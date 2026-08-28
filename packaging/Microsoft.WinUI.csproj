@@ -92,7 +92,12 @@
     <!-- Ordering only: MergedWinMD pulls in Tabular's idl project, which is enough for the merged
          winmd and therefore for the activatable-class registrations, but not for the DLL those
          registrations name. Without this the package can ship Tabular's registrations with no
-         Tabular binary, and every consuming .wapproj fails with APPX0703. -->
-    <ProjectReference Include="$(MuxControlsPath)\dev\dll-tabular\Microsoft.UI.Xaml.Controls.Tabular.vcxproj" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" />
+         Tabular binary, and every consuming .wapproj fails with APPX0703.
+         Excluded from MUXFinalRelease: every Tabular type is [MUX_PREVIEW]/[MUX_INTERNAL], which
+         maps to feature(Feature_Experimental) and is AlwaysDisabled once MUX_PRERELEASE is undefined,
+         so the public winmd keeps 6 of 93 types and no Tabular registrations are emitted. There is
+         then nothing for APPX0703 to complain about, while building Tabular would still XamlCompile
+         a generic.xaml whose TargetTypes no longer exist (WMC1006). -->
+    <ProjectReference Include="$(MuxControlsPath)\dev\dll-tabular\Microsoft.UI.Xaml.Controls.Tabular.vcxproj" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" Condition="'$(MUXFinalRelease)' != 'true'" />
   </ItemGroup>
 </Project>

@@ -432,26 +432,9 @@
       <!-- Core dxaml types come from the public merged winmd; drop other copies so XamlCompiler sees each type once. -->
       <ReferencePath Remove="@(ReferencePath)" Condition="'%(Filename)%(Extension)' == 'Microsoft.UI.Xaml.winmd' and $([System.String]::new('%(RootDir)%(Directory)').Contains('private'))" />
       <ReferencePath Remove="@(ReferencePath)" Condition="'%(Filename)%(Extension)' == 'Microsoft.winmd' and $([System.String]::new('%(RootDir)%(Directory)').Contains('dev\dll\Merged'))" />
-      <!-- midlrt output carries the unresolvable 'winrtbase' placeholder. Filter by extension, not
-           directory: the idl project copies MUXC's unmerged winmd to controls\idl-tabular\, which
-           has no 'Unmerged' segment. -->
-      <ReferencePath Remove="@(ReferencePath)" Condition="$([System.String]::new('%(Filename)').EndsWith('.g'))" />
+      <!-- Unmerged winmds carry the midlrt 'winrtbase' placeholder, which only mdmerge resolves. -->
       <ReferencePath Remove="@(ReferencePath)" Condition="$([System.String]::new('%(RootDir)%(Directory)').Contains('Unmerged'))" />
     </ItemGroup>
-    <!-- Pass2 reads @(XamlReferencesToCompile), a snapshot MarkupCompilePass2 took of
-         @(ReferencePath), so it needs the same filtering. -->
-    <ItemGroup>
-      <XamlReferencesToCompile Remove="@(XamlReferencesToCompile)" Condition="'%(Filename)%(Extension)' == 'Microsoft.UI.Xaml.winmd' and $([System.String]::new('%(RootDir)%(Directory)').Contains('private'))" />
-      <XamlReferencesToCompile Remove="@(XamlReferencesToCompile)" Condition="'%(Filename)%(Extension)' == 'Microsoft.winmd' and $([System.String]::new('%(RootDir)%(Directory)').Contains('dev\dll\Merged'))" />
-      <XamlReferencesToCompile Remove="@(XamlReferencesToCompile)" Condition="$([System.String]::new('%(Filename)').EndsWith('.g'))" />
-      <XamlReferencesToCompile Remove="@(XamlReferencesToCompile)" Condition="$([System.String]::new('%(RootDir)%(Directory)').Contains('Unmerged'))" />
-    </ItemGroup>
-    <!-- Filtering drops Tabular's own types too, so supply this project's mdmerge output, mirroring
-         MUXC's use of its own Merged\Microsoft.winmd. -->
-    <PropertyGroup>
-      <_TabularOwnMergedWinmd Condition="Exists('$(StrippedMetadataWinmdPath)')">$(StrippedMetadataWinmdPath)</_TabularOwnMergedWinmd>
-    </PropertyGroup>
-    <Message Importance="High" Text="Tabular XamlCompile: ownMerged=$(_TabularOwnMergedWinmd) publicMerged exists=$([System.IO.File]::Exists('$(MUXCXamlConsumeWinmd)'))" />
     <CallTarget Targets="SDKRedistOutputGroup" Condition="'$(IncludeSDKRedistOutputGroup)' == 'true'">
       <Output TaskParameter="TargetOutputs" ItemName="_SDKRedistOutputGroupOutput_xaml" />
     </CallTarget>
@@ -481,7 +464,7 @@
         OutputPath="$(XamlGeneratedOutputPath)"
         OutputType="$(OutputType)"
         ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
-        ReferenceAssemblies="@(ReferencePath);$(_TabularOwnMergedWinmd);$(MUXCXamlConsumeWinmd)"
+        ReferenceAssemblies="@(ReferencePath);$(MUXCXamlConsumeWinmd)"
         ForceSharedStateShutdown="False"
         CompileMode="RealBuildPass1"
         XAMLFingerprint="$(XAMLFingerprint)"
@@ -528,7 +511,7 @@
         OutputPath="$(XamlGeneratedOutputPath)"
         OutputType="$(OutputType)"
         ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
-        ReferenceAssemblies="@(XamlReferencesToCompile);$(_TabularOwnMergedWinmd);$(MUXCXamlConsumeWinmd)"
+        ReferenceAssemblies="@(XamlReferencesToCompile);$(MUXCXamlConsumeWinmd)"
         ForceSharedStateShutdown="False"
         CompileMode="RealBuildPass2"
         XAMLFingerprint="$(XAMLFingerprint)"
