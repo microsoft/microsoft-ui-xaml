@@ -1,4 +1,7 @@
-﻿# 
+﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License. See LICENSE in the project root for license information.
+
+# 
 # UpdateMasterFiles.ps1:
 #
 #   After running tests with associated masters files, the current masters and any new snapshots that don't match the masters

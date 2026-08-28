@@ -105,6 +105,10 @@ if (!$SkipPackageUninstall)
     Get-AppxPackage "WinUICsDesktopSampleApp" | Remove-AppxPackage -ErrorAction SilentlyContinue;
     Get-AppxPackage "Microsoft.WinUI3ControlsGallery.Debug" | Remove-AppxPackage -ErrorAction SilentlyContinue;
     Get-AppxPackage "Microsoft.WinUI3ControlsGallery" | Remove-AppxPackage -ErrorAction SilentlyContinue;
+    Get-AppxPackage "DisableXamlGeneratedMainCs" | Remove-AppxPackage -ErrorAction SilentlyContinue;
+    Get-AppxPackage "DisableXamlGeneratedMainNoCtorCs" | Remove-AppxPackage -ErrorAction SilentlyContinue;
+    Get-AppxPackage "DisableXamlGeneratedMainCpp" | Remove-AppxPackage -ErrorAction SilentlyContinue;
+    Get-AppxPackage "DisableXamlGeneratedMainNoCtorCpp" | Remove-AppxPackage -ErrorAction SilentlyContinue;
 }
 
 [string[]]$argsEx = $null
