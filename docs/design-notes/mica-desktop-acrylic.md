@@ -7,6 +7,7 @@
 - [Xaml Public API](#xaml-public-api)
   - [SystemBackdrop](#systembackdrop)
 - [Interaction with other features](#interaction-with-other-features)
+  - [System composition engine](#system-composition-engine)
   - [Custom title bar](#custom-title-bar)
   - [TabView and File Explorer's tabbed shell](#tabview-and-file-explorers-tabbed-shell)
 
@@ -162,6 +163,74 @@ Issues:
 
 
 ## Interaction with other features
+
+### System composition engine
+
+Everything above assumes lifted Xaml renders through the lifted compositor, which is the default. An app can
+instead opt the whole process into the system composition engine by calling
+`Microsoft.UI.Composition.CompositionEngine.TrySetProcessEngine(CompositionEngineType.System)` before it creates
+any composition object.
+
+The `SystemBackdropController`s are lifted objects that render the material into the target through the lifted
+compositor, so on the system composition engine they have nothing to render into. Setting
+`Window.SystemBackdrop` to a `MicaBackdrop` there used to do nothing at all, leaving the window showing the flat
+theme background color it erases itself with.
+
+DWM draws the same materials for a window directly, through the
+[`DWMWA_SYSTEMBACKDROP_TYPE`](https://learn.microsoft.com/windows/win32/api/dwmapi/ne-dwmapi-dwm_systembackdrop_type)
+window attribute - the recipe the system provides for every other window - so that is what `MicaBackdrop` falls
+back to. `MicaKind.Base` maps onto `DWMSBT_MAINWINDOW` and `MicaKind.BaseAlt` onto `DWMSBT_TABBEDWINDOW`.
+
+Two pieces cooperate:
+* `MicaBackdrop` (controls layer) forks on the engine. On the system engine it configures the attribute through
+  `DwmSystemBackdrop` instead of creating a `MicaController`. `DwmSystemBackdrop` snapshots the window's previous
+  attribute value and restores it on detach. It only updates or restores the attribute while Xaml is still the
+  last writer, so an app that configures the attribute itself keeps its own choice - a later `Kind` change won't
+  take the window back off it either.
+* `DirectUI::DesktopWindowImpl` (framework layer) makes the window itself stop covering the material up. DWM
+  composes the material behind the window's redirection surface, which Xaml erases with the theme's window
+  background color, so while a DWM system backdrop is configured the window extends its frame across the client
+  area and erases to black instead. It reconciles the frame against the attribute rather than against its own
+  writes - when the `SystemBackdrop` changes, and whenever it erases its background - so an app that sets
+  `DWMWA_SYSTEMBACKDROP_TYPE` on a Xaml `Window` itself gets the same treatment, and the frame and the
+  background color never disagree.
+
+DWM draws the light variant of a material unless it is told otherwise. It knows nothing about the Xaml theme and
+does not follow the system one either, so a dark themed window would get a near-white material behind its light
+content. `DwmSystemBackdrop` therefore also carries `DWMWA_USE_IMMERSIVE_DARK_MODE`, taking the theme from the
+same `SystemBackdropConfiguration` a lifted `MicaController` reads so that both engines follow one source, and
+`OnDefaultSystemBackdropConfigurationChanged` keeps the window in step when the theme changes later. That
+attribute is owned under the same last-writer rule as the material itself.
+
+Only a Xaml `Window` is configured this way, because the attribute covers a whole top-level window. `MicaBackdrop`
+only takes the DWM path when its target is the island a `Window` hosts its content in, that window is one of the
+app's Xaml `Window`s, and this backdrop object is that window's own `SystemBackdrop`. A backdrop attached to a
+windowed `Popup`, to a `SystemBackdropElement`, to an island the app hosts in a window of its own, or to an
+island the app nested inside a Xaml `Window` keeps using its (inert) `SystemBackdropController`.
+
+Two behaviors differ from the lifted path and are accepted:
+* Xaml can't read the window's current frame margins back from DWM, so a Xaml `Window` whose frame the app
+  extended itself has its margins replaced rather than restored.
+* If DWM refuses to extend the window's frame, the window keeps erasing an opaque background and the material
+  stays hidden, which is the behavior from before this fallback existed.
+
+#### Why the frame is extended
+
+Extending the frame and erasing to black is what makes the window stop covering the material up, but it is not
+the cheapest way to get there. `WS_EX_NOREDIRECTIONBITMAP` skips allocating the GDI redirection surface
+altogether, so DWM neither allocates it nor blends it; with the frame extended it still composes a full-window
+surface that contributes nothing.
+
+That is available as the opt-in `XamlChangeId.SkipWindowRedirectionSurface` (see
+[the Window design note](./xaml-window.md#the-windows-redirection-surface)). When it is enabled none of this
+applies: there is nothing opaque in the way, so the material shows through on its own and neither the frame
+extension nor the black erase runs.
+
+It stays opt-in rather than becoming the way this fallback works, because the decision has to be made when the
+window is created - the style is only honored when passed to `CreateWindowEx`, so the backdrop code can't turn
+it on when `Window.SystemBackdrop` is set - and deciding for the window as a whole means deciding for windows
+that never use a backdrop. A window without a redirection surface can't paint with GDI at all, which is a
+behavior change as much as an optimization.
 
 ### Custom title bar
 

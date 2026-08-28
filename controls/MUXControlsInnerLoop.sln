@@ -181,6 +181,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AcrylicBrush_TestUI", "dev\
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AcrylicBrush_ApiTests", "dev\Materials\Acrylic\APITests\AcrylicBrush_ApiTests.shproj", "{593E15D8-F6F9-4ABA-BA65-C6927C178DBD}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MicaBackdrop_APITests", "dev\Materials\MicaBackdrop\APITests\MicaBackdrop_APITests.shproj", "{C3ECF03A-9210-42BA-9FC6-094649AF0D72}"
+EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AcrylicBrush_InteractionTests", "dev\Materials\Acrylic\InteractionTests\AcrylicBrush_InteractionTests.shproj", "{F601284A-00C1-49F9-99B3-70D45585F784}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Reveal_InteractionTests", "dev\Materials\Reveal\InteractionTests\Reveal_InteractionTests\Reveal_InteractionTests.shproj", "{1F2872E7-28C9-4C01-88ED-73C43EE1C9A4}"
@@ -1029,6 +1031,7 @@ Global
 		dev\MenuBar\MenuBar_TestUI\MenuBar_TestUI.projitems*{55cb08ca-19fe-4db9-8160-a4ec47984b95}*SharedItemsImports = 13
 		dev\Breadcrumb\Breadcrumb.vcxitems*{563fe343-c6b0-447b-831a-b0ce3aa7a688}*SharedItemsImports = 9
 		dev\Materials\Acrylic\APITests\AcrylicBrush_ApiTests.projitems*{593e15d8-f6f9-4aba-ba65-c6927c178dbd}*SharedItemsImports = 13
+		dev\Materials\MicaBackdrop\APITests\MicaBackdrop_APITests.projitems*{c3ecf03a-9210-42ba-9fc6-094649af0d72}*SharedItemsImports = 13
 		dev\Materials\Reveal\TestUI\Reveal_TestUI.projitems*{5bf80ae9-29df-4be9-858a-f095c8073473}*SharedItemsImports = 13
 		dev\PersonPicture\PersonPicture.vcxitems*{5fdf2501-aa3d-4082-ad45-d1f2a94c1213}*SharedItemsImports = 9
 		dev\ProgressRing\ProgressRing.vcxitems*{64447efa-19b4-4bf2-9d63-618635c483ec}*SharedItemsImports = 9

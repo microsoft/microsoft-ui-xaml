@@ -140,6 +140,13 @@ namespace DirectUI
         void OpenSystemMenu(const int cursorX, const int cursorY) const noexcept;
         _Check_return_ HRESULT OnNonClientRegionButtonUp(WPARAM wParam, const int cursorX, const int cursorY);
         _Check_return_ HRESULT OnClosed();
+        LRESULT OnEraseBackground(_In_ HDC hdc);
+
+        COLORREF GetThemedBackgroundColor();
+
+        // Brings the window's frame in line with the DWM system backdrop (Mica, desktop Acrylic) configured on
+        // the window, if any. Returns whether that changed the window's painting.
+        bool UpdateDwmSystemBackdropState();
 
         void OnSetFocus();
         void RegisterDesktopWindowClass();
@@ -214,6 +221,11 @@ namespace DirectUI
         DXamlCore* m_dxamlCoreNoRef = nullptr;
         bool m_bMinimizedOrHidden = false;
         bool m_bInitialWindowActivation = true;
+
+        // True while DWM draws a system backdrop material behind this window. The window's frame is extended
+        // across its client area and its background is erased to black, so the material shows through.
+        // See UpdateDwmSystemBackdropState.
+        bool m_hasDwmSystemBackdrop = false;
 
         // --------------------------------------------------
         // Window sizing support
