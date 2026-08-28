@@ -40,5 +40,5 @@ stages:
         dependsOn: CreateTestPayload
         testOS: 'Win10-RS5'
         testPayloadArtifactName: 'TestPayload'
-        failOnTestFailure: ${{ parameters.failOnTestFailure }}
         skipTests: true
+        failOnTestFailure: ${{ parameters.failOnTestFailure }}
