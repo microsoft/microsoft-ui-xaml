@@ -46,12 +46,15 @@ sample's.
 
 ## Two things worth knowing
 
-**Nothing needs merging.** The control resolves its own `generic.xaml` and theme resources from the
-package, so `App.xaml` merges only `XamlControlsResources`. Verified by removing every Tabular
-dictionary from this sample and confirming all eight column headers and the rows still render, and
-again by the `TableViewApp` matrix (C#/C++ x packaged/unpackaged), none of which merge anything
-Tabular-specific. If a table appears with no header row, the cause is almost always **no declared
-columns**, not a missing dictionary.
+**Tabular's theme resources must be merged.** The control resolves its own `generic.xaml` from the
+package, but the theme resources that default style depends on live in `TabularControlsResources`,
+so `App.xaml` merges that alongside `XamlControlsResources`. `SortIndicator` ships in the Tabular
+DLL rather than in MUXC — `controls/Tabular.ProjectImports.targets` is the only importer of
+`SortIndicator.vcxitems` — so `SortIndicatorForeground`, which `TableView`'s column-header style
+resolves, is absent from MUXC's dictionary. Dropping the merge produces
+`XamlParseException 0x802B000A` on the first layout pass, seen as a `0xC000027B` stowed exception
+shortly after launch. If a table appears with no header row, that is a different problem: it is
+almost always **no declared columns**, not a missing dictionary.
 
 **`TableView` is `[MUX_PREVIEW]`.** C# usage raises `CS8305`, suppressed via `NoWarn` in the project
 file. XAML usage raises `WMC1501` once per page; those are deliberately left visible.

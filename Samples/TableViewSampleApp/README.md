@@ -43,10 +43,17 @@ BuildOutput\obj\amd64chk\Samples\TableViewSampleApp\TableViewSampleApp.exe
 
 ## Using TableView in your own app
 
-Reference `Microsoft.WindowsAppSDK.WinUI` and use the control. Nothing else — the control resolves
-its own default style and theme resources from the package, so there is no dictionary to merge and
-no URI to configure. The `TableViewApp` samples alongside this one demonstrate that in all four
-consumer shapes (C# and C++, packaged and unpackaged).
+Reference `Microsoft.WindowsAppSDK.WinUI` and use the control. In `App.xaml`, merge
+`XamlControlsResources` and `TabularControlsResources` — the latter is Tabular's own theme-resource
+dictionary, the exact analogue of `XamlControlsResources` for MUXC. Everything else the control
+needs (its default style, theme XBFs and `.pri`) resolves from the package, so there is no URI to
+configure and nothing to compile out of the control source tree.
+
+`TabularControlsResources` is required, not optional: `TableView`'s column-header style resolves
+`SortIndicatorForeground`, which is defined in Tabular's theme resources because `SortIndicator`
+ships in the Tabular DLL rather than in MUXC. Without the merge the app throws
+`XamlParseException 0x802B000A` during its first layout pass, which surfaces as a `0xC000027B`
+stowed exception a few seconds after launch.
 
 Declare columns, or the table renders rows with no header row and no cells:
 
