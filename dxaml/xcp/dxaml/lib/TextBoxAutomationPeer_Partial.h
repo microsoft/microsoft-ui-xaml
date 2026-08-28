@@ -17,6 +17,7 @@ namespace DirectUI
 
             IFACEMETHOD(GetClassNameCore)(_Out_ HSTRING* returnValue);
             IFACEMETHOD(GetAutomationControlTypeCore)(_Out_ xaml_automation_peers::AutomationControlType* returnValue);
+            IFACEMETHOD(GetAccessKeyCore)(_Out_ HSTRING* returnValue) override;
             _Check_return_ HRESULT GetDescribedByCoreImpl(_Outptr_ wfc::IIterable<xaml_automation_peers::AutomationPeer*>** returnValue) final;
     };
 }
