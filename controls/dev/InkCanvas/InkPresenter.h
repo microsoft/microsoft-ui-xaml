@@ -12,9 +12,11 @@
 #include "InkInputConfiguration.g.h"
 #include "InkStrokeInput.g.h"
 #include "InkUnprocessedInput.g.h"
+#include "InkSynchronizer.g.h"
 #include "InkPresenter.g.h"
 #include <windows.ui.input.inking.h>
 #include <inkpresenterdesktop.h>
+#include <dcomp.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Storage.Streams.h>
 #include <winrt/Windows.UI.Core.h>
@@ -28,6 +30,28 @@
 // unambiguous: 'inking' for the OS types, 'muxc' for our projected types.
 namespace inking = winrt::Windows::UI::Input::Inking;
 namespace muxc = winrt::Microsoft::UI::Xaml::Controls;
+
+// The IInkCommitRequestHandler the OS presenter calls (OnCommitRequested) on every wet->dry transition
+// - normal drying and custom-dry EndDry - so the host commits the shared DComposition device and the
+// change is presented. Defined here (rather than privately in InkCanvas.cpp) so the InkPresenter proxy
+// can re-create it when it re-creates the OS presenter to activate custom drying at runtime.
+struct InkCommitRequestHandler : winrt::implements<InkCommitRequestHandler, IInkCommitRequestHandler>
+{
+    InkCommitRequestHandler(winrt::com_ptr<IDCompositionDevice> device)
+        : m_device(device) {}
+
+    IFACEMETHODIMP OnCommitRequested() override
+    {
+        if (m_device)
+        {
+            return m_device->Commit();
+        }
+        return S_OK;
+    }
+
+private:
+    winrt::com_ptr<IDCompositionDevice> m_device;
+};
 
 // Marshals a work item onto the ink host thread through the owning InkPresenter proxy, passing the
 // OS presenter to the lambda. No-op if the proxy has already been destroyed. The child proxies
@@ -230,6 +254,52 @@ private:
     winrt::event<Handler> m_pointerLost;
 };
 
+// Mirror of Windows.UI.Input.Inking.InkSynchronizer, returned by InkPresenter.ActivateCustomDrying.
+// Lets the app render committed ("dry") ink itself: BeginDry hands back the strokes the presenter just
+// committed and suppresses the presenter's own dry rendering; EndDry releases the wet-ink layer once
+// the app has drawn them. This mirror OWNS the OS InkSynchronizer (adopted on the ink thread from the
+// presenter's OS ActivateCustomDrying) and the dry-transaction state; the OS synchronizer is thread-
+// affine to the ink thread, so BeginDry/EndDry marshal onto it through the owning InkPresenter proxy's
+// work queue. The InkPresenter keeps this projected mirror, never the raw OS inking::InkSynchronizer.
+class InkSynchronizer :
+    public winrt::implementation::InkSynchronizerT<InkSynchronizer>
+{
+public:
+    InkSynchronizer(winrt::weak_ref<muxc::InkPresenter> const& owner) : m_owner(owner) {}
+
+    winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> BeginDry();
+    void EndDry();
+
+    // Internal (not on the winmd surface). Adopts the OS InkSynchronizer handed back by the owning
+    // presenter's OS ActivateCustomDrying. Called once on the ink thread when custom drying is activated.
+    void AdoptOsSynchronizer(inking::InkSynchronizer const& osSynchronizer) noexcept { m_osSynchronizer = osSynchronizer; }
+
+    // Internal (not on the winmd surface). Runs the OS BeginDry in-context on the ink thread, inside the
+    // OS StrokesCollected callback (the only point BeginDry is valid): holds the wet layer up and captures
+    // the just-committed strokes for the app's BeginDry to drain. Ink-thread only.
+    void BeginDryInContext();
+
+private:
+    winrt::weak_ref<muxc::InkPresenter> m_owner{ nullptr };
+
+    // The OS InkSynchronizer this mirror fronts (from OS ActivateCustomDrying). Thread-affine to the ink
+    // thread; only ever touched inside ink-thread work items. Null until custom drying is activated.
+    inking::InkSynchronizer m_osSynchronizer{ nullptr };
+
+    // Strokes captured by the in-context BeginDry (ink thread) and drained by the app's BeginDry (which
+    // marshals to the ink thread). Ink-thread only.
+    std::vector<inking::InkStroke> m_pendingDryStrokes;
+
+    // True between the in-context BeginDry and its matching EndDry (the app drives EndDry once it has
+    // painted its dry ink, so the wet layer stays up until then). Guards a second BeginDry while a dry is
+    // still open when a burst outruns EndDry. Ink-thread only.
+    bool m_dryInProgress{ false };
+
+    // HRESULT of the most recent in-context BeginDry; S_OK on success. The app's BeginDry re-throws it so
+    // a genuine failure surfaces there instead of being swallowed. Ink-thread only.
+    HRESULT m_lastDryHr{ S_OK };
+};
+
 // Manipulable subset of Windows.UI.Input.Inking.InkPresenter. The OS presenter can only be created
 // and called on the IInkDesktopHost ink thread, so this proxy is the single owner of it: it holds
 // the ink host reference (handed in at construction by the owning InkCanvas), creates the OS
@@ -262,6 +332,8 @@ public:
     muxc::InkStrokeInput StrokeInput();
     muxc::InkUnprocessedInput UnprocessedInput();
 
+    muxc::InkSynchronizer ActivateCustomDrying();
+
     winrt::event_token StrokesCollected(winrt::Windows::Foundation::TypedEventHandler<muxc::InkPresenter, muxc::InkStrokesCollectedEventArgs> const& handler);
     void StrokesCollected(winrt::event_token const& token);
     winrt::event_token StrokesErased(winrt::Windows::Foundation::TypedEventHandler<muxc::InkPresenter, muxc::InkStrokesErasedEventArgs> const& handler);
@@ -293,6 +365,17 @@ public:
     // snapshotted off the ink thread and marshaled back to the UI thread.
     void RaiseStrokesCollected(winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> const& strokes);
     void RaiseStrokesErased(winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> const& strokes);
+
+    // Internal. Stores the shared composition device (on the ink thread) so the custom-drying path can
+    // present the wet container Clear. Called by InkCanvas at attach; released via ReleaseCompositionDevice.
+    void SetCompositionDevice(winrt::com_ptr<IDCompositionDevice> const& device);
+
+    // Internal. Drops the composition device reference on the ink thread. Called by InkCanvas at detach.
+    void ReleaseCompositionDevice();
+
+    // Internal. Remembers the ink root visual so a runtime ActivateCustomDrying can detach/reattach it
+    // around the OS activation. Called on the ink thread by InkCanvas at attach.
+    void SetInkRootVisualForCustomDry(winrt::com_ptr<IDCompositionVisual> const& visual) noexcept { m_rootVisual = visual; }
 
 private:
     // Runs on the ink thread (from Start's work item) once the OS presenter has been created. Takes
@@ -335,6 +418,30 @@ private:
     muxc::InkInputConfiguration m_inputConfiguration{ nullptr };
     muxc::InkStrokeInput m_strokeInput{ nullptr };
     muxc::InkUnprocessedInput m_unprocessedInput{ nullptr };
+
+    // Custom-drying: the stable mirror handed back by ActivateCustomDrying (UI-thread cached; repeated
+    // calls return the same identity, UWP parity). It owns the OS InkSynchronizer and the dry-transaction
+    // state; this proxy keeps only the projected mirror, never the raw OS inking::InkSynchronizer.
+    muxc::InkSynchronizer m_customDryMirror{ nullptr };
+
+    // Non-owning pointer to m_customDryMirror's implementation, so the in-context StrokesCollected
+    // callback can drive its ink-thread BeginDry. Set on the ink thread when custom drying is activated;
+    // valid for this proxy's lifetime (m_customDryMirror owns the object). Ink-thread only.
+    InkSynchronizer* m_customDrySync{ nullptr };
+
+    // The shared DComp device, BORROWED from the InkCanvas/ThreadData that owns it (a per-UI-thread
+    // singleton shared by every InkCanvas on the thread). Held only to pass as the SetRootVisual device
+    // arg and to build the commit handler when a runtime ActivateCustomDrying rebuilds the OS presenter.
+    // Ink-thread only; released at detach via ReleaseCompositionDevice.
+    winrt::com_ptr<IDCompositionDevice> m_compositionDevice{ nullptr };
+
+    // Custom drying: true once the app has activated custom drying. Ink-thread only.
+    bool m_customDryActive{ false };
+
+    // The ink root visual handed to SetRootVisual. Held so a runtime ActivateCustomDrying can detach it
+    // (SetRootVisual(nullptr)) for the OS activation - which requires a pre-start presenter - and then
+    // reattach it. Ink-thread only; set by InkCanvas at attach.
+    winrt::com_ptr<IDCompositionVisual> m_rootVisual{ nullptr };
 
     // Ruler / protractor stencils bound to the OS presenter. Thread-affine to the ink
     // thread, so they are only ever constructed and touched inside serialized ink-thread

@@ -672,6 +672,201 @@ muxc::InkUnprocessedInput InkPresenter::UnprocessedInput()
     return m_unprocessedInput;
 }
 
+muxc::InkSynchronizer InkPresenter::ActivateCustomDrying()
+{
+    // Snapshot the app-set input configuration on the UI thread (where these mirrors live) so the rebuilt
+    // presenter can restore it - the rebuild otherwise starts from OS defaults. Reading here avoids a
+    // cross-thread read inside the ink-thread work item.
+    auto mode = m_inputProcessingConfiguration ? m_inputProcessingConfiguration.Mode() : muxc::InkInputProcessingMode::Inking;
+    auto rightDrag = m_inputProcessingConfiguration ? m_inputProcessingConfiguration.RightDragAction() : muxc::InkInputRightDragAction::LeaveUnprocessed;
+    bool barrelButton = m_inputConfiguration ? m_inputConfiguration.IsPrimaryBarrelButtonInputEnabled() : true;
+    bool eraserInput = m_inputConfiguration ? m_inputConfiguration.IsEraserInputEnabled() : true;
+
+    // Ensure the stable mirror exists (UWP parity: repeated calls return the same identity) BEFORE the
+    // synchronous work item, so the work item can adopt the OS synchronizer into it on the ink thread.
+    if (!m_customDryMirror)
+    {
+        m_customDryMirror = winrt::make<InkSynchronizer>(winrt::weak_ref<muxc::InkPresenter>{ *this });
+    }
+
+    // The OS only allows ActivateCustomDrying before the presenter has started processing input. The
+    // lifted InkCanvas roots + sizes the presenter on load, which starts it, so a runtime activation on
+    // that same presenter is "too late" (E_ILLEGAL_METHOD_CALL) - and starting is irreversible, so
+    // detaching the root visual / zeroing the size does NOT undo it (verified). To honor a runtime
+    // activation we therefore build a FRESH OS presenter and wire it in the exact order the OS custom-
+    // dry contract requires - create -> SetRootVisual(device) -> SetCommitRequestHandler ->
+    // ActivateCustomDrying -> configure/subscribe -> SetSize - then swap it in for the started one.
+    RunInkPresenterWorkItemSync(
+        [this, mode, rightDrag, barrelButton, eraserInput](inking::InkPresenter const& oldPresenter)
+        {
+            // Idempotent (UWP parity): repeated calls return the same synchronizer with no side effects,
+            // so do not rebuild the presenter if custom drying is already active.
+            if (m_customDryActive)
+            {
+                return;
+            }
+
+            // Carry the current physical size across to the replacement, then stop the started presenter
+            // from presenting into the shared ink visual before the new one takes it over.
+            float width = 0, height = 0;
+            oldPresenter.as<IInkPresenterDesktop>()->GetSize(&width, &height);
+            oldPresenter.as<IInkPresenterDesktop>()->SetRootVisual(nullptr, nullptr);
+
+            // Fresh presenter, then bind the render target together with the composition DEVICE via
+            // SetRootVisual - device = m_compositionDevice, NOT nullptr. The normal-inking path passes
+            // nullptr (it relies only on the commit handler); custom drying needs the real device to wire
+            // up the wet->dry handoff - with a null device BeginDry fails with E_UNEXPECTED. Size is still
+            // 0 so the presenter has not "started" (activation is still allowed).
+            auto newDesktop = winrt::capture<IInkPresenterDesktop>(m_inkHost, &IInkDesktopHost::CreateInkPresenter);
+            auto newPresenter = newDesktop.as<inking::InkPresenter>();
+
+            if (m_rootVisual)
+            {
+                winrt::check_hresult(newDesktop->SetRootVisual(m_rootVisual.get(), m_compositionDevice.get()));
+            }
+            if (m_compositionDevice)
+            {
+                auto commitHandler = winrt::make_self<InkCommitRequestHandler>(m_compositionDevice);
+                winrt::check_hresult(newDesktop->SetCommitRequestHandler(commitHandler.as<IInkCommitRequestHandler>().get()));
+            }
+            // Adopt the OS InkSynchronizer into the mirror, which owns it and the dry-transaction state;
+            // this proxy keeps only the projected mirror, never the raw OS synchronizer. m_customDrySync
+            // lets the in-context StrokesCollected callback drive the mirror's ink-thread BeginDry.
+            auto syncImpl = winrt::get_self<::InkSynchronizer>(m_customDryMirror);
+            syncImpl->AdoptOsSynchronizer(newPresenter.ActivateCustomDrying());
+            m_customDrySync = syncImpl;
+            m_customDryActive = true;
+
+            // Adopt the new presenter (wires stroke/input forwarding) and restore the configuration the
+            // app had applied to the replaced one.
+            InitializeOsPresenter(newPresenter);
+            newPresenter.InputDeviceTypes(m_inputDeviceTypes);
+            newPresenter.IsInputEnabled(m_isInputEnabled);
+            if (m_defaultDrawingAttributes)
+            {
+                newPresenter.UpdateDefaultDrawingAttributes(m_defaultDrawingAttributes);
+            }
+            newPresenter.HighContrastAdjustment(
+                static_cast<inking::InkHighContrastAdjustment>(static_cast<int32_t>(m_highContrastAdjustment)));
+            newPresenter.InputProcessingConfiguration().Mode(
+                static_cast<inking::InkInputProcessingMode>(static_cast<int32_t>(mode)));
+            newPresenter.InputProcessingConfiguration().RightDragAction(
+                static_cast<inking::InkInputRightDragAction>(static_cast<int32_t>(rightDrag)));
+            newPresenter.InputConfiguration().IsPrimaryBarrelButtonInputEnabled(barrelButton);
+            newPresenter.InputConfiguration().IsEraserInputEnabled(eraserInput);
+
+            // Start it (input begins) now that custom-dry is engaged with the render target set.
+            winrt::check_hresult(newDesktop->SetSize(width, height));
+            if (m_compositionDevice)
+            {
+                winrt::check_hresult(m_compositionDevice->Commit());
+            }
+        },
+        /* propagateException */ true,
+        /* pumpMessages */ false);
+
+    return m_customDryMirror;
+}
+
+void InkPresenter::SetCompositionDevice(winrt::com_ptr<IDCompositionDevice> const& device)
+{
+    // Store the shared composition device on the ink thread; the custom-drying path commits it after
+    // clearing the wet container so the removed strokes leave the screen.
+    QueueInkPresenterWorkItem([this, device](inking::InkPresenter const&) { m_compositionDevice = device; });
+}
+
+void InkPresenter::ReleaseCompositionDevice()
+{
+    QueueInkPresenterWorkItem([this](inking::InkPresenter const&) { m_compositionDevice = nullptr; });
+}
+
+// -- InkSynchronizer mirror -----------------------------------------------------------------------
+// Owns the OS InkSynchronizer (adopted on the ink thread from the presenter's OS ActivateCustomDrying)
+// and the dry-transaction state, and marshals its BeginDry/EndDry onto the ink thread through the owning
+// InkPresenter proxy's work queue. Returns empty / no-ops once the owner has been torn down.
+
+void InkSynchronizer::BeginDryInContext()
+{
+    // Runs on the ink thread inside the OS StrokesCollected callback - the only point BeginDry is valid.
+    // A rapid burst can outrun the app's EndDry, and BeginDry is invalid while a dry is still open, so
+    // close any still-open one first. Then BeginDry hands back the just-committed strokes and we HOLD the
+    // wet layer up (no EndDry here) so the stroke stays on screen until the app has painted its dry ink
+    // and calls EndDry. Append (don't overwrite) so a burst that outruns the app's BeginDry is not lost.
+    // Capture any failure so it surfaces at the app's BeginDry rather than being swallowed.
+    if (!m_osSynchronizer)
+    {
+        return;
+    }
+    m_lastDryHr = S_OK;
+    try
+    {
+        if (m_dryInProgress)
+        {
+            m_osSynchronizer.EndDry();
+            m_dryInProgress = false;
+        }
+        auto dry = m_osSynchronizer.BeginDry();
+        m_dryInProgress = true;
+        if (dry && dry.Size())
+        {
+            std::vector<inking::InkStroke> drySnapshot(dry.Size(), nullptr);
+            dry.GetMany(0, drySnapshot);
+            m_pendingDryStrokes.insert(m_pendingDryStrokes.end(), drySnapshot.begin(), drySnapshot.end());
+        }
+    }
+    catch (winrt::hresult_error const& e)
+    {
+        m_lastDryHr = e.code();
+    }
+    catch (...)
+    {
+        m_lastDryHr = E_FAIL;
+    }
+}
+
+winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> InkSynchronizer::BeginDry()
+{
+    // The in-context BeginDry already ran on the ink thread (inside the OS StrokesCollected callback) and
+    // the wet layer is being held up. Drain the strokes it captured on the ink thread, then hand them
+    // back; the app paints them as dry ink and then calls EndDry to release the wet layer.
+    std::vector<inking::InkStroke> drained;
+    RunOnInkHostThreadSync(m_owner,
+        [this, &drained](inking::InkPresenter const&)
+        {
+            // Propagate a genuine in-context BeginDry failure to the app's BeginDry (UWP parity) rather
+            // than returning an empty result that hides it.
+            if (FAILED(m_lastDryHr))
+            {
+                winrt::throw_hresult(m_lastDryHr);
+            }
+            drained = std::move(m_pendingDryStrokes);
+            m_pendingDryStrokes.clear();
+        },
+        /* propagateException */ true,
+        /* pumpMessages */ false);
+    // Build the returned collection on the calling (UI) thread - matching the StrokesCollected path and
+    // avoiding an ink-thread-affine object being handed to the app.
+    return winrt::single_threaded_vector<inking::InkStroke>(std::move(drained)).GetView();
+}
+
+void InkSynchronizer::EndDry()
+{
+    // Release the held wet layer now that the app has painted its dry ink; the commit-request handler
+    // presents that removal. The wet was held since the in-context BeginDry, so the stroke stayed
+    // continuously visible. No-op if a rapid burst already closed this dry in the StrokesCollected handler.
+    RunOnInkHostThreadSync(m_owner,
+        [this](inking::InkPresenter const&)
+        {
+            if (m_dryInProgress && m_osSynchronizer)
+            {
+                m_osSynchronizer.EndDry();
+                m_dryInProgress = false;
+            }
+        },
+        /* propagateException */ true,
+        /* pumpMessages */ false);
+}
+
 winrt::event_token InkPresenter::StrokesCollected(winrt::Windows::Foundation::TypedEventHandler<muxc::InkPresenter, muxc::InkStrokesCollectedEventArgs> const& handler)
 {
     return m_strokesCollectedEvent.add(handler);
@@ -692,9 +887,11 @@ void InkPresenter::StrokesErased(winrt::event_token const& token)
     m_strokesErasedEvent.remove(token);
 }
 
-// Runs ONCE on the ink thread (from Start's work item) as soon as the OS presenter is created. The
-// proxy takes ownership of the OS presenter and owns everything about it from here on: initial
-// configuration and the stroke-event forwarding path.
+// Runs on the ink thread as soon as an OS presenter is created: once from Start's work item, and again
+// from ActivateCustomDrying when it swaps in a freshly-created presenter to activate custom drying. The
+// proxy adopts the given OS presenter and (re)establishes everything about it from here on: initial
+// configuration and the stroke-event forwarding path. Safe to run more than once - it always targets
+// the passed-in presenter, and the previously-adopted one is released when m_osPresenter is reassigned.
 void InkPresenter::InitializeOsPresenter(inking::InkPresenter const& osPresenter)
 {
     m_osPresenter = osPresenter;
@@ -733,11 +930,24 @@ void InkPresenter::InitializeOsPresenter(inking::InkPresenter const& osPresenter
     // snapshot the strokes here, marshal to the UI thread, and re-raise our own events there.
     // Handlers are attached eagerly and are harmless when the app never subscribes to our events.
     osPresenter.StrokesCollected(
-        [marshalToUi](inking::InkPresenter const&, inking::InkStrokesCollectedEventArgs const& args)
+        [marshalToUi, weakSelf](inking::InkPresenter const&, inking::InkStrokesCollectedEventArgs const& args)
         {
             auto strokes = args.Strokes();
             std::vector<inking::InkStroke> snapshot(strokes.Size(), nullptr);
             strokes.GetMany(0, snapshot);
+
+            // Custom drying: BeginDry is only valid synchronously inside THIS OS callback, on the ink
+            // thread (the app's StrokesCollected handler runs later on the UI thread - too late). Drive it
+            // through the InkSynchronizer mirror, which owns the OS synchronizer and the dry-transaction
+            // state: it holds the wet layer up and captures the strokes for the app's BeginDry to drain.
+            if (auto strong = weakSelf.get())
+            {
+                auto self = winrt::get_self<::InkPresenter>(strong);
+                if (self->m_customDrySync)
+                {
+                    self->m_customDrySync->BeginDryInContext();
+                }
+            }
 
             marshalToUi([snapshot = std::move(snapshot)](::InkPresenter* self) mutable
                 {

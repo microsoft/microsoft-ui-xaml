@@ -24,7 +24,14 @@
             </Grid.RowDefinitions>
             <controls:InkToolbar x:Name="Toolbar" Grid.Row="0" Margin="0,0,0,6" />
             <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="1" Background="White">
-                <controls:InkCanvas x:Name="InkSurface" />
+                <Grid>
+                    <controls:InkCanvas x:Name="InkSurface" />
+                    <!-- App-owned dry-ink layer. While custom drying is active the app draws the dried
+                         strokes here (red polylines) via InkSynchronizer.BeginDry. A plain Canvas (not a
+                         second InkCanvas) avoids a second compositor splice. IsHitTestVisible=False lets pen
+                         input pass through to InkSurface below. -->
+                    <Canvas x:Name="DryOverlay" IsHitTestVisible="False" SizeChanged="OnDryOverlaySizeChanged" />
+                </Grid>
             </Border>
         </Grid>
 
@@ -88,6 +95,16 @@
                            Text="draw / erase to see events..." />
                 <TextBlock x:Name="EventLogText" TextWrapping="Wrap" IsTextSelectionEnabled="True"
                            FontFamily="Consolas" FontSize="11" />
+
+                <!-- Custom drying (WIP): the app takes over rendering of committed ink via InkSynchronizer.
+                     Activate, then draw: each StrokesCollected calls BeginDry() (the just-committed strokes)
+                     then EndDry(). If BeginDry returns 0 the OS capture-inside-notification did not land
+                     (the known gap this PR is for). -->
+                <TextBlock Text="Custom drying (WIP)" FontWeight="SemiBold" />
+                <ToggleSwitch x:Name="CustomDryToggle" Header="Activate custom drying"
+                              OnContent="Active" OffContent="Off" Toggled="OnCustomDryToggled" />
+                <TextBlock x:Name="CustomDryText" TextWrapping="Wrap" FontFamily="Consolas" FontSize="12"
+                           Text="off - activate, then draw a stroke" />
 
                 <TextBlock Text="Log" FontWeight="SemiBold" />
                 <TextBlock x:Name="LogText" TextWrapping="Wrap" IsTextSelectionEnabled="True"

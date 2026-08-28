@@ -77,28 +77,9 @@ struct ThreadData
     wil::unique_hmodule m_hmodDComp;
 };
 
-//
-// IInkCommitRequestHandler implementation.
-// InkPresenter calls OnCommitRequested() when ink transitions from wet to dry
-// and needs the app to commit the DComposition device.
-//
-struct InkCommitRequestHandler : winrt::implements<InkCommitRequestHandler, IInkCommitRequestHandler>
-{
-    InkCommitRequestHandler(winrt::com_ptr<IDCompositionDevice> device)
-        : m_device(device) {}
-
-    IFACEMETHODIMP OnCommitRequested() override
-    {
-        if (m_device)
-        {
-            return m_device->Commit();
-        }
-        return S_OK;
-    }
-
-private:
-    winrt::com_ptr<IDCompositionDevice> m_device;
-};
+// InkCommitRequestHandler (the IInkCommitRequestHandler the presenter calls on every wet->dry
+// transition to commit the shared DComposition device) now lives in InkPresenter.h, so the InkPresenter
+// proxy can re-create it when it re-creates the OS presenter to activate custom drying at runtime.
 
 //
 //  InkCanvas
@@ -359,15 +340,28 @@ void InkCanvas::AttachInkVisualToPresenter()
     // Clear the detach flag BEFORE queuing so the ink thread doesn't drop the SetRootVisual work.
     m_isDetached.store(false, std::memory_order_release);
 
-    // Bind the visual to the presenter on the ink thread. SetRootVisual drives both rendering and
-    // input routing. XAML positions/clips the ink visual for both compositor paths, so commit here.
-    // No commit-request handler (conflicts with InkSynchronizer).
-    winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->QueueInkPresenterWorkItem([rootVisual = m_inkRootVisual, compositionDevice = m_threadData->m_compositionDevice](inking::InkPresenter const& presenter)
+    // Bind the visual to the presenter on the ink thread. SetRootVisual(rootVisual, device) roots the
+    // ink; SetCommitRequestHandler wires the DComp commit the presenter requests on every wet->dry
+    // transition (normal drying, and custom-dry EndDry) so the removal + new content land in one frame.
+    // The presenter holds a ref on the handler; it is replaced on re-attach and released at teardown.
+    auto* presenterSelf = winrt::get_self<::InkPresenter>(m_inkPresenterProxy);
+    presenterSelf->QueueInkPresenterWorkItem([presenterSelf, rootVisual = m_inkRootVisual, compositionDevice = m_threadData->m_compositionDevice](inking::InkPresenter const& presenter)
         {
             auto desktopPresenter = presenter.as<IInkPresenterDesktop>();
             winrt::check_hresult(desktopPresenter->SetRootVisual(rootVisual.get(), nullptr));
+            auto commitHandler = winrt::make_self<InkCommitRequestHandler>(compositionDevice);
+            winrt::check_hresult(desktopPresenter->SetCommitRequestHandler(commitHandler.as<IInkCommitRequestHandler>().get()));
             winrt::check_hresult(compositionDevice->Commit());
+            presenterSelf->SetInkRootVisualForCustomDry(rootVisual);
         });
+}
+
+// Roots the ink visual under the given target and hands the shared composition device to the presenter
+// (used to present the wet-container clear while custom drying). Shared by both compositor paths.
+void InkCanvas::RootInkVisual(IDCompositionTarget* target)
+{
+    winrt::check_hresult(target->SetRoot(m_inkRootVisual.get()));
+    winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->SetCompositionDevice(m_threadData->m_compositionDevice);
 }
 
 // System compositor path: splices the ink visual directly under a lifted MUC visual via
@@ -404,7 +398,8 @@ void InkCanvas::AttachToSystemCompositor()
 #endif
         desktopDevice.get(),
         m_systemDCompTarget.put()));
-    winrt::check_hresult(m_systemDCompTarget->SetRoot(m_inkRootVisual.get()));
+    RootInkVisual(m_systemDCompTarget.get());
+    winrt::check_hresult(m_threadData->m_compositionDevice->Commit());
 
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, mucRootVisual);
 }
@@ -436,7 +431,7 @@ void InkCanvas::AttachToLiftedCompositor()
     m_systemVisualLink.IsAboveContent(true);
 
     winrt::com_ptr<IDCompositionTarget> target = m_systemVisualLink.DCompTarget();
-    winrt::check_hresult(target->SetRoot(m_inkRootVisual.get()));
+    RootInkVisual(target.get());
 
     winrt::check_hresult(m_threadData->m_compositionDevice->Commit());
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, m_systemVisualLink.PlacementVisual());
@@ -451,6 +446,12 @@ void InkCanvas::DetachFromVisualLink()
     m_isDetached.store(true, std::memory_order_release);
 
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, nullptr);
+
+    // Drop the composition device reference on the ink thread before teardown.
+    if (m_inkPresenterProxy)
+    {
+        winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->ReleaseCompositionDevice();
+    }
 
     m_systemDCompTarget = nullptr;
     m_systemVisualLink = nullptr;

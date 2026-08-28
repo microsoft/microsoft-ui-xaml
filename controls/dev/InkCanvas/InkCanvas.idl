@@ -123,6 +123,18 @@
         InkPresenter GetInkPresenter();
     }
 
+    // Ink-thread-marshaled mirror of Windows.UI.Input.Inking.InkSynchronizer. Returned by
+    // InkPresenter.ActivateCustomDrying; lets the app take over rendering of "dry" (committed) ink.
+    // BeginDry/EndDry bracket the app's own rendering of the strokes the presenter just committed, so
+    // the presenter does not also draw them. The OS synchronizer is thread-affine to the ink thread,
+    // so both calls marshal there through the owning InkPresenter.
+    [MUX_PREVIEW]
+    runtimeclass InkSynchronizer
+    {
+        Windows.Foundation.Collections.IVectorView<Windows.UI.Input.Inking.InkStroke> BeginDry();
+        void EndDry();
+    }
+
     // Ink-thread-marshaled subset of Windows.UI.Input.Inking.InkPresenter.
     [MUX_PREVIEW]
     runtimeclass InkPresenter
@@ -145,6 +157,11 @@
         InkInputConfiguration InputConfiguration{ get; };
         InkStrokeInput StrokeInput{ get; };
         InkUnprocessedInput UnprocessedInput{ get; };
+
+        // Switches the presenter into custom-drying mode and returns the InkSynchronizer used to
+        // bracket the app's own rendering of committed strokes (parity with UWP
+        // InkPresenter.ActivateCustomDrying). Call before the first stroke is collected.
+        InkSynchronizer ActivateCustomDrying();
 
         event Windows.Foundation.TypedEventHandler<InkPresenter, InkStrokesCollectedEventArgs> StrokesCollected;
         event Windows.Foundation.TypedEventHandler<InkPresenter, InkStrokesErasedEventArgs> StrokesErased;
