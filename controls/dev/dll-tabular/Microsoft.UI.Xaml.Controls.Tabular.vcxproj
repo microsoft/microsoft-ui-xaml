@@ -52,25 +52,6 @@
     <Error Condition="!Exists('$(XamlBuildOutputRoot)\controls\dev\dll\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd')"
            Text="Microsoft.UI.Xaml.Controls.Tabular consumes MUXC's component winmd (dev\dll\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd, used by C++/WinRT), which has not been built. Build the in-box controls DLL first (e.g. 'controls\Build.cmd product'), then build Tabular." />
   </Target>
-  <!-- XamlCompile Pass2 resolves against MergedWinMD's public output, and an ordering-only
-       ProjectReference is not enough to guarantee it exists. packaging\Microsoft.WinUI.csproj
-       references MergedWinMD and this project as siblings, so MSBuild schedules them concurrently;
-       in Microsoft.UI.Xaml-Product.sln that let Pass2 run roughly six minutes before mdmerge wrote
-       the merged winmd, and the compiler fell back to this project's unmerged LocalAssembly, which
-       carries midlrt's 'winrtbase' placeholder and fails with WMC1006. Build it on demand when it is
-       missing; when another node is already building it with these properties MSBuild blocks here
-       instead of racing. -->
-  <Target Name="EnsureMergedWinMDBuiltForXamlCompile" BeforeTargets="MarkupCompilePass1;MarkupCompilePass2">
-    <PropertyGroup>
-      <_TabularXamlConsumeWinmd>$(PublicMergedWinMDDir)\Microsoft.UI.Xaml.winmd</_TabularXamlConsumeWinmd>
-    </PropertyGroup>
-    <MSBuild Projects="$(ProjectRoot)MergedWinMD\MergedWinMD.vcxproj"
-             Targets="Build"
-             Properties="Configuration=$(Configuration);Platform=$(Platform)"
-             Condition="!Exists('$(_TabularXamlConsumeWinmd)')" />
-    <Error Condition="!Exists('$(_TabularXamlConsumeWinmd)')"
-           Text="Microsoft.UI.Xaml.Controls.Tabular needs MergedWinMD's public winmd ($(_TabularXamlConsumeWinmd)) for XamlCompile, and building MergedWinMD did not produce it." />
-  </Target>
   <ItemDefinitionGroup>
     <Link>
       <ModuleDefinitionFile>Microsoft.UI.Xaml.Controls.Tabular.def</ModuleDefinitionFile>
