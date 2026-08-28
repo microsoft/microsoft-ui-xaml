@@ -125,4 +125,4 @@ stages:
       displayName: Publish switcher output for baselining
       inputs:
         targetPath: $(ob_outputDirectory)
-        artifact: '$(ob_artifactBaseName)'
+        artifact: 'switcher_x86chk'
