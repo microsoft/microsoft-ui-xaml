@@ -51,16 +51,12 @@
                       Condition="Exists('$(WinUIDetailsLibPath)\Microsoft.UI.Xaml.Controls.Charts.winmd')">
       <ImplementationDll>Microsoft.UI.Xaml.Controls.Charts.dll</ImplementationDll>
     </MuxControlsWinMD>
-    <!-- Tabular merges into the public winmd on the same terms as Charts above. Produced by the
-         metadata-only idl project (controls\idl-tabular\Microsoft.UI.Xaml.Controls.Tabular.idl.vcxproj), not
-         by Microsoft.UI.Xaml.Controls.Tabular.vcxproj, mirroring MuxControlsWinMD's MUXC entry above.
-         Excluded from MUXFinalRelease: every Tabular type is [MUX_PREVIEW]/[MUX_INTERNAL], so
-         Feature_Experimental is AlwaysDisabled there and the public winmd keeps 6 of 93 types. The
-         registrations, however, derive from the unmerged winmd above and would still be emitted -
-         naming a Tabular.dll that packaging deliberately does not build in that flavour, which is
-         the APPX0703 mismatch. Drop metadata and registrations together so the flavour stays
-         self-consistent: no Tabular types, no registrations, no binary.
-         Revisit when TableView leaves [MUX_PREVIEW]. -->
+    <!-- Tabular merges into the public winmd on the same terms as Charts above, from the
+         metadata-only idl project rather than the DLL project, mirroring MUXC's entry.
+         Excluded from MUXFinalRelease: every Tabular type is [MUX_PREVIEW]/[MUX_INTERNAL], so the
+         public winmd keeps 6 of 93 types there. Registrations derive from the unmerged winmd and
+         would still be emitted, naming a DLL packaging does not build - the APPX0703 mismatch - so
+         metadata and registrations are dropped together. Revisit when TableView leaves [MUX_PREVIEW]. -->
     <MuxControlsWinMD Include="$(XamlBuildOutputRoot)\controls\idl-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd"
                       Condition="'$(MUXFinalRelease)' != 'true'">
       <ImplementationDll>Microsoft.UI.Xaml.Controls.Tabular.dll</ImplementationDll>
