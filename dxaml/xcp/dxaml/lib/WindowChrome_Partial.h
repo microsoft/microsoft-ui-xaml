@@ -27,7 +27,9 @@ namespace DirectUI
         DesktopWindowImpl* GetDesktopWindowNoRef() const { return m_desktopWindow; }
         HWND GetPositioningBridgeWindowHandle() const;
         ctl::ComPtr<ixp::IAppWindow> GetAppWindow() const;
+        _Check_return_ HRESULT GetIsAppWindowTitleBarExtended(_Out_ bool* value) const;
         bool CanDrag() const;
+        int GetTopBorderHeight();
         void UpdateCanDragStatus(bool enabled);
 
         template <typename T>
