@@ -6,6 +6,8 @@
 #include "uielement.h"
 #include "contentroot.h"
 #include "VisualTree.h"
+#include <OptionalChangeState.h>
+#include <dwmapi.h>
 
 SIZE WindowHelpers::GetPhysicalSize(HWND hwnd) noexcept
 {
@@ -107,6 +109,31 @@ short WindowHelpers::ClampToShortMax(const long value, const short min) noexcept
     return static_cast<short>(std::clamp(value,
         static_cast<long>(min),
         static_cast<long>(SHRT_MAX)));
+}
+
+bool WindowHelpers::ShouldApplyDwmTopBorderWorkaround(HWND hwnd) noexcept
+{
+    if (!OptionalChangeState::ShouldAlignExtendsContentIntoTitleBarBehavior())
+    {
+        return false;
+    }
+
+    // This documented getter is available when DWM owns the visible frame
+    // border behavior introduced in Windows 11. Support is process-wide, so
+    // query it once using the first top-level HWND. Older DWM versions return
+    // E_INVALIDARG and need the extended-frame workaround.
+    static const bool shouldApplyWorkaround = [hwnd]()
+    {
+        UINT borderThickness = 0;
+        const HRESULT result = ::DwmGetWindowAttribute(
+            hwnd,
+            DWMWA_VISIBLE_FRAME_BORDER_THICKNESS,
+            &borderThickness,
+            sizeof(borderThickness));
+        return result == E_INVALIDARG;
+    }();
+
+    return shouldApplyWorkaround;
 }
 
 // gets client logical rect for a given ui element

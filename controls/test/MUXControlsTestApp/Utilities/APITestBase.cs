@@ -65,6 +65,7 @@ namespace MUXControlsTestApp.Utilities
             Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.DefaultStyleOptimizations));
             Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.DeferContextFlyoutInit));
             Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.GamepadKeyRouting));
+            Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.AlignExtendsContentIntoTitleBarBehavior));
         }
 
         public void UpdateXamlOptionalChanges()
@@ -174,6 +175,10 @@ namespace MUXControlsTestApp.Utilities
                         else if (string.Equals(name, "GamepadKeyRouting", StringComparison.OrdinalIgnoreCase))
                         {
                             changeId = XamlChangeId.GamepadKeyRouting;
+                        }
+                        else if (string.Equals(name, "AlignExtendsContentIntoTitleBarBehavior", StringComparison.OrdinalIgnoreCase))
+                        {
+                            changeId = XamlChangeId.AlignExtendsContentIntoTitleBarBehavior;
                         }
 
                         Verify.AreNotEqual(changeId, XamlChangeId._Reserved, "Unknown XamlChangeId: " + name);

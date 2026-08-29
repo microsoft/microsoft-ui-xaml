@@ -63,9 +63,8 @@ public:
     ctl::ComPtr<DirectUI::WindowChrome> GetPeer();
     _Check_return_ HRESULT SetIsChromeActive(bool isActive);
     bool IsChromeActive() const  { return m_bIsActive; }
-
     bool IsTitlebarVisible() const;
-    int GetTopBorderHeight() const noexcept;
+    int GetTopBorderHeight();
     _Check_return_ HRESULT ConfigureWindowChrome();
     _Check_return_ HRESULT ApplyStyling();
     _Check_return_ HRESULT SetFocusIfNeeded();
@@ -85,6 +84,11 @@ private:
     // as the custom titlebar's glass window would otherwise intercept input to it and make it inoperable
     HRESULT RefreshToolbarOffset();
     
+    int GetAlignedTopBorderHeight();
+    bool IsAppWindowTitleBarExtended();
+    _Check_return_ HRESULT UpdateDwmFrameMargins(int topBorderHeight);
+
+    // Tracks Window.ExtendsContentIntoTitleBar.
     bool m_bIsActive = false;
     HWND m_topLevelWindow = NULL;
     bool m_enabledDrag = true;
@@ -92,5 +96,6 @@ private:
     RECT m_dragRegionCached{};
     wgr::RectInt32 m_scaledDragRegionCached{};
     bool m_isDefaultCaptionButtonStyleSet = false; // do it only the first time window chrome is created
+    std::optional<int> m_appliedDwmTopFrameMargin;
     
 };
