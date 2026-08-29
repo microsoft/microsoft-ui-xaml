@@ -6066,9 +6066,21 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
         KnownTypeIndex::UnknownType, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::IsValueType) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter) | static_cast<UINT>(MetaDataTypeInfoFlags::IsEnum) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCompactEnum)), // Type flags
     },
+    // Microsoft.UI.Xaml.WindowActivationBehavior
+    {
+        KnownTypeIndex::WindowActivationBehavior, // Index name
+        KnownTypeIndex::UnknownType, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::IsValueType) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter) | static_cast<UINT>(MetaDataTypeInfoFlags::IsEnum) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCompactEnum)), // Type flags
+    },
     // Microsoft.UI.Xaml.Automation.WindowInteractionState
     {
         KnownTypeIndex::WindowInteractionState, // Index name
+        KnownTypeIndex::UnknownType, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::IsValueType) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter) | static_cast<UINT>(MetaDataTypeInfoFlags::IsEnum) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCompactEnum)), // Type flags
+    },
+    // Microsoft.UI.Xaml.WindowShowReason
+    {
+        KnownTypeIndex::WindowShowReason, // Index name
         KnownTypeIndex::UnknownType, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::IsValueType) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter) | static_cast<UINT>(MetaDataTypeInfoFlags::IsEnum) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCompactEnum)), // Type flags
     },
@@ -12047,11 +12059,23 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Visibility"), // Full name
         KnownNamespaceIndex::Microsoft_UI_Xaml, // Declaring namespace index
     },
+    // Microsoft.UI.Xaml.WindowActivationBehavior
+    {
+        XSTRING_PTR_STORAGE(L"WindowActivationBehavior"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.WindowActivationBehavior"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml, // Declaring namespace index
+    },
     // Microsoft.UI.Xaml.Automation.WindowInteractionState
     {
         XSTRING_PTR_STORAGE(L"WindowInteractionState"), // Name
         XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Automation.WindowInteractionState"), // Full name
         KnownNamespaceIndex::Microsoft_UI_Xaml_Automation, // Declaring namespace index
+    },
+    // Microsoft.UI.Xaml.WindowShowReason
+    {
+        XSTRING_PTR_STORAGE(L"WindowShowReason"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.WindowShowReason"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml, // Declaring namespace index
     },
     // Microsoft.UI.Xaml.Automation.WindowVisualState
     {
@@ -14639,7 +14663,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First enter property = UnknownObject.UnknownProperty
         0, // First render property = UnknownObject.UnknownProperty
         0, // First object property = UnknownObject.UnknownProperty
-        18, // Property slot count
+        19, // Property slot count
     },
     // Microsoft.UI.Xaml.WindowCreatedEventArgs
     {
@@ -20819,7 +20843,23 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First object property
         0, // Property slot count
     },
+    // Microsoft.UI.Xaml.WindowActivationBehavior
+    {
+        KnownPropertyIndex::UnknownType_UnknownProperty, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property
+        0, // First object property
+        0, // Property slot count
+    },
     // Microsoft.UI.Xaml.Automation.WindowInteractionState
+    {
+        KnownPropertyIndex::UnknownType_UnknownProperty, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property
+        0, // First object property
+        0, // Property slot count
+    },
+    // Microsoft.UI.Xaml.WindowShowReason
     {
         KnownPropertyIndex::UnknownType_UnknownProperty, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
@@ -21869,7 +21909,9 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Windows::System::VirtualKey>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Windows::System::VirtualKeyModifiers>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Visibility>),
+    __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::WindowActivationBehavior>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Automation::WindowInteractionState>),
+    __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::WindowShowReason>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Automation::WindowVisualState>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Input::XYFocusKeyboardNavigationMode>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy>),
@@ -21879,7 +21921,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
 };
 
 // Types that can be referenced from XAML.
-extern const MetaDataTypeName c_aTypeNames[942] =
+extern const MetaDataTypeName c_aTypeNames[944] =
 {
     { KnownTypeIndex::UnknownType },
     { KnownTypeIndex::Hub },
@@ -22263,6 +22305,7 @@ extern const MetaDataTypeName c_aTypeNames[942] =
     { KnownTypeIndex::TransitionTarget },
     { KnownTypeIndex::VisualStateGroup },
     { KnownTypeIndex::VisualTransition },
+    { KnownTypeIndex::WindowShowReason },
     { KnownTypeIndex::XamlMarkupHelper },
     { KnownTypeIndex::AccessibilityView },
     { KnownTypeIndex::AddPagesEventArgs },
@@ -22594,6 +22637,7 @@ extern const MetaDataTypeName c_aTypeNames[942] =
     { KnownTypeIndex::SwapChainBackgroundPanel },
     { KnownTypeIndex::TimePickerAutomationPeer },
     { KnownTypeIndex::VectorViewCollectionView },
+    { KnownTypeIndex::WindowActivationBehavior },
     { KnownTypeIndex::XamlCompositionBrushBase },
     { KnownTypeIndex::XamlIslandRootCollection },
     { KnownTypeIndex::XamlRootChangedEventArgs },
@@ -26576,6 +26620,14 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
     {
         KnownPropertyIndex::Window_MinWidth, // Index name
         KnownTypeIndex::Double, // Property type
+        KnownTypeIndex::Window, // Declaring type
+        KnownTypeIndex::Window, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Window.PersistPlacementId
+    {
+        KnownPropertyIndex::Window_PersistPlacementId, // Index name
+        KnownTypeIndex::String, // Property type
         KnownTypeIndex::Window, // Declaring type
         KnownTypeIndex::Window, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
@@ -38941,7 +38993,8 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::Window_MaxWidth, // Window_MaxHeight
     KnownPropertyIndex::Window_MinHeight, // Window_MaxWidth
     KnownPropertyIndex::Window_MinWidth, // Window_MinHeight
-    KnownPropertyIndex::Window_SystemBackdrop, // Window_MinWidth
+    KnownPropertyIndex::Window_PersistPlacementId, // Window_MinWidth
+    KnownPropertyIndex::Window_SystemBackdrop, // Window_PersistPlacementId
     KnownPropertyIndex::Window_Title, // Window_SystemBackdrop
     KnownPropertyIndex::Window_TransparentBackground, // Window_Title
     KnownPropertyIndex::Window_Width, // Window_TransparentBackground
@@ -40902,10 +40955,11 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     11, // Window_MaxWidth
     12, // Window_MinHeight
     13, // Window_MinWidth
-    14, // Window_SystemBackdrop
-    15, // Window_Title
-    16, // Window_TransparentBackground
-    17, // Window_Width
+    14, // Window_PersistPlacementId
+    15, // Window_SystemBackdrop
+    16, // Window_Title
+    17, // Window_TransparentBackground
+    18, // Window_Width
     8, // XamlUICommand_AccessKey
     9, // XamlUICommand_Command
     10, // XamlUICommand_Description
@@ -42862,6 +42916,7 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"MaxWidth"),
     XSTRING_PTR_STORAGE(L"MinHeight"),
     XSTRING_PTR_STORAGE(L"MinWidth"),
+    XSTRING_PTR_STORAGE(L"PersistPlacementId"),
     XSTRING_PTR_STORAGE(L"SystemBackdrop"),
     XSTRING_PTR_STORAGE(L"Title"),
     XSTRING_PTR_STORAGE(L"TransparentBackground"),
@@ -44395,95 +44450,95 @@ UINT MapTypeNameLengthToSearchRange(_In_ UINT nLength, _Out_ UINT* pnEndIndex)
             *pnEndIndex = 345;
             return 299;
         case 16:
-            *pnEndIndex = 383;
+            *pnEndIndex = 384;
             return 345;
         case 17:
-            *pnEndIndex = 417;
-            return 383;
+            *pnEndIndex = 418;
+            return 384;
         case 18:
-            *pnEndIndex = 457;
-            return 417;
+            *pnEndIndex = 458;
+            return 418;
         case 19:
-            *pnEndIndex = 510;
-            return 457;
+            *pnEndIndex = 511;
+            return 458;
         case 20:
-            *pnEndIndex = 558;
-            return 510;
+            *pnEndIndex = 559;
+            return 511;
         case 21:
-            *pnEndIndex = 592;
-            return 558;
+            *pnEndIndex = 593;
+            return 559;
         case 22:
-            *pnEndIndex = 643;
-            return 592;
+            *pnEndIndex = 644;
+            return 593;
         case 23:
-            *pnEndIndex = 683;
-            return 643;
+            *pnEndIndex = 684;
+            return 644;
         case 24:
-            *pnEndIndex = 716;
-            return 683;
+            *pnEndIndex = 718;
+            return 684;
         case 25:
-            *pnEndIndex = 751;
-            return 716;
+            *pnEndIndex = 753;
+            return 718;
         case 26:
-            *pnEndIndex = 779;
-            return 751;
+            *pnEndIndex = 781;
+            return 753;
         case 27:
-            *pnEndIndex = 793;
-            return 779;
+            *pnEndIndex = 795;
+            return 781;
         case 28:
-            *pnEndIndex = 814;
-            return 793;
+            *pnEndIndex = 816;
+            return 795;
         case 29:
-            *pnEndIndex = 834;
-            return 814;
+            *pnEndIndex = 836;
+            return 816;
         case 30:
-            *pnEndIndex = 855;
-            return 834;
+            *pnEndIndex = 857;
+            return 836;
         case 31:
-            *pnEndIndex = 867;
-            return 855;
+            *pnEndIndex = 869;
+            return 857;
         case 32:
-            *pnEndIndex = 884;
-            return 867;
+            *pnEndIndex = 886;
+            return 869;
         case 33:
-            *pnEndIndex = 898;
-            return 884;
+            *pnEndIndex = 900;
+            return 886;
         case 34:
-            *pnEndIndex = 911;
-            return 898;
+            *pnEndIndex = 913;
+            return 900;
         case 35:
-            *pnEndIndex = 917;
-            return 911;
+            *pnEndIndex = 919;
+            return 913;
         case 36:
-            *pnEndIndex = 923;
-            return 917;
+            *pnEndIndex = 925;
+            return 919;
         case 37:
-            *pnEndIndex = 928;
-            return 923;
+            *pnEndIndex = 930;
+            return 925;
         case 38:
-            *pnEndIndex = 931;
-            return 928;
+            *pnEndIndex = 933;
+            return 930;
         case 39:
-            *pnEndIndex = 936;
-            return 931;
-        case 40:
-            *pnEndIndex = 937;
-            return 936;
-        case 41:
             *pnEndIndex = 938;
-            return 937;
-        case 42:
+            return 933;
+        case 40:
             *pnEndIndex = 939;
             return 938;
-        case 43:
+        case 41:
             *pnEndIndex = 940;
             return 939;
-        case 49:
+        case 42:
             *pnEndIndex = 941;
             return 940;
-        case 50:
+        case 43:
             *pnEndIndex = 942;
             return 941;
+        case 49:
+            *pnEndIndex = 943;
+            return 942;
+        case 50:
+            *pnEndIndex = 944;
+            return 943;
         default:
             *pnEndIndex = 0;
             return 0;
@@ -45199,9 +45254,17 @@ _Check_return_ HRESULT GetEnumValueTable(_In_ KnownTypeIndex nTypeIndex, _Out_ U
             *pnCount = ARRAY_SIZE(satVisibility);
             *ppTable = satVisibility;
             return S_OK;
+        case KnownTypeIndex::WindowActivationBehavior:
+            *pnCount = ARRAY_SIZE(satWindowActivationBehavior);
+            *ppTable = satWindowActivationBehavior;
+            return S_OK;
         case KnownTypeIndex::WindowInteractionState:
             *pnCount = ARRAY_SIZE(satWindowInteractionState);
             *ppTable = satWindowInteractionState;
+            return S_OK;
+        case KnownTypeIndex::WindowShowReason:
+            *pnCount = ARRAY_SIZE(satWindowShowReason);
+            *ppTable = satWindowShowReason;
             return S_OK;
         case KnownTypeIndex::WindowVisualState:
             *pnCount = ARRAY_SIZE(satWindowVisualState);

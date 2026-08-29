@@ -2473,3 +2473,4 @@ Window_MaxHeight,Window_MaxHeight,2471
 Window_MaxWidth,Window_MaxWidth,2472
 Window_MinHeight,Window_MinHeight,2473
 Window_MinWidth,Window_MinWidth,2474
+Window_PersistPlacementId,Window_PersistPlacementId,2475

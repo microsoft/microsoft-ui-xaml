@@ -310,6 +310,25 @@ namespace Microsoft.UI.Xaml
         Wrap,
         WrapWholeWords,
     };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    enum WindowActivationBehavior
+    {
+        Activate,
+        DoNotActivate,
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    enum WindowShowReason
+    {
+        Default,
+        Launch,
+        ApplicationRestart,
+    };
 }
 namespace Microsoft.UI.Xaml.Media
 {
@@ -595,6 +614,8 @@ namespace Microsoft.UI.Xaml
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.TextReadingOrder>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.TextTrimming>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.TextWrapping>;
+        interface Windows.Foundation.IReference<Microsoft.UI.Xaml.WindowActivationBehavior>;
+        interface Windows.Foundation.IReference<Microsoft.UI.Xaml.WindowShowReason>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Automation.AutomationActiveEnd>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Automation.AutomationAnimationStyle>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Automation.AutomationBulletStyle>;
@@ -864,6 +885,9 @@ namespace Microsoft.UI.Xaml
             Double MinHeight;
             Double MaxWidth;
             Double MaxHeight;
+            String PersistPlacementId;
+            [method_name("ShowDefault")] void Show();
+            [method_name("ShowWithOptions")] void Show(Microsoft.UI.Xaml.WindowShowOptions options);
         }
     };
 
@@ -888,6 +912,17 @@ namespace Microsoft.UI.Xaml
     runtimeclass WindowEventArgs
     {
         Boolean Handled;
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    runtimeclass WindowShowOptions
+    {
+        WindowShowOptions();
+        Microsoft.UI.Xaml.WindowShowReason Reason;
+        Microsoft.UI.Xaml.WindowActivationBehavior ActivationBehavior;
+        Boolean KeepHidden;
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]

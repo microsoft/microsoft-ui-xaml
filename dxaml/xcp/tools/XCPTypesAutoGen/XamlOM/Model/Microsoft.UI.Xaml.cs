@@ -3522,6 +3522,25 @@ namespace Microsoft.UI.Xaml
         {
         }
 
+        // Makes the window visible. Unlike Activate(), Show() applies persisted window placement
+        // (see PersistPlacementId) before showing, and lets the caller control activation and the
+        // reason the window is being shown through WindowShowOptions.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [DXamlName("ShowDefault")]
+        [DXamlOverloadName("Show")]
+        public void Show()
+        {
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [DXamlName("ShowWithOptions")]
+        [DXamlOverloadName("Show")]
+        public void Show(Microsoft.UI.Xaml.WindowShowOptions options)
+        {
+        }
+
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [PropertyKind(PropertyKind.PropertyOnly)]
         public bool ExtendsContentIntoTitleBar
@@ -3571,11 +3590,75 @@ namespace Microsoft.UI.Xaml
             set;
         }
 
+        // Opts this Window into automatic window-placement persistence. When set to a non-empty,
+        // stable, app-unique id, Xaml saves the window's size, position, DPI and show-state on close
+        // and restores it on the next Show(). An empty or null id (the default) disables persistence.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [DependencyPropertyModifier(Modifier.Private)]
+        public string PersistPlacementId
+        {
+            get;
+            set;
+        }
+
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
 
         public void SetTitleBar([Optional] Microsoft.UI.Xaml.UIElement titleBar)
         {
         }
+    }
+
+    // Why the window is being shown. Used by window-placement persistence to decide whether a
+    // saved placement should be restored (for example, a normal launch restores, an app restart
+    // may not).
+    [DXamlIdlGroup("coretypes2")]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    public enum WindowShowReason
+    {
+        Default = 0,
+        Launch = 1,
+        ApplicationRestart = 2,
+    }
+
+    // Controls whether showing the window also activates it (brings it to the foreground and gives
+    // it focus).
+    [DXamlIdlGroup("coretypes2")]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    public enum WindowActivationBehavior
+    {
+        Activate = 0,
+        DoNotActivate = 1,
+    }
+
+    // Options passed to Window.Show(WindowShowOptions) to control how the window is shown.
+    [Guids(ClassGuid = "bbde24ad-76c0-4a3f-b712-cca63dd27a41")]
+    [TypeFlags(IsCreateableFromXAML = false)]
+    [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
+    [DXamlIdlGroup("coretypes2")]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    public sealed class WindowShowOptions
+        : Windows.Foundation.Object
+    {
+        public Microsoft.UI.Xaml.WindowShowReason Reason
+        {
+            get;
+            set;
+        }
+
+        public Microsoft.UI.Xaml.WindowActivationBehavior ActivationBehavior
+        {
+            get;
+            set;
+        }
+
+        public Windows.Foundation.Boolean KeepHidden
+        {
+            get;
+            set;
+        }
+
+        public WindowShowOptions() { }
     }
 
     [CodeGen(partial: true)]

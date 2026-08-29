@@ -114,6 +114,7 @@ using namespace DirectUI;
 #include "WindowChrome.g.cpp"
 #include "WindowCreatedEventArgs.g.cpp"
 #include "WindowEventArgs.g.cpp"
+#include "WindowShowOptions.g.cpp"
 #include "WindowSizeChangedEventArgs.g.cpp"
 #include "WindowVisibilityChangedEventArgs.g.cpp"
 #include "XamlIsland.g.cpp"

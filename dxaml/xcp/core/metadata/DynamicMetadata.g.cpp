@@ -6435,9 +6435,19 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
         &OnCoreCreateVisibility, // Core constructor
         nullptr, // Framework constructor
     },
+    // Microsoft.UI.Xaml.WindowActivationBehavior
+    {
+        &OnCoreCreateWindowActivationBehavior, // Core constructor
+        nullptr, // Framework constructor
+    },
     // Microsoft.UI.Xaml.Automation.WindowInteractionState
     {
         &OnCoreCreateWindowInteractionState, // Core constructor
+        nullptr, // Framework constructor
+    },
+    // Microsoft.UI.Xaml.WindowShowReason
+    {
+        &OnCoreCreateWindowShowReason, // Core constructor
         nullptr, // Framework constructor
     },
     // Microsoft.UI.Xaml.Automation.WindowVisualState
@@ -9752,6 +9762,13 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Window.MinWidth
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Window.PersistPlacementId
     {
         (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback

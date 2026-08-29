@@ -53,6 +53,12 @@ namespace DirectUI
         _Check_return_ HRESULT get_MaxHeightImpl(_Out_ DOUBLE* pValue);
         _Check_return_ HRESULT put_MaxHeightImpl(_In_ DOUBLE value);
 
+        // Window-placement persistence (experimental).
+        _Check_return_ HRESULT get_PersistPlacementIdImpl(_Out_ HSTRING* pValue);
+        _Check_return_ HRESULT put_PersistPlacementIdImpl(_In_opt_ HSTRING value);
+        _Check_return_ HRESULT ShowDefaultImpl();
+        _Check_return_ HRESULT ShowWithOptionsImpl(_In_ xaml::IWindowShowOptions* pOptions);
+
         _Check_return_ HRESULT get_DispatcherQueueImpl(_Outptr_result_maybenull_ msy::IDispatcherQueue** ppValue);
         _Check_return_ HRESULT get_CompositorImpl(_Outptr_result_maybenull_ WUComp::ICompositor** compositor);
         _Check_return_ HRESULT get_AppWindowImpl(_Outptr_result_maybenull_ ixp::IAppWindow** ppValue);
@@ -134,6 +140,9 @@ namespace DirectUI
         std::shared_ptr<WindowImpl> m_spWindowImpl;
         // Flag is used to balance peg/ unpeg DesktopWindow only.
         bool m_peggedForHWNDLifetime{ false };
+        // App-provided id that opts this Window into window-placement persistence.
+        // Empty (the default) means persistence is disabled.
+        wrl_wrappers::HString m_persistPlacementId;
     };
 }
 

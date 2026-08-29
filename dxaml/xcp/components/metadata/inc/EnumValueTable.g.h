@@ -1903,6 +1903,12 @@ extern __declspec(selectany) const XTABLE satVisibility[] =
     { XSTRING_PTR_STORAGE(L"Collapsed"), 1 },
 };
 
+extern __declspec(selectany) const XTABLE satWindowActivationBehavior[] =
+{
+    { XSTRING_PTR_STORAGE(L"Activate"), 0 },
+    { XSTRING_PTR_STORAGE(L"DoNotActivate"), 1 },
+};
+
 extern __declspec(selectany) const XTABLE satWindowInteractionState[] =
 {
     { XSTRING_PTR_STORAGE(L"Running"), 0 },
@@ -1910,6 +1916,13 @@ extern __declspec(selectany) const XTABLE satWindowInteractionState[] =
     { XSTRING_PTR_STORAGE(L"ReadyForUserInteraction"), 2 },
     { XSTRING_PTR_STORAGE(L"BlockedByModalWindow"), 3 },
     { XSTRING_PTR_STORAGE(L"NotResponding"), 4 },
+};
+
+extern __declspec(selectany) const XTABLE satWindowShowReason[] =
+{
+    { XSTRING_PTR_STORAGE(L"Default"), 0 },
+    { XSTRING_PTR_STORAGE(L"Launch"), 1 },
+    { XSTRING_PTR_STORAGE(L"ApplicationRestart"), 2 },
 };
 
 extern __declspec(selectany) const XTABLE satWindowVisualState[] =

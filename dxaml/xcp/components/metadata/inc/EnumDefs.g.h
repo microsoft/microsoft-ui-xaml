@@ -2179,6 +2179,13 @@ namespace DirectUI
     };
     DEFINE_ENUM_FLAG_OPERATORS(Visibility);
 
+    enum class WindowActivationBehavior : uint8_t
+    {
+        Activate = 0,
+        DoNotActivate = 1,
+    };
+    DEFINE_ENUM_FLAG_OPERATORS(WindowActivationBehavior);
+
     enum class WindowActivationState : uint8_t
     {
         CodeActivated = 0,
@@ -2196,6 +2203,14 @@ namespace DirectUI
         NotResponding = 4,
     };
     DEFINE_ENUM_FLAG_OPERATORS(WindowInteractionState);
+
+    enum class WindowShowReason : uint8_t
+    {
+        Default = 0,
+        Launch = 1,
+        ApplicationRestart = 2,
+    };
+    DEFINE_ENUM_FLAG_OPERATORS(WindowShowReason);
 
     enum class WindowVisualState : uint8_t
     {

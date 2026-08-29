@@ -356,6 +356,60 @@ _Check_return_ HRESULT Window::ShowImpl()
     return E_NOTIMPL;
 }
 
+_Check_return_ HRESULT Window::ShowDefaultImpl()
+{
+    // Public Window.Show(). Placement restore (via PersistPlacementId) is applied by the
+    // windowing layer before the window becomes visible; the default behavior shows and
+    // activates the window, matching Activate().
+    IFC_RETURN(ActivateImpl());
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::ShowWithOptionsImpl(_In_ xaml::IWindowShowOptions* pOptions)
+{
+    BOOLEAN keepHidden = FALSE;
+    xaml::WindowActivationBehavior activationBehavior = xaml::WindowActivationBehavior_Activate;
+
+    if (pOptions != nullptr)
+    {
+        IFC_RETURN(pOptions->get_KeepHidden(&keepHidden));
+        IFC_RETURN(pOptions->get_ActivationBehavior(&activationBehavior));
+    }
+
+    // KeepHidden lets the caller apply persisted placement without showing the window yet.
+    if (keepHidden)
+    {
+        return S_OK;
+    }
+
+    if (activationBehavior == xaml::WindowActivationBehavior_DoNotActivate)
+    {
+        // Show without taking foreground/focus.
+        IFC_RETURN(m_spWindowImpl->ShowImpl());
+    }
+    else
+    {
+        IFC_RETURN(ActivateImpl());
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::get_PersistPlacementIdImpl(_Out_ HSTRING* pValue)
+{
+    IFC_RETURN(m_persistPlacementId.CopyTo(pValue));
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::put_PersistPlacementIdImpl(_In_opt_ HSTRING value)
+{
+    IFC_RETURN(m_persistPlacementId.Set(value));
+
+    return S_OK;
+}
+
 _Check_return_ HRESULT Window::HideImpl()
 {
     IFC_RETURN(m_spWindowImpl->HideImpl());

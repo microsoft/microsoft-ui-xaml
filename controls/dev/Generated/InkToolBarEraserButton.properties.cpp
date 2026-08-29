@@ -35,7 +35,7 @@ void InkToolbarEraserButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarEraserButton>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnArePrecisionErasersVisiblePropertyChanged));
     }
     if (!s_IsClearAllVisibleProperty)
     {
@@ -46,7 +46,7 @@ void InkToolbarEraserButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarEraserButton>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnIsClearAllVisiblePropertyChanged));
     }
     if (!s_IsStrokeEraserVisibleProperty)
     {
@@ -57,7 +57,7 @@ void InkToolbarEraserButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarEraserButton>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnIsStrokeEraserVisiblePropertyChanged));
     }
     if (!s_SelectedEraserProperty)
     {
@@ -68,7 +68,7 @@ void InkToolbarEraserButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarEraserButton>(),
                 false /* isAttached */,
                 ValueHelper<winrt::InkToolbarEraserKind>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnSelectedEraserPropertyChanged));
     }
 }
 
@@ -79,6 +79,38 @@ void InkToolbarEraserButtonProperties::ClearProperties()
     s_IsStrokeEraserVisibleProperty = nullptr;
     s_SelectedEraserProperty = nullptr;
     InkToolbarToolButton::ClearProperties();
+}
+
+void InkToolbarEraserButtonProperties::OnArePrecisionErasersVisiblePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbarEraserButton>();
+    winrt::get_self<InkToolbarEraserButton>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarEraserButtonProperties::OnIsClearAllVisiblePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbarEraserButton>();
+    winrt::get_self<InkToolbarEraserButton>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarEraserButtonProperties::OnIsStrokeEraserVisiblePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbarEraserButton>();
+    winrt::get_self<InkToolbarEraserButton>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarEraserButtonProperties::OnSelectedEraserPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbarEraserButton>();
+    winrt::get_self<InkToolbarEraserButton>(owner)->OnPropertyChanged(args);
 }
 
 void InkToolbarEraserButtonProperties::ArePrecisionErasersVisible(bool value)

@@ -1002,6 +1002,8 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
         SeekSliderAutomationPeer = 981,
         SplitMenuFlyoutItemAutomationPeer = 982,
         SplitMenuFlyoutItem = 983,
+        WindowActivationBehavior = 984,
+        WindowShowReason = 985,
     }
 
     // Define the stable XBF property indices
@@ -3482,6 +3484,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
         Window_MaxWidth = 2472,
         Window_MinHeight = 2473,
         Window_MinWidth = 2474,
+        Window_PersistPlacementId = 2475,
     }
 
     // Define the stable XBF event indices
@@ -4725,7 +4728,9 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
             { StableXbfTypeIndex.VirtualKey, new XamlTypeInfo("Windows.System.VirtualKey", StableXbfTypeIndex.UnknownType, XamlTypeFlags.None) },
             { StableXbfTypeIndex.VirtualKeyModifiers, new XamlTypeInfo("Windows.System.VirtualKeyModifiers", StableXbfTypeIndex.UnknownType, XamlTypeFlags.None) },
             { StableXbfTypeIndex.Visibility, new XamlTypeInfo("Microsoft.UI.Xaml.Visibility", StableXbfTypeIndex.UnknownType, XamlTypeFlags.None) },
+            { StableXbfTypeIndex.WindowActivationBehavior, new XamlTypeInfo("Microsoft.UI.Xaml.WindowActivationBehavior", StableXbfTypeIndex.UnknownType, XamlTypeFlags.None) },
             { StableXbfTypeIndex.WindowInteractionState, new XamlTypeInfo("Microsoft.UI.Xaml.Automation.WindowInteractionState", StableXbfTypeIndex.UnknownType, XamlTypeFlags.None) },
+            { StableXbfTypeIndex.WindowShowReason, new XamlTypeInfo("Microsoft.UI.Xaml.WindowShowReason", StableXbfTypeIndex.UnknownType, XamlTypeFlags.None) },
             { StableXbfTypeIndex.WindowVisualState, new XamlTypeInfo("Microsoft.UI.Xaml.Automation.WindowVisualState", StableXbfTypeIndex.UnknownType, XamlTypeFlags.None) },
             { StableXbfTypeIndex.XYFocusKeyboardNavigationMode, new XamlTypeInfo("Microsoft.UI.Xaml.Input.XYFocusKeyboardNavigationMode", StableXbfTypeIndex.UnknownType, XamlTypeFlags.None) },
             { StableXbfTypeIndex.XYFocusNavigationStrategy, new XamlTypeInfo("Microsoft.UI.Xaml.Input.XYFocusNavigationStrategy", StableXbfTypeIndex.UnknownType, XamlTypeFlags.None) },
@@ -5205,6 +5210,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
             { StableXbfPropertyIndex.Window_MaxWidth, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.MaxWidth", StableXbfTypeIndex.Double, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.Window_MinHeight, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.MinHeight", StableXbfTypeIndex.Double, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.Window_MinWidth, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.MinWidth", StableXbfTypeIndex.Double, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },
+            { StableXbfPropertyIndex.Window_PersistPlacementId, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.PersistPlacementId", StableXbfTypeIndex.String, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.Window_SystemBackdrop, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.SystemBackdrop", StableXbfTypeIndex.SystemBackdrop, StableXbfTypeIndex.Window, XamlPropertyFlags.IsVisualTreeProperty) },
             { StableXbfPropertyIndex.Window_Title, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.Title", StableXbfTypeIndex.String, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.Window_TransparentBackground, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.TransparentBackground", StableXbfTypeIndex.Boolean, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },

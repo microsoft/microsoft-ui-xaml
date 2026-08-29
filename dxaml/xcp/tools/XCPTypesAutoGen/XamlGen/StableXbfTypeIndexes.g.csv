@@ -982,3 +982,5 @@ SystemBackdrop,SystemBackdrop,980
 SeekSliderAutomationPeer,SeekSliderAutomationPeer,981
 SplitMenuFlyoutItemAutomationPeer,SplitMenuFlyoutItemAutomationPeer,982
 SplitMenuFlyoutItem,SplitMenuFlyoutItem,983
+WindowActivationBehavior,WindowActivationBehavior,984
+WindowShowReason,WindowShowReason,985

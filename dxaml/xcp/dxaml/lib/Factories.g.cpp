@@ -109,6 +109,7 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_FrameworkTemplate();
     _Check_return_ IActivationFactory* CreateActivationFactory_TriggerCollection();
     _Check_return_ IActivationFactory* CreateActivationFactory_Vector3Transition();
+    _Check_return_ IActivationFactory* CreateActivationFactory_WindowShowOptions();
     _Check_return_ IActivationFactory* CreateActivationFactory_BitmapCache();
     _Check_return_ IActivationFactory* CreateActivationFactory_ImageSource();
     _Check_return_ IActivationFactory* CreateActivationFactory_LineSegment();
@@ -766,6 +767,7 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.FrameworkTemplate"), &DirectUI::CreateActivationFactory_FrameworkTemplate)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.TriggerCollection"), &DirectUI::CreateActivationFactory_TriggerCollection)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Vector3Transition"), &DirectUI::CreateActivationFactory_Vector3Transition)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.WindowShowOptions"), &DirectUI::CreateActivationFactory_WindowShowOptions)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.BitmapCache"), &DirectUI::CreateActivationFactory_BitmapCache)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.ImageSource"), &DirectUI::CreateActivationFactory_ImageSource)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.LineSegment"), &DirectUI::CreateActivationFactory_LineSegment)

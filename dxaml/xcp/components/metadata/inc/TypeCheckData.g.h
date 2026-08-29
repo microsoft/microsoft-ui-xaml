@@ -1994,7 +1994,11 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     { 0, 0 },
     // Microsoft.UI.Xaml.Visibility
     { 0, 0 },
+    // Microsoft.UI.Xaml.WindowActivationBehavior
+    { 0, 0 },
     // Microsoft.UI.Xaml.Automation.WindowInteractionState
+    { 0, 0 },
+    // Microsoft.UI.Xaml.WindowShowReason
     { 0, 0 },
     // Microsoft.UI.Xaml.Automation.WindowVisualState
     { 0, 0 },
