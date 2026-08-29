@@ -21,10 +21,12 @@
 #include "XamlTelemetry.h"
 #include <Theme.h>
 #include <dwmapi.h>
+#include <uxtheme.h>
 #include <windowing.h>
 #include "Microsoft.UI.Windowing.h"
 #include <FrameworkUdk/Theming.h>
 #include <Microsoft.UI.Interop.h>
+#include <OptionalChangeState.h>
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -164,6 +166,14 @@ DesktopWindowImpl::~DesktopWindowImpl()
         VERIFYHR(m_dxamlWindowInstance->SetTitleBar(nullptr));
         VERIFYHR(m_dxamlWindowInstance->put_Content(nullptr));
         Shutdown();
+    }
+
+    // This balances the initialization used only by the redirected-GDI ECITB border
+    // path below. If the top-level HWND stops using a GDI redirection bitmap, remove
+    // this teardown together with that path.
+    if (m_isBufferedPaintInitialized)
+    {
+        VERIFYHR(::BufferedPaintUnInit());
     }
 }
 
@@ -1203,6 +1213,84 @@ LRESULT LResultFromHResult(HRESULT hr)
     return 0;
 }
 
+bool DesktopWindowImpl::TryEraseBackgroundForWindowTopBorder(HDC hdc, COLORREF backgroundColor)
+{
+    ASSERT(WindowHelpers::ShouldApplyDwmTopBorderWorkaround(m_hwnd.get()));
+
+    const int topBorderHeight = m_windowChrome ? m_windowChrome->GetTopBorderHeight() : 0;
+    const RECT rc = WindowHelpers::GetClientWindowCoordinates(m_hwnd.get());
+
+    if (topBorderHeight <= 0 ||
+        (rc.top + topBorderHeight) > rc.bottom ||
+        (::GetWindowLongPtrW(m_hwnd.get(), GWL_EXSTYLE) & WS_EX_NOREDIRECTIONBITMAP) != 0)
+    {
+        return false;
+    }
+
+    // The redirected surface must be opaque under the composition island and
+    // alpha zero in the row reserved for the DWM frame. A composition-only host
+    // has no redirected surface, so the style check above skips this path.
+    if (!m_isBufferedPaintInitialized)
+    {
+        const HRESULT initializeResult = ::BufferedPaintInit();
+        if (FAILED(initializeResult))
+        {
+            TRACE_HR_NORETURN(initializeResult);
+            return false;
+        }
+
+        m_isBufferedPaintInitialized = true;
+    }
+
+    HDC bufferedHdc = nullptr;
+    const auto paintBuffer = ::BeginBufferedPaint(
+        hdc,
+        &rc,
+        BPBF_TOPDOWNDIB,
+        nullptr,
+        &bufferedHdc);
+    if (!paintBuffer)
+    {
+        TRACE_HR_NORETURN(E_FAIL);
+        return false;
+    }
+
+    auto discardPaintBuffer = wil::scope_exit([paintBuffer]()
+    {
+        TRACE_HR_NORETURN(::EndBufferedPaint(paintBuffer, FALSE));
+    });
+
+    auto oldColor = ::SetBkColor(bufferedHdc, backgroundColor);
+    ASSERT(oldColor != CLR_INVALID);
+    ::ExtTextOut(bufferedHdc, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL);
+
+    RECT borderRect = rc;
+    borderRect.bottom = rc.top + topBorderHeight;
+    ::SetBkColor(bufferedHdc, RGB(0, 0, 0));
+    ::ExtTextOut(bufferedHdc, 0, 0, ETO_OPAQUE, &borderRect, NULL, 0, NULL);
+    ::SetBkColor(bufferedHdc, oldColor);
+
+    const HRESULT opaqueResult = ::BufferedPaintSetAlpha(paintBuffer, &rc, 255);
+    const HRESULT transparentResult = SUCCEEDED(opaqueResult)
+        ? ::BufferedPaintSetAlpha(paintBuffer, &borderRect, 0)
+        : opaqueResult;
+    if (FAILED(opaqueResult) || FAILED(transparentResult))
+    {
+        TRACE_HR_NORETURN(FAILED(opaqueResult) ? opaqueResult : transparentResult);
+        return false;
+    }
+
+    discardPaintBuffer.release();
+    const HRESULT endResult = ::EndBufferedPaint(paintBuffer, TRUE);
+    if (FAILED(endResult))
+    {
+        TRACE_HR_NORETURN(endResult);
+        return false;
+    }
+
+    return true;
+}
+
 LRESULT DesktopWindowImpl::OnMessage(
     UINT uMsg,
     WPARAM wParam,
@@ -1270,6 +1358,14 @@ LRESULT DesktopWindowImpl::OnMessage(
 
             auto hdc = (HDC)wParam;
             auto color = ColorUtils::GetWUColor(dxamlCore->GetHandle()->GetFrameworkTheming()->GetHwndBackground(appTheme));
+            if (WindowHelpers::ShouldApplyDwmTopBorderWorkaround(m_hwnd.get()))
+            {
+                if (TryEraseBackgroundForWindowTopBorder(hdc, RGB(color.R, color.G, color.B)))
+                {
+                    return 1;
+                }
+            }
+
             RECT rc = WindowHelpers::GetClientWindowCoordinates(m_hwnd.get());
             auto oldColor  = ::SetBkColor(hdc, RGB(color.R, color.G, color.B));
             ASSERT(oldColor != CLR_INVALID);

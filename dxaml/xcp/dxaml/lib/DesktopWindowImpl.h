@@ -140,6 +140,7 @@ namespace DirectUI
         void OpenSystemMenu(const int cursorX, const int cursorY) const noexcept;
         _Check_return_ HRESULT OnNonClientRegionButtonUp(WPARAM wParam, const int cursorX, const int cursorY);
         _Check_return_ HRESULT OnClosed();
+        bool TryEraseBackgroundForWindowTopBorder(HDC hdc, COLORREF backgroundColor);
 
         void OnSetFocus();
         void RegisterDesktopWindowClass();
@@ -305,5 +306,7 @@ namespace DirectUI
         ctl::ComPtr<xaml::IAtlasRequestCallback> m_atlasRequestCallback;
         ctl::ComPtr<DirectUI::WindowChrome> m_windowChrome;
         ctl::ComPtr<DirectUI::DesktopWindowXamlSource> m_desktopWindowXamlSource;
+        // Only needed while the top-level HWND uses its GDI redirection bitmap.
+        bool m_isBufferedPaintInitialized = false;
     };
 }

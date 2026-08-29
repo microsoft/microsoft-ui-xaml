@@ -28,6 +28,7 @@ namespace OptionalChangeState
     constexpr int BitIndex_OptimizeApplyStyles = 1;
     constexpr int BitIndex_DefaultStyleOptimizations = 2;
     constexpr int BitIndex_DeferContextFlyoutInit = 3;
+    constexpr int BitIndex_AlignExtendsContentIntoTitleBarBehavior = 4;
 
     inline bool IsOptionalChangeEnabled(int bitIndex)
     {
@@ -53,5 +54,10 @@ namespace OptionalChangeState
     inline bool IsDeferContextFlyoutInitEnabled()
     {
         return IsOptionalChangeEnabled(BitIndex_DeferContextFlyoutInit) || IsPerfOptInEnabled();
+    }
+
+    inline bool ShouldAlignExtendsContentIntoTitleBarBehavior()
+    {
+        return IsOptionalChangeEnabled(BitIndex_AlignExtendsContentIntoTitleBarBehavior);
     }
 }
