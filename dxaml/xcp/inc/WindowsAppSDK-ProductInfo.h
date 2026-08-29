@@ -1,0 +1,42 @@
+// Copyright (c) Microsoft Corporation and Contributors.
+// Licensed under the MIT License.
+
+// This is a duplicate of the WinAppSDK repo file: dev\common\WindowsAppSdk-ProductInfo.h
+// Everything should be kept in sync with the exception of potentially the major/minor
+// release versions if WInUI3 has forked prior to WinAppSDK.
+
+// WARNING: the values in the AssemblyInfo file are defaults for use in dev-loop.
+// This file is meant to be overwritten by GenerateVersionInfo.ps1
+// Please modify the generation script in GenerateVersionInfo.ps1 to change any fields or values.
+
+#ifndef __WINDOWSAPPSDK_PRODUCTINFO_H__
+#define __WINDOWSAPPSDK_PRODUCTINFO_H__
+
+#ifndef STR2
+#define STR1(x) #x
+#define VERSION_DELIMIMITER STR1(.)
+#define STR2(a,b)     STR1(a) VERSION_DELIMIMITER STR1(b)
+#endif
+
+// If the specific version information has not been defined, then define it now.
+// The default for WINUI is the WINUI major version, WINAPPSDK major version,
+// WINAPPSDK minor version.  This means that we ignore the WINUI_RELEASE_MINOR and 
+// WINUI_RELEASE_PATCH variables.
+
+#ifndef WINUI_RELEASE_MAJOR
+#define WINUI_RELEASE_MAJOR                                 3
+#endif
+#ifndef WINUI_BUILD_VERSION
+#define WINUI_BUILD_VERSION                                 0
+#endif
+
+#define WINDOWSAPPSDK_RELEASE_MAJOR                         0
+#define WINDOWSAPPSDK_RELEASE_MINOR                         0
+
+#define WINDOWSAPPSDK_PRODUCT_VERSION    WINDOWSAPPSDK_RELEASE_MAJOR, WINDOWSAPPSDK_RELEASE_MINOR
+#define WINDOWSAPPSDK_PRODUCT_VERSION_STRING   STR2(WINDOWSAPPSDK_RELEASE_MAJOR, WINDOWSAPPSDK_RELEASE_MINOR)
+#define WINDOWSAPPSDK_COMPANY_NAME    "Microsoft Corporation"
+#define WINDOWSAPPSDK_LEGAL_COPYRIGHT    "Copyright (c) Microsoft Corporation. All rights reserved."
+#define WINDOWSAPPSDK_PRODUCT_NAME    "Windows App SDK"
+
+#endif // __WINDOWSAPPSDK_PRODUCTINFO_H__

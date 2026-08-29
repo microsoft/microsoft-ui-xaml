@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ProjectGuid>{692B5933-4B22-453F-A081-15A76C3AC385}</ProjectGuid>
+  </PropertyGroup> 
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))" />
+  <Import Project="$(XamlSourcePath)\test\common.props" />
+  <Import Project="$(NativeExternalTestPath)\common.props" />
+  <PropertyGroup>
+    <!--Causes loading of winrt dependencies from CoreWebView2 SDK package - required for any usage from WinUI3/WinAppSDK.
+        Note end-user WASDK apps get this implicitly via $(MicrosoftWindowsAppSDKPackageDir). -->
+    <WebView2UseWinRT>true</WebView2UseWinRT>
+  </PropertyGroup>
+  <Import Project="$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.targets')" />
+  <Import Project="$(ProjectRoot)\eng\WebView2Arm64EcWorkaround.targets" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>
+        %(AdditionalIncludeDirectories);
+        $(ArtifactsObjDir)MergedWinMD\private
+      </AdditionalIncludeDirectories>
+      <ForcedUsingFiles>
+        %(ForcedUsingFiles);
+        $(ArtifactsObjDir)controls\idl\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd;
+        $(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\lib\Microsoft.Web.WebView2.Core.winmd;
+      </ForcedUsingFiles>
+      <DisableSpecificWarnings>
+        %(DisableSpecificWarnings);
+        4189; <!-- 'x': local variable is initialized but not referenced -->
+        4691; <!-- 'x': type referenced was expected in unreferenced assembly 'y', type defined in current translation unit used instead -->
+        4698; <!-- 'x' is for evaluation purposes only and is subject to change or removal in future updates. -->
+      </DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="ActivationTests.h" />
+    <ClCompile Include="ActivationTests.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(NativeExternalTestPath)\pch\Microsoft.UI.Xaml.Tests.External.Precomp.vcxproj" Project="{c34f3204-817a-4715-83ad-173f686adb5a}" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

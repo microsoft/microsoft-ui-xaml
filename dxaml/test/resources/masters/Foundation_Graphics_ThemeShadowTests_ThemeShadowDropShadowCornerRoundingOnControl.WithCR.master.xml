@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="300" SizeY="300" BorderMode="Soft">
+            <ColorBrush Color="#ffffffff" />
+          </wucSpriteVisual>
+          <Visual Tag="PrependVisual">
+            <TransformMatrix>
+              <Translate Z="32" />
+            </TransformMatrix>
+            <Visual TransformParentVisualId="2" Tag="DropShadowVisual" TransparentForInput="True">
+              <wucSpriteVisual SizeX="82" SizeY="82" OffsetX="-16" OffsetY="-8" OffsetZ="0">
+                <NineGridBrush LeftInset="21" TopInset="13" RightInset="21" BottomInset="29" isCenterHollow="True">
+                  <Source>
+                    <SurfaceBrush Stretch="Fill" Transform="Identity">
+                      <VisualSurface SourceRectangle="RB {96, 96}" RealizationSizeX="96" RealizationSizeY="96" SourceVisualId="1" />
+                    </SurfaceBrush>
+                  </Source>
+                </NineGridBrush>
+              </wucSpriteVisual>
+            </Visual>
+            <Visual VisualId="2" Tag="PrimaryVisual" SizeX="50" SizeY="50" OffsetX="100" OffsetY="100" OffsetZ="0">
+              <Visual Tag="ContentVisual">
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" SizeX="50" SizeY="50">
+                    <Visual Tag="RoundedCornerClipVisual">
+                      <Clip ClipLeft="0" ClipTop="0" ClipRight="50" ClipBottom="50" ClipTopLeftRadiusX="4" ClipTopLeftRadiusY="4" ClipTopRightRadiusX="4" ClipTopRightRadiusY="4" ClipBottomLeftRadiusX="4" ClipBottomLeftRadiusY="4" ClipBottomRightRadiusX="4" ClipBottomRightRadiusY="4" TransformMatrix="Identity" />
+                      <Visual Tag="ContentVisual">
+                        <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+                          <MaskBrush>
+                            <Source>
+                              <ColorBrush Color="#ff000000" />
+                            </Source>
+                            <Mask>
+                              <NineGridBrush LeftInset="5" TopInset="5" RightInset="5" BottomInset="5" isCenterHollow="False">
+                                <Source>
+                                  <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                                </Source>
+                              </NineGridBrush>
+                            </Mask>
+                          </MaskBrush>
+                        </wucSpriteVisual>
+                        <wucSpriteVisual SizeX="69" SizeY="10" BorderMode="Hard" OffsetX="12" OffsetY="20" OffsetZ="0">
+                          <Clip ClipLeft="0" ClipTop="-5" ClipRight="43" ClipBottom="-4" TransformMatrix="Identity" />
+                          <MaskBrush>
+                            <Source>
+                              <ColorBrush Color="#ffffffff" />
+                            </Source>
+                            <Mask>
+                              <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                            </Mask>
+                          </MaskBrush>
+                        </wucSpriteVisual>
+                        <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+                          <MaskBrush>
+                            <Source>
+                              <LinearGradientBrush EndPointX="0" EndPointY="0.06" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="Identity">
+                                <GradientStop Offset="0.33" Color="Argb {18ffffff}" />
+                                <GradientStop Offset="1" Color="Argb {12ffffff}" />
+                              </LinearGradientBrush>
+                            </Source>
+                            <Mask>
+                              <NineGridBrush LeftInset="5" TopInset="5" RightInset="5" BottomInset="5" isCenterHollow="True">
+                                <Source>
+                                  <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                                </Source>
+                              </NineGridBrush>
+                            </Mask>
+                          </MaskBrush>
+                        </wucSpriteVisual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

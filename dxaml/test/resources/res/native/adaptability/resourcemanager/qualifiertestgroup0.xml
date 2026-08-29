@@ -1,0 +1,239 @@
+<?xml version="1.0"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- Tests for XAML Adapatibility Multiview -->
+<Data>
+<Table Id="Tests">
+        <ParameterTypes>
+                <ParameterType Name="QualifierContext">Int32</ParameterType>
+                <ParameterType Name="LogicalUri">String</ParameterType>
+                <ParameterType Name="ExpectedPhysicalUri">String</ParameterType>
+        </ParameterTypes>
+        <!-- Resolve root resource URI -->
+        <Row>
+                <Parameter Name="QualifierContext">10</Parameter>
+                <Parameter Name="LogicalUri">file2.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file2.MinWidth5.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">100</Parameter>
+                <Parameter Name="LogicalUri">file2.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file2.MinWidth100.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">120</Parameter>
+                <Parameter Name="LogicalUri">file2.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file2.MinWidth100.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">125</Parameter>
+                <Parameter Name="LogicalUri">file2.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file2.MinWidth100.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">128</Parameter>
+                <Parameter Name="LogicalUri">file2.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file2.MinWidth128.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">130</Parameter>
+                <Parameter Name="LogicalUri">file2.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file2.MinWidth128.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">150</Parameter>
+                <Parameter Name="LogicalUri">file2.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file2.MinWidth128.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">175</Parameter>
+                <Parameter Name="LogicalUri">file2.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file2.MinWidth128.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">210</Parameter>
+                <Parameter Name="LogicalUri">file2.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file2.MinWidth200.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">250</Parameter>
+                <Parameter Name="LogicalUri">file2.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file2.MinWidth200.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">275</Parameter>
+                <Parameter Name="LogicalUri">file2.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file2.MinWidth256.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">300</Parameter>
+                <Parameter Name="LogicalUri">file2.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file2.MinWidth256.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">750</Parameter>
+                <Parameter Name="LogicalUri">file2.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file2.MinWidth512.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">1000</Parameter>
+                <Parameter Name="LogicalUri">file2.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file2.MinWidth512.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">2000</Parameter>
+                <Parameter Name="LogicalUri">file2.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file2.MinWidth1024.xbf</Parameter>
+        </Row>
+
+        <!-- Resolve Nested Resources -->
+        <Row>
+                <Parameter Name="QualifierContext">2000</Parameter>
+                <Parameter Name="LogicalUri">foo/bar/file3.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/foo/bar/file3.MinWidth1000.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">700</Parameter>
+                <Parameter Name="LogicalUri">foo/bar/file3.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/foo/bar/file3.MinWidth400.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">1</Parameter>
+                <Parameter Name="LogicalUri">foo/bar/file3.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/foo/bar/file3.MinWidth1.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">77</Parameter>
+                <Parameter Name="LogicalUri">foo/bar/file3.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/foo/bar/file3.MinWidth1.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">99</Parameter>
+                <Parameter Name="LogicalUri">foo/bar/file3.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/foo/bar/file3.MinWidth1.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">100</Parameter>
+                <Parameter Name="LogicalUri">foo/bar/file3.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/foo/bar/file3.MinWidth100.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">200</Parameter>
+                <Parameter Name="LogicalUri">foo/bar/file3.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/foo/bar/file3.MinWidth200.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">201</Parameter>
+                <Parameter Name="LogicalUri">foo/bar/file3.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/foo/bar/file3.MinWidth201.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">250</Parameter>
+                <Parameter Name="LogicalUri">foo/bar/file3.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/foo/bar/file3.MinWidth201.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">275</Parameter>
+                <Parameter Name="LogicalUri">foo/bar/file3.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/foo/bar/file3.MinWidth201.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">350</Parameter>
+                <Parameter Name="LogicalUri">foo/bar/file3.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/foo/bar/file3.MinWidth300.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">900</Parameter>
+                <Parameter Name="LogicalUri">foo/bar/file3.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/foo/bar/file3.MinWidth400.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">5231</Parameter>
+                <Parameter Name="LogicalUri">foo/bar/file3.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/foo/bar/file3.MinWidth1000.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">52310</Parameter>
+                <Parameter Name="LogicalUri">foo/bar/file3.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/foo/bar/file3.MinWidth20000.xbf</Parameter>
+        </Row>
+
+        <!-- Resolve root resource URI, case-insensitive matching -->
+        <Row>
+                <Parameter Name="QualifierContext">10</Parameter>
+                <Parameter Name="LogicalUri">file4.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file4.MinWidth5.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">100</Parameter>
+                <Parameter Name="LogicalUri">file4.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file4.MinWidth100.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">120</Parameter>
+                <Parameter Name="LogicalUri">file4.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file4.MinWidth100.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">125</Parameter>
+                <Parameter Name="LogicalUri">file4.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file4.MinWidth100.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">128</Parameter>
+                <Parameter Name="LogicalUri">file4.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file4.MinWidth128.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">130</Parameter>
+                <Parameter Name="LogicalUri">file4.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file4.MinWidth128.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">150</Parameter>
+                <Parameter Name="LogicalUri">file4.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file4.MinWidth128.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">175</Parameter>
+                <Parameter Name="LogicalUri">file4.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file4.MinWidth128.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">210</Parameter>
+                <Parameter Name="LogicalUri">file4.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file4.MinWidth200.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">250</Parameter>
+                <Parameter Name="LogicalUri">file4.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file4.MinWidth200.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">275</Parameter>
+                <Parameter Name="LogicalUri">file4.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file4.MinWidth256.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">300</Parameter>
+                <Parameter Name="LogicalUri">file4.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file4.MinWidth256.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">750</Parameter>
+                <Parameter Name="LogicalUri">file4.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file4.MinWidth512.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">1000</Parameter>
+                <Parameter Name="LogicalUri">file4.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file4.MinWidth512.xbf</Parameter>
+        </Row>
+        <Row>
+                <Parameter Name="QualifierContext">2000</Parameter>
+                <Parameter Name="LogicalUri">file4.xbf</Parameter>
+                <Parameter Name="ExpectedPhysicalUri">ms-resource:///Files/file4.MinWidth1024.xbf</Parameter>
+        </Row>
+</Table>
+</Data>
+

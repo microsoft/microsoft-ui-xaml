@@ -1,0 +1,58 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+    <Grid x:Name="LayoutRoot"  
+          xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+          Background="{StaticResource ApplicationPageBackgroundThemeBrush}">
+        <SemanticZoom x:Name="theSezo">
+            <SemanticZoom.ZoomedOutView>
+                <GridView x:Name="theGridView"  Background="Black">
+                    <GridView.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="Green" BorderThickness="4">
+                                <TextBlock Text="{Binding}" />
+                            </Border>
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                    <GridView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapGrid ItemWidth="200" ItemHeight="100" />
+                        </ItemsPanelTemplate>
+                    </GridView.ItemsPanel>
+                </GridView>
+            </SemanticZoom.ZoomedOutView>
+            
+            <SemanticZoom.ZoomedInView>
+                <Hub x:Name="theHub"  HorizontalAlignment="Left" Width="480" Header="hub" >
+                    <HubSection x:Name="item0" Header="item 0" Width="200" >
+                        <DataTemplate>
+                            <Grid Background="Red" />
+                        </DataTemplate>
+                    </HubSection>
+
+                    <HubSection x:Name="item1" Header="item 1" Width="200" IsHeaderInteractive="True"  >
+                        <DataTemplate>
+                            <Grid Background="Orange" />
+                        </DataTemplate>
+                    </HubSection>
+
+                    <HubSection x:Name="item2" Header="item 2" Width="200">
+                        <DataTemplate>
+                            <Grid Background="Yellow" />
+                        </DataTemplate>
+                    </HubSection>
+
+                    <HubSection x:Name="item3" Header="item 3" Width="200">
+                        <DataTemplate>
+                            <Grid Background="Green" />
+                        </DataTemplate>
+                    </HubSection>
+
+                    <HubSection x:Name="item4" Header="item 4"  Width="200">
+                        <DataTemplate>
+                            <Grid Background="Blue" />
+                        </DataTemplate>
+                    </HubSection>
+                </Hub>
+            </SemanticZoom.ZoomedInView>
+        </SemanticZoom>
+    </Grid>

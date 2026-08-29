@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="400" SizeY="400" BorderMode="Soft">
+            <ColorBrush Color="rgb {1, 0, 0}" />
+          </wucSpriteVisual>
+          <Visual Tag="PrependVisual">
+            <Offset>
+              <ExpressionAnimation String="primaryVisual.Translation">
+                <ReferenceParameter Name="primaryVisual" />
+              </ExpressionAnimation>
+            </Offset>
+            <TransformMatrix>
+              <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(primaryVisual.Translation + prependVisual.Translation) * prependVisual.PrependTransform * Matrix4x4.CreateFromTranslation(-1 * (primaryVisual.Translation))">
+                <ReferenceParameter Name="prependVisual" />
+                <ReferenceParameter Name="primaryVisual" />
+              </ExpressionAnimation>
+            </TransformMatrix>
+            <PropertySet>
+              <Translation X="50" Y="50" Z="0" />
+            </PropertySet>
+            <Visual Tag="PrimaryVisual" SizeX="50" SizeY="50">
+              <PropertySet>
+                <Translation X="50" Y="50" Z="0" />
+              </PropertySet>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+                  <ColorBrush Color="rgb {0.502, 0, 0.502}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

@@ -159,6 +159,8 @@ publish/
 !**/packages/build/
 # Uncomment if necessary however generally it will be regenerated when needed
 #!**/packages/repositories.config
+# Local NuGet test feed declared in NuGet.config
+packagestore/
 *.nuget.props
 *.nuget.targets
 
@@ -270,3 +272,9 @@ HelixPayload/
 /test/MUXControlsTestApp/MSTest/MUXControlsTestApp_Test
 /test/MUXControlsTestApp/TAEF/MUXControlsTestApp_Test
 UnreliableTestReport.csv
+
+# tools
+/.dotnet/
+/.tools/
+src/.dotnet/
+src/.tools/

@@ -1,0 +1,309 @@
+@echo off
+rem Scripts cannot set enviroment variables because of an older handler in the agent that is not compatible with some pipeline containers
+rem Hence to set enviroment variables, use SetEnviromentVariable
+
+if not "%winui_echo%" == "" @echo on
+
+goto :begin
+
+rem This function is used to set enviroment variables in Azure Pipelines
+rem It will call task.setVariable on top of the regular "set" command if /pipeline is passed in.
+rem See comment at top of file for reasoning
+:SetEnviromentVariable
+set _varName=%~1
+set _varValue=%~2
+set %_varName%=%_varValue%
+if not "%Pipeline%"=="true" (
+    set _varName=
+    set _varValue=
+    exit /b 0
+)
+echo ##vso[task.setVariable variable=%_varName%]%_varValue%
+set _varName=
+set _varValue=
+exit /b 0
+
+:AddPathIfExists
+set _ToAdd=%~1
+if not exist "%_ToAdd%" (
+    goto :PathNotFound
+)
+set PATH=%_ToAdd%;%PATH%
+set _ToAdd=
+exit /b 0
+
+:PathNotFound
+echo Could not find path: %~1
+exit /b 4
+
+:begin
+set RepoRoot=%~dp0
+rem Remove the trailing backslash
+set RepoRoot=%RepoRoot:~0,-1%
+
+set EnvOnly=
+set EnvCheck=
+set Verbose=
+set NoTitle=
+set Pipeline=
+
+rem In case we run init.cmd multiple times, we don't want to keep our additions to PATH around.
+rem We'll save the original value of PATH and restore it on future calls to init.cmd.
+rem Given that PATH can get super long, we'll split this into multiple statements since having both "set"
+rem statements on the same line can cause cmd to complain the command is too large.
+if "%_OriginalPathBeforeInit%" neq "" goto :OriginalPathSet
+set _OriginalPathBeforeInit=%PATH%
+goto :DoneSettingPath
+:OriginalPathSet
+set PATH=%_OriginalPathBeforeInit%
+:DoneSettingPath
+
+set x86=
+set amd64=
+set ARM64=
+set ARM64EC=
+set fre=
+set chk=
+set _BuildArch=
+set _BuildType=
+set _DotNetMoniker=net8.0
+set _archIsSet=
+set _noPgo=
+
+:parseArgs
+if /i "%1"=="" (
+    goto:doneParsingArgs
+) else if /i "%1"=="/envonly" (
+    set EnvOnly=true
+) else if /i "%1"=="/envcheck" (
+    set EnvOnly=true
+    set EnvCheck=true
+)else if /i "%1"=="/pipeline" (
+    set EnvOnly=true
+    set Pipeline=true
+) else if /i "%1"=="/verbose" (
+    set Verbose=-Verbosity normal
+) else if /i "%1"=="/notitle" (
+    set NoTitle=1
+) else if /i "%1"=="x86chk" (
+    set x86=1
+    set chk=1
+    set _archIsSet=1
+) else if /i "%1"=="x86fre" (
+    set x86=1
+    set fre=1
+    set _archIsSet=1
+) else if /i "%1"=="x64fre" (
+    set amd64=1
+    set fre=1
+    set _archIsSet=1
+) else if /i "%1"=="x64chk" (
+    set amd64=1
+    set chk=1
+    set _archIsSet=1
+) else if /i "%1"=="amd64fre" (
+    set amd64=1
+    set fre=1
+    set _archIsSet=1
+) else if /i "%1"=="amd64chk" (
+    set amd64=1
+    set chk=1
+    set _archIsSet=1
+) else if /i "%1"=="arm64fre" (
+    set ARM64=1
+    set fre=1
+    set _archIsSet=1
+) else if /i "%1"=="arm64chk" (
+    set ARM64=1
+    set chk=1
+    set _archIsSet=1
+) else if /i "%1"=="arm64ecfre" (
+    set ARM64EC=1
+    set fre=1
+    set _archIsSet=1
+) else if /i "%1"=="arm64ecchk" (
+    set ARM64EC=1
+    set chk=1
+    set _archIsSet=1
+) else if /i "%1"=="net6" (
+    set _DotNetMoniker=net6.0
+) else if /i "%1"=="net7" (
+    set _DotNetMoniker=net7.0
+) else if /i "%1"=="net8" (
+    set _DotNetMoniker=net8.0
+) else if /i "%1"=="/nopgo" (
+    set _noPgo=1
+)  else (
+    echo Syntax:    %0 ^<arch^>^<flavor^> [^<options^>] [^<toolset^>]
+    echo.
+    echo            ^<arch^> :          x86 ^| ^(x64^|amd64^) ^| arm64 ^| arm64ec
+    echo            ^<flavor^> :        chk ^| fre
+    echo            ^<options^> :       /verbose, /envonly, /envcheck, /notitle, /nopgo
+    exit /b 1
+)
+
+rem To set enviroment variables, use SetEnviromentVariable
+rem See top of file for reasoning
+call :SetEnviromentVariable _DotNetMoniker %_DotNetMoniker%
+call :SetEnviromentVariable RepoRoot "%RepoRoot%"
+
+shift
+goto:parseArgs
+
+:doneParsingArgs
+
+rem Determine whether this is an internal (ADO) or OSS (public GitHub) build and expose it
+rem to the build scripts (e.g. PostInit.ps1). The .azuredevops folder exists only in the
+rem internal repo (it is excluded from the public mirror), matching the IsInternalWinUIBuild
+rem MSBuild property in eng\Versions.props. Use explicit true/false (never empty) so
+rem init.ps1's Invoke-CmdScript propagates the value.
+if exist "%RepoRoot%\.azuredevops" (
+    call :SetEnviromentVariable IsInternalWinUIBuild true
+) else (
+    call :SetEnviromentVariable IsInternalWinUIBuild false
+)
+
+rem If /envcheck is specified, verify that a full init has been run at least once.
+rem Without a prior full init, required tools and NuGet packages won't be available.
+if "%EnvCheck%"=="true" (
+    if not exist "%RepoRoot%\packages" (
+        echo ERROR: Cannot use /envcheck because a full init has not been run yet.
+        echo        Required tools and NuGet packages are missing.
+        echo.
+        echo        Run a full init first:  init.cmd [flavor]
+        echo        Example:                init.cmd amd64chk
+        exit /b 1
+    )
+    if not exist "%RepoRoot%\.tools" (
+        echo ERROR: Cannot use /envcheck because a full init has not been run yet.
+        echo        Required tools and NuGet packages are missing.
+        echo.
+        echo        Run a full init first:  init.cmd [flavor]
+        echo        Example:                init.cmd amd64chk
+        exit /b 1
+    )
+)
+
+if "%_archIsSet%"=="" (
+    set amd64=1
+    set chk=1
+)
+set _archIsSet=
+
+if "%x86%"=="1" (
+    call :SetEnviromentVariable _BuildArch x86
+    call :SetEnviromentVariable Platform Win32
+)
+if "%amd64%"=="1" (
+    call :SetEnviromentVariable _BuildArch amd64
+    call :SetEnviromentVariable Platform x64
+)
+if "%ARM64%"=="1" (
+    call :SetEnviromentVariable _BuildArch ARM64
+    call :SetEnviromentVariable Platform ARM64
+)
+if "%ARM64EC%"=="1" (
+    call :SetEnviromentVariable _BuildArch ARM64EC
+    call :SetEnviromentVariable Platform ARM64EC
+)
+if not "%Pipeline%"=="true" (
+    call :SetEnviromentVariable BUILDPLATFORM %Platform%
+
+    if "%x86%"=="1" (
+        call :SetEnviromentVariable BUILDPLATFORM x86
+    )
+)
+
+
+if "%fre%"=="1" (
+    call :SetEnviromentVariable _BuildType fre
+    call :SetEnviromentVariable Configuration Release
+)
+if "%chk%"=="1" (
+    call :SetEnviromentVariable _BuildType chk
+    call :SetEnviromentVariable Configuration Debug
+)
+
+rem Enable PGO optimization by default for release (fre) builds.
+rem Developers can opt out by passing /nopgo to init.
+rem ARM64EC is excluded because no PGO training data exists for that architecture.
+rem Reset to Off so switching to chk or passing /nopgo disables PGO.
+rem Using "Off" instead of empty so Invoke-CmdScript (init.ps1) propagates the value.
+call:SetEnviromentVariable PGOBuildMode Off
+if "%fre%"=="1" if not "%_noPgo%"=="1" if not "%ARM64EC%"=="1" (
+    call:SetEnviromentVariable PGOBuildMode Optimize
+)
+set _noPgo=
+
+if "%DevEnvDir%" == "" goto :NeedDevCmd
+where msbuild >nul 2>&1
+if errorlevel 1 goto :NeedDevCmd
+goto :SkipDevCmd
+:NeedDevCmd
+    echo DevEnvDir environment variable not set or msbuild unavailable. Running DevCmd.cmd to get a developer command prompt...
+    if "%ARM64EC%"=="1" (
+        call %RepoRoot%\DevCmd.cmd /PreserveContext /prerelease -arch=amd64 -host_arch=amd64
+    ) else if "%ARM64%"=="1" (
+        call %RepoRoot%\DevCmd.cmd /PreserveContext /prerelease -arch=arm64 -host_arch=amd64
+    ) else (
+        call %RepoRoot%\DevCmd.cmd /PreserveContext /prerelease -arch=%_BuildArch% -host_arch=amd64
+    )
+    if errorlevel 1 (echo Could not set up a developer command prompt && exit /b %ERRORLEVEL%)
+:SkipDevCmd
+
+if "%VisualStudioVersion%" == "16.0" (echo Visual Studio 2019 is not supported. && exit /b /1)
+
+set PATH=%RepoRoot%\.buildtools\MSBuild\Current\Bin\amd64;%RepoRoot%\.tools;%RepoRoot%\.tools\VSS.NuGet.AuthHelper;%RepoRoot%\tools;%RepoRoot%\dxaml\scripts;%PATH%
+
+rem If we have init'd from a VS developer command prompt, we should use its tooling instead of the VS build tools installed with the repo
+call :AddPathIfExists "%VSINSTALLDIR%\MSBuild\Current\Bin\amd64"
+
+call :SetEnviromentVariable BuildArtifactsDir "%RepoRoot%\BuildOutput"
+
+call :SetEnviromentVariable BinRoot "%BuildArtifactsDir%\Bin"
+
+call :SetEnviromentVariable BuildOutputRoot "%BuildArtifactsDir%\Obj"
+
+call :SetEnviromentVariable TEMP "%BuildArtifactsDir%\Temp\%_BuildArch%%_BuildType%"
+
+call :SetEnviromentVariable TMP "%TEMP%"
+
+if not exist "%TEMP%" mkdir "%TEMP%"
+
+call :SetEnviromentVariable DOTNET_ROOT "%RepoRoot%\.dotnet"
+
+call :SetEnviromentVariable DOTNET_ROOT_x86 "%RepoRoot%\.dotnet\x86"
+
+call :SetEnviromentVariable DOTNET_INSTALL_DIR "%RepoRoot%\.dotnet"
+
+call :SetEnviromentVariable DOTNET_MULTILEVEL_LOOKUP 0
+
+set PATH=%DOTNET_ROOT%;%DOTNET_ROOT_x86%;%PATH%
+
+call %RepoRoot%\scripts\init\SetupDotNetFiles.cmd %RepoRoot%
+
+powershell -ExecutionPolicy Bypass -NoProfile %RepoRoot%\scripts\GenerateTestPfx.ps1 %RepoRoot%\build\WinUITest.pfx
+
+if "%EnvOnly%"=="" (
+    rem For pipeline builds, submodules are checked out with authentication elsewhere
+    rem For dev builds, ensure that submodules are populated with latest commits
+    git submodule update --init --recursive
+    powershell -ExecutionPolicy Bypass -NoProfile -File %RepoRoot%\scripts\init\Initialize-Restore.ps1 -RepoRoot %RepoRoot% %Verbose%
+)
+
+if "%ARM64EC%"=="1" (
+    if exist %RepoRoot%\scripts\MockArm64ECFolder.ps1 (
+        powershell -ExecutionPolicy Bypass -NoProfile -File %RepoRoot%\scripts\MockArm64ECFolder.ps1
+    )
+)
+
+xcopy /d /y %RepoRoot%\scripts\winui.natvis "%USERPROFILE%\My Documents\Visual Studio 2022\Visualizers\" >nul 2>&1
+
+set EnvironmentInitialized=1
+
+if "%NoTitle%"=="" (
+   title DCPP %RepoRoot% - %_BuildArch%%_BuildType%
+)
+doskey /macrofile=%RepoRoot%\scripts\aliases
+
+exit /b 0

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Compositor>
+  <Light Number="1" TargetCount="1" HasCoordinateSpace="True" />
+  <Light Number="2" TargetCount="1" HasCoordinateSpace="True" />
+  <Light Number="3" TargetCount="0" HasCoordinateSpace="True" />
+  <CompositionTarget>
+    <Visual>
+      <Visual />
+      <Visual />
+      <Visual Tag="PrependVisual">
+        <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+          <Visual Tag="ContentVisual">
+            <Visual Tag="PrependVisual">
+              <Visual Tag="PrimaryVisual" SizeX="50" SizeY="50">
+                <CoodinateSpaceFor LightNumber="1" />
+                <CoodinateSpaceFor LightNumber="2" />
+                <CoodinateSpaceFor LightNumber="3" />
+                <Visual Tag="ContentVisual">
+                  <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+                    <ColorBrush Color="rgb {0, 0.502, 0}" />
+                  </wucSpriteVisual>
+                  <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+                    <TargetedByLight LightNumber="2" />
+                    <ColorBrush Color="rgb {0, 0.502, 0}" />
+                  </wucSpriteVisual>
+                  <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+                    <TargetedByLight LightNumber="1" />
+                    <NineGridBrush LeftInset="5" TopInset="5" RightInset="5" BottomInset="5" isCenterHollow="True">
+                      <Source>
+                        <ColorBrush Color="rgb {1, 0, 0}" />
+                      </Source>
+                    </NineGridBrush>
+                  </wucSpriteVisual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </CompositionTarget>
+</Compositor>

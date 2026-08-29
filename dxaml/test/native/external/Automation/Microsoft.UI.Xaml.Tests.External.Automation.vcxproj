@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ProjectGuid>{760F8B1C-525B-49A4-A702-64A2B8AA863A}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))" />
+  <Import Project="$(XamlSourcePath)\test\common.props" />
+  <Import Project="$(NativeExternalTestPath)\common.props" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>
+        %(AdditionalIncludeDirectories);
+        $(NativeExternalTestPath)\automation\automationpeer;
+        $(NativeExternalTestPath)\automation\AutoSuggest;
+        $(NativeExternalTestPath)\automation\events;
+        $(NativeExternalTestPath)\automation\patterns;
+        $(NativeExternalTestPath)\automation\patterns\customnavigation;
+        $(NativeExternalTestPath)\automation\patterns\RangeValue;
+        $(NativeExternalTestPath)\automation\patterns\Scroll;
+        $(NativeExternalTestPath)\automation\patterns\synchronizedinput;
+        $(NativeExternalTestPath)\automation\patterns\text;
+        $(NativeExternalTestPath)\automation\patterns\textedit;
+        $(NativeExternalTestPath)\automation\patterns\textrange;
+        $(NativeExternalTestPath)\automation\patterns\window;
+        $(NativeExternalTestPath)\automation\provider;
+        $(NativeExternalTestPath)\automation\regression;
+        $(NativeExternalTestPath)\automation\xamluiabridge;
+        $(NativeExternalTestPath)\controls\inc;
+        $(WinUIDetailsIncludePath)\abi;
+        $(WinUIDetailsIncludePath)\MockDComp;
+      </AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="automationpeer\AnnotationsIntegrationTests.h" />
+    <ClInclude Include="automationpeer\AutomationPeerIntegrationTests.h" />
+    <ClInclude Include="automationpeer\CultureIntegrationTests.h" />
+    <ClInclude Include="automationpeer\DescribedByIntegrationTests.h" />
+    <ClInclude Include="automationpeer\FlowsFromIntegrationTests.h" />
+    <ClInclude Include="automationpeer\FlowsToIntegrationTests.h" />
+    <ClInclude Include="automationpeer\FullDescriptionIntegrationTests.h" />
+    <ClInclude Include="automationpeer\HeadingLevelIntegrationTests.h" />
+    <ClInclude Include="automationpeer\HyperlinkAutomationPeerIntegrationTests.h" />
+    <ClInclude Include="automationpeer\IsDataValidForFormIntegrationTests.h" />
+    <ClInclude Include="automationpeer\IsDialogIntegrationTests.h" />
+    <ClInclude Include="automationpeer\IsPeripheralIntegrationTests.h" />
+    <ClInclude Include="automationpeer\IsRequiredForFormIntegrationTests.h" />
+    <ClInclude Include="automationpeer\LandmarksIntegrationTests.h" />
+    <ClInclude Include="automationpeer\LocalizedControlTypeIntegrationTests.h" />
+    <ClInclude Include="AutoSuggest\AutoSuggestIntegrationTests.h" />
+    <ClInclude Include="events\NotificationEventTests.h" />
+    <ClInclude Include="events\StructureChangeIntegrationTests.h" />
+    <ClInclude Include="patterns\customnavigation\CustomNavigationIntegrationTests.h" />
+    <ClInclude Include="patterns\RangeValue\RangeValueIntegrationTests.h" />
+    <ClInclude Include="patterns\Scroll\ScrollIntegrationTests.h" />
+    <ClInclude Include="patterns\synchronizedinput\SynchronizedInputIntegrationTests.h" />
+    <ClInclude Include="patterns\text\TextIntegrationTests.h" />
+    <ClInclude Include="patterns\textedit\TextEditIntegrationTests.h" />
+    <ClInclude Include="patterns\textrange\TextRangeIntegrationTests.h" />
+    <ClInclude Include="patterns\window\WindowIntegrationTests.h" />
+    <ClInclude Include="provider\CustomAutomationPeer.h" />
+    <ClInclude Include="provider\ProviderSideIntegrationTests.h" />
+    <ClInclude Include="regression\RegressionTests.h" />
+    <ClInclude Include="xamluiabridge\App.g.h" />
+    <ClInclude Include="xamluiabridge\App.g.hpp" />
+    <ClInclude Include="xamluiabridge\App.xaml.h" />
+    <ClInclude Include="xamluiabridge\XamlTypeInfo.g.h" />
+    <ClInclude Include="xamluiabridge\XAMLUIABridgeHostCanvas.h" />
+    <ClInclude Include="xamluiabridge\XAMLUIABridgeIntegrationTests.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="automationpeer\AutomationPeerIntegrationTests.cpp" />
+    <ClCompile Include="automationpeer\AnnotationsIntegrationTests.cpp" />
+    <ClCompile Include="automationpeer\HyperlinkAutomationPeerIntegrationTests.cpp" />
+    <ClCompile Include="automationpeer\LandmarksIntegrationTests.cpp" />
+    <ClCompile Include="automationpeer\IsPeripheralIntegrationTests.cpp" />
+    <ClCompile Include="automationpeer\IsDataValidForFormIntegrationTests.cpp" />
+    <ClCompile Include="automationpeer\FullDescriptionIntegrationTests.cpp" />
+    <ClCompile Include="automationpeer\LocalizedControlTypeIntegrationTests.cpp" />
+    <ClCompile Include="automationpeer\DescribedByIntegrationTests.cpp" />
+    <ClCompile Include="automationpeer\FlowsToIntegrationTests.cpp" />
+    <ClCompile Include="automationpeer\FlowsFromIntegrationTests.cpp" />
+    <ClCompile Include="automationpeer\CultureIntegrationTests.cpp" />
+    <ClCompile Include="automationpeer\IsRequiredForFormIntegrationTests.cpp" />
+    <ClCompile Include="automationpeer\HeadingLevelIntegrationTests.cpp" />
+    <ClCompile Include="automationpeer\IsDialogIntegrationTests.cpp" />
+    <ClCompile Include="AutoSuggest\AutoSuggestIntegrationTests.cpp" />
+    <ClCompile Include="events\StructureChangeIntegrationTests.cpp" />
+    <ClCompile Include="events\NotificationEventTests.cpp" />
+    <ClCompile Include="patterns\customnavigation\CustomNavigationIntegrationTests.cpp" />
+    <ClCompile Include="patterns\RangeValue\RangeValueIntegrationTests.cpp" />
+    <ClCompile Include="patterns\Scroll\ScrollIntegrationTests.cpp" />
+    <ClCompile Include="patterns\synchronizedinput\SynchronizedInputIntegrationTests.cpp" />
+    <ClCompile Include="patterns\text\TextIntegrationTests.cpp" />
+    <ClCompile Include="patterns\textedit\TextEditIntegrationTests.cpp" />
+    <ClCompile Include="patterns\textrange\TextRangeIntegrationTests.cpp" />
+    <ClCompile Include="patterns\window\WindowIntegrationTests.cpp" />
+    <ClCompile Include="provider\ProviderSideIntegrationTests.cpp" />
+    <ClCompile Include="regression\RegressionTests.cpp" />
+    <ClCompile Include="xamluiabridge\XAMLUIABridgeHostCanvas.cpp" />
+    <ClCompile Include="xamluiabridge\XAMLUIABridgeIntegrationTests.cpp" />
+    <ClCompile Include="xamluiabridge\XamlTypeInfo.g.cpp" />
+    <ClCompile Include="xamluiabridge\XamlTypeInfo.Impl.g.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(NativeExternalTestPath)\pch\Microsoft.UI.Xaml.Tests.External.Precomp.vcxproj" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(CustomTypesCompile.targets))" />
+</Project>

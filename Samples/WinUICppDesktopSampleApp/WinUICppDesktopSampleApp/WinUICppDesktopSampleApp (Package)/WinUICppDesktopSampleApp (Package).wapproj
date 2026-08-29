@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '15.0'">
+    <VisualStudioVersion>15.0</VisualStudioVersion>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64EC">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64EC</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x86">
+      <Configuration>Debug</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64EC">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64EC</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x86">
+      <Configuration>Release</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup>
+    <GenerateAppxPackageOnBuild>True</GenerateAppxPackageOnBuild>
+    <WapProjPath Condition="'$(WapProjPath)'==''">$(MSBuildExtensionsPath)\Microsoft\DesktopBridge\</WapProjPath>
+    <DebuggerType>NativeOnly</DebuggerType>
+    <BackgroundTaskDebugEngines>NativeOnly</BackgroundTaskDebugEngines>
+  </PropertyGroup>
+  <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />
+  <PropertyGroup>
+    <ProjectGuid>590b9371-8d59-451e-8422-8567ea878a73</ProjectGuid>
+    <TargetPlatformVersion>$(WindowsSdkTargetPlatformVersion)</TargetPlatformVersion>
+    <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
+    <AppxPackageName>WinUICppDesktopSampleApp</AppxPackageName>
+    <AppxBundleNameForOutput>WinUICppDesktopSampleApp</AppxBundleNameForOutput>
+    <AppxBundlePlatforms>$(Platform)</AppxBundlePlatforms>
+    <AppxBundle>Never</AppxBundle>
+    <EntryPointProjectUniqueName>..\WinUICppDesktopSampleApp\WinUICppDesktopSampleApp.vcxproj</EntryPointProjectUniqueName>
+    <PackageCertificateKeyFile>$(ProjectRoot)\build\WinUITest.pfx</PackageCertificateKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+  </PropertyGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Images\SplashScreen.scale-200.png" />
+    <Content Include="Images\LockScreenLogo.scale-200.png" />
+    <Content Include="Images\Square150x150Logo.scale-200.png" />
+    <Content Include="Images\Square44x44Logo.scale-200.png" />
+    <Content Include="Images\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Images\StoreLogo.png" />
+    <Content Include="Images\Wide310x150Logo.scale-200.png" />
+    <Content Include="Media\ladybug.wmv" />
+    <Content Include="Media\608test.mp4" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- These entries exist solely to force the AppxManifest generator to recognize
+         that these languages are supported by the packaged app; the automatic supported
+         language detection apparently doesn't consider what languages are supported by the
+         unpackaged app. -->
+    <Content Include="Images\Placeholder.language-es-ES.png" />
+    <Content Include="Images\Placeholder.language-en-US.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WinUICppDesktopSampleApp\WinUICppDesktopSampleApp.vcxproj">
+      <SkipGetTargetFrameworkProperties>True</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="[$(WinUIVersion)]">
+      <IncludeAssets>build</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
+  <!-- This file can conflict with one in MsixContent, so we'll remove it. -->
+  <Target Name="RemoveGeneratedGenericXbf" AfterTargets="_RemoveAllNonWapUWPItems">
+    <PropertyGroup>
+      <AppOutDir>$([System.IO.Path]::GetFullPath('$(OutDir)..\WinUICppDesktopSampleApp\'))</AppOutDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <AppxPackagePayload Remove="$(AppOutDir)generated\Themes\Generic.xbf" />
+    </ItemGroup>
+  </Target>
+</Project>

@@ -1,0 +1,25 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<ListView Width="400" Height="600" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <ListView.Header>
+    <Border Width="80" Height="100" Background="Red">
+      <TextBlock>Header</TextBlock>
+    </Border>
+  </ListView.Header>
+  <ListView.Footer>
+    <Border Width="50" Height="75" Background="Blue">
+      <TextBlock>Footer</TextBlock>
+    </Border>
+  </ListView.Footer>
+  <ListView.ItemsPanel>
+    <ItemsPanelTemplate>
+      <ItemsStackPanel ItemsUpdatingScrollMode="KeepLastItemInView" Background="Gray"  />
+    </ItemsPanelTemplate>
+  </ListView.ItemsPanel>
+  <ListView.ItemTemplate>
+    <DataTemplate>
+      <Border Background="Yellow" Width="{Binding Width}" Height="{Binding Height}">
+        <TextBlock Text="{Binding Text}" />
+      </Border>
+    </DataTemplate>
+  </ListView.ItemTemplate>
+</ListView>

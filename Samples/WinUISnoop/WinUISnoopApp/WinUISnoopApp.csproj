@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>WinUISnoopApp</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SelfContained>true</SelfContained>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <!-- The Windows SDK targeted by WinAppSDK 2.0 expects 10.0.26100. Suppress the benign mismatch warning. -->
+    <NoWarn>$(NoWarn);MSB3277;MSB3884;NETSDK1206</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="$(WinUISnoopWinAppSdkVersion)" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="$(WinUISnoopWindowsSdkBuildToolsVersion)" />
+    <PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.DataTable" Version="0.1.251217-build.2433" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WinUISnoopTap\WinUISnoopTap.vcxproj">
+      <Private>true</Private>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!-- Copy the native tap DLL produced by WinUISnoopTap.vcxproj next to the managed app
+       (it lands in $(SolutionDir)$(Platform)\$(Configuration)\ by default for vcxprojs). -->
+  <Target Name="CopyWinUISnoopTapNative" AfterTargets="Build">
+    <PropertyGroup>
+      <_TapPlatform Condition="'$(Platform)'=='x86'">Win32</_TapPlatform>
+      <_TapPlatform Condition="'$(_TapPlatform)'==''">$(Platform)</_TapPlatform>
+      <_TapOutDir>$(MSBuildThisFileDirectory)..\$(_TapPlatform)\$(Configuration)\</_TapOutDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <_TapFiles Include="$(_TapOutDir)WinUISnoopTap.dll" />
+      <_TapFiles Include="$(_TapOutDir)WinUISnoopTap.pdb" Condition="Exists('$(_TapOutDir)WinUISnoopTap.pdb')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_TapFiles)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

@@ -1,0 +1,23 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page
+    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <Style TargetType="Button" x:Key="ButtonStyle1">
+                <Setter Property="Width" Value="50" />
+            </Style>
+        </ResourceDictionary>
+    </Page.Resources>
+
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" x:Name="grid">
+        <Button x:Name="button" Content="Button" Height="200" Margin="266,146,0,0" VerticalAlignment="Top" Style="{StaticResource ButtonStyle1}"/>
+        <Rectangle Fill="#FFF4F4F5" HorizontalAlignment="Right" Margin="0,377,271,207" Stroke="Black" Width="353"/>
+        <Canvas x:Name="canvas">
+            <Rectangle Width= "10" Height="10" Canvas.Left="25" Canvas.Top="25" Fill="Blue"/>
+        </Canvas>
+    </Grid>
+</Page>

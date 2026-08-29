@@ -1,0 +1,13 @@
+#include <windows.h>
+#include <ntverp.h>
+#include "resource.h"
+
+#define VER_FILETYPE    VFT_APP
+#define VER_FILESUBTYPE VFT2_UNKNOWN
+#define VER_FILEDESCRIPTION_STR     "AppAnalysisTool"
+#define VER_INTERNALNAME_STR        "AppAnalysisTool.exe"
+#define VER_ORIGINALFILENAME_STR    "AppAnalysisTool.exe"
+
+#include "common.ver"
+
+// ----------------------------------------------------------------------

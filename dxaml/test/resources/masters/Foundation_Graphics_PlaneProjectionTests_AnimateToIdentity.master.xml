@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="50" SizeY="50">
+              <TransformMatrix>
+                <Row1 M11="853.5" M12="-12.5" M13="-0.5005" M14="-0.5" />
+                <Row2 M21="0" M22="1000" M13="0" M14="0" />
+                <Row3 M31="-521.7" M32="-21.65" M33="-0.8669" M34="-0.866" />
+                <Row4 M41="3637" M42="287.5" M43="1012" M44="1012" />
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 0, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

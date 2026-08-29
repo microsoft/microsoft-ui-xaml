@@ -1,0 +1,26 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Margin="20">
+<!-- Test animation of shared transform used as UIElement.RenderTransform and Clip.Transform -->
+    <Canvas>
+        <Canvas.Resources>
+            <TranslateTransform x:Name="tr1"/>
+        </Canvas.Resources>
+        <Canvas.Triggers>
+            <EventTrigger RoutedEvent="Canvas.Loaded">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetName="tr1" Storyboard.TargetProperty="X" From="0" To="100" Duration="0:0:2" />
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Canvas.Triggers>
+
+        <Canvas Width="10" Height="10" Background="Red" x:Name="canv1" RenderTransform="{StaticResource tr1}" CompositeMode="SourceOver"/>
+
+        <Canvas Width="200" Height="100" Background="Green" Canvas.Top="100" x:Name="canv2" CompositeMode="SourceOver">
+            <Canvas.Clip>
+                <RectangleGeometry Rect="0,0,10,10"  Transform="{StaticResource tr1}"/>
+            </Canvas.Clip>
+        </Canvas>
+    </Canvas>
+</StackPanel>

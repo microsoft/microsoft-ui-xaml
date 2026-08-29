@@ -1,0 +1,59 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#pragma once
+
+#include <Versioning.h>
+
+namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
+    namespace Foundation { namespace Text {
+        class TextFontFallbackTests : public WEX::TestClass < TextFontFallbackTests >
+        {
+        public:
+            BEGIN_TEST_CLASS(TextFontFallbackTests)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+            END_TEST_CLASS()
+
+            TEST_CLASS_SETUP(ClassSetup)
+            TEST_CLASS_CLEANUP(ClassCleanup)
+            TEST_METHOD_SETUP(TestSetup)
+            TEST_METHOD_CLEANUP(TestCleanup)
+
+            BEGIN_TEST_METHOD(TextFontFallbackControlsDesktop)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates font fallback for various controls")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(TextFontFallbackLanguageUpdateDesktop)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates font fallback for various controls")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(AutoFontJa)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify Japanese app default font")
+                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+                END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(AutoFontKo)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify Korean app default font")
+                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+                END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(AutoFontEN)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify English app default font")
+                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+            END_TEST_METHOD()
+
+        private:
+
+            inline Platform::String^ GetResourcesPath() const;
+            Platform::String^ savedPrimaryLanguageOverride;
+
+        void TextFontFallbackControlsTestHelper(Platform::String^ filename, Platform::String^ languageOverride);
+        void TextFontFallbackLanguageUpdateTestHelper(Platform::String^ filename, Platform::String^ languageOverride);
+        void FontNameValidationHelper(Platform::String^ appLanguage, Platform::String^ defaultFontName);
+        };
+    } }
+} } } }
+

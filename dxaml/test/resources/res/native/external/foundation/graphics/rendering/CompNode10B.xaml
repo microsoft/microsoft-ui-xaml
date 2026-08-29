@@ -1,0 +1,19 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Margin="20">
+    <Canvas>
+        <Canvas CompositeMode="SourceOver" Width="100" Height="100" Background="Red">
+            <Canvas.Projection>
+                <PlaneProjection x:Name="myTransform" RotationX="0"/>
+            </Canvas.Projection>
+            <Canvas.Triggers>
+                <EventTrigger RoutedEvent="Canvas.Loaded">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="myTransform" Storyboard.TargetProperty="RotationX" To="45" Duration="0:0:4" RepeatBehavior="Forever"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Canvas.Triggers>
+        </Canvas>
+    </Canvas>
+</StackPanel>

@@ -1,0 +1,29 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<views:ContactSupportBasePage
+    x:Class="Microsoft.ContactSupport.Views.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="using:Microsoft.ContactSupport.Common"
+    xmlns:views="using:Microsoft.ContactSupport.Views"
+    DataContext = "{Binding Source={StaticResource Locator}, Path=MainPage}"
+    Style="{Binding Source={StaticResource PageStyle}}" 
+    mc:Ignorable="d">
+
+    <!--<interactivity:Interaction.Behaviors>
+        <core:EventTriggerBehavior EventName="Loaded">
+            <core:InvokeCommandAction Command="{Binding Source={StaticResource Locator}, Path=MainPage.PageLoadedCommand}" />
+        </core:EventTriggerBehavior>
+    </interactivity:Interaction.Behaviors>-->
+
+    <Grid Style="{Binding Source={StaticResource MainPageGridStyle}}" >
+        <Grid Style="{Binding Source={StaticResource LoadingScreenGridStyle}}" 
+              Visibility="{Binding WebAppLoading, Converter={StaticResource TrueToVisibleConverter}}" >
+            <ProgressBar Style="{Binding Source={StaticResource ProgressBarStyle}}" 
+                         IsIndeterminate="{Binding WebAppLoading, Mode=OneWay}" />
+        </Grid>
+    </Grid>
+</views:ContactSupportBasePage>
+

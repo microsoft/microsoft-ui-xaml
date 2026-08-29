@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<tt xmlns='http://www.w3.org/ns/ttml'
+    xmlns:tt='http://www.w3.org/ns/ttml'
+    xmlns:ttm='http://www.w3.org/ns/ttml#metadata'
+    xmlns:tts='http://www.w3.org/ns/ttml#styling'
+    xmlns:ttp='http://www.w3.org/ns/ttml#parameter'
+    xml:lang='eng'>
+    <head>
+        <ttm:title>Sample caption file</ttm:title>
+        <metadata>
+            <ttm:title>sampleTitle</ttm:title>
+            <ttm:desc>This a sample TTML file.</ttm:desc>
+            <ttm:copyright>Public Domain</ttm:copyright>
+        </metadata>
+    </head>
+    <body>
+        <div>
+            <p begin='00:00:00.1' end='00:00:02'>Caption 1</p>
+        </div>
+    </body>
+</tt>

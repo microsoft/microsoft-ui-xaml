@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Page With Draggable Elements</title>
+    <style>
+        #draggableDiv {
+            display: inline-block;
+            width: 300px;
+            height: 150px;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            line-height: 150px;
+            cursor: move;
+            border: 2px solid #2E7D32;
+            border-radius: 5px;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 8px;
+            user-select: none;
+            vertical-align: top;
+        }
+
+        #draggableDiv:hover {
+            background-color: #66BB6A;
+        }
+
+        #draggableLink {
+            display: inline-block;
+            width: 300px;
+            height: 150px;
+            line-height: 150px;
+            text-align: center;
+            margin: 8px;
+            padding: 0;
+            background-color: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 20px;
+            font-weight: bold;
+            vertical-align: top;
+        }
+
+        #draggableLink:hover {
+            background-color: #1976D2;
+        }
+
+        #draggableImage {
+            display: block;
+            width: 300px;
+            height: 150px;
+            object-fit: contain;
+            cursor: move;
+            border: 4px solid #E64A19;
+            margin: 8px;
+            background-color: #FFF3E0;
+        }
+    </style>
+    <script>
+        "use strict";
+
+        function doPostMessage(message) {
+            // Do different things in WebView2 vs the browser, so neither gets an error
+            try {
+                window.chrome.webview.postMessage(message);
+            }
+            catch {
+                window.postMessage(message);
+            }
+        };
+
+        function onLoad() {
+            // Wait for image to load before sending coordinates (so all are available)
+            var draggableImage = document.getElementById("draggableImage");
+            if (draggableImage.complete) {
+                postAllCoordinates();
+            } else {
+                draggableImage.onload = function() {
+                    postAllCoordinates();
+                };
+            }
+        };
+
+        function postAllCoordinates() {
+            // Get device pixel ratio for DPI scaling - coordinates need to be in screen pixels
+            var dpr = window.devicePixelRatio || 1;
+
+            var draggableDiv = document.getElementById("draggableDiv");
+            var draggableRect = draggableDiv.getBoundingClientRect();
+            var div_centerX = (draggableRect.left + draggableRect.width / 2) * dpr;
+            var div_centerY = (draggableRect.top + draggableRect.height / 2) * dpr;
+
+            var draggableLink = document.getElementById("draggableLink");
+            var linkRect = draggableLink.getBoundingClientRect();
+            var link_centerX = (linkRect.left + linkRect.width / 2) * dpr;
+            var link_centerY = (linkRect.top + linkRect.height / 2) * dpr;
+
+            var draggableImage = document.getElementById("draggableImage");
+            var imageRect = draggableImage.getBoundingClientRect();
+            var image_centerX = (imageRect.left + imageRect.width / 2) * dpr;
+            var image_centerY = (imageRect.top + imageRect.height / 2) * dpr;
+
+            // Send all coordinates in a single message (already scaled to screen pixels)
+            var message = "DraggableElements: Div(" + div_centerX + "," + div_centerY + ") " +
+                          "Link(" + link_centerX + "," + link_centerY + ") " +
+                          "Image(" + image_centerX + "," + image_centerY + ")";
+            doPostMessage(message);
+        };
+
+        function onDragStart(event) {
+            console.log("Drag started");
+            event.dataTransfer.setData("text/plain", "Draggable Content");
+            // Send both the event notification and the drag content
+            doPostMessage("DragStarting event fired with content: Draggable Content");
+        };
+
+        function handleVisibilityChange() {
+            doPostMessage("Visibility state is now " + document.visibilityState);
+        };
+        
+        document.addEventListener('visibilitychange', handleVisibilityChange, false);
+    </script>
+</head>
+<body id="body" onload="onLoad()">
+    <div style="white-space: nowrap;">
+        <div id="draggableDiv" 
+             draggable="true" 
+             ondragstart="onDragStart(event)">
+            Draggable Content
+        </div>
+
+        <a id="draggableLink" href="https://example.com">Draggable Link</a>
+    </div>
+
+    <!-- Bottom row: Image -->
+    <img id="draggableImage" 
+         draggable="true"
+         src="Microsoft-Logo.png"
+         alt="Draggable Image" />
+
+    <p>
+        <i><font size="3">Green box: Draggable text element (drag to XAML)</font></i><br>
+        <i><font size="3">Blue link: Draggable link (drag to XAML)</font></i><br>
+        <i><font size="3">Orange border: Draggable image (drag to XAML)</font></i>
+    </p>
+</body>
+</html>

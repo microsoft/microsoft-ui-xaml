@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual" SizeX="400" SizeY="300">
+            <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
+            <Visual PixelSnappingEnabled="True" VisualId="3" Tag="PrimaryVisual" SizeX="400" SizeY="300">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(V.Offset) * LOCAL.DManip * Matrix4x4.CreateFromTranslation(-V.Offset)">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="DManip" Type="Matrix4x4">
+                        <ExpressionAnimation String="PS.Matrix">
+                          <ReferenceParameter Name="PS">
+                            <PropertySet>
+                              <Property Name="Matrix" Type="Matrix4x4">
+                                <ExpressionAnimation String="transform*manipTransform.Matrix">
+                                  <ReferenceParameter Name="manipTransform">
+                                    <DuplicatedMatrixTransform>
+                                      <ManipulationTransform Transform="Identity" />
+                                    </DuplicatedMatrixTransform>
+                                  </ReferenceParameter>
+                                  <Property Name="transform" Type="Matrix4x4" />
+                                </ExpressionAnimation>
+                              </Property>
+                            </PropertySet>
+                          </ReferenceParameter>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                  <ReferenceParameter Name="V" />
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="400" SizeY="300" BorderMode="Soft">
+                  <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                </wucSpriteVisual>
+                <Visual Tag="PrependVisual" Visible="False">
+                  <Visual VisualId="4" Tag="PrimaryVisual" SizeX="100" SizeY="100" OffsetX="300" OffsetY="100" OffsetZ="0">
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+                        <ColorBrush Color="rgb {0, 0.502, 0}" />
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual">
+              <Visual Tag="ContentVisual" />
+              <wucSpriteVisual Tag="ConnectedAnimationSnapshotVisual" SizeX="100" SizeY="100">
+                <Offset>
+                  <KeyFrameAnimation Duration="1000">
+                    <KeyFrame Y="100" />
+                    <KeyFrame Time="1" X="300" Y="100">
+                      <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                    </KeyFrame>
+                  </KeyFrameAnimation>
+                </Offset>
+                <CrossFadeEffectBrush Name="Crossfade">
+                  <SurfaceBrush Stretch="Fill" Transform="Identity">
+                    <VisualSurface SourceRectangle="RB {100, 100}" RealizationSizeX="100" RealizationSizeY="100" Stretch="Fill" SourceVisualId="1" />
+                  </SurfaceBrush>
+                  <SurfaceBrush Stretch="Fill" Transform="Identity">
+                    <VisualSurface SourceRectangle="RB {100, 100}" RealizationSizeX="100" RealizationSizeY="100" Stretch="Fill" SourceVisualId="4" />
+                  </SurfaceBrush>
+                  <Crossfade.Weight>
+                    <KeyFrameAnimation Duration="1000">
+                      <KeyFrame />
+                      <KeyFrame Time="1" Value="1">
+                        <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                      </KeyFrame>
+                    </KeyFrameAnimation>
+                  </Crossfade.Weight>
+                </CrossFadeEffectBrush>
+              </wucSpriteVisual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

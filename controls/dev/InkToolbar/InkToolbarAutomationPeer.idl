@@ -1,0 +1,31 @@
+namespace MU_XAP_NAMESPACE
+{
+    [MUX_PREVIEW]
+    unsealed runtimeclass InkToolbarAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+    {
+        InkToolbarAutomationPeer(MU_XC_NAMESPACE.InkToolbar owner);
+    }
+
+    [MUX_PREVIEW]
+    unsealed runtimeclass InkToolbarToolButtonAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.RadioButtonAutomationPeer,
+        Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
+    {
+        InkToolbarToolButtonAutomationPeer(MU_XC_NAMESPACE.InkToolbarToolButton owner);
+    }
+
+    [MUX_PREVIEW]
+    unsealed runtimeclass InkToolbarMenuButtonAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.ToggleButtonAutomationPeer,
+        Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
+    {
+        InkToolbarMenuButtonAutomationPeer(MU_XC_NAMESPACE.InkToolbarMenuButton owner);
+    }
+
+    [MUX_PREVIEW]
+    [default_interface]
+    unsealed runtimeclass InkToolbarFlyoutItemAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.ButtonBaseAutomationPeer,
+        Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider
+    {
+        InkToolbarFlyoutItemAutomationPeer(MU_XC_NAMESPACE.InkToolbarFlyoutItem owner);
+    }
+}
+

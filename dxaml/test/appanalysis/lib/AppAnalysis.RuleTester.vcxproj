@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{ec86ba0b-109c-4022-a575-c1ef0e5e64ee}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\test\appanalysis\common.props"/>
+
+    <PropertyGroup>
+        <XamlPrecompiledInclude>precomp.h</XamlPrecompiledInclude>
+
+        <ProjectIncludeDirectories>
+            $(AppAnalysisObjPath)\idl;
+            $(ProjectIncludeDirectories);
+            $(AppAnalysisPath)\common\;
+            $(AppAnalysisPath)\runtime\framework\;
+            $(AppAnalysisPath)\runtime\rules\;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="precomp.h"/>
+        <ClInclude Include="RuleTester.h"/>
+
+        <ClCompile Include="RuleTester.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(AppAnalysisPath)\idl\Microsoft.Diagnostics.AppAnalysis.vcxproj" Project="{e1f36d19-f82d-474a-be26-fea52da5b6e6}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

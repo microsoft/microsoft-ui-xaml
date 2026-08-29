@@ -1,0 +1,20 @@
+﻿<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Microsoft.UI.Xaml.Build.Tests.Managed.props', '$(MSBuildThisFileDirectory)../'))" />
+  
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="AssemblySetup.cs" />
+    
+    <!-- This dll is included as part of the base dlls needed to build, so we need to manually remove it -->
+    <ProjectReference Remove="$(MSBuildThisFileDirectory)\Microsoft.UI.Xaml.Tests.Managed.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(InfraTestPath)\Win32Hosting\WPF\netcore\Private.Infrastructure.Hosting.WPF.csproj" />
+  </ItemGroup>
+  
+</Project>

@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "ItemsViewIntegrationApp (Package)": {
+      "commandName": "MsixPackage",
+      "nativeDebugging": true
+    },
+    "ItemsViewIntegrationApp (Unpackaged)": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

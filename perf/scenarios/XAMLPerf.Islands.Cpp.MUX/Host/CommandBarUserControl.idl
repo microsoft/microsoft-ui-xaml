@@ -1,0 +1,8 @@
+namespace IslandSimple
+{
+    [default_interface]
+    runtimeclass CommandBarUserControl : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        CommandBarUserControl();
+    }
+}

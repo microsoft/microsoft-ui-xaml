@@ -1,0 +1,140 @@
+<!--
+  Copyright (c) Microsoft Corporation. Licensed under the MIT License
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <MSBuildWarningsAsMessages>
+       $(MSBuildWarningsAsMessages);
+
+       <!-- We don't provide an implementation for Microsoft.winmd, but that's OK, since we're constructing
+            our own Extensions entries in AppxManifest.xml. As such, we'll suppress the warning that that would otherwise raise. -->
+       APPX1707;
+    </MSBuildWarningsAsMessages>
+    <MSBuildWarningsAsMessages Condition="'$(MSBuildProjectExtension)' == '.wapproj'">
+       $(MSBuildWarningsAsMessages);
+
+       <!-- WAP project files can have class libraries with WinMDs complain that they don't have requisite dependencies present -
+            however, due to our custom packaging, they'll be present in the end, so we'll suppress this warning as well. -->
+       MSB3268;
+    </MSBuildWarningsAsMessages>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(EnableMsixTooling)'=='true' and '$(TargetPlatformIdentifier)'=='Windows'">
+    <!--
+      Suppress warnings about referencing SDKs that target UAP when we're targeting Windows.
+      See https://github.com/dotnet/msbuild/issues/6150 for more details.
+    -->
+    <LogSDKReferenceResolutionErrorsAsWarnings>true</LogSDKReferenceResolutionErrorsAsWarnings>
+    <MSBuildWarningsAsMessages>
+      $(MSBuildWarningsAsMessages);
+      MSB3842;
+      MSB3843;
+    </MSBuildWarningsAsMessages>
+  </PropertyGroup>
+
+  <!-- Packing class libraries in a WAP project can erroneously raise a warning thinking that we've packaged multiple executables.
+       We'll suppress that warning, since it's being raised in error. -->
+  <Target Name="_UWPReferencesCheck" Condition="'$(MSBuildProjectExtension)' == '.wapproj'" />
+
+  <!--
+    Setting default project properties for .NET SDK-style projects
+  -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)' == 'true'">
+    <SDKIdentifier>Windows</SDKIdentifier>
+    <SDKVersion>10.0</SDKVersion>
+    <DefaultLanguage Condition="'$(DefaultLanguage)'==''">en-US</DefaultLanguage>
+  </PropertyGroup>
+
+  <!--
+    By default, the Nuget targets for .NET projects copy MUI files next to the .dll.
+    However, we need them in language-specific locations, so we'll move them there.
+
+    For .NET5 projects, this is only a problem when building a self-contained app.
+    See https://github.com/dotnet/sdk/issues/16211.
+  -->
+  <Target Name="_UpdateMuiFilesAfterNugetRestore" AfterTargets="ResolveNuGetPackageAssets;ResolvePackageAssets">
+    <ItemGroup>
+      <!-- .NET5 projects and this takes affect after the ResolvePackageAssets target -->
+      <_WinUINativeCopyLocalItems Include="@(NativeCopyLocalItems)" Condition="'%(NativeCopyLocalItems.NuGetPackageId)' == 'Microsoft.WinUI' and '%(Extension)' == '.mui' and
+                                                                        '%(NativeCopyLocalItems.DestinationSubDirectory)'==''">
+        <DestinationSubDirectory>$([MSBuild]::EnsureTrailingSlash($([MSBuild]::MakeRelative($(_WinUIDllDir), %(RootDir)%(Directory)))))</DestinationSubDirectory>
+        <DestinationSubPath>$([MSBuild]::EnsureTrailingSlash(
+            $([MSBuild]::MakeRelative($(_WinUIDllDir), %(RootDir)%(Directory)))))%(FileName)%(Extension)</DestinationSubPath>
+      </_WinUINativeCopyLocalItems>
+
+      <!--
+        Placing these items in NativeCopyLocalItems results in a deps.json that the .NET runtime fails to load with error:
+          An assembly specified in the application dependencies manifest (WinUIGallery.deps.json) was not found:
+            package: 'Microsoft.WinUI', version: '3.0.0-xdev.1'
+            path: 'runtimes/win10-x86/native/af-ZA/Microsoft.UI.Xaml.Phone.dll.mui'
+
+        Moving these to RuntimeTargetsCopyLocalItems with the same metadata results in proper placement of files and a deps.json
+        that can be loaded.
+      -->
+      <NativeCopyLocalItems Remove="@(_WinUINativeCopyLocalItems)"/>
+      <RuntimeTargetsCopyLocalItems Include="@(_WinUINativeCopyLocalItems)"/>
+      <_WinUINativeCopyLocalItems Remove="@(_WinUINativeCopyLocalItems)"/>
+
+      <!--
+        This for .NET Native projects only and takes affect after the ResolveNuGetPackageAssets.
+        This can be removed once we no longer support .NET Native.
+       -->
+      <ReferenceCopyLocalPaths Update="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.NuGetPackageId)' == 'Microsoft.WinUI' and '%(Extension)' == '.mui' and
+                                                                              '%(ReferenceCopyLocalPaths.DestinationSubDirectory)'==''">
+        <DestinationSubDirectory>$([MSBuild]::EnsureTrailingSlash($([MSBuild]::MakeRelative($(_WinUIDllDir), %(RootDir)%(Directory)))))</DestinationSubDirectory>
+      </ReferenceCopyLocalPaths>
+    </ItemGroup>
+  </Target>
+
+  <!-- By default, add CRT package dependencies for UAP apps.  Previously, this was done to satisfy
+      CRT linkage for WinUI 3 binaries.  With Hybrid CRT, that's no longer needed, but we retain this behavior 
+      to avoid breaking existing projects.  At deployment time, it's very likely that a target device will already
+      have Microsoft.VCLibs and Microsoft.VCLibs.Desktop FWPs installed.  But apps can still opt out of referencing
+      these FWPs by setting WinUISDKReferences='false'. -->
+  <PropertyGroup Condition="'$(WinUISDKReferences)'=='' and '$(TargetPlatformIdentifier)'=='UAP'">
+    <WinUISDKReferences>true</WinUISDKReferences>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(WinUISDKReferences)'=='true' and
+                      ('$(OutputType)' == 'Exe' or 
+                      '$(OutputType)' == 'AppContainerExe' or 
+                      '$(MSBuildProjectExtension)'=='.wapproj' or
+                      ('$(OutputType)'=='WinExe' and '$(EnableMsixTooling)'=='true'))">
+    <SDKReference Include="Microsoft.VCLibs, Version=14.0" />
+    <SDKReference Include="Microsoft.VCLibs.Desktop, Version=14.0" />
+    <SDKReference Include="Microsoft.UniversalCRT.Debug, Version=$(TargetPlatformVersion)" Condition="'$(Configuration)' == 'Debug'" />
+  </ItemGroup>
+
+  <!-- The CreateWapProjPackageFiles task gets confused by MUI files with the same name but different sub-directory paths,
+      stripping out all but one of them. So we need to add their entries manually. -->
+  <Target Name="_IncludeMuiFilesInWapProj"
+      BeforeTargets="_ConvertItems"
+      AfterTargets="_ExpandProjectReferences"
+      Condition="'$(MSBuildProjectExtension)' == '.wapproj' and $(EntryPointProjectUniqueName.EndsWith('.vcxproj'))">
+    <ItemGroup>
+      <!--
+        Because we set the TargetPlatformIdentifer to 'UAP' in our Desktop .vcxproj files, the .wapproj thinks these
+        are UWP projects and copies the .exe outputs into the root of the appx. Since UWP projects use .pri resources,
+        there's a bug where the TargetPath metadata doesn't have the language-specific subfolder. Our desktop projects
+        should have TargetPlatformIdentifier be set to Windows, and this would all just work, but there are other
+        issues preventing them from building that way.
+        -->
+      <WapProjPackageFile Include="@(_FilteredNonWapProjProjectOutput)" Condition="'%(Extension)' == '.mui'">
+        <CopyToTargetPath>$(OutDir)%(_FilteredNonWapProjProjectOutput.DestinationSubDirectory)%(Filename)%(Extension)</CopyToTargetPath>
+      </WapProjPackageFile>
+      <UploadWapProjPackageFile Include="@(_FilteredNonWapProjProjectOutput)" Condition="'%(Extension)' == '.mui'">
+        <CopyToTargetPath>$(OutDir)%(_FilteredNonWapProjProjectOutput.DestinationSubDirectory)%(Filename)%(Extension)</CopyToTargetPath>
+      </UploadWapProjPackageFile>
+    </ItemGroup>
+  </Target>
+
+  <!-- In order to have the Microsoft.UniversalCRT.Debug SDK reference included in the AppX, we need to
+       set IncludeSDKRedistOutputGroup to true. -->
+  <Target Name="IncludeSDKRedistOutputGroup" BeforeTargets="GetPackagingOutputs" Condition="('$(OutputType)' == 'AppContainerExe' or '$(MSBuildProjectExtension)'=='.wapproj') and '$(Configuration)' == 'Debug'">
+    <PropertyGroup>
+      <IncludeSDKRedistOutputGroup>true</IncludeSDKRedistOutputGroup>
+    </PropertyGroup>
+  </Target>
+
+</Project>

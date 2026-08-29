@@ -1,0 +1,103 @@
+<Page
+    x:Class="XamlPGO.CommonControls1.HomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:XamlPGO.CommonControls1"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel>
+        <TextBlock Text="Home"/>
+        <Canvas Width="100" Height="150" Background="Gray">
+            <Rectangle Height="40" Width="40" Fill="Red" Canvas.Left="0" Canvas.Top="0" Canvas.ZIndex="0" />
+            <Rectangle Height="40" Width="40" Fill="Blue" Canvas.Left="20" Canvas.Top="20" Canvas.ZIndex="1" />
+            <Rectangle Height="40" Width="40" Fill="Green" Canvas.Left="40" Canvas.Top="40" Canvas.ZIndex="2" />
+            <Rectangle Height="40" Width="40" Fill="Yellow" Canvas.Left="60" Canvas.Top="60" Canvas.ZIndex="3" />
+        </Canvas>
+        <Border     BorderBrush="Red"
+                    BorderThickness="2">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="8"
+                               FontSize="8"
+                               TextWrapping="NoWrap"
+                               FontWeight="Light"
+                               TextAlignment="Left"
+                               FontFamily="Arial" />
+                <TextBlock Text="12"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               FontWeight="Medium"
+                               TextAlignment="Center"
+                               FontFamily="Segoe UI" />
+                <TextBlock Text="16"
+                               FontSize="16"
+                               TextWrapping="WrapWholeWords"
+                               FontWeight="Bold"
+                               TextAlignment="Right"
+                               FontFamily="Times New Roman" />
+                <TextBlock Text="24"
+                               FontSize="24"
+                               FontWeight="ExtraBold"
+                               TextAlignment="Justify" />
+                <TextBlock Text="😄🙆🙇🚹"
+                               FontSize="32"
+                               FontFamily="Gecko Emoji"
+                               IsColorFontEnabled="True" />
+                <RichTextBlock>
+                    <Paragraph>I am a RichTextBlock.</Paragraph>
+                </RichTextBlock>
+            </StackPanel>
+        </Border>
+
+        <Image Source="/Assets/StoreLogo.png" Height="100" />
+
+
+        <ListView x:Name="MyListView" ItemsSource="{x:Bind Items}">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="local:Item">
+                    <TextBlock Text="{x:Bind Name}" />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <ScrollViewer Height="266" Width="400"
+                    ZoomMode="Enabled" IsTabStop="True"
+                    VerticalAlignment="Top" HorizontalAlignment="Left"
+                    HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollMode="Auto" VerticalScrollBarVisibility="Auto">
+
+            <ScrollViewer.Resources>
+                <SolidColorBrush x:Key="Color1" Color="Green" />
+                <SolidColorBrush x:Key="Color2" Color="Blue" />
+            </ScrollViewer.Resources>
+            <StackPanel>
+                <StackPanel Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal">
+                        <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                        <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                        <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                        <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                        <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                        <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                        <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                    </StackPanel>
+                </StackPanel>
+                <ItemsRepeater x:Name="MyItemsRepeater" ItemsSource="{x:Bind Items}">
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="local:Item">
+                            <TextBlock Text="{x:Bind Name}" />
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </StackPanel>
+        </ScrollViewer>
+    </StackPanel>
+</Page>

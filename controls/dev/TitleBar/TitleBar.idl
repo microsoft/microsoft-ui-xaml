@@ -1,0 +1,85 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PUBLIC_V8]
+[webhosthidden]
+[contentproperty("Content")]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass TitleBar : Microsoft.UI.Xaml.Controls.Control
+{
+    TitleBar();
+
+    String Title{ get; set; };
+    String Subtitle{ get; set; };
+
+    Microsoft.UI.Xaml.Controls.IconSource IconSource{ get; set; };
+
+    Microsoft.UI.Xaml.UIElement LeftHeader{ get; set; };
+    Microsoft.UI.Xaml.UIElement Content{ get; set; };
+    Microsoft.UI.Xaml.UIElement RightHeader{ get; set; };
+
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsBackButtonVisible{ get; set; };
+
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsBackButtonEnabled{ get; set; };
+
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsPaneToggleButtonVisible{ get; set; };
+
+    TitleBarTemplateSettings TemplateSettings{ get; };
+
+    event Windows.Foundation.TypedEventHandler<TitleBar, Object> BackRequested;
+    event Windows.Foundation.TypedEventHandler<TitleBar, Object> PaneToggleRequested;
+
+    static Microsoft.UI.Xaml.DependencyProperty TitleProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty SubtitleProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty IconSourceProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty LeftHeaderProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty ContentProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty RightHeaderProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsBackButtonVisibleProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsBackButtonEnabledProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsPaneToggleButtonVisibleProperty{ get; };
+
+    static Microsoft.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
+
+    [MUX_PUBLIC_V11]
+    {
+        [MUX_DEFAULT_VALUE("false")]
+        Boolean AutoRefreshDragRegions{ get; set; };
+
+        static Microsoft.UI.Xaml.DependencyProperty AutoRefreshDragRegionsProperty{ get; };
+
+        void RecomputeDragRegions();
+    }
+
+    [MUX_PUBLIC_V11]
+    {
+        [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnIsDragRegionPropertyChanged")]
+        static Microsoft.UI.Xaml.DependencyProperty IsDragRegionProperty{ get; };
+        static Windows.Foundation.IReference<Boolean> GetIsDragRegion(Microsoft.UI.Xaml.UIElement element);
+        static void SetIsDragRegion(Microsoft.UI.Xaml.UIElement element, Windows.Foundation.IReference<Boolean> value);
+    }
+}
+
+[MUX_PUBLIC_V8]
+[webhosthidden]
+unsealed runtimeclass TitleBarTemplateSettings : Microsoft.UI.Xaml.DependencyObject
+{
+    TitleBarTemplateSettings();
+
+    Microsoft.UI.Xaml.Controls.IconElement IconElement;
+
+    static Microsoft.UI.Xaml.DependencyProperty IconElementProperty{ get; };
+}
+
+[MUX_PUBLIC_V8]
+[webhosthidden]
+unsealed runtimeclass TitleBarAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    TitleBarAutomationPeer(MU_XC_NAMESPACE.TitleBar owner);
+}
+
+}

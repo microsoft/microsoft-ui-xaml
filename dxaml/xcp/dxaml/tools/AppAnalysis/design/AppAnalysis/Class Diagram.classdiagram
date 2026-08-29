@@ -1,0 +1,864 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<logicalClassDesignerModel xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" xmlns:dm1="http://schemas.microsoft.com/dsltools/Kernel" xmlns:dm2="http://schemas.microsoft.com/dsltools/Component" xmlns:dm3="http://schemas.microsoft.com/dsltools/Activity" xmlns:dm4="http://schemas.microsoft.com/dsltools/UseCase" xmlns:dm5="http://schemas.microsoft.com/dsltools/Interaction" xmlns:dm6="http://schemas.microsoft.com/dsltools/UmlModelLibrary" xmlns:dm7="http://schemas.microsoft.com/dsltools/UmlDiagrams" xmlns:dm8="http://schemas.microsoft.com/dsltools/ModelStore" xmlns:dm9="http://schemas.microsoft.com/VisualStudio/TeamArchitect/SequenceDesigner" dslVersion="1.0.0.0" Id="0f9f71da-edb0-4b3c-ba6c-667e0e16d1b0" name="UMLClassDiagram1" linkedPackageId="87661bc5-1a94-4cce-8d71-d35bb2ecbc68" xmlns="http://schemas.microsoft.com/dsltools/LogicalClassDesigner">
+  <packagedElements>
+    <logicalClassDesignerModelHasTypes>
+      <Interface Id="b36e2384-b155-4220-802b-64c181075da7" name="IRuleSet" isAbstract="false" isLeaf="false">
+        <elementDefinition Id="b0309599-2cde-464b-901e-1d076a47159a" />
+        <targetEnds>
+          <association Id="666528d2-0d92-4177-bb88-698fd353cd6f" isDerived="false" sourceEndRoleName="IRuleSet" targetEndRoleName="IRule" isLeaf="false" isAbstract="false">
+            <interfaceMoniker Id="33d62679-3d5f-4344-b9d4-8c65924e383d" LastKnownName="IRule" />
+            <relationshipOwnedElementsInternal>
+              <associationHasOwnedEnds>
+                <memberEnd Id="bff179eb-d903-40dd-929e-05fa4bf219d5" name="IRuleSet" isLeaf="false" isStatic="false" isReadOnly="false" isDerived="false" isDerivedUnion="false" aggregation="Composite" isComposite="false" isNavigableOwned="false">
+                  <elementDefinition Id="01e1c50e-223f-48fa-979d-daca20777593" />
+                </memberEnd>
+              </associationHasOwnedEnds>
+              <associationHasOwnedEnds>
+                <memberEnd Id="052a8a6c-d034-4d5a-a821-4355ed8fa688" name="IRule" isLeaf="false" isStatic="false" isReadOnly="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="true">
+                  <lowerValueInternal>
+                    <literalString Id="530f5de2-b256-496c-a4f3-735e53d51511" name="Lower" value="1">
+                      <elementDefinition Id="46ee945c-e735-45ed-8abd-f9cad28ed11f" />
+                    </literalString>
+                  </lowerValueInternal>
+                  <upperValueInternal>
+                    <literalString Id="390721d0-3af7-454b-a8a0-73f0f9a9c006" name="Upper" value="*">
+                      <elementDefinition Id="be7d6301-97ae-49f2-82e0-f44432a0358e" />
+                    </literalString>
+                  </upperValueInternal>
+                  <elementDefinition Id="4aa84604-ea40-45be-aeee-b650302427b7" />
+                </memberEnd>
+              </associationHasOwnedEnds>
+            </relationshipOwnedElementsInternal>
+            <elementDefinition Id="b807be02-11f7-4fb5-a390-7566638cabb6" />
+          </association>
+        </targetEnds>
+        <ownedOperations>
+          <operation Id="8bfabe47-69c5-4a33-a118-2c13fca3d35a" name="Rules : SAFEARRAY&lt;IRule*&gt;" isLeaf="false" isStatic="false" isAbstract="true" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="5392dde9-882e-43f9-8638-146be4761110" />
+          </operation>
+        </ownedOperations>
+      </Interface>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <Interface Id="33d62679-3d5f-4344-b9d4-8c65924e383d" name="IRule" isAbstract="false" isLeaf="false">
+        <elementDefinition Id="0ce9bd92-828d-465f-a82a-5dea7e5a1254" />
+        <ownedAttributes>
+          <property Id="5e7e0ed6-5479-4634-bf1a-f94b624b9902" name="Id" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="a4597e17-ed0f-4a66-a5ab-fc1425d86073" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="072be673-3a32-4238-a99e-1f2781f956f7" LastKnownName="BSTR" />
+            </type_NamedElement>
+          </property>
+          <property Id="441b86e6-4eca-4553-8929-9d66d63963ac" name="Title" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="40409d94-749d-4a18-9f14-c3c181946ea8" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="072be673-3a32-4238-a99e-1f2781f956f7" LastKnownName="BSTR" />
+            </type_NamedElement>
+          </property>
+        </ownedAttributes>
+      </Interface>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <class Id="54799aad-0407-4800-a776-69a0e06d89c6" name="EventProcessor" isAbstract="false" isLeaf="false" isActiveClass="false">
+        <elementDefinition Id="309dcf58-8621-45c7-bd49-b09386bfa591" />
+        <suppliersInternal>
+          <interfaceRealization Id="3da380d9-5957-4d60-a5c5-fbf7e7a115a0">
+            <interfaceMoniker Id="87d16d03-bc24-4839-a860-7bb1fd49fc51" LastKnownName="IEventProcessor" />
+            <elementDefinition Id="fb1f08d0-4ce4-43e3-97d7-6004c460aea4" />
+          </interfaceRealization>
+          <interfaceRealization Id="d53da751-97e8-4625-ba2d-03a16f055228">
+            <interfaceMoniker Id="99d27041-47a3-41b3-bad5-884ff04fb16c" LastKnownName="IEventProcessorCallback" />
+            <elementDefinition Id="7735a69c-9320-4a5d-bb7f-b252a2473dfa" />
+          </interfaceRealization>
+        </suppliersInternal>
+        <ownedOperationsInternal>
+          <operation Id="fd7b5bc1-5549-4a08-96e0-1d52d318e582" name="AddRule" isLeaf="false" isStatic="false" isAbstract="false" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="4a19d4aa-9496-48dd-bfe0-e5afa1cd284e" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="bee9734d-ba4c-47fc-9864-74ac37bf32f0" name="IETWRule*" direction="In" isUnique="false">
+                  <elementDefinition Id="af94d159-30bb-4902-bccc-dc141e907f78" />
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+          <operation Id="f8a81010-4d9c-4f5d-9451-98d16f2f97fb" name="ProcessEvent" isLeaf="false" isStatic="false" isAbstract="false" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="03748376-0f88-4c34-a77d-1b368a1a69e3" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="88f8a765-e29e-4ff0-bef4-d77cb157fe87" name="IETWEvent*" direction="In" isUnique="false">
+                  <elementDefinition Id="7b5452b6-9109-4cf0-9e81-bb267f932f06" />
+                </parameter>
+              </operationHasOwnedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="37794de6-1815-42c3-b9da-38d9cc49a1a0" name="INotificationCallback*" direction="In" isUnique="false">
+                  <elementDefinition Id="25cfeda2-71f9-415b-a8c7-59c3a50cb431" />
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+          <operation Id="f03e54e3-3c8e-41a1-aafd-e1a14280339c" name="AddService" isLeaf="false" isStatic="false" isAbstract="false" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="9a77244b-2b04-49f9-a0e2-0db18cad5d77" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="4a5477f8-9d6e-4448-9b36-ff546f592244" name="IRuleService*" direction="In" isUnique="false">
+                  <elementDefinition Id="eafe0995-2f0f-4ef5-b6c7-77586d3e9aae" />
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+        </ownedOperationsInternal>
+      </class>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <class Id="00602e80-a878-44e2-9103-d292f40a431d" name="RuleSet" isAbstract="false" isLeaf="false" isActiveClass="false">
+        <appliedStereotypesInternal>
+          <stereotypeInstance Id="28f59d34-ebfe-4c67-a5df-84cd910732c1" name="implementationClass" profile="StandardProfileL2">
+            <elementDefinition Id="12ad158f-fad7-4240-b999-d71f8e49cecb" />
+          </stereotypeInstance>
+        </appliedStereotypesInternal>
+        <elementDefinition Id="f195a80b-54da-49c6-9779-24ff8914d7f3" />
+        <suppliersInternal>
+          <interfaceRealization Id="2dc1cbb4-2d7c-42f6-aae8-44567b347295">
+            <interfaceMoniker Id="b36e2384-b155-4220-802b-64c181075da7" LastKnownName="IRuleSet" />
+            <elementDefinition Id="356e403f-6cc3-4f42-aed0-f3634cdf3c4b" />
+          </interfaceRealization>
+        </suppliersInternal>
+        <ownedOperationsInternal>
+          <operation Id="a505f91c-9a0c-48ba-a76f-56abb2fb4b8b" name="Rules : SAFEARRAY&lt;IRule*&gt;" isLeaf="false" isStatic="false" isAbstract="false" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="c20b8f80-2f9d-433d-9a09-fb2f5eef5f91" />
+          </operation>
+        </ownedOperationsInternal>
+      </class>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <Interface Id="768d011a-8f83-4c98-9891-94ad90850a9c" name="IETWRule" isAbstract="false" isLeaf="false">
+        <elementDefinition Id="911d6828-b788-4473-8d34-5bb6a264fc87" />
+        <suppliersInternal>
+          <dependency Id="32fa7bbf-d5a2-4d31-adeb-888708be0293">
+            <interfaceMoniker Id="99d27041-47a3-41b3-bad5-884ff04fb16c" LastKnownName="IEventProcessorCallback" />
+            <elementDefinition Id="d94a1208-cdcf-4ce1-b060-993b90ab2ab2" />
+          </dependency>
+          <dependency Id="17bd59a6-0863-4039-a398-8b5559b7db4b">
+            <interfaceMoniker Id="ebab81e4-8548-4262-9c66-8ba903664faa" LastKnownName="IRuleService" />
+            <elementDefinition Id="6db21fbd-3773-48b9-a573-df80c13ac596" />
+          </dependency>
+        </suppliersInternal>
+        <generalsInternal>
+          <generalization Id="153af50f-a8ab-4061-9a98-ea4aeb7253e1" isSubstitutable="false">
+            <interfaceMoniker Id="33d62679-3d5f-4344-b9d4-8c65924e383d" LastKnownName="IRule" />
+            <elementDefinition Id="f4482078-7a19-483d-9050-d1ad1a0e2e57" />
+          </generalization>
+        </generalsInternal>
+        <ownedOperations>
+          <operation Id="ea172915-7a52-4704-893e-9f54ae3df62f" name="GetEvents" isLeaf="false" isStatic="false" isAbstract="true" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="6403ebea-fecd-4469-879a-49c8d8bac572" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="d7e7c686-5e7f-4076-b93e-af13c0c2e5f6" direction="Return" isUnique="false">
+                  <elementDefinition Id="fc0d0ca6-1069-40be-bc56-8c8151591d82" />
+                  <type_NamedElement>
+                    <referencedTypeMoniker Id="302f5534-8b61-4b5c-8e43-2f022f1a21b3" LastKnownName="SAFEARRAY&lt;USHORT&gt;*" />
+                  </type_NamedElement>
+                </parameter>
+              </operationHasOwnedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="4a242b69-9514-4d9d-8e1a-f9ba2f53f98a" name="providerId" direction="In" isUnique="false">
+                  <elementDefinition Id="8ff91e16-e3e4-4953-b622-9c9ff2ee43e0" />
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+          <operation Id="4446f68c-f84b-4d33-9dcd-41bc925b8605" name="GetProcessorCallback" isLeaf="false" isStatic="false" isAbstract="true" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="d3d5b521-e7f3-46ef-9e2e-6ea2228823cb" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="6d0c15b3-16f0-4956-826c-342ce9612bd9" direction="Return" isUnique="false">
+                  <elementDefinition Id="ffd02019-06e1-43b9-88de-240683654c12" />
+                  <type_NamedElement>
+                    <referencedTypeMoniker Id="de6ebcc0-3a2b-459f-b859-0a178dfffd0d" LastKnownName="IEventProcessorCallback*" />
+                  </type_NamedElement>
+                </parameter>
+              </operationHasOwnedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="232a8fac-b627-4a78-b76b-d37dd49fcd54" name="providerId" direction="In" isUnique="false">
+                  <elementDefinition Id="01fbeb3c-f9fe-479b-a12e-c95c8785c3de" />
+                </parameter>
+              </operationHasOwnedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="5f256a1d-76b5-429d-8ff5-39ec2499a7d9" name="eventId" direction="In" isUnique="false">
+                  <elementDefinition Id="e8bf35c1-a36b-4e2d-b4d6-3e67ca3db9c0" />
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+          <operation Id="16fc409a-b4e8-4928-ba5d-2329ae68b2f2" name="GetProviders" isLeaf="false" isStatic="false" isAbstract="true" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="d8e4c251-6809-41bc-abf1-fcfb1fb8c0f5" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="6d141e01-3b84-49da-a2c9-2123a009cffc" direction="Return" isUnique="false">
+                  <elementDefinition Id="fa28844a-34c9-4ca9-8fe7-695e4dc6232e" />
+                  <type_NamedElement>
+                    <referencedTypeMoniker Id="a00051f7-317d-430d-a3b8-afb3410a9849" LastKnownName="SAFEARRAY&lt;GUID&gt;*" />
+                  </type_NamedElement>
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+          <operation Id="b04f2a15-4c5c-446e-8ac1-b8c354b22dcd" name="GetServices" isLeaf="false" isStatic="false" isAbstract="true" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="469cbd29-e2a7-4b82-9540-6821c2d27d83" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="babc9bc1-091f-4992-b568-46717b0244f6" direction="Return" isUnique="false">
+                  <elementDefinition Id="a68016bf-6672-4e61-adb6-ad3cadc48864" />
+                  <type_NamedElement>
+                    <referencedTypeMoniker Id="d7b461a6-a1ef-454b-a652-24623856609b" LastKnownName="SAFEARRAY&lt;GUID&gt;*" />
+                  </type_NamedElement>
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+        </ownedOperations>
+      </Interface>
+    </logicalClassDesignerModelHasTypes>
+    <packageHasNamedElement>
+      <referencedType Id="072be673-3a32-4238-a99e-1f2781f956f7" name="BSTR" isAbstract="false" isLeaf="false" cachedFullName="BSTR">
+        <elementDefinition Id="63b90304-feb5-4d03-8b22-8d9787c6bf8c" />
+      </referencedType>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <referencedType Id="302f5534-8b61-4b5c-8e43-2f022f1a21b3" name="SAFEARRAY&lt;USHORT&gt;*" isAbstract="false" isLeaf="false" cachedFullName="SAFEARRAY&lt;USHORT&gt;*">
+        <elementDefinition Id="5f3c9b3f-55c1-4d71-96aa-fc08d3ea0bf3" />
+      </referencedType>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <referencedType Id="a00051f7-317d-430d-a3b8-afb3410a9849" name="SAFEARRAY&lt;GUID&gt;*" isAbstract="false" isLeaf="false" cachedFullName="SAFEARRAY&lt;GUID&gt;*">
+        <elementDefinition Id="7ecbf840-2548-44af-a2a7-a58eb3e74d5c" />
+      </referencedType>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <referencedType Id="de6ebcc0-3a2b-459f-b859-0a178dfffd0d" name="IEventProcessorCallback*" isAbstract="false" isLeaf="false" cachedFullName="IEventProcessorCallback*">
+        <elementDefinition Id="2ba1bb58-b803-43a5-9e7e-71ca89361281" />
+      </referencedType>
+    </packageHasNamedElement>
+    <logicalClassDesignerModelHasTypes>
+      <Interface Id="99d27041-47a3-41b3-bad5-884ff04fb16c" name="IEventProcessorCallback" isAbstract="false" isLeaf="false">
+        <elementDefinition Id="c431091c-deed-471b-b728-f459be1759f4" />
+        <suppliersInternal>
+          <dependency Id="ff03202c-2a07-48ce-9090-daa01ee18642">
+            <interfaceMoniker Id="3fc5529d-87d1-4dcb-8e10-7e841d81f8ae" LastKnownName="INotificationCallback" />
+            <elementDefinition Id="4cc73a9b-fde9-4058-bd8b-0060c8d5aa35" />
+          </dependency>
+          <dependency Id="20ceb69b-cd4d-4718-a8a0-c89890f54425">
+            <interfaceMoniker Id="aad06616-7534-4f9b-8d1f-397c4185871d" LastKnownName="IETWEvent" />
+            <elementDefinition Id="e87ea27a-6e18-43dd-af3a-02bae0b6d4a4" />
+          </dependency>
+        </suppliersInternal>
+        <ownedOperations>
+          <operation Id="d3eeeb22-eb5a-40f3-947e-84162b2e02e7" name="ProcessEvent" isLeaf="false" isStatic="false" isAbstract="true" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="3c36dd73-9476-4958-b9f5-65f34cd4f2c0" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="860f8f39-5c20-4a5a-a893-a075fdb05a8d" name="IETWEvent*" direction="In" isUnique="false">
+                  <elementDefinition Id="50ac2465-78b5-49de-b622-17788fce2f0c" />
+                </parameter>
+              </operationHasOwnedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="259eeea6-06ea-4ea8-9735-f20eece4fecc" name="INotificationCallback*" direction="In" isUnique="false">
+                  <elementDefinition Id="5463f9cc-dfe9-4a54-a9c2-e5d06cabd136" />
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+        </ownedOperations>
+      </Interface>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <Interface Id="87d16d03-bc24-4839-a860-7bb1fd49fc51" name="IEventProcessor" isAbstract="false" isLeaf="false">
+        <elementDefinition Id="958b680b-b263-4a90-b3f5-5255db17c084" />
+        <suppliersInternal>
+          <dependency Id="600163b3-95f1-4bfa-8fff-4c5965eb1b0e">
+            <interfaceMoniker Id="768d011a-8f83-4c98-9891-94ad90850a9c" LastKnownName="IETWRule" />
+            <elementDefinition Id="1b9f988f-bc1a-4c9c-93f0-4619a2a2728e" />
+          </dependency>
+          <dependency Id="2bdf8dc5-2feb-402b-a816-ce6ccc8d438d">
+            <interfaceMoniker Id="ebab81e4-8548-4262-9c66-8ba903664faa" LastKnownName="IRuleService" />
+            <elementDefinition Id="29d3c5d5-ec78-450d-b3a7-bb0d53076002" />
+          </dependency>
+        </suppliersInternal>
+        <ownedOperations>
+          <operation Id="1ea19874-da9e-4130-9f8c-da153db116a9" name="AddRule" isLeaf="false" isStatic="false" isAbstract="true" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="f17aba7c-e1c5-43c1-8a14-40f3f90d3e10" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="e119cbe9-eb08-41df-93a5-41c930ca34ec" name="IETWRule*" direction="In" isUnique="false">
+                  <elementDefinition Id="77995381-a380-443e-b22a-75ce5f27638c" />
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+          <operation Id="190a7ed2-8727-44f2-b130-6549b1351fbe" name="AddService" isLeaf="false" isStatic="false" isAbstract="true" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="22e1037b-c399-4fdb-b59f-f3da12aad739" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="1dc65ea9-b281-4881-85b5-8dd17a337c27" name="IRuleService*" direction="In" isUnique="false">
+                  <elementDefinition Id="05904b93-625f-415d-8d8f-50e34026d32f" />
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+        </ownedOperations>
+      </Interface>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <Interface Id="3fc5529d-87d1-4dcb-8e10-7e841d81f8ae" name="INotificationCallback" isAbstract="false" isLeaf="false">
+        <elementDefinition Id="e8331499-42c6-441f-b02d-75f27b2dda14" />
+        <suppliersInternal>
+          <dependency Id="3af08915-d2fa-4ceb-a670-26b08426cb0e">
+            <interfaceMoniker Id="da3e4167-586f-474e-acfe-1c14520a451e" LastKnownName="INotification" />
+            <elementDefinition Id="40bb6f0e-4f68-43b6-9855-148e63e911df" />
+          </dependency>
+        </suppliersInternal>
+        <ownedOperations>
+          <operation Id="7c60dba9-8d09-4f38-9761-1a35e66926e3" name="RuleNotification" isLeaf="false" isStatic="false" isAbstract="true" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="6b90b079-ed08-4853-91bd-0493252c0925" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="87b0bffb-ac6b-4b1a-96fe-6d7a672d0fc9" name="INotification*" direction="In" isUnique="false">
+                  <elementDefinition Id="94d00554-7985-47f4-af67-9b73041abd87" />
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+        </ownedOperations>
+      </Interface>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <Interface Id="da3e4167-586f-474e-acfe-1c14520a451e" name="INotification" isAbstract="false" isLeaf="false">
+        <elementDefinition Id="18f33f90-5d0b-4dd0-9cbe-e04263e588f1" />
+        <suppliersInternal>
+          <dependency Id="5c631a8c-cf24-48f0-9bd6-03daaa7c8d92">
+            <classMoniker Id="cd3d89dd-2bca-4def-b28e-3460ef399e74" LastKnownName="NotificationInfo &lt;struct&gt;" />
+            <elementDefinition Id="f0b5acfc-db1f-4f6a-a003-49f2bd701deb" />
+          </dependency>
+        </suppliersInternal>
+        <ownedAttributes>
+          <property Id="92b437ec-67cf-4205-9ae6-9dab754044e1" name="Rule" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="ddbefe8d-c1b3-4e31-a511-ef640c6bc3c6" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="c7495c0f-20d7-460c-94d5-0884cca988d7" LastKnownName="IRule*" />
+            </type_NamedElement>
+          </property>
+          <property Id="8c326ae5-4ebc-4208-8c65-09e50ae1953e" name="Info" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="0de4eea4-7c73-4a3a-ae05-a95c1d413722" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="7b7295b3-7fd1-468a-b13e-cf60157ad927" LastKnownName="NotificationInfo" />
+            </type_NamedElement>
+          </property>
+        </ownedAttributes>
+      </Interface>
+    </logicalClassDesignerModelHasTypes>
+    <packageHasNamedElement>
+      <referencedType Id="c7495c0f-20d7-460c-94d5-0884cca988d7" name="IRule*" isAbstract="false" isLeaf="false" cachedFullName="IRule*">
+        <elementDefinition Id="54cda89e-e140-4598-847d-727bf0564c48" />
+      </referencedType>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <referencedType Id="7b7295b3-7fd1-468a-b13e-cf60157ad927" name="NotificationInfo" isAbstract="false" isLeaf="false" cachedFullName="NotificationInfo">
+        <elementDefinition Id="a40cd72f-7349-45fe-857c-56dbca231db4" />
+      </referencedType>
+    </packageHasNamedElement>
+    <logicalClassDesignerModelHasTypes>
+      <class Id="cd3d89dd-2bca-4def-b28e-3460ef399e74" name="NotificationInfo &lt;struct&gt;" isAbstract="false" isLeaf="false" isActiveClass="false">
+        <elementDefinition Id="dfb576a8-8824-4da0-96ce-5e8f3e08c911" />
+        <suppliersInternal>
+          <dependency Id="4ed6b5fb-bad3-441c-8958-b85a4b747ed4">
+            <classMoniker Id="3b5b3ea9-7533-4722-9722-aea5f6a4168a" LastKnownName="NotificationRangeInfo &lt;struct&gt;" />
+            <elementDefinition Id="305c2400-2089-4b1e-b2b3-f2c766044f13" />
+          </dependency>
+          <dependency Id="f8da7138-325d-4e34-981c-1795a83087c0">
+            <classMoniker Id="dcc56a04-e16a-4cdf-ba44-a5ed24f36dc1" LastKnownName="NotificationLinkInfo &lt;struct&gt;" />
+            <elementDefinition Id="8f1fb0d5-5dbd-4bc1-a15d-24dee79a0b1b" />
+          </dependency>
+        </suppliersInternal>
+        <ownedAttributesInternal>
+          <property Id="9991cc2d-ac19-44cb-ab48-68829f98fb88" name="Issue" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="154e43ac-99e7-4970-b321-988bfbbcf3cc" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="072be673-3a32-4238-a99e-1f2781f956f7" LastKnownName="BSTR" />
+            </type_NamedElement>
+          </property>
+          <property Id="eb1352bd-6280-421e-b594-3fcd262f3056" name="Impact" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="fbd09631-110e-4c09-966d-caa88a57b9f2" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="072be673-3a32-4238-a99e-1f2781f956f7" LastKnownName="BSTR" />
+            </type_NamedElement>
+          </property>
+          <property Id="c09b673d-b0c8-42b1-bc6f-7f3ee472205e" name="Sollution" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="edeca208-6f2a-4cb7-a5cc-84190a5f9c2c" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="072be673-3a32-4238-a99e-1f2781f956f7" LastKnownName="BSTR" />
+            </type_NamedElement>
+          </property>
+          <property Id="76d7e631-5808-4149-a433-38a1bdb489d9" name="LinkInfo" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="0d59a152-4ca7-4d29-aedc-8aed1c8089a2" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="e49db057-c3ea-47ad-96eb-77daa9072c36" LastKnownName="NotificationLinkInfo" />
+            </type_NamedElement>
+          </property>
+          <property Id="a9df410e-876d-4ba4-a5c8-01c385e2ba05" name="Range" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="4c66e135-be14-4510-a700-c6212d12c040" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="43c7ec44-6552-46d0-a291-7d472d279fa1" LastKnownName="NotificationRangeInfo" />
+            </type_NamedElement>
+          </property>
+        </ownedAttributesInternal>
+      </class>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <class Id="1d9c5a81-2d8f-4376-a914-49c13044c3f3" name="Rule0001, 0002, etc" isAbstract="false" isLeaf="false" isActiveClass="false">
+        <appliedStereotypesInternal>
+          <stereotypeInstance Id="2ffdc9f2-790f-4844-a801-2f503553e9f2" name="implementationClass" profile="StandardProfileL2">
+            <elementDefinition Id="c4587e12-837a-4f91-b358-65b4ff5deb87" />
+          </stereotypeInstance>
+        </appliedStereotypesInternal>
+        <elementDefinition Id="0d9088f5-6b8a-4eea-9bf9-e86adcea9b11" />
+        <suppliersInternal>
+          <interfaceRealization Id="10b1d5d3-6766-4a8c-a128-cc3f39f40169">
+            <interfaceMoniker Id="768d011a-8f83-4c98-9891-94ad90850a9c" LastKnownName="IETWRule" />
+            <elementDefinition Id="09c7d877-cdf2-4ae6-927b-bc043988303b" />
+          </interfaceRealization>
+          <dependency Id="ff5c8edc-6101-4d4e-bf37-9dddf3f73276">
+            <interfaceMoniker Id="3fc5529d-87d1-4dcb-8e10-7e841d81f8ae" LastKnownName="INotificationCallback" />
+            <elementDefinition Id="f5ec60c0-c301-434d-968d-2aac4e49d6dc" />
+          </dependency>
+        </suppliersInternal>
+        <ownedAttributesInternal>
+          <property Id="54f5c463-af6a-4969-9b64-9c0a0676365c" name="ID" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="e16f3009-cd8c-4836-898f-599b04cdc5c6" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="072be673-3a32-4238-a99e-1f2781f956f7" LastKnownName="BSTR" />
+            </type_NamedElement>
+          </property>
+          <property Id="04a937b8-a36f-4059-b495-083ccbca685e" name="Title" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="9de4c36a-5418-4fd8-b423-a5566291eebc" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="072be673-3a32-4238-a99e-1f2781f956f7" LastKnownName="BSTR" />
+            </type_NamedElement>
+          </property>
+        </ownedAttributesInternal>
+        <ownedOperationsInternal>
+          <operation Id="d08724b7-218c-4a83-b47c-27f5690de99b" name="GetEvents" isLeaf="false" isStatic="false" isAbstract="false" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="9c97c0ad-34b3-4ced-9484-9b32f742ad07" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="71a7c20f-f5a8-4013-8448-0d41b7c5c499" name="providerId" direction="In" isUnique="false">
+                  <elementDefinition Id="3df38e1e-db57-4615-8bec-02d18dc18745" />
+                </parameter>
+              </operationHasOwnedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="a79a803b-0989-416b-907b-48c7e305dd4c" direction="Return" isUnique="false">
+                  <elementDefinition Id="19917379-b6b3-4615-a41c-cfb2b2dd1e50" />
+                  <type_NamedElement>
+                    <referencedTypeMoniker Id="302f5534-8b61-4b5c-8e43-2f022f1a21b3" LastKnownName="SAFEARRAY&lt;USHORT&gt;*" />
+                  </type_NamedElement>
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+          <operation Id="49a9c884-fe50-4787-b1d0-21490b0f8ddf" name="GetProcessorCallback" isLeaf="false" isStatic="false" isAbstract="false" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="53cc0251-47a2-458c-8a43-cf9775fe09bf" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="a3c87ed7-453b-4eea-9dd6-8ae6b1a5ed12" name="providerId" direction="In" isUnique="false">
+                  <elementDefinition Id="a47aae02-7bae-4de0-8770-73ca4d9aa645" />
+                </parameter>
+              </operationHasOwnedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="d6754a55-24af-40f6-80ed-c426ea1107fc" name="eventId" direction="In" isUnique="false">
+                  <elementDefinition Id="bc26f04c-98a3-4fb8-9ce1-fdcf39c4ff22" />
+                </parameter>
+              </operationHasOwnedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="fafeb288-a53c-4cd0-80f7-cb1ee5e73ea6" direction="Return" isUnique="false">
+                  <elementDefinition Id="8de38d42-3e2f-4ebb-abda-a767e2089bd4" />
+                  <type_NamedElement>
+                    <referencedTypeMoniker Id="de6ebcc0-3a2b-459f-b859-0a178dfffd0d" LastKnownName="IEventProcessorCallback*" />
+                  </type_NamedElement>
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+          <operation Id="7c1e942b-c200-4aaa-bbe0-5f36ac244bb0" name="GetProviders" isLeaf="false" isStatic="false" isAbstract="false" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="70941e68-d111-4efe-a490-139d8cf71587" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="6b8077e1-53f4-477b-bae5-7071333e0c30" direction="Return" isUnique="false">
+                  <elementDefinition Id="920a7314-d95a-4515-8a53-2a20b94e446f" />
+                  <type_NamedElement>
+                    <referencedTypeMoniker Id="a00051f7-317d-430d-a3b8-afb3410a9849" LastKnownName="SAFEARRAY&lt;GUID&gt;*" />
+                  </type_NamedElement>
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+          <operation Id="bcf31347-a57f-4260-892b-54e7af08dab9" name="ApplicationStartedEventHandler" visibility="Private" isLeaf="false" isStatic="false" isAbstract="false" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="d5672df0-a87b-4484-ba31-743bc2e5334d" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="10884877-450d-4f4d-882c-2a6f6ec160c9" name="IETWEvent*" direction="In" isUnique="false">
+                  <elementDefinition Id="328c893b-5cd9-4c49-a0c5-10c0574f3aec" />
+                </parameter>
+              </operationHasOwnedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="b7b9ffbf-e9ed-4495-81f7-5c39bf1f6d8e" name="INotificationCallback*" direction="In" isUnique="false">
+                  <elementDefinition Id="4bc32a26-ff5b-40f9-a306-e638e12f885e" />
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+          <operation Id="236435f8-3962-4cde-85a6-a78f3ffa3483" name="GetServices" isLeaf="false" isStatic="false" isAbstract="false" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="1a3224a4-371d-4b23-b690-90f704137ab4" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="ba4da897-ce04-4c69-b7bb-e2325d15b21f" direction="Return" isUnique="false">
+                  <elementDefinition Id="d0e2347f-e9b0-446a-b208-01c8c249fabb" />
+                  <type_NamedElement>
+                    <referencedTypeMoniker Id="d7b461a6-a1ef-454b-a652-24623856609b" LastKnownName="SAFEARRAY&lt;GUID&gt;*" />
+                  </type_NamedElement>
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+        </ownedOperationsInternal>
+      </class>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <class Id="15676c33-d2a1-4e4d-b1fb-4665cd515bde" name="ProcessorEventHandler" isAbstract="false" isLeaf="false" isActiveClass="false">
+        <appliedStereotypesInternal>
+          <stereotypeInstance Id="b715f7ac-b3f8-4810-98c0-31f94218eea9" name="implementationClass" profile="StandardProfileL2">
+            <elementDefinition Id="5f2f43c6-ca4f-41a0-90b5-5b367c68ff76" />
+          </stereotypeInstance>
+        </appliedStereotypesInternal>
+        <elementDefinition Id="544fbf13-b2dd-4409-9444-0f0314e93218" />
+        <suppliersInternal>
+          <interfaceRealization Id="c3eb660d-4826-404b-b14f-7cc32e7f15a1">
+            <interfaceMoniker Id="99d27041-47a3-41b3-bad5-884ff04fb16c" LastKnownName="IEventProcessorCallback" />
+            <elementDefinition Id="3878cb6d-0009-4ec7-ba39-9891a400ceb1" />
+          </interfaceRealization>
+        </suppliersInternal>
+        <targetEnds>
+          <association Id="330cf088-5c03-4ad3-b487-97dcef7ebbee" isDerived="false" sourceEndRoleName="ProcessorEventHandler" targetEndRoleName="Rule0001, 0002, etc" isLeaf="false" isAbstract="false">
+            <classMoniker Id="1d9c5a81-2d8f-4376-a914-49c13044c3f3" LastKnownName="Rule0001, 0002, etc" />
+            <relationshipOwnedElementsInternal>
+              <associationHasOwnedEnds>
+                <memberEnd Id="9e0d6724-2726-4da9-86cc-1ceaebbf9e13" name="ProcessorEventHandler" isLeaf="false" isStatic="false" isReadOnly="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false" isNavigableOwned="false">
+                  <elementDefinition Id="5c689d0b-c70a-4970-a45b-760a73fe4f7e" />
+                </memberEnd>
+              </associationHasOwnedEnds>
+              <associationHasOwnedEnds>
+                <memberEnd Id="124f7bcb-a83c-4b3d-ac1d-60c44ba5b1bc" name="Rule0001, 0002, etc" isLeaf="false" isStatic="false" isReadOnly="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+                  <elementDefinition Id="02b95356-74c0-4509-a748-d078995087d9" />
+                </memberEnd>
+              </associationHasOwnedEnds>
+            </relationshipOwnedElementsInternal>
+            <elementDefinition Id="2b8d0128-1b41-444a-83a9-4d79ec09985f" />
+          </association>
+        </targetEnds>
+        <ownedOperationsInternal>
+          <operation Id="68ca32be-b376-4ad6-b52d-9c745cb5b3e3" name="ProcessEvent" isLeaf="false" isStatic="false" isAbstract="false" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="40fdfa0d-2468-4b0d-84bf-14b5563fbf05" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="a6c7de59-3ccf-49ff-95da-a9fae3301fe8" name="IETWEvent*" direction="In" isUnique="false">
+                  <elementDefinition Id="1944e70a-a4ff-4f56-93de-db383d8d280e" />
+                </parameter>
+              </operationHasOwnedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="5d95330d-2d8f-484d-a752-0a4fea419915" name="INotificationCallback*" direction="In" isUnique="false">
+                  <elementDefinition Id="3b9e423c-0b99-4abe-a54b-f30013b72822" />
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+        </ownedOperationsInternal>
+      </class>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <class Id="3578202a-ef2b-408f-a09f-cfd9f0ab76db" name="Notification" isAbstract="false" isLeaf="false" isActiveClass="false">
+        <elementDefinition Id="46c8af06-12d4-4fd8-94ff-cc50b45277de" />
+        <suppliersInternal>
+          <interfaceRealization Id="0a28a3e8-a4e1-472b-ab90-0db3bb91ec3e">
+            <interfaceMoniker Id="da3e4167-586f-474e-acfe-1c14520a451e" LastKnownName="INotification" />
+            <elementDefinition Id="ae74c103-eb3f-4314-8b0d-f730959e02d7" />
+          </interfaceRealization>
+        </suppliersInternal>
+        <ownedAttributesInternal>
+          <property Id="7ffcb6ec-1cca-4b56-88f2-5dd4b9afb869" name="Info" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="5f09eeb9-a34f-46d1-a1b4-8c1105d18150" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="7b7295b3-7fd1-468a-b13e-cf60157ad927" LastKnownName="NotificationInfo" />
+            </type_NamedElement>
+          </property>
+          <property Id="1c3e73d1-33bc-4e3c-8067-d3e44ecdf33b" name="Rule" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="5e4d8824-33ec-4e46-b7c6-a742f6c92d73" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="c7495c0f-20d7-460c-94d5-0884cca988d7" LastKnownName="IRule*" />
+            </type_NamedElement>
+          </property>
+        </ownedAttributesInternal>
+      </class>
+    </logicalClassDesignerModelHasTypes>
+    <packageHasNamedElement>
+      <referencedType Id="e49db057-c3ea-47ad-96eb-77daa9072c36" name="NotificationLinkInfo" isAbstract="false" isLeaf="false" cachedFullName="NotificationLinkInfo">
+        <elementDefinition Id="44041283-bcb8-4d98-abf7-97f00b50c3b3" />
+      </referencedType>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <referencedType Id="43c7ec44-6552-46d0-a291-7d472d279fa1" name="NotificationRangeInfo" isAbstract="false" isLeaf="false" cachedFullName="NotificationRangeInfo">
+        <elementDefinition Id="a278ee2f-c611-4863-8d47-db5d76b7d38b" />
+      </referencedType>
+    </packageHasNamedElement>
+    <logicalClassDesignerModelHasTypes>
+      <class Id="dcc56a04-e16a-4cdf-ba44-a5ed24f36dc1" name="NotificationLinkInfo &lt;struct&gt;" isAbstract="false" isLeaf="false" isActiveClass="false">
+        <elementDefinition Id="347f4672-5be0-4c4c-a152-c0869d19c103" />
+        <ownedAttributesInternal>
+          <property Id="f7d28408-6da4-47c9-841f-28254b2c030d" name="Title" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="0a80d145-1332-4e38-b290-b1f9d5c45ed5" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="072be673-3a32-4238-a99e-1f2781f956f7" LastKnownName="BSTR" />
+            </type_NamedElement>
+          </property>
+          <property Id="4713213f-b960-4439-8aa9-7b01244b0c25" name="URL" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="b099eed8-b68b-4a8f-b5be-500f61b4ca9f" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="072be673-3a32-4238-a99e-1f2781f956f7" LastKnownName="BSTR" />
+            </type_NamedElement>
+          </property>
+        </ownedAttributesInternal>
+      </class>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <class Id="3b5b3ea9-7533-4722-9722-aea5f6a4168a" name="NotificationRangeInfo &lt;struct&gt;" isAbstract="false" isLeaf="false" isActiveClass="false">
+        <elementDefinition Id="d2a97f2e-e8eb-449e-b741-a6d5d9496733" />
+        <ownedAttributesInternal>
+          <property Id="51e8faca-c228-4ec5-aa45-29dbf11d4b58" name="Beginning" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="9f05c48b-b1d3-4b93-9470-5947f191d02e" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="4479c5cf-1110-4252-9631-73707634fcde" LastKnownName="LONGLONG" />
+            </type_NamedElement>
+          </property>
+          <property Id="621a2b0f-c9ff-46a7-9c38-dcd65591c022" name="End" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="59ec9b42-f67b-4e28-8657-f4b016304fe3" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="4479c5cf-1110-4252-9631-73707634fcde" LastKnownName="LONGLONG" />
+            </type_NamedElement>
+          </property>
+        </ownedAttributesInternal>
+      </class>
+    </logicalClassDesignerModelHasTypes>
+    <packageHasNamedElement>
+      <referencedType Id="4479c5cf-1110-4252-9631-73707634fcde" name="LONGLONG" isAbstract="false" isLeaf="false" cachedFullName="LONGLONG">
+        <elementDefinition Id="eb787cad-913a-4002-8017-804880402bbb" />
+      </referencedType>
+    </packageHasNamedElement>
+    <logicalClassDesignerModelHasTypes>
+      <class Id="1e978358-00f4-4b3a-b13f-0dcb3fef7803" name="ETWEvent" isAbstract="false" isLeaf="false" isActiveClass="false">
+        <elementDefinition Id="2b9c02e5-2675-4b8a-86a6-43d7233c862d" />
+        <suppliersInternal>
+          <interfaceRealization Id="3c39d118-1c87-4671-b01d-4ba74e78e412">
+            <interfaceMoniker Id="aad06616-7534-4f9b-8d1f-397c4185871d" LastKnownName="IETWEvent" />
+            <elementDefinition Id="415f7f36-5751-4067-975c-016cf9b7ca53" />
+          </interfaceRealization>
+        </suppliersInternal>
+        <ownedAttributesInternal>
+          <property Id="376e1680-78c6-483d-806e-52ca022ce2ac" name="EventId" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="48c5b3d9-9ada-4d53-932d-eea8625635df" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="966afe77-9054-4946-bf9d-863812abfefe" LastKnownName="USHORT" />
+            </type_NamedElement>
+          </property>
+          <property Id="76735f46-8d8b-4191-a305-2f1d7d755fcf" name="ProviderId" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="d5367c63-2e26-475e-8063-84263f82feff" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="0f3c24b8-b6c8-4631-bf96-8a9b84723f9f" LastKnownName="GUID" />
+            </type_NamedElement>
+          </property>
+          <property Id="60b7f37c-e7dd-4e9e-b7cf-0aee66db5f7d" name="TimeStamp" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="3dbcb3d5-ca8c-40e1-91d4-25f70f119a14" />
+          </property>
+        </ownedAttributesInternal>
+      </class>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <Interface Id="aad06616-7534-4f9b-8d1f-397c4185871d" name="IETWEvent" isAbstract="false" isLeaf="false">
+        <elementDefinition Id="b74b41b6-c21c-469d-aa1f-3e5e51426ea0" />
+        <targetEnds>
+          <association Id="477b9da7-85a0-44b5-a36b-85c49a2d7c81" isDerived="false" sourceEndRoleName="IETWEvent" targetEndRoleName="IETWEventRecord" isLeaf="false" isAbstract="false">
+            <interfaceMoniker Id="4669d271-0e71-4ec7-be48-94b5d372af2f" LastKnownName="IETWEventRecord" />
+            <relationshipOwnedElementsInternal>
+              <associationHasOwnedEnds>
+                <memberEnd Id="7d3ed1ba-1c24-46bd-b024-057a5c623e7a" name="IETWEvent" isLeaf="false" isStatic="false" isReadOnly="false" isDerived="false" isDerivedUnion="false" aggregation="Composite" isComposite="false" isNavigableOwned="false">
+                  <elementDefinition Id="8bb4c849-a810-49ee-b05e-2666b5c6e3d9" />
+                </memberEnd>
+              </associationHasOwnedEnds>
+              <associationHasOwnedEnds>
+                <memberEnd Id="4c14783f-dbb2-413b-b9fa-d8014d8da999" name="IETWEventRecord" isLeaf="false" isStatic="false" isReadOnly="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="true">
+                  <elementDefinition Id="56a29047-5458-4ba7-9c9b-de7a800c9605" />
+                </memberEnd>
+              </associationHasOwnedEnds>
+            </relationshipOwnedElementsInternal>
+            <elementDefinition Id="df11ac16-187f-4dc1-9c54-a5ea6d2266a5" />
+          </association>
+        </targetEnds>
+        <ownedAttributes>
+          <property Id="7821e729-1b2a-4399-91ae-d01863236349" name="ProviderId" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="81aa4305-1ce4-436c-b75d-051b5b3a0b71" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="6db050c0-ce3c-40fd-b126-cc91ac6c437e" LastKnownName="GUID" />
+            </type_NamedElement>
+          </property>
+          <property Id="6694ebbd-1421-492b-97a2-1539cf4025c7" name="EventId" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="1b954444-6394-4411-91d7-6e8a148d6c80" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="ee88c453-a0ef-430a-a17c-532d4faf0045" LastKnownName="USHORT" />
+            </type_NamedElement>
+          </property>
+          <property Id="d494e082-ca88-485f-b9b7-590c67f3692b" name="TimeStamp" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="e41be5e6-a2d6-4cad-9cf6-6ec6b2546d7a" />
+          </property>
+        </ownedAttributes>
+      </Interface>
+    </logicalClassDesignerModelHasTypes>
+    <packageHasNamedElement>
+      <referencedType Id="ee88c453-a0ef-430a-a17c-532d4faf0045" name="USHORT" isAbstract="false" isLeaf="false" cachedFullName="USHORT">
+        <elementDefinition Id="e45d1002-7893-4c14-93ad-7c6757eec2f8" />
+      </referencedType>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <referencedType Id="6db050c0-ce3c-40fd-b126-cc91ac6c437e" name="GUID" isAbstract="false" isLeaf="false" cachedFullName="GUID">
+        <elementDefinition Id="c9c61dca-a8d7-4c3f-ade1-be68e9425b78" />
+      </referencedType>
+    </packageHasNamedElement>
+    <logicalClassDesignerModelHasTypes>
+      <Interface Id="4669d271-0e71-4ec7-be48-94b5d372af2f" name="IETWEventRecord" isAbstract="false" isLeaf="false">
+        <elementDefinition Id="9e5d91cb-38fb-4850-a0bc-32b053f9343a" />
+        <ownedAttributes>
+          <property Id="7c8548cf-1617-476b-8519-332db5c18941" name="p" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="68f76ff2-07f8-4b0b-80ad-4ef00535602d" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="09a14bfe-544a-4cad-800c-3591d28afc58" LastKnownName="EVENT_RECORD" />
+            </type_NamedElement>
+          </property>
+        </ownedAttributes>
+        <ownedOperations>
+          <operation Id="712cf4ac-7247-47ea-b1f6-93612ef0d7e2" name="SetEventRecord" isLeaf="false" isStatic="false" isAbstract="true" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="db474c08-e589-4f24-8296-ddf68f07716f" />
+          </operation>
+        </ownedOperations>
+      </Interface>
+    </logicalClassDesignerModelHasTypes>
+    <packageHasNamedElement>
+      <referencedType Id="966afe77-9054-4946-bf9d-863812abfefe" name="USHORT" isAbstract="false" isLeaf="false" cachedFullName="USHORT">
+        <elementDefinition Id="e45d1002-7893-4c14-93ad-7c6757eec2f8" />
+      </referencedType>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <referencedType Id="0f3c24b8-b6c8-4631-bf96-8a9b84723f9f" name="GUID" isAbstract="false" isLeaf="false" cachedFullName="GUID">
+        <elementDefinition Id="c9c61dca-a8d7-4c3f-ade1-be68e9425b78" />
+      </referencedType>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <referencedType Id="09a14bfe-544a-4cad-800c-3591d28afc58" name="EVENT_RECORD" isAbstract="false" isLeaf="false" cachedFullName="EVENT_RECORD">
+        <elementDefinition Id="bc017914-5c77-4ae9-9e15-5e97946334ac" />
+      </referencedType>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <referencedType Id="18fc1e1d-fa08-4a8e-b5b0-e51325127e09" name="BSTR" isAbstract="false" isLeaf="false" cachedFullName="BSTR">
+        <elementDefinition Id="63b90304-feb5-4d03-8b22-8d9787c6bf8c" />
+      </referencedType>
+    </packageHasNamedElement>
+    <logicalClassDesignerModelHasTypes>
+      <Interface Id="ebab81e4-8548-4262-9c66-8ba903664faa" name="IRuleService" isAbstract="false" isLeaf="false">
+        <elementDefinition Id="f9f2431a-8514-47c5-ba27-12a333311521" />
+        <ownedAttributes>
+          <property Id="73f5aa41-051a-42d6-a125-50c7fae2a443" name="Id" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="d1378fab-3373-4f6c-86bf-75d0f9686c3e" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="18fc1e1d-fa08-4a8e-b5b0-e51325127e09" LastKnownName="BSTR" />
+            </type_NamedElement>
+          </property>
+          <property Id="88fef4d7-b45d-4119-a9cd-f895381f4679" name="Title" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="d666e762-5c95-4f17-b89c-915b35c94a7f" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="18fc1e1d-fa08-4a8e-b5b0-e51325127e09" LastKnownName="BSTR" />
+            </type_NamedElement>
+          </property>
+        </ownedAttributes>
+      </Interface>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <class Id="f51fe2de-38ea-4f4e-a6de-7e30ce099db4" name="RuleServiceProvider" isAbstract="false" isLeaf="false" isActiveClass="false">
+        <appliedStereotypesInternal>
+          <stereotypeInstance Id="a38832c3-b2e7-44eb-b4f7-5d11ed8928c5" name="implementationClass" profile="StandardProfileL2">
+            <elementDefinition Id="3a64d03c-2a4f-468f-b2c4-0864c26d94ef" />
+          </stereotypeInstance>
+        </appliedStereotypesInternal>
+        <elementDefinition Id="6dc6a533-3d29-44b7-be86-7e07bff326ac" />
+        <suppliersInternal>
+          <dependency Id="13e8bdfe-ad9e-476b-ac35-c551e0a38278">
+            <interfaceMoniker Id="ebab81e4-8548-4262-9c66-8ba903664faa" LastKnownName="IRuleService" />
+            <elementDefinition Id="d8867bda-4954-433f-989e-e4759d3cf246" />
+          </dependency>
+        </suppliersInternal>
+        <ownedOperationsInternal>
+          <operation Id="e18f35ac-2ec7-41f2-acb0-4e349abb3b2a" name="GetService" isLeaf="false" isStatic="false" isAbstract="false" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="02b3a9f3-9e56-4b67-83fd-8857a74f0d1c" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="cddc7b3a-3e97-49f3-8ff1-90b188e20885" direction="Return" isUnique="false">
+                  <elementDefinition Id="707649c5-9b78-42af-aa22-427aaf2ea681" />
+                  <type_NamedElement>
+                    <referencedTypeMoniker Id="9ccb8673-9a09-447f-84e5-256c35ee5266" LastKnownName="IRuleService*" />
+                  </type_NamedElement>
+                </parameter>
+              </operationHasOwnedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="c7cd2aec-c6e2-4e09-9eae-6e67ad9a8ca0" name="GUID" direction="In" isUnique="false">
+                  <elementDefinition Id="acfc7ec0-691c-4d6f-b326-d1e120a95f5b" />
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+        </ownedOperationsInternal>
+      </class>
+    </logicalClassDesignerModelHasTypes>
+    <packageHasNamedElement>
+      <referencedType Id="9ccb8673-9a09-447f-84e5-256c35ee5266" name="IRuleService*" isAbstract="false" isLeaf="false" cachedFullName="IRuleService*">
+        <elementDefinition Id="90fb0b82-e1c5-41c7-a615-6671baf8a6a2" />
+      </referencedType>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <referencedType Id="d7b461a6-a1ef-454b-a652-24623856609b" name="SAFEARRAY&lt;GUID&gt;*" isAbstract="false" isLeaf="false" cachedFullName="SAFEARRAY&lt;GUID&gt;*">
+        <elementDefinition Id="108f03ba-be68-453b-83a9-5f9b211554db" />
+      </referencedType>
+    </packageHasNamedElement>
+  </packagedElements>
+  <package Id="87661bc5-1a94-4cce-8d71-d35bb2ecbc68" name="AppAnalysis">
+    <elementDefinition Id="a7b56f6d-8099-4ac0-9e58-3623f8e5483d" />
+    <profileInstances>
+      <packageHasProfileInstances Id="3e0b1542-8f96-421a-a1bf-7885a01cc2a1">
+        <profileInstance Id="ca044c31-2058-4455-bfdf-dfa1149f82ab" name="StandardProfileL2">
+          <elementDefinition Id="e34d544e-0fea-4ed6-ac5e-1b74119ac791" />
+        </profileInstance>
+        <elementDefinition Id="0caec977-1f8c-4ba3-a7db-8cc9ad9cc73b" />
+      </packageHasProfileInstances>
+      <packageHasProfileInstances Id="6957c44d-d8b5-4c83-ad55-ca9cbba8eb4f">
+        <profileInstance Id="e5a40cd9-8a4b-4b92-8daf-b972e03d100c" name="StandardProfileL3">
+          <elementDefinition Id="532ea607-fb19-44b8-8502-3351b05452be" />
+        </profileInstance>
+        <elementDefinition Id="29349502-908c-4fda-9054-c48619c59ed0" />
+      </packageHasProfileInstances>
+    </profileInstances>
+  </package>
+</logicalClassDesignerModel>

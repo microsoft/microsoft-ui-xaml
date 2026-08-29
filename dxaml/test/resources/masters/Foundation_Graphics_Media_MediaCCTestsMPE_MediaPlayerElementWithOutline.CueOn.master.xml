@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualTreeDump>
+  <VisualElements>
+    <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+      <ChildElements>
+        <Element Type="Microsoft.UI.Xaml.Controls.MediaPlayerElement">
+          <Properties>
+            <Property Name="AreTransportControlsEnabled" Value="False" />
+            <Property Name="AutoPlay" Value="False" />
+            <Property Name="HorizontalAlignment" Value="3" />
+            <Property Name="IsTabStop" Value="False" />
+            <Property Name="MediaPlayer" Value="[Windows.Media.Playback.MediaPlayer]" />
+            <Property Name="Source" Value="[Windows.Media.Playback.MediaPlaybackItem]" />
+            <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+            <Property Name="TransportControls" Value="[Microsoft.UI.Xaml.Controls.MediaTransportControls]" />
+            <Property Name="VerticalAlignment" Value="3" />
+          </Properties>
+          <ChildElements>
+            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+              <ChildElements>
+                <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                  <Properties>
+                    <Property Name="Background" Value="#00FFFFFF" />
+                  </Properties>
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Image">
+                  <Properties>
+                    <Property Name="Source" Value="[NULL]" />
+                    <Property Name="Stretch" Value="2" />
+                    <Property Name="Visibility" Value="1" />
+                  </Properties>
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.MediaPlayerPresenter">
+                  <Properties>
+                    <Property Name="MediaPlayer" Value="[Windows.Media.Playback.MediaPlayer]" />
+                    <Property Name="Stretch" Value="2" />
+                  </Properties>
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+                  <Properties>
+                    <Property Name="Content" Value="[Microsoft.UI.Xaml.Controls.MediaTransportControls]" />
+                  </Properties>
+                  <ChildElements>
+                    <Element Type="Microsoft.UI.Xaml.Controls.MediaTransportControls">
+                      <Properties>
+                        <Property Name="Background" Value="#00FFFFFF" />
+                        <Property Name="CornerRadius" Value="8,8,8,8" />
+                        <Property Name="FastPlayFallbackBehaviour" Value="0" />
+                        <Property Name="FlowDirection" Value="0" />
+                        <Property Name="IsFastForwardButtonVisible" Value="False" />
+                        <Property Name="IsFastForwardEnabled" Value="False" />
+                        <Property Name="IsFastRewindButtonVisible" Value="False" />
+                        <Property Name="IsFastRewindEnabled" Value="False" />
+                        <Property Name="IsNextTrackButtonVisible" Value="False" />
+                        <Property Name="IsPlaybackRateButtonVisible" Value="False" />
+                        <Property Name="IsPlaybackRateEnabled" Value="False" />
+                        <Property Name="IsPreviousTrackButtonVisible" Value="False" />
+                        <Property Name="IsRepeatButtonVisible" Value="False" />
+                        <Property Name="IsRepeatEnabled" Value="False" />
+                        <Property Name="IsSeekBarVisible" Value="True" />
+                        <Property Name="IsSeekEnabled" Value="True" />
+                        <Property Name="IsSkipBackwardButtonVisible" Value="False" />
+                        <Property Name="IsSkipBackwardEnabled" Value="False" />
+                        <Property Name="IsSkipForwardButtonVisible" Value="False" />
+                        <Property Name="IsSkipForwardEnabled" Value="False" />
+                        <Property Name="IsStopButtonVisible" Value="False" />
+                        <Property Name="IsStopEnabled" Value="False" />
+                        <Property Name="IsTabStop" Value="False" />
+                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                        <Property Name="IsVolumeButtonVisible" Value="True" />
+                        <Property Name="IsVolumeEnabled" Value="True" />
+                        <Property Name="IsZoomButtonVisible" Value="True" />
+                        <Property Name="IsZoomEnabled" Value="True" />
+                        <Property Name="Margin" Value="12,12,12,12" />
+                        <Property Name="MaxWidth" Value="720" />
+                        <Property Name="MinWidth" Value="296" />
+                        <Property Name="ShowAndHideAutomatically" Value="True" />
+                        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                        <Property Name="UseSystemFocusVisuals" Value="True" />
+                        <Property Name="Visibility" Value="1" />
+                      </Properties>
+                    </Element>
+                  </ChildElements>
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                  <ChildElements>
+                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                      <Properties>
+                        <Property Name="Background" Value="#00000000" />
+                        <Property Name="Clip" Value="[Microsoft.UI.Xaml.Media.RectangleGeometry]" />
+                        <Property Name="Height" Value="281" />
+                        <Property Name="HorizontalAlignment" Value="0" />
+                        <Property Name="IsHitTestVisible" Value="False" />
+                        <Property Name="Margin" Value="0.0270833,0,0,0" />
+                        <Property Name="VerticalAlignment" Value="0" />
+                        <Property Name="Width" Value="499.946" />
+                      </Properties>
+                      <ChildElements>
+                        <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                          <Properties>
+                            <Property Name="Background" Value="#00000000" />
+                            <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.StackPanel]" />
+                            <Property Name="Height" Value="281" />
+                            <Property Name="HorizontalAlignment" Value="0" />
+                            <Property Name="Margin" Value="0,0,0,0" />
+                            <Property Name="Padding" Value="0,0,0,0" />
+                            <Property Name="VerticalAlignment" Value="0" />
+                            <Property Name="Visibility" Value="0" />
+                            <Property Name="Width" Value="499.946" />
+                          </Properties>
+                          <ChildElements>
+                            <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+                              <Properties>
+                                <Property Name="VerticalAlignment" Value="0" />
+                              </Properties>
+                              <ChildElements>
+                                <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                                  <Properties>
+                                    <Property Name="Background" Value="#00000000" />
+                                    <Property Name="HorizontalAlignment" Value="0" />
+                                    <Property Name="Visibility" Value="0" />
+                                  </Properties>
+                                  <ChildElements>
+                                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                                      <Properties>
+                                        <Property Name="HorizontalAlignment" Value="0" />
+                                        <Property Name="VerticalAlignment" Value="3" />
+                                      </Properties>
+                                      <ChildElements>
+                                        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                                          <Properties>
+                                            <Property Name="Clip" Value="[Microsoft.UI.Xaml.Media.RectangleGeometry]" />
+                                            <Property Name="HorizontalAlignment" Value="0" />
+                                            <Property Name="VerticalAlignment" Value="3" />
+                                          </Properties>
+                                          <ChildElements>
+                                            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                                              <Properties>
+                                                <Property Name="HorizontalAlignment" Value="0" />
+                                                <Property Name="VerticalAlignment" Value="3" />
+                                              </Properties>
+                                              <ChildElements>
+                                                <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                                                  <Properties>
+                                                    <Property Name="HorizontalAlignment" Value="0" />
+                                                    <Property Name="Margin" Value="6,6,6,6" />
+                                                  </Properties>
+                                                  <ChildElements>
+                                                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                                      <Properties>
+                                                        <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                                                        <Property Name="LineStackingStrategy" Value="0" />
+                                                        <Property Name="RenderTransform" Value="TranslateTransform( X=-2  Y=-2 )" />
+                                                        <Property Name="TextLineBounds" Value="0" />
+                                                        <Property Name="TextWrapping" Value="2" />
+                                                      </Properties>
+                                                      <ChildElements>
+                                                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                                                          <Properties>
+                                                            <Property Name="FlowDirection" Value="0" />
+                                                            <Property Name="FontFamily" Value="Segoe UI" />
+                                                            <Property Name="FontSize" Value="14.05" />
+                                                            <Property Name="FontWeight" Value="400" />
+                                                            <Property Name="Foreground" Value="#FFFF0000" />
+                                                            <Property Name="Text" Value="This text has a red, two-pixel outline." />
+                                                            <Property Name="TextDecorations" Value="0" />
+                                                          </Properties>
+                                                        </Element>
+                                                      </ChildElements>
+                                                    </Element>
+                                                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                                      <Properties>
+                                                        <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                                                        <Property Name="LineStackingStrategy" Value="0" />
+                                                        <Property Name="RenderTransform" Value="TranslateTransform( X=0  Y=-2 )" />
+                                                        <Property Name="TextLineBounds" Value="0" />
+                                                        <Property Name="TextWrapping" Value="2" />
+                                                      </Properties>
+                                                      <ChildElements>
+                                                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                                                          <Properties>
+                                                            <Property Name="FlowDirection" Value="0" />
+                                                            <Property Name="FontFamily" Value="Segoe UI" />
+                                                            <Property Name="FontSize" Value="14.05" />
+                                                            <Property Name="FontWeight" Value="400" />
+                                                            <Property Name="Foreground" Value="#FFFF0000" />
+                                                            <Property Name="Text" Value="This text has a red, two-pixel outline." />
+                                                            <Property Name="TextDecorations" Value="0" />
+                                                          </Properties>
+                                                        </Element>
+                                                      </ChildElements>
+                                                    </Element>
+                                                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                                      <Properties>
+                                                        <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                                                        <Property Name="LineStackingStrategy" Value="0" />
+                                                        <Property Name="RenderTransform" Value="TranslateTransform( X=2  Y=-2 )" />
+                                                        <Property Name="TextLineBounds" Value="0" />
+                                                        <Property Name="TextWrapping" Value="2" />
+                                                      </Properties>
+                                                      <ChildElements>
+                                                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                                                          <Properties>
+                                                            <Property Name="FlowDirection" Value="0" />
+                                                            <Property Name="FontFamily" Value="Segoe UI" />
+                                                            <Property Name="FontSize" Value="14.05" />
+                                                            <Property Name="FontWeight" Value="400" />
+                                                            <Property Name="Foreground" Value="#FFFF0000" />
+                                                            <Property Name="Text" Value="This text has a red, two-pixel outline." />
+                                                            <Property Name="TextDecorations" Value="0" />
+                                                          </Properties>
+                                                        </Element>
+                                                      </ChildElements>
+                                                    </Element>
+                                                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                                      <Properties>
+                                                        <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                                                        <Property Name="LineStackingStrategy" Value="0" />
+                                                        <Property Name="RenderTransform" Value="TranslateTransform( X=-2  Y=0 )" />
+                                                        <Property Name="TextLineBounds" Value="0" />
+                                                        <Property Name="TextWrapping" Value="2" />
+                                                      </Properties>
+                                                      <ChildElements>
+                                                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                                                          <Properties>
+                                                            <Property Name="FlowDirection" Value="0" />
+                                                            <Property Name="FontFamily" Value="Segoe UI" />
+                                                            <Property Name="FontSize" Value="14.05" />
+                                                            <Property Name="FontWeight" Value="400" />
+                                                            <Property Name="Foreground" Value="#FFFF0000" />
+                                                            <Property Name="Text" Value="This text has a red, two-pixel outline." />
+                                                            <Property Name="TextDecorations" Value="0" />
+                                                          </Properties>
+                                                        </Element>
+                                                      </ChildElements>
+                                                    </Element>
+                                                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                                      <Properties>
+                                                        <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                                                        <Property Name="LineStackingStrategy" Value="0" />
+                                                        <Property Name="RenderTransform" Value="TranslateTransform( X=2  Y=0 )" />
+                                                        <Property Name="TextLineBounds" Value="0" />
+                                                        <Property Name="TextWrapping" Value="2" />
+                                                      </Properties>
+                                                      <ChildElements>
+                                                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                                                          <Properties>
+                                                            <Property Name="FlowDirection" Value="0" />
+                                                            <Property Name="FontFamily" Value="Segoe UI" />
+                                                            <Property Name="FontSize" Value="14.05" />
+                                                            <Property Name="FontWeight" Value="400" />
+                                                            <Property Name="Foreground" Value="#FFFF0000" />
+                                                            <Property Name="Text" Value="This text has a red, two-pixel outline." />
+                                                            <Property Name="TextDecorations" Value="0" />
+                                                          </Properties>
+                                                        </Element>
+                                                      </ChildElements>
+                                                    </Element>
+                                                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                                      <Properties>
+                                                        <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                                                        <Property Name="LineStackingStrategy" Value="0" />
+                                                        <Property Name="RenderTransform" Value="TranslateTransform( X=-2  Y=2 )" />
+                                                        <Property Name="TextLineBounds" Value="0" />
+                                                        <Property Name="TextWrapping" Value="2" />
+                                                      </Properties>
+                                                      <ChildElements>
+                                                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                                                          <Properties>
+                                                            <Property Name="FlowDirection" Value="0" />
+                                                            <Property Name="FontFamily" Value="Segoe UI" />
+                                                            <Property Name="FontSize" Value="14.05" />
+                                                            <Property Name="FontWeight" Value="400" />
+                                                            <Property Name="Foreground" Value="#FFFF0000" />
+                                                            <Property Name="Text" Value="This text has a red, two-pixel outline." />
+                                                            <Property Name="TextDecorations" Value="0" />
+                                                          </Properties>
+                                                        </Element>
+                                                      </ChildElements>
+                                                    </Element>
+                                                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                                      <Properties>
+                                                        <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                                                        <Property Name="LineStackingStrategy" Value="0" />
+                                                        <Property Name="RenderTransform" Value="TranslateTransform( X=0  Y=2 )" />
+                                                        <Property Name="TextLineBounds" Value="0" />
+                                                        <Property Name="TextWrapping" Value="2" />
+                                                      </Properties>
+                                                      <ChildElements>
+                                                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                                                          <Properties>
+                                                            <Property Name="FlowDirection" Value="0" />
+                                                            <Property Name="FontFamily" Value="Segoe UI" />
+                                                            <Property Name="FontSize" Value="14.05" />
+                                                            <Property Name="FontWeight" Value="400" />
+                                                            <Property Name="Foreground" Value="#FFFF0000" />
+                                                            <Property Name="Text" Value="This text has a red, two-pixel outline." />
+                                                            <Property Name="TextDecorations" Value="0" />
+                                                          </Properties>
+                                                        </Element>
+                                                      </ChildElements>
+                                                    </Element>
+                                                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                                      <Properties>
+                                                        <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                                                        <Property Name="LineStackingStrategy" Value="0" />
+                                                        <Property Name="RenderTransform" Value="TranslateTransform( X=2  Y=2 )" />
+                                                        <Property Name="TextLineBounds" Value="0" />
+                                                        <Property Name="TextWrapping" Value="2" />
+                                                      </Properties>
+                                                      <ChildElements>
+                                                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                                                          <Properties>
+                                                            <Property Name="FlowDirection" Value="0" />
+                                                            <Property Name="FontFamily" Value="Segoe UI" />
+                                                            <Property Name="FontSize" Value="14.05" />
+                                                            <Property Name="FontWeight" Value="400" />
+                                                            <Property Name="Foreground" Value="#FFFF0000" />
+                                                            <Property Name="Text" Value="This text has a red, two-pixel outline." />
+                                                            <Property Name="TextDecorations" Value="0" />
+                                                          </Properties>
+                                                        </Element>
+                                                      </ChildElements>
+                                                    </Element>
+                                                    <Element Type="Microsoft.UI.Xaml.Controls.Canvas" />
+                                                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                                      <Properties>
+                                                        <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                                                        <Property Name="LineStackingStrategy" Value="0" />
+                                                        <Property Name="TextLineBounds" Value="0" />
+                                                        <Property Name="TextWrapping" Value="2" />
+                                                      </Properties>
+                                                      <ChildElements>
+                                                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                                                          <Properties>
+                                                            <Property Name="FlowDirection" Value="0" />
+                                                            <Property Name="FontFamily" Value="Segoe UI" />
+                                                            <Property Name="FontSize" Value="14.05" />
+                                                            <Property Name="FontWeight" Value="400" />
+                                                            <Property Name="Foreground" Value="#FFFFFFFF" />
+                                                            <Property Name="Text" Value="This text has a red, two-pixel outline." />
+                                                            <Property Name="TextDecorations" Value="0" />
+                                                          </Properties>
+                                                        </Element>
+                                                      </ChildElements>
+                                                    </Element>
+                                                  </ChildElements>
+                                                </Element>
+                                              </ChildElements>
+                                            </Element>
+                                          </ChildElements>
+                                        </Element>
+                                      </ChildElements>
+                                    </Element>
+                                  </ChildElements>
+                                </Element>
+                              </ChildElements>
+                            </Element>
+                          </ChildElements>
+                        </Element>
+                      </ChildElements>
+                    </Element>
+                  </ChildElements>
+                </Element>
+              </ChildElements>
+            </Element>
+          </ChildElements>
+        </Element>
+      </ChildElements>
+    </Element>
+  </VisualElements>
+</VisualTreeDump>

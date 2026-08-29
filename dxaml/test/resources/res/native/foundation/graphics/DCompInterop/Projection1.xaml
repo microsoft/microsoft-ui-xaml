@@ -1,0 +1,8 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Border Canvas.Left="100" Canvas.Top="100" Background="Red" Width="200" Height="200">
+        <Border.Projection>
+            <PlaneProjection/>
+        </Border.Projection>
+    </Border>
+</Canvas>

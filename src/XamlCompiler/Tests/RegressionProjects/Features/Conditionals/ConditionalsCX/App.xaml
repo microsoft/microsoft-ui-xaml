@@ -1,0 +1,25 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Application
+    x:Class="Conditionals.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Conditionals"
+    RequestedTheme="Light">
+
+    <Application.Resources>
+        <Style TargetType="TextBlock" x:Key="Title">
+            <Setter Property="FontSize" Value="25" />
+            <Setter Property="Padding" Value="0, 20, 0, 0" />
+        </Style>
+        <Style TargetType="TextBlock" x:Key="Section">
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="FontSize" Value="18" />
+        </Style>
+        <Style TargetType="TextBlock" x:Key="Note">
+            <Setter Property="FontStyle" Value="Italic" />
+            <Setter Property="Foreground" Value="DarkGray" />
+        </Style>
+    </Application.Resources>
+
+</Application>

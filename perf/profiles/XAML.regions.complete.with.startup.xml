@@ -1,0 +1,2067 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstrumentationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Instrumentation>
+    <Regions>
+      <RegionRoot Guid="{209b787e-7b9d-4feb-a57a-2addc4452863}" Name="Microsoft-Windows-XAML">
+      <Region Guid="{D504D396-3C6C-45F5-BA29-92B492D33343}" Name="Startup">
+            <Start>
+                <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="31" Version="0" />
+            </Start>
+            <Stop>
+                <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="65" Version="0" />
+            </Stop>
+            <Match>
+                <Event TID="true" PID="true" />
+            </Match>
+        </Region>
+               <Region Guid="{6E198CFC-C7E3-4FDA-99B2-F30BDE167036}" Name="Start-To-InitializeCore"> 
+           <Start>
+              <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="31" Version="0" />
+           </Start>
+           <Stop>
+              <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="32" Version="0" />
+           </Stop>
+            <Match>
+                <Event TID="true" PID="true" />
+           </Match>
+        </Region>
+        <Region Guid="{35925336-374a-400d-b61e-85ebed78e833}" Name="Start-To-CreateResourceManager"> 
+           <Start>
+              <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="31" Version="0" />
+           </Start>
+           <Stop>
+              <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="464" Version="0" />
+           </Stop>
+            <Match>
+                <Event TID="true" PID="true" />
+           </Match>
+        </Region>
+        <Region Guid="{DD6F3261-ED75-497D-9B03-2A8813E1BF25}" Name="Start-To-CreateWindow"> 
+           <Start>
+              <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="31" Version="0" />
+           </Start>
+           <Stop>
+              <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="30" Version="0" />
+           </Stop>
+            <Match>
+                <Event TID="true" PID="true" />
+           </Match>
+        </Region>
+        <Region Guid="{9394A09E-07CB-4959-ADB6-2D6A6E2FBEA5}" Name="Start-To-ApplicationStartup"> 
+           <Start>
+              <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="31" Version="0" />
+           </Start>
+           <Stop>
+              <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="17" Version="0" />
+           </Stop>
+            <Match>
+                <Event TID="true" PID="true" />
+           </Match>
+        </Region>
+        <Region Guid="{BEAC5E3F-338F-411C-A0D5-7972C058FE12}" Name="Start-To-Layout"> 
+           <Start>
+              <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="31" Version="0" />
+           </Start>
+           <Stop>
+              <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="42" Version="0" />
+           </Stop>
+            <Match>
+                <Event TID="true" PID="true" />
+           </Match>
+        </Region>
+        <Region Guid="{63146B81-6891-4BE1-8B3A-837B9662C576}" Name="Start-To-Frame"> 
+           <Start>
+              <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="31" Version="0" />
+           </Start>
+           <Stop>
+              <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="65" Version="0" />
+           </Stop>
+            <Match>
+                <Event TID="true" PID="true" />
+           </Match>
+        </Region>
+        <Region Guid="{9835E264-04B9-4ee1-8F0D-666C1A86EA24}" Name="ParseXaml">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="1" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="2" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{84D1C136-7DE5-46c9-B5B7-264325C4A01C}" Name="ClrStartup">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="7" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="8" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{8A537CD0-CF1E-4d92-9C8B-A005AE1DD401}" Name="ClrShutdown">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="9" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="10" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{A72C6400-7EF2-4355-B231-E38FE4D63A84}" Name="PutRootVisual">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="11" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="12" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{EA919D73-2960-49e4-8649-F441E02F58CD}" Name="PutSource">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="13" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="14" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{054A51C3-97F7-4BCC-A020-1693C1F08496}" Name="ShowWindow">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="27" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="28" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{0AE1D84A-CA23-46E2-BF63-372FBBBE9929}" Name="CreateWindow">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="29" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="30" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{CABE0CE7-8E44-430A-877B-2CABA2A5227D}" Name="Layout">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="41" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="42" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{475921E0-1CDB-4467-BB77-EE009F516046}" Name="Measure">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="43" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="44" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{4EB265AE-95B3-4CE3-8908-2F9F0B2F5950}" Name="Arrange">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="45" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="46" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{74ACF5E2-585F-4639-BCCE-5D3280058D3B}" Name="MeasureElement">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="47" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="48" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{F4FB719B-D48B-4B74-8EB4-669C0B20041D}" Name="ArrangeElement">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="49" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="50" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{BE75C388-7935-453E-B2CA-4905F63FF812}" Name="FireLayoutUpdated">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="51" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="52" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{E48697DE-F9E6-42FD-8367-381445068A8C}" Name="FireSizeChanged">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="53" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="54" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{BF317E0F-9A21-42B8-9DFB-A3F58E424D82}" Name="EventCallback">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="15" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="16" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{9EE4B089-164B-4038-AC71-CD41F649B7AD}" Name="Frame">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="63" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="65" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{600C2568-1AF2-4981-8A60-990FE415FF0F}" Name="PerFrameCallback">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="66" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="67" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{CDCDC866-B51A-41AC-8F07-447C82224AF8}" Name="ApplicationLoadComponent">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="20" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="21" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{CDBAB665-217E-40A0-9F8C-3916A91B832F}" Name="CoreServicesCreate">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="22" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="23" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{ED75C1FC-E6CE-4310-B7F1-E26C7E1EA61B}" Name="CoreServicesReset">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="24" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="25" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{DC2879B8-3213-4520-8FE0-6A906BEE518E}" Name="RefreshTemplateBindings">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="82" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="83" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{F4895669-A49B-475E-92B4-02C5A861BC76}" Name="GetBuiltInStyle">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="3" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="4" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{CE921A2A-E97C-4C30-B318-173F99C5A608}" Name="InitializeCore">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="31" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="32" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{7CED9481-F1BE-40D8-8317-44C9F9316362}" Name="InitializeMetadataStore">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="33" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="34" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{4F2EDD6D-73A1-4EBC-9364-8EE4A3C3470D}" Name="DynamicTimeline">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="55" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="56" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{CC830311-86B3-4387-BC38-D54F304E66B9}" Name="ProcessLayoutForTransition">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="57" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="58" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{B2CEE7CD-E0A8-4B4C-86D0-ABB7A63AA2C7}" Name="RealizeTransition">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="59" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="60" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{792DCAAD-3DA8-439A-A0E8-B48A9BB0DE43}" Name="HitTest">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="80" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="81" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{C51BEF3C-5D26-4DE9-81AC-39B401F82FAA}" Name="ApplyTemplate">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="5" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="6" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{1a9e8cc4-1930-4aba-bc65-f221e32371f1}" Name="RenderThreadPresent">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="68" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="69" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{29347895-3508-43AE-8457-E47EA6334A94}" Name="RenderWalk">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="93" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="94" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{173D9D04-4B2B-4A1A-B259-10E73852C0E7}" Name="FindBackgroundPrimitive">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="96" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="97" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{032EBDBF-EDA0-4F63-B821-A364B8504B95}" Name="DrawFrameRateCounter">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="98" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="99" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{8c25a176-609c-48dc-a519-489a92b90d1b}" Name="SubmitFrame">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="100" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="102" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{47EBC335-E0B7-490f-8645-62C1A3261F73}" Name="DownloadRequest">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="103" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="104" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{19341127-D2B0-4e96-B888-0920F59EAF8A}" Name="CreatingHardwareCompositor">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="70" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="71" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{078ACB4F-E170-4bd0-ABE2-22BCC4C6045C}" Name="CreatingMetaSurface">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="72" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="73" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{DF85E5BE-1011-47d3-81C1-3905A68BA808}" Name="ResettingMetaSurfaces">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="74" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="75" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{2BD68A1A-F298-4CAB-BF93-15CFB43A5E0D}" Name="CreateGraphicsDevice">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="76" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="77" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{A5623C27-ED29-40BE-B15E-204EA9E3EF6A}" Name="CreateAcceleratedGraphics">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="78" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="79" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{aee790b0-871e-4442-ad75-46b2856932be}" Name="HardwareDecodeFrame">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="36" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="37" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{d2106124-a94c-4b19-b86e-3b66a805d01c}" Name="PrimitiveCompositionDraw">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="108" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="109" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{5ca2bc42-83c0-4703-9a45-9fd7f6a7cd97}" Name="PrimitiveCompositionUpdateSurfaces">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="110" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="111" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{C2A5C05F-C025-4865-AF24-3BF452A2D2B7}" Name="RenderThreadFrame">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="115" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="116" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{3031EEC7-6D18-472C-8D62-40B3E3368F09}" Name="RenderThreadWaitForVBlank">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="118" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="119" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{A63AB23B-CC6C-4EA7-8D82-92B400A307A2}" Name="RenderThreadWaitForWork">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="120" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="121" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{A3EB704F-A444-43FC-9DCA-6A115BA72508}" Name="PrimitiveCompositionEnsureHardwareResources">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="126" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="127" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{9FD92282-4ECF-4A16-99A8-D356828F36B1}" Name="PrimitiveCompositionGenerateInstances">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="128" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="129" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{41EA1858-8082-4BBC-9DAF-B5659B1CDF1F}" Name="SubmitRetarget">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="130" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="131" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{1004559A-DA1A-4219-8CDE-BDB038240CBC}" Name="ProcessRetarget">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="132" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="133" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{979B80FB-2640-4990-8A38-CD40061F4052}" Name="SubmitAlphaModeUpdate">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="134" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="135" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{164288AA-3FD8-458A-AEBC-588C5B86C534}" Name="ProcessAlphaModeUpdate">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="136" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="137" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{28300166-F324-4F8E-9916-E0FBC5D38F01}" Name="ImageCacheDownload">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="143" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="144" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{C10BB1EB-8892-42AE-A6DF-009C174EF13B}" Name="ImageCacheDecode">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="145" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="146" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{07005F31-ADD6-4876-A7CE-6F90A59003A1}" Name="DecodeToSurface">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="147" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="148" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{07C148B5-20EF-461c-A5D1-A6ED1C800901}" Name="PointerDown">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="149" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="150" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{07C148B5-20EF-461c-A5D1-A6ED1C800902}" Name="PointerUpdate">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="151" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="152" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{07C148B5-20EF-461c-A5D1-A6ED1C800903}" Name="PointerUp">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="153" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="154" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{6b87453f-b775-4b62-9cf7-35e6496336de}" Name="PointerEnter">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="155" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="156" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{22e1fdc7-6627-4d1b-bc90-99e39f57776e}" Name="PointerLeave">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="157" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="158" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{60615954-14cb-4513-a4c8-a6dd8ca9d731}" Name="PointerWheel">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="159" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="160" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{5cf77714-2b20-4c1b-9133-00135684650f}" Name="PointerHWheel">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="161" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="162" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{42a4716d-8326-4698-b902-73138ce4725a}" Name="PointerCaptureChanged">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="163" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="164" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{f5c8b5ad-063c-42c6-8d1e-5eca39d12a75}" Name="ProcessPointerInput">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="165" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="166" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{bcf30cb3-33b4-4a93-a553-087cc464acc4}" Name="DmViewportStatusUpdate">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="169" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="170" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{647c48fa-ab15-46b5-a13a-b90236e09fb6}" Name="DmViewportValuesUpdate">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="171" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="172" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{d651c8ef-1598-4d5f-adea-5d7d341c188e}" Name="DmCompositorViewportValuesUpdate">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="173" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="174" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{8e5e5b26-d136-48f0-aea2-1ea1fe29a897}" Name="RegisterInputPaneHandler">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="185" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="186" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{b7ab53e2-6ebc-45cf-994b-e4a50be5ae21}" Name="TouchHitTesting">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="187" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="188" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{21120203-567e-4d34-affe-047a4451cb9d}" Name="DmInitialize">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="177" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="178" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{5046d83b-8b51-45fa-8318-1a74aa46c7d3}" Name="DmSetCrossSlideContainer">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="179" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="180" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{6e4a9e38-132c-49b6-aaf9-f925a2abec82}" Name="DmStartCrossSlideContainers">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="181" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="182" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{934405f5-acf4-4af7-9335-ec3cbdfde3ce}" Name="CreateSwipeRecognizer">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="189" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="190" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{916c5a67-4b5d-4d7b-bc98-e713e74c505d}" Name="Swiping">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="197" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="198" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{62ce6ef9-d7fc-4b7c-a558-f34991142ed5}" Name="DestroySwipeRecognizer">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="191" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="192" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{19761571-5204-4094-9aaf-5f15868bac65}" Name="DmCrossSlideContainerCompleted">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="183" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="184" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{503be4c8-9701-4168-8d65-d73abcbdac98}" Name="FeedSwipeRecognizer">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="193" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="194" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{b0d00ed9-9817-440d-adc0-019be9ab8d1b}" Name="VirtualizationMeasure">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="199" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="200" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{2904bcdc-7aaf-49e3-ae0d-6375f1d1b1dd}" Name="VirtualizationCleanup">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="201" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="202" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{6b9cbe75-90d7-48f3-a220-319ed580b6b2}" Name="VirtualizationAdd">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="203" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="204" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{50ecb666-b7ca-4a19-9d59-5d39490ac0c6}" Name="GenerateContainer">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="205" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="206" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{be15d722-b80a-4d23-a81e-28b089b686bc}" Name="MeasureChild">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="207" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="208" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{8c3660af-56e3-41e3-bf43-151de0f0fbe5}" Name="PrepareContainer">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="209" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="210" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{B3FFB743-6106-4A03-B47B-BDD1FD934A4F}" Name="UpdateLogicalScrollData">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="211" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="212" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{ade91ac3-9b1f-4688-88af-3b7c19cea72d}" Name="ApplicationSuspend">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="214" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="215" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{82e9dc5a-5c6c-46a7-9a1f-b1181a26f443}" Name="ApplicationResume">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="216" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="217" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{b8ab3e56-a75a-431a-982c-0b56f5a7c3ab}" Name="PrimitiveCompositionTextureUpdate">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="266" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="267" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{71cc9667-95d7-49ca-916d-4114192a626c}" Name="UIThreadSoftwareRasterizeWait">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="268" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="269" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{6ec2adfa-96cd-48f6-9975-28276e73f79c}" Name="UIThreadTextRasterizeWait">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="270" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="271" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{31810aed-8499-42fc-b6f8-75a2cb8adfc4}" Name="UIThreadWaitGPUWork">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="272" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="273" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{15353e76-b71d-4b59-b1b6-0308c86d1560}" Name="PrimitiveCompositionTexture8BitExpand">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="276" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="277" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{10a76253-5c5c-4712-9343-1acc383691c9}" Name="CompTreeRemoveFromParent">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="290" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="291" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{25178926-3a43-43b2-8a42-1b449af30e4f}" Name="LoadTemplateContent">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="300" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="301" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{3F7D71B0-62C4-4E8A-9099-EE0A5C926912}" Name="NotifyGripperPositionChanged">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="311" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="312" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{D58BD2BC-CC7D-4F7F-9D7F-2A498E778C3D}" Name="ChangeSelection">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="313" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="314" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{75DD3EF4-9C82-45C5-ADBE-086AAF8F2CE9}" Name="ComputeSnappingMode">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="315" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="316" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{6E7D42A7-4EEC-4FFC-A8A2-1116A1517701}" Name="ExtendSelectionRange">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="317" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="318" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{0A41E664-CE6D-4C61-8CE2-724FAC2D2437}" Name="ExtendToBlockBoundaries">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="319" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="320" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{42a4716e-8327-4699-b903-73138ce4725b}" Name="DmPointerHitTest">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="321" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="322" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{3ba953e2-4431-4a67-a3e2-7442a33c1412}" Name="CompositorLock">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="327" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="328" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{ddb25841-dcd0-47dd-82fa-6300cdef7a8b}" Name="CommitMainDevice">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="329" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="330" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{e54994e7-ef2d-42eb-92a5-25b2813a98a7}" Name="CommitSecondaryDevice">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="331" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="332" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{CAD8364B-9EFF-47FE-BCF2-1FA7ABD492B7}" Name="OfferResources">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="333" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="334" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{0D608AA0-03D5-40E7-8E24-FA58917C7070}" Name="ReclaimResources">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="335" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="336" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{ca286e8c-4b24-4df7-8b6a-48f314863a5c}" Name="BlockOnGPU">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="338" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="339" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{d525be93-7569-481d-bb62-7fd2f671827f}" Name="RenderThreadSimulateVBlank">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="350" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="351" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{D9BC9209-18AF-475B-9709-CDD6296631A0}" Name="DecodeToRenderSize">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="360" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="361" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{3e052be0-c268-4b66-88b7-8addb05b3b6c}" Name="DecodeSizeQuery">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="358" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="359" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{d32a659d-f80e-4720-9344-276a56207f95}" Name="ImageRequestDecode">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="362" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="363" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{cf2cac3b-b591-49ae-b1be-a500a5b9671b}" Name="ImageEnsureAndUpdateHardwareResources">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="364" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="365" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{d999147d-3fa3-4203-ba18-78e27f677d04}" Name="ImageCopyToVideoMemory">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="366" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="367" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{98ae4dfa-d2e3-4e74-8e67-b74ccca7791d}" Name="ImageDownloadAvailable">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="368" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="369" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{274be523-2614-4053-b402-a5cae1ed9d6f}" Name="ImageSetSource">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="370" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="371" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{cba89b2c-5e8d-4c3d-9c16-195feef04a3f}" Name="ImageSetSourceFromUri">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="372" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="373" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{d6d99bb3-cd26-472d-b74b-46015b8c03c9}" Name="ImageResetForSourceChange">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="374" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="375" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{1D797F19-7894-4FC7-8DD1-E9694D40B5F9}" Name="RenderToSurface">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="380" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="381" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{a3c8b5aa-6315-48f7-8384-04f53d7877ad}" Name="DmContentValuesUpdate">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="383" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="384" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{790b3f19-0f9f-445a-a215-f70cb938fb38}" Name="DmCompositorContentValuesUpdate">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="385" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="386" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{457529EA-F547-40C3-8A5B-C3DF8EEB61C8}" Name="RealizeDeferredElement">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="397" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="398" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{D99AC3E4-E53D-4389-9F95-1483E12F0EF6}" Name="ImageUpdateHardwareResources">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="401" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="402" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{4F77DD72-AB26-49BA-8D5E-6323B9FA27D4}" Name="FaultInBehavior">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="409" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="410" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{DDCCB53C-5769-4352-96DD-CF945D98301D}" Name="AccessKeyScopeBuilderConstructScope">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="417" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="418" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{A5A6BE1C-5523-4B63-AC83-6945D1668F1F}" Name="AccessKeyScopeInvoke">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="419" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="420" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{3A18AF8C-FAB6-487E-B6A4-042BCC590A57}" Name="ReleaseGraphicsDeviceResources">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="421" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="422" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{2E23054B-DB7D-477D-B5C3-50043836A0B2}" Name="RebuildGraphicsDeviceResources">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="423" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="424" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{35829CD1-BF9D-4898-A999-FC4F9E3D5408}" Name="ApiPropertySetValue">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="451" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="452" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{17E33AFF-2E3D-4B37-8C9E-29D46BCB5AF2}" Name="ApiPropertyGetValue">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="453" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="454" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{FD581DF5-9A2D-4296-80AD-11BFF1350F3C}" Name="ApiFunctionCall">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="455" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="456" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{a00ab9f9-5ee0-4df0-9ba4-bdcf3eb395a0}" Name="ThemeChanged">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="457" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="458" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{1d4b72d8-f416-4cb6-988b-8ba4d2418203}" Name="InitializeText">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="461" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="462" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{bfe6717e-b77a-4f51-9256-f7227605c96b}" Name="CreateResourceManager">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="463" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="464" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{EAABB942-4DD9-4347-924D-229FF3E27311}" Name="ReferenceTrackingCompleted">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="517" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="468" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{D53E7163-86C2-4423-98D7-40025912CD1D}" Name="ThreadedJobQueueShutdownWait">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="471" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="472" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{B9E78E42-C4C2-4028-B9DC-2616E08B694D}" Name="ThreadedJobQueueThreadLifetime">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="475" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="476" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{0E9BD049-E14F-474A-8C40-59BA09AFE720}" Name="ThreadedJobQueueJob">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="478" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="479" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{1682362E-506D-478B-BD7B-B39A223E2881}" Name="ThreadedJobQueueWait">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="480" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="481" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{7D09F211-312D-46F8-B6C1-AA06846A4FED}" Name="DownloadRequestBinding">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="483" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="484" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{b14e40ea-8730-4259-b60c-7659be5d05e7}" Name="XYFocusWalk">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="486" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="487" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{b14ae938-a1e4-4de7-ab83-c67defe40604}" Name="SetupCCC">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="489" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="490" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{0638a158-511e-41f2-9dcf-d0d2a4cf384f}" Name="IndividualSizeChanged">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="491" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="492" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{21e8888b-b8bf-4c90-ad08-4a0ef31a931c}" Name="RaiseLoadedEvent">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="493" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="494" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{0fd10927-da25-4e1d-8d4b-cd01dd1f6c21}" Name="RaiseAllLoadedEvents">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="495" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="496" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{72bd24aa-dcd8-4b33-8d85-9e4ed0703200}" Name="UpdateFocus">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="497" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="498" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{df58d639-b364-4e9f-85c0-34e623121c44}" Name="PlaySound">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="501" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="502" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{9af7a699-52cd-4cbf-8530-e1bc8afff381}" Name="GetSoundPlayerService">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="499" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="500" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{9d9ad09a-896a-4fe7-999f-b5df0fda1429}" Name="GenerateItems">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="503" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="504" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{e14b6177-3720-48da-8e72-a8e0b9075a74}" Name="GenerateMCContainer">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="505" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="506" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{b20eb71b-73ec-43ab-b508-c4506b5458b6}" Name="PlaceElement">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="507" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="508" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{321013c8-8272-4d71-899a-5183d9b154d2}" Name="UIThreadCallback">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="509" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="510" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{50041979-93fe-4d29-9e1a-b191779decc5}" Name="CancelTransitions">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="511" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="512" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{65b39bef-aeaa-4070-a3a6-feb5867eb297}" Name="ReleaseQueueCleanup">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="513" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="514" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{a4448c43-1466-4eeb-ae7a-8bd62378a51d}" Name="FindTrackerTargets">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="515" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="516" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{00ea1923-0d14-439d-8966-c866fd8ef3df}" Name="ReferenceTrackingStarted">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="518" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="519" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{11387ff3-9858-4c4e-880a-d9ce242ffb60}" Name="CheckAutomaticAutomationChanges">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="520" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="521" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{d13b427e-a7be-446e-9158-1af0df772b82}" Name="CheckAutomaticAutomationChangesPopup">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="522" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="523" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{CB6896F7-CE73-466B-85EF-B0F6ED723D40}" Name="KeyUp">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="528" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="529" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{DC7E57DE-A69B-4150-A3F1-9B073F6CF4D7}" Name="KeyDown">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="530" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="531" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{BB71CD40-F9CF-469C-A3C5-8DA9F3DC2B1E}" Name="KeyUpHandler">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="524" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="525" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{79997C2D-3746-46CE-9030-E797F1FB0B4D}" Name="KeyDownHandler">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="526" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="527" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{6AC3C216-5D3F-4CB5-AEBE-8A3FC4010B5E}" Name="KeyEvent">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="532" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="533" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{6cb8f17a-6637-474e-a50d-06d456b00897}" Name="OnLaunchedProtected">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="534" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="535" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{2d5530c4-cc04-47b9-b6b5-39dc80c55040}" Name="OnActivated">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="536" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="537" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{82dffd48-0e41-4747-9d67-0033472b1ad2}" Name="RenderElement">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="538" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="539" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{5c1bb557-6de2-4a31-ad2e-ec4af25ddfca}" Name="HWCompNodeUpdate">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="540" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="541" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{E9091EFB-6C81-44D6-A33D-5598AD6D1A65}" Name="XYFocusEntered">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="542" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="543" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{93924EE3-76B1-432A-B6D5-F482607D2E16}" Name="FireEffectiveViewportChanged">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="545" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="546" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{68b50386-4ef7-4167-8a5d-a03e646cec00}" Name="GetElementCount">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="547" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="548" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{300c38f5-0da4-438b-8811-0b6d850a7a49}" Name="GetCompressedImageSize">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="549" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="550" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{1bd20917-7f6b-4092-a1e2-dadbb6b9724e}" Name="FindObjectsOfType">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="551" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="552" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{B606D4F8-756B-40E0-8FE8-27DBEDFCB64B}" Name="ProvideStaticResourceReference">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="555" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="556" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{C8AE01B5-4777-4864-85B3-CA9829E3F1BA}" Name="SetValueOnCurrentInstance">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="557" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="558" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{518C7D60-05AB-4AA8-9DEC-03D4C0F4A9C7}" Name="SetConnectionID">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="559" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="560" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{D1615C42-03D6-4D6C-8D57-54815664D02B}" Name="SetCustomRuntimeDataOnCurrentInstance">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="561" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="562" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{C8BC1132-2E62-4278-86C1-8AA5ED652837}" Name="AddToCollectionOnCurrentInstance">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="563" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="564" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{5E66486A-9EFB-4024-B87A-DDC8B045BDF7}" Name="SetNameOnCurrentInstance">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="565" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="566" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{B659FD24-ABCA-48C8-AD13-EA563A49201C}" Name="CreateInstance">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="567" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="568" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{0FFB9876-6818-4D06-A31A-6B3DC25287CF}" Name="SetCustomRuntimeDataForStyle">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="569" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="570" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{11B82986-1FCD-4643-8118-71CD834DC4DE}" Name="SetCustomRuntimeDataForResourceDictionary">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="571" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="572" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{10B0524B-4CEC-49DD-AF04-9899346E9759}" Name="SetCustomRuntimeDataForVSM">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="573" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="574" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+        <Region Guid="{37DE4BF9-FE38-476B-A70B-42CB8B7FD24B}" Name="SetCustomRuntimeDataForDeferredElement">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="553" Version="0" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="554" Version="0" />
+          </Stop>
+          <Match>
+            <Event TID="true" PID="true" />
+          </Match>
+        </Region>
+      </RegionRoot>
+    </Regions>
+  </Instrumentation>
+</InstrumentationManifest>
+

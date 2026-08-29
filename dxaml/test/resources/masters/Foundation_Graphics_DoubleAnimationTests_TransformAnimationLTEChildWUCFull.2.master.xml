@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual VisualId="1" Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual">
+            <Visual VisualId="2" Tag="PrimaryVisual" SizeX="400" SizeY="300">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4(LOCAL.Render)">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="Render" Type="Matrix3x2">
+                        <ExpressionAnimation String="Matrix3x2.CreateFromTranslation(-vector2(PS.CenterX, PS.CenterY)) * Matrix3x2.CreateFromScale(vector2(PS.ScaleX, PS.ScaleY)) * Matrix3x2.CreateFromTranslation(vector2(PS.CenterX, PS.CenterY))">
+                          <ReferenceParameter Name="PS" />
+                          <PropertySet>
+                            <Property Name="CenterX" Type="Scalar" />
+                            <Property Name="CenterY" Type="Scalar" />
+                            <Property Name="ScaleX" Type="Scalar">
+                              <KeyFrameAnimation Duration="100">
+                                <KeyFrame Value="1" />
+                                <KeyFrame Time="1" Value="1">
+                                  <LinearEasingFunction />
+                                </KeyFrame>
+                              </KeyFrameAnimation>
+                            </Property>
+                            <Property Name="ScaleY" Type="Scalar" Value="1" />
+                          </PropertySet>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <Visual Tag="PrependVisual">
+                  <TransformMatrix>
+                    <Translate X="0.75" Y="0.75" />
+                  </TransformMatrix>
+                  <Visual Tag="PrimaryVisual">
+                    <Visual Tag="ContentVisual">
+                      <Visual TransformParentVisualId="2" Tag="PrependVisual">
+                        <Visual Tag="PrimaryVisual" SizeX="23" SizeY="19">
+                          <TransformMatrix>
+                            <Translate X="0.75" Y="0.75" />
+                          </TransformMatrix>
+                          <Visual Tag="ContentVisual">
+                            <wucSpriteVisual SizeX="21" SizeY="10" BorderMode="Hard" OffsetX="1.25" OffsetY="5.25" OffsetZ="0">
+                              <MaskBrush>
+                                <Source>
+                                  <ColorBrush Color="rgb {1, 0, 0}" />
+                                </Source>
+                                <Mask>
+                                  <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                                </Mask>
+                              </MaskBrush>
+                            </wucSpriteVisual>
+                          </Visual>
+                        </Visual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

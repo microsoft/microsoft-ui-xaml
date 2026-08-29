@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual">
+            <TransformMatrix>
+              <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(PS.Translation) * prependVisual.PrependTransform">
+                <ReferenceParameter Name="PS">
+                  <PropertySet>
+                    <Property Name="Opacity" Type="Scalar">
+                      <KeyFrameAnimation Duration="0.001">
+                        <KeyFrame Expression="this.StartingValue" />
+                        <KeyFrame Time="1" Value="0.5">
+                          <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                        </KeyFrame>
+                      </KeyFrameAnimation>
+                    </Property>
+                    <Property Name="Rotation" Type="Scalar">
+                      <KeyFrameAnimation Duration="2.074e+06">
+                        <KeyFrame Expression="this.StartingValue" />
+                        <KeyFrame Time="1" Value="45">
+                          <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                        </KeyFrame>
+                      </KeyFrameAnimation>
+                    </Property>
+                    <Property Name="Scale" Type="Vector3">
+                      <KeyFrameAnimation Duration="7202">
+                        <KeyFrame Expression="Vector3(4.000000,this.StartingValue.Y,this.StartingValue.Z)" />
+                        <KeyFrame Time="1" X="4" Y="3" Z="2">
+                          <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                        </KeyFrame>
+                      </KeyFrameAnimation>
+                    </Property>
+                    <Property Name="Translation" Type="Vector3">
+                      <KeyFrameAnimation Duration="1.5">
+                        <KeyFrame Expression="this.StartingValue" />
+                        <KeyFrame Time="1" X="100" Y="200" Z="300">
+                          <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                        </KeyFrame>
+                      </KeyFrameAnimation>
+                    </Property>
+                  </PropertySet>
+                </ReferenceParameter>
+                <ReferenceParameter Name="prependVisual" />
+              </ExpressionAnimation>
+            </TransformMatrix>
+            <Visual Tag="PrimaryVisual" SizeX="100" SizeY="100">
+              <Opacity>
+                <ExpressionAnimation String="PS.Opacity">
+                  <ReferenceParameter Name="PS">
+                    <PropertySet>
+                      <Property Name="Opacity" Type="Scalar">
+                        <KeyFrameAnimation Duration="0.001">
+                          <KeyFrame Expression="this.StartingValue" />
+                          <KeyFrame Time="1" Value="0.5">
+                            <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                          </KeyFrame>
+                        </KeyFrameAnimation>
+                      </Property>
+                      <Property Name="Rotation" Type="Scalar">
+                        <KeyFrameAnimation Duration="2.074e+06">
+                          <KeyFrame Expression="this.StartingValue" />
+                          <KeyFrame Time="1" Value="45">
+                            <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                          </KeyFrame>
+                        </KeyFrameAnimation>
+                      </Property>
+                      <Property Name="Scale" Type="Vector3">
+                        <KeyFrameAnimation Duration="7202">
+                          <KeyFrame Expression="Vector3(4.000000,this.StartingValue.Y,this.StartingValue.Z)" />
+                          <KeyFrame Time="1" X="4" Y="3" Z="2">
+                            <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                          </KeyFrame>
+                        </KeyFrameAnimation>
+                      </Property>
+                      <Property Name="Translation" Type="Vector3">
+                        <KeyFrameAnimation Duration="1.5">
+                          <KeyFrame Expression="this.StartingValue" />
+                          <KeyFrame Time="1" X="100" Y="200" Z="300">
+                            <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                          </KeyFrame>
+                        </KeyFrameAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                </ExpressionAnimation>
+              </Opacity>
+              <RotationAngleInDegrees>
+                <ExpressionAnimation String="PS.Rotation">
+                  <ReferenceParameter Name="PS">
+                    <PropertySet>
+                      <Property Name="Opacity" Type="Scalar">
+                        <KeyFrameAnimation Duration="0.001">
+                          <KeyFrame Expression="this.StartingValue" />
+                          <KeyFrame Time="1" Value="0.5">
+                            <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                          </KeyFrame>
+                        </KeyFrameAnimation>
+                      </Property>
+                      <Property Name="Rotation" Type="Scalar">
+                        <KeyFrameAnimation Duration="2.074e+06">
+                          <KeyFrame Expression="this.StartingValue" />
+                          <KeyFrame Time="1" Value="45">
+                            <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                          </KeyFrame>
+                        </KeyFrameAnimation>
+                      </Property>
+                      <Property Name="Scale" Type="Vector3">
+                        <KeyFrameAnimation Duration="7202">
+                          <KeyFrame Expression="Vector3(4.000000,this.StartingValue.Y,this.StartingValue.Z)" />
+                          <KeyFrame Time="1" X="4" Y="3" Z="2">
+                            <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                          </KeyFrame>
+                        </KeyFrameAnimation>
+                      </Property>
+                      <Property Name="Translation" Type="Vector3">
+                        <KeyFrameAnimation Duration="1.5">
+                          <KeyFrame Expression="this.StartingValue" />
+                          <KeyFrame Time="1" X="100" Y="200" Z="300">
+                            <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                          </KeyFrame>
+                        </KeyFrameAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                </ExpressionAnimation>
+              </RotationAngleInDegrees>
+              <Scale>
+                <ExpressionAnimation String="PS.Scale">
+                  <ReferenceParameter Name="PS">
+                    <PropertySet>
+                      <Property Name="Opacity" Type="Scalar">
+                        <KeyFrameAnimation Duration="0.001">
+                          <KeyFrame Expression="this.StartingValue" />
+                          <KeyFrame Time="1" Value="0.5">
+                            <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                          </KeyFrame>
+                        </KeyFrameAnimation>
+                      </Property>
+                      <Property Name="Rotation" Type="Scalar">
+                        <KeyFrameAnimation Duration="2.074e+06">
+                          <KeyFrame Expression="this.StartingValue" />
+                          <KeyFrame Time="1" Value="45">
+                            <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                          </KeyFrame>
+                        </KeyFrameAnimation>
+                      </Property>
+                      <Property Name="Scale" Type="Vector3">
+                        <KeyFrameAnimation Duration="7202">
+                          <KeyFrame Expression="Vector3(4.000000,this.StartingValue.Y,this.StartingValue.Z)" />
+                          <KeyFrame Time="1" X="4" Y="3" Z="2">
+                            <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                          </KeyFrame>
+                        </KeyFrameAnimation>
+                      </Property>
+                      <Property Name="Translation" Type="Vector3">
+                        <KeyFrameAnimation Duration="1.5">
+                          <KeyFrame Expression="this.StartingValue" />
+                          <KeyFrame Time="1" X="100" Y="200" Z="300">
+                            <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                          </KeyFrame>
+                        </KeyFrameAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                </ExpressionAnimation>
+              </Scale>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+                  <Color>
+                    <KeyFrameAnimation Duration="0.15">
+                      <KeyFrame Color="rgb {1, 0, 0}" />
+                      <KeyFrame Time="1" Color="rgb {0, 0, 1}">
+                        <LinearEasingFunction />
+                      </KeyFrame>
+                    </KeyFrameAnimation>
+                  </Color>
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

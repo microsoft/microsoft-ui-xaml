@@ -1,0 +1,22 @@
+<UserControl
+    x:Class="WinUICsDesktopClassLibrary.UserControlWithXBindResource"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinUICsDesktopClassLibrary"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+  <UserControl.Resources>
+    <Button x:Key="ButtonResource" Background="{x:Bind RedBrush}" />
+    <Style TargetType="TextBlock">
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="Tag" Value="{StaticResource ButtonResource}" />
+    </Style>
+  </UserControl.Resources>
+  <Grid>
+    <Grid.Background>
+      <SolidColorBrush x:Name="RedBrush" Color="Red" />
+    </Grid.Background>
+  </Grid>
+</UserControl>

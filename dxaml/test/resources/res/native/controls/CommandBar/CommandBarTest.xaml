@@ -1,0 +1,58 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page    
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <CommandBar VerticalAlignment="Center" Margin="0,0,200,0">
+            <AppBarButton Icon="Accept" Label="AppBarButton0"/>
+            <AppBarButton Icon="Account" Label="AppBarButton1"/>
+            <AppBarButton Icon="Add" Label="AppBarButton2"/>
+            <AppBarButton Icon="AddFriend" Label="AppBarButton3"/>
+            <AppBarButton Icon="Admin" Label="AppBarButton4">
+                <AppBarButton.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="MenuFlyoutItem40" />
+                        <MenuFlyoutItem Text="MenuFlyoutItem41" />
+                        <MenuFlyoutItem Text="MenuFlyoutItem42" />
+                    </MenuFlyout>
+                </AppBarButton.Flyout>
+            </AppBarButton>
+            <AppBarButton Icon="AlignCenter" Label="AppBarButton5">
+                <!--<AppBarButton.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="MenuFlyoutItem50" />
+                        <MenuFlyoutItem Text="MenuFlyoutItem51" />
+                        <MenuFlyoutItem Text="MenuFlyoutItem52" />
+                    </MenuFlyout>
+                </AppBarButton.Flyout>-->
+            </AppBarButton>
+            <AppBarButton Icon="AlignLeft" Label="AppBarButton6">
+                <!--<AppBarButton.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="MenuFlyoutItem60" />
+                        <MenuFlyoutItem Text="MenuFlyoutItem61" />
+                        <MenuFlyoutItem Text="MenuFlyoutItem62" />
+                    </MenuFlyout>
+                </AppBarButton.Flyout>-->
+            </AppBarButton>
+            <AppBarButton Icon="AlignRight" Label="AppBarButton7">
+                <!--<AppBarButton.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="MenuFlyoutItem70" />
+                        <MenuFlyoutItem Text="MenuFlyoutItem71" />
+                        <MenuFlyoutItem Text="MenuFlyoutItem72" />
+                    </MenuFlyout>
+                </AppBarButton.Flyout>-->
+            </AppBarButton>
+            <AppBarButton Icon="AllApps" Label="AppBarButton8">
+                <!--<AppBarButton.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="MenuFlyoutItem80" />
+                        <MenuFlyoutItem Text="MenuFlyoutItem81" />
+                        <MenuFlyoutItem Text="MenuFlyoutItem82" />
+                    </MenuFlyout>
+                </AppBarButton.Flyout>-->
+            </AppBarButton>
+    </CommandBar>
+</Page>

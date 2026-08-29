@@ -1,0 +1,124 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<UserControl
+    x:Class="BindTestbed.TwoWayTests"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BindTestbed"
+    xmlns:model="using:BindTestbedModel"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Tag="{x:Bind Model.Employees[0]}">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <model:ColorToStringConverter x:Key="ColorToStringConverter"/>
+            <Style TargetType="Slider">
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="Width" Value="250" />
+            </Style>
+            <DataTemplate x:Key="ManagerTemplate" x:DataType="model:IManager" >
+                <Grid Width="200" Height="40">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Text="{x:Bind FirstName, Mode=TwoWay}" />
+                    <TextBox Grid.Column="1" Text="{x:Bind FavoriteColor, Mode=OneWay, Converter={StaticResource ColorToStringConverter}}"/>
+                </Grid>
+            </DataTemplate>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <ScrollViewer>
+            <StackPanel Margin="30">
+
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Button x:Name="UpdateValuesButton" Click="UpdateValuesClick" >Update Values</Button>
+                    <Button Click="ResetValuesClick" >Reset Values</Button>
+                </StackPanel>
+
+                <TextBlock Text="Two way Bindings" Style="{StaticResource Section}"/>
+
+                <TextBlock Style="{StaticResource Note}"><Run>Updates on Default (LostFocus)</Run></TextBlock>
+                <TextBox x:Name="TB1D" Text="{x:Bind Model.ManagerProp.FirstName, Mode=TwoWay}"/>
+                <TextBlock Style="{StaticResource Note}"><Run>Updates on Default (LostFocus, Null Object)</Run></TextBlock>
+                <TextBox x:Name="TB1D2" Text="{x:Bind Model.NullEmployee.FirstName, Mode=TwoWay}"/>
+                <TextBlock Style="{StaticResource Note}"><Run>Updates on LostFocus (explicit)</Run></TextBlock>
+                <TextBox x:Name="TB1LF" Text="{x:Bind Model.ManagerProp.FirstName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"/>
+                <TextBlock Style="{StaticResource Note}"><Run>Updates on PropertyChanged</Run></TextBlock>
+                <TextBox x:Name="TB1PC" Text="{x:Bind Model.ManagerProp.FirstName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Text="{x:Bind Model.ManagerProp.FirstName, Mode=OneWay}"/>
+
+                <TextBlock Style="{StaticResource Note}"><Run>Both sliders should be connected, via a DP and INPC combo</Run></TextBlock>
+                <Slider x:Name="Yin"  Minimum="20" Maximum="100" Value="{x:Bind DOModel.YinPropertyDP, Mode=TwoWay}"/>
+                <Slider x:Name="Yang" Minimum="20" Maximum="100" Value="{x:Bind DOModel.YangObj.Value, Mode=TwoWay}"/>
+
+                <TextBlock Style="{StaticResource Note}"><Run>Textbox Text bound to an Integer</Run></TextBlock>
+                <TextBox x:Name="TB2" Text="{x:Bind Model.IntPropWithINPC, Mode=TwoWay}"/>
+
+                <TextBlock Style="{StaticResource Note}"><Run>Textbox bound to a Color</Run></TextBlock>
+                <TextBox x:Name="TB3" Text="{x:Bind Model.ColorPropWithINPC, Mode=TwoWay, Converter={StaticResource ColorToStringConverter}}"/>
+
+                <TextBlock Style="{StaticResource Note}"><Run>Rectangle Width bound to an string</Run></TextBlock>
+                <Rectangle Width="{x:Bind Model.StringPropAsInteger, Mode=TwoWay}" Height="20">
+                    <Rectangle.Fill>
+                        <SolidColorBrush Color="{x:Bind Model.ColorPropWithINPC, Mode=TwoWay}"/>
+                    </Rectangle.Fill>
+                </Rectangle>
+
+                <TextBlock Style="{StaticResource Note}"><Run>TwoWayBinding with a cast</Run></TextBlock>
+                <TextBox Text="{x:Bind Tag.(model:IEmployee.FirstName), Mode=TwoWay}"/>
+
+                <!-- Regression: github #4787 / #7986. Two-way binding a value/string source property to
+                     a target property typed as Object/IInspectable (ContentControl.Content). -->
+                <TextBlock Style="{StaticResource Note}"><Run>TwoWay String source bound to an Object (IInspectable) target (#4787)</Run></TextBlock>
+                <ContentControl Content="{x:Bind Model.StringPropWithINPC, Mode=TwoWay}"/>
+                <TextBlock Style="{StaticResource Note}"><Run>TwoWay primitive source bound to an Object (IInspectable) target (#7986)</Run></TextBlock>
+                <ContentControl Content="{x:Bind Model.IntPropWithINPC, Mode=TwoWay}"/>
+                <TextBlock Style="{StaticResource Note}"><Run>TwoWay nullable (IReference&lt;Int32&gt;) source bound to an Object (IInspectable) target (#4787)</Run></TextBlock>
+                <ContentControl Content="{x:Bind Model.NullableIntPropWithINPC, Mode=TwoWay}"/>
+
+                <TextBlock Style="{StaticResource Note}">
+                    <Run>TwoWayBinding to an array element</Run>
+                </TextBlock>
+                <model:EmployeeTextBlock x:Name="twowayToArrayElem"  
+                           Employee="{x:Bind Model.Employees[0], Mode=TwoWay}"/>
+                <TextBox Text="{x:Bind twowayToArrayElem.Employee.FirstName, Mode=OneWay}"/>
+
+                <TextBlock Style="{StaticResource Note}">
+                    <Run>TwoWayBinding to an map element</Run>
+                </TextBlock>
+                <model:EmployeeTextBlock x:Name="twowayToMapElem" 
+                           Employee="{x:Bind Model.ThatOneGuy['You Know'], Mode=TwoWay}"/>
+                <TextBox Text="{x:Bind twowayToMapElem.Employee.FirstName, Mode=OneWay}"/>
+
+                <TextBlock Style="{StaticResource Note}"><Run>TwoWay Attached Property on Model</Run></TextBlock>
+                <TextBox Text="{x:Bind DOModel.(model:AttachedProperties.AttachedString), Mode=TwoWay}"/>
+
+                <TextBlock Style="{StaticResource Note}">The folowing should display 123</TextBlock>
+                <TextBlock Text="{x:Bind model:DataModel.UpdateReentrancyString(Model,Model.ReentrancyString),Mode=OneWay}" />
+
+                <StackPanel Margin="30">
+                    <TextBlock Text="TwoWay list scenario" Style="{StaticResource Section}"/>
+                    <TextBlock Text="These 2 lists should update each other"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="200"/>
+                        </Grid.ColumnDefinitions>
+                        <ListView  Width="200" MaxHeight="400" ItemsSource="{x:Bind Model.Managers, Mode=OneWay}" ItemTemplate="{StaticResource ManagerTemplate}"/>
+                        <ListView Grid.Column="1" Width="200" MaxHeight="400" ItemsSource="{x:Bind Model.Managers, Mode=OneWay}" ItemTemplate="{StaticResource ManagerTemplate}"/>
+                    </Grid>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Button Click="UpdateValuesClick" >Update Values</Button>
+                    <Button Click="ResetValuesClick" >Reset Values</Button>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

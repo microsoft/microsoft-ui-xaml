@@ -1,0 +1,35 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <StackPanel.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary>
+          <SolidColorBrush x:Key="RedBrush" Color="Red" />
+          <SolidColorBrush x:Key="BlueBrush" Color="Blue" />
+          <SolidColorBrush x:Key="PurpleBrush" Color="Purple" />
+          <!-- Style here references brush in same nested dictionary -->
+          <Style TargetType="Button" x:Key="BlueButtonStyle">
+            <Setter Property="Background" Value="{StaticResource BlueBrush}" />
+          </Style>
+        </ResourceDictionary>
+        <ResourceDictionary>
+          <!-- Styles here reference brushes in previous nested dictionary
+               We define 2 styles here to make sure the dictionary has custom runtime data via XBF -->
+          <Style TargetType="Button" x:Key="RedButtonStyle">
+            <Setter Property="Background" Value="{StaticResource RedBrush}" />
+          </Style>
+          <Style TargetType="Button" x:Key="PurpleButtonStyle">
+            <Setter Property="Background" Value="{StaticResource PurpleBrush}" />
+          </Style>
+        </ResourceDictionary>
+      </ResourceDictionary.MergedDictionaries>
+      <!-- We define 2 resources here to make sure the dictionary has custom runtime data via XBF -->
+      <SolidColorBrush x:Key="GreenBrush" Color="Green" />
+      <SolidColorBrush x:Key="BlackBrush" Color="Black" />
+    </ResourceDictionary>
+  </StackPanel.Resources>
+  <Button Style="{StaticResource BlueButtonStyle}" Content="Blue Button" />
+  <Button Style="{StaticResource RedButtonStyle}" Content="Red Button" />
+  <Button Style="{StaticResource PurpleButtonStyle}" Content="Purple Button" />
+</StackPanel>

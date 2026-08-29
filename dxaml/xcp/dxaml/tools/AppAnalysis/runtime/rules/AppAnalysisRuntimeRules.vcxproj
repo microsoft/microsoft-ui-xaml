@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{9bda9f6a-f3fb-4d5c-ba39-1101495c0029}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\dxaml\tools\AppAnalysis\common.props"/>
+
+    <PropertyGroup>
+        <XamlPrecompiledInclude>precomp.h</XamlPrecompiledInclude>
+        <ProjectIncludeDirectories>
+            $(LiftedIXPIncludePaths);
+            $(ProjectIncludeDirectories);
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <Import Project="$(XamlSourcePath)\msbuild\buildsettings\ETWManifestUsage.props"/>
+
+    <ItemGroup>
+        <ClInclude Include="BackingEtwRule.h"/>
+        <ClInclude Include="EtwConsumer.h"/>
+        <ClInclude Include="ETWRule.h"/>
+        <ClInclude Include="ETWRuleService.h"/>
+        <ClInclude Include="EtwRuleSet.h"/>
+        <ClInclude Include="precomp.h"/>
+        <ClInclude Include="ResourceString.h"/>
+        <ClInclude Include="RuleServiceProvider.h"/>
+        <ClInclude Include="RuleTriggeredEventArgs.h"/>
+        <ClInclude Include="StringDefinitions.h"/>
+
+        <ClCompile Include="EtwRuleSet.cpp"/>
+        <ClCompile Include="EtwRule.cpp"/>
+        <ClCompile Include="ResourceString.cpp"/>
+        <ClCompile Include="RuleTriggeredEventArgs.cpp"/>
+        <ClCompile Include="RuleServiceProvider.cpp"/>
+        <ClCompile Include="SourceInfoRuleService.cpp"/>
+        <ClCompile Include="ImageDecodingRule.cpp"/>
+        <ClCompile Include="CollapsedElementsRule.cpp"/>
+        <ClCompile Include="ListViewDevirtualizedRule.cpp"/>
+        <ClCompile Include="UIThreadUtilizationRule.cpp"/>
+        <ClCompile Include="DynamicBindingRule.cpp"/>
+        <ClCompile Include="NoAutomationNameRule.cpp"/>
+        <ClCompile Include="AutomationNameDuplicatedRule.cpp"/>
+        <ClCompile Include="ResourceUsingXNameRule.cpp"/>
+        <ClCompile Include="NonVirtualizingItemsPanelRule.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(AppAnalysisPath)\idl\Microsoft.Diagnostics.AppAnalysis.vcxproj" Project="{e1f36d19-f82d-474a-be26-fea52da5b6e6}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

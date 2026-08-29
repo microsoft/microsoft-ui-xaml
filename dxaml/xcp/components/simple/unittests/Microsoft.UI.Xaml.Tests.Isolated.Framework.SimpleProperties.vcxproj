@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{fa8aa2f0-a4b0-4cde-842a-211380204264}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\unittest.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>$(ProjectIncludeDirectories) $(XcpPath)\components\simple\inc;</ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="SimpleProperties.h"/>
+        <ClInclude Include="SimplePropertiesAdapter.g.h"/>
+        <ClInclude Include="SimplePropertiesMetadata.g.h"/>
+        <ClInclude Include="SimplePropertiesUnitTests.h"/>
+        <ClInclude Include="SomeClass.h"/>
+        <ClInclude Include="sp_ids.h"/>
+
+        <ClCompile Include="SimplePropertiesUnitTests.cpp"/>
+        <ClCompile Include="SimplePropertiesAdapter.cpp"/>
+    </ItemGroup>
+
+    <ItemDefinitionGroup>
+        <Link>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\ut\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

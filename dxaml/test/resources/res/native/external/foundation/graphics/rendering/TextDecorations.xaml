@@ -1,0 +1,16 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Margin="20">
+     <TextBlock Text="1TextBlock" FontSize="30" TextDecorations="Underline"/>
+     <TextBlock Text="2לדגחעיךדHello.לגכחיעךלדגכחיע" FontFamily="Segoe UI" FontSize="16" Width="400" TextReadingOrder="DetectFromContent" TextDecorations="Underline"/>
+     <TextBlock Text="3TextBlock" FontSize="30" TextDecorations="Strikethrough"/>
+     <TextBlock Text="4לדגחעיךדHello.לגכחיעךלדגכחיע" FontFamily="Segoe UI" FontSize="16" Width="400" TextReadingOrder="DetectFromContent" TextDecorations="Strikethrough"/>
+     <TextBlock><Run Text="5Some text"/><Run Text="Text in a Run" FontSize="30" TextDecorations="Underline"/><Run Text="Some text"/></TextBlock>
+     <TextBlock><Run Text="6Some text"/><Run Text="Text in a Run" FontSize="30" TextDecorations="Strikethrough"/><Run Text="Some text"/></TextBlock>
+     <RichTextBlock><Paragraph><Run Text="7Some text in RTB"/><Run Text="Text in a Run" FontSize="30" TextDecorations="Strikethrough"/><Run Text="Some text in RTB"/></Paragraph></RichTextBlock>
+     <RichTextBlock><Paragraph TextDecorations="Strikethrough"><Run Text="8Some text in RTB"/><Run Text="Text in a Run" FontSize="30" /><Run Text="Some text in RTB"/></Paragraph></RichTextBlock>
+     <RichTextBlock TextDecorations="Strikethrough"><Paragraph><Run Text="9Some text in RTB"/><Run Text="Text in a Run" FontSize="30" /><Run Text="Some text in RTB"/></Paragraph></RichTextBlock>
+     <RichTextBlock TextDecorations="Strikethrough,Underline"><Paragraph><Run Text="10Some text in RTB"/><Run Text="Text in a Run" FontSize="30" TextDecorations="Strikethrough"/><Run Text="Some text in RTB"/></Paragraph></RichTextBlock>
+     <TextBlock TextDecorations="Strikethrough,Underline" Text="11TextBlock" FontSize="30"/>
+     <TextBlock x:Name="mytb" Text="12TextBlock" FontSize="30"/>
+     <RichTextBlock x:Name="myrtb"><Paragraph><Run Text="13Some text in RTB"/><Run Text="Text in a Run" FontSize="30" /><Run Text="Some text in RTB"/></Paragraph></RichTextBlock>
+</StackPanel>

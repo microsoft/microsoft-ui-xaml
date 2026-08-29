@@ -175,7 +175,7 @@ In WinUI 2.2, controls began to be re-designed to have rounded corners, marking 
 There's more information on rounded corners in WinUI [here](https://docs.microsoft.com/en-us/windows/uwp/design/style/rounded-corner), 
 but the general purpose of the rounded corners design shift is to evoke warmth and trust, 
 and make the UI easier for users to visually process. 
-Since this shift, certain controls have adopted the new styling and recieved rounded corners, but some have not. 
+Since this shift, certain controls have adopted the new styling and received rounded corners, but some have not.
 This creates a strong visual inconsistency in WinUI apps, where certain pieces of an app may look modern and others may look dated. 
 Examples of this include the DatePicker and TimePicker controls. While the corners of the controls themselves are rounded, the selection rectangle within the control is still squared off. Buttons and other areas inside these controls are also still squared off, making them look dated when placed alongside other controls that are more modernly designed, such as 
 [NavigationView](https://docs.microsoft.com/en-us/windows/uwp/design/controls-and-patterns/navigationview).

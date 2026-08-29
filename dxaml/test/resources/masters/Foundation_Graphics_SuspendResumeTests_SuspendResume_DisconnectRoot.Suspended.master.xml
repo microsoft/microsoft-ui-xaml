@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <wucSpriteVisual SizeX="400" SizeY="300">
+      <ColorBrush Color="#ff000000" />
+    </wucSpriteVisual>
+  </Visual>
+</CompositionTarget>

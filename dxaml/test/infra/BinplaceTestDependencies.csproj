@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project Sdk="Microsoft.Build.NoTargets">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Platform Condition="'$(Platform)' == 'Win32'">x86</Platform>
+    <RedistPlatform>$(Platform)</RedistPlatform>
+    <RedistPlatform Condition="'$(Platform)' == 'Win32'">x86</RedistPlatform>
+    <RedistPlatform Condition="'$(Platform)' == 'ARM64EC'">x64</RedistPlatform>
+    <TaefPlatform>$(Platform)</TaefPlatform>
+    <TaefPlatform Condition="'$(Platform)' == 'AnyCPU'">x86</TaefPlatform>
+    <TaefPlatform Condition="'$(Platform)' == 'ARM64EC'">x64</TaefPlatform>
+    <DotNetRuntimeInstallerArch>$(arch)</DotNetRuntimeInstallerArch>
+    <DotNetRuntimeInstallerArch Condition="'$(Platform)' == 'AnyCPU'">x86</DotNetRuntimeInstallerArch>
+    <DotNetRuntimeInstallerArch Condition="'$(Platform)' == 'ARM64EC'">amd64</DotNetRuntimeInstallerArch>
+    <Platforms>x64;x86;ARM64</Platforms>
+  </PropertyGroup>
+
+  <!-- Binplace CRT -->
+  <ItemGroup>
+    <BinplaceItem Include="$(VCToolsRedistDir)\vc_redist.$(RedistPlatform).exe" Destination="$(TestDependenciesResourcesDestinationPath)\crt" />
+    <BinplaceItem Include="$(VCToolsRedistDir)\onecore\$(Platform)\Microsoft.VC142.CRT\*.dll">
+      <Destination>$(TestDependenciesResourcesDestinationPath)\crt</Destination>
+    </BinplaceItem>
+    <BinplaceItem Include="$(VCToolsRedistDir)\onecore\$(Platform)\Microsoft.VC142.OPENMP\*.dll">
+      <Destination>$(TestDependenciesResourcesDestinationPath)\crt</Destination>
+    </BinplaceItem>
+  </ItemGroup>
+
+  <!-- Binplace TAEF binaries -->
+  <PropertyGroup>
+    <TaefBinplaceDestination>$(BinplaceRootPath)\Taef</TaefBinplaceDestination>
+    <TaefPkgDirectory>$(NugetPackageDirectory)\Microsoft.Taef.$(TaefNugetPackageVersion)\</TaefPkgDirectory>
+  </PropertyGroup>
+  <ItemGroup>
+    <BinplaceItem Include="$(TaefPkgDirectory)\build\Binaries\$(TaefPlatform)\*" Destination="$(TaefBinplaceDestination)" />
+    <BinplaceItem Include="$(TaefPkgDirectory)\build\Binaries\$(TaefPlatform)\NetFx4.5\*" Destination="$(TaefBinplaceDestination)\NetFx4.5" />
+    <BinplaceItem Include="$(TaefPkgDirectory)\lib\Microsoft.VisualStudio.TestPlatform.TestExecutor.WinRTCore.winmd" Destination="$(TaefBinplaceDestination)" />
+  </ItemGroup>
+
+  <!-- Binplace cert -->
+  <ItemGroup>
+    <BinplaceItem Include="$(ProjectRoot)\build\WinUITest.cer">
+      <Destination>$(TestDependenciesResourcesDestinationPath)</Destination>
+    </BinplaceItem>
+  </ItemGroup>
+
+  <!-- Binplace dotnet installer -->
+  <ItemGroup>
+    <BinplaceItem Include="$(ProjectRoot).tools\$(DotNetRuntimeInstallerArch)\dotnet-windowsdesktop-runtime-installer.exe">
+      <Destination>$(TestDependenciesResourcesDestinationPath)</Destination>
+    </BinplaceItem>
+  </ItemGroup>
+
+</Project>

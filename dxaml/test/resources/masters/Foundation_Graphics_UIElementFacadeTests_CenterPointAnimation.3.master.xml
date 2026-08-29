@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="100" SizeY="100">
+              <CenterPoint>
+                <ExpressionAnimation String="PS.CenterPoint">
+                  <ReferenceParameter Name="PS">
+                    <PropertySet>
+                      <Property Name="CenterPoint" Type="Vector3">
+                        <KeyFrameAnimation Duration="1000">
+                          <KeyFrame Time="1" X="20" Y="30" Z="40" />
+                        </KeyFrameAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                </ExpressionAnimation>
+              </CenterPoint>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+                  <ColorBrush Color="rgb {0.502, 0, 0.502}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

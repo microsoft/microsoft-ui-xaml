@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual" SizeX="400" SizeY="300">
+            <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
+            <Visual PixelSnappingEnabled="True" VisualId="1" Tag="PrimaryVisual" SizeX="400" SizeY="300">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(V.Offset) * LOCAL.DManip * Matrix4x4.CreateFromTranslation(-V.Offset)">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="DManip" Type="Matrix4x4">
+                        <ExpressionAnimation String="PS.Matrix">
+                          <ReferenceParameter Name="PS">
+                            <PropertySet>
+                              <Property Name="Matrix" Type="Matrix4x4">
+                                <ExpressionAnimation String="transform*manipTransform.Matrix">
+                                  <ReferenceParameter Name="manipTransform">
+                                    <DuplicatedMatrixTransform>
+                                      <ManipulationTransform Transform="Identity" />
+                                    </DuplicatedMatrixTransform>
+                                  </ReferenceParameter>
+                                  <Property Name="transform" Type="Matrix4x4" />
+                                </ExpressionAnimation>
+                              </Property>
+                            </PropertySet>
+                          </ReferenceParameter>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                  <ReferenceParameter Name="V" />
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="400" SizeY="300" BorderMode="Soft">
+                  <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="400" SizeY="300" BorderMode="Soft">
+                  <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                </wucSpriteVisual>
+                <Visual PixelSnappingEnabled="True" Tag="PrependVisual" SizeX="400" SizeY="300">
+                  <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
+                  <Visual PixelSnappingEnabled="True" VisualId="2" HasInteraction="True" Tag="PrimaryVisual" SizeX="400" SizeY="300">
+                    <TransformMatrix>
+                      <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(V.Offset) * LOCAL.DManip * Matrix4x4.CreateFromTranslation(-V.Offset)">
+                        <ReferenceParameter Name="LOCAL">
+                          <PropertySet>
+                            <Property Name="DManip" Type="Matrix4x4">
+                              <ExpressionAnimation String="PS.Matrix">
+                                <ReferenceParameter Name="PS">
+                                  <PropertySet>
+                                    <Property Name="Matrix" Type="Matrix4x4">
+                                      <ExpressionAnimation String="transform*manipTransform.Matrix">
+                                        <ReferenceParameter Name="manipTransform">
+                                          <DuplicatedMatrixTransform>
+                                            <ManipulationTransform Transform="Identity" />
+                                          </DuplicatedMatrixTransform>
+                                        </ReferenceParameter>
+                                        <Property Name="transform" Type="Matrix4x4" />
+                                      </ExpressionAnimation>
+                                    </Property>
+                                  </PropertySet>
+                                </ReferenceParameter>
+                              </ExpressionAnimation>
+                            </Property>
+                          </PropertySet>
+                        </ReferenceParameter>
+                        <ReferenceParameter Name="V" />
+                      </ExpressionAnimation>
+                    </TransformMatrix>
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="80" SizeY="36" BorderMode="Soft" TransparentForInput="True" OffsetX="165" OffsetY="2" OffsetZ="0">
+                        <Clip ClipLeft="-4" ClipTop="-2" ClipRight="24" ClipBottom="-2" TransformMatrix="Identity" />
+                        <ColorBrush Color="rgb {1, 0, 0}" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="30" SizeY="20" BorderMode="Soft" OffsetX="161" OffsetY="10" OffsetZ="0">
+                        <ColorBrush Color="#ff000000" />
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

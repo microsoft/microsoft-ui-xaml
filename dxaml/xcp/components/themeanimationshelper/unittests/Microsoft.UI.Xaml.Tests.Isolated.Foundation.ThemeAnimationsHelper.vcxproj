@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{2be58f46-4eb3-4c10-ac55-5033f1520153}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\unittest.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\themeanimationshelper\inc\;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="ThemeAnimationsHelperUnitTests.h"/>
+
+        <ClCompile Include="ThemeAnimationsHelperUnitTests.cpp"/>
+    </ItemGroup>
+
+    <ItemDefinitionGroup>
+        <Link>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\ut\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\themeanimationshelper\lib\Microsoft.UI.Xaml.ThemeAnimationsHelper.vcxproj" Project="{c9cba2d3-6d77-464c-b0d9-b02da694b0c2}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

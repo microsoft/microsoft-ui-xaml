@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="AddBinplaceItems" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="Directory.Build.props" />
+
+  <PropertyGroup>
+    <TestCode>true</TestCode>
+    <_PackagesConfigContents>$([System.IO.File]::ReadAllText("$(MSBuildThisFileDirectory)packages.config"))</_PackagesConfigContents>
+    <PerfInfraVersion>$([System.Text.RegularExpressions.Regex]::Match($(_PackagesConfigContents), 'id\s*=\s*"Microsoft\.Internal\.Performance\.Infra"\s+version\s*=\s*"(.*?)"').Groups[1].Value)</PerfInfraVersion>
+    <PerfInfraPkgDirectory>$(NugetPackageDirectory)\Microsoft.Internal.Performance.Infra.$(PerfInfraVersion)</PerfInfraPkgDirectory>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(PublishDestination)' == ''">
+    <TaefTargetDestination>$(BinplaceRootPath)\Taef</TaefTargetDestination>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(PublishDestination)' != ''">
+    <ArtifactsBinRoot></ArtifactsBinRoot>
+    <TargetDestination>$(PublishDestination)</TargetDestination>
+    <TaefTargetDestination>$(PublishDestination)\Taef</TaefTargetDestination>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <BinplaceItem Include="$(PerfInfraPkgDirectory)\content\**\*" Destination="$(TargetDestination)\infra" />
+    <BinplaceItem Include="$(ProjectRoot)perf\scripts\**\*.*" Destination="$(TargetDestination)\scripts" />
+    <BinplaceItem Include="$(ProjectRoot)perf\profiles\**\*.*" Destination="$(TargetDestination)\profiles" />
+    <BinplaceItem Include="$(ProjectRoot)perf\vis\**\*.*" Destination="$(TargetDestination)\vis" />
+    <BinplaceItem Condition="'$(CopyTAEF)' == 'true'" Include="$(TaefPkgDirectory)\build\Binaries\$(Platform)\**\*" Destination="$(TaefTargetDestination)" />
+    <BinplaceItem Include="$(ProjectRoot)build\WinUITest.cer" Destination="$(TargetDestination)\scripts" />
+  </ItemGroup>
+
+  <Import Project="Directory.Build.targets" />
+</Project>

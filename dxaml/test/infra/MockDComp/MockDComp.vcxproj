@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ProjectGuid>{a74e0d51-30fb-4da3-9b41-a44762bf6c09}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\test\common.props"/>
+
+    <PropertyGroup>
+        <TargetDestination>$(TestBinplaceDestinationPath)</TargetDestination>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- This project's only goal is to copy MockDComp.dll into the test (TargetDestination) folder. -->
+        <ReferenceCopyLocalPaths Include="$(WinUIDetailsRuntimesPath)\MockDComp.dll" />
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

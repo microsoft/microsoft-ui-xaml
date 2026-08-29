@@ -1,0 +1,194 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  dependenciesVersion: '0'
+  clearGlobalCache: ''
+  privateIXPTransportNuGetFeedUrl: '$(WinUIProjectReunionFeedUri)'
+  privateCsWinRTNuGetFeedUrl: '$(WinUICsWinRTFeedUri)'
+
+steps:
+  - task: CmdLine@2
+    displayName: Set NuGet environment variables
+    condition: succeeded()
+    inputs:
+      script: |
+        $(Build.SourcesDirectory)\scripts\setnugetenvvars.cmd
+
+  # In this pipeline configuration, 'NuGetCommand' is ambiguous so the specific task guid must be used instead
+  # See known NuGet task issue notes.
+  - task: NuGetCommand@2
+    displayName: 'NuGet clear http-cache cache'
+    inputs:
+      command: 'custom'
+      arguments: 'locals http-cache -clear'
+
+  - ${{if parameters.clearGlobalCache }}:
+    - task: NuGetCommand@2
+      displayName: 'NuGet clear global-packages cache'
+      inputs:
+        command: 'custom'
+        arguments: 'locals global-packages -clear'
+
+  - task: NuGetAuthenticate@1
+
+  # If a custom IXP transport package version is provided, restore it first and update the config
+  # files to point at the new version.
+  - powershell: |
+      $ixpTransportPackage = "Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage"
+      nuget install -Source "${{ parameters.privateIXPTransportNuGetFeedUrl }}" -Version $(_privateIXPNupkgVersion) -DirectDownload -NoCache $ixpTransportPackage
+    condition:
+      ne(variables['_privateIXPNupkgVersion'],'')
+    displayName: 'Restore custom IXP transport nupkg into package cache'
+
+  - task: PowerShell@2
+    condition:
+      ne(variables['_privateIXPNupkgVersion'],'')
+    displayName: 'Rewrite config files to consume custom IXP transport version'
+    inputs:
+      filePath: 'scripts\updateIxp.ps1'
+      arguments: '-version $(_privateIXPNupkgVersion)'
+
+  # If a custom CsWinRT package version is provided, restore it first and update the config
+  # files to point at the new version.
+  - powershell: |
+      $cswinrtPackage = "Microsoft.Windows.CsWinRT"
+      nuget install -Source "${{ parameters.privateCsWinRTNuGetFeedUrl }}" -Version $(_privateCsWinRTNupkgVersion) -DirectDownload -NoCache $cswinrtPackage
+    condition:
+      ne(variables['_privateCsWinRTNupkgVersion'],'')
+    displayName: 'Restore custom CsWinRT nupkg into package cache'
+
+  - task: PowerShell@2
+    condition:
+      ne(variables['_privateCsWinRTNupkgVersion'],'')
+    displayName: 'Rewrite config files to consume custom CsWinRT version'
+    inputs:
+      filePath: 'scripts\updateCswinrt.ps1'
+      arguments: '$(_privateCsWinRTNupkgVersion)'
+
+  - task: powershell@2
+    displayName: 'Installing .NET SDK'
+    inputs:
+      targetType: filePath
+      workingDirectory: $(Build.SourcesDirectory)\build
+      filePath: $(Build.SourcesDirectory)\build\DownloadDotNetCoreSdk.ps1
+      arguments: "-version '$(_dotnetSdkVersion)' -quality '$(_dotnetSdkQuality)' -channel '$(_dotnetSdkChannel)'"
+
+  - task: powershell@2
+    condition:
+      ne(variables['_dotNetFrameworkVersionInitParam'],'net7')
+    displayName: 'Download .net Windows runtime installer'
+    inputs:
+      targetType: filePath
+      workingDirectory: $(Build.SourcesDirectory)\build
+      filePath: $(Build.SourcesDirectory)\build\DownloadDotNetRuntimeInstaller.ps1
+
+  - task: powershell@2
+    condition:
+      eq(variables['_dotNetFrameworkVersionInitParam'],'net7')
+    displayName: 'Download .net 7 Windows runtime installer'
+    inputs:
+      targetType: filePath
+      workingDirectory: $(Build.SourcesDirectory)\build
+      filePath: $(Build.SourcesDirectory)\build\DownloadDotNetRuntimeInstaller.ps1
+      arguments: '-downloadurlx86 $(_dotnetRuntimeDownloadUrlx86) -downloadurlx64 $(_dotnetRuntimeDownloadUrlx64)'
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet restore Lifted XAML dependencies'
+    inputs:
+      command: 'custom'
+      arguments: 'restore packages.config -ConfigFile nuget.config -PackagesDirectory $(Build.SourcesDirectory)\packages'
+      includeNuGetOrg: false
+
+  # Note: This restore uses an authenticated feed because the production TestInProduction package
+  # is not available on the shine-oss feed.
+  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+    displayName: 'NuGet restore production TestInProduction package'
+    condition: succeeded()
+    inputs:
+      command: 'custom'
+      arguments: 'restore build\packages.TestInProduction.config -Source $(WinUIInternalFeedUri) -PackagesDirectory $(Build.SourcesDirectory)\packages'
+      includeNuGetOrg: false
+
+  # Note: Restore the WebView2 Runtime package from the authenticated WinUI.Dependencies feed.
+  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+    displayName: 'NuGet restore WebView2 Runtime installer'
+    condition: succeeded()
+    inputs:
+      command: 'custom'
+      arguments: 'restore build\packages.webview2.config -Source $(WinUIInternalFeedUri) -PackagesDirectory $(Build.SourcesDirectory)\packages'
+      includeNuGetOrg: false
+
+  - task: VSBuild@1
+    displayName: 'Restore Maestro dependencies'
+    condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+    inputs:
+      solution: '$(Build.SourcesDirectory)\eng\Microsoft.MaestroRestore.csproj'
+      msBuildArgs: '/t:restore'
+
+  - task: VSBuild@1
+    displayName: 'Restore OSS Maestro dependencies'
+    condition: and(succeeded(), or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')))
+    inputs:
+      solution: '$(Build.SourcesDirectory)\eng\Microsoft.MaestroRestore.csproj'
+      msBuildArgs: '/t:restore /p:IsInternalWinUIBuild=false'
+
+  - task: PowerShell@2
+    displayName: SetupMockArm64EC
+    condition: succeeded()
+    inputs:
+      filePath: 'scripts\MockArm64ECFolder.ps1'
+      arguments: -nugetContentFolder "$(Build.SourcesDirectory)\packages"
+        
+  - task: NuGetCommand@2
+    displayName: 'NuGet restore Lifted XAML dependencies $(buildPlatform)'
+    inputs:
+      command: 'custom'
+      arguments: 'restore packages.$(buildPlatform).config -ConfigFile nuget.config -PackagesDirectory $(Build.SourcesDirectory)\packages'
+      includeNuGetOrg: false
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet restore Lifted XAML dependencies x64'
+    condition:
+      ne(variables['buildPlatform'],'x64')
+    inputs:
+      command: 'custom'
+      arguments: 'restore packages.x64.config -ConfigFile nuget.config -PackagesDirectory $(Build.SourcesDirectory)\packages'
+      includeNuGetOrg: false
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet restore Lifted XAML dependencies x64'
+    inputs:
+      command: 'custom'
+      arguments: 'restore packages.x64.config -ConfigFile nuget.config -PackagesDirectory $(Build.SourcesDirectory)\packages'
+      includeNuGetOrg: false
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet restore PGO infrastructure dependencies'
+    condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+    inputs:
+      command: 'custom'
+      arguments: 'restore $(Build.SourcesDirectory)\perf\packages.config -ConfigFile $(Build.SourcesDirectory)\nuget.config -PackagesDirectory $(Build.SourcesDirectory)\packages'
+      includeNuGetOrg: false
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet restore OSS PGO infrastructure dependencies'
+    condition: and(succeeded(), or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')))
+    inputs:
+      command: 'custom'
+      arguments: 'restore $(Build.SourcesDirectory)\perf\packages.OSS.config -ConfigFile $(Build.SourcesDirectory)\nuget.config -PackagesDirectory $(Build.SourcesDirectory)\packages'
+      includeNuGetOrg: false
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet restore MUXC dependencies'
+    inputs:
+      command: 'custom'
+      arguments: 'restore controls\dev\dll\packages.config -ConfigFile nuget.config -PackagesDirectory $(Build.SourcesDirectory)\packages'
+      includeNuGetOrg: false
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet restore Lifted XAML build tool dependencies'
+    inputs:
+      command: 'custom'
+      arguments: 'restore src\BuildTools.sln -PackagesDirectory $(Build.SourcesDirectory)\packages'
+      includeNuGetOrg: false
+    continueOnError: true

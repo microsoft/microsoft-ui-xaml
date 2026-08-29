@@ -1,0 +1,86 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="rootGrid">
+  <Grid.Resources>
+    <Style TargetType="Button">
+      <Setter Property="Width" Value="250" />
+      <Setter Property="Height" Value="100" />
+    </Style>
+  </Grid.Resources>
+  <Hub x:Name="hub">
+    <HubSection x:Name="Sec1" Header="Section 1" Margin="0">
+      <DataTemplate>
+        <StackPanel Margin="4,0,0,0">
+          <Button x:Name="btn00" Content="Button 10" AccessKey="10" />
+          <Button x:Name="btn01" Content="Button 11" AccessKey="11" />
+          <Button x:Name="btn02" Content="Button 12" AccessKey="12" />
+        </StackPanel>
+      </DataTemplate>
+    </HubSection>
+    <HubSection x:Uid="Section2Header" Header="Section 2">
+      <DataTemplate>
+        <Grid Margin="-8,0,0,0">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+          <Grid Margin="4,0,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button Content="Button 20" x:Name="btn20" AccessKey="20" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Button Content="Button 21" x:Name="btn21" AccessKey="21" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Button Content="Button 22" x:Name="btn22" AccessKey="22" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+          </Grid>
+          <Grid Margin="4,0,0,0" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button Content="Button 23" x:Name="btn23" AccessKey="23" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Button Content="Button 24" x:Name="btn24" AccessKey="24" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Button Content="Button 25" x:Name="btn25" AccessKey="25" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+          </Grid>
+          <Grid Margin="4,0,0,0" Grid.Row="2">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button Content="Button 26" x:Name="btn26" AccessKey="26" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Button Content="Button 27" x:Name="btn27" AccessKey="27" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Button Content="Button 28" x:Name="btn28" AccessKey="28" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+          </Grid>
+        </Grid>
+      </DataTemplate>
+    </HubSection>
+    <HubSection x:Uid="Section3Header" Header="Section 3">
+      <DataTemplate>
+        <Grid Margin="-8,0,0,0">
+          <StackPanel Margin="4,0,0,0">
+            <Button Content="Button 30" AccessKey="30" x:Name="btn30" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Button Content="Button 31" AccessKey="31" x:Name="btn31" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Button Content="Button 32" AccessKey="32" x:Name="btn32" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Button Content="Button 33" AccessKey="33" x:Name="btn33" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Button Content="Button 34" AccessKey="34" x:Name="btn34" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+          </StackPanel>
+        </Grid>
+      </DataTemplate>
+    </HubSection>
+    <HubSection IsHeaderInteractive="True" x:Uid="Section4Header" x:Name="Section 4" Header="Section 4">
+      <DataTemplate>
+        <Grid Margin="-8,0,0,0">
+          <StackPanel Margin="4,0,0,0">
+            <Button Content="Button 40" x:Name="btn40" AccessKey="40" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Button Content="Button 41" x:Name="btn41" AccessKey="41" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Button Content="Button 42" x:Name="btn42" AccessKey="42" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Button Content="Button 43" x:Name="btn43" AccessKey="43" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+          </StackPanel>
+        </Grid>
+      </DataTemplate>
+    </HubSection>
+  </Hub>
+</Grid>

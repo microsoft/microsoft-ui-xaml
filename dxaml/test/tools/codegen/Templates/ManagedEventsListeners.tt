@@ -1,0 +1,54 @@
+﻿<#@ template language="C#" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Reflection" #>
+using System;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
+
+namespace Microsoft.UI.Xaml.Tests.Common.EventsListeners
+{
+<# foreach(Type type in GetTargetedTypes()) { 
+    IList<EventInfo> events = GetTargetedEvents(type).ToList();
+    if(events.Count > 0) {
+#>
+    public static class <#= type.Name #>Events
+    {
+<#      foreach(EventInfo eventInfo in events) { #>
+        private static EventListener<<#= type.Name #>> _<#= eventInfo.Name #>;
+        public static EventListener<<#= type.Name #>> <#= eventInfo.Name #>
+        {
+            get
+            {
+                if(_<#= eventInfo.Name #> == null)
+                {
+                    _<#= eventInfo.Name #> = new EventListener<<#= type.Name #>>(
+                        (sender, action) =>
+                        {
+                            <#= TemplateHelpers.GetTypeName(eventInfo.EventHandlerType) #> handler = delegate { action(); };
+                            sender.<#= eventInfo.Name #> += handler;
+                            return handler;
+                        },
+                        (sender, handler) =>
+                        {
+                            sender.<#= eventInfo.Name #> -= (<#= TemplateHelpers.GetTypeName(eventInfo.EventHandlerType) #>) handler;
+                        }
+                    );
+                }
+                return _<#= eventInfo.Name #>;
+            }
+        }
+
+<#      } #>
+    }
+
+<#  }
+   } #>
+
+}

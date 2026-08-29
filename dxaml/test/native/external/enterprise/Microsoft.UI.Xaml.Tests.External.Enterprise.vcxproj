@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{6c6f63da-4f88-4165-bc09-7857be018055}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\test\common.props"/>
+    <Import Project="$(NativeExternalTestPath)\common.props" />
+    
+    <ItemDefinitionGroup>
+        <ClCompile>
+           <AdditionalIncludeDirectories>
+                %(AdditionalIncludeDirectories);
+                $(MSBuildThisFileDirectory)\CalendarDatePicker;
+                $(MSBuildThisFileDirectory)\CalendarView;
+                $(MSBuildThisFileDirectory)\datavirtualization;
+                $(MSBuildThisFileDirectory)\GridView;
+                $(MSBuildThisFileDirectory)\ListView;
+                $(MSBuildThisFileDirectory)\rangeselection;
+                $(MSBuildThisFileDirectory)\SemanticZoom;
+                $(MSBuildThisFileDirectory)\stickyheaders;
+                $(NativeExternalTestPath)\controls\inc;
+                $(NativeExternalTestPath)\enterprise\inc;
+                $(NativeExternalTestPath)\foundation\inc;
+                $(WinUIDetailsIncludePath)\abi;
+                $(WinUIDetailsIncludePath)\MockDComp;
+            </AdditionalIncludeDirectories>
+        </ClCompile>
+    </ItemDefinitionGroup>
+    
+    <ItemGroup>
+        <ClInclude Include="CalendarDatePicker\CalendarDatePickerIntegrationTests.h" />
+        <ClInclude Include="CalendarView\CalendarViewAutomationPeerIntegrationTests.h" />
+        <ClInclude Include="CalendarView\CalendarViewIntegrationTests.h" />
+        <ClInclude Include="datavirtualization\IItemsRangeInfoIntegrationTests.h" />
+        <ClInclude Include="datavirtualization\ISelectionInfoIntegrationTests.h" />
+        <ClInclude Include="datavirtualization\ItemIndexRangeIntegrationTests.h" />
+        <ClInclude Include="ItemsControl\ItemsControlIntegrationTests.h" />
+        <ClInclude Include="GridView\GridViewIntegrationTests.h" />
+        <ClInclude Include="ListView\ListViewIntegrationTests.h" />
+        <ClInclude Include="rangeselection\RangeSelectionIntegrationTests.h" />
+        <ClInclude Include="SemanticZoom\GroupedDataSource.h" />
+        <ClInclude Include="SemanticZoom\SemanticZoomIntegrationTests.h" />
+        <ClInclude Include="stickyheaders\StickyHeadersIntegrationTests.h" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <ClCompile Include="CalendarDatePicker\CalendarDatePickerIntegrationTests.cpp" />
+        <ClCompile Include="CalendarView\CalendarViewIntegrationTests.cpp" />
+        <ClCompile Include="CalendarView\CalendarViewAutomationPeerIntegrationTests.cpp" />
+        <ClCompile Include="datavirtualization\ItemIndexRangeIntegrationTests.cpp" />
+        <ClCompile Include="datavirtualization\IItemsRangeInfoIntegrationTests.cpp" />
+        <ClCompile Include="datavirtualization\ISelectionInfoIntegrationTests.cpp" />
+        <ClCompile Include="ItemsControl\ItemsControlIntegrationTests.cpp" />
+        <ClCompile Include="GridView\GridViewIntegrationTests.cpp" />
+        <ClCompile Include="ListView\ListViewIntegrationTests.cpp" />
+        <ClCompile Include="rangeselection\RangeSelectionIntegrationTests.cpp" />
+        <ClCompile Include="SemanticZoom\SemanticZoomIntegrationTests.cpp" />
+        <ClCompile Include="stickyheaders\StickyHeadersIntegrationTests.cpp" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(NativeExternalTestPath)\pch\Microsoft.UI.Xaml.Tests.External.Precomp.vcxproj" />
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(CustomTypesCompile.targets))"/>
+</Project>

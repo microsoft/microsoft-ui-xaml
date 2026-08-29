@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.Internal.WinUI.Helix</id>
+    <version>0.5.8</version>
+    <title>Microsoft.Internal.WinUI.Helix</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <description>Microsoft.Internal.WinUI.Helix</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+  </metadata>
+
+  <files>
+    <file target="scripts\pipeline" src="pipeline\*" />
+    <file target="scripts\test" src="test\*" />
+  </files>
+
+</package>

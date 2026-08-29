@@ -1,0 +1,132 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="RootCanvas">
+
+  <!-- Plain popup -->
+  <Popup Canvas.Left="10" Canvas.Top="10" x:Name="p1">
+    <Rectangle Fill="Red" Width="30" Height="30"/>
+  </Popup>
+
+  <!-- Popup inside 2 comp nodes -->
+  <Canvas Canvas.Left="60" Canvas.Top="10">
+    <Canvas.RenderTransform><RotateTransform CenterX="10" CenterY="20" Angle="30" /></Canvas.RenderTransform>
+    <Canvas CompositeMode="SourceOver" x:Name="Canvas1">
+      <Canvas.RenderTransform><TranslateTransform X="50" Y="50" /></Canvas.RenderTransform>
+      <Popup x:Name="p2">
+        <Rectangle Fill="Red" Width="30" Height="30"/>
+      </Popup>
+    </Canvas>
+  </Canvas>
+
+  <!-- Popup inside projection -->
+  <Canvas Canvas.Left="110" Canvas.Top="10">
+    <Canvas.RenderTransform><RotateTransform CenterX="10" CenterY="20" Angle="30" /></Canvas.RenderTransform>
+    <Canvas>
+      <Canvas.Projection><PlaneProjection RotationY="45" /></Canvas.Projection>
+      <Canvas CompositeMode="SourceOver" x:Name="Canvas2">
+        <Canvas.RenderTransform><TranslateTransform X="50" Y="50" /></Canvas.RenderTransform>
+        <Popup x:Name="p3">
+          <Rectangle Fill="Red" Width="30" Height="30"/>
+        </Popup>
+      </Canvas>
+    </Canvas>
+  </Canvas>
+
+  <!-- Popup with its own projection -->
+  <Canvas Canvas.Left="160" Canvas.Top="10">
+    <Canvas.RenderTransform><RotateTransform CenterX="10" CenterY="20" Angle="30" /></Canvas.RenderTransform>
+    <Canvas>
+      <Canvas.Projection><PlaneProjection RotationY="45" /></Canvas.Projection>
+      <Canvas CompositeMode="SourceOver" x:Name="Canvas3">
+        <Canvas.RenderTransform><TranslateTransform X="50" Y="50" /></Canvas.RenderTransform>
+        <Popup x:Name="p4">
+          <Popup.Projection><PlaneProjection RotationX="45" /></Popup.Projection>
+          <Rectangle Fill="Red" Width="30" Height="30"/>
+        </Popup>
+      </Canvas>
+    </Canvas>
+  </Canvas>
+
+  <!-- Popup inside many projections -->
+  <Canvas Canvas.Left="210" Canvas.Top="10">
+    <Canvas.RenderTransform><RotateTransform CenterX="10" CenterY="20" Angle="30" /></Canvas.RenderTransform>
+    <Canvas>
+      <Canvas.Projection><PlaneProjection RotationZ="-45" /></Canvas.Projection>
+      <Canvas>
+        <Canvas.RenderTransform><SkewTransform AngleX="10" /></Canvas.RenderTransform>
+        <Canvas>
+          <Canvas.RenderTransform><ScaleTransform ScaleY="0.75" /></Canvas.RenderTransform>
+          <Canvas.Projection><PlaneProjection RotationY="45" /></Canvas.Projection>
+          <Canvas CompositeMode="SourceOver" x:Name="Canvas4">
+            <Canvas.RenderTransform><TranslateTransform X="50" Y="50" /></Canvas.RenderTransform>
+            <Popup x:Name="p5">
+              <Popup.Projection><PlaneProjection RotationX="45" /></Popup.Projection>
+              <Rectangle Fill="Red" Width="30" Height="30"/>
+            </Popup>
+          </Canvas>
+        </Canvas>
+      </Canvas>
+    </Canvas>
+  </Canvas>
+
+  <!-- Popup with a prepend transform -->
+  <Canvas Canvas.Left="260" Canvas.Top="10" x:Name="Canvas5">
+    <Canvas.RenderTransform><RotateTransform CenterX="10" CenterY="20" Angle="30" /></Canvas.RenderTransform>
+    <Canvas.Projection><PlaneProjection RotationY="45" /></Canvas.Projection>
+    <Canvas>
+      <Canvas>
+        <Canvas.RenderTransform><TranslateTransform X="50" Y="50" /></Canvas.RenderTransform>
+        <Popup x:Name="p6">
+          <Rectangle Fill="Red" Width="30" Height="30"/>
+        </Popup>
+      </Canvas>
+    </Canvas>
+  </Canvas>
+
+  <!-- Popup with a prepend and a local transform -->
+  <Canvas Canvas.Left="310" Canvas.Top="10" x:Name="Canvas6">
+    <Canvas.RenderTransform><RotateTransform CenterX="10" CenterY="20" Angle="30" /></Canvas.RenderTransform>
+    <Canvas.Projection><PlaneProjection RotationY="45" /></Canvas.Projection>
+    <Canvas>
+      <Canvas>
+        <Canvas.RenderTransform><TranslateTransform X="50" Y="50" /></Canvas.RenderTransform>
+        <Popup x:Name="p7">
+          <Popup.RenderTransform><TranslateTransform X="-50" Y="-50" /></Popup.RenderTransform>
+          <Rectangle Fill="Red" Width="30" Height="30"/>
+        </Popup>
+      </Canvas>
+    </Canvas>
+  </Canvas>
+
+  <!-- Nested popup -->
+  <Canvas Canvas.Left="10" Canvas.Top="60" x:Name="Canvas7">
+    <Canvas.RenderTransform><RotateTransform CenterX="10" CenterY="20" Angle="30" /></Canvas.RenderTransform>
+    <Popup x:Name="p8">
+      <Canvas CompositeMode="SourceOver" x:Name="Canvas8">
+        <Canvas.RenderTransform><TranslateTransform X="50" Y="50" /></Canvas.RenderTransform>
+        <Popup IsOpen="False" x:Name="innerPopup">
+          <Rectangle Fill="Red" Width="30" Height="30"/>
+        </Popup>
+      </Canvas>
+    </Popup>
+  </Canvas>
+
+  <!-- Deeply nested popup -->
+  <Canvas Canvas.Left="60" Canvas.Top="60" x:Name="Canvas9">
+    <Canvas.RenderTransform><RotateTransform CenterX="10" CenterY="20" Angle="30" /></Canvas.RenderTransform>
+    <Canvas>
+      <Canvas.RenderTransform><TranslateTransform X="25" Y="25" /></Canvas.RenderTransform>
+      <Popup x:Name="p9">
+        <Canvas CompositeMode="SourceOver" x:Name="Canvas10">
+          <Canvas.RenderTransform><TranslateTransform X="50" Y="50" /></Canvas.RenderTransform>
+          <Canvas>
+            <Canvas.RenderTransform><TranslateTransform X="-25" Y="-25" /></Canvas.RenderTransform>
+            <Popup IsOpen="False" x:Name="innerPopup2">
+              <Rectangle Fill="Red" Width="30" Height="30"/>
+            </Popup>
+          </Canvas>
+        </Canvas>
+      </Popup>
+    </Canvas>
+  </Canvas>
+
+</Canvas>

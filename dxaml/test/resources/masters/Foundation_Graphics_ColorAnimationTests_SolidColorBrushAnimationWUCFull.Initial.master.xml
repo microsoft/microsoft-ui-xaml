@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="300" SizeY="500" BorderMode="Soft">
+            <ColorBrush Color="rgb {0, 0, 1}" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="20" BorderMode="Soft" OffsetX="125" OffsetY="0" OffsetZ="0">
+            <ColorBrush Color="#00000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="46" SizeY="16" BorderMode="Soft" OffsetX="127" OffsetY="22" OffsetZ="0">
+            <ColorBrush Color="#00000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="20" BorderMode="Soft" OffsetX="125" OffsetY="40" OffsetZ="0">
+            <NineGridBrush LeftInset="2" TopInset="2" RightInset="2" BottomInset="2" isCenterHollow="True">
+              <Source>
+                <ColorBrush Color="#00000000" />
+              </Source>
+            </NineGridBrush>
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="20" BorderMode="Soft" OffsetX="125" OffsetY="60" OffsetZ="0">
+            <ColorBrush Color="#00000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="46" SizeY="16" BorderMode="Soft" OffsetX="127" OffsetY="82" OffsetZ="0">
+            <ColorBrush Color="#00000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="20" BorderMode="Soft" OffsetX="125" OffsetY="100" OffsetZ="0">
+            <NineGridBrush LeftInset="6" TopInset="6" RightInset="6" BottomInset="6" isCenterHollow="True">
+              <Source>
+                <ColorBrush Color="#00000000" />
+              </Source>
+            </NineGridBrush>
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="46" SizeY="16" BorderMode="Soft" OffsetX="127" OffsetY="122" OffsetZ="0">
+            <ColorBrush Color="#00000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="20" BorderMode="Soft" OffsetX="125" OffsetY="120" OffsetZ="0">
+            <NineGridBrush LeftInset="6" TopInset="6" RightInset="6" BottomInset="6" isCenterHollow="True">
+              <Source>
+                <ColorBrush Color="#00000000" />
+              </Source>
+            </NineGridBrush>
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="20" BorderMode="Soft" OffsetX="125" OffsetY="140" OffsetZ="0">
+            <ColorBrush Color="#00000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="20" BorderMode="Soft" OffsetX="125" OffsetY="160" OffsetZ="0">
+            <ColorBrush Color="#00000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="48" SizeY="18" BorderMode="Soft" OffsetX="126" OffsetY="181" OffsetZ="0">
+            <ColorBrush Color="#00000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="20" BorderMode="Soft" OffsetX="125" OffsetY="180" OffsetZ="0">
+            <ColorBrush Color="#00000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="20" BorderMode="Soft" OffsetX="125" OffsetY="200" OffsetZ="0">
+            <ColorBrush Color="#00000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="20" BorderMode="Soft" OffsetX="125" OffsetY="220" OffsetZ="0">
+            <ColorBrush Color="#00000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="48" SizeY="18" BorderMode="Soft" OffsetX="126" OffsetY="241" OffsetZ="0">
+            <ColorBrush Color="#00000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="20" BorderMode="Soft" OffsetX="125" OffsetY="240" OffsetZ="0">
+            <ColorBrush Color="#00000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="20" BorderMode="Soft" OffsetX="125" OffsetY="260" OffsetZ="0">
+            <ColorBrush Color="#00000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="20" BorderMode="Soft" OffsetX="125" OffsetY="280" OffsetZ="0">
+            <ColorBrush Color="#00000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="48" SizeY="18" BorderMode="Soft" OffsetX="126" OffsetY="301" OffsetZ="0">
+            <ColorBrush Color="#00000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="20" BorderMode="Soft" OffsetX="125" OffsetY="300" OffsetZ="0">
+            <ColorBrush Color="#00000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="26" SizeY="10" BorderMode="Hard" OffsetX="125" OffsetY="325" OffsetZ="0">
+            <MaskBrush>
+              <Source>
+                <ColorBrush Color="#00000000" />
+              </Source>
+              <Mask>
+                <SurfaceBrush Stretch="Fill" Transform="Identity" />
+              </Mask>
+            </MaskBrush>
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="26" SizeY="10" BorderMode="Hard" OffsetX="125" OffsetY="345" OffsetZ="0">
+            <MaskBrush>
+              <Source>
+                <ColorBrush Color="rgb {1, 0, 0}" />
+              </Source>
+              <Mask>
+                <SurfaceBrush Stretch="Fill" Transform="Identity" />
+              </Mask>
+            </MaskBrush>
+          </wucSpriteVisual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

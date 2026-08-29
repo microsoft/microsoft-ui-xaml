@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="400">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="400" SizeY="400" BorderMode="Soft">
+            <ColorBrush Color="#ff000000" />
+          </wucSpriteVisual>
+          <Visual Tag="PrependVisual" SizeX="400" SizeY="400">
+            <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
+            <Visual PixelSnappingEnabled="True" VisualId="1" Tag="PrimaryVisual" SizeX="400" SizeY="400">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(V.Offset) * LOCAL.DManip * Matrix4x4.CreateFromTranslation(-V.Offset)">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="DManip" Type="Matrix4x4">
+                        <ExpressionAnimation String="PS.Matrix">
+                          <ReferenceParameter Name="PS">
+                            <PropertySet>
+                              <Property Name="Matrix" Type="Matrix4x4">
+                                <ExpressionAnimation String="transform*manipTransform.Matrix">
+                                  <ReferenceParameter Name="manipTransform">
+                                    <DuplicatedMatrixTransform>
+                                      <ManipulationTransform Transform="Identity" />
+                                    </DuplicatedMatrixTransform>
+                                  </ReferenceParameter>
+                                  <Property Name="transform" Type="Matrix4x4" />
+                                </ExpressionAnimation>
+                              </Property>
+                            </PropertySet>
+                          </ReferenceParameter>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                  <ReferenceParameter Name="V" />
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="400" SizeY="400" BorderMode="Soft">
+                  <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="400" SizeY="400" BorderMode="Soft">
+                  <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                </wucSpriteVisual>
+                <Visual PixelSnappingEnabled="True" Tag="PrependVisual" SizeX="400" SizeY="400">
+                  <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
+                  <Visual PixelSnappingEnabled="True" VisualId="2" Tag="PrimaryVisual" SizeX="400" SizeY="400">
+                    <TransformMatrix>
+                      <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(V.Offset) * LOCAL.DManip * Matrix4x4.CreateFromTranslation(-V.Offset)">
+                        <ReferenceParameter Name="LOCAL">
+                          <PropertySet>
+                            <Property Name="DManip" Type="Matrix4x4">
+                              <ExpressionAnimation String="PS.Matrix">
+                                <ReferenceParameter Name="PS">
+                                  <PropertySet>
+                                    <Property Name="Matrix" Type="Matrix4x4">
+                                      <ExpressionAnimation String="transform*manipTransform.Matrix">
+                                        <ReferenceParameter Name="manipTransform">
+                                          <DuplicatedMatrixTransform>
+                                            <ManipulationTransform Transform="Identity" />
+                                          </DuplicatedMatrixTransform>
+                                        </ReferenceParameter>
+                                        <Property Name="transform" Type="Matrix4x4" />
+                                      </ExpressionAnimation>
+                                    </Property>
+                                  </PropertySet>
+                                </ReferenceParameter>
+                              </ExpressionAnimation>
+                            </Property>
+                          </PropertySet>
+                        </ReferenceParameter>
+                        <ReferenceParameter Name="V" />
+                      </ExpressionAnimation>
+                    </TransformMatrix>
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="4" OffsetY="4" OffsetZ="0">
+                        <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="4" OffsetY="4" OffsetZ="0">
+                        <ColorBrush Color="#ffffffff" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="40" SizeY="11" BorderMode="Hard" OffsetX="5" OffsetY="9" OffsetZ="0">
+                        <MaskBrush>
+                          <Source>
+                            <ColorBrush Color="#ff000000" />
+                          </Source>
+                          <Mask>
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                          </Mask>
+                        </MaskBrush>
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="4" OffsetY="114" OffsetZ="0">
+                        <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="4" OffsetY="114" OffsetZ="0">
+                        <ColorBrush Color="#ffffffff" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="38" SizeY="11" BorderMode="Hard" OffsetX="5" OffsetY="119" OffsetZ="0">
+                        <MaskBrush>
+                          <Source>
+                            <ColorBrush Color="#ff000000" />
+                          </Source>
+                          <Mask>
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                          </Mask>
+                        </MaskBrush>
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="4" OffsetY="224" OffsetZ="0">
+                        <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="4" OffsetY="224" OffsetZ="0">
+                        <ColorBrush Color="#ffffffff" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="40" SizeY="11" BorderMode="Hard" OffsetX="5" OffsetY="229" OffsetZ="0">
+                        <MaskBrush>
+                          <Source>
+                            <ColorBrush Color="#ff000000" />
+                          </Source>
+                          <Mask>
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                          </Mask>
+                        </MaskBrush>
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="114" OffsetY="4" OffsetZ="0">
+                        <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="114" OffsetY="4" OffsetZ="0">
+                        <ColorBrush Color="#ffffffff" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="40" SizeY="11" BorderMode="Hard" OffsetX="115" OffsetY="9" OffsetZ="0">
+                        <MaskBrush>
+                          <Source>
+                            <ColorBrush Color="#ff000000" />
+                          </Source>
+                          <Mask>
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                          </Mask>
+                        </MaskBrush>
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="108" SizeY="108" BorderMode="Soft" OffsetX="110" OffsetY="110" OffsetZ="0">
+                        <NineGridBrush LeftInset="2" TopInset="2" RightInset="2" BottomInset="2" isCenterHollow="True">
+                          <Source>
+                            <ColorBrush Color="#ffffffff" />
+                          </Source>
+                        </NineGridBrush>
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="114" OffsetY="114" OffsetZ="0">
+                        <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="114" OffsetY="114" OffsetZ="0">
+                        <ColorBrush Color="#ffffffff" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="40" SizeY="11" BorderMode="Hard" OffsetX="115" OffsetY="119" OffsetZ="0">
+                        <MaskBrush>
+                          <Source>
+                            <ColorBrush Color="#ff000000" />
+                          </Source>
+                          <Mask>
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                          </Mask>
+                        </MaskBrush>
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="114" OffsetY="224" OffsetZ="0">
+                        <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="114" OffsetY="224" OffsetZ="0">
+                        <ColorBrush Color="#ffffffff" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="40" SizeY="11" BorderMode="Hard" OffsetX="115" OffsetY="229" OffsetZ="0">
+                        <MaskBrush>
+                          <Source>
+                            <ColorBrush Color="#ff000000" />
+                          </Source>
+                          <Mask>
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                          </Mask>
+                        </MaskBrush>
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="224" OffsetY="4" OffsetZ="0">
+                        <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="224" OffsetY="4" OffsetZ="0">
+                        <ColorBrush Color="#ffffffff" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="40" SizeY="11" BorderMode="Hard" OffsetX="225" OffsetY="9" OffsetZ="0">
+                        <MaskBrush>
+                          <Source>
+                            <ColorBrush Color="#ff000000" />
+                          </Source>
+                          <Mask>
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                          </Mask>
+                        </MaskBrush>
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="224" OffsetY="114" OffsetZ="0">
+                        <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="224" OffsetY="114" OffsetZ="0">
+                        <ColorBrush Color="#ffffffff" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="40" SizeY="11" BorderMode="Hard" OffsetX="225" OffsetY="119" OffsetZ="0">
+                        <MaskBrush>
+                          <Source>
+                            <ColorBrush Color="#ff000000" />
+                          </Source>
+                          <Mask>
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                          </Mask>
+                        </MaskBrush>
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="224" OffsetY="224" OffsetZ="0">
+                        <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="224" OffsetY="224" OffsetZ="0">
+                        <ColorBrush Color="#ffffffff" />
+                      </wucSpriteVisual>
+                      <wucSpriteVisual SizeX="40" SizeY="11" BorderMode="Hard" OffsetX="225" OffsetY="229" OffsetZ="0">
+                        <MaskBrush>
+                          <Source>
+                            <ColorBrush Color="#ff000000" />
+                          </Source>
+                          <Mask>
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                          </Mask>
+                        </MaskBrush>
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

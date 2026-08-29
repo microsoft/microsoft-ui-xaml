@@ -1,0 +1,39 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>$(DotNetCoreTargetFrameworkMoniker)</TargetFramework>
+    <UseWPF Condition="'$(Platform)' != 'ARM64'" >true</UseWPF>
+    <Platforms>x64;x86;ARM64</Platforms>
+    <RuntimeIdentifiers>win10-x86;win10-x64</RuntimeIdentifiers>
+    <RuntimeIdentifiers Condition="'$(Platform)' == 'ARM64'" >$(RuntimeIdentifiers);win10-arm64</RuntimeIdentifiers>
+    <RuntimeIdentifier>win10-$(WindowsSDKArch.ToLowerInvariant())</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64EC'">win10-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Platform)' != 'ARM64'" >
+    <BinplaceItem Include="$(MSBuildThisFileDirectory)WinRT.Host.runtimeconfig.json" /> 
+    <BinplaceItem Include="$(NuGetPackageRoot)\Microsoft.Windows.CsWinRT\$(MicrosoftCsWinRTPackageVersion)\hosting\$(WindowsSDKArch)\native\WinRT.Host.dll" /> 
+    <BinplaceItem Include="$(NuGetPackageRoot)\Microsoft.Windows.CsWinRT\$(MicrosoftCsWinRTPackageVersion)\hosting\$(WindowsSDKArch)\native\en-us\WinRT.Host.dll.mui" />
+    <!--
+      WinRT.Host.Shim.dll is only published under lib\net6.0 in Microsoft.Windows.CsWinRT (2.1.1 and 2.2.0
+      both ship lib\net6.0\WinRT.Host.Shim.dll; the lib\net8.0 folder only contains WinRT.Runtime.dll).
+      The .NET 6 assembly is forward-compatible with .NET 8 hosts, so it is the right binary to binplace
+      until CsWinRT publishes a net8.0 variant of WinRT.Host.Shim.dll. Do not change to net8.0.
+    -->
+    <BinplaceItem Include="$(NuGetPackageRoot)\Microsoft.Windows.CsWinRT\$(MicrosoftCsWinRTPackageVersion)\lib\net6.0\WinRT.Host.Shim.dll" />
+  </ItemGroup>
+
+  <Target Name="BinplaceNetCoreBins" AfterTargets="AddBinplaceItems" BeforeTargets="Binplace" Condition="'$(BuildingInsideVisualStudio)' != 'true'">
+    <ItemGroup>
+      <BinplaceItem Include="$(OutDir)\*.dll">
+        <Destination>$(TestDependenciesResourcesDestinationPath)\localDotNet</Destination>
+      </BinplaceItem>
+    </ItemGroup>
+  </Target>
+</Project>

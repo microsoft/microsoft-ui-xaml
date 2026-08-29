@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualTreeDump>
+  <VisualRoot>
+    <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+      <Property Name="ActualHeight" Value="600" />
+      <Property Name="ActualWidth" Value="400" />
+      <Property Name="Background" Value="#FF000000" />
+      <Property Name="IsHitTestVisible" Value="False" />
+      <Property Name="RenderSize" Value="400x600" />
+      <Property Name="RequestedTheme" Value="1" />
+      <Element Type="Microsoft.UI.Xaml.Controls.Button">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="60" />
+        <Property Name="Background" Value="#FF952AAB" />
+        <Property Name="BackgroundSizing" Value="1" />
+        <Property Name="BorderBrush" Value="#FF00FF00" />
+        <Property Name="BorderThickness" Value="1,1,1,1" />
+        <Property Name="Content" Value="Button" />
+        <Property Name="CornerRadius" Value="2,2,2,2" />
+        <Property Name="FocusState" Value="1" />
+        <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="FontWeight" Value="400" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="Padding" Value="8,5,8,6" />
+        <Property Name="RenderSize" Value="60x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="60" />
+          <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+          <Property Name="Background" Value="#FF952AAB" />
+          <Property Name="BackgroundSizing" Value="1" />
+          <Property Name="BorderBrush" Value="#FF00FF00" />
+          <Property Name="BorderThickness" Value="1,1,1,1" />
+          <Property Name="Content" Value="Button" />
+          <Property Name="ContentTransitions" Value="[NULL]" />
+          <Property Name="CornerRadius" Value="2,2,2,2" />
+          <Property Name="DataContext" Value="Button" />
+          <Property Name="HorizontalContentAlignment" Value="1" />
+          <Property Name="Name" Value="ContentPresenter" />
+          <Property Name="Padding" Value="8,5,8,6" />
+          <Property Name="RenderSize" Value="60x32" />
+          <Property Name="VerticalContentAlignment" Value="1" />
+          <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+            <Property Name="ActualHeight" Value="18.6211" />
+            <Property Name="ActualWidth" Value="41.5625" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+            <Property Name="RenderSize" Value="42x19" />
+            <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+            <Property Name="Text" Value="Button" />
+            <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Documents.Run">
+              <Property Name="Text" Value="Button" />
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.Button">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="137" />
+        <Property Name="Background" Value="#FF952AAB" />
+        <Property Name="BackgroundSizing" Value="1" />
+        <Property Name="BorderBrush" Value="#FF00FF00" />
+        <Property Name="BorderThickness" Value="1,1,1,1" />
+        <Property Name="Content" Value="PointerOver Button" />
+        <Property Name="CornerRadius" Value="2,2,2,2" />
+        <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="FontWeight" Value="400" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="Padding" Value="8,5,8,6" />
+        <Property Name="RenderSize" Value="137x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="137" />
+          <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+          <Property Name="Background" Value="#FF952AAB" />
+          <Property Name="BackgroundSizing" Value="1" />
+          <Property Name="BorderBrush" Value="#FFFF0066" />
+          <Property Name="BorderThickness" Value="1,1,1,1" />
+          <Property Name="Content" Value="PointerOver Button" />
+          <Property Name="ContentTransitions" Value="[NULL]" />
+          <Property Name="CornerRadius" Value="2,2,2,2" />
+          <Property Name="DataContext" Value="PointerOver Button" />
+          <Property Name="Foreground" Value="#FFFF0066" />
+          <Property Name="HorizontalContentAlignment" Value="1" />
+          <Property Name="Name" Value="ContentPresenter" />
+          <Property Name="Padding" Value="8,5,8,6" />
+          <Property Name="RenderSize" Value="137x32" />
+          <Property Name="VerticalContentAlignment" Value="1" />
+          <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+            <Property Name="ActualHeight" Value="18.6211" />
+            <Property Name="ActualWidth" Value="118.617" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+            <Property Name="RenderSize" Value="119x19" />
+            <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+            <Property Name="Text" Value="PointerOver Button" />
+            <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Documents.Run">
+              <Property Name="Text" Value="PointerOver Button" />
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.Button">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="111" />
+        <Property Name="Background" Value="#FF952AAB" />
+        <Property Name="BackgroundSizing" Value="1" />
+        <Property Name="BorderBrush" Value="#FF00FF00" />
+        <Property Name="BorderThickness" Value="1,1,1,1" />
+        <Property Name="Content" Value="Pressed Button" />
+        <Property Name="CornerRadius" Value="2,2,2,2" />
+        <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="FontWeight" Value="400" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="Padding" Value="8,5,8,6" />
+        <Property Name="RenderSize" Value="111x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="111" />
+          <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+          <Property Name="Background" Value="#FF952AAB" />
+          <Property Name="BackgroundSizing" Value="1" />
+          <Property Name="BorderBrush" Value="#FFFF0066" />
+          <Property Name="BorderThickness" Value="1,1,1,1" />
+          <Property Name="Content" Value="Pressed Button" />
+          <Property Name="ContentTransitions" Value="[NULL]" />
+          <Property Name="CornerRadius" Value="2,2,2,2" />
+          <Property Name="DataContext" Value="Pressed Button" />
+          <Property Name="Foreground" Value="#FFFF0066" />
+          <Property Name="HorizontalContentAlignment" Value="1" />
+          <Property Name="Name" Value="ContentPresenter" />
+          <Property Name="Padding" Value="8,5,8,6" />
+          <Property Name="Projection" Value="[Microsoft.UI.Xaml.Media.PlaneProjection]" />
+          <Property Name="RenderSize" Value="111x32" />
+          <Property Name="RenderTransform" Value="CompositeTransform( CenterX=55.5  CenterY=16  ScaleX=0.97  ScaleY=0.97 )" />
+          <Property Name="VerticalContentAlignment" Value="1" />
+          <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+            <Property Name="ActualHeight" Value="18.6211" />
+            <Property Name="ActualWidth" Value="92.873" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+            <Property Name="RenderSize" Value="93x19" />
+            <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+            <Property Name="Text" Value="Pressed Button" />
+            <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Documents.Run">
+              <Property Name="Text" Value="Pressed Button" />
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.Button">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="117" />
+        <Property Name="Background" Value="#FF952AAB" />
+        <Property Name="BackgroundSizing" Value="1" />
+        <Property Name="BorderBrush" Value="#FF00FF00" />
+        <Property Name="BorderThickness" Value="1,1,1,1" />
+        <Property Name="Content" Value="Disabled Button" />
+        <Property Name="CornerRadius" Value="2,2,2,2" />
+        <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="FontWeight" Value="400" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="IsEnabled" Value="False" />
+        <Property Name="IsPointerOver" Value="False" />
+        <Property Name="IsPressed" Value="False" />
+        <Property Name="Padding" Value="8,5,8,6" />
+        <Property Name="RenderSize" Value="117x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="117" />
+          <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+          <Property Name="Background" Value="#FF952AAB" />
+          <Property Name="BackgroundSizing" Value="1" />
+          <Property Name="BorderBrush" Value="#FF8080FF" />
+          <Property Name="BorderThickness" Value="1,1,1,1" />
+          <Property Name="Content" Value="Disabled Button" />
+          <Property Name="ContentTransitions" Value="[NULL]" />
+          <Property Name="CornerRadius" Value="2,2,2,2" />
+          <Property Name="DataContext" Value="Disabled Button" />
+          <Property Name="Foreground" Value="#FF8080FF" />
+          <Property Name="HorizontalContentAlignment" Value="1" />
+          <Property Name="Name" Value="ContentPresenter" />
+          <Property Name="Padding" Value="8,5,8,6" />
+          <Property Name="RenderSize" Value="117x32" />
+          <Property Name="VerticalContentAlignment" Value="1" />
+          <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+            <Property Name="ActualHeight" Value="18.6211" />
+            <Property Name="ActualWidth" Value="98.8545" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+            <Property Name="RenderSize" Value="99x19" />
+            <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+            <Property Name="Text" Value="Disabled Button" />
+            <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Documents.Run">
+              <Property Name="Text" Value="Disabled Button" />
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.Button">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="145" />
+        <Property Name="Background" Value="#FF952AAB" />
+        <Property Name="BackgroundSizing" Value="1" />
+        <Property Name="BorderBrush" Value="#FF00FF00" />
+        <Property Name="BorderThickness" Value="1,1,1,1" />
+        <Property Name="Content" Value="Focused Rest Button" />
+        <Property Name="CornerRadius" Value="2,2,2,2" />
+        <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="FontWeight" Value="400" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="Padding" Value="8,5,8,6" />
+        <Property Name="RenderSize" Value="145x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="145" />
+          <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+          <Property Name="Background" Value="#FF952AAB" />
+          <Property Name="BackgroundSizing" Value="1" />
+          <Property Name="BorderBrush" Value="#FF00FF00" />
+          <Property Name="BorderThickness" Value="1,1,1,1" />
+          <Property Name="Content" Value="Focused Rest Button" />
+          <Property Name="ContentTransitions" Value="[NULL]" />
+          <Property Name="CornerRadius" Value="2,2,2,2" />
+          <Property Name="DataContext" Value="Focused Rest Button" />
+          <Property Name="HorizontalContentAlignment" Value="1" />
+          <Property Name="Name" Value="ContentPresenter" />
+          <Property Name="Padding" Value="8,5,8,6" />
+          <Property Name="RenderSize" Value="145x32" />
+          <Property Name="VerticalContentAlignment" Value="1" />
+          <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+            <Property Name="ActualHeight" Value="18.6211" />
+            <Property Name="ActualWidth" Value="126.137" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+            <Property Name="RenderSize" Value="127x19" />
+            <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+            <Property Name="Text" Value="Focused Rest Button" />
+            <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Documents.Run">
+              <Property Name="Text" Value="Focused Rest Button" />
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.Button">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="192" />
+        <Property Name="Background" Value="#FF952AAB" />
+        <Property Name="BackgroundSizing" Value="1" />
+        <Property Name="BorderBrush" Value="#FF00FF00" />
+        <Property Name="BorderThickness" Value="1,1,1,1" />
+        <Property Name="Content" Value="Focused PointerOver Button" />
+        <Property Name="CornerRadius" Value="2,2,2,2" />
+        <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="FontWeight" Value="400" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="Padding" Value="8,5,8,6" />
+        <Property Name="RenderSize" Value="192x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="192" />
+          <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+          <Property Name="Background" Value="#FF952AAB" />
+          <Property Name="BackgroundSizing" Value="1" />
+          <Property Name="BorderBrush" Value="#FFFF0066" />
+          <Property Name="BorderThickness" Value="1,1,1,1" />
+          <Property Name="Content" Value="Focused PointerOver Button" />
+          <Property Name="ContentTransitions" Value="[NULL]" />
+          <Property Name="CornerRadius" Value="2,2,2,2" />
+          <Property Name="DataContext" Value="Focused PointerOver Button" />
+          <Property Name="Foreground" Value="#FFFF0066" />
+          <Property Name="HorizontalContentAlignment" Value="1" />
+          <Property Name="Name" Value="ContentPresenter" />
+          <Property Name="Padding" Value="8,5,8,6" />
+          <Property Name="RenderSize" Value="192x32" />
+          <Property Name="VerticalContentAlignment" Value="1" />
+          <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+            <Property Name="ActualHeight" Value="18.6211" />
+            <Property Name="ActualWidth" Value="173.387" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+            <Property Name="RenderSize" Value="174x19" />
+            <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+            <Property Name="Text" Value="Focused PointerOver Button" />
+            <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Documents.Run">
+              <Property Name="Text" Value="Focused PointerOver Button" />
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.Button">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="166" />
+        <Property Name="Background" Value="#FF952AAB" />
+        <Property Name="BackgroundSizing" Value="1" />
+        <Property Name="BorderBrush" Value="#FF00FF00" />
+        <Property Name="BorderThickness" Value="1,1,1,1" />
+        <Property Name="Content" Value="Focused Pressed Button" />
+        <Property Name="CornerRadius" Value="2,2,2,2" />
+        <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="FontWeight" Value="400" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="Padding" Value="8,5,8,6" />
+        <Property Name="RenderSize" Value="166x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="166" />
+          <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+          <Property Name="Background" Value="#FF952AAB" />
+          <Property Name="BackgroundSizing" Value="1" />
+          <Property Name="BorderBrush" Value="#FFFF0066" />
+          <Property Name="BorderThickness" Value="1,1,1,1" />
+          <Property Name="Content" Value="Focused Pressed Button" />
+          <Property Name="ContentTransitions" Value="[NULL]" />
+          <Property Name="CornerRadius" Value="2,2,2,2" />
+          <Property Name="DataContext" Value="Focused Pressed Button" />
+          <Property Name="Foreground" Value="#FFFF0066" />
+          <Property Name="HorizontalContentAlignment" Value="1" />
+          <Property Name="Name" Value="ContentPresenter" />
+          <Property Name="Padding" Value="8,5,8,6" />
+          <Property Name="Projection" Value="[Microsoft.UI.Xaml.Media.PlaneProjection]" />
+          <Property Name="RenderSize" Value="166x32" />
+          <Property Name="RenderTransform" Value="CompositeTransform( CenterX=83  CenterY=16  ScaleX=0.97  ScaleY=0.97 )" />
+          <Property Name="VerticalContentAlignment" Value="1" />
+          <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+            <Property Name="ActualHeight" Value="18.6211" />
+            <Property Name="ActualWidth" Value="147.643" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+            <Property Name="RenderSize" Value="148x19" />
+            <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+            <Property Name="Text" Value="Focused Pressed Button" />
+            <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Documents.Run">
+              <Property Name="Text" Value="Focused Pressed Button" />
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+    </Element>
+  </VisualRoot>
+</VisualTreeDump>

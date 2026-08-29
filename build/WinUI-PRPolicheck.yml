@@ -1,0 +1,165 @@
+# This pipeline helps scan the PR title (and possibly description, in the future) to ensure it
+# is good to be shared with the public. At least the PR title will be shared in the description
+# of the commit when mirroring the change to GitHub.
+#
+# There are three tasks currently:
+#   1. Scan for known company or product names which should not be included (since we should not
+#      be sharing who is using WinUI3 nor who asked for specific fixes). The list of banned words
+#      is stored in the ADO variable group named WinUI-PRBannedWords.
+#
+#   2. Add a comment requesting the author review the PR title with an eye towards public sharing.
+#
+#   3. For PRs targeting `main` only, post a one-time comment letting the author know that WinUI
+#      development is moving to GitHub. This is idempotent (guarded by a hidden marker so it is
+#      only posted once per PR) since this pipeline reruns on every PR iteration.
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+trigger: none
+
+variables:
+- group: WinUI-PRBannedWords
+- name: GitHubMigrationNoticeComment
+  value: |
+    **Heads up: WinUI development is moving to GitHub**
+
+    The public [microsoft-ui-xaml repository](https://github.com/microsoft/microsoft-ui-xaml) will become the single source of truth for WinUI development, and this Azure DevOps repository will stop accepting new pull requests targeting the `main` branch. Pull requests targeting the `2.x` and `1.8` branches will continue to be accepted in Azure DevOps.
+
+stages:
+- stage: ValidatePR
+  displayName: "Validating PR for mirroring policies"
+  jobs:
+  - job: Validate
+    steps:
+    - task: PowerShell@2
+      displayName: 'Validate PR title'
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+        BANNED_WORDS: $(PRBannedWords)
+      inputs:
+        failOnStdErr: true
+        targetType: 'inline'
+        script: |
+            $url = "$($env:SYSTEM_COLLECTIONURI)_apis/git/repositories/$($env:BUILD_REPOSITORY_ID)/pullRequests/$($env:SYSTEM_PULLREQUEST_PULLREQUESTID)?api-version=4.0"
+        
+            Write-Host "Pull request id: $($env:SYSTEM_PULLREQUEST_PULLREQUESTID)"
+            if(![string]::IsNullOrEmpty($env:SYSTEM_PULLREQUEST_PULLREQUESTID)) {
+                $jsonObj = Invoke-RestMethod -Uri $url -Headers @{
+                    "Authorization"="Bearer $($env:SYSTEM_ACCESSTOKEN)"
+                }
+
+                $pr_title = $jsonObj.title
+                Write-Host "Title: $pr_title"
+
+                # Skip all checks for automated dependency-update PRs. Titles should always be fine there, but we don't
+                # want to add any comments which may prevent auto-completing those PRs.
+                if ($jsonObj.CreatedBy.displayName -eq "ProductConstructionServiceProd") {
+                    Write-Host "Maestro PR detected. Skipping checks..."
+                    Write-Host "##vso[task.setvariable variable=IsMaestroPR;]true"
+                    Write-Host "##vso[task.complete result=Succeeded;]Skipping check for Maestro PR."
+                    exit
+                }
+
+                $Regex = $env:BANNED_WORDS
+                # Make sure it does end in comma or have double commas
+                $Regex = $Regex -replace ',$', ''
+                $Regex = $Regex -replace ',,', ','
+                # Swap out the commas to make a regex format
+                $Regex = $Regex.Replace(',', '|')
+                #Write-Host "Banned regex: $Regex"
+                if ($pr_title -match $Regex) {
+                    Write-Host "##vso[task.logissue type=error]Pull request title contains one or more banned words: $($matches[0])"
+
+                    # Add a PR comment for the error
+                    $url = "$($env:SYSTEM_COLLECTIONURI)_apis/git/repositories/$($env:BUILD_REPOSITORY_ID)/pullRequests/$($env:SYSTEM_PULLREQUEST_PULLREQUESTID)/threads?api-version=7.1-preview.1"
+                    $body = @{
+                        comments = @(@{
+                            content = ":no_entry: Don't include company or product names in the PR title, since the PR title " +
+                                    "will be used in the commit description when mirroring to GitHub. Banned word found: " +
+                                    "**$($matches[0])**. Please fix the PR title so it is good to share with the public. Then " +
+                                    "close this comment."
+                            commentType = "text"
+                        })
+                        "status" = "Active"
+                    } | ConvertTo-Json -Depth 10
+                    Invoke-RestMethod -Uri $url -Method Post -Headers @{Authorization = "Bearer $($env:SYSTEM_ACCESSTOKEN)"} -Body $body -ContentType "application/json"
+
+                    # Finish the task as Failed
+                    Write-Host "##vso[task.complete result=Failed;]Error: Pull request title contains one or more banned words: $($matches[0])"
+                } else {
+                    Write-Host "SUCCESS: The title of the pull request does not contain banned words."
+                    Write-Host "##vso[task.complete result=Succeeded;]The title of the pull request does not contain banned words."
+                }
+            } else {
+                Write-Host "##[task.logissue type=error]Error: No pull request id available to validate."
+                Write-Host "##vso[task.complete result=Failed;]Error: No pull request id available to validate."
+            }
+    - task: PowerShell@2
+      displayName: 'Add PR comment for author confirmation'
+      condition: and(succeeded(), ne(variables['IsMaestroPR'], 'true'))
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      inputs:
+        failOnStdErr: true
+        targetType: 'inline'
+        script: |
+            $url = "$($env:SYSTEM_COLLECTIONURI)_apis/git/repositories/$($env:BUILD_REPOSITORY_ID)/pullRequests/$($env:SYSTEM_PULLREQUEST_PULLREQUESTID)/threads?api-version=7.1-preview.1"
+            $body = @{
+                comments = @(@{
+                    content = "Please ensure the PR title does not contain any company names or external product names " +
+                              "which we should not share with the public. Also ensure the rest of the PR title is good " +
+                              "to share with the public, since the full title will be shared when the merged change is " +
+                              "mirrored to GitHub. Then close this comment."
+                    commentType = "text"
+                })
+                "status" = "Active"
+            } | ConvertTo-Json -Depth 10
+            Invoke-RestMethod -Uri $url -Method Post -Headers @{Authorization = "Bearer $($env:SYSTEM_ACCESSTOKEN)"} -Body $body -ContentType "application/json"
+    - task: PowerShell@2
+      displayName: 'Post GitHub migration notice comment'
+      condition: and(always(), ne(variables['IsMaestroPR'], 'true'), ne(variables['System.PullRequest.PullRequestId'], ''), eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main'))
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+        GITHUB_MIGRATION_NOTICE_COMMENT: $(GitHubMigrationNoticeComment)
+      inputs:
+        failOnStdErr: true
+        targetType: 'inline'
+        script: |
+            # Stable hidden marker used to detect whether this notice was already posted on this PR, so
+            # that it is only added once even though this pipeline reruns on every new PR iteration.
+            $marker = "<!-- winui-github-transition-notice -->"
+
+            # Pull Request Threads - List does not support $top/continuationToken paging (it always
+            # returns the full set of threads for the PR), so a single request is sufficient here:
+            # https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-request-threads/list
+            $threadsUrl = "$($env:SYSTEM_COLLECTIONURI)_apis/git/repositories/$($env:BUILD_REPOSITORY_ID)/pullRequests/$($env:SYSTEM_PULLREQUEST_PULLREQUESTID)/threads?api-version=7.1-preview.1"
+            $existingThreads = Invoke-RestMethod -Uri $threadsUrl -Headers @{Authorization = "Bearer $($env:SYSTEM_ACCESSTOKEN)"}
+
+            $alreadyPosted = $false
+            foreach ($thread in $existingThreads.value) {
+                foreach ($comment in $thread.comments) {
+                    if ($comment.content -like "*$marker*") {
+                        $alreadyPosted = $true
+                        break
+                    }
+                }
+                if ($alreadyPosted) {
+                    break
+                }
+            }
+
+            if ($alreadyPosted) {
+                Write-Host "GitHub migration notice already posted on this PR. Skipping."
+            } else {
+                $noticeBody = "$marker`n$($env:GITHUB_MIGRATION_NOTICE_COMMENT)"
+                $body = @{
+                    comments = @(@{
+                        content = $noticeBody
+                        commentType = "text"
+                    })
+                    "status" = "Active"
+                } | ConvertTo-Json -Depth 10
+                Invoke-RestMethod -Uri $threadsUrl -Method Post -Headers @{Authorization = "Bearer $($env:SYSTEM_ACCESSTOKEN)"} -Body $body -ContentType "application/json"
+                Write-Host "Posted GitHub migration notice comment."
+            }

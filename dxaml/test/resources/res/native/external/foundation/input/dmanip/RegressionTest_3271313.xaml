@@ -1,0 +1,12 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+    <Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+        <ScrollViewer Name="myScrollViewer" Width="300" Height="300" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" HorizontalScrollMode="Enabled" VerticalScrollMode="Enabled" MinZoomFactor="0.5" MaxZoomFactor="2.0" IsScrollInertiaEnabled="False" IsZoomInertiaEnabled="False" HorizontalSnapPointsType="None" VerticalSnapPointsType="None">
+            <StackPanel Orientation="Vertical">
+                <Rectangle Width="300" Height="150" Fill="Red"></Rectangle>
+                <Popup Name="myPopup">
+                    <TextBlock FontSize="24">OOOOOO</TextBlock>
+                </Popup>
+                <Rectangle Width="300" Height="250" Fill="Green"></Rectangle>
+            </StackPanel>
+        </ScrollViewer>
+    </Canvas>

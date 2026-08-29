@@ -1,0 +1,75 @@
+﻿ <?xml version="1.0" encoding="utf-8"?>
+<layerModel xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" xmlns:dm1="http://schemas.microsoft.com/dsltools/SimpleShapesModel" dslVersion="1.0.0.0" Id="92d27190-001e-4869-a4a2-5ea3051549d5" xmlns="http://schemas.microsoft.com/VisualStudio/TeamArchitect/LayerDesigner">
+  <layers>
+    <layer Id="47306177-1dbf-40f5-931e-ef35fe34dfd9" name="AppAnalysis.dll">
+      <dependencyToLayers>
+        <dependencyFromLayerToLayer Id="79d40f27-aaf5-4862-b0bd-1e323065c10f" direction="Forward">
+          <layerMoniker Id="2acaf4e5-3bb4-4b63-bc0d-5b3fa08ab48e" />
+        </dependencyFromLayerToLayer>
+        <dependencyFromLayerToLayer Id="6125b775-1fa0-4930-b654-93e9cfea2396" direction="Forward">
+          <layerMoniker Id="df04e3ad-5d96-42b1-ab28-2b34521cd583" />
+        </dependencyFromLayerToLayer>
+      </dependencyToLayers>
+      <childLayers>
+        <layer Id="bfdc308c-7e2b-4d49-99fb-7b3e2054ec53" name="MUI Dll" />
+        <layer Id="dcfbcb3b-caaf-4cfc-bec2-e534d2b82b54" name="IDL" />
+      </childLayers>
+    </layer>
+    <layer Id="2acaf4e5-3bb4-4b63-bc0d-5b3fa08ab48e" name="App Analysis Framework">
+      <dependencyToLayers>
+        <dependencyFromLayerToLayer Id="2988ba16-2b4d-4a29-a5c9-929ea66ffb63" direction="Forward">
+          <layerMoniker Id="49cc931c-8121-496e-97a4-1e66e6747bdd" />
+        </dependencyFromLayerToLayer>
+      </dependencyToLayers>
+    </layer>
+    <layer Id="df04e3ad-5d96-42b1-ab28-2b34521cd583" name="Build-in Rules">
+      <dependencyToLayers>
+        <dependencyFromLayerToLayer Id="6f809e79-c015-4a85-a82f-9e0fbed0ed5f" direction="Forward">
+          <layerMoniker Id="49cc931c-8121-496e-97a4-1e66e6747bdd" />
+        </dependencyFromLayerToLayer>
+      </dependencyToLayers>
+    </layer>
+    <layer Id="aa958b07-e576-4983-907f-6bc7447bde37" name="Extra Rules (extensible).dll">
+      <dependencyToLayers>
+        <dependencyFromLayerToLayer Id="b89ac4db-1c1d-4f9e-b066-efac11d06e80" direction="Forward">
+          <layerMoniker Id="73322cad-23c8-4314-9599-ca5102ff7e9f" />
+        </dependencyFromLayerToLayer>
+        <dependencyFromLayerToLayer Id="cdce3c3d-398a-4779-b670-e575b975a37c" direction="Forward">
+          <layerMoniker Id="dcfbcb3b-caaf-4cfc-bec2-e534d2b82b54" />
+        </dependencyFromLayerToLayer>
+      </dependencyToLayers>
+      <childLayers>
+        <layer Id="54f0d55d-eed5-4f2e-a037-a7c74ad7e489" name="MUI Dll" />
+      </childLayers>
+    </layer>
+    <layer Id="73322cad-23c8-4314-9599-ca5102ff7e9f" name="Extra Rules">
+      <dependencyToLayers>
+        <dependencyFromLayerToLayer Id="b929cafd-c21c-4478-ade9-ec547605db09" direction="Forward">
+          <layerMoniker Id="49cc931c-8121-496e-97a4-1e66e6747bdd" />
+        </dependencyFromLayerToLayer>
+      </dependencyToLayers>
+    </layer>
+    <layer Id="53b508af-7f76-484f-9174-3412916d8b2d" name="VS or Standalone Tool">
+      <dependencyToLayers>
+        <dependencyFromLayerToLayer Id="eab4bb9c-0551-4e21-a92e-b4dfca44f5d2" direction="Forward">
+          <layerMoniker Id="47306177-1dbf-40f5-931e-ef35fe34dfd9" />
+        </dependencyFromLayerToLayer>
+        <dependencyFromLayerToLayer Id="01ed2c81-1023-4a91-9f2b-c4eae8c73735" direction="Forward">
+          <layerMoniker Id="aa958b07-e576-4983-907f-6bc7447bde37" />
+        </dependencyFromLayerToLayer>
+      </dependencyToLayers>
+    </layer>
+    <layer Id="49cc931c-8121-496e-97a4-1e66e6747bdd" name="TDH">
+      <dependencyToLayers>
+        <dependencyFromLayerToLayer Id="c686caf3-a268-4afd-a808-e85e766bd69d" direction="Forward">
+          <layerMoniker Id="94f16e35-7e69-4cab-b378-618a835f6a08" />
+        </dependencyFromLayerToLayer>
+        <dependencyFromLayerToLayer Id="8ea8a5ab-59c1-4509-a1fa-1155e2e8fd8b" direction="Forward">
+          <layerMoniker Id="9210671a-61de-4050-9d16-cfb6c52e7e2f" />
+        </dependencyFromLayerToLayer>
+      </dependencyToLayers>
+    </layer>
+    <layer Id="9210671a-61de-4050-9d16-cfb6c52e7e2f" name="ETW" />
+    <layer Id="94f16e35-7e69-4cab-b378-618a835f6a08" name="ETW Manifest(s)" />
+  </layers>
+</layerModel>

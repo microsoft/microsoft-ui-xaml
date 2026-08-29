@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- 
+  This file contains the properties and items necessary to run the Xaml Compiler as part of a test application.
+-->
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- these options are passed to the XAML compiler to control how it generates Xbf -->
+  <PropertyGroup>
+    <DefaultLanguage Condition="$(DefaultLanguage) == ''">en-US</DefaultLanguage>
+    <DisableXbfGeneration>false</DisableXbfGeneration>
+    <DisableXbfLineInfo>true</DisableXbfLineInfo>
+    <UseXamlCompiler>true</UseXamlCompiler>
+    <RedirectionTarget>8.21</RedirectionTarget>
+    <RootNamespace>$(TargetName)</RootNamespace>
+
+    <!-- setting this explicitly to null here. This controls the prefix the XamlCompiler
+          places in code for the resource URI to XAML/XBF files. By default it is set to the target name. -->
+    <PriIndexName></PriIndexName>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release'">_WINRT_DLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'!='Release'">_WINRT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+
+      <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(OutDir)Generated;$(OutDir)Generated\CustomTypes;.\CustomTypes</AdditionalIncludeDirectories>
+    </ClCompile>
+
+    <Link>
+      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <Reference Include="@(WinUIWinMDReferences)" />
+    <Reference Include="$(SDKReferencesPath)\Windows.Foundation.FoundationContract.winmd" />
+    <Reference Include="$(SDKReferencesPath)\Windows.Foundation.UniversalApiContract.winmd" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.Cpp.targets"/>
+
+</Project>

@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>Utility</ConfigurationType>
+        <ProjectGuid>{e1f36d19-f82d-474a-be26-fea52da5b6e6}</ProjectGuid>
+        <IsWinmdProject>true</IsWinmdProject>
+        <MergeWinMd>false</MergeWinMd>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+
+    <Import Project="$(XamlSourcePath)\xcp\dxaml\tools\AppAnalysis\common.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>$(ProjectIncludeDirectories);</ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <Midl>
+            <MinimumTargetSystem>NT62</MinimumTargetSystem>
+        </Midl>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ClInclude Include="AppAnalysisETWEventRecord.h"/>
+
+        <Midl Include="Microsoft.Diagnostics.AppAnalysis.idl"/>
+        <Midl Include="Microsoft.Diagnostics.AppAnalysis.Internal.idl"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

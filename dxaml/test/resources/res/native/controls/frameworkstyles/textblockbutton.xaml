@@ -1,0 +1,43 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    Orientation="Horizontal"
+    Margin="5">
+    <StackPanel Orientation="Vertical">
+        <Button x:Name="Button1" Content="Button Normal" Style="{StaticResource TextBlockButtonStyle}"/>
+        <Button x:Name="Button2" Content="Button Hover" Style="{StaticResource TextBlockButtonStyle}"/>
+        <Button x:Name="Button3" Content="Button Pressed" Style="{StaticResource TextBlockButtonStyle}"/>
+        <Button x:Name="Button4" Content="Button Disabled" Style="{StaticResource TextBlockButtonStyle}"/>
+        
+        <RadioButton x:Name="RadioButton1" Content="RadioBtn Unchk Normal" Style="{StaticResource TextBlockButtonStyle}" IsChecked="False"/>
+        <RadioButton x:Name="RadioButton2" Content="RadioBtn Unchk Hover" Style="{StaticResource TextBlockButtonStyle}" IsChecked="False"/>
+        <RadioButton x:Name="RadioButton3" Content="RadioBtn Unchk Pressed" Style="{StaticResource TextBlockButtonStyle}" IsChecked="False"/>
+        <RadioButton x:Name="RadioButton4" Content="RadioBtn Unchk Disabled" Style="{StaticResource TextBlockButtonStyle}" IsChecked="False"/>
+        <!-- Place these in separate groups so that they all remain checked -->
+        <RadioButton x:Name="RadioButton5" Content="RadioBtn Chk Normal" Style="{StaticResource TextBlockButtonStyle}" IsChecked="True" GroupName="Group5"/>
+        <RadioButton x:Name="RadioButton6" Content="RadioBtn Chk Hover" Style="{StaticResource TextBlockButtonStyle}" IsChecked="True" GroupName="Group6"/>
+        <RadioButton x:Name="RadioButton7" Content="RadioBtn Chk Pressed" Style="{StaticResource TextBlockButtonStyle}" IsChecked="True" GroupName="Group7"/>
+        <RadioButton x:Name="RadioButton8" Content="RadioBtn Chk Disabled" Style="{StaticResource TextBlockButtonStyle}" IsChecked="True" GroupName="Group8"/>
+    </StackPanel>
+    <StackPanel Orientation="Vertical" Margin="5,0,0,0">
+        <ToggleButton x:Name="ToggleButton1" Content="ToggleBtn Unchk Normal" Style="{StaticResource TextBlockButtonStyle}" IsChecked="False"/>
+        <ToggleButton x:Name="ToggleButton2" Content="ToggleBtn Unchk Hover" Style="{StaticResource TextBlockButtonStyle}" IsChecked="False"/>
+        <ToggleButton x:Name="ToggleButton3" Content="ToggleBtn Unchk Pressed" Style="{StaticResource TextBlockButtonStyle}" IsChecked="False"/>
+        <ToggleButton x:Name="ToggleButton4" Content="ToggleBtn Unchk Disabled" Style="{StaticResource TextBlockButtonStyle}" IsChecked="False"/>
+        <ToggleButton x:Name="ToggleButton5" Content="ToggleBtn Chk Normal" Style="{StaticResource TextBlockButtonStyle}" IsChecked="True"/>
+        <ToggleButton x:Name="ToggleButton6" Content="ToggleBtn Chk Hover" Style="{StaticResource TextBlockButtonStyle}" IsChecked="True"/>
+        <ToggleButton x:Name="ToggleButton7" Content="ToggleBtn Chk Pressed" Style="{StaticResource TextBlockButtonStyle}" IsChecked="True"/>
+        <ToggleButton x:Name="ToggleButton8" Content="ToggleBtn Chk Disabled" Style="{StaticResource TextBlockButtonStyle}" IsChecked="True"/>
+
+        <CheckBox x:Name="CheckBox1" Content="CheckBox Unchk Normal" Style="{StaticResource TextBlockButtonStyle}" IsChecked="False"/>
+        <CheckBox x:Name="CheckBox2" Content="CheckBox Unchk Hover" Style="{StaticResource TextBlockButtonStyle}" IsChecked="False"/>
+        <CheckBox x:Name="CheckBox3" Content="CheckBox Unchk Pressed" Style="{StaticResource TextBlockButtonStyle}" IsChecked="False"/>
+        <CheckBox x:Name="CheckBox4" Content="CheckBox Unchk Disabled" Style="{StaticResource TextBlockButtonStyle}" IsChecked="False"/>
+        <CheckBox x:Name="CheckBox5" Content="CheckBox Chk Normal" Style="{StaticResource TextBlockButtonStyle}" IsChecked="True"/>
+        <CheckBox x:Name="CheckBox6" Content="CheckBox Chk Hover" Style="{StaticResource TextBlockButtonStyle}" IsChecked="True"/>
+        <CheckBox x:Name="CheckBox7" Content="CheckBox Chk Pressed" Style="{StaticResource TextBlockButtonStyle}" IsChecked="True"/>
+        <CheckBox x:Name="CheckBox8" Content="CheckBox Chk Disabled" Style="{StaticResource TextBlockButtonStyle}" IsChecked="True"/>
+    </StackPanel>
+</StackPanel>

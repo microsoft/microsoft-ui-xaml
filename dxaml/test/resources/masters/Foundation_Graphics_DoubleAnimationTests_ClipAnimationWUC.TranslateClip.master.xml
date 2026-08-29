@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="100" SizeY="100" OffsetX="0" OffsetY="100" OffsetZ="0">
+              <Clip ClipLeft="0" ClipTop="0" ClipRight="90" ClipBottom="90">
+                <TransformMatrix>
+                  <ExpressionAnimation String="Matrix3x2(PS.ScaleX, 0, 0, PS.ScaleY, PS.X, PS.Y)">
+                    <ReferenceParameter Name="PS" />
+                    <PropertySet>
+                      <Property Name="ScaleX" Type="Scalar" Value="1" />
+                      <Property Name="ScaleY" Type="Scalar" Value="1" />
+                      <Property Name="X" Type="Scalar" />
+                      <Property Name="Y" Type="Scalar">
+                        <KeyFrameAnimation Duration="1">
+                          <KeyFrame />
+                          <KeyFrame Time="1" Value="50">
+                            <LinearEasingFunction />
+                          </KeyFrame>
+                        </KeyFrameAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ExpressionAnimation>
+                </TransformMatrix>
+              </Clip>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 0, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

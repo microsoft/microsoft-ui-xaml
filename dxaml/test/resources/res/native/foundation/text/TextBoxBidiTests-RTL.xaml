@@ -1,0 +1,23 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel Width="400" Height="600" VerticalAlignment="Top" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <StackPanel.Resources>
+    <!-- Restore old TextControlThemePadding padding value when TextBox defaulted to 15 font size instead of 14 -->
+    <Style TargetType="TextBox">
+      <Setter Property="Padding" Value="10,3,6,5"/>
+    </Style>
+    <Style TargetType="Button">
+      <Setter Property="FontSize" Value="15"/>
+      <Setter Property="Padding" Value="8,4,8,4"/>
+    </Style>
+  </StackPanel.Resources>
+  <Button x:Name="button" Content="Focus" Margin="20,10,10,0"/>
+  <TextBox FontSize="15" Text="نسيايب123!" IsReadOnly="True" FlowDirection="RightToLeft" TextReadingOrder="UseFlowDirection" TextAlignment="Left" Width="200"  FontFamily="Segoe UI" Margin="20,5,10,0"/>
+  <TextBox FontSize="15" Text="نسيايب123!" IsReadOnly="True" FlowDirection="RightToLeft" TextReadingOrder="UseFlowDirection" TextAlignment="Right" Width="200"  FontFamily="Segoe UI" Margin="20,5,10,0"/>
+  <TextBox FontSize="15" Text="نسيايب123!" IsReadOnly="True" FlowDirection="RightToLeft" TextReadingOrder="UseFlowDirection" TextAlignment="Center" Width="200"  FontFamily="Segoe UI" Margin="20,5,10,0"/>
+  <TextBox FontSize="15" Text="نسيايب123!" IsReadOnly="True" FlowDirection="RightToLeft" TextReadingOrder="UseFlowDirection" TextAlignment="DetectFromContent" Width="200"  FontFamily="Segoe UI" Margin="20,5,10,0"/>
+  <TextBox FontSize="15" Text="نسيايب123!" IsReadOnly="True" FlowDirection="RightToLeft" TextReadingOrder="DetectFromContent" TextAlignment="Left" Width="200"  FontFamily="Segoe UI" Margin="20,5,10,0"/>
+  <TextBox FontSize="15" Text="نسيايب123!" IsReadOnly="True" FlowDirection="RightToLeft" TextReadingOrder="DetectFromContent" TextAlignment="Right" Width="200"  FontFamily="Segoe UI" Margin="20,5,10,0"/>
+  <TextBox FontSize="15" Text="نسيايب123!" IsReadOnly="True" FlowDirection="RightToLeft" TextReadingOrder="DetectFromContent" TextAlignment="Center" Width="200"  FontFamily="Segoe UI" Margin="20,5,10,0"/>
+  <TextBox FontSize="15" Text="نسيايب123!" IsReadOnly="True" FlowDirection="RightToLeft" TextReadingOrder="DetectFromContent" TextAlignment="DetectFromContent" Width="200"  FontFamily="Segoe UI" Margin="20,5,10,0"/>
+  <TextBox FontSize="15" Text="نسيايب123!" IsReadOnly="True" FlowDirection="RightToLeft" Width="200"  FontFamily="Segoe UI" Margin="20,5,10,0"/>
+</StackPanel>

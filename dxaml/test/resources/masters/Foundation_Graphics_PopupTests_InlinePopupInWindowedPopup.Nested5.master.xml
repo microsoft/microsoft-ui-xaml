@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MultiTargetTree>
+  <CompositionTarget>
+    <Visual>
+      <Visual />
+      <Visual />
+      <Visual Tag="PrependVisual">
+        <Visual VisualId="3" Tag="PrimaryVisual" SizeX="400" SizeY="300">
+          <Visual Tag="ContentVisual">
+            <Visual Tag="PopupPlaceholderVisual" />
+            <Visual Tag="PopupPlaceholderVisual" />
+            <Visual Tag="PopupPlaceholderVisual" />
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </CompositionTarget>
+  <CompositionTarget HwndLeft="90" HwndTop="121" HwndWidth="120" HwndHeight="120">
+    <Visual Tag="WindowedPopup_ContentIslandRootVisual">
+      <TransformMatrix>
+        <Translate X="-90" Y="-98" />
+      </TransformMatrix>
+      <Visual Tag="WindowedPopup_AnimationRootVisual">
+        <Visual Tag="PrependVisual">
+          <Visual Tag="PrimaryVisual">
+            <Visual Tag="ContentVisual">
+              <Visual Tag="PrependVisual">
+                <Visual VisualId="4" Tag="PrimaryVisual" SizeX="10" SizeY="10" OffsetX="100" OffsetY="100" OffsetZ="0">
+                  <Visual Tag="ContentVisual">
+                    <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+                      <ColorBrush Color="#ff000000" />
+                    </wucSpriteVisual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+        <Visual TransformParentVisualId="4" Tag="PrependVisual">
+          <Visual Tag="PrimaryVisual">
+            <Visual Tag="ContentVisual">
+              <Visual Tag="PrependVisual">
+                <Visual Tag="PrimaryVisual" SizeX="10" SizeY="10">
+                  <Visual Tag="ContentVisual">
+                    <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+                      <MaskBrush>
+                        <Source>
+                          <ColorBrush Color="rgb {0, 0, 1}" />
+                        </Source>
+                        <Mask>
+                          <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                        </Mask>
+                      </MaskBrush>
+                    </wucSpriteVisual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+        <Visual TransformParentVisualId="4" Tag="PrependVisual">
+          <Visual Tag="PrimaryVisual">
+            <Visual Tag="ContentVisual">
+              <Visual Tag="PrependVisual">
+                <Visual Tag="PrimaryVisual" SizeX="10" SizeY="10">
+                  <Visual Tag="ContentVisual">
+                    <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+                      <MaskBrush>
+                        <Source>
+                          <ColorBrush Color="rgb {1, 0, 0}" />
+                        </Source>
+                        <Mask>
+                          <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                        </Mask>
+                      </MaskBrush>
+                    </wucSpriteVisual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </CompositionTarget>
+</MultiTargetTree>

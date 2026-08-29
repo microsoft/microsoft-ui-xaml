@@ -1,0 +1,12 @@
+// Peer lives in the same private namespace as its owner, so it too stays out of shipped WinMDs.
+namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+[MUX_INTERNAL]
+[webhosthidden]
+unsealed runtimeclass SortIndicatorAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    [method_name("CreateInstanceWithOwner")] SortIndicatorAutomationPeer(SortIndicator owner);
+}
+
+}

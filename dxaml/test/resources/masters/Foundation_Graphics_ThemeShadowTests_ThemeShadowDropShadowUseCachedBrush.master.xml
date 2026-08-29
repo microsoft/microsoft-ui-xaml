@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="300" SizeY="300" BorderMode="Soft">
+            <ColorBrush Color="#ffffffff" />
+          </wucSpriteVisual>
+          <Visual Tag="PrependVisual">
+            <TransformMatrix>
+              <Translate Z="32" />
+            </TransformMatrix>
+            <Visual TransformParentVisualId="2" Tag="DropShadowVisual" TransparentForInput="True">
+              <wucSpriteVisual SizeX="62" SizeY="62" OffsetX="-16" OffsetY="-8" OffsetZ="0">
+                <NineGridBrush LeftInset="21" TopInset="13" RightInset="21" BottomInset="29" isCenterHollow="True">
+                  <Source>
+                    <SurfaceBrush Stretch="Fill" Transform="Identity">
+                      <VisualSurface SourceRectangle="RB {96, 96}" RealizationSizeX="96" RealizationSizeY="96" SourceVisualId="1" />
+                    </SurfaceBrush>
+                  </Source>
+                </NineGridBrush>
+              </wucSpriteVisual>
+            </Visual>
+            <Visual VisualId="2" Tag="PrimaryVisual" SizeX="30" SizeY="30">
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft">
+                  <MaskBrush>
+                    <Source>
+                      <ColorBrush Color="#ff000000" />
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <TransformMatrix>
+              <Translate Z="32" />
+            </TransformMatrix>
+            <Visual TransformParentVisualId="3" Tag="DropShadowVisual" TransparentForInput="True">
+              <wucSpriteVisual SizeX="52" SizeY="52" OffsetX="-16" OffsetY="-8" OffsetZ="0">
+                <NineGridBrush LeftInset="21" TopInset="13" RightInset="21" BottomInset="29" isCenterHollow="True">
+                  <Source>
+                    <SurfaceBrush Stretch="Fill" Transform="Identity">
+                      <VisualSurface SourceRectangle="RB {96, 96}" RealizationSizeX="96" RealizationSizeY="96" SourceVisualId="1" />
+                    </SurfaceBrush>
+                  </Source>
+                </NineGridBrush>
+              </wucSpriteVisual>
+            </Visual>
+            <Visual VisualId="3" Tag="PrimaryVisual" SizeX="20" SizeY="20">
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="20" SizeY="20" BorderMode="Soft">
+                  <MaskBrush>
+                    <Source>
+                      <ColorBrush Color="#ff000000" />
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <TransformMatrix>
+              <Translate Z="32" />
+            </TransformMatrix>
+            <Visual TransformParentVisualId="5" Tag="DropShadowVisual" TransparentForInput="True">
+              <wucSpriteVisual SizeX="62" SizeY="62" OffsetX="-16" OffsetY="-8" OffsetZ="0">
+                <NineGridBrush LeftInset="21" TopInset="13" RightInset="21" BottomInset="29" isCenterHollow="True">
+                  <Source>
+                    <SurfaceBrush Stretch="Fill" Transform="Identity">
+                      <VisualSurface SourceRectangle="RB {96, 96}" RealizationSizeX="96" RealizationSizeY="96" SourceVisualId="4" />
+                    </SurfaceBrush>
+                  </Source>
+                </NineGridBrush>
+              </wucSpriteVisual>
+            </Visual>
+            <Visual VisualId="5" Tag="PrimaryVisual" SizeX="30" SizeY="30">
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft">
+                  <MaskBrush>
+                    <Source>
+                      <ColorBrush Color="#ff000000" />
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <TransformMatrix>
+              <Translate Z="32" />
+            </TransformMatrix>
+            <Visual TransformParentVisualId="7" Tag="DropShadowVisual" TransparentForInput="True">
+              <wucSpriteVisual SizeX="62" SizeY="62" OffsetX="-16" OffsetY="-8" OffsetZ="0">
+                <NineGridBrush LeftInset="21" TopInset="13" RightInset="21" BottomInset="29" isCenterHollow="True">
+                  <Source>
+                    <SurfaceBrush Stretch="Fill" Transform="Identity">
+                      <VisualSurface SourceRectangle="RB {96, 96}" RealizationSizeX="96" RealizationSizeY="96" SourceVisualId="6" />
+                    </SurfaceBrush>
+                  </Source>
+                </NineGridBrush>
+              </wucSpriteVisual>
+            </Visual>
+            <Visual VisualId="7" Tag="PrimaryVisual" SizeX="30" SizeY="30">
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft">
+                  <MaskBrush>
+                    <Source>
+                      <ColorBrush Color="#ff000000" />
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <TransformMatrix>
+              <Translate Z="32" />
+            </TransformMatrix>
+            <Visual TransformParentVisualId="9" Tag="DropShadowVisual" TransparentForInput="True">
+              <wucSpriteVisual SizeX="42" SizeY="42" OffsetX="-16" OffsetY="-8" OffsetZ="0">
+                <NineGridBrush LeftInset="20" TopInset="12" RightInset="20" BottomInset="28" isCenterHollow="True">
+                  <Source>
+                    <SurfaceBrush Stretch="Fill" Transform="Identity">
+                      <VisualSurface SourceRectangle="RB {96, 96}" RealizationSizeX="96" RealizationSizeY="96" SourceVisualId="8" />
+                    </SurfaceBrush>
+                  </Source>
+                </NineGridBrush>
+              </wucSpriteVisual>
+            </Visual>
+            <Visual VisualId="9" Tag="PrimaryVisual" SizeX="10" SizeY="10">
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+                  <MaskBrush>
+                    <Source>
+                      <ColorBrush Color="#ff000000" />
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

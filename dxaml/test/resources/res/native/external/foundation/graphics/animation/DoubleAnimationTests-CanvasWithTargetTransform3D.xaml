@@ -1,0 +1,21 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Canvas Width="250" Height="250" Background="Blue" Canvas.Top="100" x:Name="outerCanv">
+        <Canvas.Transform3D>
+            <PerspectiveTransform3D x:Name="persTrans" />
+        </Canvas.Transform3D>
+
+        <Canvas Width="200" Height="200" Background="Red" Canvas.Top="25" Canvas.Left="25" x:Name="canv">
+            <Canvas.Transform3D>
+                <CompositeTransform3D x:Name="trans" />
+            </Canvas.Transform3D>
+
+            <Canvas Width="150" Height="150" Background="Green" Canvas.Top="25" Canvas.Left="25" x:Name="innerCanv">
+                <Canvas.Transform3D>
+                    <CompositeTransform3D x:Name="innerTrans" />
+                </Canvas.Transform3D>
+            </Canvas>
+        </Canvas>
+    </Canvas>
+</Canvas>

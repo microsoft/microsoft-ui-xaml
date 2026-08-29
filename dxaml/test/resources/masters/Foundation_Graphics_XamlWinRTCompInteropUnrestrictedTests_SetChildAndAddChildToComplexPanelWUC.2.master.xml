@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="350" SizeY="350">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="321" SizeY="333" OffsetX="9" OffsetY="11" OffsetZ="0">
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="321" SizeY="333" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 1, 0}" />
+                </wucSpriteVisual>
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" SizeX="321" SizeY="12">
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="321" SizeY="12" BorderMode="Soft">
+                        <ColorBrush Color="rgb {0, 0, 1}" />
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" SizeX="321" SizeY="13" OffsetX="0" OffsetY="12" OffsetZ="0">
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="321" SizeY="13" BorderMode="Soft">
+                        <ColorBrush Color="#ffffffff" />
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" SizeX="321" SizeY="14" OffsetX="0" OffsetY="25" OffsetZ="0">
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="321" SizeY="14" BorderMode="Soft">
+                        <ColorBrush Color="rgb {1, 0, 0}" />
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" SizeX="321" SizeY="15" OffsetX="0" OffsetY="39" OffsetZ="0">
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="321" SizeY="15" BorderMode="Soft">
+                        <ColorBrush Color="rgb {0, 0.502, 0}" />
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+              <wucSpriteVisual SizeX="10" SizeY="20" Opacity="0.25">
+                <ColorBrush Color="rgb {0.9333, 0.8667, 0.8}" />
+              </wucSpriteVisual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

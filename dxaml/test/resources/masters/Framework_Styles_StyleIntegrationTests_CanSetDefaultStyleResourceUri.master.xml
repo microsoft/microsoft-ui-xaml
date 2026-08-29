@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualTreeDump>
+  <VisualElements>
+    <Element Type="Tests.Native.External.Framework.DefaultStyleResourceUriControl">
+      <Properties>
+        <Property Name="DefaultStyleKey" Value="Tests.Native.External.Framework.DefaultStyleResourceUriControl" />
+        <Property Name="DefaultStyleResourceUri" Value="[Windows.Foundation.Uri]" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+      </Properties>
+      <ChildElements>
+        <Element Type="Microsoft.UI.Xaml.Controls.Border">
+          <Properties>
+            <Property Name="Background" Value="#FFFF0000" />
+          </Properties>
+        </Element>
+      </ChildElements>
+    </Element>
+  </VisualElements>
+</VisualTreeDump>

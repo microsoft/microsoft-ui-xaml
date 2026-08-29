@@ -1,0 +1,34 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<ScrollViewer x:Name="scrollViewer" Width="400" Height="400" VerticalAlignment="Top" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <StackPanel x:Name="stackPanel" Width="400">
+    <Button x:Name="btn" Content="Focus Holder"/>
+    <TextBox x:Name="textBox1a" Margin="10"/>
+    <TextBox x:Name="textBox1b" Margin="10" FontSize="6"/>
+    <TextBox x:Name="textBox1c" Margin="10" FontSize="6" MinHeight="10"/>
+    <TextBox x:Name="textBox1d" Margin="10" FontSize="40"/>
+    <TextBox x:Name="textBox1e" Margin="10" AcceptsReturn="True" TextWrapping="Wrap"/>
+
+    <!--With Text-->
+    <TextBox x:Name="textBox2a" Margin="10" Text="Hello"/>
+    <TextBox x:Name="textBox2b" Margin="10" FontSize="6" Text="Hello"/>
+    <TextBox x:Name="textBox2c" Margin="10" FontSize="6" MinHeight="10" Text="Hello"/>
+    <TextBox x:Name="textBox2d" Margin="10" FontSize="40" Text="Hello"/>
+    <TextBox x:Name="textBox2e" Margin="10" AcceptsReturn="True" TextWrapping="Wrap" Text="This awesome text is super long, but is it long enough to wrap?"/>
+    <TextBox x:Name="textBox2f" Margin="10" FontSize="40" AcceptsReturn="True" TextWrapping="Wrap" Text="This test is long, but is it long enough to wrap?"/>
+
+    <!--With Header-->
+    <TextBox x:Name="textBox3a" Margin="10" Header="Header:"/>
+    <TextBox x:Name="textBox3b" Margin="10" FontSize="6" Header="Header:"/>
+    <TextBox x:Name="textBox3c" Margin="10" FontSize="6" MinHeight="10" Header="Header:"/>
+    <TextBox x:Name="textBox3d" Margin="10" FontSize="40" Header="Header:"/>
+    <TextBox x:Name="textBox3e" Margin="10" AcceptsReturn="True" TextWrapping="Wrap" Header="Header:"/>
+
+    <!--With Header and Text-->
+    <TextBox x:Name="textBox4a" Margin="10" Header="Header:" Text="Hello"/>
+    <TextBox x:Name="textBox4b" Margin="10" FontSize="6" Header="Header:" Text="Hello"/>
+    <TextBox x:Name="textBox4c" Margin="10" FontSize="6" MinHeight="10" Header="Header:" Text="Hello"/>
+    <TextBox x:Name="textBox4d" Margin="10" FontSize="40" Header="Header:" Text="Hello"/>
+    <TextBox x:Name="textBox4e" Margin="10" AcceptsReturn="True" TextWrapping="Wrap" Header="Header:" Text="This awesome text is super long, but is it long enough to wrap?"/>
+    <TextBox x:Name="textBox4f" Margin="10" FontSize="40" AcceptsReturn="True" TextWrapping="Wrap" Header="Header:" Text="This test is long, but is it long enough to wrap?"/>
+  </StackPanel>
+</ScrollViewer>

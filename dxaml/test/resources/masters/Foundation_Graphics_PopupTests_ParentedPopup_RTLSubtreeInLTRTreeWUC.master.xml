@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual" SizeX="400" SizeY="300">
+            <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
+            <Visual PixelSnappingEnabled="True" Tag="PrimaryVisual" SizeX="400" SizeY="300">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(V.Offset) * LOCAL.DManip * Matrix4x4.CreateFromTranslation(-V.Offset)">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="DManip" Type="Matrix4x4">
+                        <ExpressionAnimation String="PS.Matrix">
+                          <ReferenceParameter Name="PS">
+                            <PropertySet>
+                              <Property Name="Matrix" Type="Matrix4x4">
+                                <ExpressionAnimation String="transform*manipTransform.Matrix">
+                                  <ReferenceParameter Name="manipTransform">
+                                    <DuplicatedMatrixTransform>
+                                      <ManipulationTransform Transform="Identity" />
+                                    </DuplicatedMatrixTransform>
+                                  </ReferenceParameter>
+                                  <Property Name="transform" Type="Matrix4x4" />
+                                </ExpressionAnimation>
+                              </Property>
+                            </PropertySet>
+                          </ReferenceParameter>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                  <ReferenceParameter Name="V" />
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="400" SizeY="300" BorderMode="Soft">
+                  <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                </wucSpriteVisual>
+                <Visual Tag="PrependVisual">
+                  <Visual VisualId="1" Tag="PrimaryVisual" CompositeMode="SourceOver" SizeX="200" SizeY="200" OffsetX="100" OffsetY="50" OffsetZ="0">
+                    <Visual Tag="ContentVisual" />
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual TransformParentVisualId="1" Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="100" SizeY="100" OffsetX="50" OffsetY="50" OffsetZ="0">
+              <TransformMatrix>
+                <ExpressionAnimation String="LOCAL.PostRedir">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="PostRedir" Type="Matrix4x4">
+                        <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(V.Offset) * PS.Redir * Matrix4x4.CreateFromTranslation(-Vector3(V.Offset.X, V.Offset.Y, 0))">
+                          <ReferenceParameter Name="PS" />
+                          <ReferenceParameter Name="V" />
+                          <PropertySet>
+                            <Property Name="Redir" Type="Matrix4x4">
+                              <Value>
+                                <Row1 M11="-1" M12="0" M13="0" M14="0" />
+                                <Row2 M21="0" M22="1" M13="0" M14="0" />
+                                <Row3 M31="0" M32="0" M33="1" M34="0" />
+                                <Row4 M41="200" M42="0" M43="0" M44="1" />
+                              </Value>
+                            </Property>
+                          </PropertySet>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" SizeX="100" SizeY="100">
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+                        <ColorBrush Color="rgb {0, 0.502, 0}" />
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

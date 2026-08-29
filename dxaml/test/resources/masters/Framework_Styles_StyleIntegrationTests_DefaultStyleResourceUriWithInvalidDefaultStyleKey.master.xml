@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualTreeDump>
+  <VisualElements>
+    <Element Type="Tests.Native.External.Framework.DefaultStyleResourceUriControlWithInvalidDefaultStyleKey">
+      <Properties>
+        <Property Name="DefaultStyleKey" Value="InvalidKey" />
+        <Property Name="DefaultStyleResourceUri" Value="[Windows.Foundation.Uri]" />
+      </Properties>
+    </Element>
+  </VisualElements>
+</VisualTreeDump>

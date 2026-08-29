@@ -1,0 +1,26 @@
+/*
+ *
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ *
+ */
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+#define VER_INTERNALNAME_STR        "Private.Infrastructure.Resources.dll"
+#define VER_LANGNEUTRAL
+
+#include <WinUIrc.ver>
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Neutral language
+//
+LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
+
+#include "TestResource.h"
+
+#include "Masters.rc"
+

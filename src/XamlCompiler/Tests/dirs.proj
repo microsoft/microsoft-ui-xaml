@@ -1,0 +1,95 @@
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Project ToolsVersion="dogfood" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <BuildProjectReferences>true</BuildProjectReferences>
+    <XamlCompilerDir>$(_NTBINDIR)\vsproject\XamlCompiler</XamlCompilerDir>
+    <Target_UnitTestRoot>$(_NTBINROOT)\bin\i386\vsproject\xamlcompiler\test</Target_UnitTestRoot>
+    <Target_ComponentTestRoot>$(_NTBINROOT)\bin\i386\vsproject\test</Target_ComponentTestRoot>
+    <Target_UnitTestAssembly>$(Target_UnitTestRoot)\UnitTests.dll</Target_UnitTestAssembly>
+    <Target_ComponentTestAssembly>$(Target_ComponentTestRoot)\VSProject.Tests.Component.XamlCompiler.dll</Target_ComponentTestAssembly>
+    <MSTestConsole_Executable>$(_NTDRIVE)$(_NTROOT)\vsproject\test\UnRazzle.cmd $(RazzleToolPath)\x86\managed\v4.5\MSTest\mstest.exe</MSTestConsole_Executable>
+    <VSTestConsole_Executable>$(_NTDRIVE)$(_NTROOT)\vsproject\test\UnRazzle.cmd $(RazzleToolPath)\x86\managed\v4.5\TestPlatform\vstest.console.exe</VSTestConsole_Executable>
+    <UtilityTasksAssemblySourcePath>$(XamlCompilerDir)\tests\TestUtilityTasks\Source\XamlCompilerTestsUtilityTasks.csproj</UtilityTasksAssemblySourcePath>
+    <UtilityTasksAssemblyPath>$(_NTBINROOT)\bin\i386\vsproject\xamlcompiler\test\TestUtilityTask\XamlCompilerTestsUtilityTasks.dll</UtilityTasksAssemblyPath>
+    <xUnit_InstallLocation>$(ProgramFiles)\Microsoft Visual Studio $(BUILD_PRODUCT_VER)\Common7\IDE\CommonExtensions\XUnit</xUnit_InstallLocation>
+    <VSTestConsole_LoggerCommand>/logger:TRX</VSTestConsole_LoggerCommand>
+  </PropertyGroup>
+
+  <Import Project="$(_NTDRIVE)$(_NTROOT)\tools\Microsoft.DevDiv.Settings.targets" />
+  <Import Project="RegressionProjects\LocalMSBuild.targets"/>
+  <UsingTask AssemblyFile="$(UtilityTasksAssemblyPath)" TaskName="CleanupSubDirectories" />
+  <UsingTask AssemblyFile="$(UtilityTasksAssemblyPath)" TaskName="MakeDummyChangeXaml" />
+  <UsingTask AssemblyFile="$(UtilityTasksAssemblyPath)" TaskName="UndoDummyChangeXaml" />
+  <UsingTask AssemblyFile="$(UtilityTasksAssemblyPath)" TaskName="EnsureTestProjectsUpToDate"/>
+  <UsingTask AssemblyFile="$(UtilityTasksAssemblyPath)" TaskName="FindMostRecentInstalledUapSDKVersion"/>
+  <UsingTask AssemblyFile="$(UtilityTasksAssemblyPath)" TaskName="ExecuteUnelevated"/>
+
+  <ItemGroup Condition="'$(BuildExePhase)' == ''">
+    <ProjectFile Include="XamlCompilerProxies\XamlCompilerProxies.csproj" />
+    <ProjectFile Include="UnitTests\XamlCompilerUnitTests.csproj" />
+    <ProjectFile Include="UnitTests\Lib.Binaries\LibBinaries.nativeproj" />
+  </ItemGroup>
+
+  <Target Name="UTBuild" DependsOnTargets="Build" />
+
+  <Target Name="UnitTestsRun">
+    <Exec WorkingDirectory="$(Target_UnitTestRoot)" Command="$(MSTestConsole_Executable) /testcontainer:$(Target_UnitTestAssembly) /testsettings:$(XamlCompilerDir)\Tests\UnitTests\XamlCompilerUnitTests.testsettings" />
+  </Target>
+
+  <Target Name="ComponentTestsRun">
+    <Exec WorkingDirectory="$(Target_ComponentTestRoot)" 
+          Command="$(VSTestConsole_Executable) /TestAdapterPath:&quot;$(xUnit_InstallLocation)&quot; $(Target_ComponentTestAssembly) $(VSTestConsole_LoggerCommand) /TestCaseFilter:&quot;(FullyQualifiedName!=VSProject.Tests.Component.XamlCompiler.Tests.RuntimeTests.RuntimeTest)&amp;(FullyQualifiedName!=VSProject.Tests.Component.XamlCompiler.Tests.RuntimeTests.RuntimeTestIncremental)&quot;"/>
+  </Target>
+
+  <Target Name="CleanRegressionTests" DependsOnTargets="UtilityTestTaskBuild">
+    <CleanupSubDirectories DirectoryNames="Debug;Release;bin;Obj;Generated Files;AppPackages" RootDirectory="$(XamlCompilerDir)\Tests\RegressionProjects"/>
+  </Target>
+  
+  <Target Name="UtilityTestTaskBuild">
+    <MSBuild Projects="$(UtilityTasksAssemblySourcePath)" Targets="Build" Properties="Configuration=Debug;Platform=x86"/>
+  </Target>
+
+  <Target Name="ComputeRequiredBuildProperties" DependsOnTargets="UtilityTestTaskBuild">
+    <FindMostRecentInstalledUapSDKVersion>
+      <Output TaskParameter="MostRecentVersion" PropertyName="LatestInstalledUapSDKVersion"/>
+    </FindMostRecentInstalledUapSDKVersion>
+  </Target>
+  
+  <Target Name="RegressionProjectsBuild" DependsOnTargets="ComputeRequiredBuildProperties">
+    <MSBuild Projects="RegressionProjects\RegressionProjects.proj" Targets="Build" Properties="LatestInstalledUapSDKVersion=$(LatestInstalledUapSDKVersion)"/>
+  </Target>
+
+  <Target Name="RegressionProjectsIncremental" DependsOnTargets="ComputeRequiredBuildProperties">
+    <MakeDummyChangeXaml XamlFilePath="$(XamlCompilerDir)\Tests\RegressionProjects\Basic\CSharp\Simple\MainPage.xaml">
+      <Output TaskParameter="ShouldUndoEdit" PropertyName="UndoEdit"/>
+    </MakeDummyChangeXaml>
+
+    <!-- Incremental Build Test -->
+    <Message Text="INFO ----------------------------------------- Incremental Build Test.............................." />
+    <Microsoft.Build.Tasks.Exec Command="$(UnRazzlePath) &quot;$(InstalledMSBuildPath)&quot; $(DepotRoot)\vsproject\XamlCompiler\Tests\RegressionProjects\Basic\CSharp\CSharp.sln /p:TargetPlatformVersion=$(LatestInstalledUapSDKVersion) /p:Platform=x86 /v:m"/>
+
+    <!-- Incremental Run Test -->
+    <Message Text="INFO ----------------------------------------- Incremental Runtime Test.............................." />
+    <Exec Command="$(_NTDRIVE)$(_NTROOT)\vsproject\test\UnRazzle.cmd powershell -ExecutionPolicy Unrestricted RegressionProjects\InstallAppxs.ps1"/>
+    <Exec WorkingDirectory="$(Target_ComponentTestRoot)" 
+          Command="$(VSTestConsole_Executable) /TestAdapterPath:&quot;$(xUnit_InstallLocation)&quot; $(Target_ComponentTestAssembly) $(VSTestConsole_LoggerCommand) /TestCaseFilter:(FullyQualifiedName=VSProject.Tests.Component.XamlCompiler.Tests.RuntimeTests.RuntimeTestIncremental)"/>
+
+    <UndoDummyChangeXaml XamlFilePath="$(XamlCompilerDir)\Tests\RegressionProjects\Basic\CSharp\Simple\MainPage.xaml" ShouldUndoEdit="$(UndoEdit)"/>
+  </Target>
+  
+  <Target Name="DeployRegressionApps">
+    <Exec Command="$(_NTDRIVE)$(_NTROOT)\vsproject\test\UnRazzle.cmd powershell -ExecutionPolicy Unrestricted RegressionProjects\InstallAppxs.ps1"/>
+  </Target>
+  
+  <Target Name="ExecuteRuntimeTests">
+    <Exec WorkingDirectory="$(Target_ComponentTestRoot)" 
+          Command="$(VSTestConsole_Executable) /TestAdapterPath:&quot;$(xUnit_InstallLocation)&quot; $(Target_ComponentTestAssembly) $(VSTestConsole_LoggerCommand) /TestCaseFilter:(FullyQualifiedName=VSProject.Tests.Component.XamlCompiler.Tests.RuntimeTests.RuntimeTest)"/>
+  </Target>
+
+  <!-- This target encapsulates the utility to update regression projects automatically to remain up to date with breaking changes in UAP templates, build and deploy pipeline -->
+  <Target Name="EnsureRegressionProjectsUpToDate" DependsOnTargets="UtilityTestTaskBuild">
+    <EnsureTestProjectsUpToDate/>
+  </Target>
+  <Import Project="$(_NTDRIVE)$(_NTROOT)\tools\Microsoft.devdiv.traversal.targets" />
+</Project>

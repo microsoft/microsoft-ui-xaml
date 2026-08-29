@@ -1,0 +1,17 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<UserControl xmlns="http://schemas.microsoft.com/client/2007" 
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <StackPanel DataContext="42">
+    <VisualStateManager.VisualStateGroups>
+      <VisualStateGroup>
+        <VisualState x:Name="Test">
+          <Storyboard Duration="0">
+            <DoubleAnimation Storyboard.TargetName="myTarget" Storyboard.TargetProperty="Width" To="{Binding}" />
+          </Storyboard>
+        </VisualState>
+      </VisualStateGroup>
+    </VisualStateManager.VisualStateGroups>
+
+    <Rectangle x:Name="myTarget" />
+  </StackPanel>
+</UserControl>

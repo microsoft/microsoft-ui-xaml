@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="rootStackPanel">
+  <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+    <Button x:Name="TopButton" Content="Top Button" />
+    <Button Content="Top Button" />
+    <Button Content="Top Button" />
+  </StackPanel>
+  <ScrollViewer Height="300" x:Name="ScrollViewer">
+    <StackPanel x:Name="SVStackPanel">
+      <Button x:Name="Button0" Content="Button" Height="100" HorizontalAlignment="Stretch" />
+      <Button x:Name="Button1" Content="Button" Height="100" HorizontalAlignment="Stretch" />
+      <Button x:Name="Button2" Content="Button" Height="100" HorizontalAlignment="Stretch" />
+      <Button x:Name="Button3" Content="Button" Height="100" HorizontalAlignment="Stretch" />
+      <Button x:Name="Button4" Content="Button" Height="100" HorizontalAlignment="Stretch" />
+      <Button x:Name="Button5" Content="Button" Height="100" HorizontalAlignment="Stretch" />
+    </StackPanel>
+  </ScrollViewer>
+  <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+    <Button x:Name="BottomButton" Content="Bottom Button" />
+    <Button Content="Bottom Button" />
+  </StackPanel>
+</StackPanel>

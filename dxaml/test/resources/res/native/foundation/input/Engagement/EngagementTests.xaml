@@ -1,0 +1,59 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="stackpanel1">
+    <StackPanel Orientation="Horizontal">
+        <Button Name="btnA" Height="70" Width="181">A</Button>
+        <Slider Padding="25" Name="slider1" IsFocusEngagementEnabled="True" IntermediateValue="50" Value="0" Orientation="Horizontal" HorizontalAlignment="Left" Width="200"/>
+        <Button Name="btnB" Height="70" Width="125">B</Button>
+    </StackPanel>
+    <Border Padding="100">
+        <Button Name="btnC" Width="219" HorizontalAlignment="Center">BtnC</Button>
+    </Border>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Border Grid.Row="0" Grid.Column="0">
+            <StackPanel>
+                <ListView IsFocusEngagementEnabled="True" IsTabStop="True" UseSystemFocusVisuals="True" Name="lv1" HorizontalAlignment="Left" VerticalAlignment="Top" Width="194">
+                    <ListViewItem Name="item1" Content="Item1"></ListViewItem>
+                    <ListViewItem Name="item2" Content="Item2"></ListViewItem>
+                    <ListViewItem Content="Item3"></ListViewItem>
+                    <ListViewItem Content="Item4"></ListViewItem>
+                </ListView>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="0" Grid.Column="1">
+            <FlipView IsFocusEngagementEnabled="True" Name="fv1" IsTabStop="True" Background="Red" UseSystemFocusVisuals="True" HorizontalAlignment="Right" Height="50" Width="100" VerticalAlignment="Top">
+                <FlipViewItem Name="fvItem1">FlipViewItem1</FlipViewItem>
+                <FlipViewItem Name="fvItem2">FlipViewItem2</FlipViewItem>
+            </FlipView>
+        </Border>
+
+        <Border Grid.Row="0" Grid.Column="2">
+            <ListBox IsFocusEngagementEnabled="True" Name="lb1" IsTabStop="True" Background="Green" UseSystemFocusVisuals="True" HorizontalAlignment="Right" Height="200" Width="100" VerticalAlignment="Top">
+                <ListBoxItem Name="lbItem1">ListBoxItem1</ListBoxItem>
+                <ListBoxItem Name="lbItem2">ListBoxItem2</ListBoxItem>
+            </ListBox>
+        </Border>
+
+        <Border Grid.Row="0" Grid.Column="3">
+            <ComboBox IsFocusEngagementEnabled="True" PlaceholderText="ComboBox" Name="combobox1">
+                <ComboBoxItem Content="Item 0"/>
+                <ComboBoxItem Content="Item 1"/>
+                <ComboBoxItem Content="Item 2"/>
+                <ComboBoxItem Content="Item 3"/>
+                <ComboBoxItem Content="Item 4"/>
+                <ComboBoxItem Content="Item 5"/>
+                <ComboBoxItem Content="Item 6"/>
+                <ComboBoxItem Content="Item 7"/>
+            </ComboBox>
+        </Border>
+    </Grid>
+</StackPanel>

@@ -1,0 +1,13 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' x:Name='root' 
+                           xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <TextBlock Text='{CustomResource simpleString}' x:Name='simpleString_TextBlock' />
+    <TextBlock Text='{CustomResource fullTypeNameString}' x:Name='fullTypeNameString_TextBlock' />
+    <HyperlinkButton NavigateUri='{CustomResource myTestUrl}' Content='NavigateUri set to CustomResourceLoader text' x:Name='myLink' />
+    <Rectangle x:Name='customMargin_Rectangle' Width='50' Height='50' Margin='{CustomResource myMargin}'/>
+    <Rectangle x:Name='solidColorBrush_Rectangle'>
+        <Rectangle.Fill>
+            <SolidColorBrush Color='{CustomResource solidColor}' />
+        </Rectangle.Fill>
+    </Rectangle>
+</StackPanel>

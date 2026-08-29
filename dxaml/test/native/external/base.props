@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- TAEF.targets always sets INLINE_TEST_METHOD_MARKUP.  We don't want that defined so capture the value before the import and override it
+         back to the starting value afterwards. -->
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <BeforeTAEFPreprocessorDefinitions>%(PreprocessorDefinitions)</BeforeTAEFPreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+    <Import Project="$(TaefPkgDirectory)\build\Microsoft.Taef.targets"/>
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <PreprocessorDefinitions>%(BeforeTAEFPreprocessorDefinitions)</PreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) UNICODE; _UNICODE;</ProjectPreprocessorDefinitions>
+        <UseHybridCRT>false</UseHybridCRT>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <ExceptionHandling>Sync</ExceptionHandling>
+
+            <DisableSpecificWarnings>%(DisableSpecificWarnings);4702</DisableSpecificWarnings>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <PropertyGroup>
+        <TestCode>true</TestCode>
+
+        <XamlConsumesWinRT>true</XamlConsumesWinRT>
+
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(NativeExternalTestPath)\pch;
+            $(NativeExternalTestPath)\inc;
+            $(InfraTestPath)\inc;
+            $(InfraTestPath)\client\inc;
+            $(NativeExternalTestPath)\Automation;
+            $(InfraTestPath)\server\inc;
+            $(WinUIDetailsIncludePath)\abi;
+            $(WinUIDetailsIncludePath)\MockDComp;
+            $(NativeIncPath);
+            $(XcpPath)\components\runtimeEnabledFeatures\inc;
+            $(XcpPath)\inc;
+            $(XamlSourcePath)\xcp\components\base\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+</Project>

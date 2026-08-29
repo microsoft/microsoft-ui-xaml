@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{08e4b92d-c2b8-49b0-98e9-bea89d48dc59}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\test\common.props"/>
+    <Import Project="$(InfraTestPath)\client\base.props"/>
+
+    <PropertyGroup>
+        <XamlPrecompiledShared>..\pch\precomp.h</XamlPrecompiledShared>
+
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) __FORCE_NAMED_EVENTS;</ProjectPreprocessorDefinitions>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\inc;
+            $(InfraTestPath)\..\resources\masters;
+            $(XcpPath)\components\runtimeEnabledFeatures\inc;
+            $(InfraTestPath)\logging;
+            $(LiftedIXPIncludePaths);
+            $(WinUIDetailsIncludePath)\abi;
+            $(WinUIDetailsIncludePath)\MockDComp;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="DPISetter.h"/>
+        <ClInclude Include="DPITestPoolFilter.h"/>
+        <ClInclude Include="DragDropTestPoolFilter.h"/>
+        <ClInclude Include="ErrorHandlingHelper.h"/>
+        <ClInclude Include="FailFastOnErrorsTestPoolFilter.h"/>
+        <ClInclude Include="FileDiff.h"/>
+        <ClInclude Include="FocusTestPoolFilter.h"/>
+        <ClInclude Include="FontHelper.h"/>
+        <ClInclude Include="Hosting.h"/>
+        <ClInclude Include="HostingDispatcher.h"/>
+        <ClInclude Include="IdleSynchronizer.h"/>
+        <ClInclude Include="ImageBuffer.h"/>
+        <ClInclude Include="InputHelper.h"/>
+        <ClInclude Include="IslandHelper.h"/>
+        <ClInclude Include="KeyboardHelper.h"/>
+        <ClInclude Include="KeyPressedTestPoolFilter.h"/>
+        <ClInclude Include="KeyTipTestPoolFilter.h"/>
+        <ClInclude Include="LayoutExceptionPoolFilter.h"/>
+        <ClInclude Include="MockPowerManager.h"/>
+        <ClInclude Include="PackageStatusEvent.h"/>
+        <ClInclude Include="RenderingScopeGuard.h"/>
+        <ClInclude Include="RpcClient.h"/>
+        <ClInclude Include="SecondaryView.h"/>
+        <ClInclude Include="TestPoolFilter.h"/>
+        <ClInclude Include="ThemingHelper.h"/>
+        <ClInclude Include="Utilities.h"/>
+        <ClInclude Include="VerificationComparer.h"/>
+        <ClInclude Include="VisualTreeDumper.h"/>
+        <ClInclude Include="VisualTreeVerifier.h"/>
+        <ClInclude Include="Win32Hosting.h"/>
+        <ClInclude Include="WindowHelper.h"/>
+        <ClInclude Include="WuxLoadedTestPoolFilter.h"/>
+
+        <ClCompile Include="RpcClient.cpp"/>
+        <ClCompile Include="Utilities.cpp"/>
+        <ClCompile Include="InputHelper.cpp"/>
+        <ClCompile Include="IslandHelper.cpp"/>
+        <ClCompile Include="TestServices.cpp"/>
+        <ClCompile Include="KeyboardHelper.cpp"/>
+        <ClCompile Include="WindowHelper.cpp"/>
+        <ClCompile Include="IdleSynchronizer.cpp"/>
+        <ClCompile Include="PredictableDManipEnabler.cpp"/>
+        <ClCompile Include="ErrorHandlingHelper.cpp"/>
+        <ClCompile Include="VisualTreeDumper.cpp"/>
+        <ClCompile Include="VisualTreeVerifier.cpp"/>
+        <ClCompile Include="TraceConsumer.cpp"/>
+        <ClCompile Include="StoryboardMonitor.cpp"/>
+        <ClCompile Include="ETWWaiterClientHelper.cpp"/>
+        <ClCompile Include="FileDiff.cpp"/>
+        <ClCompile Include="VerificationComparer.cpp"/>
+        <ClCompile Include="FontHelper.cpp"/>
+        <ClCompile Include="ThemingHelper.cpp"/>
+        <ClCompile Include="AppAnalysisClientHelper.cpp"/>
+        <ClCompile Include="FailFastOnErrorsTestPoolFilter.cpp"/>
+        <ClCompile Include="LayoutExceptionPoolFilter.cpp"/>
+        <ClCompile Include="DragDropTestPoolFilter.cpp"/>
+        <ClCompile Include="PackageStatusEvent.cpp"/>
+        <ClCompile Include="RenderingScopeGuard.cpp"/>
+        <ClCompile Include="KeyTipTestPoolFilter.cpp"/>
+        <ClCompile Include="SecondaryView.cpp"/>
+        <ClCompile Include="ImageBuffer.cpp"/>
+        <ClCompile Include="KeyPressedTestPoolFilter.cpp"/>
+        <ClCompile Include="MockPowerManager.cpp"/>
+        <ClCompile Include="HostingDispatcher.cpp"/>
+        <ClCompile Include="Win32Hosting.cpp"/>
+        <ClCompile Include="Hosting.cpp"/>
+        <ClCompile Include="DPISetter.cpp"/>
+        <ClCompile Include="DPITestPoolFilter.cpp"/>
+        <ClCompile Include="Event.cpp"/>
+        <ClCompile Include="WuxLoadedTestPoolFilter.cpp"/>
+        <ClCompile Include="TestHostSettings.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(InfraTestPath)\Win32Hosting\idl\Private.Infrastructure.Hosting.vcxproj" Project="{3fd1b03c-df81-4bc7-8204-c48d16026cfb}"/>
+        <ProjectReference Include="$(InfraTestPath)\contract\contract.vcxproj" Project="{37d37a5d-e167-43fe-aeca-5063c2369807}"/>
+        <ProjectReference Include="$(InfraTestPath)\client\idl\Private.Infrastructure.vcxproj" Project="{e076fa9c-3b19-431a-a566-3e771f962428}"/>
+        <ProjectReference Include="$(XamlSourcePath)\phone\idl\phone.vcxproj" Project="{84d22d7d-5fd0-4ccf-b8d2-c34506c6ba66}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\dxaml\tools\AppAnalysis\idl\Microsoft.Diagnostics.AppAnalysis.vcxproj" Project="{e1f36d19-f82d-474a-be26-fea52da5b6e6}"/>
+        <ProjectReference Include="..\pch\Private.Infrastructure.Client.Precomp.vcxproj" Project="{158251a1-4336-4495-8629-02fe45d473c0}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

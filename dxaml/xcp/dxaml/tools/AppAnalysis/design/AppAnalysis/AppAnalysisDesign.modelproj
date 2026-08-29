@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{879a0e4b-be3e-4c93-b9ad-f12f98ac4f46}</ProjectGuid>
+    <ArchitectureToolsVersion>2.0.0.0</ArchitectureToolsVersion>
+    <Name>AppAnalysisDesign</Name>
+    <RootNamespace>AppAnalysis</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\ArchitectureTools\Microsoft.VisualStudio.TeamArchitect.ModelingProject.targets" Condition="'$(VSToolsPath)' != ''" />
+  <ItemGroup>
+    <Content Include="Class Diagram.classdiagram">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Class Diagram.classdiagram.layout">
+      <SubType>Content</SubType>
+      <DependentUpon>Class Diagram.classdiagram</DependentUpon>
+    </Content>
+    <Content Include="Processing.sequencediagram">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Processing.sequencediagram.layout">
+      <SubType>Content</SubType>
+      <DependentUpon>Processing.sequencediagram</DependentUpon>
+    </Content>
+    <Content Include="Rules Setup.sequencediagram">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Rules Setup.sequencediagram.layout">
+      <SubType>Content</SubType>
+      <DependentUpon>Rules Setup.sequencediagram</DependentUpon>
+    </Content>
+    <Content Include="Processor Class Diagram.classdiagram">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Processor Class Diagram.classdiagram.layout">
+      <SubType>Content</SubType>
+      <DependentUpon>Processor Class Diagram.classdiagram</DependentUpon>
+    </Content>
+    <Content Include="Rule Class Diagram.classdiagram">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Rule Class Diagram.classdiagram.layout">
+      <SubType>Content</SubType>
+      <DependentUpon>Rule Class Diagram.classdiagram</DependentUpon>
+    </Content>
+    <Folder Include="ModelDefinition\" />
+    <Content Include="ModelDefinition\AppAnalysisDesign.uml">
+      <SubType>Content</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Validate Include="Extensibility.layerdiagram">
+      <SubType>Content</SubType>
+    </Validate>
+    <Validate Include="Extensibility.layerdiagram.layout">
+      <SubType>Content</SubType>
+      <DependentUpon>Extensibility.layerdiagram</DependentUpon>
+    </Validate>
+    <Validate Include="Extensibility.layerdiagram.suppressions">
+      <SubType>Content</SubType>
+      <DependentUpon>Extensibility.layerdiagram</DependentUpon>
+    </Validate>
+  </ItemGroup>
+</Project>

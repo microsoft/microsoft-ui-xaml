@@ -1,0 +1,390 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Width="800" Height="600" Background="RoyalBlue">
+  <Grid.Resources>
+    <Style TargetType="TextBlock">
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="FontFamily" Value="Segoe UI"/>
+      <Setter Property="Foreground" Value="Black"/>
+    </Style>
+    <Style TargetType="RichTextBlock">
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="FontFamily" Value="Segoe UI"/>
+      <Setter Property="Foreground" Value="Black"/>
+    </Style>
+    <Style TargetType="Glyphs">
+      <Setter Property="FontRenderingEmSize" Value="14"/>
+      <Setter Property="FontUri" Value="Arial.ttf"/>
+      <Setter Property="Fill" Value="Black"/>
+    </Style>
+    <Style TargetType="Border">
+      <Setter Property="Margin" Value="1"/>
+      <Setter Property="Background" Value="White"/>
+      <Setter Property="VerticalAlignment" Value="Top"/>
+    </Style>
+  </Grid.Resources>
+  <Grid.ColumnDefinitions>
+    <ColumnDefinition Width="*"/>
+    <ColumnDefinition Width="*"/>
+    <ColumnDefinition Width="*"/>
+    <ColumnDefinition Width="*"/>
+  </Grid.ColumnDefinitions>
+  <Grid.RowDefinitions>
+    <RowDefinition Height="Auto"/>
+    <RowDefinition Height="Auto"/>
+    <RowDefinition Height="Auto"/>
+    <RowDefinition Height="Auto"/>
+    <RowDefinition Height="Auto"/>
+    <RowDefinition Height="Auto"/>
+    <RowDefinition Height="Auto"/>
+    <RowDefinition Height="Auto"/>
+    <RowDefinition Height="Auto"/>
+    <RowDefinition Height="Auto"/>
+    <RowDefinition Height="Auto"/>
+    <RowDefinition Height="Auto"/>
+  </Grid.RowDefinitions>
+  <Border Grid.Column="0" Grid.Row="0">
+    <Canvas Height="30">
+      <TextBlock Canvas.Left="5" Canvas.Top="5">The quick brown fox jumps</TextBlock>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="1" Grid.Row="0">
+    <Canvas Height="30">
+      <RichTextBlock Canvas.Left="5" Canvas.Top="5">
+        <Paragraph>The quick brown fox jumps</Paragraph>
+      </RichTextBlock>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="2" Grid.Row="0">
+    <Canvas Height="30">
+      <TextBlock Canvas.Left="5" Canvas.Top="5" CacheMode="BitmapCache">The quick brown fox jumps</TextBlock>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="3" Grid.Row="0">
+    <Canvas Height="30">
+      <RichTextBlock Canvas.Left="5" Canvas.Top="5" CacheMode="BitmapCache">
+        <Paragraph>The quick brown fox jumps</Paragraph>
+      </RichTextBlock>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2">
+    <Canvas Height="30">
+      <TextBlock Canvas.Left="5" Canvas.Top="5">
+        <Run Foreground="Red">The</Run> quick <Run Foreground="Green">brown</Run> fox <Run Foreground="Blue">jumps</Run> over <Bold Foreground="Blue">the</Bold> lazy dog.
+      </TextBlock>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="2" Grid.Row="1" Grid.ColumnSpan="2">
+    <Canvas Height="30">
+      <RichTextBlock Canvas.Left="5" Canvas.Top="5">
+        <Paragraph>
+          <Run Foreground="Red">The</Run> quick <Run Foreground="Green">brown</Run> fox <Run Foreground="Blue">jumps</Run> over <Bold Foreground="Blue">the</Bold> lazy dog.
+        </Paragraph>
+      </RichTextBlock>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2">
+    <Canvas Height="30">
+      <TextBlock Canvas.Left="5" Canvas.Top="5" CacheMode="BitmapCache">
+        <Run Foreground="Red">The</Run> quick <Run Foreground="Green">brown</Run> fox <Run Foreground="Blue">jumps</Run> over <Bold Foreground="Blue">the</Bold> lazy dog.
+      </TextBlock>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="2">
+    <Canvas Height="30">
+      <RichTextBlock Canvas.Left="5" Canvas.Top="5" CacheMode="BitmapCache">
+        <Paragraph>
+          <Run Foreground="Red">The</Run> quick <Run Foreground="Green">brown</Run> fox <Run Foreground="Blue">jumps</Run> over <Bold Foreground="Blue">the</Bold> lazy dog.
+        </Paragraph>
+      </RichTextBlock>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2">
+    <TextBlock TextWrapping="Wrap">
+      The quick brown fox jumps over the lazy dog. <Run Foreground="Red">The</Run> quick <Run Foreground="Green">brown</Run> fox <Run Foreground="Blue">jumps</Run> over <Bold Foreground="Blue">the</Bold> lazy dog.
+    </TextBlock>
+  </Border>
+  <Border Grid.Column="2" Grid.Row="3" Grid.ColumnSpan="2">
+    <RichTextBlock>
+      <Paragraph>
+        The quick brown fox jumps over the lazy dog. <Run Foreground="Red">The</Run> quick <Run Foreground="Green">brown</Run> fox <Run Foreground="Blue">jumps</Run> over <Bold Foreground="Blue">the</Bold> lazy dog.
+      </Paragraph>
+    </RichTextBlock>
+  </Border>
+  <Border Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="2">
+    <TextBlock TextWrapping="Wrap" CacheMode="BitmapCache">
+      The quick brown fox jumps over the lazy dog. <Run Foreground="Red">The</Run> quick <Run Foreground="Green">brown</Run> fox <Run Foreground="Blue">jumps</Run> over <Bold Foreground="Blue">the</Bold> lazy dog.
+    </TextBlock>
+  </Border>
+  <Border Grid.Column="2" Grid.Row="4" Grid.ColumnSpan="2">
+    <RichTextBlock CacheMode="BitmapCache">
+      <Paragraph>
+        The quick brown fox jumps over the lazy dog. <Run Foreground="Red">The</Run> quick <Run Foreground="Green">brown</Run> fox <Run Foreground="Blue">jumps</Run> over <Bold Foreground="Blue">the</Bold> lazy dog.
+      </Paragraph>
+    </RichTextBlock>
+  </Border>
+  <Border Grid.Column="0" Grid.Row="5">
+    <Canvas Height="65">
+      <TextBlock>
+        <TextBlock.RenderTransform>
+          <ScaleTransform ScaleX="1.75" ScaleY="1.75" />
+        </TextBlock.RenderTransform>
+        The <Run Foreground="Blue">quick</Run><LineBreak/>brown <Run Foreground="Green">fox</Run>
+      </TextBlock>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="1" Grid.Row="5">
+    <Canvas Height="65">
+      <RichTextBlock>
+        <RichTextBlock.RenderTransform>
+          <ScaleTransform ScaleX="1.75" ScaleY="1.75" />
+        </RichTextBlock.RenderTransform>
+        <Paragraph>
+          The <Run Foreground="Blue">quick</Run><LineBreak/>brown <Run Foreground="Green">fox</Run>
+        </Paragraph>
+      </RichTextBlock>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="2" Grid.Row="5">
+    <Canvas Height="65">
+      <TextBlock CacheMode="BitmapCache">
+        <TextBlock.RenderTransform>
+          <ScaleTransform ScaleX="1.75" ScaleY="1.75" />
+        </TextBlock.RenderTransform>
+        The <Run Foreground="Blue">quick</Run><LineBreak/>brown <Run Foreground="Green">fox</Run>
+      </TextBlock>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="3" Grid.Row="5">
+    <Canvas Height="65">
+      <RichTextBlock CacheMode="BitmapCache">
+        <RichTextBlock.RenderTransform>
+          <ScaleTransform ScaleX="1.75" ScaleY="1.75" />
+        </RichTextBlock.RenderTransform>
+        <Paragraph>
+          The <Run Foreground="Blue">quick</Run><LineBreak/>brown <Run Foreground="Green">fox</Run>
+        </Paragraph>
+      </RichTextBlock>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="0" Grid.Row="6">
+    <Canvas Height="95">
+      <TextBlock Canvas.Left="20" Canvas.Top="-5">
+        <TextBlock.RenderTransform>
+          <TransformGroup>
+            <ScaleTransform ScaleX="2" ScaleY="2" />
+            <RotateTransform Angle="15" />
+          </TransformGroup>
+        </TextBlock.RenderTransform>
+        The <Run Foreground="Blue">quick</Run><LineBreak/>brown <Run Foreground="Green">fox</Run>
+      </TextBlock>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="1" Grid.Row="6">
+    <Canvas Height="95">
+      <RichTextBlock Canvas.Left="20" Canvas.Top="-5">
+        <RichTextBlock.RenderTransform>
+          <TransformGroup>
+            <ScaleTransform ScaleX="2" ScaleY="2" />
+            <RotateTransform Angle="15" />
+          </TransformGroup>
+        </RichTextBlock.RenderTransform>
+        <Paragraph>
+          The <Run Foreground="Blue">quick</Run><LineBreak/>brown <Run Foreground="Green">fox</Run>
+        </Paragraph>
+      </RichTextBlock>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="2" Grid.Row="6">
+    <Canvas Height="95">
+      <TextBlock Canvas.Left="20" Canvas.Top="-5" CacheMode="BitmapCache">
+        <TextBlock.RenderTransform>
+          <TransformGroup>
+            <ScaleTransform ScaleX="2" ScaleY="2" />
+            <RotateTransform Angle="15" />
+          </TransformGroup>
+        </TextBlock.RenderTransform>
+        The <Run Foreground="Blue">quick</Run><LineBreak/>brown <Run Foreground="Green">fox</Run>
+      </TextBlock>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="3" Grid.Row="6">
+    <Canvas Height="95">
+      <RichTextBlock Canvas.Left="20" Canvas.Top="-5" CacheMode="BitmapCache">
+        <RichTextBlock.RenderTransform>
+          <TransformGroup>
+            <ScaleTransform ScaleX="2" ScaleY="2" />
+            <RotateTransform Angle="15" />
+          </TransformGroup>
+        </RichTextBlock.RenderTransform>
+        <Paragraph>
+          The <Run Foreground="Blue">quick</Run><LineBreak/>brown <Run Foreground="Green">fox</Run>
+        </Paragraph>
+      </RichTextBlock>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="0" Grid.Row="7" Height="45">
+    <TextBlock FlowDirection="RightToLeft" TextAlignment="Left" TextReadingOrder="UseFlowDirection">
+      <TextBlock.RenderTransform>
+        <ScaleTransform ScaleX="2.25" ScaleY="1.25" />
+      </TextBlock.RenderTransform>
+      The <Run Foreground="Blue">quick</Run><LineBreak/>brown <Run Foreground="Green">fox</Run>
+    </TextBlock>
+  </Border>
+  <Border Grid.Column="1" Grid.Row="7" Height="45">
+    <RichTextBlock FlowDirection="RightToLeft" TextAlignment="Left" TextReadingOrder="UseFlowDirection">
+      <RichTextBlock.RenderTransform>
+        <ScaleTransform ScaleX="2.25" ScaleY="1.25" />
+      </RichTextBlock.RenderTransform>
+      <Paragraph>
+        The <Run Foreground="Blue">quick</Run><LineBreak/>brown <Run Foreground="Green">fox</Run>
+      </Paragraph>
+    </RichTextBlock>
+  </Border>
+  <Border Grid.Column="2" Grid.Row="7" Height="45">
+    <TextBlock CacheMode="BitmapCache" FlowDirection="RightToLeft" TextAlignment="Left" TextReadingOrder="UseFlowDirection">
+      <TextBlock.RenderTransform>
+        <ScaleTransform ScaleX="2.25" ScaleY="1.25" />
+      </TextBlock.RenderTransform>
+      The <Run Foreground="Blue">quick</Run><LineBreak/>brown <Run Foreground="Green">fox</Run>
+    </TextBlock>
+  </Border>
+  <Border Grid.Column="3" Grid.Row="7" Height="45">
+    <RichTextBlock CacheMode="BitmapCache" FlowDirection="RightToLeft" TextAlignment="Left" TextReadingOrder="UseFlowDirection">
+      <RichTextBlock.RenderTransform>
+        <ScaleTransform ScaleX="2.25" ScaleY="1.25" />
+      </RichTextBlock.RenderTransform>
+      <Paragraph>
+        The <Run Foreground="Blue">quick</Run><LineBreak/>brown <Run Foreground="Green">fox</Run>
+      </Paragraph>
+    </RichTextBlock>
+  </Border>
+  <Border Grid.Column="0" Grid.Row="8" Height="45">
+    <TextBlock TextAlignment="Center">
+      <TextBlock.RenderTransform>
+        <ScaleTransform ScaleX="1.25" ScaleY="1.25" />
+      </TextBlock.RenderTransform>
+      The <Run Foreground="Blue">quick</Run><LineBreak/>brown <Run Foreground="Green">fox</Run>
+    </TextBlock>
+  </Border>
+  <Border Grid.Column="1" Grid.Row="8" Height="45">
+    <RichTextBlock TextAlignment="Center">
+      <RichTextBlock.RenderTransform>
+        <ScaleTransform ScaleX="1.25" ScaleY="1.25" />
+      </RichTextBlock.RenderTransform>
+      <Paragraph>
+        The <Run Foreground="Blue">quick</Run><LineBreak/>brown <Run Foreground="Green">fox</Run>
+      </Paragraph>
+    </RichTextBlock>
+  </Border>
+  <Border Grid.Column="2" Grid.Row="8" Height="45">
+    <TextBlock CacheMode="BitmapCache" TextAlignment="Center">
+      <TextBlock.RenderTransform>
+        <ScaleTransform ScaleX="1.25" ScaleY="1.25" />
+      </TextBlock.RenderTransform>
+      The <Run Foreground="Blue">quick</Run><LineBreak/>brown <Run Foreground="Green">fox</Run>
+    </TextBlock>
+  </Border>
+  <Border Grid.Column="3" Grid.Row="8" Height="45">
+    <RichTextBlock CacheMode="BitmapCache" TextAlignment="Center">
+      <RichTextBlock.RenderTransform>
+        <ScaleTransform ScaleX="1.25" ScaleY="1.25" />
+      </RichTextBlock.RenderTransform>
+      <Paragraph>
+        The <Run Foreground="Blue">quick</Run><LineBreak/>brown <Run Foreground="Green">fox</Run>
+      </Paragraph>
+    </RichTextBlock>
+  </Border>
+  <Border Grid.Column="0" Grid.Row="9">
+    <ScrollViewer Height="40" x:Name="sv1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
+      <TextBlock TextWrapping="Wrap">
+        The quick brown fox jumps over the lazy dog. <Run Foreground="Red">The</Run> quick <Run Foreground="Green">brown</Run> fox <Run Foreground="Blue">jumps</Run> over <Bold Foreground="Blue">the</Bold> lazy dog.
+      </TextBlock>
+    </ScrollViewer>
+  </Border>
+  <Border Grid.Column="1" Grid.Row="9">
+    <ScrollViewer Height="40" x:Name="sv2" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
+      <RichTextBlock>
+        <Paragraph>
+          The quick brown fox jumps over the lazy dog. <Run Foreground="Red">The</Run> quick <Run Foreground="Green">brown</Run> fox <Run Foreground="Blue">jumps</Run> over <Bold Foreground="Blue">the</Bold> lazy dog.
+        </Paragraph>
+      </RichTextBlock>
+    </ScrollViewer>
+  </Border>
+  <Border Grid.Column="2" Grid.Row="9">
+    <ScrollViewer Height="40" x:Name="sv3" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
+      <TextBlock TextWrapping="Wrap" CacheMode="BitmapCache">
+        The quick brown fox jumps over the lazy dog. <Run Foreground="Red">The</Run> quick <Run Foreground="Green">brown</Run> fox <Run Foreground="Blue">jumps</Run> over <Bold Foreground="Blue">the</Bold> lazy dog.
+      </TextBlock>
+    </ScrollViewer>
+  </Border>
+  <Border Grid.Column="3" Grid.Row="9">
+    <ScrollViewer Height="40" x:Name="sv4" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
+      <RichTextBlock CacheMode="BitmapCache">
+        <Paragraph>
+          The quick brown fox jumps over the lazy dog. <Run Foreground="Red">The</Run> quick <Run Foreground="Green">brown</Run> fox <Run Foreground="Blue">jumps</Run> over <Bold Foreground="Blue">the</Bold> lazy dog.
+        </Paragraph>
+      </RichTextBlock>
+    </ScrollViewer>
+  </Border>
+  <Border Grid.Column="2" Grid.Row="10" Grid.RowSpan="2">
+    <RichTextBlock>
+      <Paragraph>The quick brown fox jumps over the lazy dog.</Paragraph>
+      <Paragraph>The quick brown fox jumps over the lazy dog.</Paragraph>
+      <Paragraph>
+        <Run Foreground="Red">The</Run> quick <Run Foreground="Green">brown</Run> fox <Run Foreground="Blue">jumps</Run> over <Bold Foreground="Blue">the</Bold> lazy dog.
+      </Paragraph>
+    </RichTextBlock>
+  </Border>
+  <Border Grid.Column="3" Grid.Row="10" Grid.RowSpan="2">
+    <RichTextBlock CacheMode="BitmapCache">
+      <Paragraph>The quick brown fox jumps over the lazy dog.</Paragraph>
+      <Paragraph>The quick brown fox jumps over the lazy dog.</Paragraph>
+      <Paragraph>
+        <Run Foreground="Red">The</Run> quick <Run Foreground="Green">brown</Run> fox <Run Foreground="Blue">jumps</Run> over <Bold Foreground="Blue">the</Bold> lazy dog.
+      </Paragraph>
+    </RichTextBlock>
+  </Border>
+  <Border Grid.Column="0" Grid.Row="10">
+    <Canvas Height="50">
+      <Glyphs Canvas.Left="5" Canvas.Top="5" UnicodeString="The quick brown">
+        <Glyphs.RenderTransform>
+          <ScaleTransform ScaleX="1.25" ScaleY="1.25" />
+        </Glyphs.RenderTransform>
+      </Glyphs>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="1" Grid.Row="10">
+    <Canvas Height="50">
+      <Glyphs Canvas.Left="5" Canvas.Top="5" UnicodeString="The quick brown" CacheMode="BitmapCache">
+        <Glyphs.RenderTransform>
+          <ScaleTransform ScaleX="1.25" ScaleY="1.25" />
+        </Glyphs.RenderTransform>
+      </Glyphs>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="0" Grid.Row="11">
+    <Canvas Height="55">
+      <Glyphs Canvas.Left="20" Canvas.Top="-5" UnicodeString="The quick brown">
+        <Glyphs.RenderTransform>
+          <TransformGroup>
+            <ScaleTransform ScaleX="1.5" ScaleY="1.5" />
+            <RotateTransform Angle="15" />
+          </TransformGroup>
+        </Glyphs.RenderTransform>
+      </Glyphs>
+    </Canvas>
+  </Border>
+  <Border Grid.Column="1" Grid.Row="11">
+    <Canvas Height="55">
+      <Glyphs Canvas.Left="20" Canvas.Top="-5" UnicodeString="The quick brown" CacheMode="BitmapCache">
+        <Glyphs.RenderTransform>
+          <TransformGroup>
+            <ScaleTransform ScaleX="1.5" ScaleY="1.5" />
+            <RotateTransform Angle="15" />
+          </TransformGroup>
+        </Glyphs.RenderTransform>
+      </Glyphs>
+    </Canvas>
+  </Border>
+</Grid>

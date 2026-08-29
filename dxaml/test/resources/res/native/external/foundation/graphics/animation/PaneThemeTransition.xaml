@@ -1,0 +1,56 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            Orientation="Horizontal">
+    <StackPanel.Resources>
+        <Style x:Key="StackPanelTransitionStyle" TargetType="StackPanel">
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+        </Style>
+        <Style x:Key="RectangleStyle" TargetType="Rectangle">
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Height" Value="10"/>
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+    </StackPanel.Resources>
+    <StackPanel Style="{StaticResource StackPanelTransitionStyle}">
+        <StackPanel.Transitions>
+            <PaneThemeTransition Edge="Top"/>
+        </StackPanel.Transitions>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Red"/>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Green"/>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Blue"/>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Purple"/>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Orange"/>
+    </StackPanel>
+    <StackPanel Style="{StaticResource StackPanelTransitionStyle}">
+        <StackPanel.Transitions>
+            <PaneThemeTransition Edge="Left"/>
+        </StackPanel.Transitions>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Red"/>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Green"/>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Blue"/>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Purple"/>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Orange"/>
+    </StackPanel>
+    <StackPanel Style="{StaticResource StackPanelTransitionStyle}">
+        <StackPanel.Transitions>
+            <PaneThemeTransition Edge="Right"/>
+        </StackPanel.Transitions>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Red"/>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Green"/>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Blue"/>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Purple"/>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Orange"/>
+    </StackPanel>
+    <StackPanel Style="{StaticResource StackPanelTransitionStyle}">
+        <StackPanel.Transitions>
+            <PaneThemeTransition Edge="Bottom"/>
+        </StackPanel.Transitions>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Red"/>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Green"/>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Blue"/>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Purple"/>
+        <Rectangle Style="{StaticResource RectangleStyle}" Fill="Orange"/>
+    </StackPanel>
+</StackPanel>

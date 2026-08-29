@@ -1,0 +1,9 @@
+{
+  "_comment": "Self-contained. Stops walk-up from inheriting the repository root global.json. Pinned to .NET 9 (latestFeature) because VS 2022 17.14 ships MSBuild 17.x, and .NET SDK 10 requires MSBuild 18 (only in VS 2026). Roll forward stays within 9.x.",
+  "sdk": {
+    "version": "9.0.0",
+    "rollForward": "latestFeature",
+    "allowPrerelease": false
+  }
+}
+

@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>Utility</ConfigurationType>
+        <ProjectGuid>{2b89d2a5-36f3-4040-b3a9-6278ed16ab42}</ProjectGuid>
+        <IsWinmdProject>true</IsWinmdProject>
+        <!-- Override the project name because the project name doesn't match the output of this project -->
+        <ProjectName>Microsoft.Diagnostics.AppAnalysis</ProjectName>
+        <IgnorePrivateMUXMetadataDir>true</IgnorePrivateMUXMetadataDir>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\dxaml\tools\AppAnalysis\common.props"/>
+
+    <PropertyGroup>
+        <TargetDestination>$(TestBinplaceDestinationPath)\AppAnalysis</TargetDestination>
+        <MidlFlags>$(MidlFlags) /ns_prefix</MidlFlags>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <Midl>
+            <MinimumTargetSystem>NT62</MinimumTargetSystem>
+        </Midl>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <Midl Include="..\idl\Microsoft.Diagnostics.AppAnalysis.idl"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

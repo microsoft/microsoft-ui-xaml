@@ -1,0 +1,20 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page
+    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+
+    <Page.Resources>
+      <Style x:Key="RedBackgroundButton" TargetType="Button">
+        <Setter Property="Background" Value="Red"/>
+        <Setter Property="BorderThickness" Value="10" />
+      </Style>
+      <Style x:Key="ThickBorderRedBackgroundButton" TargetType="Button" BasedOn="{StaticResource RedBackgroundButton}">
+        <Setter Property="BorderThickness" Value="5"/>
+      </Style>
+    </Page.Resources>
+
+    <Grid Background="Red">
+      <Button Style="{StaticResource ThickBorderRedBackgroundButton}" x:Name="button" Content="Button" HorizontalAlignment="Left" Height="113" Margin="69,70,0,0" VerticalAlignment="Top" Width="166"/>
+    </Grid>
+</Page>

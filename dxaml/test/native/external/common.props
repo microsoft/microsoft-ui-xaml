@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <TargetDestination>$(TestBinplaceDestinationPath)</TargetDestination>
+    </PropertyGroup>
+
+    <Import Project="$(NativeExternalTestPath)\base.props"/>
+
+    <PropertyGroup>
+        <XamlPrecompiledShared>$(NativeExternalTestPath)\pch\pch.h</XamlPrecompiledShared>
+
+        <!-- When compiling with the current _MSC_VER (instead of the faked 1710), many deprecated functions are exposed -->
+        <!-- Since these are tests, the deprecated functions may actually need to be called                              -->
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <Link>
+            <ModuleDefinitionFile></ModuleDefinitionFile>
+
+            <AdditionalDependencies>
+                %(AdditionalDependencies);
+                onecoreuap.lib;
+                uiautomationcore.lib;
+            </AdditionalDependencies>
+
+            <!-- All the other test libs need the goodness from this obj file linked in -->
+            <!-- Linking it twice in the same project produces a warning though         -->
+            <AdditionalDependencies Condition="'$(MSBuildProjectName)'!='Private.Native.External.Infrastructure'">
+                %(AdditionalDependencies);
+                $(TestObjPath)\native\external\infra\modulecleanup.obj;
+                $(TestObjPath)\native\external\infra\screenshothelper.obj;
+                $(TestObjPath)\native\external\infra\XamlFileTestEngine.obj;
+                $(TestObjPath)\native\external\infra\ClipboardHelper.obj;
+            </AdditionalDependencies>
+
+            <AdditionalDependencies Condition="'$(MSBuildProjectName)'!='Windows.UI.Xaml.Tests.Native.BVTs'">%(AdditionalDependencies) $(TestObjPath)\native\external\infra\_Event.obj;</AdditionalDependencies>
+            
+            <DelayLoadDLLs>api-ms-win-rtcore-ntuser-private-l1-*.dll;</DelayLoadDLLs>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <ForcedUsingFiles>
+                %(ForcedUsingFiles);
+                $(PrivateInfrastructureMergedWinMdPath)\Private.Infrastructure.winmd;
+                $(PrivateInfrastructureHostingHelpersGeneratedWinMdPath)\Private.Infrastructure.Hosting.HostingHelpers.winmd;
+            </ForcedUsingFiles>
+
+            <DisableSpecificWarnings>%(DisableSpecificWarnings);4973</DisableSpecificWarnings>
+
+            <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
+        </ClCompile>
+        <Link>
+            <!-- We need /WHOLEARCHIVE here per the guidelines in this article:
+            
+                https://docs.microsoft.com/en-us/cpp/build/reference/wholearchive-include-all-library-object-files?view=vs-2019 -->
+            <AdditionalOptions Condition="'$(TargetName)'!='Microsoft.UI.Xaml.Tests.External.Precomp'">%(AdditionalOptions) /WHOLEARCHIVE:Microsoft.UI.Xaml.Tests.External.Precomp.lib</AdditionalOptions>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{c34f3204-817a-4715-83ad-173f686adb5a}'" Include="$(NativeExternalTestPath)\pch\Microsoft.UI.Xaml.Tests.External.Precomp.vcxproj" Project="{c34f3204-817a-4715-83ad-173f686adb5a}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{e076fa9c-3b19-431a-a566-3e771f962428}'" Include="$(InfraTestPath)\client\idl\Private.Infrastructure.vcxproj" Project="{e076fa9c-3b19-431a-a566-3e771f962428}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\xamlDiagnostics\idl\xamlom.vcxproj" />
+        <ProjectReference Include="$(InfraTestPath)\Win32Hosting\WPF\HostingHelpers\Private.Infrastructure.Hosting.HostingHelpers.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(ConfigurationType)'=='DynamicLibrary' or '$(ConfigurationType)'=='Application'">
+        <ProjectReference Condition="'$(ProjectGuid)'!='{c59fc853-80da-4b7e-bcda-3eb94d1351da}'" Include="$(InfraTestPath)\server\Private.Infrastructure.Server.vcxproj" Project="{c59fc853-80da-4b7e-bcda-3eb94d1351da}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{a814c8d3-cf4d-4e7f-a1f6-ba6d2b2e328c}'" Include="$(TestPath)\native\external\infra\Private.Native.External.Infrastructure.vcxproj" Project="{a814c8d3-cf4d-4e7f-a1f6-ba6d2b2e328c}" LinkLibraryDependencies="false"/>
+    </ItemGroup>
+</Project>

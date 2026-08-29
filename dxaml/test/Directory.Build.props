@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <TestCode>true</TestCode>
+    <UseRidGraph>true</UseRidGraph>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <NativeIsolatedTestPath>$(XamlSourcePath)\test\native\isolated</NativeIsolatedTestPath>
+    <NativeExternalTestPath>$(XamlSourcePath)\test\native\external</NativeExternalTestPath>
+
+    <AppAnalysisTestPath>$(XamlSourcePath)\test\appanalysis</AppAnalysisTestPath>
+    <InternalTestPath>$(XamlSourcePath)\test\native\internal</InternalTestPath>
+    <InfraTestPath>$(XamlSourcePath)\test\infra</InfraTestPath>
+    <ManagedTestPath>$(XamlSourcePath)\test\managed</ManagedTestPath>
+
+    <NativeIncPath>$(XamlSourcePath)\test\native\inc</NativeIncPath>
+
+    <AppAnalysisTestObjPath>$(TestObjPath)\appanalysis</AppAnalysisTestObjPath>
+    <NativeExternalTestObjPath>$(TestObjPath)\native\external\</NativeExternalTestObjPath>
+      
+    <MakePriExeFullPath>$(WindowsSdkToolLocation)\makepri.exe</MakePriExeFullPath>
+    <MakeAppxExeFullPath>$(WindowsSdkToolLocation)\makeappx.exe</MakeAppxExeFullPath>
+    <SignAppxPackageExeFullPath>$(WindowsSdkToolLocation)\signtool.exe</SignAppxPackageExeFullPath>
+    <AppxPackagingComponentManifestPath>$(TargetPlatformSdkRootOverride)\bin\$(WindowsTargetPlatformVersion)\$(WindowsSDKBuildToolsArchFolder)\Microsoft.Windows.Build.Appx.AppxPackaging.dll.manifest</AppxPackagingComponentManifestPath>
+    <MrmSupportLibraryPath>$(WindowsSdkToolLocation)\MrmSupport.dll</MrmSupportLibraryPath>
+  </PropertyGroup>
+</Project>

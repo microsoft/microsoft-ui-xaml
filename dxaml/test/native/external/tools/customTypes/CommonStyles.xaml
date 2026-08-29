@@ -1,0 +1,72 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tests.Tools.Shared">
+
+    <local:IconConverter x:Key="IconConverter"></local:IconConverter>
+    <Style x:Key="Icon" TargetType="ContentControl">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContentControl">
+                    <Viewbox Stretch="Uniform">
+                        <Grid>
+                            <!-- Define MyBrush here as well. We do this to validate that the StaticResource resolution logic actually picks the brush defined
+                                 in the outer ResourceDictionary (it's the Blue one defined below) -->
+                            <Grid.Resources>
+                              <SolidColorBrush x:Key="MyBrush">Green</SolidColorBrush>
+                            </Grid.Resources>
+                            <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IconConverter}}"
+                                       Foreground="{StaticResource MyBrush}" x:Name="IconTextBlock"/>
+                        </Grid>
+                    </Viewbox>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="ThemedEllipseFillStyle" TargetType="Ellipse">
+      <Setter Property="Fill" Value="{ThemeResource MyCustomThemedBrush}"/>
+    </Style>
+    <Style x:Key="UnthemedEllipseFillStyle" TargetType="Ellipse">
+      <Setter Property="Fill" Value="Red"/>
+    </Style>
+    <SolidColorBrush x:Key="MyBrush">Blue</SolidColorBrush>
+  
+    <!-- The following button templates are meant to be identical, except for how their root grid defines it's 
+         Background property. We do this so we can validate Resource resolution. -->
+    <Style TargetType="Button" x:Key="MyBrushTemplatedButtonStyle">
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ButtonBase">
+            <Grid Background="{StaticResource MyBrush}" x:Name="MyBrushButtonRoot">
+              <ContentPresenter x:Name="Text" Content="{TemplateBinding Content}" Foreground="White" />
+            </Grid>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+    <Style TargetType="Button" x:Key="BlackTemplatedButtonStyle">
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ButtonBase">
+            <Grid Background="Black" x:Name="BlackButtonRoot">
+              <ContentPresenter x:Name="Text" Content="{TemplateBinding Content}" Foreground="White" />
+            </Grid>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter> 
+    </Style>
+    <ResourceDictionary.ThemeDictionaries>
+      <ResourceDictionary x:Key="Light">
+        <SolidColorBrush x:Key="MyCustomThemedBrush">Blue</SolidColorBrush>
+        <!-- Meant to test the case where there is a light brush, but no dark -->
+        <SolidColorBrush x:Key="LightRedBrushWithoutDark">Red</SolidColorBrush>
+      </ResourceDictionary>
+      <ResourceDictionary x:Key="Dark">
+        <SolidColorBrush x:Key="MyCustomThemedBrush">White</SolidColorBrush>
+        <!-- Meant to test the case where there is a dark brush, but no light -->
+        <SolidColorBrush x:Key="DarkGreenBrushWithoutLight">Green</SolidColorBrush>
+      </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>
+

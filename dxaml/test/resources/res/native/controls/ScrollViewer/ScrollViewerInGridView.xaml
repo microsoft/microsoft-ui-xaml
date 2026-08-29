@@ -1,0 +1,114 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Grid x:Name="LayoutRoot"  
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{StaticResource ApplicationPageBackgroundThemeBrush}">
+  <Grid.Resources>
+    <Style x:Key="ItemTextStyle" TargetType="TextBlock">
+      <Setter Property="Margin" Value="2"/>
+      <Setter Property="Padding" Value="2"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+    <Style x:Key="TileStyle" TargetType="GridViewItem">
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="Height" Value="50" />
+      <Setter Property="Width" Value="100" />
+      <Setter Property="Padding" Value="2" />
+      <Setter Property="Margin" Value="2" />
+      <Setter Property="Background" Value="Blue"/>
+      <Setter Property="TabNavigation" Value="Local" />
+    </Style>
+  </Grid.Resources>
+
+  <GridView
+      x:Name="gridView"
+      ItemContainerStyle="{StaticResource TileStyle}"
+      VerticalAlignment="Top"
+      HorizontalAlignment="Left"
+      Margin="2"
+      Background="Black"
+      ScrollViewer.HorizontalScrollMode="Auto"
+      ScrollViewer.VerticalScrollMode="Auto"
+      Width="300">
+    <GridView.ItemsPanel>
+      <ItemsPanelTemplate>
+        <WrapGrid MaximumRowsOrColumns="4" VerticalChildrenAlignment="Center"/>
+      </ItemsPanelTemplate>
+    </GridView.ItemsPanel>
+    <TextBlock Text="Algona" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Auburn" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Beaux Arts Village" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Bellevue" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Black Diamond" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Bothell" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Burien" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Carnation" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Clyde Hill" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Covington" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Des Moines" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Duvall" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Enumclaw" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Federal Way" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Hunts Point" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Issaquah" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Kenmore" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Kent" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Kirkland" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Lake Forest Park" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Maple Valley" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Medina" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Mercer Island" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Milton" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Newcastle" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Normandy Park" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="North Bend" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Pacific" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Redmond" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Renton" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Sammamish" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="SeaTac" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Seattle" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Shoreline" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Skykomish" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Snoqualmie" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Tukwila" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Woodinville" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Yarrow Point" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Medina" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Mercer Island" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Milton" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Newcastle" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Normandy Park" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="North Bend" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Pacific" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Redmond" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Renton" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Sammamish" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="SeaTac" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Seattle" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Shoreline" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Skykomish" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Snoqualmie" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Tukwila" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Woodinville" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Yarrow Point" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Medina" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Mercer Island" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Milton" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Newcastle" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Normandy Park" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="North Bend" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Pacific" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Redmond" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Renton" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Sammamish" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="SeaTac" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Seattle" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Shoreline" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Skykomish" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Snoqualmie" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Tukwila" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Woodinville" Style="{StaticResource ItemTextStyle}" />
+    <TextBlock Text="Yarrow Point" Style="{StaticResource ItemTextStyle}" />
+  </GridView>
+</Grid>

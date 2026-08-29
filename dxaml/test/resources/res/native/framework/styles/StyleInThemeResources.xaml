@@ -1,0 +1,25 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <StackPanel.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+          <SolidColorBrush x:Key="RedBrush" Color="Red" />
+          <SolidColorBrush x:Key="BlueBrush" Color="Blue" />
+          <Style TargetType="Button" x:Key="BlueButtonStyle">
+            <Setter Property="Background" Value="{StaticResource BlueBrush}" />
+          </Style>
+          <Style TargetType="Button" x:Key="RedButtonStyle">
+            <Setter Property="Background" Value="{StaticResource RedBrush}" />
+          </Style>
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+      <!-- We define 2 resources here to make sure the dictionary has custom runtime data via XBF -->
+      <SolidColorBrush x:Key="GreenBrush" Color="Green" />
+      <SolidColorBrush x:Key="BlackBrush" Color="Black" />
+    </ResourceDictionary>
+  </StackPanel.Resources>
+  <Button Style="{ThemeResource BlueButtonStyle}" Content="Blue Button" />
+  <Button Style="{ThemeResource RedButtonStyle}" Content="Red Button" />
+</StackPanel>

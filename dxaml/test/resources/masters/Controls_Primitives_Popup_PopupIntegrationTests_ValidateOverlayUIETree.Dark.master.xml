@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualTreeDump>
+  <VisualRoot>
+    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+      <Property Name="ActualHeight" Value="400" />
+      <Property Name="ActualWidth" Value="400" />
+      <Property Name="Background" Value="#FF000000" />
+      <Property Name="RenderSize" Value="400x400" />
+      <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Popup">
+        <Property Name="ActualHeight" Value="400" />
+        <Property Name="ActualWidth" Value="400" />
+        <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.Grid]" />
+        <Property Name="IsLightDismissEnabled" Value="True" />
+        <Property Name="IsOpen" Value="True" />
+        <Property Name="LightDismissOverlayMode" Value="1" />
+        <Property Name="RenderSize" Value="400x400" />
+      </Element>
+    </Element>
+  </VisualRoot>
+  <PopupRoot>
+    <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Popup">
+      <Property Name="ActualHeight" Value="400" />
+      <Property Name="ActualWidth" Value="400" />
+      <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.Grid]" />
+      <Property Name="IsLightDismissEnabled" Value="True" />
+      <Property Name="IsOpen" Value="True" />
+      <Property Name="LightDismissOverlayMode" Value="1" />
+      <Property Name="RenderSize" Value="400x400" />
+      <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+        <Property Name="ActualHeight" Value="0" />
+        <Property Name="ActualWidth" Value="0" />
+        <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Primitives.Popup]" />
+        <Property Name="RenderSize" Value="0x0" />
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+        <Property Name="ActualHeight" Value="400" />
+        <Property Name="ActualWidth" Value="400" />
+        <Property Name="Fill" Value="#99000000" />
+        <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Primitives.Popup]" />
+        <Property Name="RenderSize" Value="400x400" />
+      </Element>
+    </Element>
+  </PopupRoot>
+</VisualTreeDump>

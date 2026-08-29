@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{0bc11d27-a210-429d-afec-41101de977a4}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\unittest.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\valueboxer\inc;
+            $(XcpPath)\components\colors\inc;
+            $(XcpPath)\components\lifetime\inc;
+            $(XcpPath)\components\metadata\inc;
+            $(XcpPath)\components\theming\inc;
+            $(XcpPath)\components\text\inc;
+            $(XcpPath)\components\primitiveDependencyObjects\inc;
+            $(XcpPath)\dxaml\lib;
+            $(XcpPath)\dxaml\lib\winrtgeneratedclasses;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="PropertyValueWrapper.h"/>
+        <ClInclude Include="ValueBoxerTests.h"/>
+
+        <ClCompile Include="ValueBoxerTests.cpp"/>
+        <ClCompile Include="SimplePropertyValue.cpp"/>
+        <ClCompile Include="PropertyValueWrapper.cpp"/>
+        <ClCompile Include="Stubs.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\ut\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\valueboxer\lib\Microsoft.UI.Xaml.ValueBoxer.vcxproj" Project="{bbdd985f-5ab4-40f4-8eb9-18ab4a76169a}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\cvalue\lib\Microsoft.UI.Xaml.CValue.vcxproj" Project="{a96cf4ea-7170-4aff-90a5-5fce1055270f}"/>
+        <ProjectReference Include="$(XcpPath)\hostpalplatmisc.vcxproj" Project="{379aa0e5-75bd-4ac3-9e9d-2168f400f1b0}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\xstring\lib\Microsoft.UI.Xaml.XString.vcxproj" Project="{f9da8380-5504-4acc-bde0-72cd5981826d}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\com\lib\Microsoft.UI.Xaml.Com.vcxproj" Project="{38506cdd-c34a-404c-b6e2-4d1ed278da88}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\metadata\lib\Microsoft.UI.Xaml.Metadata.vcxproj" Project="{23637f36-0cb9-4142-a60c-888b0efe9a4c}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\metadata\mocks\Microsoft.UI.Xaml.Tests.Isolated.Mocks.Framework.Metadata.vcxproj" Project="{2b9a325f-17af-40f1-98c9-2aa7856b77e7}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\lifetime\lib\Microsoft.UI.Xaml.Lifetime.vcxproj" Project="{71ada981-d444-464c-833d-290206b05240}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\unittests\stubs\Microsoft.UI.Xaml.Stubs.vcxproj" Project="{ec5bfab1-619b-45cb-b8ec-db81f3c7811b}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\telemetry\Microsoft.UI.Xaml.Instrumentation.vcxproj" Project="{073bb1fb-9ce9-4b52-becb-47bd8a77c6ca}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\colors\lib\Microsoft.UI.Xaml.Colors.vcxproj" Project="{6b5aed1f-fd5d-47bc-9b9a-37d56e2c2e97}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\animation\lib\Microsoft.UI.Xaml.Animation.vcxproj" Project="{bb0522d9-7e95-40a1-9522-88b6f42b2db6}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\flyweight\lib\Microsoft.UI.Xaml.Flyweight.vcxproj" Project="{88536608-bab9-49f1-9cc6-36b7f8e73d8a}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

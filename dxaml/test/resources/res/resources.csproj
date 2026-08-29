@@ -1,0 +1,23 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project Sdk="Microsoft.Build.NoTargets">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetDestination>$(TestBinplaceResourcesDestinationPath)</TargetDestination>
+	<Platforms>x64;x86;ARM64</Platforms>
+  </PropertyGroup>
+    
+  <ItemGroup>
+    <!--
+      Ideally we could just grab all the subdirectories recursively, but when we try to do that we get copy errors for MSBuild.ProjectImports.zip,
+      which is some file added to this directory during the build
+    -->
+    <BinplaceItem Include="managed\**" Destination="$(TargetDestination)\managed" />
+    <BinplaceItem Include="native\**" Destination="$(TargetDestination)\native" />
+    <BinplaceItem Include="AppAnalysis\*.*" Destination="$(TargetDestination)\AppAnalysis" />
+    <BinplaceItem Include="BVTs\*.*" Destination="$(TargetDestination)\BVTs" />
+    <BinplaceItem Include="sample\*.*" Destination="$(TargetDestination)\sample" />
+    <BinplaceItem Include="$(XamlSourcePath)\xcp\dxaml\themes\generic.xaml">
+      <Destination>$(TargetDestination)\native\controls\general\</Destination>
+    </BinplaceItem>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,2642 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualTreeDump>
+  <VisualRoot>
+    <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+      <Property Name="ActualHeight" Value="700" />
+      <Property Name="ActualWidth" Value="400" />
+      <Property Name="IsHitTestVisible" Value="False" />
+      <Property Name="RenderSize" Value="400x700" />
+      <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+        <Property Name="ActualHeight" Value="300" />
+        <Property Name="ActualWidth" Value="400" />
+        <Property Name="Height" Value="300" />
+        <Property Name="Orientation" Value="1" />
+        <Property Name="RenderSize" Value="400x300" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Slider">
+          <Property Name="ActualHeight" Value="300" />
+          <Property Name="ActualWidth" Value="65" />
+          <Property Name="Background" Value="#8BFFFFFF" />
+          <Property Name="BorderBrush" Value="[Microsoft.UI.Xaml.Media.LinearGradientBrush]" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="2,2,2,2" />
+          <Property Name="FocusState" Value="1" />
+          <Property Name="FocusVisualMargin" Value="-7,0,-7,0" />
+          <Property Name="FontFamily" Value="Segoe UI" />
+          <Property Name="FontSize" Value="14" />
+          <Property Name="Foreground" Value="#FF76B9ED" />
+          <Property Name="Header" Value="Rest Slider" />
+          <Property Name="IntermediateValue" Value="50" />
+          <Property Name="IsFocusEngagementEnabled" Value="True" />
+          <Property Name="ManipulationMode" Value="0" />
+          <Property Name="Orientation" Value="0" />
+          <Property Name="RenderSize" Value="65x300" />
+          <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+          <Property Name="UseSystemFocusVisuals" Value="True" />
+          <Property Name="Value" Value="50" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="300" />
+            <Property Name="ActualWidth" Value="65" />
+            <Property Name="Margin" Value="0,0,0,0" />
+            <Property Name="RenderSize" Value="65x300" />
+            <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+              <Property Name="ActualHeight" Value="19" />
+              <Property Name="ActualWidth" Value="65" />
+              <Property Name="Content" Value="Rest Slider" />
+              <Property Name="ContentTemplate" Value="[NULL]" />
+              <Property Name="DataContext" Value="Rest Slider" />
+              <Property Name="FontWeight" Value="400" />
+              <Property Name="Foreground" Value="#FFFFFFFF" />
+              <Property Name="Grid.Row" Value="0" />
+              <Property Name="Margin" Value="0,0,0,4" />
+              <Property Name="Name" Value="HeaderContentPresenter" />
+              <Property Name="RenderSize" Value="65x19" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="Visibility" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                <Property Name="ActualHeight" Value="18.6211" />
+                <Property Name="ActualWidth" Value="64.4561" />
+                <Property Name="HorizontalAlignment" Value="0" />
+                <Property Name="RenderSize" Value="65x19" />
+                <Property Name="Text" Value="Rest Slider" />
+                <Property Name="TextWrapping" Value="2" />
+                <Property Name="VerticalAlignment" Value="0" />
+                <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                  <Property Name="Text" Value="Rest Slider" />
+                </Element>
+              </Element>
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="277" />
+              <Property Name="ActualWidth" Value="65" />
+              <Property Name="Control.IsTemplateFocusTarget" Value="True" />
+              <Property Name="CornerRadius" Value="4,4,4,4" />
+              <Property Name="Grid.Row" Value="1" />
+              <Property Name="Name" Value="FocusBorder" />
+              <Property Name="RenderSize" Value="65x277" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+              <Property Name="ActualHeight" Value="277" />
+              <Property Name="ActualWidth" Value="65" />
+              <Property Name="Background" Value="#00FFFFFF" />
+              <Property Name="Grid.Row" Value="1" />
+              <Property Name="Name" Value="SliderContainer" />
+              <Property Name="RenderSize" Value="65x277" />
+              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                <Property Name="ActualHeight" Value="0" />
+                <Property Name="ActualWidth" Value="0" />
+                <Property Name="MinHeight" Value="32" />
+                <Property Name="Name" Value="HorizontalTemplate" />
+                <Property Name="RenderSize" Value="0x0" />
+                <Property Name="Visibility" Value="1" />
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Name" Value="HorizontalTrackRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="0x0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#FF76B9ED" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Name" Value="HorizontalDecreaseRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="0x0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Margin" Value="0,0,0,4" />
+                  <Property Name="Name" Value="TopTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="VerticalAlignment" Value="2" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#B31E1E1E" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Name" Value="HorizontalInlineTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="2" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Margin" Value="0,4,0,0" />
+                  <Property Name="Name" Value="BottomTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="VerticalAlignment" Value="0" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                  <Property Name="Background" Value="#FF76B9ED" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="BorderThickness" Value="1,1,1,1" />
+                  <Property Name="CornerRadius" Value="4,4,4,4" />
+                  <Property Name="DataContext" Value="50" />
+                  <Property Name="FocusVisualMargin" Value="-14,-6,-14,-6" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.Row" Value="0" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Height" Value="18" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Name" Value="HorizontalThumb" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                  <Property Name="Width" Value="18" />
+                </Element>
+              </Element>
+              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                <Property Name="ActualHeight" Value="277" />
+                <Property Name="ActualWidth" Value="65" />
+                <Property Name="MinWidth" Value="32" />
+                <Property Name="Name" Value="VerticalTemplate" />
+                <Property Name="RenderSize" Value="65x277" />
+                <Property Name="Visibility" Value="0" />
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="277" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Name" Value="VerticalTrackRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="4x277" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="130" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#FF76B9ED" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.Row" Value="2" />
+                  <Property Name="Height" Value="130" />
+                  <Property Name="Name" Value="VerticalDecreaseRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="4x130" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="HorizontalAlignment" Value="2" />
+                  <Property Name="Margin" Value="0,0,4,0" />
+                  <Property Name="Name" Value="LeftTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#B31E1E1E" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Name" Value="VerticalInlineTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="0" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.Column" Value="2" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="HorizontalAlignment" Value="0" />
+                  <Property Name="Margin" Value="4,0,0,0" />
+                  <Property Name="Name" Value="RightTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+                  <Property Name="ActualHeight" Value="18" />
+                  <Property Name="ActualWidth" Value="18" />
+                  <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                  <Property Name="Background" Value="#FF76B9ED" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="BorderThickness" Value="1,1,1,1" />
+                  <Property Name="CornerRadius" Value="4,4,4,4" />
+                  <Property Name="DataContext" Value="50" />
+                  <Property Name="FocusVisualMargin" Value="-6,-14,-6,-14" />
+                  <Property Name="Grid.Column" Value="0" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="18" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Name" Value="VerticalThumb" />
+                  <Property Name="RenderSize" Value="18x18" />
+                  <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                  <Property Name="Width" Value="18" />
+                  <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                    <Property Name="ActualHeight" Value="22" />
+                    <Property Name="ActualWidth" Value="22" />
+                    <Property Name="Background" Value="#FF454545" />
+                    <Property Name="BorderBrush" Value="[Microsoft.UI.Xaml.Media.LinearGradientBrush]" />
+                    <Property Name="BorderThickness" Value="1,1,1,1" />
+                    <Property Name="Child" Value="[Microsoft.UI.Xaml.Shapes.Ellipse]" />
+                    <Property Name="CornerRadius" Value="10,10,10,10" />
+                    <Property Name="Margin" Value="-2,-2,-2,-2" />
+                    <Property Name="RenderSize" Value="22x22" />
+                    <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+                      <Property Name="ActualHeight" Value="12" />
+                      <Property Name="ActualWidth" Value="12" />
+                      <Property Name="Fill" Value="#FF76B9ED" />
+                      <Property Name="Height" Value="12" />
+                      <Property Name="Name" Value="SliderInnerThumb" />
+                      <Property Name="RenderSize" Value="12x12" />
+                      <Property Name="RenderTransform" Value="CompositeTransform( ScaleX=0.86  ScaleY=0.86 )" />
+                      <Property Name="RenderTransformOrigin" Value="0.5,0.5" />
+                      <Property Name="Width" Value="12" />
+                    </Element>
+                  </Element>
+                </Element>
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+        <Element Type="Microsoft.UI.Xaml.Controls.Slider">
+          <Property Name="ActualHeight" Value="300" />
+          <Property Name="ActualWidth" Value="76" />
+          <Property Name="Background" Value="#8BFFFFFF" />
+          <Property Name="BorderBrush" Value="[Microsoft.UI.Xaml.Media.LinearGradientBrush]" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="2,2,2,2" />
+          <Property Name="FocusVisualMargin" Value="-7,0,-7,0" />
+          <Property Name="FontFamily" Value="Segoe UI" />
+          <Property Name="FontSize" Value="14" />
+          <Property Name="Foreground" Value="#FF76B9ED" />
+          <Property Name="Header" Value="Hover Slider" />
+          <Property Name="IntermediateValue" Value="50" />
+          <Property Name="IsFocusEngagementEnabled" Value="True" />
+          <Property Name="ManipulationMode" Value="0" />
+          <Property Name="Orientation" Value="0" />
+          <Property Name="RenderSize" Value="76x300" />
+          <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+          <Property Name="UseSystemFocusVisuals" Value="True" />
+          <Property Name="Value" Value="50" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="300" />
+            <Property Name="ActualWidth" Value="76" />
+            <Property Name="Margin" Value="0,0,0,0" />
+            <Property Name="RenderSize" Value="76x300" />
+            <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+              <Property Name="ActualHeight" Value="19" />
+              <Property Name="ActualWidth" Value="76" />
+              <Property Name="Content" Value="Hover Slider" />
+              <Property Name="ContentTemplate" Value="[NULL]" />
+              <Property Name="DataContext" Value="Hover Slider" />
+              <Property Name="FontWeight" Value="400" />
+              <Property Name="Foreground" Value="#FFFFFFFF" />
+              <Property Name="Grid.Row" Value="0" />
+              <Property Name="Margin" Value="0,0,0,4" />
+              <Property Name="Name" Value="HeaderContentPresenter" />
+              <Property Name="RenderSize" Value="76x19" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="Visibility" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                <Property Name="ActualHeight" Value="18.6211" />
+                <Property Name="ActualWidth" Value="75.5234" />
+                <Property Name="HorizontalAlignment" Value="0" />
+                <Property Name="RenderSize" Value="76x19" />
+                <Property Name="Text" Value="Hover Slider" />
+                <Property Name="TextWrapping" Value="2" />
+                <Property Name="VerticalAlignment" Value="0" />
+                <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                  <Property Name="Text" Value="Hover Slider" />
+                </Element>
+              </Element>
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="277" />
+              <Property Name="ActualWidth" Value="76" />
+              <Property Name="Control.IsTemplateFocusTarget" Value="True" />
+              <Property Name="CornerRadius" Value="4,4,4,4" />
+              <Property Name="Grid.Row" Value="1" />
+              <Property Name="Name" Value="FocusBorder" />
+              <Property Name="RenderSize" Value="76x277" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+              <Property Name="ActualHeight" Value="277" />
+              <Property Name="ActualWidth" Value="76" />
+              <Property Name="Background" Value="#00FFFFFF" />
+              <Property Name="Grid.Row" Value="1" />
+              <Property Name="Name" Value="SliderContainer" />
+              <Property Name="RenderSize" Value="76x277" />
+              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                <Property Name="ActualHeight" Value="0" />
+                <Property Name="ActualWidth" Value="0" />
+                <Property Name="MinHeight" Value="32" />
+                <Property Name="Name" Value="HorizontalTemplate" />
+                <Property Name="RenderSize" Value="0x0" />
+                <Property Name="Visibility" Value="1" />
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Name" Value="HorizontalTrackRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="0x0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#FF76B9ED(Opacity=0.90)" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Name" Value="HorizontalDecreaseRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="0x0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Margin" Value="0,0,0,4" />
+                  <Property Name="Name" Value="TopTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="VerticalAlignment" Value="2" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#B31E1E1E" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Name" Value="HorizontalInlineTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="2" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Margin" Value="0,4,0,0" />
+                  <Property Name="Name" Value="BottomTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="VerticalAlignment" Value="0" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                  <Property Name="Background" Value="#FF76B9ED(Opacity=0.90)" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="BorderThickness" Value="1,1,1,1" />
+                  <Property Name="CornerRadius" Value="4,4,4,4" />
+                  <Property Name="DataContext" Value="50" />
+                  <Property Name="FocusVisualMargin" Value="-14,-6,-14,-6" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.Row" Value="0" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Height" Value="18" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Name" Value="HorizontalThumb" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                  <Property Name="Width" Value="18" />
+                </Element>
+              </Element>
+              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                <Property Name="ActualHeight" Value="277" />
+                <Property Name="ActualWidth" Value="76" />
+                <Property Name="MinWidth" Value="32" />
+                <Property Name="Name" Value="VerticalTemplate" />
+                <Property Name="RenderSize" Value="76x277" />
+                <Property Name="Visibility" Value="0" />
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="277" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Name" Value="VerticalTrackRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="4x277" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="130" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#FF76B9ED(Opacity=0.90)" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.Row" Value="2" />
+                  <Property Name="Height" Value="130" />
+                  <Property Name="Name" Value="VerticalDecreaseRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="4x130" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="HorizontalAlignment" Value="2" />
+                  <Property Name="Margin" Value="0,0,4,0" />
+                  <Property Name="Name" Value="LeftTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#B31E1E1E" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Name" Value="VerticalInlineTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="0" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.Column" Value="2" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="HorizontalAlignment" Value="0" />
+                  <Property Name="Margin" Value="4,0,0,0" />
+                  <Property Name="Name" Value="RightTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+                  <Property Name="ActualHeight" Value="18" />
+                  <Property Name="ActualWidth" Value="18" />
+                  <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                  <Property Name="Background" Value="#FF76B9ED(Opacity=0.90)" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="BorderThickness" Value="1,1,1,1" />
+                  <Property Name="CornerRadius" Value="4,4,4,4" />
+                  <Property Name="DataContext" Value="50" />
+                  <Property Name="FocusVisualMargin" Value="-6,-14,-6,-14" />
+                  <Property Name="Grid.Column" Value="0" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="18" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Name" Value="VerticalThumb" />
+                  <Property Name="RenderSize" Value="18x18" />
+                  <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                  <Property Name="Width" Value="18" />
+                  <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                    <Property Name="ActualHeight" Value="22" />
+                    <Property Name="ActualWidth" Value="22" />
+                    <Property Name="Background" Value="#FF454545" />
+                    <Property Name="BorderBrush" Value="[Microsoft.UI.Xaml.Media.LinearGradientBrush]" />
+                    <Property Name="BorderThickness" Value="1,1,1,1" />
+                    <Property Name="Child" Value="[Microsoft.UI.Xaml.Shapes.Ellipse]" />
+                    <Property Name="CornerRadius" Value="10,10,10,10" />
+                    <Property Name="Margin" Value="-2,-2,-2,-2" />
+                    <Property Name="RenderSize" Value="22x22" />
+                    <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+                      <Property Name="ActualHeight" Value="12" />
+                      <Property Name="ActualWidth" Value="12" />
+                      <Property Name="Fill" Value="#FF76B9ED(Opacity=0.90)" />
+                      <Property Name="Height" Value="12" />
+                      <Property Name="Name" Value="SliderInnerThumb" />
+                      <Property Name="RenderSize" Value="12x12" />
+                      <Property Name="RenderTransform" Value="CompositeTransform( ScaleX=0.86  ScaleY=0.86 )" />
+                      <Property Name="RenderTransformOrigin" Value="0.5,0.5" />
+                      <Property Name="Width" Value="12" />
+                    </Element>
+                  </Element>
+                </Element>
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+        <Element Type="Microsoft.UI.Xaml.Controls.Slider">
+          <Property Name="ActualHeight" Value="300" />
+          <Property Name="ActualWidth" Value="86" />
+          <Property Name="Background" Value="#8BFFFFFF" />
+          <Property Name="BorderBrush" Value="[Microsoft.UI.Xaml.Media.LinearGradientBrush]" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="2,2,2,2" />
+          <Property Name="FocusVisualMargin" Value="-7,0,-7,0" />
+          <Property Name="FontFamily" Value="Segoe UI" />
+          <Property Name="FontSize" Value="14" />
+          <Property Name="Foreground" Value="#FF76B9ED" />
+          <Property Name="Header" Value="Pressed Slider" />
+          <Property Name="IntermediateValue" Value="50" />
+          <Property Name="IsFocusEngagementEnabled" Value="True" />
+          <Property Name="ManipulationMode" Value="0" />
+          <Property Name="Orientation" Value="0" />
+          <Property Name="RenderSize" Value="86x300" />
+          <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+          <Property Name="UseSystemFocusVisuals" Value="True" />
+          <Property Name="Value" Value="50" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="300" />
+            <Property Name="ActualWidth" Value="86" />
+            <Property Name="Margin" Value="0,0,0,0" />
+            <Property Name="RenderSize" Value="86x300" />
+            <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+              <Property Name="ActualHeight" Value="19" />
+              <Property Name="ActualWidth" Value="86" />
+              <Property Name="Content" Value="Pressed Slider" />
+              <Property Name="ContentTemplate" Value="[NULL]" />
+              <Property Name="DataContext" Value="Pressed Slider" />
+              <Property Name="FontWeight" Value="400" />
+              <Property Name="Foreground" Value="#FFFFFFFF" />
+              <Property Name="Grid.Row" Value="0" />
+              <Property Name="Margin" Value="0,0,0,4" />
+              <Property Name="Name" Value="HeaderContentPresenter" />
+              <Property Name="RenderSize" Value="86x19" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="Visibility" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                <Property Name="ActualHeight" Value="18.6211" />
+                <Property Name="ActualWidth" Value="85.9619" />
+                <Property Name="HorizontalAlignment" Value="0" />
+                <Property Name="RenderSize" Value="86x19" />
+                <Property Name="Text" Value="Pressed Slider" />
+                <Property Name="TextWrapping" Value="2" />
+                <Property Name="VerticalAlignment" Value="0" />
+                <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                  <Property Name="Text" Value="Pressed Slider" />
+                </Element>
+              </Element>
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="277" />
+              <Property Name="ActualWidth" Value="86" />
+              <Property Name="Control.IsTemplateFocusTarget" Value="True" />
+              <Property Name="CornerRadius" Value="4,4,4,4" />
+              <Property Name="Grid.Row" Value="1" />
+              <Property Name="Name" Value="FocusBorder" />
+              <Property Name="RenderSize" Value="86x277" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+              <Property Name="ActualHeight" Value="277" />
+              <Property Name="ActualWidth" Value="86" />
+              <Property Name="Background" Value="#00FFFFFF" />
+              <Property Name="Grid.Row" Value="1" />
+              <Property Name="Name" Value="SliderContainer" />
+              <Property Name="RenderSize" Value="86x277" />
+              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                <Property Name="ActualHeight" Value="0" />
+                <Property Name="ActualWidth" Value="0" />
+                <Property Name="MinHeight" Value="32" />
+                <Property Name="Name" Value="HorizontalTemplate" />
+                <Property Name="RenderSize" Value="0x0" />
+                <Property Name="Visibility" Value="1" />
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Name" Value="HorizontalTrackRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="0x0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#FF76B9ED(Opacity=0.80)" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Name" Value="HorizontalDecreaseRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="0x0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Margin" Value="0,0,0,4" />
+                  <Property Name="Name" Value="TopTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="VerticalAlignment" Value="2" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#B31E1E1E" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Name" Value="HorizontalInlineTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="2" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Margin" Value="0,4,0,0" />
+                  <Property Name="Name" Value="BottomTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="VerticalAlignment" Value="0" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                  <Property Name="Background" Value="#FF76B9ED(Opacity=0.80)" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="BorderThickness" Value="1,1,1,1" />
+                  <Property Name="CornerRadius" Value="4,4,4,4" />
+                  <Property Name="DataContext" Value="50" />
+                  <Property Name="FocusVisualMargin" Value="-14,-6,-14,-6" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.Row" Value="0" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Height" Value="18" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Name" Value="HorizontalThumb" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                  <Property Name="Width" Value="18" />
+                </Element>
+              </Element>
+              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                <Property Name="ActualHeight" Value="277" />
+                <Property Name="ActualWidth" Value="86" />
+                <Property Name="MinWidth" Value="32" />
+                <Property Name="Name" Value="VerticalTemplate" />
+                <Property Name="RenderSize" Value="86x277" />
+                <Property Name="Visibility" Value="0" />
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="277" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Name" Value="VerticalTrackRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="4x277" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="130" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#FF76B9ED(Opacity=0.80)" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.Row" Value="2" />
+                  <Property Name="Height" Value="130" />
+                  <Property Name="Name" Value="VerticalDecreaseRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="4x130" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="HorizontalAlignment" Value="2" />
+                  <Property Name="Margin" Value="0,0,4,0" />
+                  <Property Name="Name" Value="LeftTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#B31E1E1E" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Name" Value="VerticalInlineTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="0" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.Column" Value="2" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="HorizontalAlignment" Value="0" />
+                  <Property Name="Margin" Value="4,0,0,0" />
+                  <Property Name="Name" Value="RightTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+                  <Property Name="ActualHeight" Value="18" />
+                  <Property Name="ActualWidth" Value="18" />
+                  <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                  <Property Name="Background" Value="#FF76B9ED(Opacity=0.80)" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="BorderThickness" Value="1,1,1,1" />
+                  <Property Name="CornerRadius" Value="4,4,4,4" />
+                  <Property Name="DataContext" Value="50" />
+                  <Property Name="FocusVisualMargin" Value="-6,-14,-6,-14" />
+                  <Property Name="Grid.Column" Value="0" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="18" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Name" Value="VerticalThumb" />
+                  <Property Name="RenderSize" Value="18x18" />
+                  <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                  <Property Name="Width" Value="18" />
+                  <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                    <Property Name="ActualHeight" Value="22" />
+                    <Property Name="ActualWidth" Value="22" />
+                    <Property Name="Background" Value="#FF454545" />
+                    <Property Name="BorderBrush" Value="[Microsoft.UI.Xaml.Media.LinearGradientBrush]" />
+                    <Property Name="BorderThickness" Value="1,1,1,1" />
+                    <Property Name="Child" Value="[Microsoft.UI.Xaml.Shapes.Ellipse]" />
+                    <Property Name="CornerRadius" Value="10,10,10,10" />
+                    <Property Name="Margin" Value="-2,-2,-2,-2" />
+                    <Property Name="RenderSize" Value="22x22" />
+                    <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+                      <Property Name="ActualHeight" Value="12" />
+                      <Property Name="ActualWidth" Value="12" />
+                      <Property Name="Fill" Value="#FF76B9ED(Opacity=0.80)" />
+                      <Property Name="Height" Value="12" />
+                      <Property Name="Name" Value="SliderInnerThumb" />
+                      <Property Name="RenderSize" Value="12x12" />
+                      <Property Name="RenderTransform" Value="CompositeTransform( ScaleX=0.86  ScaleY=0.86 )" />
+                      <Property Name="RenderTransformOrigin" Value="0.5,0.5" />
+                      <Property Name="Width" Value="12" />
+                    </Element>
+                  </Element>
+                </Element>
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+        <Element Type="Microsoft.UI.Xaml.Controls.Slider">
+          <Property Name="ActualHeight" Value="300" />
+          <Property Name="ActualWidth" Value="92" />
+          <Property Name="Background" Value="#8BFFFFFF" />
+          <Property Name="BorderBrush" Value="[Microsoft.UI.Xaml.Media.LinearGradientBrush]" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="2,2,2,2" />
+          <Property Name="FocusVisualMargin" Value="-7,0,-7,0" />
+          <Property Name="FontFamily" Value="Segoe UI" />
+          <Property Name="FontSize" Value="14" />
+          <Property Name="Foreground" Value="#FF76B9ED" />
+          <Property Name="Header" Value="Disabled Slider" />
+          <Property Name="IntermediateValue" Value="50" />
+          <Property Name="IsEnabled" Value="False" />
+          <Property Name="IsFocusEngagementEnabled" Value="True" />
+          <Property Name="ManipulationMode" Value="0" />
+          <Property Name="Orientation" Value="0" />
+          <Property Name="RenderSize" Value="92x300" />
+          <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+          <Property Name="UseSystemFocusVisuals" Value="True" />
+          <Property Name="Value" Value="50" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="300" />
+            <Property Name="ActualWidth" Value="92" />
+            <Property Name="Margin" Value="0,0,0,0" />
+            <Property Name="RenderSize" Value="92x300" />
+            <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+              <Property Name="ActualHeight" Value="19" />
+              <Property Name="ActualWidth" Value="92" />
+              <Property Name="Content" Value="Disabled Slider" />
+              <Property Name="ContentTemplate" Value="[NULL]" />
+              <Property Name="DataContext" Value="Disabled Slider" />
+              <Property Name="FontWeight" Value="400" />
+              <Property Name="Foreground" Value="#5DFFFFFF" />
+              <Property Name="Grid.Row" Value="0" />
+              <Property Name="Margin" Value="0,0,0,4" />
+              <Property Name="Name" Value="HeaderContentPresenter" />
+              <Property Name="RenderSize" Value="92x19" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="Visibility" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                <Property Name="ActualHeight" Value="18.6211" />
+                <Property Name="ActualWidth" Value="91.9434" />
+                <Property Name="HorizontalAlignment" Value="0" />
+                <Property Name="RenderSize" Value="92x19" />
+                <Property Name="Text" Value="Disabled Slider" />
+                <Property Name="TextWrapping" Value="2" />
+                <Property Name="VerticalAlignment" Value="0" />
+                <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                  <Property Name="Text" Value="Disabled Slider" />
+                </Element>
+              </Element>
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="277" />
+              <Property Name="ActualWidth" Value="92" />
+              <Property Name="Control.IsTemplateFocusTarget" Value="True" />
+              <Property Name="CornerRadius" Value="4,4,4,4" />
+              <Property Name="Grid.Row" Value="1" />
+              <Property Name="Name" Value="FocusBorder" />
+              <Property Name="RenderSize" Value="92x277" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+              <Property Name="ActualHeight" Value="277" />
+              <Property Name="ActualWidth" Value="92" />
+              <Property Name="Background" Value="#00FFFFFF" />
+              <Property Name="Grid.Row" Value="1" />
+              <Property Name="Name" Value="SliderContainer" />
+              <Property Name="RenderSize" Value="92x277" />
+              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                <Property Name="ActualHeight" Value="0" />
+                <Property Name="ActualWidth" Value="0" />
+                <Property Name="MinHeight" Value="32" />
+                <Property Name="Name" Value="HorizontalTemplate" />
+                <Property Name="RenderSize" Value="0x0" />
+                <Property Name="Visibility" Value="1" />
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#3FFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Name" Value="HorizontalTrackRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="0x0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#28FFFFFF" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Name" Value="HorizontalDecreaseRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="0x0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#3FFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Margin" Value="0,0,0,4" />
+                  <Property Name="Name" Value="TopTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="VerticalAlignment" Value="2" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#B31E1E1E" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Name" Value="HorizontalInlineTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#3FFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="2" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Margin" Value="0,4,0,0" />
+                  <Property Name="Name" Value="BottomTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="VerticalAlignment" Value="0" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                  <Property Name="Background" Value="#28FFFFFF" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="BorderThickness" Value="1,1,1,1" />
+                  <Property Name="CornerRadius" Value="4,4,4,4" />
+                  <Property Name="DataContext" Value="50" />
+                  <Property Name="FocusVisualMargin" Value="-14,-6,-14,-6" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.Row" Value="0" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Height" Value="18" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Name" Value="HorizontalThumb" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                  <Property Name="Width" Value="18" />
+                </Element>
+              </Element>
+              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                <Property Name="ActualHeight" Value="277" />
+                <Property Name="ActualWidth" Value="92" />
+                <Property Name="MinWidth" Value="32" />
+                <Property Name="Name" Value="VerticalTemplate" />
+                <Property Name="RenderSize" Value="92x277" />
+                <Property Name="Visibility" Value="0" />
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="277" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#3FFFFFFF" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Name" Value="VerticalTrackRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="4x277" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="130" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#28FFFFFF" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.Row" Value="2" />
+                  <Property Name="Height" Value="130" />
+                  <Property Name="Name" Value="VerticalDecreaseRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="4x130" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#3FFFFFFF" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="HorizontalAlignment" Value="2" />
+                  <Property Name="Margin" Value="0,0,4,0" />
+                  <Property Name="Name" Value="LeftTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#B31E1E1E" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Name" Value="VerticalInlineTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="0" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#3FFFFFFF" />
+                  <Property Name="Grid.Column" Value="2" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="HorizontalAlignment" Value="0" />
+                  <Property Name="Margin" Value="4,0,0,0" />
+                  <Property Name="Name" Value="RightTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+                  <Property Name="ActualHeight" Value="18" />
+                  <Property Name="ActualWidth" Value="18" />
+                  <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                  <Property Name="Background" Value="#28FFFFFF" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="BorderThickness" Value="1,1,1,1" />
+                  <Property Name="CornerRadius" Value="4,4,4,4" />
+                  <Property Name="DataContext" Value="50" />
+                  <Property Name="FocusVisualMargin" Value="-6,-14,-6,-14" />
+                  <Property Name="Grid.Column" Value="0" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="18" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Name" Value="VerticalThumb" />
+                  <Property Name="RenderSize" Value="18x18" />
+                  <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                  <Property Name="Width" Value="18" />
+                  <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                    <Property Name="ActualHeight" Value="22" />
+                    <Property Name="ActualWidth" Value="22" />
+                    <Property Name="Background" Value="#FF454545" />
+                    <Property Name="BorderBrush" Value="[Microsoft.UI.Xaml.Media.LinearGradientBrush]" />
+                    <Property Name="BorderThickness" Value="1,1,1,1" />
+                    <Property Name="Child" Value="[Microsoft.UI.Xaml.Shapes.Ellipse]" />
+                    <Property Name="CornerRadius" Value="10,10,10,10" />
+                    <Property Name="Margin" Value="-2,-2,-2,-2" />
+                    <Property Name="RenderSize" Value="22x22" />
+                    <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+                      <Property Name="ActualHeight" Value="12" />
+                      <Property Name="ActualWidth" Value="12" />
+                      <Property Name="Fill" Value="#28FFFFFF" />
+                      <Property Name="Height" Value="12" />
+                      <Property Name="Name" Value="SliderInnerThumb" />
+                      <Property Name="RenderSize" Value="12x12" />
+                      <Property Name="RenderTransform" Value="CompositeTransform( ScaleX=1.167  ScaleY=1.167 )" />
+                      <Property Name="RenderTransformOrigin" Value="0.5,0.5" />
+                      <Property Name="Width" Value="12" />
+                    </Element>
+                  </Element>
+                </Element>
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+        <Property Name="ActualHeight" Value="300" />
+        <Property Name="ActualWidth" Value="400" />
+        <Property Name="Height" Value="300" />
+        <Property Name="Orientation" Value="1" />
+        <Property Name="RenderSize" Value="400x300" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Slider">
+          <Property Name="ActualHeight" Value="300" />
+          <Property Name="ActualWidth" Value="62" />
+          <Property Name="Background" Value="#8BFFFFFF" />
+          <Property Name="BorderBrush" Value="[Microsoft.UI.Xaml.Media.LinearGradientBrush]" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="2,2,2,2" />
+          <Property Name="FocusVisualMargin" Value="-7,0,-7,0" />
+          <Property Name="FontFamily" Value="Segoe UI" />
+          <Property Name="FontSize" Value="14" />
+          <Property Name="Foreground" Value="#FF76B9ED" />
+          <Property Name="Header" Value="Tick Inline" />
+          <Property Name="IntermediateValue" Value="50" />
+          <Property Name="IsFocusEngagementEnabled" Value="True" />
+          <Property Name="ManipulationMode" Value="0" />
+          <Property Name="Orientation" Value="0" />
+          <Property Name="RenderSize" Value="62x300" />
+          <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+          <Property Name="TickFrequency" Value="10" />
+          <Property Name="TickPlacement" Value="4" />
+          <Property Name="UseSystemFocusVisuals" Value="True" />
+          <Property Name="Value" Value="50" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="300" />
+            <Property Name="ActualWidth" Value="62" />
+            <Property Name="Margin" Value="0,0,0,0" />
+            <Property Name="RenderSize" Value="62x300" />
+            <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+              <Property Name="ActualHeight" Value="19" />
+              <Property Name="ActualWidth" Value="62" />
+              <Property Name="Content" Value="Tick Inline" />
+              <Property Name="ContentTemplate" Value="[NULL]" />
+              <Property Name="DataContext" Value="Tick Inline" />
+              <Property Name="FontWeight" Value="400" />
+              <Property Name="Foreground" Value="#FFFFFFFF" />
+              <Property Name="Grid.Row" Value="0" />
+              <Property Name="Margin" Value="0,0,0,4" />
+              <Property Name="Name" Value="HeaderContentPresenter" />
+              <Property Name="RenderSize" Value="62x19" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="Visibility" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                <Property Name="ActualHeight" Value="18.6211" />
+                <Property Name="ActualWidth" Value="61.6602" />
+                <Property Name="HorizontalAlignment" Value="0" />
+                <Property Name="RenderSize" Value="62x19" />
+                <Property Name="Text" Value="Tick Inline" />
+                <Property Name="TextWrapping" Value="2" />
+                <Property Name="VerticalAlignment" Value="0" />
+                <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                  <Property Name="Text" Value="Tick Inline" />
+                </Element>
+              </Element>
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="277" />
+              <Property Name="ActualWidth" Value="62" />
+              <Property Name="Control.IsTemplateFocusTarget" Value="True" />
+              <Property Name="CornerRadius" Value="4,4,4,4" />
+              <Property Name="Grid.Row" Value="1" />
+              <Property Name="Name" Value="FocusBorder" />
+              <Property Name="RenderSize" Value="62x277" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+              <Property Name="ActualHeight" Value="277" />
+              <Property Name="ActualWidth" Value="62" />
+              <Property Name="Background" Value="#00FFFFFF" />
+              <Property Name="Grid.Row" Value="1" />
+              <Property Name="Name" Value="SliderContainer" />
+              <Property Name="RenderSize" Value="62x277" />
+              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                <Property Name="ActualHeight" Value="0" />
+                <Property Name="ActualWidth" Value="0" />
+                <Property Name="MinHeight" Value="32" />
+                <Property Name="Name" Value="HorizontalTemplate" />
+                <Property Name="RenderSize" Value="0x0" />
+                <Property Name="Visibility" Value="1" />
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Name" Value="HorizontalTrackRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="0x0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#FF76B9ED" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Name" Value="HorizontalDecreaseRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="0x0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Margin" Value="0,0,0,4" />
+                  <Property Name="Name" Value="TopTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="VerticalAlignment" Value="2" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#B31E1E1E" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Name" Value="HorizontalInlineTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="2" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Margin" Value="0,4,0,0" />
+                  <Property Name="Name" Value="BottomTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="VerticalAlignment" Value="0" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                  <Property Name="Background" Value="#FF76B9ED" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="BorderThickness" Value="1,1,1,1" />
+                  <Property Name="CornerRadius" Value="4,4,4,4" />
+                  <Property Name="DataContext" Value="50" />
+                  <Property Name="FocusVisualMargin" Value="-14,-6,-14,-6" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.Row" Value="0" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Height" Value="18" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Name" Value="HorizontalThumb" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                  <Property Name="Width" Value="18" />
+                </Element>
+              </Element>
+              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                <Property Name="ActualHeight" Value="277" />
+                <Property Name="ActualWidth" Value="62" />
+                <Property Name="MinWidth" Value="32" />
+                <Property Name="Name" Value="VerticalTemplate" />
+                <Property Name="RenderSize" Value="62x277" />
+                <Property Name="Visibility" Value="0" />
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="277" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Name" Value="VerticalTrackRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="4x277" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="130" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#FF76B9ED" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.Row" Value="2" />
+                  <Property Name="Height" Value="130" />
+                  <Property Name="Name" Value="VerticalDecreaseRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="4x130" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="HorizontalAlignment" Value="2" />
+                  <Property Name="Margin" Value="0,0,4,0" />
+                  <Property Name="Name" Value="LeftTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="277" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#B31E1E1E" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Name" Value="VerticalInlineTickBar" />
+                  <Property Name="RenderSize" Value="4x277" />
+                  <Property Name="Visibility" Value="0" />
+                  <Property Name="Width" Value="4" />
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#B31E1E1E" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#B31E1E1E" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#B31E1E1E" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#B31E1E1E" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#B31E1E1E" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#B31E1E1E" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#B31E1E1E" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#B31E1E1E" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#B31E1E1E" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#B31E1E1E" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#B31E1E1E" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.Column" Value="2" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="HorizontalAlignment" Value="0" />
+                  <Property Name="Margin" Value="4,0,0,0" />
+                  <Property Name="Name" Value="RightTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+                  <Property Name="ActualHeight" Value="18" />
+                  <Property Name="ActualWidth" Value="18" />
+                  <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                  <Property Name="Background" Value="#FF76B9ED" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="BorderThickness" Value="1,1,1,1" />
+                  <Property Name="CornerRadius" Value="4,4,4,4" />
+                  <Property Name="DataContext" Value="50" />
+                  <Property Name="FocusVisualMargin" Value="-6,-14,-6,-14" />
+                  <Property Name="Grid.Column" Value="0" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="18" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Name" Value="VerticalThumb" />
+                  <Property Name="RenderSize" Value="18x18" />
+                  <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                  <Property Name="Width" Value="18" />
+                  <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                    <Property Name="ActualHeight" Value="22" />
+                    <Property Name="ActualWidth" Value="22" />
+                    <Property Name="Background" Value="#FF454545" />
+                    <Property Name="BorderBrush" Value="[Microsoft.UI.Xaml.Media.LinearGradientBrush]" />
+                    <Property Name="BorderThickness" Value="1,1,1,1" />
+                    <Property Name="Child" Value="[Microsoft.UI.Xaml.Shapes.Ellipse]" />
+                    <Property Name="CornerRadius" Value="10,10,10,10" />
+                    <Property Name="Margin" Value="-2,-2,-2,-2" />
+                    <Property Name="RenderSize" Value="22x22" />
+                    <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+                      <Property Name="ActualHeight" Value="12" />
+                      <Property Name="ActualWidth" Value="12" />
+                      <Property Name="Fill" Value="#FF76B9ED" />
+                      <Property Name="Height" Value="12" />
+                      <Property Name="Name" Value="SliderInnerThumb" />
+                      <Property Name="RenderSize" Value="12x12" />
+                      <Property Name="RenderTransform" Value="CompositeTransform( ScaleX=0.86  ScaleY=0.86 )" />
+                      <Property Name="RenderTransformOrigin" Value="0.5,0.5" />
+                      <Property Name="Width" Value="12" />
+                    </Element>
+                  </Element>
+                </Element>
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+        <Element Type="Microsoft.UI.Xaml.Controls.Slider">
+          <Property Name="ActualHeight" Value="300" />
+          <Property Name="ActualWidth" Value="77" />
+          <Property Name="Background" Value="#8BFFFFFF" />
+          <Property Name="BorderBrush" Value="[Microsoft.UI.Xaml.Media.LinearGradientBrush]" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="2,2,2,2" />
+          <Property Name="FocusVisualMargin" Value="-7,0,-7,0" />
+          <Property Name="FontFamily" Value="Segoe UI" />
+          <Property Name="FontSize" Value="14" />
+          <Property Name="Foreground" Value="#FF76B9ED" />
+          <Property Name="Header" Value="Tick Outside" />
+          <Property Name="IntermediateValue" Value="50" />
+          <Property Name="IsFocusEngagementEnabled" Value="True" />
+          <Property Name="ManipulationMode" Value="0" />
+          <Property Name="Orientation" Value="0" />
+          <Property Name="RenderSize" Value="77x300" />
+          <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+          <Property Name="TickFrequency" Value="10" />
+          <Property Name="TickPlacement" Value="3" />
+          <Property Name="UseSystemFocusVisuals" Value="True" />
+          <Property Name="Value" Value="50" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="300" />
+            <Property Name="ActualWidth" Value="77" />
+            <Property Name="Margin" Value="0,0,0,0" />
+            <Property Name="RenderSize" Value="77x300" />
+            <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+              <Property Name="ActualHeight" Value="19" />
+              <Property Name="ActualWidth" Value="77" />
+              <Property Name="Content" Value="Tick Outside" />
+              <Property Name="ContentTemplate" Value="[NULL]" />
+              <Property Name="DataContext" Value="Tick Outside" />
+              <Property Name="FontWeight" Value="400" />
+              <Property Name="Foreground" Value="#FFFFFFFF" />
+              <Property Name="Grid.Row" Value="0" />
+              <Property Name="Margin" Value="0,0,0,4" />
+              <Property Name="Name" Value="HeaderContentPresenter" />
+              <Property Name="RenderSize" Value="77x19" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="Visibility" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                <Property Name="ActualHeight" Value="18.6211" />
+                <Property Name="ActualWidth" Value="76.1045" />
+                <Property Name="HorizontalAlignment" Value="0" />
+                <Property Name="RenderSize" Value="77x19" />
+                <Property Name="Text" Value="Tick Outside" />
+                <Property Name="TextWrapping" Value="2" />
+                <Property Name="VerticalAlignment" Value="0" />
+                <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                  <Property Name="Text" Value="Tick Outside" />
+                </Element>
+              </Element>
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="277" />
+              <Property Name="ActualWidth" Value="77" />
+              <Property Name="Control.IsTemplateFocusTarget" Value="True" />
+              <Property Name="CornerRadius" Value="4,4,4,4" />
+              <Property Name="Grid.Row" Value="1" />
+              <Property Name="Name" Value="FocusBorder" />
+              <Property Name="RenderSize" Value="77x277" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+              <Property Name="ActualHeight" Value="277" />
+              <Property Name="ActualWidth" Value="77" />
+              <Property Name="Background" Value="#00FFFFFF" />
+              <Property Name="Grid.Row" Value="1" />
+              <Property Name="Name" Value="SliderContainer" />
+              <Property Name="RenderSize" Value="77x277" />
+              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                <Property Name="ActualHeight" Value="0" />
+                <Property Name="ActualWidth" Value="0" />
+                <Property Name="MinHeight" Value="32" />
+                <Property Name="Name" Value="HorizontalTemplate" />
+                <Property Name="RenderSize" Value="0x0" />
+                <Property Name="Visibility" Value="1" />
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Name" Value="HorizontalTrackRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="0x0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#FF76B9ED" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Name" Value="HorizontalDecreaseRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="0x0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Margin" Value="0,0,0,4" />
+                  <Property Name="Name" Value="TopTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="VerticalAlignment" Value="2" />
+                  <Property Name="Visibility" Value="0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#B31E1E1E" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Name" Value="HorizontalInlineTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="2" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Margin" Value="0,4,0,0" />
+                  <Property Name="Name" Value="BottomTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="VerticalAlignment" Value="0" />
+                  <Property Name="Visibility" Value="0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                  <Property Name="Background" Value="#FF76B9ED" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="BorderThickness" Value="1,1,1,1" />
+                  <Property Name="CornerRadius" Value="4,4,4,4" />
+                  <Property Name="DataContext" Value="50" />
+                  <Property Name="FocusVisualMargin" Value="-14,-6,-14,-6" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.Row" Value="0" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Height" Value="18" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Name" Value="HorizontalThumb" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                  <Property Name="Width" Value="18" />
+                </Element>
+              </Element>
+              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                <Property Name="ActualHeight" Value="277" />
+                <Property Name="ActualWidth" Value="77" />
+                <Property Name="MinWidth" Value="32" />
+                <Property Name="Name" Value="VerticalTemplate" />
+                <Property Name="RenderSize" Value="77x277" />
+                <Property Name="Visibility" Value="0" />
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="277" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Name" Value="VerticalTrackRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="4x277" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="130" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#FF76B9ED" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.Row" Value="2" />
+                  <Property Name="Height" Value="130" />
+                  <Property Name="Name" Value="VerticalDecreaseRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="4x130" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="277" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="HorizontalAlignment" Value="2" />
+                  <Property Name="Margin" Value="0,0,4,0" />
+                  <Property Name="Name" Value="LeftTickBar" />
+                  <Property Name="RenderSize" Value="4x277" />
+                  <Property Name="Visibility" Value="0" />
+                  <Property Name="Width" Value="4" />
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#B31E1E1E" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Name" Value="VerticalInlineTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="277" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.Column" Value="2" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="HorizontalAlignment" Value="0" />
+                  <Property Name="Margin" Value="4,0,0,0" />
+                  <Property Name="Name" Value="RightTickBar" />
+                  <Property Name="RenderSize" Value="4x277" />
+                  <Property Name="Visibility" Value="0" />
+                  <Property Name="Width" Value="4" />
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+                  <Property Name="ActualHeight" Value="18" />
+                  <Property Name="ActualWidth" Value="18" />
+                  <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                  <Property Name="Background" Value="#FF76B9ED" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="BorderThickness" Value="1,1,1,1" />
+                  <Property Name="CornerRadius" Value="4,4,4,4" />
+                  <Property Name="DataContext" Value="50" />
+                  <Property Name="FocusVisualMargin" Value="-6,-14,-6,-14" />
+                  <Property Name="Grid.Column" Value="0" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="18" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Name" Value="VerticalThumb" />
+                  <Property Name="RenderSize" Value="18x18" />
+                  <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                  <Property Name="Width" Value="18" />
+                  <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                    <Property Name="ActualHeight" Value="22" />
+                    <Property Name="ActualWidth" Value="22" />
+                    <Property Name="Background" Value="#FF454545" />
+                    <Property Name="BorderBrush" Value="[Microsoft.UI.Xaml.Media.LinearGradientBrush]" />
+                    <Property Name="BorderThickness" Value="1,1,1,1" />
+                    <Property Name="Child" Value="[Microsoft.UI.Xaml.Shapes.Ellipse]" />
+                    <Property Name="CornerRadius" Value="10,10,10,10" />
+                    <Property Name="Margin" Value="-2,-2,-2,-2" />
+                    <Property Name="RenderSize" Value="22x22" />
+                    <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+                      <Property Name="ActualHeight" Value="12" />
+                      <Property Name="ActualWidth" Value="12" />
+                      <Property Name="Fill" Value="#FF76B9ED" />
+                      <Property Name="Height" Value="12" />
+                      <Property Name="Name" Value="SliderInnerThumb" />
+                      <Property Name="RenderSize" Value="12x12" />
+                      <Property Name="RenderTransform" Value="CompositeTransform( ScaleX=0.86  ScaleY=0.86 )" />
+                      <Property Name="RenderTransformOrigin" Value="0.5,0.5" />
+                      <Property Name="Width" Value="12" />
+                    </Element>
+                  </Element>
+                </Element>
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+        <Element Type="Microsoft.UI.Xaml.Controls.Slider">
+          <Property Name="ActualHeight" Value="300" />
+          <Property Name="ActualWidth" Value="80" />
+          <Property Name="Background" Value="#8BFFFFFF" />
+          <Property Name="BorderBrush" Value="[Microsoft.UI.Xaml.Media.LinearGradientBrush]" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="2,2,2,2" />
+          <Property Name="FocusVisualMargin" Value="-7,0,-7,0" />
+          <Property Name="FontFamily" Value="Segoe UI" />
+          <Property Name="FontSize" Value="14" />
+          <Property Name="Foreground" Value="#FF76B9ED" />
+          <Property Name="Header" Value="Ticks TopLeft" />
+          <Property Name="IsFocusEngagementEnabled" Value="True" />
+          <Property Name="ManipulationMode" Value="0" />
+          <Property Name="Orientation" Value="0" />
+          <Property Name="RenderSize" Value="80x300" />
+          <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+          <Property Name="TickFrequency" Value="10" />
+          <Property Name="TickPlacement" Value="1" />
+          <Property Name="UseSystemFocusVisuals" Value="True" />
+          <Property Name="Value" Value="0" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="300" />
+            <Property Name="ActualWidth" Value="80" />
+            <Property Name="Margin" Value="0,0,0,0" />
+            <Property Name="RenderSize" Value="80x300" />
+            <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+              <Property Name="ActualHeight" Value="19" />
+              <Property Name="ActualWidth" Value="80" />
+              <Property Name="Content" Value="Ticks TopLeft" />
+              <Property Name="ContentTemplate" Value="[NULL]" />
+              <Property Name="DataContext" Value="Ticks TopLeft" />
+              <Property Name="FontWeight" Value="400" />
+              <Property Name="Foreground" Value="#FFFFFFFF" />
+              <Property Name="Grid.Row" Value="0" />
+              <Property Name="Margin" Value="0,0,0,4" />
+              <Property Name="Name" Value="HeaderContentPresenter" />
+              <Property Name="RenderSize" Value="80x19" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="Visibility" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                <Property Name="ActualHeight" Value="18.6211" />
+                <Property Name="ActualWidth" Value="79.3652" />
+                <Property Name="HorizontalAlignment" Value="0" />
+                <Property Name="RenderSize" Value="80x19" />
+                <Property Name="Text" Value="Ticks TopLeft" />
+                <Property Name="TextWrapping" Value="2" />
+                <Property Name="VerticalAlignment" Value="0" />
+                <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                  <Property Name="Text" Value="Ticks TopLeft" />
+                </Element>
+              </Element>
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="277" />
+              <Property Name="ActualWidth" Value="80" />
+              <Property Name="Control.IsTemplateFocusTarget" Value="True" />
+              <Property Name="CornerRadius" Value="4,4,4,4" />
+              <Property Name="Grid.Row" Value="1" />
+              <Property Name="Name" Value="FocusBorder" />
+              <Property Name="RenderSize" Value="80x277" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+              <Property Name="ActualHeight" Value="277" />
+              <Property Name="ActualWidth" Value="80" />
+              <Property Name="Background" Value="#00FFFFFF" />
+              <Property Name="Grid.Row" Value="1" />
+              <Property Name="Name" Value="SliderContainer" />
+              <Property Name="RenderSize" Value="80x277" />
+              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                <Property Name="ActualHeight" Value="0" />
+                <Property Name="ActualWidth" Value="0" />
+                <Property Name="MinHeight" Value="32" />
+                <Property Name="Name" Value="HorizontalTemplate" />
+                <Property Name="RenderSize" Value="0x0" />
+                <Property Name="Visibility" Value="1" />
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Name" Value="HorizontalTrackRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="0x0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#FF76B9ED" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Name" Value="HorizontalDecreaseRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="0x0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Margin" Value="0,0,0,4" />
+                  <Property Name="Name" Value="TopTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="VerticalAlignment" Value="2" />
+                  <Property Name="Visibility" Value="0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#B31E1E1E" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Name" Value="HorizontalInlineTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="2" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Margin" Value="0,4,0,0" />
+                  <Property Name="Name" Value="BottomTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="VerticalAlignment" Value="0" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                  <Property Name="Background" Value="#FF76B9ED" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="BorderThickness" Value="1,1,1,1" />
+                  <Property Name="CornerRadius" Value="4,4,4,4" />
+                  <Property Name="DataContext" Value="0" />
+                  <Property Name="FocusVisualMargin" Value="-14,-6,-14,-6" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.Row" Value="0" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Height" Value="18" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Name" Value="HorizontalThumb" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                  <Property Name="Width" Value="18" />
+                </Element>
+              </Element>
+              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                <Property Name="ActualHeight" Value="277" />
+                <Property Name="ActualWidth" Value="80" />
+                <Property Name="MinWidth" Value="32" />
+                <Property Name="Name" Value="VerticalTemplate" />
+                <Property Name="RenderSize" Value="80x277" />
+                <Property Name="Visibility" Value="0" />
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="277" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Name" Value="VerticalTrackRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="4x277" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#FF76B9ED" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.Row" Value="2" />
+                  <Property Name="Height" Value="0" />
+                  <Property Name="Name" Value="VerticalDecreaseRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="4x0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="277" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="HorizontalAlignment" Value="2" />
+                  <Property Name="Margin" Value="0,0,4,0" />
+                  <Property Name="Name" Value="LeftTickBar" />
+                  <Property Name="RenderSize" Value="4x277" />
+                  <Property Name="Visibility" Value="0" />
+                  <Property Name="Width" Value="4" />
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#B31E1E1E" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Name" Value="VerticalInlineTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.Column" Value="2" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="HorizontalAlignment" Value="0" />
+                  <Property Name="Margin" Value="4,0,0,0" />
+                  <Property Name="Name" Value="RightTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+                  <Property Name="ActualHeight" Value="18" />
+                  <Property Name="ActualWidth" Value="18" />
+                  <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                  <Property Name="Background" Value="#FF76B9ED" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="BorderThickness" Value="1,1,1,1" />
+                  <Property Name="CornerRadius" Value="4,4,4,4" />
+                  <Property Name="DataContext" Value="0" />
+                  <Property Name="FocusVisualMargin" Value="-6,-14,-6,-14" />
+                  <Property Name="Grid.Column" Value="0" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="18" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Name" Value="VerticalThumb" />
+                  <Property Name="RenderSize" Value="18x18" />
+                  <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                  <Property Name="Width" Value="18" />
+                  <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                    <Property Name="ActualHeight" Value="22" />
+                    <Property Name="ActualWidth" Value="22" />
+                    <Property Name="Background" Value="#FF454545" />
+                    <Property Name="BorderBrush" Value="[Microsoft.UI.Xaml.Media.LinearGradientBrush]" />
+                    <Property Name="BorderThickness" Value="1,1,1,1" />
+                    <Property Name="Child" Value="[Microsoft.UI.Xaml.Shapes.Ellipse]" />
+                    <Property Name="CornerRadius" Value="10,10,10,10" />
+                    <Property Name="Margin" Value="-2,-2,-2,-2" />
+                    <Property Name="RenderSize" Value="22x22" />
+                    <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+                      <Property Name="ActualHeight" Value="12" />
+                      <Property Name="ActualWidth" Value="12" />
+                      <Property Name="Fill" Value="#FF76B9ED" />
+                      <Property Name="Height" Value="12" />
+                      <Property Name="Name" Value="SliderInnerThumb" />
+                      <Property Name="RenderSize" Value="12x12" />
+                      <Property Name="RenderTransform" Value="CompositeTransform( ScaleX=0.86  ScaleY=0.86 )" />
+                      <Property Name="RenderTransformOrigin" Value="0.5,0.5" />
+                      <Property Name="Width" Value="12" />
+                    </Element>
+                  </Element>
+                </Element>
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+        <Element Type="Microsoft.UI.Xaml.Controls.Slider">
+          <Property Name="ActualHeight" Value="300" />
+          <Property Name="ActualWidth" Value="113" />
+          <Property Name="Background" Value="#8BFFFFFF" />
+          <Property Name="BorderBrush" Value="[Microsoft.UI.Xaml.Media.LinearGradientBrush]" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="2,2,2,2" />
+          <Property Name="FocusVisualMargin" Value="-7,0,-7,0" />
+          <Property Name="FontFamily" Value="Segoe UI" />
+          <Property Name="FontSize" Value="14" />
+          <Property Name="Foreground" Value="#FF76B9ED" />
+          <Property Name="Header" Value="Ticks BottomRight" />
+          <Property Name="IntermediateValue" Value="100" />
+          <Property Name="IsFocusEngagementEnabled" Value="True" />
+          <Property Name="ManipulationMode" Value="0" />
+          <Property Name="Orientation" Value="0" />
+          <Property Name="RenderSize" Value="113x300" />
+          <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+          <Property Name="TickFrequency" Value="10" />
+          <Property Name="TickPlacement" Value="2" />
+          <Property Name="UseSystemFocusVisuals" Value="True" />
+          <Property Name="Value" Value="100" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="300" />
+            <Property Name="ActualWidth" Value="113" />
+            <Property Name="Margin" Value="0,0,0,0" />
+            <Property Name="RenderSize" Value="113x300" />
+            <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+              <Property Name="ActualHeight" Value="19" />
+              <Property Name="ActualWidth" Value="113" />
+              <Property Name="Content" Value="Ticks BottomRight" />
+              <Property Name="ContentTemplate" Value="[NULL]" />
+              <Property Name="DataContext" Value="Ticks BottomRight" />
+              <Property Name="FontWeight" Value="400" />
+              <Property Name="Foreground" Value="#FFFFFFFF" />
+              <Property Name="Grid.Row" Value="0" />
+              <Property Name="Margin" Value="0,0,0,4" />
+              <Property Name="Name" Value="HeaderContentPresenter" />
+              <Property Name="RenderSize" Value="113x19" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="Visibility" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                <Property Name="ActualHeight" Value="18.6211" />
+                <Property Name="ActualWidth" Value="112.581" />
+                <Property Name="HorizontalAlignment" Value="0" />
+                <Property Name="RenderSize" Value="113x19" />
+                <Property Name="Text" Value="Ticks BottomRight" />
+                <Property Name="TextWrapping" Value="2" />
+                <Property Name="VerticalAlignment" Value="0" />
+                <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                  <Property Name="Text" Value="Ticks BottomRight" />
+                </Element>
+              </Element>
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="277" />
+              <Property Name="ActualWidth" Value="113" />
+              <Property Name="Control.IsTemplateFocusTarget" Value="True" />
+              <Property Name="CornerRadius" Value="4,4,4,4" />
+              <Property Name="Grid.Row" Value="1" />
+              <Property Name="Name" Value="FocusBorder" />
+              <Property Name="RenderSize" Value="113x277" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+              <Property Name="ActualHeight" Value="277" />
+              <Property Name="ActualWidth" Value="113" />
+              <Property Name="Background" Value="#00FFFFFF" />
+              <Property Name="Grid.Row" Value="1" />
+              <Property Name="Name" Value="SliderContainer" />
+              <Property Name="RenderSize" Value="113x277" />
+              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                <Property Name="ActualHeight" Value="0" />
+                <Property Name="ActualWidth" Value="0" />
+                <Property Name="MinHeight" Value="32" />
+                <Property Name="Name" Value="HorizontalTemplate" />
+                <Property Name="RenderSize" Value="0x0" />
+                <Property Name="Visibility" Value="1" />
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Name" Value="HorizontalTrackRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="0x0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#FF76B9ED" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Name" Value="HorizontalDecreaseRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="0x0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Margin" Value="0,0,0,4" />
+                  <Property Name="Name" Value="TopTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="VerticalAlignment" Value="2" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#B31E1E1E" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Name" Value="HorizontalInlineTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="2" />
+                  <Property Name="Height" Value="4" />
+                  <Property Name="Margin" Value="0,4,0,0" />
+                  <Property Name="Name" Value="BottomTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="VerticalAlignment" Value="0" />
+                  <Property Name="Visibility" Value="0" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                  <Property Name="Background" Value="#FF76B9ED" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="BorderThickness" Value="1,1,1,1" />
+                  <Property Name="CornerRadius" Value="4,4,4,4" />
+                  <Property Name="DataContext" Value="100" />
+                  <Property Name="FocusVisualMargin" Value="-14,-6,-14,-6" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.Row" Value="0" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Height" Value="18" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Name" Value="HorizontalThumb" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                  <Property Name="Width" Value="18" />
+                </Element>
+              </Element>
+              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                <Property Name="ActualHeight" Value="277" />
+                <Property Name="ActualWidth" Value="113" />
+                <Property Name="MinWidth" Value="32" />
+                <Property Name="Name" Value="VerticalTemplate" />
+                <Property Name="RenderSize" Value="113x277" />
+                <Property Name="Visibility" Value="0" />
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="277" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Name" Value="VerticalTrackRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="4x277" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                  <Property Name="ActualHeight" Value="259" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#FF76B9ED" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.Row" Value="2" />
+                  <Property Name="Height" Value="259" />
+                  <Property Name="Name" Value="VerticalDecreaseRect" />
+                  <Property Name="RadiusX" Value="2" />
+                  <Property Name="RadiusY" Value="2" />
+                  <Property Name="RenderSize" Value="4x259" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="HorizontalAlignment" Value="2" />
+                  <Property Name="Margin" Value="0,0,4,0" />
+                  <Property Name="Name" Value="LeftTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Fill" Value="#B31E1E1E" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="Name" Value="VerticalInlineTickBar" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                  <Property Name="Width" Value="4" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                  <Property Name="ActualHeight" Value="277" />
+                  <Property Name="ActualWidth" Value="4" />
+                  <Property Name="Fill" Value="#8BFFFFFF" />
+                  <Property Name="Grid.Column" Value="2" />
+                  <Property Name="Grid.RowSpan" Value="3" />
+                  <Property Name="HorizontalAlignment" Value="0" />
+                  <Property Name="Margin" Value="4,0,0,0" />
+                  <Property Name="Name" Value="RightTickBar" />
+                  <Property Name="RenderSize" Value="4x277" />
+                  <Property Name="Visibility" Value="0" />
+                  <Property Name="Width" Value="4" />
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="1" />
+                    <Property Name="ActualWidth" Value="4" />
+                    <Property Name="Fill" Value="#8BFFFFFF" />
+                    <Property Name="Height" Value="1" />
+                    <Property Name="RenderSize" Value="4x1" />
+                    <Property Name="Width" Value="4" />
+                  </Element>
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+                  <Property Name="ActualHeight" Value="18" />
+                  <Property Name="ActualWidth" Value="18" />
+                  <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                  <Property Name="Background" Value="#FF76B9ED" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="BorderThickness" Value="1,1,1,1" />
+                  <Property Name="CornerRadius" Value="4,4,4,4" />
+                  <Property Name="DataContext" Value="100" />
+                  <Property Name="FocusVisualMargin" Value="-6,-14,-6,-14" />
+                  <Property Name="Grid.Column" Value="0" />
+                  <Property Name="Grid.ColumnSpan" Value="3" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Height" Value="18" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Name" Value="VerticalThumb" />
+                  <Property Name="RenderSize" Value="18x18" />
+                  <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                  <Property Name="Width" Value="18" />
+                  <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                    <Property Name="ActualHeight" Value="22" />
+                    <Property Name="ActualWidth" Value="22" />
+                    <Property Name="Background" Value="#FF454545" />
+                    <Property Name="BorderBrush" Value="[Microsoft.UI.Xaml.Media.LinearGradientBrush]" />
+                    <Property Name="BorderThickness" Value="1,1,1,1" />
+                    <Property Name="Child" Value="[Microsoft.UI.Xaml.Shapes.Ellipse]" />
+                    <Property Name="CornerRadius" Value="10,10,10,10" />
+                    <Property Name="Margin" Value="-2,-2,-2,-2" />
+                    <Property Name="RenderSize" Value="22x22" />
+                    <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+                      <Property Name="ActualHeight" Value="12" />
+                      <Property Name="ActualWidth" Value="12" />
+                      <Property Name="Fill" Value="#FF76B9ED" />
+                      <Property Name="Height" Value="12" />
+                      <Property Name="Name" Value="SliderInnerThumb" />
+                      <Property Name="RenderSize" Value="12x12" />
+                      <Property Name="RenderTransform" Value="CompositeTransform( ScaleX=0.86  ScaleY=0.86 )" />
+                      <Property Name="RenderTransformOrigin" Value="0.5,0.5" />
+                      <Property Name="Width" Value="12" />
+                    </Element>
+                  </Element>
+                </Element>
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+    </Element>
+  </VisualRoot>
+</VisualTreeDump>

@@ -1,0 +1,115 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page
+    x:Class="Tests.Native.External.Framework.XDefer.CustomPageNested"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local='using:Tests.Native.External.Framework.XDefer'>
+    
+    <Page.Resources>
+        <SolidColorBrush x:Key="pageBrush" Color="Red"/>
+        
+        <DataTemplate x:Key="dataTemplate">
+            <Border x:Name="level0Border">
+                <Border.Resources>
+                    <SolidColorBrush x:Key="borderBrush" Color="Green"/>
+                    <x:Double x:Key="borderOpacity">0.5</x:Double>
+                </Border.Resources>
+                    
+                <Grid x:Name="level1Grid"
+                      x:DeferLoadStrategy="Lazy"
+                      Opacity="{StaticResource borderOpacity}"
+                      Background="{StaticResource pageBrush}"
+                      Tag="{Binding}">
+                    <Grid.Resources>
+                        <SolidColorBrush x:Key="buttonBrush" Color="Blue"/>
+                    </Grid.Resources>
+
+                    <Button x:Name="level2Button"
+                            x:DeferLoadStrategy="Lazy"
+                            Background="{StaticResource buttonBrush}"
+                            BorderBrush="{StaticResource borderBrush}"
+                            Foreground="{StaticResource pageBrush}"
+                            Content="{Binding}"/>
+                            
+                    <Rectangle x:Name="Nondeferred"/>
+                </Grid>
+            </Border>        
+        </DataTemplate>
+        
+        <ControlTemplate x:Key="controlTemplate" TargetType="local:CustomControl">
+            <Border x:Name="level0Border">
+                <Border.Resources>
+                    <SolidColorBrush x:Key="borderBrush" Color="Green"/>
+                    <x:Double x:Key="borderOpacity">0.5</x:Double>
+                </Border.Resources>
+                    
+                <Grid x:Name="level1Grid"
+                      x:DeferLoadStrategy="Lazy"
+                      Opacity="{StaticResource borderOpacity}"
+                      Background="{StaticResource pageBrush}"
+                      Tag="{TemplateBinding Content}">
+                    <Grid.Resources>
+                        <SolidColorBrush x:Key="buttonBrush" Color="Blue"/>
+                    </Grid.Resources>
+
+                    <Button x:Name="level2Button"
+                            x:DeferLoadStrategy="Lazy"
+                            Background="{StaticResource buttonBrush}"
+                            BorderBrush="{StaticResource borderBrush}"
+                            Foreground="{StaticResource pageBrush}"
+                            Content="{TemplateBinding Content}"/>
+
+                    <Rectangle x:Name="Nondeferred"/>
+                </Grid>
+            </Border>
+        </ControlTemplate>
+    </Page.Resources>
+
+    <StackPanel x:Name="topLevelStackPanel">
+        <Border x:Name="level0Border"
+                x:DeferLoadStrategy="Lazy">
+            <Border.Resources>
+                <SolidColorBrush x:Key="borderBrush" Color="Green"/>
+                <x:Double x:Key="borderOpacity">0.5</x:Double>
+            </Border.Resources>
+                
+            <Grid x:Name="level1Grid"
+                  x:DeferLoadStrategy="Lazy"
+                  Loaded="level1Grid_Loaded"
+                  Unloaded="level1Grid_Unloaded"
+                  Opacity="{StaticResource borderOpacity}"
+                  Background="{StaticResource pageBrush}"
+                  Tag="{Binding}">
+                <Grid.Resources>
+                    <SolidColorBrush x:Key="buttonBrush" Color="Blue"/>
+                </Grid.Resources>
+
+                <Button x:Name="level2Button"
+                        x:DeferLoadStrategy="Lazy"
+                        Loaded="level2Button_Loaded"
+                        Unloaded="level2Button_Unloaded"
+                        Background="{StaticResource buttonBrush}"
+                        BorderBrush="{StaticResource borderBrush}"
+                        Foreground="{StaticResource pageBrush}"
+                        Content="{Binding}"/>
+                        
+                <Rectangle x:Name="Nondeferred"/>
+            </Grid>
+        </Border>
+        
+        <ContentControl x:Name="contentControl"
+                        x:DeferLoadStrategy="Lazy"
+                        ContentTemplate="{StaticResource dataTemplate}"
+                        Content="{Binding}"/>
+                        
+        <local:CustomControl x:Name="customControl"
+                             x:DeferLoadStrategy="Lazy"
+                             Tag="hello world!"
+                             Template="{StaticResource controlTemplate}"
+                             Content="{Binding}"/>
+
+        <local:CustomControl x:Name="customControl2"
+                             Template="{StaticResource controlTemplate}"
+                             Content="Happy Birthday!" />
+    </StackPanel>
+</Page>

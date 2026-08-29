@@ -1,0 +1,377 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<!-- 
+//
+// Copyright (c) Microsoft Corporation. All Rights Reserved.
+//
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
+    xmlns:animation="using:Microsoft.UI.Xaml.Media.Animation"
+    xmlns:maps="using:Microsoft.UI.Xaml.Controls.Maps">
+    <!-- 
+    ******************************************************************
+    DEFAULT COMMON CONTROL PROPERTIES
+    ******************************************************************
+    -->
+    <!-- THEME RESOURCES -->
+        
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <!-- Even though PhoneBaseBlackColor and PhoneBaseWhiteColor do not vary with themes, they should not be moved
+                 because other resources reference them using the ThemeResource markup. -->
+            <Color x:Key="PhoneBaseBlackColor">#FF000000</Color>
+            <Color x:Key="PhoneBaseWhiteColor">#FFFFFFFF</Color>
+            <Color x:Key="PhoneBackgroundColor">#FF000000</Color>
+            <Color x:Key="PhoneDisabledColor">#66FFFFFF</Color>
+            <Color x:Key="PhoneForegroundColor">#FFFFFFFF</Color>
+            <Color x:Key="PhonePageBackgroundColor">#FF000000</Color>
+            <Color x:Key="PhoneTextHighColor">#FFFFFFFF</Color>
+            <Color x:Key="PhoneTextMidColor">#99FFFFFF</Color>
+            <Color x:Key="PhoneTextLowColor">#73FFFFFF</Color>
+            <Color x:Key="PhoneTextOverAccentColor">#FFFFFFFF</Color>
+            <Color x:Key="PhoneBaseHighColor">#FFFFFFFF</Color>
+            <Color x:Key="PhoneBaseMediumHighColor">#CCFFFFFF</Color>
+            <Color x:Key="PhoneBaseMidColor">#99FFFFFF</Color>
+            <Color x:Key="PhoneBaseMediumMidColor">#80FFFFFF</Color>
+            <Color x:Key="PhoneBaseMediumMidSolidColor">#FF666666</Color>
+            <Color x:Key="PhoneBaseLowColor">#73FFFFFF</Color>
+            <Color x:Key="PhoneBaseLowSolidColor">#FF747474</Color>
+            <Color x:Key="PhoneImagePlaceholderColor">#FF3D3D3D</Color>
+            <Color x:Key="PhoneChromeColor">#FF1F1F1F</Color>
+            <Color x:Key="PhoneControlBackgroundColor">Transparent</Color>
+            <Color x:Key="PhoneControlDisabledColor">#66FFFFFF</Color>
+            <Color x:Key="PhoneControlForegroundColor">#FFFFFFFF</Color>
+            <Color x:Key="TextBoxBackgroundColor">#FFFFFFFF</Color>
+            <Color x:Key="TextBoxBorderColor">#FFFFFFFF</Color>
+            <Color x:Key="TextBoxForegroundColor">#FF000000</Color>
+            <Color x:Key="TextBoxPlaceholderColor">#FF909090</Color>
+            <Color x:Key="ContentDialogDimmingColor">#99000000</Color>
+            <SolidColorBrush x:Key="AutoSuggestBackgroundThemeBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="DefaultTextForegroundThemeBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="SliderThumbBackgroundThemeBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="SliderThumbDisabledBackgroundThemeBrush" Color="#FF999999" />
+            <SolidColorBrush x:Key="SliderThumbDisabledBorderThemeBrush" Color="#FF999999" />
+            <SolidColorBrush x:Key="SliderTrackBackgroundThemeBrush" Color="#FF1F1F1F" />
+            <SolidColorBrush x:Key="SliderTrackBorderThemeBrush" Color="#FF1F1F1F" />
+            <SolidColorBrush x:Key="SliderTrackDisabledBackgroundThemeBrush" Color="#FF1F1F1F" />
+            <SolidColorBrush x:Key="SliderTrackDisabledBorderThemeBrush" Color="#FF1F1F1F" />
+            <SolidColorBrush x:Key="SliderTrackDecreaseDisabledBackgroundThemeBrush" Color="#FF666666" />
+            <SolidColorBrush x:Key="TextBoxFocusedBackgroundThemeBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="LoopingSelectorForegroundThemeBrush" Color="#73FFFFFF" />
+            <SolidColorBrush x:Key="PhoneHighContrastSelectedForegroundThemeBrush" Color="{ThemeResource SystemColorControlAccentColor}" />
+            <SolidColorBrush x:Key="PhoneHighContrastSelectedBackgroundThemeBrush" Color="#00000000" />
+            <SolidColorBrush x:Key="JumpListDefaultEnabledForeground" Color="{ThemeResource PhoneTextOverAccentColor}" />
+            <SolidColorBrush x:Key="JumpListDefaultEnabledBackground" Color="{ThemeResource SystemColorControlAccentColor}" />
+            <SolidColorBrush x:Key="JumpListDefaultDisabledForeground" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="JumpListDefaultDisabledBackground" Color="#FF1F1F1F" />
+            <SolidColorBrush x:Key="ComboBoxHighlightedBackgroundThemeBrush" Color="#FFFFFFFF" />
+            <SolidColorBrush x:Key="ComboBoxHighlightedForegroundThemeBrush" Color="#FF000000" />
+            <x:Double x:Key="ComboBoxFlyoutListPlaceholderTextOpacity">0.6</x:Double>
+            <SolidColorBrush x:Key="ListPickerFlyoutPresenterSelectedItemForegroundThemeBrush" Color="{ThemeResource SystemColorControlAccentColor}" />
+            <SolidColorBrush x:Key="ListPickerFlyoutPresenterSelectedItemBackgroundThemeBrush" Color="#00000000" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+           
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrastBlack">
+            
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrastWhite">          
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+    <!-- 
+    COMMON THEME RESOURCES START MARKER
+    Do not edit this comment! It indicates the beginning of a section of resources that will be removed
+    from this scope and appended to each theme's ResourceDictionary.
+    -->
+    <!-- COMMON THEME RESOURCES -->
+
+    <!-- Theming global brushes -->
+    <SolidColorBrush x:Key="PhoneAccentBrush" Color="{ThemeResource SystemColorControlAccentColor}" />
+    <SolidColorBrush x:Key="PhoneChromeBrush" Color="{ThemeResource PhoneChromeColor}" />
+    <SolidColorBrush x:Key="PhoneForegroundBrush" Color="{ThemeResource PhoneForegroundColor}" />
+    <SolidColorBrush x:Key="PhoneBackgroundBrush" Color="{ThemeResource PhoneBackgroundColor}" />
+    <SolidColorBrush x:Key="PhoneDisabledBrush" Color="{ThemeResource PhoneDisabledColor}" />
+    <SolidColorBrush x:Key="PhoneButtonBasePressedForegroundBrush" Color="{ThemeResource PhoneTextOverAccentColor}" />
+    <SolidColorBrush x:Key="PhoneMidBrush" Color="{ThemeResource PhoneBaseMidColor}" />
+    <SolidColorBrush x:Key="PhoneLowBrush" Color="{ThemeResource PhoneBaseLowColor}" />
+    <SolidColorBrush x:Key="PhoneRadioCheckBoxPressedBrush" Color="{ThemeResource SystemColorControlAccentColor}" />
+    <SolidColorBrush x:Key="PhoneRadioCheckBoxBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="PhoneRadioCheckBoxCheckBrush" Color="{ThemeResource PhoneForegroundColor}" />
+    <SolidColorBrush x:Key="PhoneRadioCheckBoxBorderBrush" Color="{ThemeResource PhoneForegroundColor}" />
+    <SolidColorBrush x:Key="TextSelectionHighlightColorThemeBrush" Color="{ThemeResource SystemColorControlAccentColor}" />
+    <!-- Global font family -->
+    <FontFamily x:Key="PhoneFontFamilyNormal">Segoe UI</FontFamily>
+    <FontFamily x:Key="PhoneFontFamilyLight">Segoe UI Light</FontFamily>
+    <FontFamily x:Key="PhoneFontFamilySemiLight">Segoe UI</FontFamily>
+    <FontFamily x:Key="PhoneFontFamilySemiBold">Segoe UI Semibold</FontFamily>
+    <FontFamily x:Key="ContentControlThemeFontFamily">Segoe UI</FontFamily>
+    <!-- Global Font Size -->
+    <x:Double x:Key="TextStyleSmallFontSize">10.66</x:Double>
+    <x:Double x:Key="TextStyleMediumFontSize">16</x:Double>
+    <x:Double x:Key="TextStyleLargeFontSize">18.14</x:Double>
+    <x:Double x:Key="TextStyleExtraLargeFontSize">25.5</x:Double>
+    <x:Double x:Key="TextStyleExtraLargePlusFontSize">29.86</x:Double>
+    <x:Double x:Key="TextStyleExtraExtraLargeFontSize">34.14</x:Double>
+    <x:Double x:Key="ContentControlFontSize">20.26</x:Double>
+    <!-- Global TextControl -->
+    <x:Double x:Key="TextControlBackgroundThemeOpacity">0.8</x:Double>
+    <x:Double x:Key="TextControlBorderThemeOpacity">0.8</x:Double>
+    <x:Double x:Key="TextControlPointerOverBackgroundThemeOpacity">0.87</x:Double>
+    <x:Double x:Key="TextControlPointerOverBorderThemeOpacity">0.87</x:Double>
+    <x:Double x:Key="TextControlThemeMinHeight">34</x:Double>
+    <x:Double x:Key="TextControlThemeMinWidth">51</x:Double>
+    <x:Double x:Key="TextControlHeaderMinHeightSize">9.5</x:Double>
+    <Thickness x:Key="TextControlMarginThemeThickness">0,9.5,0,9.5</Thickness>
+    <Thickness x:Key="TextControlHeaderMarginThemeThickness">0,0,0,4.8</Thickness>
+    <Thickness x:Key="TextControlBorderThemeThickness">2.5</Thickness>
+    <Thickness x:Key="TextControlThemePadding">7,0.8,8,0</Thickness>
+    <Thickness x:Key="TextControlPlaceholderThemePadding">9.5,2.5,8,4</Thickness>
+    <!-- Global Phone values -->
+    <FontWeight x:Key="PhoneButtonFontWeight">Semibold</FontWeight>
+    <Thickness x:Key="PhoneBorderThickness">2.5</Thickness>
+    <Thickness x:Key="PhoneTouchTargetOverhang">0,9.5</Thickness>
+    <Thickness x:Key="PhoneTouchTargetLargeOverhang">0,16</Thickness>
+    <Thickness x:Key="PhoneButtonContentPadding">9.5,0,9.5,3.5</Thickness>
+    <x:Double x:Key="PhoneStrokeThickness">2.5</x:Double>
+    <x:Double x:Key="PhoneButtonMinWidth">109</x:Double>
+    <x:Double x:Key="PhoneButtonMinHeight">57.5</x:Double>
+    <!-- Application -->
+    <SolidColorBrush x:Key="ApplicationForegroundThemeBrush" Color="{ThemeResource PhoneBaseMediumHighColor}" />
+    <SolidColorBrush x:Key="ApplicationHeaderForegroundThemeBrush" Color="{ThemeResource PhoneForegroundColor}" />
+    <SolidColorBrush x:Key="ApplicationPageBackgroundThemeBrush" Color="{ThemeResource PhoneBackgroundColor}" />
+    <SolidColorBrush x:Key="ApplicationPointerOverForegroundThemeBrush" Color="{ThemeResource PhoneBaseMediumHighColor}" />
+    <SolidColorBrush x:Key="ApplicationPressedForegroundThemeBrush" Color="{ThemeResource PhoneBaseMediumMidColor}" />
+    <SolidColorBrush x:Key="ApplicationSecondaryForegroundThemeBrush" Color="{ThemeResource PhoneBaseMidColor}" />
+
+    <!-- Default style for Microsoft.UI.Xaml.Controls.TextBox -->
+    <Style TargetType="TextBox">
+        <Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}" />
+        <Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}" />
+        <Setter Property="Foreground" Value="{ThemeResource TextBoxForegroundThemeBrush}" />
+        <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextSelectionHighlightColorThemeBrush}" />
+        <Setter Property="Background" Value="{ThemeResource TextBoxBackgroundThemeBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource TextBoxBorderThemeBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderThemeThickness}" />
+        <Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilyNormal}" />
+        <Setter Property="FontSize" Value="{ThemeResource ContentControlFontSize}" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
+        <Setter Property="Padding" Value="{ThemeResource TextControlThemePadding}" />
+        <Setter Property="Margin" Value="{ThemeResource TextControlMarginThemeThickness}" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Grid Background="Transparent">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Disabled">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextBoxDisabledBackgroundThemeBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextBoxDisabledBorderThemeBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextBoxDisabledForegroundThemeBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HeaderContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextBoxDisabledHeaderForegroundThemeBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Normal">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="BorderElement"
+                                            Storyboard.TargetProperty="Opacity"
+                                            Duration="0"
+                                            To="{ThemeResource TextControlBorderThemeOpacity}" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Focused">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextSelectionHighlightColorThemeBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextBoxFocusedBackgroundThemeBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Border x:Name="BorderElement"
+                            Grid.Row="1"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" />
+                        <ContentPresenter x:Name="HeaderContentPresenter"
+                            Grid.Row="0"
+                            Style="{StaticResource HeaderContentPresenterStyle}"
+                            Margin="{ThemeResource TextControlHeaderMarginThemeThickness}"
+                            Content="{TemplateBinding Header}"
+                            ContentTemplate="{TemplateBinding HeaderTemplate}" />
+                        <ScrollViewer x:Name="ContentElement"
+                            Grid.Row="1"
+                            MinHeight="{ThemeResource TextControlThemeMinHeight}"
+                            HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                            HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                            VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                            IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
+                            IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
+                            IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                            Margin="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}"
+                            IsTabStop="False"
+                            ZoomMode="Disabled"
+                            AutomationProperties.AccessibilityView="Raw" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- 
+    *****************************************************************
+    RICH/TEXTBLOCK STYLES
+    *****************************************************************
+    -->
+    <Style x:Key="BaseTextBlockStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilyNormal}" />
+        <Setter Property="FontSize" Value="{ThemeResource TextStyleLargeFontSize}" />
+        <Setter Property="Foreground" Value="{ThemeResource PhoneForegroundBrush}" />
+        <Setter Property="TextTrimming" Value="Clip" />
+        <Setter Property="TextWrapping" Value="WrapWholeWords" />
+        <Setter Property="LineHeight" Value="21.5" />
+        <Setter Property="LineStackingStrategy" Value="BaselineToBaseline" />
+        <Setter Property="TextLineBounds" Value="Full" />
+        <Setter Property="OpticalMarginAlignment" Value="TrimSideBearings" />
+    </Style>
+
+    <!-- list styles -->
+    <Style x:Key="ListViewItemTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+        <Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilySemiLight}" />
+        <Setter Property="FontSize" Value="{ThemeResource TextStyleExtraLargePlusFontSize}" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+        <Setter Property="LineHeight" Value="33.5" />
+    </Style>
+    <Style x:Key="ListViewEmptyStaticTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+        <Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilySemiLight}" />
+        <Setter Property="FontSize" Value="{ThemeResource TextStyleExtraLargePlusFontSize}" />
+        <Setter Property="Foreground" Value="{ThemeResource PhoneMidBrush}" />
+        <Setter Property="LineHeight" Value="33.5" />
+    </Style>
+    <Style x:Key="ListViewItemSubheaderTextBlockStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilySemiLight}" />
+        <Setter Property="FontSize" Value="{ThemeResource TextStyleMediumFontSize}" />
+        <Setter Property="TextLineBounds" Value="Full" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+        <Setter Property="LineHeight" Value="20" />
+        <Setter Property="Foreground" Value="{ThemeResource PhoneMidBrush}" />
+    </Style>
+    <Style x:Key="ListViewItemContentTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource ListViewItemSubheaderTextBlockStyle}">
+        <Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilyNormal}" />
+        <Setter Property="Foreground" Value="{ThemeResource PhoneForegroundBrush}" />
+    </Style>
+    <!-- body text styles -->
+    <Style x:Key="BodyTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+        <Setter Property="LineHeight" Value="24" />
+    </Style>
+
+    <!-- controls styles -->
+    <Style x:Key="FlyoutPickerListViewItemContentPresenterStyle" TargetType="ContentPresenter">
+        <Setter Property="FontSize" Value="{ThemeResource TextStyleExtraLargeFontSize}" />
+        <Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilySemiLight}" />
+    </Style>
+    <Style x:Key="ControlHeaderContentPresenterStyle" TargetType="ContentPresenter">
+        <Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilyNormal}" />
+        <Setter Property="FontSize" Value="{ThemeResource TextStyleMediumFontSize}" />
+        <Setter Property="Foreground" Value="{ThemeResource PhoneMidBrush}" />
+    </Style>
+    <Style x:Key="ControlHeaderTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+        <Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilyNormal}" />
+        <Setter Property="FontSize" Value="{ThemeResource TextStyleMediumFontSize}" />
+        <Setter Property="Foreground" Value="{ThemeResource PhoneMidBrush}" />
+        <Setter Property="LineHeight" Value="17.5" />
+    </Style>
+    <Style x:Key="ControlContextualInfoTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+        <Setter Property="FontSize" Value="{ThemeResource TextStyleMediumFontSize}" />
+        <Setter Property="Foreground" Value="{ThemeResource PhoneMidBrush}" />
+        <Setter Property="LineHeight" Value="17.5" />
+    </Style>
+    <Style x:Key="GroupHeaderTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+        <Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilySemiLight}" />
+        <Setter Property="FontSize" Value="23.73" />
+        <Setter Property="Foreground" Value="{ThemeResource PhoneMidBrush}" />
+        <Setter Property="LineHeight" Value="23" />
+        <Setter Property="CharacterSpacing" Value="-3" />
+    </Style>
+  
+    <Style x:Key="HeaderContentPresenterStyle" TargetType="ContentPresenter">
+        <Setter Property="FontFamily" Value="{StaticResource PhoneFontFamilyNormal}" />
+        <Setter Property="FontSize" Value="{StaticResource TextStyleMediumFontSize}" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Foreground" Value="{ThemeResource PhoneMidBrush}" />
+    </Style>
+    <Style x:Key="PivotTitleContentControlStyle" TargetType="ContentControl">
+        <Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilyNormal}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="{ThemeResource TextStyleLargeFontSize}" />
+        <Setter Property="Margin" Value="{StaticResource PivotPortraitThemePadding}" />
+    </Style>
+    <!-- Page Level Text -->
+    <Style x:Key="MessageDialogTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+        <Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilyNormal}" />
+        <Setter Property="FontSize" Value="{ThemeResource TextStyleExtraLargeFontSize}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="LineHeight" Value="31.5" />
+        <Setter Property="CharacterSpacing" Value="3" />
+    </Style>
+    <Style x:Key="MessageDialogContentStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+        <Setter Property="FontSize" Value="{StaticResource TextStyleLargeFontSize}" />
+        <Setter Property="LineHeight" Value="21.5" />
+    </Style>
+    <Style x:Key="TitleTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+        <Setter Property="FontSize" Value="{StaticResource TextStyleLargeFontSize}" />
+        <Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilyNormal}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+    </Style>
+    <Style x:Key="FlyoutPickerTitleTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+        <Setter Property="FontSize" Value="{StaticResource TextStyleLargeFontSize}" />
+        <Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilyNormal}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+        <Setter Property="CharacterSpacing" Value="15" />
+    </Style>
+    <Style x:Key="HeaderTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+        <Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilySemiLight}" />
+        <Setter Property="FontSize" Value="57.5" />
+        <Setter Property="FontWeight" Value="SemiLight" />
+        <Setter Property="LineHeight" Value="57.5" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+    </Style>
+    <Style x:Key="SubheaderTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+        <Setter Property="FontFamily" Value="{ThemeResource PhoneFontFamilySemiLight}" />
+        <Setter Property="FontSize" Value="30" />
+        <Setter Property="FontWeight" Value="SemiLight" />
+        <Setter Property="LineHeight" Value="33" />
+    </Style>
+</ResourceDictionary>
+    
+    

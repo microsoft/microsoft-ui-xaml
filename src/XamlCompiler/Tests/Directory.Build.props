@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <AdHocApp>true</AdHocApp>
+        <GenerateProjectSpecificOutputFolder>true</GenerateProjectSpecificOutputFolder>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <UseLocalSDK>true</UseLocalSDK>
+        <AdHocApp>true</AdHocApp>
+        <!-- Suppress WinMDExp warnings WME0010 since the Microsoft.UI.Xaml.Markup.IXamlMetadataProvider GetXamlType method is automatically renamed -->
+        <WinMdExpNoWarn>0010;$(WinMdExpNoWarn)</WinMdExpNoWarn>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition="$(MSBuildProjectExtension)=='.csproj'">
+        <RuntimeIdentifiers>win10-x86; win10-x86-aot; win10-x64; win10-x64-aot; win10-arm64; win10-arm64-aot</RuntimeIdentifiers>
+        <EnableTypeInfoReflection>false</EnableTypeInfoReflection>
+        <GenerateProjectSpecificOutputFolder>true</GenerateProjectSpecificOutputFolder>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <ProjectReference>
+            <!-- By default,
+                     don't copy project reference output to the output directory
+                     of the current project unless this is an exe. -->
+            <Private>false</Private>
+            <Private Condition="'$(ConfigurationType)' == 'Application' or '$(OutputType)'=='winexe' or '$(OutputType)'=='exe' or '$(OutputType)'=='appcontainerexe'">true</Private>
+        </ProjectReference>
+        <Reference>
+            <!-- By default,
+                     don't copy reference output to the output directory
+                     of the current project unless this is an exe. -->
+            <Private>false</Private>
+            <Private Condition="'$(ConfigurationType)' == 'Application' or '$(OutputType)'=='winexe' or '$(OutputType)'=='exe' or '$(OutputType)'=='appcontainerexe'">true</Private>
+        </Reference>
+    </ItemDefinitionGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" /> 
+    <Import Project="$(ConsumeBinariesProps)"/>
+</Project>

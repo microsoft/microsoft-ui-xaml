@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.Internal.MUXAppTestHelpers.WinUI</id>
+    <version>$VERSION$</version>
+    <title>Microsoft.Internal.MUXAppTestHelpers.WinUI</title>
+    <authors>Microsoft.Internal.MUXAppTestHelpers.WinUI</authors>
+    <owners>Microsoft.Internal.MUXAppTestHelpers.WinUI</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Microsoft.Internal.MUXAppTestHelpers.WinUI</description>
+
+    <dependencies>
+      <group targetFramework="net6.0-windows10.0.18362.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    
+    <file target="lib\net6.0-windows10.0.18362.0" src="$BUILDBINDIR$\x86fre\Test\MUXTestInfra\AppTestAutomationHelpers.winmd"/>
+    <file target="lib\uap10.0" src="$BUILDBINDIR$\x86fre\Test\MUXTestInfra\AppTestAutomationHelpers.winmd"/>
+
+    <file target="runtimes\win10-x86\native" src="$BUILDBINDIR$\x86fre\Test\MUXTestInfra\AppTestAutomationHelpers.dll"/>
+    <file target="runtimes\win10-x64\native" src="$BUILDBINDIR$\amd64fre\Test\MUXTestInfra\AppTestAutomationHelpers.dll"/>
+    <file target="runtimes\win10-arm64\native" src="$BUILDBINDIR$\arm64fre\Test\MUXTestInfra\AppTestAutomationHelpers.dll"/>
+
+    <file target="build\native\Microsoft.Internal.MUXAppTestHelpers.WinUI.targets" src="Microsoft.Internal.MUXAppTestHelpers.WinUI-Native.targets"/>
+    
+    <file target="content\AppTestAutomationHelpers\TestAutomationHelpersPanel.xaml" src="$BUILDBINDIR$\x86fre\Test\MUXTestInfra\TestAutomationHelpersPanel.xaml"/>
+    
+  </files>
+</package>

@@ -1,0 +1,19 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Canvas Width="10" Height="10" Background="Red" Canvas.Top="100" x:Name="canv">
+        <Canvas.Resources>
+            <!-- Native code has no RepeatBehavior constructor that take a timespan or allow a count of 0. Make it from Xaml. -->
+            <Storyboard x:Name="zeroRepeatSB">
+                <DoubleAnimation x:Name="zeroRepeatDA" From="50" To="50" Duration="0:0:2" RepeatBehavior="0x" />
+            </Storyboard>
+        </Canvas.Resources>
+        <Canvas.RenderTransform>
+            <TransformGroup>
+                <TranslateTransform x:Name="tr1" />
+                <TranslateTransform x:Name="tr2" />
+            </TransformGroup>
+        </Canvas.RenderTransform>
+    </Canvas>
+
+</Canvas>

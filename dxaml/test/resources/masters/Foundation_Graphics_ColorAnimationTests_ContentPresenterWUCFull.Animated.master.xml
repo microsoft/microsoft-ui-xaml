@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+            <NineGridBrush LeftInset="10" TopInset="10" RightInset="10" BottomInset="10" isCenterHollow="True">
+              <Source>
+                <Color>
+                  <KeyFrameAnimation Duration="1">
+                    <KeyFrame Color="#00000000" />
+                    <KeyFrame Time="1" Color="rgb {0, 0, 1}">
+                      <LinearEasingFunction />
+                    </KeyFrame>
+                  </KeyFrameAnimation>
+                </Color>
+              </Source>
+            </NineGridBrush>
+          </wucSpriteVisual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

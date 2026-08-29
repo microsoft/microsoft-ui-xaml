@@ -1,0 +1,42 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page
+    x:Class="Tests.Tools.Shared.UnnamedStatePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tests.Tools.Shared">
+
+  <!-- This page is meant to validate the following scenario:
+       IVisualTreeService::SetProperty on AdaptiveTrigger::MinWindowWidth does not update when VisualState doesn't have an x:Name. 
+       
+       NOTE: Giving ANY VisualState or VisualStateGroup in this page an x:Name will completely invalidate the purpose of the test so don't do it.
+  -->
+      
+    <Grid x:Name="LayoutRoot" Background="Transparent">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState>
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="500"/>
+                    </VisualState.StateTriggers>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetName="bananas"
+                                 Storyboard.TargetProperty="Height"
+                                 EnableDependentAnimation="True" From="110" To="300">
+                            <DoubleAnimation.EasingFunction>
+                                <BounceEase Bounces="2" EasingMode="EaseOut" Bounciness="2" />
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                        <ColorAnimation EnableDependentAnimation="True"
+                                Storyboard.TargetName="bananas"
+                                Storyboard.TargetProperty="(Button.Foreground).(SolidColorBrush.Color)"
+                                To="Yellow" />
+                    </Storyboard>
+                    <VisualState.Setters>
+                        <Setter Target="bananas.Width" Value="200"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <Button x:Name="bananas" Foreground="Purple" Height="100" Width="100" Content="Bananas" Background="Orange"/>
+    </Grid>
+</Page>

@@ -1,0 +1,18 @@
+﻿<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
+  <PropertyGroup>
+    <TargetFramework>$(DotNetCoreTargetFrameworkMoniker)</TargetFramework>
+    <RootNamespace>Microsoft.Toolkit.Win32.UI.XamlHost</RootNamespace>
+    <UseWPF>true</UseWPF>
+    <WebView2UseWinRT>true</WebView2UseWinRT>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(ProjectRoot)\src\projection\private\Microsoft.WinUI.csproj" />
+  </ItemGroup>
+</Project>

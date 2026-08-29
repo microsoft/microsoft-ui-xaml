@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="809.1" SizeY="697">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual" SizeX="809.1" SizeY="697">
+            <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
+            <Visual PixelSnappingEnabled="True" Tag="PrimaryVisual" SizeX="809.1" SizeY="697">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(V.Offset) * LOCAL.DManip * Matrix4x4.CreateFromTranslation(-V.Offset)">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="DManip" Type="Matrix4x4">
+                        <ExpressionAnimation String="PS.Matrix">
+                          <ReferenceParameter Name="PS">
+                            <PropertySet>
+                              <Property Name="Matrix" Type="Matrix4x4">
+                                <ExpressionAnimation String="transform*manipTransform.Matrix">
+                                  <ReferenceParameter Name="manipTransform">
+                                    <DuplicatedMatrixTransform>
+                                      <ManipulationTransform Transform="Identity" />
+                                    </DuplicatedMatrixTransform>
+                                  </ReferenceParameter>
+                                  <Property Name="transform" Type="Matrix4x4" />
+                                </ExpressionAnimation>
+                              </Property>
+                            </PropertySet>
+                          </ReferenceParameter>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                  <ReferenceParameter Name="V" />
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="809.1" SizeY="697" BorderMode="Soft">
+                  <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="80.11" SizeY="80.11" BorderMode="Soft" OffsetX="49.85" OffsetY="9.791" OffsetZ="0">
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="80.11" SizeY="80.11" BorderMode="Soft" OffsetX="49.85" OffsetY="149.5" OffsetZ="0">
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="80.11" SizeY="80.11" BorderMode="Soft" OffsetX="49.85" OffsetY="289.3" OffsetZ="0">
+                  <Clip ClipLeft="0" ClipTop="0" ClipRight="-80.11" ClipBottom="40.05" TransformMatrix="Identity" />
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="80.11" SizeY="80.11" BorderMode="Soft" OffsetX="70.32" OffsetY="389" OffsetZ="0">
+                  <Clip ClipLeft="0" ClipTop="0" ClipRight="40.05" ClipBottom="-80.11" TransformMatrix="Identity" />
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="80.11" SizeY="80.11" BorderMode="Soft" OffsetX="70.32" OffsetY="528.7" OffsetZ="0">
+                  <Clip ClipLeft="0" ClipTop="0" ClipRight="40.05" ClipBottom="40.05" TransformMatrix="Identity" />
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="80.11" SizeY="80.11" BorderMode="Soft" OffsetX="80.11" OffsetY="588.4" OffsetZ="0">
+                  <Clip ClipLeft="0" ClipTop="0" ClipRight="60.53" ClipBottom="60.53" TransformMatrix="Identity" />
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="80.11" SizeY="80.11" BorderMode="Soft" OffsetX="229.6" OffsetY="9.791" OffsetZ="0">
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="160.2" SizeY="160.2" BorderMode="Soft" OffsetX="189.6" OffsetY="109.5" OffsetZ="0">
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="160.2" SizeY="40.05" BorderMode="Soft" OffsetX="189.6" OffsetY="289.3" OffsetZ="0">
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="40.05" SizeY="160.2" BorderMode="Soft" OffsetX="250.1" OffsetY="348.9" OffsetZ="0">
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="40.05" SizeY="40.05" BorderMode="Soft" OffsetX="250.1" OffsetY="528.7" OffsetZ="0">
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="19.58" SizeY="19.58" BorderMode="Soft" OffsetX="259.9" OffsetY="588.4" OffsetZ="0">
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="80.11" SizeY="80.11" BorderMode="Soft" OffsetX="409.5" OffsetY="9.791" OffsetZ="0">
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="160.2" SizeY="160.2" BorderMode="Soft" OffsetX="369.4" OffsetY="109.5" OffsetZ="0">
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="40.05" SizeY="40.05" BorderMode="Soft" OffsetX="429.9" OffsetY="289.3" OffsetZ="0">
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="40.05" SizeY="40.05" BorderMode="Soft" OffsetX="429.9" OffsetY="409.5" OffsetZ="0">
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="40.05" SizeY="40.05" BorderMode="Soft" OffsetX="429.9" OffsetY="528.7" OffsetZ="0">
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="19.58" SizeY="19.58" BorderMode="Soft" OffsetX="439.7" OffsetY="588.4" OffsetZ="0">
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="80.11" SizeY="80.11" BorderMode="Soft" OffsetX="589.3" OffsetY="9.791" OffsetZ="0">
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="160.2" SizeY="160.2" BorderMode="Soft" OffsetX="549.2" OffsetY="109.5" OffsetZ="0">
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="160.2" SizeY="160.2" BorderMode="Soft" OffsetX="549.2" OffsetY="289.3" OffsetZ="0">
+                  <Clip ClipLeft="0" ClipTop="0" ClipRight="-1.526e-05" ClipBottom="120.2" TransformMatrix="Identity" />
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="160.2" SizeY="160.2" BorderMode="Soft" OffsetX="609.7" OffsetY="348.9" OffsetZ="0">
+                  <Clip ClipLeft="0" ClipTop="0" ClipRight="120.2" ClipBottom="1.526e-05" TransformMatrix="Identity" />
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="40.05" SizeY="40.05" BorderMode="Soft" OffsetX="609.7" OffsetY="528.7" OffsetZ="0">
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="19.58" SizeY="19.58" BorderMode="Soft" OffsetX="619.5" OffsetY="588.4" OffsetZ="0">
+                  <NineGridBrush LeftInset="10" TopInset="10" RightInset="20" BottomInset="20" isCenterHollow="False">
+                    <Source>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Source>
+                  </NineGridBrush>
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

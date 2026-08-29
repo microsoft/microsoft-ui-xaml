@@ -152,7 +152,7 @@ _The Default LayoutUpdated event fires for every little (non-relevant) events._
 
 # Functional spec link
 
-[Functional Spec](titleBar-functional-spec.md)
+[Functional Spec](titlebar-functional-spec.md)
 
 # Architectural overview
 

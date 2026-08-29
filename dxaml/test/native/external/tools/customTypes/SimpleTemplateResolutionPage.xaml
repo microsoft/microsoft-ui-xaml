@@ -1,0 +1,36 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tests.Tools.Shared">
+
+  <StackPanel x:Name="root">
+      <Grid x:Name="Grid1">
+        <Grid.Resources>
+          <ControlTemplate x:Key="T1" TargetType="Button">
+            <Border x:Name="borderInsideTemplate">
+              <Border.Resources>
+                <SolidColorBrush x:Key='MyBrush' Color='Red' />
+                <Style x:Key='InsideTemplate' TargetType='Rectangle'>
+                  <Setter Property='Fill' Value='{StaticResource MyBrush}' />
+                </Style>
+              </Border.Resources>
+              <Rectangle x:Name='rectInsideTemplate' Width="200" Height="50" Style="{StaticResource InsideTemplate}"/>
+            </Border>
+          </ControlTemplate>
+        </Grid.Resources>
+        <Button Width="200" Height="50" Template='{StaticResource T1}' />
+        <Button Width="200" Height="50" Template='{StaticResource T1}' />
+      </Grid>
+      <Border x:Name="borderOutsideTemplate">
+        <Border.Resources>
+          <SolidColorBrush x:Key='MyBrush' Color='Green' />
+          <Style x:Key='OutsideTemplate' TargetType='Rectangle'>
+            <Setter Property='Fill' Value='{StaticResource MyBrush}' />
+          </Style>
+        </Border.Resources>
+        <Rectangle x:Name='rectOutsideTemplate' Width="200" Height="50" Style='{StaticResource OutsideTemplate}' />
+      </Border>
+    </StackPanel>
+</Page>
+

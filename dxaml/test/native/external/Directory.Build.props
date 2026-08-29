@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <UseXamlCompiler>true</UseXamlCompiler>
+    <IntegrationTest Condition="'$(MSBuildProjectName)' != 'customTypes'">true</IntegrationTest>
+    <IgnorePrivateMUXMetadataDir>true</IgnorePrivateMUXMetadataDir>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'customTypes'">
+    <BinplaceOutputAssemblies>false</BinplaceOutputAssemblies>
+  </PropertyGroup>
+  
+  <!--
+    Use the common directory structure that all projects in the repo follow for custom types projects:
+    - xdefer
+       - tests
+       - customTypes
+   -->
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\..\customTypes\CustomTypes.vcxproj') and '$(MSBuildProjectName)' != 'customTypes'">
+    <ProjectReference Include="$(MSBuildProjectDirectory)\..\customTypes\CustomTypes.vcxproj"/>
+  </ItemGroup>
+
+  <PropertyGroup Condition="Exists('$(MSBuildProjectDirectory)\..\customTypes\CustomTypes.vcxproj') and '$(MSBuildProjectName)' != 'customTypes'">
+    <ProjectIncludeDirectories>
+      $(ProjectIncludeDirectories);
+      $(MSBuildProjectDirectory)\..\customTypes;
+      $(BaseIntermediateOutputPath)\..\customTypes\generated;
+    </ProjectIncludeDirectories>
+ </PropertyGroup>
+
+  <!-- For projects that use a shared custom type location -->
+  <PropertyGroup Condition="'$(UseSharedCustomTypes)'!='false' and '$(SharedCustomTypes)' != ''">
+    <SharedCustomTypesGeneratedFilesDir>$(NativeExternalTestObjPath)\$(SharedCustomTypes)\customtypes\generated</SharedCustomTypesGeneratedFilesDir>
+    <SharedCustomTypesDir>$(NativeExternalTestPath)\$(SharedCustomTypes)\customtypes</SharedCustomTypesDir>
+    <ProjectIncludeDirectories>
+        $(ProjectIncludeDirectories);
+        $(SharedCustomTypesDir);
+        $(SharedCustomTypesGeneratedFilesDir);
+    </ProjectIncludeDirectories>
+ </PropertyGroup>
+
+  <PropertyGroup>
+    <XamlDiagPath>$(XamlSourcePath)\xcp\components\xamldiagnostics</XamlDiagPath>
+    <XamlDiagObjPath>$(XamlBinaryPath)\xcp\components\xamldiagnostics</XamlDiagObjPath>
+    <ProjectIncludeDirectories>
+        $(ProjectIncludeDirectories);
+        $(XamlDiagPath)\idl;
+        $(XamlDiagObjPath)\idl;
+    </ProjectIncludeDirectories>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(UseSharedCustomTypes)'!='false' and '$(SharedCustomTypes)' != '' and '$(MSBuildProjectName)' != 'customTypes'">
+    <ProjectReference Include="$(SharedCustomTypesDir)\CustomTypes.vcxproj"/>
+  </ItemGroup>
+
+<!-- Uncomment once all projects use CustomTypeBase.props 
+  <Import Project="CustomTypeBase.props" Condition="'$(MSBuildProjectName)' == 'customTypes'" />
+-->
+</Project>

@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{80AD7F51-8997-47B9-BB41-078B81CFF9B0}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <!-- NOTE: GridCoordinateHelper.{h,cpp} also live in this directory but are intentionally NOT
+       listed here. They are a Tabular-only helper (TableView keyboard navigation) and are compiled
+       into Microsoft.UI.Xaml.Controls.Tabular.dll exclusively via controls\Tabular.ProjectImports.targets.
+       Do NOT add them to this shared Common.vcxitems: this file is consumed by the in-box MUXC
+       (Microsoft.UI.Xaml.Controls.dll) build, so listing them here would compile the Tabular-only
+       helper into MUXC. -->
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ColorConversion.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)CornerRadiusFilterConverter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)LifetimeHandler.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\CornerRadiusFilterConverter.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)CornerRadiusToThicknessConverter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\CornerRadiusToThicknessConverter.properties.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ColorConversion.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)CornerRadiusFilterConverter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)CornerRadiusToThicknessConverter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Flags_Enum.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)LifetimeHandler.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)PointerInfo.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)PointerInfoRevokers.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)CornerRadiusToThicknessConverter.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)CornerRadiusFilterConverters.idl" />
+  </ItemGroup>
+</Project>

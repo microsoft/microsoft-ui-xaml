@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="400">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual" SizeX="400" SizeY="400">
+            <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
+            <Visual PixelSnappingEnabled="True" Tag="PrimaryVisual" SizeX="400" SizeY="400">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(V.Offset) * LOCAL.DManip * Matrix4x4.CreateFromTranslation(-V.Offset)">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="DManip" Type="Matrix4x4">
+                        <ExpressionAnimation String="PS.Matrix">
+                          <ReferenceParameter Name="PS">
+                            <PropertySet>
+                              <Property Name="Matrix" Type="Matrix4x4">
+                                <ExpressionAnimation String="transform*manipTransform.Matrix">
+                                  <ReferenceParameter Name="manipTransform">
+                                    <DuplicatedMatrixTransform>
+                                      <ManipulationTransform Transform="Identity" />
+                                    </DuplicatedMatrixTransform>
+                                  </ReferenceParameter>
+                                  <Property Name="transform" Type="Matrix4x4" />
+                                </ExpressionAnimation>
+                              </Property>
+                            </PropertySet>
+                          </ReferenceParameter>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                  <ReferenceParameter Name="V" />
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="400" SizeY="400" BorderMode="Soft">
+                  <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                </wucSpriteVisual>
+                <Visual Tag="PrependVisual">
+                  <TransformMatrix>
+                    <Translate X="20" Y="20" />
+                  </TransformMatrix>
+                  <Visual Tag="PrimaryVisual" CompositeMode="SourceOver" SizeX="100" SizeY="100">
+                    <TransformMatrix>
+                      <ExpressionAnimation String="LOCAL.Projection">
+                        <ReferenceParameter Name="LOCAL">
+                          <PropertySet>
+                            <Property Name="Projection" Type="Matrix4x4">
+                              <ExpressionAnimation String="PS.LocalXYZ * PS.Rotation * PS.GlobalXYZ * PS.Perspective">
+                                <ReferenceParameter Name="PS" />
+                                <PropertySet>
+                                  <Property Name="GlobalXYZ" Type="Matrix4x4" />
+                                  <Property Name="LocalXYZ" Type="Matrix4x4" />
+                                  <Property Name="Perspective" Type="Matrix4x4">
+                                    <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(vector3(PS.Width / -2, PS.Height / -2, 0)) * PS.PerspectiveMatrix * Matrix4x4.CreateFromTranslation(vector3(PS.Width / 2, PS.Height / 2, 0))">
+                                      <ReferenceParameter Name="PS" />
+                                      <PropertySet>
+                                        <Property Name="Height" Type="Scalar" Value="100" />
+                                        <Property Name="PerspectiveMatrix" Type="Matrix4x4">
+                                          <Value>
+                                            <Row1 M11="1000" M12="0" M13="0" M14="0" />
+                                            <Row2 M21="0" M22="1000" M13="0" M14="0" />
+                                            <Row3 M31="0" M32="0" M33="-1.001" M34="-1" />
+                                            <Row4 M41="0" M42="0" M43="999" M44="999" />
+                                          </Value>
+                                        </Property>
+                                        <Property Name="Width" Type="Scalar" Value="100" />
+                                      </PropertySet>
+                                    </ExpressionAnimation>
+                                  </Property>
+                                  <Property Name="Rotation" Type="Matrix4x4">
+                                    <ExpressionAnimation String="PS.RotateCenter * PS.RotateX * PS.RotateY * PS.RotateZ * PS.UndoRotateCenter">
+                                      <ReferenceParameter Name="PS" />
+                                      <PropertySet>
+                                        <Property Name="RotateCenter" Type="Matrix4x4" />
+                                        <Property Name="RotateX" Type="Matrix4x4">
+                                          <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(-vector3(PS.CenterX, PS.CenterY, PS.CenterZ))* Matrix4x4.CreateFromAxisAngle(vector3(-1, 0, 0), PS.RotateAngle * pi / 180.0f) * Matrix4x4.CreateFromTranslation(vector3(PS.CenterX, PS.CenterY, PS.CenterZ))">
+                                            <ReferenceParameter Name="PS" />
+                                            <PropertySet>
+                                              <Property Name="CenterX" Type="Scalar" Value="50" />
+                                              <Property Name="CenterY" Type="Scalar" Value="50" />
+                                              <Property Name="CenterZ" Type="Scalar" />
+                                              <Property Name="RotateAngle" Type="Scalar">
+                                                <KeyFrameAnimation Duration="4" IterationCount="Forever">
+                                                  <KeyFrame />
+                                                  <KeyFrame Time="1" Value="45">
+                                                    <LinearEasingFunction />
+                                                  </KeyFrame>
+                                                </KeyFrameAnimation>
+                                              </Property>
+                                            </PropertySet>
+                                          </ExpressionAnimation>
+                                        </Property>
+                                        <Property Name="RotateY" Type="Matrix4x4" />
+                                        <Property Name="RotateZ" Type="Matrix4x4" />
+                                        <Property Name="UndoRotateCenter" Type="Matrix4x4" />
+                                      </PropertySet>
+                                    </ExpressionAnimation>
+                                  </Property>
+                                </PropertySet>
+                              </ExpressionAnimation>
+                            </Property>
+                          </PropertySet>
+                        </ReferenceParameter>
+                      </ExpressionAnimation>
+                    </TransformMatrix>
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+                        <ColorBrush Color="rgb {1, 0, 0}" />
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

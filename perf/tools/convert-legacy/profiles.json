@@ -1,0 +1,28 @@
+{
+    "cpu":
+    {
+        "Name": "cpu",
+        "Tags": [ "cpu", "monitor" ],
+        "ScenarioLaunchCount": 0,
+        "WPROptions": {
+          "Profiles": [ "XAML.wprp!XAML_CPU" ],
+          "Filemode": true,
+          "SkipPdbGen": true
+        },
+        "PipelinePath": "cpu",
+        "PipelinePropertyFilesPaths": [ "XAML.pipeline.props.json" ]
+      },
+    "mem":
+    {
+        "Name": "refset",
+        "Tags": [ "refset", "monitor" ],
+        "ScenarioLaunchCount": 0,
+        "WPROptions": {
+          "Profiles": [ "XAML.wprp!XAML_Memory" ],
+          "Filemode": true,
+          "SkipPdbGen": true
+        },
+        "PipelinePath": "mem",
+        "PipelinePropertyFilesPaths": [ "XAML.pipeline.props.json" ]
+    }
+}

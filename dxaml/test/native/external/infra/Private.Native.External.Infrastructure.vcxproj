@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="BuildIfChanged" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>CompileOnly</ConfigurationType>
+        <ProjectGuid>{a814c8d3-cf4d-4e7f-a1f6-ba6d2b2e328c}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\test\common.props"/>
+    <Import Project="$(NativeExternalTestPath)\base.props"/>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <ForcedUsingFiles>
+                %(ForcedUsingFiles);
+                $(PrivateInfrastructureMergedWinMdPath)\Private.Infrastructure.winmd;
+                $(WinUIDetailsLibPath)\MockDComp.winmd;
+                $(PrivateInfrastructureHostingHelpersGeneratedWinMdPath)\Private.Infrastructure.Hosting.HostingHelpers.winmd;
+            </ForcedUsingFiles>
+            <AdditionalIncludeDirectories>
+                %(AdditionalIncludeDirectories);
+                $(WinUIDetailsIncludePath)\abi;
+                $(WinUIDetailsIncludePath)\MockDComp;
+            </AdditionalIncludeDirectories>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ClCompile Include="ModuleCleanup.cpp"/>
+        <ClCompile Include="ScreenshotHelper.cpp"/>
+        <ClCompile Include="XamlFileTestEngine.cpp"/>
+        <ClCompile Include="ClipboardHelper.cpp"/>
+        <ClCompile Include="_Event.cpp"/>
+
+        <ProjectReference Include="$(InfraTestPath)\client\idl\Private.Infrastructure.vcxproj" ReferenceOutputAssembly="false"/>
+        <ProjectReference Include="$(InfraTestPath)\Win32Hosting\WPF\HostingHelpers\Private.Infrastructure.Hosting.HostingHelpers.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    </ItemGroup>
+    
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+    
+    <!-- Since we aren't building any .lib files, MSBuild doesn't have its usual way to determine whether it needs to build anything.
+        We'll help it out to avoid needing to rebuild this project every time we build a project that references it. -->
+    <Target Name="BuildIfChanged" Inputs="@(ClCompile)" Outputs="@(ClCompile->'$(IntDir)%(Filename).obj')">
+        <CallTarget Targets="Build" />
+    </Target>
+</Project>

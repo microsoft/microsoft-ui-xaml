@@ -1,0 +1,68 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  runTestJobName: 'RunStaticTests'
+  dependsOn: ''
+  MUXFinalRelease: false
+
+jobs:
+- job: ${{ parameters.runTestJobName }}
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: not(failed())
+  continueOnError: true
+  pool:
+    type: windows
+  variables:
+    artifactsDir: $(Build.SourcesDirectory)\Artifacts
+    packagesDir: $(Agent.TempDirectory)\WinUI-RunStaticTests-Job\packages
+    ob_outputDirectory: '$(Build.SourcesDirectory)\out'
+    ob_sdl_codeSignValidation_excludes: '-|packaging\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**;-|**\Microsoft.Internal.FrameworkUdk.dll'
+    ob_sdl_prefast_enabled: false   # this job does no native build
+
+  steps:
+  # This is a temporarily workaround to avoid getting non-fatal "folder C:\__t\NativeCompilerPrefast not found"
+  # errors from the Guardian PREfast task, which shouldn't even be run in the first place, because its pre-
+  # requisite of isNative=true isn't met currently.
+  - script: |
+      if not exist "C:\__t\NativeCompilerPrefast" md "C:\__t\NativeCompilerPrefast"
+    displayName: 'Creating C:\__t\NativeCompilerPrefast to prevent errors from Guardian PREfast'
+
+  - powershell: |
+      gci env:* | sort-object name
+    displayName: Display build machine environment variable
+
+  # Authenticate to NuGet feeds used by this pipeline (WinUI.Dependencies has nuget.org as an upstream source,
+  # so public releases are available through it without direct nuget.org access)
+  - task: NuGetAuthenticate@1
+    displayName: 'NuGet Authenticate'
+
+  # In this pipeline configuration, 'NuGetCommand' is ambiguous so the specific task guid must be used instead
+  # See known NuGet task issue notes.
+  # The latest public release is resolved via the WinUI.Dependencies feed (which has nuget.org as an upstream)
+  # The package is installed into a temp directory to ensure it doesn't get used elsewhere for a build
+  - task: NuGetCommand@2
+    displayName: 'NuGet install Microsoft.WindowsAppSDK'
+    inputs:
+      command: 'custom'
+      arguments: 'install Microsoft.WindowsAppSDK -OutputDirectory $(packagesDir) -ConfigFile $(Build.SourcesDirectory)\nuget.config'
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet install WinMDVersionVerifyLcr'
+    inputs:
+      command: 'custom'
+      arguments: 'install WinMDVersionVerifyLcr -OutputDirectory $(packagesDir) -ConfigFile $(Build.SourcesDirectory)\nuget.config'
+
+  - template: WinUI-DownloadPipelineArtifacts-Steps.yml
+    parameters:
+      enableUseOutputFromPreviousBuild: true
+      artifactName: drop_amd64fre
+      itemPattern: '**/packaging/Release/lib/uap10.0/*.winmd'
+      targetPath: ' $(artifactsDir)'
+
+  - task: powershell@2
+    displayName: 'Run WinMD Compat Test'
+    inputs:
+      targetType: filePath
+      filePath: $(Build.SourcesDirectory)\build\PipelineScripts\VerifyWinMDCompat.ps1
+      arguments: -WinMDPath '$(artifactsDir)\packaging\Release\lib\uap10.0' -PackagesDirectory '$(packagesDir)' -isRelease:$${{ parameters.MUXFinalRelease }}
+      pwsh: true

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Compositor>
+  <Light Number="1" TargetCount="0" HasCoordinateSpace="True" />
+  <Light Number="2" TargetCount="0" HasCoordinateSpace="True" />
+  <ProjectedShadowScene SceneId="1" LightNumber="1" BlurRadiusMultiplier="0.225" MaxBlurRadius="86" MinxOpacity="0.18" MaxOpacity="0.18" OpacityFalloff="192">
+    <ProjectedShadowReceiver ReceiverVisualId="2" Policy="Rectangular" DrawOrder="PostChildren" />
+    <ProjectedShadowReceiver ReceiverVisualId="1" Policy="Rectangular" DrawOrder="PostChildren" />
+    <ProjectedShadowCaster CasterVisualId="2" Cutout="True" Policy="Rectangular" />
+  </ProjectedShadowScene>
+  <ProjectedShadowScene SceneId="2" LightNumber="2" BlurRadiusMultiplier="0.9" MaxBlurRadius="500" MinxOpacity="0.22" MaxOpacity="0.22" OpacityFalloff="192">
+    <ProjectedShadowReceiver ReceiverVisualId="2" Policy="Rectangular" DrawOrder="PostChildren" />
+    <ProjectedShadowReceiver ReceiverVisualId="1" Policy="Rectangular" DrawOrder="PostChildren" />
+    <ProjectedShadowCaster CasterVisualId="2" Cutout="True" Policy="Rectangular" />
+  </ProjectedShadowScene>
+  <CompositionTarget>
+    <Visual>
+      <CoodinateSpaceFor LightNumber="1" />
+      <CoodinateSpaceFor LightNumber="2" />
+      <Visual />
+      <Visual />
+      <Visual Tag="PrependVisual">
+        <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+          <Visual Tag="ContentVisual">
+            <wucSpriteVisual SizeX="400" SizeY="300" BorderMode="Soft">
+              <ColorBrush Color="#ff000000" />
+            </wucSpriteVisual>
+            <Visual Tag="PrependVisual">
+              <Visual VisualId="1" Tag="PrimaryVisual" CompositeMode="SourceOver" SizeX="400" SizeY="300">
+                <Visual Tag="ContentVisual">
+                  <wucSpriteVisual SizeX="400" SizeY="300" BorderMode="Soft">
+                    <ColorBrush Color="#ffffffff" />
+                  </wucSpriteVisual>
+                </Visual>
+              </Visual>
+            </Visual>
+            <Visual TransformParentVisualId="1" Tag="PrependVisual">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(PS.Translation) * prependVisual.PrependTransform">
+                  <ReferenceParameter Name="PS">
+                    <PropertySet>
+                      <Property Name="Translation" Type="Vector3">
+                        <KeyFrameAnimation Duration="0.125">
+                          <KeyFrame />
+                          <KeyFrame Time="1" Z="32">
+                            <LinearEasingFunction />
+                          </KeyFrame>
+                        </KeyFrameAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                  <ReferenceParameter Name="prependVisual" />
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <WindowBackgroundTreatment>
+                <EffectBrush />
+              </WindowBackgroundTreatment>
+              <Visual Tag="PrimaryVisual">
+                <Visual Tag="ContentVisual">
+                  <Visual Tag="PrependVisual">
+                    <Visual Tag="PrimaryVisual" SizeX="200" SizeY="200">
+                      <Visual VisualId="2" Tag="ContentVisual" SizeX="200" SizeY="200">
+                        <wucSpriteVisual SizeX="200" SizeY="200" BorderMode="Soft">
+                          <ColorBrush Color="rgb {1, 0, 0}" />
+                        </wucSpriteVisual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </CompositionTarget>
+</Compositor>

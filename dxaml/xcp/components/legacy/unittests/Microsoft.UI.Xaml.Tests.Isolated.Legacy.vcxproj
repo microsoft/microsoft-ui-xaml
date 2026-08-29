@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{3ce6bc3d-50c1-426e-944e-a5f8a141375d}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\unittest.props"/>
+
+    <ItemGroup>
+        <ClInclude Include="ImageCacheIdentifierUnitTests.h"/>
+        <ClInclude Include="WinReaderUnitTests.h"/>
+        <ClInclude Include="xvectorunittests.h"/>
+
+        <ClCompile Include="XVectorUnitTests.cpp"/>
+        <ClCompile Include="WinReaderUnitTests.cpp"/>
+        <ClCompile Include="ImageCacheIdentifierUnitTests.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\imaging\inc;
+            $(XcpPath)\components\legacy\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <Link>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\ut\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\legacy\lib\Microsoft.UI.Xaml.Legacy.vcxproj" Project="{95d07701-4af9-48e5-b726-0d42034811c8}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\xstring\lib\Microsoft.UI.Xaml.XString.vcxproj" Project="{f9da8380-5504-4acc-bde0-72cd5981826d}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

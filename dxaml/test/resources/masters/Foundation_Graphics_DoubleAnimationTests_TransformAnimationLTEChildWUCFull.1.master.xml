@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual VisualId="1" Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual">
+            <TransformMatrix>
+              <Translate X="0.75" Y="0.75" />
+            </TransformMatrix>
+            <Visual Tag="PrimaryVisual">
+              <Visual Tag="ContentVisual">
+                <Visual TransformParentVisualId="1" Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" SizeX="23" SizeY="19">
+                    <TransformMatrix>
+                      <Translate X="0.75" Y="0.75" />
+                    </TransformMatrix>
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="21" SizeY="10" BorderMode="Hard" OffsetX="1.25" OffsetY="5.25" OffsetZ="0">
+                        <MaskBrush>
+                          <Source>
+                            <ColorBrush Color="rgb {1, 0, 0}" />
+                          </Source>
+                          <Mask>
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                          </Mask>
+                        </MaskBrush>
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

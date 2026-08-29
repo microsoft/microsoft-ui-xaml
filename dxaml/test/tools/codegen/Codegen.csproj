@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <TargetFrameworkDirectory>$(TargetFrameworkDirectory);$(ProjectSdkMetadataPath)</TargetFrameworkDirectory>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform>AnyCPU</Platform>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ProjectGuid>{680ED2F4-D0EC-4692-AFD4-E4AFF686B53D}</ProjectGuid>
+    <ManagedCode>true</ManagedCode>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Codegen</RootNamespace>
+    <AssemblyName>Microsoft.UI.Xaml.Tests.Tools.Codegen</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetPlatformVersion>8.1</TargetPlatformVersion>
+    <TestCode>true</TestCode>
+    <ManagedCode>true</ManagedCode>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Runtime.InteropServices.WindowsRuntime" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="$(PrivateMergedWinMDDir)\Microsoft.UI.winmd" Private="true" />
+    <Reference Include="$(PrivateMergedWinMDDir)\Microsoft.UI.Xaml.winmd" Private="true" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="Templates\ManagedEventsListeners.cs">
+      <DependentUpon>ManagedEventsListeners.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Templates\ManagedEventsListeners.g.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ManagedEventsListeners.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Templates\TemplateHelpers.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\ManagedEventsListeners.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ManagedEventsListeners.g.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(ProjectRoot)\MergedWinMD\private\MergedWinMD.vcxproj" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.Managed.props))" />
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+
+  <Target Name="TargetName" BeforeTargets="Build"><Message Text="PMD=$(PrivateMUXDir)"/></Target>
+    
+</Project>

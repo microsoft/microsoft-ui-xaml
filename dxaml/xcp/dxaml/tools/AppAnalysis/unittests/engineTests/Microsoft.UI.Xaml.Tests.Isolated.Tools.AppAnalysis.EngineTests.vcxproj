@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{8a12dfcf-137a-46fe-b64e-7cdeae719b5c}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\dxaml\tools\AppAnalysis\unittests\unittest.props"/>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <WarningLevel>Level3</WarningLevel>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories)
+            $(XamlSourcePath)\test\native\isolated\inc;
+            $(AppAnalysisPath)\dll\;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+  
+    <Import Project="$(XamlSourcePath)\msbuild\buildsettings\ETWManifestUsage.props"/>
+
+    <ItemGroup>
+        <ClInclude Include="EtwEventRecordTests.h"/>
+        <ClInclude Include="EtwRuleSetTests.h"/>
+        <ClInclude Include="EventProcessorTests.h"/>
+        <ClInclude Include="MockTDH.h"/>
+
+        <ClCompile Include="DllMain.cpp"/>
+        <ClCompile Include="EtwEventRecordTests.cpp"/>
+        <ClCompile Include="EtwRuleSetTests.cpp"/>
+        <ClCompile Include="EventProcessorTests.cpp"/>
+        <ClCompile Include="MockTDH.cpp"/>
+        <ClCompile Include="_Event.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(AppAnalysisPath)\idl\Microsoft.Diagnostics.AppAnalysis.vcxproj" Project="{e1f36d19-f82d-474a-be26-fea52da5b6e6}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

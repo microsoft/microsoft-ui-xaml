@@ -1,0 +1,28 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Margin="20" Orientation="Horizontal">
+                <StackPanel Typography.Fraction="Stacked">
+                    <TextBlock FontSize="50" FontFamily="Palatino Linotype" Text="1/2" Typography.Fraction="Slashed"/>
+                    <TextBlock FontSize="50" FontFamily="Palatino Linotype" Text="1/2" />
+                    <TextBlock FontSize="50" FontFamily="Segoe UI" Text="abcdefgh" Typography.Capitals="AllSmallCaps"/>
+                    <TextBlock Typography.Variants="Subscript" FontFamily="Palatino Linotype" Text="Subscript"/>
+                    <TextBlock Typography.AnnotationAlternates="4" FontFamily="Yu Gothic UI" Text="ABC" />
+                    <TextBlock FontSize="20" Typography.EastAsianWidths="Quarter" FontFamily="Yu Gothic UI" Text="ｺﾕ" />
+                    <TextBlock Typography.CapitalSpacing="False" FontSize="16" Text="ABC Capital Spacing False" />
+                    <TextBlock Typography.CapitalSpacing="True" FontSize="16" Text="ABC Capital Spacing True" />
+                    <TextBlock Typography.Kerning="False" FontSize="16" Text="AVA no Kerning" />
+                    <TextBlock Typography.Kerning="True" FontSize="16" Text="AVA with Kerning" />
+                </StackPanel>
+                <!--Turn on text selection for the TextBlocks in the next StackPanel to force LS path layout, this should look exactly same as the above DTWL path.-->
+                <StackPanel Typography.Fraction="Stacked">
+                    <TextBlock TextTrimming="Clip" FontSize="50" FontFamily="Palatino Linotype" Text="1/2" Typography.Fraction="Slashed"/>
+                    <TextBlock TextTrimming="Clip" FontSize="50" FontFamily="Palatino Linotype" Text="1/2" />
+                    <TextBlock TextTrimming="Clip" FontSize="50" FontFamily="Segoe UI" Text="abcdefgh" Typography.Capitals="AllSmallCaps"/>
+                    <TextBlock TextTrimming="Clip" Typography.Variants="Subscript" FontFamily="Palatino Linotype" Text="Subscript"/>
+                    <TextBlock TextTrimming="Clip" Typography.AnnotationAlternates="4" FontFamily="Yu Gothic UI" Text="ABC" />
+                    <TextBlock TextTrimming="Clip" FontSize="20" Typography.EastAsianWidths="Quarter" FontFamily="Yu Gothic UI" Text="ｺﾕ" />
+                    <TextBlock TextTrimming="Clip" Typography.CapitalSpacing="False" FontSize="16" Text="ABC Capital Spacing False" />
+                    <TextBlock TextTrimming="Clip" Typography.CapitalSpacing="True" FontSize="16" Text="ABC Capital Spacing True" />
+                    <TextBlock TextTrimming="Clip" Typography.Kerning="False" FontSize="16" Text="AVA no Kerning" />
+                    <TextBlock TextTrimming="Clip" Typography.Kerning="True" FontSize="16" Text="AVA with Kerning" />
+                </StackPanel>
+</StackPanel>

@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>Utility</ConfigurationType>
+        <ProjectGuid>{e076fa9c-3b19-431a-a566-3e771f962428}</ProjectGuid>
+        <IsWinmdProject>true</IsWinmdProject>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+
+    <PropertyGroup>
+        <DisableMidlVersionChecks>1</DisableMidlVersionChecks>  <!-- MIDL version checks do not work with [experimental] (which is used in lifted IXP idl files) -->
+    </PropertyGroup>
+
+    <Import Project="$(XamlSourcePath)\test\common.props"/>
+
+    <PropertyGroup>
+        <TargetDestination>$(TestBinplaceDestinationPath)</TargetDestination>
+        <TestCode>true</TestCode>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Midl Include="Private.Infrastructure.idl"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(XcpPath)\dxaml\idl\winrt;
+            $(XcpPath)\inc;
+            $(XamlSourcePath)\phone\idl;
+            $(WinUIDetailsIncludePath)\abi;
+            $(WinUIDetailsIncludePath)\MockDComp;
+            $(XcpPath)\dxaml\tools\AppAnalysis\idl;
+            $(InfraTestPath)\Win32Hosting\idl;
+            $(LiftedIXPGeneratedIdlPath);
+            $(LiftedMRTGeneratedIdlPath);
+        </ProjectIncludeDirectories>
+
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(InfraTestPath)\Win32Hosting\idl\Private.Infrastructure.Hosting.vcxproj" Project="{3fd1b03c-df81-4bc7-8204-c48d16026cfb}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\dxaml\tools\AppAnalysis\idl\Microsoft.Diagnostics.AppAnalysis.vcxproj" Project="{e1f36d19-f82d-474a-be26-fea52da5b6e6}"/>
+        
+        <!--
+            Reference our external WinMDs, but not the IXP ones. Since the IXP winmds are merged
+            with the WinUI ones, those are picked up through the ProjectReference to the merge project
+         -->
+        <Reference Include="@(ExternalWinmds)" Exclude="@(IxpWinmds)"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

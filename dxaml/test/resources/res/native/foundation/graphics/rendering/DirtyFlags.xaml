@@ -1,0 +1,52 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Rectangle Canvas.Left="10" Canvas.Top="10" Fill="White" Width="30" Height="30">
+        <Rectangle.RenderTransform>
+            <TransformGroup>
+                <TranslateTransform x:Name="translateTransform" X="1" Y="1" />
+                <ScaleTransform x:Name="scaleTransform" ScaleX="1" ScaleY="1" CenterX="1" CenterY="1" />
+                <SkewTransform x:Name="skewTransform" AngleX="1" AngleY="1" CenterX="1" CenterY="1" />
+                <RotateTransform x:Name="rotateTransform" Angle="1" CenterX="1" CenterY="1" />
+                <CompositeTransform x:Name="compositeTransform"
+                    CenterX="1" CenterY="1" TranslateX="1" TranslateY="1" Rotation="1" ScaleX="1" ScaleY="1" SkewX="1" SkewY="1"/>
+                <MatrixTransform x:Name="matrixTransform" Matrix="1,2,3,4,5,6" />
+            </TransformGroup>
+        </Rectangle.RenderTransform>
+    </Rectangle>
+
+    <Rectangle Canvas.Left="10" Canvas.Top="60" Fill="White" Width="30" Height="30">
+        <Rectangle.Projection>
+            <PlaneProjection x:Name="planeProjection"
+                RotationX="1" RotationY="1" RotationZ="1"
+                CenterOfRotationX="1" CenterOfRotationY="1" CenterOfRotationZ="1"
+                LocalOffsetX="1" LocalOffsetY="1" LocalOffsetZ="1"
+                GlobalOffsetX="1" GlobalOffsetY="1" GlobalOffsetZ="1"
+                />
+        </Rectangle.Projection>
+    </Rectangle>
+
+    <Rectangle Canvas.Left="60" Canvas.Top="60" Fill="White" Width="30" Height="30">
+        <Rectangle.Projection>
+            <Matrix3DProjection x:Name="matrixProjection"
+                ProjectionMatrix="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16" />
+        </Rectangle.Projection>
+    </Rectangle>
+
+    <Rectangle Canvas.Left="110" Canvas.Top="60" Fill="White" Width="30" Height="30">
+        <Rectangle.Transform3D>
+            <CompositeTransform3D x:Name="compositeTransform3D"
+                RotationX="1" RotationY="1" RotationZ="1"
+                TranslateX="1" TranslateY="1" TranslateZ="1"
+                ScaleX="1" ScaleY="1" ScaleZ="1"
+                CenterX="1" CenterY="1" CenterZ="1"
+                />
+        </Rectangle.Transform3D>
+    </Rectangle>
+
+    <Rectangle Canvas.Left="160" Canvas.Top="60" Fill="White" Width="30" Height="30">
+        <Rectangle.Transform3D>
+            <PerspectiveTransform3D x:Name="perspectiveTransform3D" Depth="1" OffsetX="1" OffsetY="1" />
+        </Rectangle.Transform3D>
+    </Rectangle>
+</Canvas>

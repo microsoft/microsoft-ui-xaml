@@ -1,0 +1,65 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+
+    <Canvas Width="10" Height="10" Background="Red">
+        <Canvas.RenderTransform><TranslateTransform Name="tr1" /></Canvas.RenderTransform>
+        <Canvas.Triggers>
+            <EventTrigger RoutedEvent="Canvas.Loaded">
+                <BeginStoryboard>
+                    <Storyboard SpeedRatio="2" FillBehavior="Stop">
+                        <!-- Total duration = 2 -->
+                        <DoubleAnimation Duration="0:0:4" Storyboard.TargetName="tr1" Storyboard.TargetProperty="X" From="0" To="400" />
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Canvas.Triggers>
+    </Canvas>
+
+    <Canvas Canvas.Top="50" Width="10" Height="10" Background="Red">
+        <Canvas.RenderTransform><ScaleTransform Name="tr2" /></Canvas.RenderTransform>
+        <Canvas.Triggers>
+            <EventTrigger RoutedEvent="Canvas.Loaded">
+                <BeginStoryboard>
+                    <!-- AutoReverse on Storyboard, total duration = 2 -->
+                    <Storyboard AutoReverse="True" FillBehavior="Stop">
+                        <DoubleAnimation Duration="0:0:1" Storyboard.TargetName="tr2" Storyboard.TargetProperty="ScaleY" From="0" To="2" />
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Canvas.Triggers>
+    </Canvas>
+
+    <Canvas Canvas.Top="100" Width="10" Height="10" Background="Lime">
+        <Canvas.RenderTransform><RotateTransform Name="tr3" Angle="45" /></Canvas.RenderTransform>
+        <Canvas.Triggers>
+            <EventTrigger RoutedEvent="Canvas.Loaded">
+                <BeginStoryboard>
+                    <!-- Duration 1, repeated 2x = total duration 2 -->
+                    <Storyboard SpeedRatio="2" RepeatBehavior="2x" FillBehavior="Stop">
+                        <DoubleAnimation Duration="0:0:4" SpeedRatio="2" Storyboard.TargetName="tr3" Storyboard.TargetProperty="Angle" From="0" To="360" />
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Canvas.Triggers>
+    </Canvas>
+
+    <Canvas Canvas.Top="150" Width="10" Height="10" Background="Blue">
+        <Canvas.RenderTransform>
+            <TransformGroup>
+                <CompositeTransform Name="tr4" TranslateX="100" />
+                <CompositeTransform Name="tr5" SkewY="-45" />
+            </TransformGroup>
+        </Canvas.RenderTransform>
+        <Canvas.Triggers>
+            <EventTrigger RoutedEvent="Canvas.Loaded">
+                <BeginStoryboard>
+                    <Storyboard RepeatBehavior="2x" FillBehavior="Stop">
+                        <DoubleAnimation Duration="0:0:1" Storyboard.TargetName="tr4" Storyboard.TargetProperty="TranslateX" From="0" To="200" />
+                        <DoubleAnimation Duration="0:0:1.5" Storyboard.TargetName="tr5" Storyboard.TargetProperty="SkewY" From="0" To="45" />
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Canvas.Triggers>
+    </Canvas>
+
+</Canvas>

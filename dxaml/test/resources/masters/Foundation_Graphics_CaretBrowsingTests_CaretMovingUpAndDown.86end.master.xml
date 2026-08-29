@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="800" SizeY="600">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="800" SizeY="600" BorderMode="Soft">
+            <ColorBrush Color="#ff000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="800" SizeY="600" BorderMode="Soft">
+            <ColorBrush Color="#ff000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="298" SizeY="114" BorderMode="Hard" OffsetX="0" OffsetY="5" OffsetZ="0">
+            <MaskBrush>
+              <Source>
+                <ColorBrush Color="#ffffffff" />
+              </Source>
+              <Mask>
+                <SurfaceBrush Stretch="Fill" Transform="Identity" />
+              </Mask>
+            </MaskBrush>
+          </wucSpriteVisual>
+          <Visual Tag="PrependVisual">
+            <TransformMatrix>
+              <Translate X="269" Y="20.24" />
+            </TransformMatrix>
+            <Visual Tag="PrimaryVisual" CompositeMode="DestinationInvert" SizeX="1" SizeY="20">
+              <Opacity>
+                <ExpressionAnimation String="PS.Opacity">
+                  <ReferenceParameter Name="PS" />
+                  <PropertySet>
+                    <Property Name="Opacity" Type="Scalar">
+                      <KeyFrameAnimation Duration="1.06" IterationCount="Forever">
+                        <KeyFrame Value="1" />
+                        <KeyFrame Time="0.5">
+                          <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                        </KeyFrame>
+                        <KeyFrame Time="1" Value="1">
+                          <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                        </KeyFrame>
+                      </KeyFrameAnimation>
+                    </Property>
+                  </PropertySet>
+                </ExpressionAnimation>
+              </Opacity>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="1" SizeY="20" BorderMode="Soft" TransparentForInput="True">
+                  <ColorBrush Color="#ffffffff" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

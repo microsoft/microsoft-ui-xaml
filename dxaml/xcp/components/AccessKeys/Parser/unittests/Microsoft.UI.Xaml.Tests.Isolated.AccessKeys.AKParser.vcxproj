@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{8dff014b-fa6b-487c-a0a7-e80dd69eb981}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\unittest.props"/>
+
+    <!-- Satisfy "UT", which currently doesn't parse includes. -->
+    <!-- UT:TARGETTYPE=DYNLINK                                 -->
+    <!-- UT:TARGET_DESTINATION=NTTEST\WINDOWSTEST\dxaml\test   -->
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\AccessKeys\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="AccessKeysParserUnitTests.h"/>
+
+        <ClCompile Include="AccessKeysParserUnitTests.cpp"/>
+    </ItemGroup>
+
+    <ItemDefinitionGroup>
+        <!-- All tests include WUX.DependencyLocator.lib & the include directory -->
+        <!-- so it's not needed to specify them here                             -->
+        <Link>
+            <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_Desktop_CurrentPlatform_spectre);</AdditionalLibraryDirectories>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\ut\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\AccessKeys\AccessKey\lib\AccessKeys.AKAccessKey.vcxproj" Project="{f43ad9ae-a7c4-4e99-8d9f-fe2dbed5a568}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\AccessKeys\Parser\lib\AccessKeys.AKParser.vcxproj" Project="{ed253c25-0512-4fd8-b050-3c3c6835f2ef}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

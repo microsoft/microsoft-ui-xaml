@@ -1,0 +1,9 @@
+<Project>
+  <ItemGroup>
+    <HelixWorkItem Include="UnitTests" Condition="'$(TestSuite)'=='DevTestSuite'">
+      <Timeout>00:10:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\RunHelixWorkItem.cmd Test\Microsoft.UI.Xaml.Tests.Isolated.*.dll </Command>
+      <PreCommands>set testnameprefix=$(Configuration).$(Platform).UAP</PreCommands>
+    </HelixWorkItem>
+  </ItemGroup>
+</Project>

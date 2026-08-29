@@ -1,0 +1,84 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Rectangle Canvas.Left="10" Canvas.Top="10" Fill="Lime" Width="30" Height="30">
+        <Rectangle.Transform3D>
+            <CompositeTransform3D />
+        </Rectangle.Transform3D>
+    </Rectangle>
+
+    <Rectangle Canvas.Left="60" Canvas.Top="10" Fill="Lime" Width="30" Height="30">
+        <Rectangle.Transform3D>
+            <CompositeTransform3D TranslateX="10" />
+        </Rectangle.Transform3D>
+    </Rectangle>
+
+    <Rectangle Canvas.Left="110" Canvas.Top="10" Fill="Lime" Width="30" Height="30">
+        <Rectangle.Transform3D>
+            <CompositeTransform3D RotationY="30" />
+        </Rectangle.Transform3D>
+    </Rectangle>
+
+    <Rectangle Canvas.Left="160" Canvas.Top="10" Fill="Lime" Width="30" Height="30">
+        <Rectangle.Transform3D>
+            <CompositeTransform3D ScaleX="1.5" />
+        </Rectangle.Transform3D>
+    </Rectangle>
+
+    <StackPanel Canvas.Left="10" Canvas.Top="60">
+        <StackPanel.Transform3D>
+            <PerspectiveTransform3D />
+        </StackPanel.Transform3D>
+        <Rectangle Fill="Lime" Width="100" Height="100">
+            <Rectangle.Transform3D>
+                <CompositeTransform3D RotationY="60" />
+            </Rectangle.Transform3D>
+        </Rectangle>
+    </StackPanel>
+
+    <StackPanel Canvas.Left="60" Canvas.Top="60">
+        <StackPanel.Transform3D>
+            <PerspectiveTransform3D />
+        </StackPanel.Transform3D>
+        <Rectangle Fill="Lime" Width="100" Height="100">
+            <Rectangle.Transform3D>
+                <CompositeTransform3D RotationY="60" CenterX="50" />
+            </Rectangle.Transform3D>
+        </Rectangle>
+    </StackPanel>
+
+    <StackPanel Canvas.Left="110" Canvas.Top="60">
+        <StackPanel.Transform3D>
+            <PerspectiveTransform3D />
+        </StackPanel.Transform3D>
+        <Rectangle Fill="Lime" Width="100" Height="100">
+            <Rectangle.Transform3D>
+                <CompositeTransform3D ScaleY="0.5" />
+            </Rectangle.Transform3D>
+            <Rectangle.Projection>
+                <PlaneProjection RotationY="60" />
+            </Rectangle.Projection>
+        </Rectangle>
+    </StackPanel>
+
+    <StackPanel Canvas.Left="160" Canvas.Top="60">
+        <StackPanel.Transform3D>
+            <PerspectiveTransform3D />
+        </StackPanel.Transform3D>
+        <Rectangle Fill="Lime" Width="100" Height="100">
+            <Rectangle.Transform3D>
+                <CompositeTransform3D x:Name="tx3d" />
+            </Rectangle.Transform3D>
+            <Rectangle.Triggers>
+                <EventTrigger RoutedEvent="Rectangle.Loaded">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="tx3d" Storyboard.TargetProperty="RotationY" To="90" Duration="0:0:2" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Rectangle.Triggers>
+        </Rectangle>
+    </StackPanel>
+
+</Canvas>

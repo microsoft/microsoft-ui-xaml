@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.Tests.Managed.props))" />
+  
+  <PropertyGroup>
+      <!-- We can't place the generated type metadata in the Windows namespace, so keeping with the convention
+      the private infrastructure uses to work around this we place it in the private namespace -->
+    <RootNamespace>CustomTypes</RootNamespace>
+    <AssemblyName>Microsoft.UI.Xaml.Tests.Managed.Lifetime</AssemblyName>
+    <UseXamlCompiler>true</UseXamlCompiler>
+    <SkipProject>true</SkipProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="CustomStateTrigger.xaml.cs">
+      <DependentUpon>CustomStateTrigger.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CustomStateTriggerPage.xaml.cs">
+      <DependentUpon>CustomStateTriggerPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="XamlTypeInfo.g.cs" />
+    <Compile Include="LifetimeTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="CustomStateTrigger.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="CustomStateTriggerPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <BinplaceLinked Include="$(ObjectPath)\$(ObjectDirectory)*.xbf">
+      <DestinationFolder>$(TestBinplaceResourcesDestinationPath)\managed\Lifetime</DestinationFolder>
+    </BinplaceLinked>
+  </ItemGroup>
+  
+  <Import Project="$(XamlSourcePath)\Microsoft.UI.Xaml.Build.targets"/>
+</Project>

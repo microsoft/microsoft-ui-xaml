@@ -1,0 +1,26 @@
+root=pushd %reporoot%\$*
+nt=pushd %reporoot%\$*
+native=pushd %reporoot%\dxaml\xcp\dxaml\dllsrv\winrt\native\$*
+tfgr=pushd %reporoot%\dxaml\test\native\external\foundation\graphics\rendering
+dxaml=pushd %reporoot%\dxaml\$*
+xcp=pushd %reporoot%\dxaml\xcp\$*
+text=pushd %reporoot%\dxaml\xcp\core\native\text\Controls\$*
+scripts=pushd %reporoot%\scripts\$*
+idl=pushd %reporoot%\dxaml\xcp\dxaml\idl\winrt\$*
+elements=pushd %reporoot%\dxaml\xcp\core\core\elements\$*
+core=pushd %reporoot%\dxaml\xcp\core\$*
+codegen=pushd %reporoot%\dxaml\xcp\tools\XCPTypesAutoGen\XamlOM\Model\$*
+masters=pushd %reporoot%\dxaml\test\resources\masters\$*
+cb=git branch | find "*"
+..=cd..
+up=pushd ..
+up2=pushd ..\..
+up3=pushd ..\..\..
+up4=pushd ..\..\..\..
+up5=pushd ..\..\..\..\..
+up6=pushd ..\..\..\..\..\..
+up7=pushd ..\..\..\..\..\..\..
+ctp=%reporoot%\test\CreateTestPayload.cmd $1 $2 & if %amd64%==1 (pushd %reporoot%\TestPayload\x64chk) else (pushd %reporoot%\TestPayload\x86chk)
+ctps=%reporoot%\test\CreateTestPayload.cmd -mode ScenarioTestSuite $1 $2 & if %amd64%==1 (pushd %reporoot%\TestPayload\x64chk) else (pushd %reporoot%\TestPayload\x86chk)
+dbo=taskkill /f /im msbuild.exe & taskkill /f /im vbcscompiler.exe & rmdir /s /q %reporoot%\BuildOutput
+tp=pushd %reporoot%\TestPayload

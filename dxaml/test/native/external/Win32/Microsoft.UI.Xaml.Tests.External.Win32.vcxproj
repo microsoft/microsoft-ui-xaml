@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ProjectGuid>{F1EF69B5-3656-490D-A85E-B8088FBC6DA5}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))" />
+  <Import Project="$(XamlSourcePath)\test\common.props" />
+  <Import Project="$(NativeExternalTestPath)\common.props" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>
+          %(AdditionalIncludeDirectories);
+          $(MSBuildThisFileDirectory)\Centennial;
+          $(WinUIDetailsIncludePath)\abi;
+          $(WinUIDetailsIncludePath)\MockDComp;
+      </AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>%(DisableSpecificWarnings);4691</DisableSpecificWarnings>
+      <ForcedUsingFiles>
+                %(ForcedUsingFiles);
+                $(PrivateInfrastructureWin32HostingMergedWinMdPath)\Private.Infrastructure.Hosting.winmd;
+      </ForcedUsingFiles>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="Centennial\WPFHostTests.h" />
+    <ClInclude Include="Centennial\DesktopWindowTests.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Centennial\WPFHostTests.cpp" />
+    <ClCompile Include="Centennial\DesktopWindowTests.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(NativeExternalTestPath)\pch\Microsoft.UI.Xaml.Tests.External.Precomp.vcxproj" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(CustomTypesCompile.targets))" />
+</Project>

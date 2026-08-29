@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{866995b2-99a9-46c6-8178-e41637bec689}</ProjectGuid>
+        <UseHybridCRT>false</UseHybridCRT>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\unittest-uielement.props"/>
+
+    <PropertyGroup>
+        <XamlPrecompiledShared>$(XcpPath)\components\pch\ut-nohybrid\precomp.h</XamlPrecompiledShared>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\animation\inc;
+            $(XcpPath)\components\colors\inc;
+            $(XcpPath)\components\transforms\inc;
+            $(XcpPath)\components\unittests\mocks;
+            $(XamlSourcePath)\test\dcomp\inc;
+            $(XamlBinaryPath)\test\dcomp\idl;
+            $(WinUIDetailsIncludePath)\abi;
+            $(WinUIDetailsIncludePath)\MockDComp;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="AnimationUnitTests.h"/>
+        <ClInclude Include="DCompAnimationUnitTestHelper.h"/>
+        <ClInclude Include="DoubleAnimationUnitTests.h"/>
+        <ClInclude Include="DoubleAnimationUsingKeyFramesUnitTests.h"/>
+        <ClInclude Include="KeySplineUnitTests.h"/>
+        <ClInclude Include="RepeatBehaviorUnitTests.h"/>
+        <ClInclude Include="TimelineUnitTests.h"/>
+        <ClInclude Include="StoryboardUnitTests.h"/>
+
+        <ClCompile Include="DCompAnimationUnitTestHelper.cpp"/>
+        <ClCompile Include="AnimationUnitTests.cpp"/>
+        <ClCompile Include="TimelineUnitTests.cpp"/>
+        <ClCompile Include="DoubleAnimationUnitTests.cpp"/>
+        <ClCompile Include="RepeatBehaviorUnitTests.cpp"/>
+        <ClCompile Include="DoubleAnimationUsingKeyFramesUnitTests.cpp"/>
+        <ClCompile Include="KeySplineUnitTests.cpp"/>
+        <ClCompile Include="StoryboardUnitTests.cpp"/>
+
+        <!-- MockDComp.dll is needed for these unittests -->
+        <ReferenceCopyLocalPaths Include="$(WinUIDetailsRuntimesPath)\MockDComp.dll" />
+    </ItemGroup>
+
+    <ItemDefinitionGroup>
+        <Link>
+            <AdditionalDependencies>
+                $(FrameworkUdkLibPath)\Microsoft.Internal.FrameworkUdk.lib;
+                %(AdditionalDependencies);
+                $(WinUIDetailsRuntimesPath)\MockDComp.lib;
+            </AdditionalDependencies>
+        </Link>
+    </ItemDefinitionGroup>
+    
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\ut-nohybrid\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{33a6c9ea-636f-42fb-9ceb-15e54abab8e6}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\transforms\lib\Microsoft.UI.Xaml.Transforms.vcxproj" Project="{365cdabf-7f04-445d-a598-ba372821b5a6}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\text\lib\Microsoft.UI.Xaml.Text.vcxproj" Project="{df854298-841f-4dd5-9ddf-fefbc280a6d1}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

@@ -1,0 +1,88 @@
+// Copyright (c) Microsoft Corporation. Licensed under the MIT License.
+
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    TEST_RULE_ID            "Rule001"
+    TEST_RULE_TITLE         "Test rule that always fires"
+    TEST_RULE_IMPACT        "For testing purposes only"
+    TEST_RULE_SOLUTION      "Try harder!"
+    TEST_RULE_LINK_TITLE    "find the test on catgates"
+    TEST_RULE_LINK_URL      "http://catgates"
+    TEST_RULE_DESCRIPTION   "Silly test rule"
+    TEST_NESTED_RULE_ID     "Rule002"
+    TEST_NESTED_RULE_TITLE  "Test rule that verifies nested structure capabilities"
+    TEST_NESTED_RULE_IMPACT "For testing purposes only"
+    TEST_NESTED_RULE_SOLUTION "Keep on swimming"
+END
+
+STRINGTABLE
+BEGIN
+    TEST_NESTED_RULE_LINK_TITLE "find the test on catgates"
+    TEST_NESTED_RULE_LINK_URL "http://catgates"
+    TEST_NESTED_RULE_DESCRIPTION "Number 2"
+    TEST_MULTIPLE_PROVIDER_ID "Rule003"
+    TEST_MULTIPLE_PROVIDER_TITLE "Multiple providers"
+    TEST_MULTIPLE_PROVIDER_IMPACT 
+                            "Multiple providers out of order caused rules to get two events"
+    TEST_MULTIPLE_PROVIDER_SOLUTION 
+                            "Keep track of all providers in a map, not just the last one"
+    TEST_MULTIPLE_PROVIDER_LINK_TITLE "DNE"
+    TEST_MULTIPLE_PROVIDER_LINK_URL "http://doesnotexist.net"
+    TEST_MULTIPLE_PROVIDER_DESCRIPTION "BUG!"
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

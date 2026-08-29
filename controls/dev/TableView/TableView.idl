@@ -1,0 +1,669 @@
+namespace MU_XC_NAMESPACE
+{
+
+// Column pinning edge; None scrolls naturally, Leading pins left, Trailing is reserved.
+[MUX_PREVIEW]
+[webhosthidden]
+enum TableViewFrozenEdge
+{
+    None = 0,
+    Leading = 1,
+    Trailing = 2,
+};
+
+// Only None and Single this release. Multiple/Extended need an anchor and a range model; members
+// are appended, so these values stay stable when they arrive.
+[MUX_PREVIEW]
+[webhosthidden]
+enum TableViewSelectionMode
+{
+    None = 0,
+    Single = 1,
+};
+
+// Column-header visibility (None/Column). Mirrors the Column slot of WPF
+// DataGridHeadersVisibility; row headers are out of scope, so Row/All are not defined.
+[MUX_PREVIEW]
+[webhosthidden]
+[flags]
+enum TableViewHeadersVisibility
+{
+    None = 0,
+    Column = 1,
+};
+
+// Mirrors WPF DataGridGridLinesVisibility names and values for persisted casts.
+[MUX_PREVIEW]
+[webhosthidden]
+enum TableViewGridLinesVisibility
+{
+    All = 0,
+    Horizontal = 1,
+    None = 2,
+    Vertical = 3,
+};
+
+// Density preset for row height and built-in cell/header padding resources.
+[MUX_PREVIEW]
+[webhosthidden]
+enum TableViewDensity
+{
+    Compact = 0,
+    Standard = 1,
+    Comfortable = 2,
+};
+
+// How an edit closed.
+[MUX_PREVIEW]
+[webhosthidden]
+enum TableViewEditAction
+{
+    Commit = 0,
+    Cancel = 1,
+};
+
+// Direction sequence a column's header walks on repeated clicks. The first pair member is the
+// direction an unsorted column opens in: Ascending* suits names and categories, Descending* suits
+// metrics where the interesting rows are the largest (CPU, memory, size). The *None variants add a
+// trailing unsorted step, so a third click returns the column to source order instead of going
+// straight back to the opening direction.
+[MUX_PREVIEW]
+[webhosthidden]
+enum TableViewSortCycle
+{
+    AscendingDescending = 0,
+    AscendingDescendingNone = 1,
+    DescendingAscending = 2,
+    DescendingAscendingNone = 3,
+};
+
+// Orders two row items. Return <0, 0 or >0 like a classic three-way comparison. The comparer must
+// be a pure function of its inputs: re-entering the control from it is an app bug.
+// An interface rather than a delegate so a comparer can be declared as a XAML resource and assigned
+// in markup.
+[MUX_PREVIEW]
+[webhosthidden]
+interface ITableViewSortComparer
+{
+    Int32 Compare(Object left, Object right);
+};
+
+// Item-owned edit transaction (the WinRT counterpart of IEditableObject) is deliberately NOT in
+// this release. It is the rollback mechanism for ROW-scoped editing, and editing is cell-scoped
+// here, so shipping it now would be public surface with nothing behind it. It lands with row
+// editing, when it has a job to do.
+
+[MUX_PREVIEW]
+[webhosthidden]
+[contentproperty("Header")]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
+{
+    // Required for derivation: the overridable cell factories below are only reachable if a
+    // consumer can actually construct a derived column.
+    TableViewColumn();
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Object Header { get; set; };
+
+    // Optional header template; HeaderTemplateSelector takes precedence.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Microsoft.UI.Xaml.DataTemplate HeaderTemplate { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Microsoft.UI.Xaml.Controls.DataTemplateSelector HeaderTemplateSelector { get; set; };
+
+    // Width carries GridLength intent; ActualWidth is the resolved, MinWidth/MaxWidth-clamped
+    // pixels (see TableView_Layout.cpp). Pixel = exact; Auto = widest realized cell (grows within a
+    // data set); Star = a proportional share of the body viewport after fixed columns.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("c_widthDefault")]
+    Microsoft.UI.Xaml.GridLength Width { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("20.0")]
+    Double MinWidth { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("std::numeric_limits<double>::infinity()")]
+    Double MaxWidth { get; set; };
+
+    // Gates the resize affordance for this column only; the owner's CanUserResizeColumns gates all of them.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean CanResize { get; set; };
+
+    // Read-only DP written by the column's width resolve; the header host and realized cell panels
+    // arrange each cell to this width (no per-cell binding).
+    [MUX_DEFAULT_VALUE("120.0")]
+    Double ActualWidth { get; };
+
+    // Pins the column during horizontal scroll; Leading is implemented, Trailing reserved.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::TableViewFrozenEdge::None")]
+    MU_XC_NAMESPACE.TableViewFrozenEdge FrozenEdge { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::Visibility::Visible")]
+    Microsoft.UI.Xaml.Visibility Visibility { get; set; };
+
+    // Per-column opt-out for the click-to-sort UX. Default true. When false the header click
+    // handler ignores this column; programmatic SortByColumn still works.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean CanSort { get; set; };
+
+    // Direction sequence repeated header clicks walk for THIS column. Per-column because the cycle
+    // describes how one column responds to being clicked again, and a table can reasonably mix
+    // policies - a metric column that should open on its largest values alongside a name column
+    // that should open A-Z. Read at click time, so a change needs no rebuild.
+    [MUX_DEFAULT_VALUE("winrt::TableViewSortCycle::AscendingDescending")]
+    TableViewSortCycle SortCycle { get; set; };
+
+    // Property name on the row item used to extract the sort key. When empty, TableViewTextColumn
+    // falls back to its Binding.Path.Path; the base column returns an empty string and the column
+    // is only sortable if it supplies a CustomSortComparer.
+    //
+    // The path need not be unique. Several columns may name the same property - a common shape when
+    // one column formats a value and another ranks it. Each column sorts as its own independent
+    // axis, keyed on column identity rather than on this path, so duplicates neither collide nor
+    // prevent the table from being built. Sorting one of them leaves the others' SortDirection at
+    // None, since sorting is single-column: applying a sort clears any previous one.
+    String SortMemberPath { get; set; };
+
+    // Optional comparer supplied by the column for custom sort ordering. Takes precedence over
+    // SortMemberPath.
+    ITableViewSortComparer CustomSortComparer { get; set; };
+
+    // Read-only DP driven by the owning TableView. None means the column is not part of the
+    // active sort.
+    [MUX_DEFAULT_VALUE("winrt::SortDirection::None")]
+    SortDirection SortDirection { get; };
+
+    // Returns the effective sort key path. The base column returns SortMemberPath verbatim;
+    // TableViewTextColumn overrides to fall back to Binding.Path.Path when SortMemberPath is empty.
+    overridable String GetSortMemberPathCore();
+
+    // Generates the display-only visual root for a cell.
+    Microsoft.UI.Xaml.FrameworkElement GenerateElement(Object dataItem);
+
+    // Overridable cell factory. Custom columns return the display visual for a cell.
+    // The returned element must bind reactively to its inherited DataContext (the row data item) and
+    // must not set a local DataContext: rows are recycled and their DataContext is updated in place,
+    // so cells refresh through inheritance/bindings. dataItem is provided for initial setup only;
+    // baking it in as static content (or a local DataContext) will show stale data after recycle.
+    overridable Microsoft.UI.Xaml.FrameworkElement GenerateElementCore(Object dataItem);
+
+    // Per-column opt-out. A read-only column can still be the current cell, but cannot be edited.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsReadOnly { get; set; };
+
+    // Editing visual. A column with no CellEditingTemplate and no built-in editor is not editable.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Microsoft.UI.Xaml.DataTemplate CellEditingTemplate { get; set; };
+
+    // The editing hooks a derived column would override - GenerateEditingElement, PrepareCellForEdit,
+    // CommitCellEdit, CancelCellEdit - are internal in this release. The built-in columns use them,
+    // but a CellEditingTemplate is the supported way to customise an editor here, so publishing the
+    // hooks now would fix their exact shape forever. They can be added later without breaking anyone.
+    static Microsoft.UI.Xaml.DependencyProperty HeaderProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateSelectorProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty WidthProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty MinWidthProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty MaxWidthProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty CanResizeProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty ActualWidthProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty FrozenEdgeProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty VisibilityProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty CellEditingTemplateProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty CanSortProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty SortCycleProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty SortMemberPathProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty SortDirectionProperty { get; };
+};
+
+// ----- Sort event args -----
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewSortingEventArgs
+{
+    // The trigger column. Null is the clear-all sentinel used by ClearSort.
+    MU_XC_NAMESPACE.TableViewColumn Column { get; };
+
+    // The direction the control is about to apply.
+    SortDirection Direction { get; };
+
+    // Set true to stop the control applying the sort, leaving the app to own the ordering. The
+    // control's sort state, header glyph and Sorted event are all suppressed, so an app that
+    // orders the rows itself and wants the glyph to follow sets the column's state explicitly.
+    Boolean Cancel;
+};
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewSortedEventArgs
+{
+    // The trigger column for this sort-state change. Null is the clear-all sentinel.
+    MU_XC_NAMESPACE.TableViewColumn Column { get; };
+
+    // The direction now applied to the column.
+    SortDirection Direction { get; };
+};
+
+// ----- Editing event args -----
+// Cancel is read synchronously, right after the handler returns, so a handler must decide before
+// returning. Asynchronous validation would need a deferral, which is not in this release.
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewBeginningEditEventArgs
+{
+    Object Item { get; };
+    MU_XC_NAMESPACE.TableViewColumn Column { get; };
+    Boolean Cancel;
+};
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewCellEditEndingEventArgs
+{
+    Object Item { get; };
+    MU_XC_NAMESPACE.TableViewColumn Column { get; };
+    MU_XC_NAMESPACE.TableViewEditAction EditAction { get; };
+
+    Boolean Cancel;
+};
+
+[MUX_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass TableViewTextColumn : TableViewColumn
+{
+    TableViewTextColumn();
+
+    // CLR property so Binding-typed XAML values route through the setter.
+    Microsoft.UI.Xaml.Data.Binding Binding;
+};
+
+/// A column whose display visuals are consumer-defined via DataTemplates.
+[MUX_PREVIEW]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass TableViewTemplateColumn : TableViewColumn
+{
+    TableViewTemplateColumn();
+
+    /// Template used to generate display cell content.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Microsoft.UI.Xaml.DataTemplate CellTemplate { get; set; };
+
+    static Microsoft.UI.Xaml.DependencyProperty CellTemplateProperty { get; };
+};
+
+// Cell layout host used as PART_HeaderHost and each row's PART_CellsHost. Measures cells for Auto
+// size-to-content and arranges them at each column's resolved ActualWidth (see TableViewCellsPanel.cpp
+// and TableView_Layout.cpp).
+[MUX_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass TableViewCellsPanel : Microsoft.UI.Xaml.Controls.Panel
+{
+    TableViewCellsPanel();
+};
+
+// Read-only group-header projection: the binding source of a GroupHeaderTemplate.
+// Mirrors ICollectionViewGroup (Key <-> Group, ItemCount <-> GroupItems.Count).
+// Updated in place and raises PropertyChanged, so recycling does not re-evaluate
+// every binding in the header template.
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewGroupInfo : Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+{
+    Object Key { get; };            // the GroupBy key
+    Int32 ItemCount { get; };       // members in the group
+    Int32 Level { get; };           // 0 for single-level v1
+    Boolean IsExpandable { get; };  // false when the group can't expand (e.g. empty)
+    Boolean IsExpanded { get; };
+
+    // Culture-formatted display strings for the built-in content template.
+    // Computed lazily: a template binding only Key / ItemCount pays nothing.
+    String KeyText { get; };
+    String ItemCountText { get; };
+}
+
+[MUX_PREVIEW]
+[default_interface]
+[webhosthidden]
+runtimeclass TableViewGroupHeaderToggleRequestedEventArgs
+{
+    // Carried on the args so a handler that re-enters and mutates the header
+    // still sees the key that was actually activated.
+    Object GroupKey { get; };
+}
+
+// A templated ContentControl rather than a code-built visual tree: the chrome and
+// expander live in one control-owned ControlTemplate, and GroupHeaderTemplate fills
+// only the content region, so it cannot drop the expander or the themed band.
+// Replacing Style/Template outright still hands the app the whole visual -- the usual
+// re-template contract, which is why the parts are documented here.
+//
+// The whole band is the toggle target (matching ListView / TreeView) rather than a
+// nested Button, so there is one interactive element and one automation story.
+//
+// Parts (all optional; omitting one degrades rather than fails):
+//   PART_ExpanderGutter  Border    reserves the chevron column so content stays aligned
+//   PART_ExpanderIcon    FontIcon  glyph driven by ExpansionStates, not by code
+//   content region       inherited from ContentControl
+//
+// States: CommonStates Normal|PointerOver|Pressed|Disabled
+//         ExpansionStates Expanded|Collapsed
+//         ExpandabilityStates Expandable|NotExpandable
+[MUX_PREVIEW]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentControl
+{
+    TableViewGroupHeader();
+
+    // Content is the TableViewGroupInfo projection; ContentTemplate is the header content
+    // template. The default Style seeds it, and TableView.GroupHeaderTemplate overrides it as a
+    // local value that ClearValue reverts back to the Style setter.
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean IsExpanded { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean IsExpandable { get; set; };
+
+    // The owning row forwards this to TableView::ToggleGroupExpansion, keeping the header
+    // free of TableView plumbing and independently testable.
+    event Windows.Foundation.TypedEventHandler<TableViewGroupHeader, TableViewGroupHeaderToggleRequestedEventArgs> ToggleRequested;
+
+    static Microsoft.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsExpandableProperty { get; };
+}
+
+[MUX_PREVIEW]
+[webhosthidden]
+//
+// Template contract (MIDL3 does not surface [TemplatePart], so this block is it).
+// All parts are REQUIRED: the Selected* states target them by name, and an unresolved Storyboard
+// target fails when the state is applied, not when the template is parsed.
+//
+//   PART_RootBorder              — Border. Row chrome; Background driven by CommonStates.
+//   PART_CellsHost               — Panel. One cell wrapper per column, in Columns order.
+//   PART_CellForegroundPresenter — ContentPresenter hosting PART_CellsHost. Exists because a
+//                                  Border has no Foreground for the Selected* states to animate.
+//   PART_SelectionIndicator      — UIElement. Opacity animated 0 -> 1 by the Selected* states.
+//
+//   CommonStates: Normal, PointerOver, Pressed, Disabled,
+//                 Selected, SelectedPointerOver, SelectedPressed, SelectedDisabled
+//
+// Selected states share this one group so nothing depends on GoToState call order.
+// Multiple/Extended selection will add a separate MultiSelectStates group (and a checkbox part)
+// rather than extending this one, so it stays additive for existing templates.
+//
+unsealed runtimeclass TableViewRow : Microsoft.UI.Xaml.Controls.Control
+{
+    TableViewRow();
+
+    // Read-only DP written only by the owning TableView (Register + a setter that is not
+    // projected, NOT RegisterReadOnly). Drives the Selected* states.
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsSelected { get; };
+
+    static Microsoft.UI.Xaml.DependencyProperty IsSelectedProperty { get; };
+};
+
+[MUX_PREVIEW]
+[webhosthidden]
+[contentproperty("Columns")]
+//
+// Template contract: re-templates must provide these named parts.
+// Missing required parts disables the related feature.
+//
+//   PART_HeaderRow      — FrameworkElement. Collapsed when headers are hidden.
+//   PART_HeaderHost     — Panel. Receives one header cell per column.
+//   PART_RowsRepeater   — ItemsRepeater. Hosts row containers; do not TemplateBind ItemsSource.
+//   PART_EmptyStatePresenter — ContentControl/ContentPresenter (optional). Hosts EmptyTemplate.
+//
+// Unsealed: ReferenceTracker requires the cppwinrt-projected derivable type surface.
+//
+unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
+{
+    TableView();
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Object ItemsSource { get; set; };
+
+    // ABI exposes IVector, but the backing vector is observable for live column updates.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Windows.Foundation.Collections.IVector<TableViewColumn> Columns { get; };
+
+    // Controls column-header visibility without mutating Columns.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::TableViewHeadersVisibility::Column")]
+    TableViewHeadersVisibility HeadersVisibility { get; set; };
+
+    // Controls row dividers and column separators; row banding is separate.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::TableViewGridLinesVisibility::All")]
+    TableViewGridLinesVisibility GridLinesVisibility { get; set; };
+
+    // Master switch for the column-resize affordance; a column opts out individually via CanResize.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean CanUserResizeColumns { get; set; };
+
+    // Opt-in row banding; null brushes preserve the theme row background.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Microsoft.UI.Xaml.Media.Brush RowBackground { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Microsoft.UI.Xaml.Media.Brush AlternatingRowBackground { get; set; };
+
+    // Optional empty-state template shown when ItemsSource is null or empty.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Microsoft.UI.Xaml.DataTemplate EmptyTemplate { get; set; };
+
+    // [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)] belongs here -- swapping the template at runtime has
+    // to re-inflate the realized headers. The handler lives in TableView.cpp, which this PR does
+    // not carry, so the attribute travels with it rather than pointing at a method that is not
+    // here yet.
+    Microsoft.UI.Xaml.DataTemplate GroupHeaderTemplate { get; set; };
+
+    // Vertical density preset for row height and built-in cell/header padding.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::TableViewDensity::Standard")]
+    TableViewDensity Density { get; set; };
+
+    // Editing is opt-in: while true (the default) no cell can be edited, whatever the column says.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsReadOnly { get; set; };
+
+    // ----- Editing -----
+
+    // True while an edit is in flight on a cell: from the edit being accepted, through the open
+    // editor, until the matching close completes.
+    //
+    // It also covers the brief windows where an edit is still opening and where a close is already
+    // underway, because the control uses this to reject re-entrant edit operations from inside
+    // consumer callbacks. An app querying it from a BeginningEdit handler therefore sees true even
+    // if that handler goes on to cancel.
+    //
+    // Cell scope: this is "a cell editor is open". Row-scoped editing is not part of this release.
+    Boolean IsEditing { get; };
+
+    // Editing starts from the user: double-click, or F2 on the current cell. There is no
+    // programmatic BeginEdit in this release, and therefore no public current-cell surface for one
+    // to target. Both arrive together when there is a scenario - a context menu or a view-model
+    // command - to justify them.
+
+    // Closes the open CELL edit. False when it did not close: a veto or failed validation leaves the
+    // edit open and IsEditing true.
+    //
+    // There is no row-scoped commit/cancel API and no RowEditEnding in this release; both arrive
+    // with row editing.
+    Boolean CommitEdit();
+    Boolean CancelEdit();
+
+    event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewBeginningEditEventArgs> BeginningEdit;
+    event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewCellEditEndingEventArgs> CellEditEnding;
+
+    // There is no post-close event in this release. CellEditEnding reports the outcome through
+    // EditAction and is raised for every close, so a second "it finished" event is surface without
+    // a scenario of its own yet. It can be added later without breaking anyone.
+
+    // ----- Selection -----
+    // Row-scoped, single item. SelectedItem and SelectedIndex are read-only projections of the
+    // selection and stay coherent with each other. Drive selection through Select / Deselect /
+    // DeselectAll, matching ItemsView. Independent of editing.
+
+    // On by default, matching ItemsView, ListView and WPF's DataGrid. None = display-only.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::TableViewSelectionMode::Single")]
+    TableViewSelectionMode SelectionMode { get; set; };
+
+    // The selected data item, or null.
+    Object SelectedItem { get; };
+
+    // The selected item's index, or -1 when nothing is selected.
+    [MUX_DEFAULT_VALUE("-1")]
+    Int32 SelectedIndex { get; };
+
+    // Named to match ItemsView. No identity-based overloads: an index is the only addressing mode.
+    void Select(Int32 index);
+    void Deselect(Int32 index);
+    Boolean IsSelected(Int32 index);
+    void DeselectAll();
+
+    event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs> SelectionChanged;
+
+    // ----- Sorting -----
+    // Single-column sort. The control reshapes the rows itself: an ItemsSource that is not already
+    // a TableViewSource is projected through one internally, so sorting works over any collection
+    // the control can display. Sorting is raised first; cancel it to own the ordering instead.
+    // The active sort state lives on the column, as TableViewColumn.SortDirection; Sorted hands
+    // the app the column that changed, and a null column there means the sort was cleared.
+
+    // Control-wide gate for the click-to-sort UX. When false no sort affordance is built and
+    // header clicks do not sort; programmatic sorting still works. The per-column cycle policy is
+    // TableViewColumn.SortCycle.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean CanUserSortColumns { get; set; };
+
+    // Clears any other sort state, then sets this column's SortDirection. Pass SortDirection.None
+    // to clear. Returns true when the sort state changed.
+    Boolean SortByColumn(MU_XC_NAMESPACE.TableViewColumn column, SortDirection direction);
+
+    // Cycles the trigger column's direction per SortCycle, clearing any other sort state first.
+    // Returns true when the sort state changed.
+    Boolean ToggleSortDirection(MU_XC_NAMESPACE.TableViewColumn column);
+
+    // Clears every column's sort state in one batch. Returns true when anything was cleared.
+    Boolean ClearSort();
+
+    // Raised BEFORE a sort-state change is applied. Set Cancel=true to keep the control's sort
+    // state unchanged and let the app own the ordering.
+    event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewSortingEventArgs> Sorting;
+
+    // Raised AFTER a sort-state change has been applied. Not cancellable.
+    event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewSortedEventArgs> Sorted;
+
+    static Microsoft.UI.Xaml.DependencyProperty ItemsSourceProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty HeadersVisibilityProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty GridLinesVisibilityProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty CanUserResizeColumnsProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty RowBackgroundProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty AlternatingRowBackgroundProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty EmptyTemplateProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty GroupHeaderTemplateProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty DensityProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty SelectionModeProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty SelectedItemProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty SelectedIndexProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty CanUserSortColumnsProperty { get; };
+};
+
+[MUX_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass TableViewAutomationPeer
+    : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
+      Microsoft.UI.Xaml.Automation.Provider.ISelectionProvider,
+      Microsoft.UI.Xaml.Automation.Provider.IGridProvider,
+      Microsoft.UI.Xaml.Automation.Provider.ITableProvider,
+      Microsoft.UI.Xaml.Automation.Provider.IItemContainerProvider
+{
+    TableViewAutomationPeer(MU_XC_NAMESPACE.TableView owner);
+}
+
+[MUX_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass TableViewRowAutomationPeer
+    : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
+      Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider
+{
+    TableViewRowAutomationPeer(MU_XC_NAMESPACE.TableViewRow owner);
+}
+
+// CARVE-OUT: declared but commented out. TableViewRowTemplateSelector.cpp is not compiled on
+// this branch because SelectTemplateCore calls TableView::GetRowKindForItem, which lives in
+// TableView_Grouping.cpp on the feature branch. The shape below is what ships; uncomment this
+// block and the ClCompile entry when the grouping stack lands.
+// // Picks the row container template from TableViewRowKind. Set as PART_RowsRepeater.ItemTemplate,
+// // so ItemsRepeater supplies the per-template recycle pools. Projected only because
+// // ItemTemplateWrapper lives in another DLL; not app-facing, since selection needs an owning
+// // TableView that only TableView can set. unsealed + ctor is what MIDL requires for a member-less
+// // runtimeclass.
+// [MUX_INTERNAL]
+// [webhosthidden]
+// unsealed runtimeclass TableViewRowTemplateSelector
+//     : Microsoft.UI.Xaml.Controls.DataTemplateSelector
+// {
+//     TableViewRowTemplateSelector();
+// }
+
+// Automation peer for the group-header band. Separate from TableViewRowAutomationPeer because
+// the header is now its own container rather than a row in "group mode": there is no adaptive
+// branch, no GridItem coordinates for a band that spans every column, and ExpandCollapse is
+// unconditional (a non-expandable group reports LeafNode rather than dropping the pattern).
+[MUX_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass TableViewGroupHeaderAutomationPeer
+    : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
+      Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider,
+      Microsoft.UI.Xaml.Automation.Provider.IGridItemProvider
+{
+    TableViewGroupHeaderAutomationPeer(MU_XC_NAMESPACE.TableViewGroupHeader owner);
+}
+
+// Header peer gives plain Grid header visuals distinct automation metadata.
+[MUX_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass TableViewColumnHeaderAutomationPeer
+    : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
+      Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider
+{
+    TableViewColumnHeaderAutomationPeer(MU_XC_NAMESPACE.TableView owner, MU_XC_NAMESPACE.TableViewColumn column);
+}
+
+// Cell peer supplies per-cell grid/table structure and "{column header}, {cell value}" names.
+[MUX_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass TableViewCellAutomationPeer
+    : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
+      Microsoft.UI.Xaml.Automation.Provider.IGridItemProvider,
+      Microsoft.UI.Xaml.Automation.Provider.ITableItemProvider,
+      Microsoft.UI.Xaml.Automation.Provider.IValueProvider
+{
+    TableViewCellAutomationPeer(Microsoft.UI.Xaml.FrameworkElement cell, MU_XC_NAMESPACE.TableViewRow row, MU_XC_NAMESPACE.TableViewColumn column, Int32 columnIndex);
+}
+
+}

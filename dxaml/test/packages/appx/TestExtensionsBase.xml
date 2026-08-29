@@ -1,0 +1,47 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+    <Extension Category="windows.activatableClass.inProcessServer">
+        <InProcessServer>
+          <Path>Private.Infrastructure.Client.dll</Path>
+          <ActivatableClass ActivatableClassId="Private.Infrastructure.TestServices" ThreadingModel="both" />
+          <ActivatableClass ActivatableClassId="Private.Infrastructure.WindowHelper" ThreadingModel="both" />
+          <ActivatableClass ActivatableClassId="Private.Infrastructure.ETWWaiterHelper" ThreadingModel="both" />
+          <ActivatableClass ActivatableClassId="Private.Infrastructure.StoryboardMonitor" ThreadingModel="both" />
+          <ActivatableClass ActivatableClassId="Private.Infrastructure.TraceConsumer" ThreadingModel="both" />
+          <ActivatableClass ActivatableClassId="Private.Infrastructure.AppAnalysisClientHelper" ThreadingModel="both" />
+          <ActivatableClass ActivatableClassId="Private.Infrastructure.CustomMetadataRegistrar" ThreadingModel="both" />
+          <ActivatableClass ActivatableClassId="Private.Infrastructure.TestHostSettings" ThreadingModel="both" />
+          <ActivatableClass ActivatableClassId="Private.Infrastructure.IslandHelper" ThreadingModel="both" />
+          <ActivatableClass ActivatableClassId="Private.Infrastructure.VisualTreeVerifier" ThreadingModel="both" />
+        </InProcessServer>
+    </Extension>
+    <Extension Category="windows.activatableClass.inProcessServer">
+      <InProcessServer>
+        <Path>CLRHost.dll</Path>
+        <ActivatableClass ActivatableClassId="Private.Infrastructure.Hosting.AppWindow.AppWindowHostFactory" ThreadingModel="both" />
+      </InProcessServer>
+    </Extension>
+    <Extension Category="windows.activatableClass.inProcessServer">
+      <InProcessServer>
+        <Path>TE.AppxUnitTestClient.dll</Path>
+        <ActivatableClass ActivatableClassId="Microsoft.VisualStudio.TestPlatform.TestExecutor.WinRTCore.UnitTestClient" ThreadingModel="both" />
+      </InProcessServer>
+    </Extension>
+    <Extension Category="windows.activatableClass.inProcessServer">
+      <InProcessServer>
+        <Path>Microsoft.Diagnostics.AppAnalysis.dll</Path>
+        <ActivatableClass ActivatableClassId="Microsoft.Diagnostics.AppAnalysis.EtwRuleSet" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.Diagnostics.AppAnalysis.ResourceString" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.Diagnostics.AppAnalysis.EtwEventWatcher" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.Diagnostics.AppAnalysis.EtwEvent" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.Diagnostics.AppAnalysis.EtwProvider" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.Diagnostics.AppAnalysis.RuleTriggeredEventArgs" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.Diagnostics.AppAnalysis.EtwRule" ThreadingModel="both" />
+      </InProcessServer>
+    </Extension>
+    <Extension Category="windows.activatableClass.inProcessServer">
+      <InProcessServer>
+        <Path>WinRT.Host.dll</Path>
+        <ActivatableClass ActivatableClassId="Private.Infrastructure.Hosting.HostingHelpers.HostingSetupHelper" ThreadingModel="both" />
+      </InProcessServer>
+    </Extension>

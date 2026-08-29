@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="400">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="50" SizeY="150">
+              <Opacity>
+                <KeyFrameAnimation Duration="1000">
+                  <KeyFrame Time="1">
+                    <LinearEasingFunction />
+                  </KeyFrame>
+                </KeyFrameAnimation>
+              </Opacity>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft" TransparentForInput="True">
+                  <ColorBrush Color="rgb {0.502, 0, 0.502}" />
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft" OffsetX="0" OffsetY="50" OffsetZ="0">
+                  <ColorBrush Color="rgb {1, 1, 0}" />
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft" OffsetX="0" OffsetY="100" OffsetZ="0">
+                  <ColorBrush Color="rgb {0, 0.502, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

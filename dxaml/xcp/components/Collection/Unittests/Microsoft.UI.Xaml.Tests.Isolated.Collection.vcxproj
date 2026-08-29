@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{8be7a3d8-890f-4ac2-8a36-bd1f736fc2c1}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\unittest-uielement.props"/>
+
+    <!-- Satisfy "UT", which currently doesn't parse includes. -->
+    <!-- UT:TARGETTYPE=DYNLINK                                 -->
+    <!-- UT:TARGET_DESTINATION=NTTEST\WINDOWSTEST\dxaml\test   -->
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\text\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="CollectionUnitTests.h"/>
+
+        <ClCompile Include="CollectionUnitTests.cpp"/>
+    </ItemGroup>
+
+    <ItemDefinitionGroup>
+        <Link>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\ut\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\Collection\lib\Microsoft.UI.Xaml.Collection.vcxproj" Project="{808bc3a6-a9e1-4e36-bdf7-1f3c12de8464}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\dependencyObject\lib\Microsoft.UI.Xaml.DependencyObject.vcxproj" Project="{f7139209-4407-43f4-b04b-cddfcbfd5a65}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\elements\lib\Microsoft.UI.Xaml.Elements.vcxproj" Project="{425451f3-e2fe-49a1-a7f5-a3776e963b5e}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\simple\lib\Microsoft.UI.Xaml.Framework.SimpleProperties.vcxproj" Project="{4a1f0ce8-0b6e-4d29-9799-a629c067543a}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\colors\lib\Microsoft.UI.Xaml.Colors.vcxproj" Project="{6b5aed1f-fd5d-47bc-9b9a-37d56e2c2e97}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\runtimeEnabledFeatures\lib\Microsoft.UI.Xaml.RuntimeEnabledFeatures.vcxproj" Project="{968dc6e1-0f0a-4211-97cc-57ab0754206b}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\legacy\lib\Microsoft.UI.Xaml.Legacy.vcxproj" Project="{95d07701-4af9-48e5-b726-0d42034811c8}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\unittests\stubs\Microsoft.UI.Xaml.Stubs.vcxproj" Project="{ec5bfab1-619b-45cb-b8ec-db81f3c7811b}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\transforms\lib\Microsoft.UI.Xaml.Transforms.vcxproj" Project="{365cdabf-7f04-445d-a598-ba372821b5a6}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\text\lib\Microsoft.UI.Xaml.Text.vcxproj" Project="{df854298-841f-4dd5-9ddf-fefbc280a6d1}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

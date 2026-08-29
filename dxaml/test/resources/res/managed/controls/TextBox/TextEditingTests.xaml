@@ -1,0 +1,106 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+      x:Name="LayoutRoot"  Background="Blue"
+      Width="800" Height="450">
+  <Grid Width="750" Height="380" Background="Green" Canvas.Top="20" Canvas.Left="20">
+    <Grid.Resources>
+        <SolidColorBrush x:Name="selectionHighlightBrush" Color="Orange"/>
+    </Grid.Resources>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="240" />
+      <ColumnDefinition Width="240" />
+      <ColumnDefinition Width="240" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="40" />
+      <RowDefinition Height="40" />
+      <RowDefinition Height="40" />
+      <RowDefinition Height="40" />
+      <RowDefinition Height="40" />
+      <RowDefinition Height="40" />
+      <RowDefinition Height="40" />
+      <RowDefinition Height="40" />
+      <RowDefinition Height="40" />
+    </Grid.RowDefinitions>
+
+    <Border Grid.Column="0" Grid.Row="0" BorderBrush="Black" BorderThickness="1">
+      <TextBox x:Name="txbxNormal" Text="initial text" />
+    </Border>
+    <Border Grid.Column="0" Grid.Row="1" BorderBrush="Black" BorderThickness="1">
+      <TextBox x:Name="txbxHScroll" />
+    </Border>
+    <Border Grid.Column="0" Grid.Row="2" BorderBrush="Black" BorderThickness="1">
+      <TextBox x:Name="txbxVScroll" AcceptsReturn="true" />
+    </Border>
+    <Border Grid.Column="0" Grid.Row="3" BorderBrush="Black" BorderThickness="1">
+      <TextBox x:Name="txbxARnoTWno" />
+    </Border>
+    <Border Grid.Column="0" Grid.Row="4" BorderBrush="Black" BorderThickness="1">
+      <TextBox x:Name="txbxARyesTWno" AcceptsReturn="true" />
+    </Border>
+    <Border Grid.Column="0" Grid.Row="5" BorderBrush="Black" BorderThickness="1">
+      <TextBox x:Name="txbxARnoTWyes" TextWrapping="wrap" />
+    </Border>
+    <Border Grid.Column="0" Grid.Row="6" BorderBrush="Black" BorderThickness="1">
+      <TextBox x:Name="txbxARyesTWyes" AcceptsReturn="true" TextWrapping="wrap" />
+    </Border>
+    <Border Grid.Column="0" Grid.Row="7" BorderBrush="Black" BorderThickness="1">
+      <TextBox x:Name="txbxCenter" TextAlignment="Center" FontStretch="Condensed" />
+    </Border>
+    <Border Grid.Column="0" Grid.Row="8" BorderBrush="Black" BorderThickness="1">
+      <TextBox x:Name="txbxRight" TextAlignment="Right" FontWeight="Bold" Foreground="Blue" />
+    </Border>
+
+    <Border Grid.Column="1" Grid.Row="0" BorderBrush="Black" BorderThickness="1">
+      <RichEditBox x:Name="rebxNormal" />
+    </Border>
+    <Border Grid.Column="1" Grid.Row="1" BorderBrush="Black" BorderThickness="1">
+      <RichEditBox x:Name="rebxHScroll" TextWrapping="NoWrap" />
+    </Border>
+    <Border Grid.Column="1" Grid.Row="2" BorderBrush="Black" BorderThickness="1">
+      <RichEditBox x:Name="rebxVScroll" />
+    </Border>
+    <Border Grid.Column="1" Grid.Row="3" BorderBrush="Black" BorderThickness="1">
+      <RichEditBox x:Name="rebxARnoTWno" AcceptsReturn="false" TextWrapping="Nowrap" />
+    </Border>
+    <Border Grid.Column="1" Grid.Row="4" BorderBrush="Black" BorderThickness="1">
+      <RichEditBox x:Name="rebxARyesTWno" TextWrapping="Nowrap" />
+    </Border>
+    <Border Grid.Column="1" Grid.Row="5" BorderBrush="Black" BorderThickness="1">
+      <RichEditBox x:Name="rebxARnoTWyes" AcceptsReturn="false" />
+    </Border>
+    <Border Grid.Column="1" Grid.Row="6" BorderBrush="Black" BorderThickness="1">
+      <RichEditBox x:Name="rebxARyesTWyes" />
+    </Border>
+    <Border Grid.Column="1" Grid.Row="7" BorderBrush="Black" BorderThickness="1">
+      <RichEditBox x:Name="rebxCenter" TextAlignment="Center" FontStretch="Condensed" />
+    </Border>
+    <Border Grid.Column="1" Grid.Row="8" BorderBrush="Black" BorderThickness="1">
+      <RichEditBox x:Name="rebxRight" TextAlignment="Right" FontWeight="Bold" Foreground="Blue" />
+    </Border>
+
+    <Border Grid.Column="2" Grid.Row="0" BorderBrush="Black" BorderThickness="1">
+      <PasswordBox x:Name="pwbxNormal" />
+    </Border>
+    <Border Grid.Column="2" Grid.Row="1" BorderBrush="Black" BorderThickness="1">
+      <PasswordBox x:Name="pwbxEmpty" />
+    </Border>
+    <Border Grid.Column="2" Grid.Row="2" BorderBrush="Black" BorderThickness="1">
+      <TextBox x:Name="txbxEmpty" />
+    </Border>
+    <Border Grid.Column="2" Grid.Row="3" BorderBrush="Black" BorderThickness="1">
+      <TextBlock>AcceptsReturn = false, TextWrapping = NoWrap</TextBlock>
+    </Border>
+    <Border Grid.Column="2" Grid.Row="4" BorderBrush="Black" BorderThickness="1">
+      <TextBlock>AcceptsReturn = true, TextWrapping = NoWrap</TextBlock>
+    </Border>
+    <Border Grid.Column="2" Grid.Row="5" BorderBrush="Black" BorderThickness="1">
+      <TextBlock>AcceptsReturn = false, TextWrapping = Wrap</TextBlock>
+    </Border>
+    <Border Grid.Column="2" Grid.Row="6" BorderBrush="Black" BorderThickness="1">
+      <TextBlock>AcceptsReturn = true, TextWrapping = Wrap</TextBlock>
+    </Border>
+
+  </Grid>
+</Canvas>

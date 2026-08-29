@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="100" SizeY="80" BorderMode="Soft">
+            <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="20" TransformMatrix="Identity" />
+            <MaskBrush>
+              <Source>
+                <ColorBrush Color="Argb {0.502, 1, 0, 0}" />
+              </Source>
+              <Mask>
+                <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="1" />
+              </Mask>
+            </MaskBrush>
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="100" SizeY="80" BorderMode="Soft" OffsetX="110" OffsetY="0" OffsetZ="0">
+            <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="20" TransformMatrix="Identity" />
+            <MaskBrush>
+              <Source>
+                <ColorBrush Color="Argb {0.502, 1, 0, 0}" />
+              </Source>
+              <Mask>
+                <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="2" />
+              </Mask>
+            </MaskBrush>
+          </wucSpriteVisual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

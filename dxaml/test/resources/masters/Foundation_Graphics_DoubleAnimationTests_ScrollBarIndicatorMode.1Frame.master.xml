@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="400" SizeY="300" BorderMode="Soft">
+            <ColorBrush Color="#ff000000" />
+          </wucSpriteVisual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="100" SizeY="12">
+              <Visual Tag="RoundedCornerClipVisual">
+                <Clip ClipLeft="0" ClipTop="0" ClipRight="100" ClipBottom="12" ClipTopLeftRadiusX="3" ClipTopLeftRadiusY="3" ClipTopRightRadiusX="3" ClipTopRightRadiusY="3" ClipBottomLeftRadiusX="3" ClipBottomLeftRadiusY="3" ClipBottomRightRadiusX="3" ClipBottomRightRadiusY="3" TransformMatrix="Identity" />
+                <Visual Tag="ContentVisual">
+                  <wucSpriteVisual SizeX="100" SizeY="12" BorderMode="Soft" TransparentForInput="True">
+                    <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                  </wucSpriteVisual>
+                  <Visual Tag="PrependVisual">
+                    <Visual Tag="PrimaryVisual" SizeX="100" SizeY="12">
+                      <Opacity>
+                        <ExpressionAnimation String="PS.Opacity">
+                          <ReferenceParameter Name="PS" />
+                          <PropertySet>
+                            <Property Name="Opacity" Type="Scalar">
+                              <KeyFrameAnimation Duration="0.083">
+                                <KeyFrame />
+                                <KeyFrame Time="1">
+                                  <LinearEasingFunction />
+                                </KeyFrame>
+                              </KeyFrameAnimation>
+                            </Property>
+                          </PropertySet>
+                        </ExpressionAnimation>
+                      </Opacity>
+                      <Visual Tag="ContentVisual">
+                        <wucSpriteVisual SizeX="100" SizeY="12" BorderMode="Soft" TransparentForInput="True">
+                          <MaskBrush>
+                            <Source>
+                              <ColorBrush Color="rgb {0.1725, 0.1725, 0.1725}" />
+                            </Source>
+                            <Mask>
+                              <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                            </Mask>
+                          </MaskBrush>
+                        </wucSpriteVisual>
+                        <wucSpriteVisual SizeX="100" SizeY="12" BorderMode="Soft" TransparentForInput="True">
+                          <MaskBrush>
+                            <Source>
+                              <ColorBrush Color="rgb {0.1725, 0.1725, 0.1725}" />
+                            </Source>
+                            <Mask>
+                              <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                            </Mask>
+                          </MaskBrush>
+                        </wucSpriteVisual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                  <Visual Tag="PrependVisual">
+                    <Visual Tag="PrimaryVisual" SizeX="12" SizeY="12">
+                      <Opacity>
+                        <ExpressionAnimation String="PS.Opacity">
+                          <ReferenceParameter Name="PS" />
+                          <PropertySet>
+                            <Property Name="Opacity" Type="Scalar">
+                              <KeyFrameAnimation Duration="0.083">
+                                <KeyFrame />
+                                <KeyFrame Time="1">
+                                  <LinearEasingFunction />
+                                </KeyFrame>
+                              </KeyFrameAnimation>
+                            </Property>
+                          </PropertySet>
+                        </ExpressionAnimation>
+                      </Opacity>
+                      <Visual Tag="ContentVisual">
+                        <wucSpriteVisual SizeX="12" SizeY="12" BorderMode="Soft" TransparentForInput="True">
+                          <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                        </wucSpriteVisual>
+                        <wucSpriteVisual SizeX="8" SizeY="12" BorderMode="Soft" TransparentForInput="True" OffsetX="4" OffsetY="0" OffsetZ="0">
+                          <ColorBrush Color="#00000000" />
+                        </wucSpriteVisual>
+                        <wucSpriteVisual SizeX="4" SizeY="6" BorderMode="Hard" TransparentForInput="True" OffsetX="6" OffsetY="4" OffsetZ="0">
+                          <MaskBrush>
+                            <Source>
+                              <ColorBrush Color="Argb {0.5451, 1, 1, 1}" />
+                            </Source>
+                            <Mask>
+                              <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                            </Mask>
+                          </MaskBrush>
+                        </wucSpriteVisual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                  <Visual Tag="PrependVisual">
+                    <Visual Tag="PrimaryVisual" SizeX="0" SizeY="12" OffsetX="12" OffsetY="0" OffsetZ="0">
+                      <Opacity>
+                        <ExpressionAnimation String="PS.Opacity">
+                          <ReferenceParameter Name="PS" />
+                          <PropertySet>
+                            <Property Name="Opacity" Type="Scalar">
+                              <KeyFrameAnimation Duration="0.083">
+                                <KeyFrame />
+                                <KeyFrame Time="1">
+                                  <LinearEasingFunction />
+                                </KeyFrame>
+                              </KeyFrameAnimation>
+                            </Property>
+                          </PropertySet>
+                        </ExpressionAnimation>
+                      </Opacity>
+                      <Visual Tag="ContentVisual">
+                        <wucSpriteVisual SizeX="0" SizeY="12" BorderMode="Soft" TransparentForInput="True">
+                          <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                        </wucSpriteVisual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                  <Visual Tag="PrependVisual">
+                    <Visual Tag="PrimaryVisual" SizeX="30" SizeY="8" OffsetX="12" OffsetY="2" OffsetZ="0">
+                      <Opacity>
+                        <ExpressionAnimation String="PS.Opacity">
+                          <ReferenceParameter Name="PS" />
+                          <PropertySet>
+                            <Property Name="Opacity" Type="Scalar">
+                              <KeyFrameAnimation Duration="0.083">
+                                <KeyFrame Value="1" />
+                                <KeyFrame Time="1">
+                                  <LinearEasingFunction />
+                                </KeyFrame>
+                              </KeyFrameAnimation>
+                            </Property>
+                          </PropertySet>
+                        </ExpressionAnimation>
+                      </Opacity>
+                      <TransformMatrix>
+                        <ExpressionAnimation String="Matrix4x4(LOCAL.Render)">
+                          <ReferenceParameter Name="LOCAL">
+                            <PropertySet>
+                              <Property Name="Render" Type="Matrix3x2">
+                                <ExpressionAnimation String="Matrix3x2.CreateFromTranslation(-vector2(PS.X, PS.Y)) * PS.Expression * Matrix3x2.CreateFromTranslation(vector2(PS.X, PS.Y))">
+                                  <ReferenceParameter Name="PS" />
+                                  <PropertySet>
+                                    <Property Name="Expression" Type="Matrix3x2">
+                                      <ExpressionAnimation String="Matrix3x2.CreateFromTranslation(vector2(PS.X, PS.Y))">
+                                        <ReferenceParameter Name="PS" />
+                                        <PropertySet>
+                                          <Property Name="X" Type="Scalar" />
+                                          <Property Name="Y" Type="Scalar">
+                                            <KeyFrameAnimation Duration="0.167">
+                                              <KeyFrame Value="2" />
+                                              <KeyFrame Time="1" Value="2">
+                                                <CubicBezierEasingFunction Offset2X="0" Offset2Y="1" />
+                                              </KeyFrame>
+                                            </KeyFrameAnimation>
+                                          </Property>
+                                        </PropertySet>
+                                      </ExpressionAnimation>
+                                    </Property>
+                                    <Property Name="X" Type="Scalar" Value="15" />
+                                    <Property Name="Y" Type="Scalar" Value="8" />
+                                  </PropertySet>
+                                </ExpressionAnimation>
+                              </Property>
+                            </PropertySet>
+                          </ReferenceParameter>
+                        </ExpressionAnimation>
+                      </TransformMatrix>
+                      <Visual Tag="ContentVisual">
+                        <wucSpriteVisual SizeX="30" SizeY="8" BorderMode="Soft" TransparentForInput="True">
+                          <MaskBrush>
+                            <Source>
+                              <ColorBrush Color="Argb {0.5451, 1, 1, 1}" />
+                            </Source>
+                            <Mask>
+                              <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                            </Mask>
+                          </MaskBrush>
+                        </wucSpriteVisual>
+                        <wucSpriteVisual SizeX="30" SizeY="8" BorderMode="Soft" TransparentForInput="True" OffsetX="2.384e-07" OffsetY="0" OffsetZ="0">
+                          <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                        </wucSpriteVisual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                  <Visual Tag="PrependVisual">
+                    <Visual Tag="PrimaryVisual" SizeX="46" SizeY="12" OffsetX="42" OffsetY="0" OffsetZ="0">
+                      <Opacity>
+                        <ExpressionAnimation String="PS.Opacity">
+                          <ReferenceParameter Name="PS" />
+                          <PropertySet>
+                            <Property Name="Opacity" Type="Scalar">
+                              <KeyFrameAnimation Duration="0.083">
+                                <KeyFrame />
+                                <KeyFrame Time="1">
+                                  <LinearEasingFunction />
+                                </KeyFrame>
+                              </KeyFrameAnimation>
+                            </Property>
+                          </PropertySet>
+                        </ExpressionAnimation>
+                      </Opacity>
+                      <Visual Tag="ContentVisual">
+                        <wucSpriteVisual SizeX="46" SizeY="12" BorderMode="Soft" TransparentForInput="True">
+                          <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                        </wucSpriteVisual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                  <Visual Tag="PrependVisual">
+                    <Visual Tag="PrimaryVisual" SizeX="12" SizeY="12" OffsetX="88" OffsetY="0" OffsetZ="0">
+                      <Opacity>
+                        <ExpressionAnimation String="PS.Opacity">
+                          <ReferenceParameter Name="PS" />
+                          <PropertySet>
+                            <Property Name="Opacity" Type="Scalar">
+                              <KeyFrameAnimation Duration="0.083">
+                                <KeyFrame />
+                                <KeyFrame Time="1">
+                                  <LinearEasingFunction />
+                                </KeyFrame>
+                              </KeyFrameAnimation>
+                            </Property>
+                          </PropertySet>
+                        </ExpressionAnimation>
+                      </Opacity>
+                      <Visual Tag="ContentVisual">
+                        <wucSpriteVisual SizeX="12" SizeY="12" BorderMode="Soft" TransparentForInput="True">
+                          <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                        </wucSpriteVisual>
+                        <wucSpriteVisual SizeX="8" SizeY="12" BorderMode="Soft" TransparentForInput="True">
+                          <ColorBrush Color="#00000000" />
+                        </wucSpriteVisual>
+                        <wucSpriteVisual SizeX="4" SizeY="6" BorderMode="Hard" TransparentForInput="True" OffsetX="2" OffsetY="4" OffsetZ="0">
+                          <MaskBrush>
+                            <Source>
+                              <ColorBrush Color="Argb {0.5451, 1, 1, 1}" />
+                            </Source>
+                            <Mask>
+                              <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                            </Mask>
+                          </MaskBrush>
+                        </wucSpriteVisual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                  <wucSpriteVisual SizeX="100" SizeY="12" BorderMode="Soft" TransparentForInput="True">
+                    <NineGridBrush LeftInset="3" TopInset="3" RightInset="3" BottomInset="3" isCenterHollow="True">
+                      <Source>
+                        <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                      </Source>
+                    </NineGridBrush>
+                  </wucSpriteVisual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

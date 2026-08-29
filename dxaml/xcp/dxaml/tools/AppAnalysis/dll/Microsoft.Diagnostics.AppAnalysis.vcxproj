@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{2443059a-fad7-4812-b0e6-243e33f11a01}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\dxaml\tools\AppAnalysis\common.props"/>
+
+    <!-- Devs often build with no_mui, so force enable MUI so this builds correctly -->
+    <PropertyGroup>
+        <Mui>true</Mui>
+
+        <XamlPrecompiledInclude>precomp.h</XamlPrecompiledInclude>
+
+        <TargetDestination>$(TestBinplaceDestinationPath)\AppAnalysis</TargetDestination>
+
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(AppAnalysisPath)\idl\;
+            $(AppAnalysisPath)\common;
+            $(AppAnalysisPath)\runtime\rules;
+            $(AppAnalysisPath)\runtime\framework;
+            $(AppAnalysisObjPath)\idl;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="precomp.h"/>
+        <ClInclude Include="resource.h"/>
+
+        <ResourceCompile Include="AppAnalysis.rc"/>
+        <ClCompile Include="dllmain.cpp"/>
+    </ItemGroup>
+
+    <ItemDefinitionGroup>
+        <Link>
+            <ModuleDefinitionFile>Module.def</ModuleDefinitionFile>
+
+            <AdditionalDependencies>
+                %(AdditionalDependencies);
+                onecoreuap.lib;
+            </AdditionalDependencies>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) ___TARGETNAME="""$(TargetName).dll""";</ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(AppAnalysisPath)\idl\Microsoft.Diagnostics.AppAnalysis.vcxproj" Project="{e1f36d19-f82d-474a-be26-fea52da5b6e6}"/>
+        <ProjectReference Include="$(AppAnalysisPath)\runtime\rules\AppAnalysisRuntimeRules.vcxproj" Project="{9bda9f6a-f3fb-4d5c-ba39-1101495c0029}"/>
+        <ProjectReference Include="$(AppAnalysisPath)\runtime\framework\AppAnalysisRuntimeFramework.vcxproj" Project="{0abd262a-c1d8-440a-ac58-99fd5997fbdd}"/>
+        <ProjectReference Include="$(AppAnalysisPath)\runtime\common\AppAnalysisRuntimeCommon.vcxproj" Project="{d4761272-8a6c-4015-a41a-aaff4bc1d728}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

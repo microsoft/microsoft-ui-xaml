@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualTreeDump>
+  <VisualRoot>
+    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+      <Property Name="ActualHeight" Value="600" />
+      <Property Name="ActualWidth" Value="400" />
+      <Property Name="Name" Value="root" />
+      <Property Name="RenderSize" Value="400x600" />
+      <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+        <Property Name="ActualHeight" Value="600" />
+        <Property Name="ActualWidth" Value="400" />
+        <Property Name="RenderSize" Value="400x600" />
+        <Element Type="Microsoft.UI.Xaml.Controls.GridViewItem">
+          <Property Name="ActualHeight" Value="44" />
+          <Property Name="ActualWidth" Value="396" />
+          <Property Name="AllowDrop" Value="False" />
+          <Property Name="Background" Value="#00FFFFFF" />
+          <Property Name="Content" Value="Item 1" />
+          <Property Name="FocusState" Value="1" />
+          <Property Name="FocusVisualMargin" Value="-2,-2,-2,-2" />
+          <Property Name="FontFamily" Value="Segoe UI" />
+          <Property Name="FontSize" Value="14" />
+          <Property Name="Foreground" Value="#FFFFFFFF" />
+          <Property Name="HorizontalContentAlignment" Value="1" />
+          <Property Name="IsHoldingEnabled" Value="True" />
+          <Property Name="Margin" Value="0,0,4,4" />
+          <Property Name="MinHeight" Value="44" />
+          <Property Name="MinWidth" Value="44" />
+          <Property Name="Name" Value="GVI1" />
+          <Property Name="RenderSize" Value="396x44" />
+          <Property Name="TabNavigation" Value="0" />
+          <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+          <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.GridViewItemTemplateSettings]" />
+          <Property Name="UseSystemFocusVisuals" Value="True" />
+          <Property Name="VerticalContentAlignment" Value="1" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter">
+            <Property Name="ActualHeight" Value="44" />
+            <Property Name="ActualWidth" Value="396" />
+            <Property Name="CheckBoxBrush" Value="#B31C1C1C" />
+            <Property Name="CheckBrush" Value="#FF000000" />
+            <Property Name="CheckMode" Value="1" />
+            <Property Name="Content" Value="Item 1" />
+            <Property Name="ContentMargin" Value="0,0,0,0" />
+            <Property Name="ContentTransitions" Value="[NULL]" />
+            <Property Name="Control.IsTemplateFocusTarget" Value="True" />
+            <Property Name="DataContext" Value="Item 1" />
+            <Property Name="DisabledOpacity" Value="0.3" />
+            <Property Name="DragBackground" Value="#00FFFFFF" />
+            <Property Name="DragForeground" Value="#FF000000" />
+            <Property Name="DragOpacity" Value="0.8" />
+            <Property Name="FocusBorderBrush" Value="#FFFFFFFF" />
+            <Property Name="FocusSecondaryBorderBrush" Value="#FFFFFFFF" />
+            <Property Name="FocusVisualMargin" Value="-2,-2,-2,-2" />
+            <Property Name="HorizontalContentAlignment" Value="1" />
+            <Property Name="Name" Value="Root" />
+            <Property Name="PlaceholderBackground" Value="#3FFFFFFF" />
+            <Property Name="PointerOverBackground" Value="#0FFFFFFF" />
+            <Property Name="PointerOverForeground" Value="#C5FFFFFF" />
+            <Property Name="PressedBackground" Value="#0AFFFFFF" />
+            <Property Name="RenderSize" Value="396x44" />
+            <Property Name="ReorderHintOffset" Value="16" />
+            <Property Name="RevealBackground" Value="#FF00FF00" />
+            <Property Name="RevealBorderBrush" Value="#FF00FFFF" />
+            <Property Name="RevealBorderThickness" Value="1,1,1,1" />
+            <Property Name="SelectedBackground" Value="#0AFFFFFF" />
+            <Property Name="SelectedForeground" Value="#FFFFFFFF" />
+            <Property Name="SelectedPointerOverBackground" Value="#0AFFFFFF" />
+            <Property Name="SelectedPressedBackground" Value="#0FFFFFFF" />
+            <Property Name="SelectionCheckMarkVisualEnabled" Value="True" />
+            <Property Name="VerticalContentAlignment" Value="1" />
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="44" />
+              <Property Name="ActualWidth" Value="396" />
+              <Property Name="Background" Value="#00FFFFFF" />
+              <Property Name="BorderBrush" Value="[NULL]" />
+              <Property Name="BorderThickness" Value="0,0,0,0" />
+              <Property Name="CornerRadius" Value="0,0,0,0" />
+              <Property Name="HorizontalAlignment" Value="3" />
+              <Property Name="IsHitTestVisible" Value="False" />
+              <Property Name="Margin" Value="0,0,0,0" />
+              <Property Name="RenderSize" Value="396x44" />
+              <Property Name="VerticalAlignment" Value="3" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="18.6211" />
+              <Property Name="ActualWidth" Value="39.2314" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="RenderSize" Value="40x19" />
+              <Property Name="Text" Value="Item 1" />
+              <Property Name="VerticalAlignment" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                <Property Name="Text" Value="Item 1" />
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+        <Element Type="Microsoft.UI.Xaml.Controls.GridViewItem">
+          <Property Name="ActualHeight" Value="44" />
+          <Property Name="ActualWidth" Value="396" />
+          <Property Name="AllowDrop" Value="False" />
+          <Property Name="Background" Value="#00FFFFFF" />
+          <Property Name="Content" Value="Item 2" />
+          <Property Name="FocusVisualMargin" Value="-2,-2,-2,-2" />
+          <Property Name="FontFamily" Value="Segoe UI" />
+          <Property Name="FontSize" Value="14" />
+          <Property Name="Foreground" Value="#FFFFFFFF" />
+          <Property Name="HorizontalContentAlignment" Value="1" />
+          <Property Name="IsEnabled" Value="False" />
+          <Property Name="IsHoldingEnabled" Value="True" />
+          <Property Name="Margin" Value="0,0,4,4" />
+          <Property Name="MinHeight" Value="44" />
+          <Property Name="MinWidth" Value="44" />
+          <Property Name="Name" Value="GVI2" />
+          <Property Name="RenderSize" Value="396x44" />
+          <Property Name="TabNavigation" Value="0" />
+          <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+          <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.GridViewItemTemplateSettings]" />
+          <Property Name="UseSystemFocusVisuals" Value="True" />
+          <Property Name="VerticalContentAlignment" Value="1" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Primitives.ListViewItemPresenter">
+            <Property Name="ActualHeight" Value="44" />
+            <Property Name="ActualWidth" Value="396" />
+            <Property Name="CheckBoxBrush" Value="#B31C1C1C" />
+            <Property Name="CheckBrush" Value="#FF000000" />
+            <Property Name="CheckMode" Value="1" />
+            <Property Name="Content" Value="Item 2" />
+            <Property Name="ContentMargin" Value="0,0,0,0" />
+            <Property Name="ContentTransitions" Value="[NULL]" />
+            <Property Name="Control.IsTemplateFocusTarget" Value="True" />
+            <Property Name="DataContext" Value="Item 2" />
+            <Property Name="DisabledOpacity" Value="0.3" />
+            <Property Name="DragBackground" Value="#00FFFFFF" />
+            <Property Name="DragForeground" Value="#FF000000" />
+            <Property Name="DragOpacity" Value="0.8" />
+            <Property Name="FocusBorderBrush" Value="#FFFFFFFF" />
+            <Property Name="FocusSecondaryBorderBrush" Value="#FFFFFFFF" />
+            <Property Name="FocusVisualMargin" Value="-2,-2,-2,-2" />
+            <Property Name="HorizontalContentAlignment" Value="1" />
+            <Property Name="Name" Value="Root" />
+            <Property Name="PlaceholderBackground" Value="#3FFFFFFF" />
+            <Property Name="PointerOverBackground" Value="#0FFFFFFF" />
+            <Property Name="PointerOverForeground" Value="#C5FFFFFF" />
+            <Property Name="PressedBackground" Value="#0AFFFFFF" />
+            <Property Name="RenderSize" Value="396x44" />
+            <Property Name="ReorderHintOffset" Value="16" />
+            <Property Name="RevealBackground" Value="#FF00FF00" />
+            <Property Name="RevealBorderBrush" Value="#FF00FFFF" />
+            <Property Name="RevealBorderThickness" Value="0,0,0,0" />
+            <Property Name="SelectedBackground" Value="#0AFFFFFF" />
+            <Property Name="SelectedForeground" Value="#FFFFFFFF" />
+            <Property Name="SelectedPointerOverBackground" Value="#0AFFFFFF" />
+            <Property Name="SelectedPressedBackground" Value="#0FFFFFFF" />
+            <Property Name="SelectionCheckMarkVisualEnabled" Value="True" />
+            <Property Name="VerticalContentAlignment" Value="1" />
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="44" />
+              <Property Name="ActualWidth" Value="396" />
+              <Property Name="Background" Value="[NULL]" />
+              <Property Name="BorderBrush" Value="[NULL]" />
+              <Property Name="BorderThickness" Value="0,0,0,0" />
+              <Property Name="CornerRadius" Value="0,0,0,0" />
+              <Property Name="HorizontalAlignment" Value="3" />
+              <Property Name="IsHitTestVisible" Value="False" />
+              <Property Name="Margin" Value="0,0,0,0" />
+              <Property Name="RenderSize" Value="396x44" />
+              <Property Name="VerticalAlignment" Value="3" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="18.6211" />
+              <Property Name="ActualWidth" Value="39.2314" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="RenderSize" Value="40x19" />
+              <Property Name="Text" Value="Item 2" />
+              <Property Name="VerticalAlignment" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                <Property Name="Text" Value="Item 2" />
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+    </Element>
+  </VisualRoot>
+</VisualTreeDump>

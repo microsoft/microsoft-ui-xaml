@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MultiTargetTree>
+  <CompositionTarget>
+    <Visual>
+      <Visual />
+      <Visual />
+      <Visual Tag="PrependVisual">
+        <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+          <Visual Tag="ContentVisual">
+            <wucSpriteVisual SizeX="400" SizeY="300" BorderMode="Soft">
+              <ColorBrush Color="#ff000000" />
+            </wucSpriteVisual>
+            <wucSpriteVisual SizeX="150" SizeY="150" BorderMode="Soft" OffsetX="100" OffsetY="100" OffsetZ="0">
+              <ColorBrush Color="rgb {0.06275, 0.06275, 0.06275}" />
+            </wucSpriteVisual>
+            <Visual Tag="PopupPlaceholderVisual" />
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </CompositionTarget>
+  <CompositionTarget HwndLeft="100" HwndTop="100">
+    <Visual>
+      <WindowBackgroundTreatment>
+        <EffectBrush />
+      </WindowBackgroundTreatment>
+      <Visual Tag="PrependVisual">
+        <Visual Tag="PrimaryVisual">
+          <Visual Tag="ContentVisual">
+            <Visual Tag="PrependVisual">
+              <Visual Tag="PrimaryVisual" SizeX="50" SizeY="50">
+                <Visual Tag="ContentVisual">
+                  <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+                    <ColorBrush Color="Argb {0.06275, 1, 0, 0}" />
+                  </wucSpriteVisual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </CompositionTarget>
+</MultiTargetTree>

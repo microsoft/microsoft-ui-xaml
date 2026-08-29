@@ -1,0 +1,52 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Grid x:Name="LayoutRoot"  
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{StaticResource ApplicationPageBackgroundThemeBrush}">
+  <ListBox
+      x:Name="listBox"
+      VerticalAlignment="Top"
+      HorizontalAlignment="Left"
+      Margin="10"
+      Width="280"
+      Height="280">
+    <TextBlock FontSize="12" Text='Auburn'/>
+    <TextBlock FontSize="14" Text='Beaux Arts Village'/>
+    <TextBlock FontSize="16" Text='Bellevue'/>
+    <TextBlock FontSize="18" Text='Black Diamond'/>
+    <TextBlock FontSize="20" Text='Bothell'/>
+    <TextBlock FontSize="22" Text='Burien'/>
+    <TextBlock FontSize="24" Text='Carnation'/>
+    <TextBlock FontSize="26" Text='Clyde Hill'/>
+    <TextBlock FontSize="28" Text='Covington'/>
+    <TextBlock FontSize="30" Text='Des Moines'/>
+    <TextBlock FontSize="28" Text='Duvall'/>
+    <TextBlock FontSize="26" Text='Enumclaw'/>
+    <TextBlock FontSize="24" Text='Federal Way'/>
+    <TextBlock FontSize="22" Text='Hunts Point'/>
+    <TextBlock FontSize="20" Text='Issaquah'/>
+    <TextBlock FontSize="18" Text='Kenmore'/>
+    <TextBlock FontSize="16" Text='Kent'/>
+    <TextBlock FontSize="14" Text='Kirkland'/>
+    <TextBlock FontSize="12" Text='Lake Forest Park'/>
+    <TextBlock FontSize="14" Text='Maple Valley'/>
+    <TextBlock FontSize="16" Text='Medina'/>
+    <TextBlock FontSize="18" Text='Mercer Island'/>
+    <TextBlock FontSize="20" Text='Milton'/>
+    <TextBlock FontSize="22" Text='Newcastle'/>
+    <TextBlock FontSize="24" Text='Normandy Park'/>
+    <TextBlock FontSize="26" Text='North Bend'/>
+    <TextBlock FontSize="28" Text='Pacific'/>
+    <TextBlock FontSize="30" Text='Redmond'/>
+    <TextBlock FontSize="28" Text='Renton'/>
+    <TextBlock FontSize="26" Text='Sammamish'/>
+    <TextBlock FontSize="24" Text='SeaTac'/>
+    <TextBlock FontSize="22" Text='Seattle'/>
+    <TextBlock FontSize="20" Text='Shoreline'/>
+    <TextBlock FontSize="18" Text='Skykomish'/>
+    <TextBlock FontSize="16" Text='Snoqualmie'/>
+    <TextBlock FontSize="14" Text='Tukwila'/>
+    <TextBlock FontSize="12" Text='Woodinville'/>
+    <TextBlock FontSize="14" Text='Yarrow Point'/>
+  </ListBox>
+</Grid>

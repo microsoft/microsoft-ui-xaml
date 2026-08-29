@@ -1,0 +1,534 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+       <StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Margin="20" >
+        <ScrollViewer>
+            <StackPanel >
+                <TextBlock Text="Hello World, Hello world, hello world hello world hello world ああああああああああああ" FontFamily="Segoe UI" FontSize="16" Width="200" TextWrapping="Wrap" LineStackingStrategy="BlockLineHeight" />
+                <TextBlock Text="Hello World, Hello world, hello world hello world hello world ああああああああああああ" FontFamily="Segoe UI" FontSize="16" Width="200" TextWrapping="Wrap" LineStackingStrategy="MaxHeight" />
+                <TextBlock Text="Hello World, Hello world, hello world hello world hello world ああああああああああああ" FontFamily="Segoe UI" FontSize="16" Width="200" TextWrapping="Wrap" LineStackingStrategy="BaselineToBaseline" />
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Width="102" FontSize="30" TextWrapping="Wrap" LineStackingStrategy="BaselineToBaseline" LineHeight="15" Text="Hello ☺⛄☂♥♦♨⛅ꦄꦅꦆꦇHello World this is some long text with trimming none. Hello ☺⛄☂♥♦♨⛅ꦄꦅꦆꦇ" />
+                    <TextBlock Language="ar-sa" Width="102" FontSize="30" TextWrapping="Wrap" LineStackingStrategy="BaselineToBaseline" LineHeight="15" Text="Hello ☺⛄☂♥♦♨⛅ꦄꦅꦆꦇHello World this is some long text with trimming none. Hello ☺⛄☂♥♦♨⛅ꦄꦅꦆꦇ" />
+                    <TextBlock Width="102" FontSize="30" TextWrapping="Wrap" LineStackingStrategy="BaselineToBaseline" LineHeight="55" Text="Hello ☺⛄☂♥♦♨⛅ꦄꦅꦆꦇHello World this is some long text with trimming none. Hello ☺⛄☂♥♦♨⛅ꦄꦅꦆꦇ" />
+                    <TextBlock Language="ar-sa" Width="102" FontSize="30" TextWrapping="Wrap" LineStackingStrategy="BaselineToBaseline" LineHeight="55" Text="Hello ☺⛄☂♥♦♨⛅ꦄꦅꦆꦇHello World this is some long text with trimming none. Hello ☺⛄☂♥♦♨⛅ꦄꦅꦆꦇ" />
+                    <TextBlock Width="102" FontSize="30" TextWrapping="Wrap" LineStackingStrategy="MaxHeight" LineHeight="5" Text="Hello ☺⛄☂♥♦♨⛅ꦄꦅꦆꦇHello World this is some long text with trimming none. Hello ☺⛄☂♥♦♨⛅ꦄꦅꦆꦇ" />
+                    <TextBlock Language="ar-sa" Width="102" FontSize="30" TextWrapping="Wrap" LineStackingStrategy="MaxHeight" LineHeight="5" Text="Hello ☺⛄☂♥♦♨⛅ꦄꦅꦆꦇHello World this is some long text with trimming none. Hello ☺⛄☂♥♦♨⛅ꦄꦅꦆꦇ" />
+                    <TextBlock Width="102" FontSize="30" TextWrapping="Wrap" LineStackingStrategy="MaxHeight" LineHeight="55" Text="Hello ☺⛄☂♥♦♨⛅ꦄꦅꦆꦇHello World this is some long text with trimming none. Hello ☺⛄☂♥♦♨⛅ꦄꦅꦆꦇ" />
+                    <TextBlock Language="ar-sa" Width="102" FontSize="30" TextWrapping="Wrap" LineStackingStrategy="MaxHeight" LineHeight="55" Text="Hello ☺⛄☂♥♦♨⛅ꦄꦅꦆꦇHello World this is some long text with trimming none. Hello ☺⛄☂♥♦♨⛅ꦄꦅꦆꦇ" />
+                </StackPanel>
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" >
+
+                        <StackPanel Width="100">
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="Tight"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="26"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Things"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="Tight"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="26"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Text that wraps"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                        </StackPanel>
+                        <StackPanel Width="100" Language="ar-sa">
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="Tight"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="26"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Things"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="Tight"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="26"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Text that wraps"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                        </StackPanel>
+                        <StackPanel Width="100" Language="ar-sa">
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                      TextLineBounds="Tight"
+                     LineStackingStrategy="BaselineToBaseline"
+                         OpticalMarginAlignment="TrimSideBearings"
+                     TextAlignment="Left"
+                     IsTextScaleFactorEnabled="False"
+                    FontSize="20"
+                     LineHeight="6"
+                     FontWeight="Normal" 
+                    MaxLines="4"
+                    TextTrimming="WordEllipsis"
+                    TextWrapping="Wrap"  
+                    Text="Things"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                      TextLineBounds="Tight"
+                     LineStackingStrategy="BaselineToBaseline"
+                         OpticalMarginAlignment="TrimSideBearings"
+                     TextAlignment="Left"
+                     IsTextScaleFactorEnabled="False"
+                    FontSize="20"
+                     LineHeight="6"
+                     FontWeight="Normal" 
+                    MaxLines="4"
+                    TextTrimming="WordEllipsis"
+                    TextWrapping="Wrap"  
+                    Text="Text that wraps"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                        </StackPanel>
+                        <StackPanel Width="100" >
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                      TextLineBounds="Tight"
+                     LineStackingStrategy="BaselineToBaseline"
+                         OpticalMarginAlignment="TrimSideBearings"
+                     TextAlignment="Left"
+                     IsTextScaleFactorEnabled="False"
+                    FontSize="20"
+                     LineHeight="6"
+                     FontWeight="Normal" 
+                    MaxLines="4"
+                    TextTrimming="WordEllipsis"
+                    TextWrapping="Wrap"  
+                    Text="Things"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                      TextLineBounds="Tight"
+                     LineStackingStrategy="BaselineToBaseline"
+                         OpticalMarginAlignment="TrimSideBearings"
+                     TextAlignment="Left"
+                     IsTextScaleFactorEnabled="False"
+                    FontSize="20"
+                     LineHeight="6"
+                     FontWeight="Normal" 
+                    MaxLines="4"
+                    TextTrimming="WordEllipsis"
+                    TextWrapping="Wrap"  
+                    Text="Text that wraps"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                        </StackPanel>
+
+                        <!--LineBounds = FULL.-->
+                        <StackPanel Width="100">
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="Full"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="26"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Things"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="Full"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="26"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Text that wraps"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                        </StackPanel>
+                        <StackPanel Width="100" Language="ar-sa">
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="Full"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="26"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Things"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="Full"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="26"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Text that wraps"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                        </StackPanel>
+
+                        <StackPanel Width="100" Language="ar-sa">
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="Full"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="6"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Things"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="Full"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="6"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Text that wraps"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                        </StackPanel>
+
+                        <StackPanel Width="100" >
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="Full"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="6"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Things"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="Full"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="6"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Text that wraps"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                        </StackPanel>
+                        <!--LineBounds = trimtobaseline;-->
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" >
+                        <StackPanel Width="100">
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="TrimToBaseline"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="26"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Things"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="TrimToBaseline"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="26"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Text that wraps"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                        </StackPanel>
+                        <StackPanel Width="100" Language="ar-sa">
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="TrimToBaseline"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="26"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Things"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="TrimToBaseline"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="26"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Text that wraps"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                        </StackPanel>
+
+                        <StackPanel Width="100" Language="ar-sa">
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="TrimToBaseline"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="6"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Things"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="TrimToBaseline"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="6"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Text that wraps"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                        </StackPanel>
+
+                        <StackPanel Width="100" >
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="TrimToBaseline"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="6"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Things"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="TrimToBaseline"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="6"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Text that wraps"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                        </StackPanel>
+
+                        <!--TrimtoCapheight-->
+                        <StackPanel Width="100">
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="TrimToCapHeight"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="26"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Things"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="TrimToCapHeight"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="26"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Text that wraps"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                        </StackPanel>
+                        <StackPanel Width="100" Language="ar-sa">
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="TrimToCapHeight"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="26"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Things"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="TrimToCapHeight"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="26"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Text that wraps"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                        </StackPanel>
+
+                        <StackPanel Width="100" Language="ar-sa">
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="TrimToCapHeight"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="6"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Things"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="TrimToCapHeight"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="6"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Text that wraps"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                        </StackPanel>
+
+                        <StackPanel Width="100" >
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="TrimToCapHeight"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="6"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Things"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                            <TextBlock
+                  TextLineBounds="TrimToCapHeight"
+                 LineStackingStrategy="BaselineToBaseline"
+                     OpticalMarginAlignment="TrimSideBearings"
+                 TextAlignment="Left"
+                 IsTextScaleFactorEnabled="False"
+                FontSize="20"
+                 LineHeight="6"
+                 FontWeight="Normal" 
+                MaxLines="4"
+                TextTrimming="WordEllipsis"
+                TextWrapping="Wrap"  
+                Text="Text that wraps"/>
+                            <Rectangle Width="100" Fill="Green" Height="100"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+       </StackPanel>

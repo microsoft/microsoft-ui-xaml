@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual">
+            <TransformMatrix>
+              <Translate Y="200" />
+            </TransformMatrix>
+            <Visual Tag="PrimaryVisual" SizeX="10" SizeY="10">
+              <Opacity>
+                <ExpressionAnimation String="PS.Opacity">
+                  <ReferenceParameter Name="PS" />
+                  <PropertySet>
+                    <Property Name="Opacity" Type="Scalar">
+                      <KeyFrameAnimation Duration="10">
+                        <KeyFrame />
+                        <KeyFrame Time="1" Value="1">
+                          <LinearEasingFunction />
+                        </KeyFrame>
+                      </KeyFrameAnimation>
+                    </Property>
+                  </PropertySet>
+                </ExpressionAnimation>
+              </Opacity>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 0, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

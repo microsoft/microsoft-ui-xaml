@@ -1,0 +1,171 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IMAGE_RULE_TITLE        "Decoded image size larger than rendered image size"
+    IMAGE_RULE_IMPACT       "Rendering large images (in memory) to a small phsycial size on the screen causes memory bloat and negatively impacts performance."
+    IMAGE_RULE_SOLUTION     "Use the link as a reference and supply different image sizes to your AppX. Ensure that the image control is in the live tree before setting the source on the image so that decode to render size can be used."
+    IMAGE_RULE_LINK_TITLE   "More information on this issue"
+    IMAGE_RULE_DESCRIPTION  "How an application handles images can be a major factor in the overall performance of an application. XAML utilizes a ""Decode to Render Size"" feature that decodes images only to the size that is needed. If we are unable to use this feature, the application will take unnecessary memory bloat and performance degredation that could have been avoided."
+    IMAGE_RULE_SYNCDECODE   "SetSource() is being called on instead of SetSourceAsync(). Parent Element: %1"
+    IMAGE_RULE_NOTLIVE      "SetSourceAsync() is being called when the ImageSource is not in the live tree. Parent Element: %1"
+    IMAGE_RULE_SOFTWARERENDERING 
+                            "ImageSource is used to fill a Shape, Stroke, or element with CacheMode=BitmapCache. Parent Element: %1"
+    IMAGE_RULE_DRAGDROP     "Image is decoded as part of producing a Drag and Drop image on element. Parent Element: %1"
+    IMAGE_RULE_BITMAPICON   "Images used inside of BitmapIcons fall back to decoding to natural size. Parent Element: %1"
+    IMAGE_RULE_USESIMAGETILING "Images that appear extremely large on screen fall back to decoding to natural size. Parent Element: %1"
+    IMAGE_RULE_EMPTYBOUNDS  "Image %1 is not visible on screen, due to clipping or transparency, and may fall back to decoding to natural size. Parent Element: %1"
+    IMAGE_RULE_NINEGRID     "Images that use the NineGrid property fall back to decoding to natural size. Parent Element: %1"
+    IMAGE_RULE_DECODESIZESPECIFIED 
+                            "DecodePixelWidth or DecodePixelHeight are set to a size that is larger than the image will appear on screen. Parent Element: %1"
+END
+
+STRINGTABLE
+BEGIN
+    COLLAPSED_ELEMENTS_TITLE 
+                            "Detecting elements with Visibility set to collapsed in Xaml markup."
+    COLLAPSED_ELEMENTS_SOLUTION 
+                            "Using x:DeferLoadStrategy, you can delay the loading of a piece of UI, and load it when needed. This is good way to delay processing UI that is not visible during the startup screen, so that you can load it when needed, or as part of a set of delayed logic. To trigger the loading, you need only call FindName for the element. "
+    COLLAPSED_ELEMENTS_IMPACT 
+                            "Creating UIElements has a non-zero impact on performance, and when they are not being displayed, wastes CPU and memory and delays getting your visual UI on the screen."
+    COLLAPSED_ELEMENTS_DESCRIPTION 
+                            "Element %1 of type %2 was collapsed at load time.  Collapsing an element, or setting its opacity to 0, will not prevent the element from being created.  "
+    COLLAPSED_ELEMENTS_DESCRIPTION_NO_NAME
+                            "Element of type %1 was collapsed at load time.  Collapsing an element, or setting its opacity to 0, will not prevent the element from being created.  "
+    COLLAPSED_ELEMENTS_LINK_TITLE "More information on this issue"
+END
+
+STRINGTABLE
+BEGIN
+    LV_DEVIRTUALIZED_TITLE  "ListView is not virtualized."
+    LV_DEVIRTUALIZED_LAYOUT_SOLUTION 
+                            "Either make sure the orientation of the ItemsPanel is not in the same direction as the %1 or do not place a ListView inside of it."
+    LV_DEVIRTUALIZED_IMPACT
+                            "A non-virtualized ListView will increase load time and resource usage by loading more of its child items than necessary."
+    LV_DEVIRTUALIZED_LAYOUT_DESCRIPTION 
+                            "ListView %1 is not being virtualized due to being placed inside a %2."
+    LV_DEVIRTUALIZED_LAYOUT_DESCRIPTION_NO_NAME
+                            "ListView is not being virtualized due to being placed inside a %1."
+    LV_DEVIRTUALIZED_LINK_TITLE "More information on this issue."
+END
+
+STRINGTABLE
+BEGIN
+    UI_THREAD_UTILIZATION_TITLE "UI Thread Blocked/Idle."
+    UI_THREAD_UTILIZATION_IMPACT 
+                            "A blocked or idle UI thread will increase load time."
+    UI_THREAD_UTILIZATION_LINK_TITLE "More information on this issue."
+    UI_THREAD_UTILIZATION_DESCRIPTION 
+                            "The UI thread for your app fell below 80% to %1 during load time."
+    UI_THREAD_UTILIZATION_SOLUTION 
+                            "Your app can be interactive even though there are parts of the app that are not fully functional. For example, if your app displays data that takes a while to retrieve, you can make that code execute independently of the app's startup code by retrieving the data asynchronously. When the data is available, populate the app's user interface with the data."
+END
+
+STRINGTABLE
+BEGIN
+    DYNAMIC_BINDING_TITLE "{Binding} instead of x:Bind."
+    DYNAMIC_BINDING_IMPACT 
+                            "{Binding} runs in more time and more memory than {x:Bind}."
+    DYNAMIC_BINDING_DESCRIPTION 
+                            "Element %1 of type %2 is using {Binding} instead of {x:Bind} to bind %3 property to %4.%5."
+    DYNAMIC_BINDING_DESCRIPTION_NO_NAME 
+                            "Element of type %1 is using {Binding} instead of {x:Bind} to bind %2 property to %3.%4."
+    DYNAMIC_BINDING_SOLUTION 
+                            "Use the {x:Bind} markup extension, which compiles the bindings at build time.  {x:Bind} bindings (often referred-to as compiled bindings) have great performance, provide compile-time validation of your binding expressions, and support debugging by enabling you to set breakpoints in the code files that are generated as the partial class for your page. Note that x:Bind is not suitable in all cases such as late-bound scenarios.  For a full list of cases, see doc. "
+    DYNAMIC_BINDING_LINK_TITLE "See documentation on x:Bind."
+END
+
+STRINGTABLE
+BEGIN    
+    ACC_NO_NAME_TITLE       "UIA Elements must have a name."
+    ACC_NO_NAME_IMPACT      "If a user reaches an element with no name, they may not know what the element relates to."
+    ACC_NO_NAME_SOLUTION    "Supply AutomationProperties.Name or take element out of all but the raw trees by setting AutomationProperties.AccessibilityView='Raw'"
+    ACC_NO_NAME_DESCRIPTION "Element %1 of type %2 has UIA name that is null or empty."
+    ACC_NO_NAME_DESCRIPTION_NO_NAME "Element of type %1 has UIA name that is null or empty."
+    ACC_NO_NAME_LINK_TITLE  "More information about this rule"
+END
+
+STRINGTABLE
+BEGIN
+    ACC_NAME_DUPLICATE_TITLE "UIA Elements with the same ControlType should not have the same name."
+    ACC_NAME_DUPLICATE_IMPACT 
+                            "User may not be able to distinguish the difference between the 2 elements with the same name."
+    ACC_NAME_DUPLICATE_SOLUTION "Supply different names to your elements."
+    ACC_NAME_DUPLICATE_DESCRIPTION "UIA Elements with the same UIA parent have the same automation name %1 and ControlType %2."
+    ACC_NAME_DUPLICATE_LINK_TITLE "More information about this rule."
+END
+
+STRINGTABLE
+BEGIN
+    RESOURCE_USING_XNAME_TITLE "x:Name is used instead of x:Key."
+    RESOURCE_USING_XNAME_IMPACT 
+                            "Setting x:Name creates a backing field that consumes memory and CPU time."
+    RESOURCE_USING_XNAME_SOLUTION "Have a property on the ViewModel that retrieves the resource from the ResourceDictionary only when needed."
+    RESOURCE_USING_XNAME_DESCRIPTION "x:Name set on Resource %1 of type %2."
+    RESOURCE_USING_XNAME_LINK_TITLE "More information about this rule."
+END
+
+STRINGTABLE
+BEGIN
+    NON_VIRTUALIZED_ITEMS_PANEL_TITLE "Element with ItemsSource set is using non-virtualizing panel."
+    NON_VIRTUALIZED_ITEMS_PANEL_IMPACT 
+                            "A non-virtualized ItemsControl will increase load time and resource usage by loading more of its child items than necessary."
+    NON_VIRTUALIZED_ITEMS_PANEL_SOLUTION "Use either ItemsStackPanel or ItemsWrapGrid for your ItemsPanel instead of %1."
+    NON_VIRTUALIZED_ITEMS_PANEL_DESCRIPTION "Element %1 of type %2 is using an items panel of type %3 in ItemsPanel that does not support virtualization."
+    NON_VIRTUALIZED_ITEMS_PANEL_DESCRIPTION_NO_NAME "Element of type %1 is using an items panel of type %2 in ItemsPanel that does not support virtualization."
+    NON_VIRTUALIZED_ITEMS_PANEL_LINK_TITLE "More information about this rule"
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

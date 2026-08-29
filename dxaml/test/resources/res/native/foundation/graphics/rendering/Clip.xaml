@@ -1,0 +1,83 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+
+    <!-- Clip matches element size -->
+    <Rectangle Canvas.Left="10" Canvas.Top="10" Fill="Green" Width="30" Height="30">
+        <Rectangle.Clip>
+            <RectangleGeometry Rect="0,0,30,30" />
+        </Rectangle.Clip>
+    </Rectangle>
+
+    <!-- Clip larger than element -->
+    <Rectangle Canvas.Left="60" Canvas.Top="10" Fill="Green" Width="30" Height="30">
+        <Rectangle.Clip>
+            <RectangleGeometry Rect="0,0,100,100" />
+        </Rectangle.Clip>
+    </Rectangle>
+
+    <!-- Zero clip - no primitive should be generated -->
+    <Rectangle Canvas.Left="110" Canvas.Top="10" Fill="Green" Width="30" Height="30">
+        <Rectangle.Clip>
+            <RectangleGeometry Rect="0,0,0,0" />
+        </Rectangle.Clip>
+    </Rectangle>
+
+    <!-- Clip not originating at (0,0) -->
+    <Rectangle Canvas.Left="160" Canvas.Top="10" Fill="Green" Width="30" Height="30">
+        <Rectangle.Clip>
+            <RectangleGeometry Rect="15,15,30,30" />
+        </Rectangle.Clip>
+    </Rectangle>
+
+    <!-- Clip originating at negative coordinates -->
+    <Rectangle Canvas.Left="210" Canvas.Top="10" Fill="Green" Width="30" Height="30">
+        <Rectangle.Clip>
+            <RectangleGeometry Rect="-100,-100,120,120" />
+        </Rectangle.Clip>
+    </Rectangle>
+
+    <!-- Clip transform - clip is small but is scaled up to match element size -->
+    <Rectangle Canvas.Left="10" Canvas.Top="60" Fill="Green" Width="30" Height="30">
+        <Rectangle.Clip>
+            <RectangleGeometry Rect="0,0,10,10">
+                <RectangleGeometry.Transform>
+                    <ScaleTransform ScaleX="3" ScaleY="3" />
+                </RectangleGeometry.Transform>
+            </RectangleGeometry>
+        </Rectangle.Clip>
+    </Rectangle>
+
+    <!-- Clip transform - rotation -->
+    <Rectangle Canvas.Left="60" Canvas.Top="60" Fill="Green" Width="30" Height="30">
+        <Rectangle.Clip>
+            <RectangleGeometry Rect="0,0,50,50">
+                <RectangleGeometry.Transform>
+                    <RotateTransform Angle="45" />
+                </RectangleGeometry.Transform>
+            </RectangleGeometry>
+        </Rectangle.Clip>
+    </Rectangle>
+
+    <!-- Clip transform - clip does not intersect element but is translated to intersect -->
+    <Rectangle Canvas.Left="110" Canvas.Top="60" Fill="Green" Width="30" Height="30">
+        <Rectangle.Clip>
+            <RectangleGeometry Rect="-100,-150,30,30">
+                <RectangleGeometry.Transform>
+                    <TranslateTransform X="90" Y="160" />
+                </RectangleGeometry.Transform>
+            </RectangleGeometry>
+        </Rectangle.Clip>
+    </Rectangle>
+
+    <!-- Clip transform - composite transform -->
+    <Rectangle Canvas.Left="160" Canvas.Top="60" Fill="Green" Width="30" Height="30">
+        <Rectangle.Clip>
+            <RectangleGeometry Rect="0,-20,15,30">
+                <RectangleGeometry.Transform>
+                    <CompositeTransform TranslateY="20" ScaleX="2" />
+                </RectangleGeometry.Transform>
+            </RectangleGeometry>
+        </Rectangle.Clip>
+    </Rectangle>
+
+</Canvas>

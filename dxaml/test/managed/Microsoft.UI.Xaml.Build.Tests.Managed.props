@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. -->
+<Project ToolsVersion="15.0"
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <TargetFramework>$(DotNetCoreTargetFrameworkMoniker)</TargetFramework>
+    <Platforms>x64;x86;ARM64</Platforms>
+    <WebView2UseWinRT>true</WebView2UseWinRT>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetDestination>$(TestBinplaceDestinationPath)</TargetDestination>
+    <TestCode>true</TestCode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(XamlSourcePath)\test\managed\common\AssemblySetup.cs" />
+  </ItemGroup>
+
+  <Import Project="taef.managed.props"/>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(ProjectRoot)\src\projection\private\Microsoft.WinUI.csproj" />
+    <ProjectReference Include="$(InfraTestPath)\client\cswinrt\Private.Infrastructure.CsWinRT.csproj" Private="False" />
+    <ProjectReference Include="$(XamlSourcePath)\test\managed\common\Microsoft.UI.Xaml.Tests.Managed.Common.csproj" Private="False" />
+  </ItemGroup>
+</Project>

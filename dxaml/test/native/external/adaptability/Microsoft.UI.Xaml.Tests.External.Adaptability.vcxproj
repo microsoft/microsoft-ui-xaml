@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ProjectGuid>{F0F6B6FE-3EE4-4EE3-8AAE-2FDAC0194ABD}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))" />
+  <Import Project="$(XamlSourcePath)\test\common.props" />
+  <Import Project="$(NativeExternalTestPath)\common.props" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>
+        %(AdditionalIncludeDirectories);
+        $(MSBuildThisFileDirectory)\customtypes;
+        $(MSBuildThisFileDirectory)\statetriggers;
+        $(MSBuildThisFileDirectory)\vsmsetters;
+        $(BaseIntermediateOutputPath)\customtypes\generated;
+        $(WinUIDetailsIncludePath)\abi;
+        $(WinUIDetailsIncludePath)\MockDComp;
+      </AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="statetriggers\StateTriggerTests.h" />
+    <ClInclude Include="vsmsetters\VsmSettersTests.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="statetriggers\StateTriggerTests.cpp" />
+    <ClCompile Include="vsmsetters\VsmSettersTests.cpp" />
+    <ClCompile Include="TypeInfo.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(NativeExternalTestPath)\pch\Microsoft.UI.Xaml.Tests.External.Precomp.vcxproj" />
+    <ProjectReference Include="$(NativeExternalTestPath)\adaptability\customtypes\CustomTypes.vcxproj" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(CustomTypesCompile.targets))" />
+</Project>

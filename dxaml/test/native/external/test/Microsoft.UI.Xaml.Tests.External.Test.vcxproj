@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{a236264b-bc96-4f3d-b185-b866b2febf30}</ProjectGuid>
+    </PropertyGroup>
+
+    <!-- poke -->
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\test\common.props"/>
+
+    <Import Project="$(NativeExternalTestPath)\common.props"/>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <AdditionalIncludeDirectories>
+                %(AdditionalIncludeDirectories);
+                $(WinUIDetailsIncludePath)\abi;
+                $(WinUIDetailsIncludePath)\MockDComp;
+            </AdditionalIncludeDirectories>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ClInclude Include="ErrorHandlingTests.h"/>
+        <ClInclude Include="InfrastructureIntegrationTests.h"/>
+
+        <ClCompile Include="InfrastructureIntegrationTests.cpp"/>
+        <ClCompile Include="ErrorHandlingTests.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(NativeExternalTestPath)\pch\Microsoft.UI.Xaml.Tests.External.Precomp.vcxproj" Project="{c34f3204-817a-4715-83ad-173f686adb5a}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

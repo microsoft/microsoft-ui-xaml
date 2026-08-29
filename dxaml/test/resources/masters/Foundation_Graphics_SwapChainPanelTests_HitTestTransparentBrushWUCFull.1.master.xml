@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="400">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual">
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="400" SizeY="400">
+                  <SurfaceBrush Stretch="Uniform" Transform="Identity" SwapChainID="1" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <wucSpriteVisual SizeX="200" SizeY="200" BorderMode="Soft" OffsetX="100" OffsetY="0" OffsetZ="0">
+            <ColorBrush Color="Argb {0, 1, 1, 1}" />
+          </wucSpriteVisual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="WinUICsDesktopClassLibrary.MuxcIxmpTestUserControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinUICsDesktopClassLibrary"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel>
+        <!-- 
+            This tests setting Nullable properties on types from MUXC.dll to ensure that its IXMP implementation works correctly for nullable types
+            We don't include this xaml in the main app and instead it is in a library referenced by the app.
+            This is to ensure that MUXC's IXMP implementation gets used instead of the one generated for the app.
+            AcrylicBrush.TintLuminosityOpacity and ColorPicker.PreviousColor are both nullable properties.
+        -->
+        <Button Content="Display property values" Click="Button_Click" AutomationProperties.Name="MuxcIxmpTestButton" />
+        <Rectangle Width="50" Height="50" >
+            <Rectangle.Fill>
+                <AcrylicBrush x:Name="acrylicBrush" TintLuminosityOpacity="0.3"  />
+            </Rectangle.Fill>
+        </Rectangle>
+        <ColorPicker x:Name="colorPicker" IsColorChannelTextInputVisible="False" IsColorSpectrumVisible="False" Color="Red" PreviousColor="Blue" />
+        <TextBlock x:Name="muxcIxmpTextBlock" AutomationProperties.Name="MuxcIxmpTextBlock"  />
+    </StackPanel>
+</UserControl>

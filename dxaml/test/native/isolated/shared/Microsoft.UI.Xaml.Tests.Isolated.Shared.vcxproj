@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{3ea83b4a-7041-4ea2-9e18-9e571b97451f}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\unittest.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(LiftedIXPIncludePaths);
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\inc\;
+            $(XcpPath)\components\base\inc\;
+            $(XcpPath)\components\xstring\inc\;
+            $(XcpPath)\components\metadata\inc\;
+            $(XcpPath)\core\inc\;
+            $(XcpPath)\pal\inc\;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <ExceptionHandling>Sync</ExceptionHandling>
+            <!-- Defined by the compiler for DLLs.  This is a static lib but consumers of this library are DLLs. -->
+            <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ClCompile Include="DebuggingServices.cpp"/>
+        <ClCompile Include="ScreenshotNoOp.cpp"/>
+        <ClCompile Include="_Event.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\ut-nohybrid\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{33a6c9ea-636f-42fb-9ceb-15e54abab8e6}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

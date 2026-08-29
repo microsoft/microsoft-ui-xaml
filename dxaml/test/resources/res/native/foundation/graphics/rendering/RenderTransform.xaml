@@ -1,0 +1,57 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+
+    <!-- TranslateTransform -->
+    <Rectangle Canvas.Left="10" Canvas.Top="10" Fill="Red" Width="30" Height="30">
+        <Rectangle.RenderTransform>
+            <TranslateTransform X="-100" Y="70" />
+        </Rectangle.RenderTransform>
+    </Rectangle>
+
+    <!-- ScaleTransform -->
+    <Rectangle Canvas.Left="60" Canvas.Top="10" Fill="Red" Width="30" Height="30">
+        <Rectangle.RenderTransform>
+            <ScaleTransform ScaleX="2" ScaleY="-0.6" CenterX="15" />
+        </Rectangle.RenderTransform>
+    </Rectangle>
+
+    <!-- RotateTransform -->
+    <Rectangle Canvas.Left="110" Canvas.Top="10" Fill="Red" Width="30" Height="30">
+        <Rectangle.RenderTransform>
+            <RotateTransform CenterX="10" CenterY="20" Angle="30" />
+        </Rectangle.RenderTransform>
+    </Rectangle>
+
+    <!-- SkewTransform -->
+    <Rectangle Canvas.Left="160" Canvas.Top="10" Fill="Red" Width="30" Height="30">
+        <Rectangle.RenderTransform>
+            <SkewTransform CenterY="20" AngleX="30" AngleY="-45" />
+        </Rectangle.RenderTransform>
+    </Rectangle>
+
+    <!-- CompositeTransform -->
+    <Rectangle Canvas.Left="10" Canvas.Top="60" Fill="Red" Width="30" Height="30">
+        <Rectangle.RenderTransform>
+            <CompositeTransform TranslateX="20" Rotation="30" ScaleY="0.5" SkewX="45" />
+        </Rectangle.RenderTransform>
+    </Rectangle>
+
+    <!-- TransformGroup, applied in the same order as the CompositeTransform -->
+    <Rectangle Canvas.Left="60" Canvas.Top="60" Fill="Red" Width="30" Height="30">
+        <Rectangle.RenderTransform>
+            <TransformGroup>
+                <ScaleTransform ScaleY="0.5" />
+                <SkewTransform AngleX="45" />
+                <RotateTransform Angle="30" />
+                <TranslateTransform X="20" />
+            </TransformGroup>
+        </Rectangle.RenderTransform>
+    </Rectangle>
+
+    <!-- Empty TransformGroup with a comp node -->
+    <Rectangle Canvas.Left="110" Canvas.Top="60" Fill="Red" Width="30" Height="30" CompositeMode="SourceOver">
+        <Rectangle.RenderTransform>
+            <TransformGroup />
+        </Rectangle.RenderTransform>
+    </Rectangle>
+</Canvas>

@@ -1,0 +1,32 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.NavigationViewFooterMenuItemsSourcePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:muxcontrols="using:Microsoft.UI.Xaml.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <StackPanel>
+            <muxcontrols:NavigationView
+                Width="1000"
+                x:Name="NavView"
+                AutomationProperties.Name="NavView"
+                AutomationProperties.AutomationId="NavView"
+                PaneDisplayMode="Top"
+                IsSettingsVisible="True"
+                ShoulderNavigationEnabled="Always"
+                FooterMenuItemsSource="{x:Bind FooterItems}">
+                <muxcontrols:NavigationView.MenuItems>
+                    <muxcontrols:NavigationViewItem x:Name="MainItem0" Content="Main 0" AutomationProperties.Name="Main 0" />
+                    <muxcontrols:NavigationViewItem x:Name="MainItem1" Content="Main 1" AutomationProperties.Name="Main 1" />
+                    <muxcontrols:NavigationViewItem x:Name="MainItem2" Content="Main 2" AutomationProperties.Name="Main 2" />
+                </muxcontrols:NavigationView.MenuItems>
+            </muxcontrols:NavigationView>
+            <TextBox x:Name="SelectionChangedResult" AutomationProperties.Name="SelectionChangedResult" />
+        </StackPanel>
+    </Grid>
+</local:TestPage>

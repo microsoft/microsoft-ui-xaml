@@ -1,0 +1,26 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<UserControl 
+    x:Name="rootUserControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:local="using:JupiterSUnitDrts.Parser.NamescopeResolution"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Width="400" Height="300">
+    <StackPanel>
+        <Button x:Name="button">
+            <Button.Template>
+                <ControlTemplate>
+                    <ContentPresenter x:Name="contentPresenterFromTemplate"/>
+                </ControlTemplate>
+            </Button.Template>
+            <TextBlock x:Name="textBlockFromButtonContent"/>
+        </Button>
+        
+        <ItemsControl x:Name="itemsControl">
+            <ItemsControl.Template>
+                <ControlTemplate>
+                    <ItemsPresenter x:Name="itemsPresenterFromTemplate"/>
+                </ControlTemplate>
+            </ItemsControl.Template>
+            <Canvas x:Name="canvasFromItemsControlContent"/>
+        </ItemsControl>
+    </StackPanel>
+</UserControl>

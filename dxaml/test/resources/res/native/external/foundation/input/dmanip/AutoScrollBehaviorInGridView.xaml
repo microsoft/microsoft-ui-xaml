@@ -1,0 +1,98 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Grid x:Name="rootGrid" Width="400" Height="300" Background="Red" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <GridView 
+    x:Name="gridView"
+    Margin="25,0,25,0"
+    AllowDrop="True"
+    CanReorderItems="True"
+    Background="DarkGreen"    
+    Width="350"
+    ScrollViewer.HorizontalScrollBarVisibility="Auto"
+    ScrollViewer.HorizontalScrollMode="Enabled"
+    ScrollViewer.VerticalScrollMode="Disabled"
+    ScrollViewer.VerticalScrollBarVisibility="Auto">
+    <GridView.ItemContainerTransitions>
+      <TransitionCollection/>
+    </GridView.ItemContainerTransitions>
+    <GridView.ItemsPanel>
+      <ItemsPanelTemplate>
+        <WrapGrid MaximumRowsOrColumns="4" VerticalChildrenAlignment="Center" Background="DarkBlue"/>
+      </ItemsPanelTemplate>
+    </GridView.ItemsPanel>
+    <TextBlock x:Name="tb1" Text="Algona" FontSize="15"/>
+    <TextBlock Text="Auburn" FontSize="15"/>
+    <TextBlock Text="Beaux Arts Village" FontSize="15"/>
+    <TextBlock Text="Bellevue" FontSize="15"/>
+    <TextBlock Text="Black Diamond" FontSize="15"/>
+    <TextBlock Text="Bothell" FontSize="15"/>
+    <TextBlock Text="Burien" FontSize="15"/>
+    <TextBlock Text="Carnation" FontSize="15"/>
+    <TextBlock Text="Clyde Hill" FontSize="15"/>
+    <TextBlock Text="Covington" FontSize="15"/>
+    <TextBlock Text="Des Moines" FontSize="15"/>
+    <TextBlock Text="Duvall" FontSize="15"/>
+    <TextBlock Text="Enumclaw" FontSize="15"/>
+    <TextBlock Text="Federal Way" FontSize="15"/>
+    <TextBlock Text="Hunts Point" FontSize="15"/>
+    <TextBlock Text="Issaquah" FontSize="15"/>
+    <TextBlock Text="Kenmore" FontSize="15"/>
+    <TextBlock Text="Kent" FontSize="15"/>
+    <TextBlock Text="Kirkland" FontSize="15"/>
+    <TextBlock Text="Lake Forest Park" FontSize="15"/>
+    <TextBlock Text="Maple Valley" FontSize="15"/>
+    <TextBlock Text="Medina" FontSize="15"/>
+    <TextBlock Text="Mercer Island" FontSize="15"/>
+    <TextBlock Text="Milton" FontSize="15"/>
+    <TextBlock Text="Newcastle" FontSize="15"/>
+    <TextBlock Text="Normandy Park" FontSize="15"/>
+    <TextBlock Text="North Bend" FontSize="15"/>
+    <TextBlock Text="Pacific" FontSize="15"/>
+    <TextBlock Text="Redmond" FontSize="15"/>
+    <TextBlock Text="Renton" FontSize="15"/>
+    <TextBlock Text="Sammamish" FontSize="15"/>
+    <TextBlock Text="SeaTac" FontSize="15"/>
+    <TextBlock Text="Seattle" FontSize="15"/>
+    <TextBlock Text="Shoreline" FontSize="15"/>
+    <TextBlock Text="Skykomish" FontSize="15"/>
+    <TextBlock Text="Snoqualmie" FontSize="15"/>
+    <TextBlock Text="Tukwila" FontSize="15"/>
+    <TextBlock Text="Woodinville" FontSize="15"/>
+    <TextBlock Text="Yarrow Point" FontSize="15"/>
+    <TextBlock Text="Medina" FontSize="15"/>
+    <TextBlock Text="Mercer Island" FontSize="15"/>
+    <TextBlock Text="Milton" FontSize="15"/>
+    <TextBlock Text="Newcastle" FontSize="15"/>
+    <TextBlock Text="Normandy Park" FontSize="15"/>
+    <TextBlock Text="North Bend" FontSize="15"/>
+    <TextBlock Text="Pacific" FontSize="15"/>
+    <TextBlock Text="Redmond" FontSize="15"/>
+    <TextBlock Text="Renton" FontSize="15"/>
+    <TextBlock Text="Sammamish" FontSize="15"/>
+    <TextBlock Text="SeaTac" FontSize="15"/>
+    <TextBlock Text="Seattle" FontSize="15"/>
+    <TextBlock Text="Shoreline" FontSize="15"/>
+    <TextBlock Text="Skykomish" FontSize="15"/>
+    <TextBlock Text="Snoqualmie" FontSize="15"/>
+    <TextBlock Text="Tukwila" FontSize="15"/>
+    <TextBlock Text="Woodinville" FontSize="15"/>
+    <TextBlock Text="Yarrow Point" FontSize="15"/>
+    <TextBlock Text="Medina" FontSize="15"/>
+    <TextBlock Text="Mercer Island" FontSize="15"/>
+    <TextBlock Text="Milton" FontSize="15"/>
+    <TextBlock Text="Newcastle" FontSize="15"/>
+    <TextBlock Text="Normandy Park" FontSize="15"/>
+    <TextBlock Text="North Bend" FontSize="15"/>
+    <TextBlock Text="Pacific" FontSize="15"/>
+    <TextBlock Text="Redmond" FontSize="15"/>
+    <TextBlock Text="Renton" FontSize="15"/>
+    <TextBlock Text="Sammamish" FontSize="15"/>
+    <TextBlock Text="SeaTac" FontSize="15"/>
+    <TextBlock Text="Seattle" FontSize="15"/>
+    <TextBlock Text="Shoreline" FontSize="15"/>
+    <TextBlock Text="Skykomish" FontSize="15"/>
+    <TextBlock Text="Snoqualmie" FontSize="15"/>
+    <TextBlock Text="Tukwila" FontSize="15"/>
+    <TextBlock Text="Woodinville" FontSize="15"/>
+    <TextBlock Text="Yarrow Point" FontSize="15"/>
+  </GridView>
+</Grid>

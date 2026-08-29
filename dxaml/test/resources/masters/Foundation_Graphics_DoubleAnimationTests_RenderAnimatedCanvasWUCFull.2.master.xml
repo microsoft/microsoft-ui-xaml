@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+            <ColorBrush Color="rgb {1, 0, 0}" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft" OffsetX="0" OffsetY="50" OffsetZ="0">
+            <ColorBrush Color="rgb {1, 0, 0}" />
+          </wucSpriteVisual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="10" SizeY="10" OffsetX="0" OffsetY="100" OffsetZ="0">
+              <TransformMatrix>
+                <Row1 M11="0.7071" M12="0.7071" M13="0" M14="0" />
+                <Row2 M21="-0.7071" M22="0.7071" M13="0" M14="0" />
+                <Row3 M31="0" M32="0" M33="1" M34="0" />
+                <Row4 M41="0" M42="0" M43="0" M44="1" />
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+                  <ColorBrush Color="rgb {0, 1, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="10" SizeY="10" OffsetX="0" OffsetY="150" OffsetZ="0">
+              <TransformMatrix>
+                <Row1 M11="1" M12="-1" M13="0" M14="0" />
+                <Row2 M21="0" M22="1" M13="0" M14="0" />
+                <Row3 M31="0" M32="0" M33="1" M34="0" />
+                <Row4 M41="100" M42="-100" M43="0" M44="1" />
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+                  <ColorBrush Color="rgb {0, 0, 1}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

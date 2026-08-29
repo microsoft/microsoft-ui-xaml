@@ -1,0 +1,17 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ListView x:Name="lstBegin">
+        <ListView.ItemTemplate>
+            <DataTemplate>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding}"/>
+                </StackPanel>
+            </DataTemplate>
+        </ListView.ItemTemplate>
+        <ListView.Items>
+            <x:String>One</x:String>
+            <x:String>Two</x:String>
+        </ListView.Items>
+    </ListView>
+    <Button x:Name="btnEnd">Final Button</Button>
+</StackPanel>

@@ -1,0 +1,7 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+Styles.xbf TEXTFILE "Styles.xbf"
+Styles_perf2026.xbf TEXTFILE "Styles_perf2026.xbf"
+ThemeResources.xbf TEXTFILE "ThemeResources.xbf"
+ThemeResources_perf2026.xbf TEXTFILE "ThemeResources_perf2026.xbf"

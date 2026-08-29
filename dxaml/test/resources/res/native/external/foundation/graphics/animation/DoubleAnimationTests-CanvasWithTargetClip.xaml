@@ -1,0 +1,17 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Canvas Width="100" Height="100" Background="Red" Canvas.Top="100" x:Name="canv">
+        <Canvas.RenderTransform>
+            <CompositeTransform x:Name="canvTx" />
+        </Canvas.RenderTransform>
+        <Canvas.Clip>
+            <RectangleGeometry Rect="0,0,10,10">
+                <RectangleGeometry.Transform>
+                    <CompositeTransform x:Name="clipTx" />
+                </RectangleGeometry.Transform>
+            </RectangleGeometry>
+        </Canvas.Clip>
+    </Canvas>
+
+</Canvas>
