@@ -260,7 +260,7 @@
                             Padding=14,0,14,0
                             RenderSize=40,20
                             Visibility=Visible
-                          [Microsoft.UI.Xaml.Controls.TextBlock]
+                          [Microsoft.UI.Xaml.Controls.FontIcon]
                               FocusVisualPrimaryBrush=#E4000000
                               FocusVisualPrimaryThickness=2,2,2,2
                               FocusVisualSecondaryBrush=#B3FFFFFF
@@ -269,11 +269,20 @@
                               Height=12
                               Margin=0,0,0,0
                               Name=CollapsedGlyph
-                              Padding=2,2,2,2
                               RenderSize=12,12
                               Visibility=Visible
                               Width=12
-                          [Microsoft.UI.Xaml.Controls.TextBlock]
+                            [Microsoft.UI.Xaml.Controls.TextBlock]
+                                FocusVisualPrimaryBrush=#E4000000
+                                FocusVisualPrimaryThickness=2,2,2,2
+                                FocusVisualSecondaryBrush=#B3FFFFFF
+                                FocusVisualSecondaryThickness=1,1,1,1
+                                Foreground=#E4000000
+                                Margin=0,0,0,0
+                                Padding=0,0,0,0
+                                RenderSize=12,8
+                                Visibility=Visible
+                          [Microsoft.UI.Xaml.Controls.FontIcon]
                               FocusVisualPrimaryBrush=#E4000000
                               FocusVisualPrimaryThickness=2,2,2,2
                               FocusVisualSecondaryBrush=#B3FFFFFF
@@ -282,7 +291,6 @@
                               Height=12
                               Margin=0,0,0,0
                               Name=ExpandedGlyph
-                              Padding=2,2,2,2
                               RenderSize=0,0
                               Visibility=Collapsed
                               Width=12
