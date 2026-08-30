@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
  Licensed under the MIT License. -->
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" DefaultTargets="Build" InitialTargets="EnsureWindowsXamlTargetsPresent" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -79,7 +79,33 @@
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- Resolve the WindowsXaml targets path independently of VisualStudioVersion. When msbuild is
+       invoked outside a VS developer environment, VisualStudioVersion is empty or falls back to the
+       stale 14.0 above, pointing the import below at a non-existent path and failing with a cryptic
+       MSB4019. Probe for an installed version (newest first) so the import resolves to a real file,
+       and fall back to VisualStudioVersion when none is found. -->
+  <PropertyGroup>
+    <_WinXamlTargetsBase>$(MSBuildExtensionsPath)\Microsoft\WindowsXaml</_WinXamlTargetsBase>
+    <_WinXamlTargetsLeaf>Microsoft.Windows.UI.Xaml.CSharp.targets</_WinXamlTargetsLeaf>
+    <_WindowsXamlTargetsPath Condition="'$(_WindowsXamlTargetsPath)' == '' and Exists('$(_WinXamlTargetsBase)\v17.0\$(_WinXamlTargetsLeaf)')">$(_WinXamlTargetsBase)\v17.0\$(_WinXamlTargetsLeaf)</_WindowsXamlTargetsPath>
+    <_WindowsXamlTargetsPath Condition="'$(_WindowsXamlTargetsPath)' == '' and Exists('$(_WinXamlTargetsBase)\v16.0\$(_WinXamlTargetsLeaf)')">$(_WinXamlTargetsBase)\v16.0\$(_WinXamlTargetsLeaf)</_WindowsXamlTargetsPath>
+    <_WindowsXamlTargetsPath Condition="'$(_WindowsXamlTargetsPath)' == '' and Exists('$(_WinXamlTargetsBase)\v15.0\$(_WinXamlTargetsLeaf)')">$(_WinXamlTargetsBase)\v15.0\$(_WinXamlTargetsLeaf)</_WindowsXamlTargetsPath>
+    <_WindowsXamlTargetsPath Condition="'$(_WindowsXamlTargetsPath)' == ''">$(_WinXamlTargetsBase)\v$(VisualStudioVersion)\$(_WinXamlTargetsLeaf)</_WindowsXamlTargetsPath>
+  </PropertyGroup>
+  <!-- Skip importing the WindowsXaml targets during NuGet restore. Importing them unconditionally
+       broke restore for projects that reference this one (see PR 8207144); the targets are only
+       needed to provide the Build target during an actual build. The Exists() guard keeps a missing
+       toolset from failing at evaluation with a cryptic MSB4019 - the InitialTargets diagnostic below
+       surfaces an actionable error instead. -->
+  <Import Project="$(_WindowsXamlTargetsPath)" Condition="'$(ExcludeRestorePackageImports)' != 'true' and Exists('$(_WindowsXamlTargetsPath)')" />
+  <!-- Runs via the project's InitialTargets on every build invocation. When the WindowsXaml targets
+       are absent (so the import above is skipped and no Build target exists) this fails with a clear,
+       actionable message instead of a cryptic MSB4019/MSB4057. It is named distinctly so it never
+       shadows the real Build target supplied by the imported WindowsXaml targets. -->
+  <Target Name="EnsureWindowsXamlTargetsPresent" Condition="'$(ExcludeRestorePackageImports)' != 'true' and !Exists('$(_WindowsXamlTargetsPath)')">
+    <Error Text="The WindowsXaml C# targets were not found at '$(_WindowsXamlTargetsPath)'. This project requires the UWP/WindowsXaml build tools (install the 'Universal Windows Platform development' workload, or build from a VS Developer environment after 'Init x64fre' so VisualStudioVersion resolves correctly)." />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
