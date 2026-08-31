@@ -97,36 +97,22 @@ winrt::hstring TableViewCellAutomationPeer::GetColumnHeaderText()
 
 winrt::hstring TableViewCellAutomationPeer::GetCellValueText()
 {
-    auto const cell = Owner().try_as<winrt::FrameworkElement>();
-    if (!cell)
+    return GetCellValueTextFromWrapper(Owner().try_as<winrt::FrameworkElement>());
+}
+
+hstring TableViewCellAutomationPeer::GetHelpTextCore()
+{
+    auto const helpText = __super::GetHelpTextCore();
+
+    // Resolved here rather than when the tooltip is attached: at that point the cell's content is
+    // freshly generated and its binding has not produced a value yet, so the texts always compare
+    // unequal and the value would be announced twice.
+    if (!helpText.empty() && helpText == GetCellValueText())
     {
         return {};
     }
 
-    // The cell wrapper's child is the column-generated content.
-    winrt::FrameworkElement content{ nullptr };
-    if (auto const border = cell.try_as<winrt::Border>())
-    {
-        content = border.Child().try_as<winrt::FrameworkElement>();
-    }
-    if (!content)
-    {
-        content = cell;
-    }
-
-    // Common text-column case: read the generated TextBlock.
-    if (auto const textBlock = content.try_as<winrt::TextBlock>())
-    {
-        return textBlock.Text();
-    }
-
-    // Template content uses the standard UIA name computation.
-    if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(content))
-    {
-        return peer.GetName();
-    }
-
-    return {};
+    return helpText;
 }
 
 int32_t TableViewCellAutomationPeer::GetRowIndex()

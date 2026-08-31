@@ -279,6 +279,27 @@ runtimeclass TableViewCellEditEndingEventArgs
     Boolean Cancel;
 };
 
+// Args for CellToolTipRequested.
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewCellToolTipRequestedEventArgs
+{
+    // The data item of the row the cell belongs to.
+    Object Item { get; };
+
+    // The column of the cell. Always non-null.
+    MU_XC_NAMESPACE.TableViewColumn Column { get; };
+
+    // The tooltip content: a string, or any content a ToolTip can host. Null or empty means no
+    // tooltip. A ToolTip is not valid content, and a UIElement is parented by the cell's ToolTip,
+    // so return a fresh element per raise.
+    Object Content { get; set; };
+
+    // Accessible text, published as the cell's UIA HelpText. Set it when Content is not a string;
+    // it overrides string Content, and is ignored when Content is null.
+    String AutomationHelpText { get; set; };
+};
+
 [MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass TableViewTextColumn : TableViewColumn
@@ -574,6 +595,19 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
 
     // Raised AFTER a sort-state change has been applied. Not cancellable.
     event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewSortedEventArgs> Sorted;
+
+    // ----- Tooltips -----
+    // Raised as each cell's tooltip is resolved: on realization, on cell rebuild, when a cell edit
+    // closes, and on InvalidateCellToolTips. Opt-in, and may be raised repeatedly for the same
+    // cell, so handlers should be cheap and side-effect free. A tooltip the app sets inside a
+    // cell's own content template is left alone; the control's tooltip covers the rest of the cell.
+    event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewCellToolTipRequestedEventArgs> CellToolTipRequested;
+
+    // Queues a coalesced re-resolve of every realized cell. Use it when a handler is attached after
+    // rows are realized, when the data behind the tooltips changes, or to retract tooltips after
+    // the last handler is removed. Safe to call from a handler, but only when that state actually
+    // changed: a handler that invalidates on every raise is dropped after a few passes.
+    void InvalidateCellToolTips();
 
     static Microsoft.UI.Xaml.DependencyProperty ItemsSourceProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };

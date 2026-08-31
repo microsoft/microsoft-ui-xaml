@@ -445,6 +445,7 @@ Named to match `ItemsView`, which ships `Select` / `Deselect` / `IsSelected` ove
 
 | Event | Args | Description |
 |---|---|---|
+| `CellToolTipRequested` | `TableViewCellToolTipRequestedEventArgs` | Raised when a cell's tooltip is resolved — on realization, on cell rebuild, when a cell edit closes, and on `InvalidateCellToolTips()`. May be raised repeatedly for the same cell and item, so handlers should be cheap and side-effect free. Opt-in: with no handler attached the control does no per-cell work. `InvalidateCellToolTips()` queues a coalesced re-resolve for every realized cell, for handlers attached after realization, when the underlying data changes, or to retract tooltips already showing after the last handler is removed; it is re-entrancy-safe, but a handler that invalidates on every raise is dropped after a few passes. |
 | `SelectionChanged` | `SelectionChangedEventArgs` | Raised after the selection has settled. Reading `SelectedItem`, `SelectedIndex`, or a row's `IsSelected` inside the handler observes the new state. Replacing a selection raises **one** event carrying both the removed and the added item. |
 
 Selection is raised only for real changes: a re-select of the already-selected row, or an index shift caused by a collection reshape, does not raise `SelectionChanged`.
@@ -647,6 +648,17 @@ How an edit is being closed.
 |---|---|
 | `TableViewBeginningEditEventArgs` | `Item`, `Column` (read-only); `Cancel` (settable) |
 | `TableViewCellEditEndingEventArgs` | `Item`, `Column`, `EditAction` (read-only); `Cancel` (settable) |
+| `TableViewCellToolTipRequestedEventArgs` | `Item`, `Column` (read-only); `Content`, `AutomationHelpText` (settable) |
+
+### Cell tooltip accessibility
+
+The control owns the `ToolTip`; `Content` is its content, not a `ToolTip` to attach. A `UIElement` returned as `Content` is parented by that cell's `ToolTip`, so return a string or a fresh element per raise — the same instance handed to a second cell cannot be parented twice and is dropped.
+
+- The tooltip text is published as the cell's `AutomationProperties.HelpText`, and retracted on recycle and when a cell edit begins.
+- Publication is suppressed when the text equals the cell's own UIA text, so Narrator does not read it twice.
+- The popup is **pointer-only**: cell focus in `TableView` is row-level, so there is no cell element for the framework's keyboard-tooltip path to fire on. The UIA pairing is what serves keyboard and screen-reader users, which is why it is not optional.
+- Placement is control-owned and fixed (`PlacementMode.Mouse`), matching `TabViewItem`. An app needing different placement uses a tooltip inside its own cell content template.
+- Setting `AutomationHelpText` is **required** when `Content` is not a string: non-string content cannot be stringified, and the cell wrapper the tooltip attaches to is internal, so an app cannot set `HelpText` on it.
 
 ## Selection event args
 
@@ -728,6 +740,15 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Object Item { get; };
         Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn Column { get; };
         Boolean Cancel;
+    };
+
+    [MUX_PREVIEW, webhosthidden]
+    runtimeclass TableViewCellToolTipRequestedEventArgs
+    {
+        Object Item { get; };
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn Column { get; };
+        Object Content { get; set; };
+        String AutomationHelpText { get; set; };
     };
 
     [MUX_PREVIEW, webhosthidden]
@@ -837,6 +858,8 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Boolean IsSelected(Int32 index);
         void DeselectAll();
 
+        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.Tabular.TableViewCellToolTipRequestedEventArgs> CellToolTipRequested;
+        void InvalidateCellToolTips();
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs> SelectionChanged;
 
         static Microsoft.UI.Xaml.DependencyProperty ItemsSourceProperty { get; };

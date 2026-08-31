@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.ToolTipsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular">
+
+    <Page.Resources>
+        <!-- A cell whose OWN content carries an app-set ToolTip. The control must never replace or
+             clear this one; hovering the text shows the app's tooltip, not a control-owned one. -->
+        <DataTemplate x:Key="AppToolTipCell">
+            <TextBlock Text="{Binding Notes}"
+                       VerticalAlignment="Center"
+                       Margin="8,0"
+                       ToolTipService.ToolTip="APP-OWNED tooltip (set in the cell template)"/>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid Padding="12" RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Spacing="2">
+            <TextBlock Text="Cell tooltips" FontSize="18" FontWeight="SemiBold"/>
+            <TextBlock Opacity="0.7" FontSize="12" TextWrapping="Wrap"
+                       Text="Opt-in per-cell tooltips via CellToolTipRequested. Bio returns a plain string; Name returns non-string content plus AutomationHelpText for UIA; Score returns nothing (no tooltip should appear); Notes has an app-set tooltip in its own cell template that the control must not touch."/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <Button x:Name="EnableToolTips" Content="Tooltips: ON" Click="OnToggleEnabled"/>
+            <Button x:Name="ThrowInHandler" Content="Throwing handler: OFF" Click="OnToggleThrow"/>
+            <Button x:Name="ReentrantInvalidate" Content="Reentrant invalidate: OFF" Click="OnToggleReentrant"/>
+            <Button x:Name="AttachLate" Content="Detach handler" Click="OnAttachLate"/>
+            <Button x:Name="MutateData" Content="Mutate data + Invalidate" Click="OnMutateData"/>
+            <Button x:Name="ScrollDown" Content="Scroll (recycle rows)" Click="OnScroll"/>
+            <Button x:Name="CheckOwnership" Content="Check app-owned cells" Click="OnCheckOwnership"/>
+        </StackPanel>
+
+        <Border Grid.Row="2" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
+            <tv:TableView x:Name="Table"/>
+        </Border>
+
+        <TextBlock x:Name="Status" Grid.Row="3" FontSize="12" Opacity="0.8" TextWrapping="Wrap"/>
+    </Grid>
+</Page>

@@ -75,6 +75,17 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 - Light / Dark / High Contrast theme tokens + inline fallbacks (`#29FFFFFF` dark gridline). — **PR2** (full self-themed Theme-XBF emission deferred)
 - Cell-level styling: custom cells via `TableViewTemplateColumn` + built-in text-cell defaults (left, vertically centered). A public per-column alignment/weight API — **deferred (PR3+)**.
 
+### Tooltips
+- Cell: opt-in via `CellToolTipRequested`; the app supplies content per cell on demand. No handler means no tooltip and no per-cell cost. Needed because text cells render with `CharacterEllipsis` and no wrapping, so over-wide values are otherwise unreadable. — **PR3**
+- Raised as each cell's tooltip is resolved: on realization, on cell rebuild, when a cell edit closes, and on `InvalidateCellToolTips()`.
+- Author precedence: a tooltip set inside a cell's own content template opens over that content; the control's tooltip covers the rest of the cell, and the control never touches a tooltip it did not attach.
+- Content: a string, or any content a `ToolTip` can host. A `UIElement` is parented by that cell's `ToolTip`, so a handler returns a fresh element per raise — the same instance handed to a second cell cannot be parented twice and is dropped.
+- Accessibility: the tooltip text is published as the cell's `AutomationProperties.HelpText` unless the cell already reports it, so the information is not pointer-only and is not announced twice. For content UIA cannot read the handler sets `AutomationHelpText`, since the cell wrapper is not reachable from the app.
+- Recycling: a recycled row never shows a previous item's cell tooltip, including after the last handler is removed. `InvalidateCellToolTips()` queues a coalesced re-resolve of every realized cell when a handler is attached late, when the underlying data changes, or to retract tooltips already showing after the last handler is removed. It is re-entrancy-safe, but a handler that invalidates on every raise is dropped after a few passes.
+- Column-header and group-header tooltips are **deferred**: the header band is `IsHitTestVisible="False"` (`TableView.xaml`) so a header tooltip could never open, and grouping is not yet enabled. Both land with the work that makes those surfaces interactive.
+
+> Tooltips are **not** gated on text truncation. No WinUI control keys tooltips off `IsTextTrimmed`; the shipped pattern is to gate on a cheap content predicate (non-empty string) or an explicit opt-in.
+
 ### Accessibility (UIA)
 - Grid/Table peers; Row peer (`SelectionItem` + `GridItem`); ColumnHeader peer (`Invoke` → sort). — **PR2** read-only Grid/Table · **PR3** Selection + sort invoke
 - Narrator, keyboard navigation parity, sort announcements. — **PR2** nav · **PR3** sort

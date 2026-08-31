@@ -8,6 +8,7 @@
 #include "TableViewRow.h"
 #include "TableViewCellsPanel.h"
 #include "TableViewAutomationPeer.h"
+#include "TableViewCellToolTipRequestedEventArgs.h"
 #include "TableViewSource.h"
 #include "SortIndicator.h"
 #include "RuntimeProfiler.h"
@@ -32,6 +33,11 @@ static constexpr std::wstring_view s_SortIndicatorName{ L"TableViewSortIndicator
 
 namespace
 {
+    // Consecutive follow-up tooltip passes a handler may request by calling InvalidateCellToolTips
+    // from inside CellToolTipRequested. Bounding a chain the control cannot make converge, then
+    // resetting once it settles, matches ItemsRepeater's stack-layout measure counter.
+    constexpr int c_maxCellToolTipRefreshPasses = 3;
+
     // cppwinrt's == compares raw ABI pointers, which can differ for the same object across a QI,
     // so fall back to canonical IUnknown identity.
     bool IsSameObject(winrt::IInspectable const& left, winrt::IInspectable const& right)
@@ -1298,6 +1304,98 @@ void TableView::OnRowElementPrepared(
 
 }
 
+winrt::com_ptr<TableViewCellToolTipRequestedEventArgs> TableView::RaiseCellToolTipRequested(
+    const winrt::TableViewColumn& column,
+    const winrt::IInspectable& item)
+{
+    // Contained by the callers, which run from framework callbacks.
+    auto args = winrt::make_self<TableViewCellToolTipRequestedEventArgs>(item, column);
+    m_cellToolTipRequestedEventSource(*this, *args);
+    return args;
+}
+
+void TableView::InvalidateCellToolTips()
+{
+    // Deferred because this is public: raising synchronously from an app handler would re-enter the
+    // pass and walk live children mid-mutation. Matches InvalidateItemsInfo.
+    if (m_cellToolTipRefreshQueued)
+    {
+        m_cellToolTipRefreshDirty = true;
+        return;
+    }
+
+    // No dispatcher, or one that is shutting down, means nothing will render a tooltip anyway, so
+    // there is nothing useful to run: drop the request rather than raise app code off the tick.
+    auto dispatcher = DispatcherQueue();
+    if (!dispatcher)
+    {
+        return;
+    }
+
+    m_cellToolTipRefreshQueued = true;
+    auto weakThis = get_weak();
+    if (!dispatcher.TryEnqueue([weakThis]()
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                // Held across the pass so a handler calling back records a follow-up instead of
+                // queueing a callback every tick, and cleared on the throw path so a failed pass
+                // cannot disable every future invalidate.
+                strongThis->m_cellToolTipRefreshDirty = false;
+                try
+                {
+                    strongThis->RefreshCellToolTipsOnRealizedRows();
+                }
+                catch (...)
+                {
+                    TVDiag::LogRetailF(L"[TableView] Cell-tooltip re-resolve failed (HRESULT 0x%08X).",
+                        static_cast<unsigned int>(winrt::to_hresult()));
+                }
+                strongThis->m_cellToolTipRefreshQueued = false;
+
+                if (strongThis->m_cellToolTipRefreshDirty)
+                {
+                    strongThis->m_cellToolTipRefreshDirty = false;
+
+                    // A handler invalidating on every raise would re-arm this forever, so it is
+                    // bounded like the row's rebuild drain.
+                    if (++strongThis->m_cellToolTipRefreshPasses < c_maxCellToolTipRefreshPasses)
+                    {
+                        strongThis->InvalidateCellToolTips();
+                        return;
+                    }
+
+                    TVDiag::LogRetailF(L"[TableView] Dropping a cell-tooltip re-resolve after %d passes; "
+                        L"a CellToolTipRequested handler is calling InvalidateCellToolTips unconditionally.",
+                        c_maxCellToolTipRefreshPasses);
+                }
+
+                strongThis->m_cellToolTipRefreshPasses = 0;
+            }
+        }))
+    {
+        m_cellToolTipRefreshQueued = false;
+    }
+}
+
+void TableView::RefreshCellToolTipsOnRealizedRows()
+{
+    ForEachRealizedRow([](winrt::TableViewRow const& row)
+        {
+            try
+            {
+                winrt::get_self<TableViewRow>(row)->RefreshCellToolTips();
+            }
+            catch (...)
+            {
+                // Contained per row: an exception escaping a dispatcher callback fail-fasts, and one
+                // bad row must not abort the rest.
+                TVDiag::LogRetailF(L"[TableView] A row's cell tooltip pass failed (HRESULT 0x%08X). Continuing.",
+                    static_cast<unsigned int>(winrt::to_hresult()));
+            }
+        });
+}
+
 void TableView::OnRowElementClearing(
     const winrt::ItemsRepeater& /*sender*/,
     const winrt::ItemsRepeaterElementClearingEventArgs& args)
@@ -1330,7 +1428,10 @@ void TableView::OnRowElementClearing(
             }
         }
 
-        winrt::get_self<TableViewRow>(row)->SetOwningTableViewInternal(nullptr);
+        auto const rowImpl = winrt::get_self<TableViewRow>(row);
+        // Release app-supplied tooltip content rather than pinning it in the recycle pool.
+        rowImpl->ReleaseCellToolTips();
+        rowImpl->SetOwningTableViewInternal(nullptr);
         InvalidateMeasure();
     }
 

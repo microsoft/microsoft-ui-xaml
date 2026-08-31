@@ -9,6 +9,9 @@
 #include "TableViewRow.g.h"
 #include "TableViewRow.properties.h"
 
+#include <utility>
+#include <vector>
+
 class TableViewRow :
     public ReferenceTracker<TableViewRow, winrt::implementation::TableViewRowT>,
     public TableViewRowProperties
@@ -55,6 +58,12 @@ public:
     void RefreshDensity();
     // Rebuild realized cells when column content changes at runtime.
     void RefreshCells();
+
+    // Internal: re-resolves this row's cell tooltips against its current data item.
+    void RefreshCellToolTips();
+    // Releases control-owned cell tooltips (recycle-out).
+    void ReleaseCellToolTips();
+
     // Apply a column's current visibility to this row's matching cell (the row owns its cells,
     // so TableView asks the row instead of reaching into the row's cell panel). The visibility is
     // passed in (snapshotted once by the caller) so header and all rows apply the same value.
@@ -128,6 +137,11 @@ private:
         const winrt::Microsoft::UI::Xaml::DependencyPropertyChangedEventArgs& args);
 
     void RebuildCells();
+    // The guarded bodies. RebuildCells and RefreshCellToolTips drain over these.
+    void RebuildCellsCore();
+    void RefreshCellToolTipsCore();
+    void RefreshCellToolTipsGuarded();
+    void ClearOwnedCellToolTips(const winrt::Panel& host);
 
     // Coalesces a burst of Columns-collection changes into a single cell rebuild on the next
     // dispatcher tick (each realized row observes Columns, so N bulk edits would otherwise cost N
@@ -154,6 +168,20 @@ private:
 
     // Prevent DataContextChanged re-entry while RebuildCells updates child DCs.
     bool m_isRebuildingCells{ false };
+    // Set while the tooltip pass is running, so a nested RebuildCells records instead of raising.
+    bool m_isRefreshingCellToolTips{ false };
+    // A rebuild requested while the guard was held; replayed once the guard drops.
+    bool m_rebuildCellsPending{ false };
+    // A tooltip refresh requested while a pass was running (an edit that closed under a handler).
+    // That pass took its targets first, so the cell it is about needs another pass.
+    bool m_refreshCellToolTipsPending{ false };
+    // Whether any cell on this row carries a control-created tooltip, so the pass stays free when
+    // the feature is unused but still retracts tooltips after the last handler goes.
+    bool m_hasOwnedCellToolTips{ false };
+    // Reused per pass so the virtualized path does not allocate on every recycle. Plain refs rather
+    // than tracker_ref: strictly stack-scoped, cleared by the pass guard on every path including
+    // throw, so it never outlives the pass.
+    std::vector<std::pair<winrt::TableViewColumn, winrt::FrameworkElement>> m_toolTipTargets{};
 
     // Set while a coalesced RebuildCells is pending on the dispatcher (Columns-vector-changed burst).
     bool m_rebuildCellsQueued{ false };
