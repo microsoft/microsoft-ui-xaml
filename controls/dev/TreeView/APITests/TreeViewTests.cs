@@ -529,6 +529,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(collapsedGlyph, "CollapsedGlyph needs to be a FontIcon so that it can mirror in RTL");
                 Verify.IsTrue(collapsedGlyph.MirroredWhenRightToLeft, "CollapsedGlyph should opt into RTL mirroring");
 
+                var expandedGlyph = VisualTreeUtils.FindVisualChildByName(treeView, "ExpandedGlyph") as FontIcon;
+                Verify.IsNotNull(expandedGlyph, "ExpandedGlyph needs to be a FontIcon so that it can mirror in RTL");
+                Verify.IsTrue(expandedGlyph.MirroredWhenRightToLeft, "ExpandedGlyph should opt into RTL mirroring");
                 var scaleX = (collapsedGlyph.RenderTransform as ScaleTransform)?.ScaleX ?? 1.0;
                 Verify.AreEqual(shouldBeMirrored ? -1.0 : 1.0, scaleX, "CollapsedGlyph horizontal scale");
             });
