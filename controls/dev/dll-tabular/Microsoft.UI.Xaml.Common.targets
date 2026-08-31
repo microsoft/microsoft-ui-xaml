@@ -420,9 +420,21 @@
       <LocalAssembly Condition="'$(LocalAssembly)' == '' and Exists(@(XamlIntermediateAssembly))">
         @(XamlIntermediateAssembly->'%(Identity)')
       </LocalAssembly>
-      <!-- Pre-wire MUXC's merged winmd for future Tabular styles that reference MUXC controls. -->
-      <MUXCXamlConsumeWinmd>$(XamlBuildOutputRoot)\controls\dev\dll\Merged\Microsoft.winmd</MUXCXamlConsumeWinmd>
+      <!-- Consume the fully-merged public winmd (built by MergedWinMD, which Tabular's idl project feeds)
+           so styles referencing MUXC controls resolve without pulling in pre-merge placeholders like
+           winrtbase. Microsoft.UI.Xaml.Controls.Tabular.vcxproj carries an ordering-only ProjectReference
+           to MergedWinMD.vcxproj so this path exists by the time this target runs. -->
+      <MUXCXamlConsumeWinmd>$(PublicMergedWinMDDir)\Microsoft.UI.Xaml.winmd</MUXCXamlConsumeWinmd>
     </PropertyGroup>
+    <!-- $(MUXCXamlConsumeWinmd) already carries merged core dxaml types (Control, Brush, UIElement, ...).
+         Drop the private unmerged copy so XamlCompiler doesn't resolve the same type twice. -->
+    <ItemGroup>
+      <!-- Core dxaml types come from the public merged winmd; drop other copies so XamlCompiler sees each type once. -->
+      <ReferencePath Remove="@(ReferencePath)" Condition="'%(Filename)%(Extension)' == 'Microsoft.UI.Xaml.winmd' and $([System.String]::new('%(RootDir)%(Directory)').Contains('private'))" />
+      <ReferencePath Remove="@(ReferencePath)" Condition="'%(Filename)%(Extension)' == 'Microsoft.winmd' and $([System.String]::new('%(RootDir)%(Directory)').Contains('dev\dll\Merged'))" />
+      <!-- Unmerged winmds carry the midlrt 'winrtbase' placeholder, which only mdmerge resolves. -->
+      <ReferencePath Remove="@(ReferencePath)" Condition="$([System.String]::new('%(RootDir)%(Directory)').Contains('Unmerged'))" />
+    </ItemGroup>
     <CallTarget Targets="SDKRedistOutputGroup" Condition="'$(IncludeSDKRedistOutputGroup)' == 'true'">
       <Output TaskParameter="TargetOutputs" ItemName="_SDKRedistOutputGroupOutput_xaml" />
     </CallTarget>
@@ -452,7 +464,7 @@
         OutputPath="$(XamlGeneratedOutputPath)"
         OutputType="$(OutputType)"
         ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
-        ReferenceAssemblies="@(ReferencePath);$(IntermediateOutputPath)Merged\Microsoft.winmd;$(MUXCXamlConsumeWinmd)"
+        ReferenceAssemblies="@(ReferencePath);$(MUXCXamlConsumeWinmd)"
         ForceSharedStateShutdown="False"
         CompileMode="RealBuildPass1"
         XAMLFingerprint="$(XAMLFingerprint)"
@@ -499,7 +511,7 @@
         OutputPath="$(XamlGeneratedOutputPath)"
         OutputType="$(OutputType)"
         ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
-        ReferenceAssemblies="@(XamlReferencesToCompile);$(IntermediateOutputPath)Merged\Microsoft.winmd;$(MUXCXamlConsumeWinmd)"
+        ReferenceAssemblies="@(XamlReferencesToCompile);$(MUXCXamlConsumeWinmd)"
         ForceSharedStateShutdown="False"
         CompileMode="RealBuildPass2"
         XAMLFingerprint="$(XAMLFingerprint)"

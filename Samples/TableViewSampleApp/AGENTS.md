@@ -1,188 +1,71 @@
-# TableView sample — build & setup notes (for agents and maintainers)
+# TableView sample — build notes
 
-This document explains **how** the sample is built and **why** each non-obvious step exists. The
-end-user quick start lives in [README.md](README.md); this file is the deep reference for anyone
-(human or automation) that needs to reproduce, debug, or maintain the build.
+The end-user quick start is in [README.md](README.md). This file records how the sample is wired
+and why, for anyone maintaining it.
 
-## Why this sample is unusual
+## There is nothing unusual here any more
 
-`TableView` currently ships as a **split binary**: the control lives in
-`Microsoft.UI.Xaml.Controls.Tabular.dll`, separate from the main framework DLL, and it is **not
-yet exposed through the WindowsAppSDK NuGet package**. A normal WinUI app can't just add a package
-reference and use it. To consume the locally built control, the sample:
+The sample used to hand-wire around the product, because `TableView`'s type information was withheld
+from the public winmd and its theme resources did not resolve in a consuming app. It linked raw build
+output, regenerated its own CsWinRT projection, injected a XAML metadata provider, seeded an internal
+template part into `XamlTypeInfo`, compiled the control's theme resources out of the control source
+tree, merged activatable-class registrations into its own app manifest, and staged the control DLL
+next to the EXE.
 
-1. links the freshly built native control DLL,
-2. regenerates its WinRT projection from the freshly built WinMD, and
-3. reconstructs, at build and startup time, the pieces the WindowsAppSDK packaging would normally
-   provide (activatable-class registrations, theme resources, default styles).
+None of that is needed. The project file is now ~60 lines and the sample is an ordinary package
+consumer, modelled on the [ChartApp](../ChartApp) samples — the existing pattern in this repo for a
+separately-built control set.
 
-Every workaround below disappears once `TableView` is delivered in-box through WindowsAppSDK.
+If you find yourself reaching for one of those workarounds again, that is a signal the product
+regressed. Check, in order:
 
-## Environment setup
+1. Tabular types are in the public merged winmd (`MergedWinMD`), not gated out.
+2. `<ActivatableClass>` registrations are emitted — they derive from the same merge inputs, so a
+   withheld winmd silently removes them too.
+3. The control's theme XBFs ship in the package and its default-style URI is authority-less
+   `ms-appx:///`, matching the path in `AppxPriInitialPath`.
 
-1. Install Visual Studio 2022 with the **Desktop development with C++** and **.NET Desktop**
-   workloads.
-2. From the repo root, run a full initialization once so packages are restored and the build
-   environment is provisioned:
-
-   ```
-   .\init.cmd
-   ```
-
-   For one-shot commands in an already-initialized enlistment, `initrun.ps1 <command>` sets up the
-   environment for a single invocation without persisting a shell.
-
-## Step 1 — Build the Tabular control
+## How it builds
 
 ```
-.\initrun.ps1 controls\Build.cmd tabular
+.\initrun.ps1 msb /q /restore Samples\TableViewSampleApp\TableViewSampleApp.csproj /p:Platform=x64
 ```
 
-Produces:
-
-- `BuildOutput\obj\amd64chk\controls\dev\dll-tabular\Microsoft.UI.Xaml.Controls.Tabular.dll`
-- `BuildOutput\obj\amd64chk\controls\dev\dll-tabular\Merged\*.winmd` (the metadata the sample
-  projects against)
-- `BuildOutput\obj\amd64chk\controls\dev\dll-tabular\generic.xaml` (the default Style /
-  ControlTemplate slice the sample compiles)
-
-The sample consumes these outputs directly, so the control must be built **before** the sample.
-
-## Step 2 — Build the sample
+`Microsoft.WindowsAppSDK.WinUI` resolves at `$(WinUIVersion)` through Central Package Versions. To
+test a locally built control, pack the component and override that version:
 
 ```
-.\initrun.ps1 msb /q /restore Samples\TableViewSampleApp\TableViewSampleApp.csproj /p:Platform=x64 /p:RuntimeIdentifier=win-x64
+.\pack.component.cmd /version 3.0.0-mylocal
+... /p:WinUIVersion=3.0.0-mylocal
 ```
 
-The project (`TableViewSampleApp.csproj`) performs several workarounds during this build. Each
-is described below with the failure it prevents.
+The control DLL, its `.pri` and its theme XBFs arrive from the package. The consuming app's build
+expands every referenced `.pri` and re-indexes it into the app's own `TableViewSampleApp.pri`, which
+is why that file is several megabytes: it contains MUXC's and Tabular's resources as well as the
+sample's.
 
-### a. Stage the control DLL next to the executable
+## Two things worth knowing
 
-The native `Microsoft.UI.Xaml.Controls.Tabular.dll` is copied next to the app. TableView's
-runtime classes are registered (see step *e*) but cannot activate without the DLL present.
+**Tabular's theme resources must be merged.** The control resolves its own `generic.xaml` from the
+package, but the theme resources that default style depends on live in `TabularControlsResources`,
+so `App.xaml` merges that alongside `XamlControlsResources`. `SortIndicator` ships in the Tabular
+DLL rather than in MUXC — `controls/Tabular.ProjectImports.targets` is the only importer of
+`SortIndicator.vcxitems` — so `SortIndicatorForeground`, which `TableView`'s column-header style
+resolves, is absent from MUXC's dictionary. Dropping the merge produces
+`XamlParseException 0x802B000A` on the first layout pass, seen as a `0xC000027B` stowed exception
+shortly after launch. If a table appears with no header row, that is a different problem: it is
+almost always **no declared columns**, not a missing dictionary.
 
-*Prevents:* `CLASS_E_CLASSNOTAVAILABLE` (`0x80040111`) when a `TableView` is first activated.
+**`TableView` is `[MUX_PREVIEW]`.** C# usage raises `CS8305`, suppressed via `NoWarn` in the project
+file. XAML usage raises `WMC1501` once per page; those are deliberately left visible.
 
-### b. Regenerate the CsWinRT projection from the built WinMD
+## Entry point
 
-The mock WindowsAppSDK projection can carry stale `Microsoft.UI.Xaml.Controls.Tabular` metadata.
-When the built control's interface IIDs diverge from the stale projection, calls such as
-`TableView.get_Columns` fail their `QueryInterface`. The project regenerates the projection with
-CsWinRT from the freshly built WinMD (`CsWinRTFilters` include the
-`Microsoft.UI.Xaml.Controls.Tabular` namespace and the Tabular XAML metadata provider types) so
-the projected IIDs match the control exactly.
-
-The filters also include `Microsoft.UI.Private.Controls`, the framework-internal primitive
-namespace (`ResizeGripper`). The app never references those types, but it compiles the control's
-`generic.xaml`, which carries `<Style TargetType="privatecontrols:ResizeGripper">`; without the
-projection the XAML compiler cannot resolve that `TargetType` and the build fails (`WMC0110`).
-
-*Prevents:* `E_NOINTERFACE` from stale metadata; an unresolvable private `TargetType`.
-
-### c. Include the TableView theme resources — sourced from the control, never checked in
-
-The split binary's theme resources are **not** deployed to consuming apps, so the sample compiles
-and merges them itself. To guarantee they can never drift from the control, the sample references
-the canonical sources directly instead of checking in copies:
-
-- `TabularSurfaces_themeresources.xaml` ← `controls\dev\CommonStyles\TabularSurfaces_themeresources.xaml`
-- `TableView_themeresources.xaml` ← `controls\dev\TableView\TableView_themeresources.xaml`
-- `generic.xaml` (default `Style` + `ControlTemplate`) ← the freshly built
-  `BuildOutput\...\dll-tabular\generic.xaml`
-
-These are wired via `<Page>`/`<Content>` items with `<Link>` metadata (see the theme-resources
-`ItemGroup` in the csproj), app-compiled to the same ms-appx paths the app expects, and merged at
-startup by `App.xaml` / `App.xaml.cs`.
-
-*Prevents:* the control rendering unstyled or blank; its native `MeasureOverride` throwing on
-first layout when the template is missing.
-
-### d. Build self-contained and unpackaged
-
-The project sets `WindowsAppSdkSelfContained=true`, `WindowsPackageType=None`. This bundles the
-WindowsAppRuntime framework natives and emits the in-process-server activation entries that the
-packaged bootstrap would otherwise inject.
-
-*Prevents:* startup failure (`0xC000027B`) on machines lacking a matching framework package. This
-is standard WindowsAppSDK behavior for unpackaged apps, not a defect.
-
-### e. Merge the InteractiveExperiences (IXP) app manifest
-
-`Build\MergeIxpAppManifest.ps1` merges the WindowsAppSDK InteractiveExperiences component package
-`appxfragment` into the app's side-by-side manifest, adding the lifted-WinRT activatable-class
-registrations (CoreMessaging, Dispatching, Input, Windowing, etc.) that the mock aggregator's
-runtime MSIX omits. It also emits registrations for the split Tabular runtimeclasses (enumerated
-from the built Tabular WinMDs) — including the framework-internal
-`Microsoft.UI.Private.Controls.ResizeGripper*` primitives that TableView creates for column
-resize — and stages the per-RID native component DLLs next to the executable.
-
-*Prevents:* `REGDB_E_CLASSNOTREG` at startup when `DispatcherQueueController` is activated, and
-`CLASS_E_CLASSNOTAVAILABLE` when the Tabular metadata provider / `TableView` is activated.
-
-### f. Register the Tabular metadata provider and merge styles at runtime
-
-`App.xaml.cs`:
-
-- Injects the Tabular DLL's XAML metadata provider into the generated app provider's
-  `OtherProviders` (after `InitializeComponent`) so a runtime `XamlReader.Load` can resolve
-  split-only types such as `TabularControlsResources`. If the provider can't be loaded, the sample
-  skips the explicit resource merges rather than proceeding without it.
-- Defers merging `TabularControlsResources` and the control's `generic.xaml` styles to
-  `OnLaunched`, because `Application.Resources` is not reachable from the `App` constructor in this
-  self-contained split configuration (accessing it early throws `E_UNEXPECTED` / `0x8000FFFF`).
-
-### g. Seed the internal template part into XamlTypeInfo
-
-`_SplitTypeSeed.xaml` references `TableViewRow` inside a never-loaded `DataTemplate` so the XAML
-compiler emits an app-level `XamlTypeInfo` entry for that internal template part.
-
-*Prevents:* "type `TableViewRow` not found" at inflation time (`0xC000027B`).
-
-### Type disambiguation in code
-
-`MainWindow.xaml.cs` uses `using` aliases to bind `TableView*` names to the real
-`Microsoft.UI.Xaml.Controls.Tabular.*` types, disambiguating them from the stale mock
-`Microsoft.UI.Xaml.Controls.*` projection that the mock framework DLL still carries.
-
-## Step 3 — Run and verify
-
-Launch:
-
-```
-BuildOutput\obj\amd64chk\Samples\TableViewSampleApp\TableViewSampleApp.exe
-```
-
-The app writes a diagnostic log next to the executable, `tabular-split-diag.txt`. A healthy
-startup looks like:
-
-```
-[TabularSplit] Tabular metadata provider registered; OtherProviders count = 2.
-[TabularSplit] Merge: XamlReader.Load OK; TabularControlsResources constructed natively.
-[TabularSplit] Merge: TabularControlsResources merged; count = 4.
-[TabularSplit] Merge: Tabular control styles merged; count = 5.
-```
-
-If the window appears and the log shows the four lines above with no `THREW`/`UnhandledException`
-entries, the split-binary consumption is working.
-
-## Configuration → flavor mapping
-
-The project maps `Configuration` to the matching native control flavor so it stages the correct
-bits:
-
-- `Debug` → `amd64chk`
-- `Release` → `amd64fre`
-
-Build the Tabular control in the flavor that matches the configuration you build the sample in.
-
-## Mock WindowsAppSDK package version
-
-Samples that consume the locally built split-binary controls need a mock `WindowsAppSdkPackageVersion`
-so the app resolves the local mock NuGet layout. This is defined **in the sample's own csproj**, so
-adding the sample requires no repo-wide build changes.
+`Program.cs` provides `Main` and the project defines `DISABLE_XAML_GENERATED_MAIN`, following the
+[DisableXamlGeneratedMain](../DisableXamlGeneratedMain) sample. This is a normal WinUI pattern, not a
+workaround.
 
 ## Known issue
 
-An `EmptyTemplate` containing a `FontIcon` can crash at startup while the empty state is first
-shown. Prefer text or shape content in the `EmptyTemplate` until this is resolved.
+An `EmptyTemplate` containing a `FontIcon` can crash at startup while the empty state is first shown.
+Prefer text or shape content in the `EmptyTemplate` until this is resolved.
