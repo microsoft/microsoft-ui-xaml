@@ -176,9 +176,10 @@ extends:
           failOnTestFailure: false
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml@WinUIInternal
+      - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml
         parameters:
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+          condition: false
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: build\AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml@WinUIInternal

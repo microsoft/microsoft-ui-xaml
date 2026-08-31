@@ -2,12 +2,13 @@
 # Licensed under the MIT License.
 parameters:
   MUXFinalRelease: false
+  condition: true
 
 stages:
 - stage: RunStaticTests
   displayName: Run Static Tests Stage
   dependsOn: Build
-  condition: not(failed())
+  condition: and(not(failed()), ${{ parameters.condition }})
   jobs:
   - template: WinUI-RunStaticTests-Job.yml
     parameters:
