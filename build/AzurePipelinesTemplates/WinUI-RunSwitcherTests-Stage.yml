@@ -103,8 +103,32 @@ stages:
         targetType: inline
         workingDirectory: $(testPayloadDirInner)
         script: |
-          .\runtests.cmd "${{ parameters.testSelector }}" -HostingMode:WPF /p:SwitcherMode=true /p:SwitcherLafToken=$(CompositionSwitcherLafToken)
-          exit $LASTEXITCODE
+          # Capture te's console output so we can enforce a real result. te.exe returns exit code 0
+          # when tests are Blocked (e.g. the test DLL or a dependency fails to load), which would
+          # otherwise let this stage pass green without actually running the switcher tests. Parse the
+          # TAEF summary and fail on Blocked>0 or Passed==0 so a "didn't actually run" is never a pass.
+          $consoleLog = Join-Path "$(ob_outputDirectory)" 'switcher-te-console.log'
+          New-Item -ItemType Directory -Path "$(ob_outputDirectory)" -Force | Out-Null
+          .\runtests.cmd "${{ parameters.testSelector }}" -HostingMode:WPF /p:SwitcherMode=true /p:SwitcherLafToken=$(CompositionSwitcherLafToken) /reportLoadingIssue 2>&1 | Tee-Object -FilePath $consoleLog
+          $teExit = $LASTEXITCODE
+
+          $summaryLine = Select-String -Path $consoleLog -Pattern 'Summary:\s*Total=(\d+).*?Passed=(\d+).*?Failed=(\d+).*?Blocked=(\d+)' | Select-Object -Last 1
+          if (-not $summaryLine) {
+            Write-Host "##vso[task.logissue type=error]Switcher tests produced no TAEF summary - te.exe did not run to completion."
+            exit 1
+          }
+          $m = $summaryLine.Matches[0].Groups
+          $total = [int]$m[1].Value; $passed = [int]$m[2].Value; $failed = [int]$m[3].Value; $blocked = [int]$m[4].Value
+          Write-Host "Switcher TAEF summary: Total=$total Passed=$passed Failed=$failed Blocked=$blocked (te exit=$teExit)"
+          if ($blocked -gt 0) {
+            Write-Host "##vso[task.logissue type=error]$blocked switcher test(s) were Blocked - the test DLL or a dependency failed to load (the switcher tests did not actually run). Failing the stage instead of passing green."
+            exit 1
+          }
+          if ($total -eq 0 -or $passed -eq 0) {
+            Write-Host "##vso[task.logissue type=error]No switcher tests passed (Total=$total Passed=$passed) - failing the stage."
+            exit 1
+          }
+          exit $teExit
 
     - task: PublishTestResults@2
       condition: always()
