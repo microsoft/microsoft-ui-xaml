@@ -6,8 +6,6 @@
 #include "TextBox.g.h"
 #include "TextBoxPlaceholderTextHelper.h"
 #include "FrameworkElementAutomationPeer_partial.h"
-#include "AutoSuggestBox_Partial.h"
-#include "AccessKeyStringBuilder.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -74,56 +72,6 @@ IFACEMETHODIMP TextBoxAutomationPeer::GetAutomationControlTypeCore(_Out_ xaml_au
 {
     *returnValue = xaml_automation_peers::AutomationControlType_Edit;
     RRETURN(S_OK);
-}
-
-IFACEMETHODIMP TextBoxAutomationPeer::GetAccessKeyCore(_Out_ HSTRING* returnValue)
-{
-    ctl::ComPtr<IInspectable> localValue;
-    ctl::ComPtr<IUIElement> owner;
-    xaml::IDependencyProperty* accessKeyProperty = nullptr;
-    BOOLEAN isUnset = FALSE;
-
-    IFC_RETURN(get_Owner(owner.GetAddressOf()));
-
-    MetadataAPI::GetIDependencyProperty(
-        KnownPropertyIndex::AutomationProperties_AccessKey,
-        &accessKeyProperty);
-    IFC_RETURN(owner.Cast<UIElement>()->ReadLocalValue(accessKeyProperty, &localValue));
-    IFC_RETURN(DependencyPropertyFactory::IsUnsetValue(localValue.Get(), isUnset));
-
-    // An explicitly set value, including an empty string, always belongs to the TextBox.
-    if (!isUnset)
-    {
-        IFC_RETURN(FrameworkElementAutomationPeer::GetAccessKeyCore(returnValue));
-        return S_OK;
-    }
-
-    wrl_wrappers::HString textBoxAccessKey;
-    IFC_RETURN(FrameworkElementAutomationPeer::GetAccessKeyCore(textBoxAccessKey.GetAddressOf()));
-    if (WindowsGetStringLen(textBoxAccessKey.Get()) > 0)
-    {
-        IFC_RETURN(textBoxAccessKey.CopyTo(returnValue));
-        return S_OK;
-    }
-
-    ctl::ComPtr<IFrameworkElement> ownerAsFrameworkElement;
-    IFC_RETURN(owner.As(&ownerAsFrameworkElement));
-
-    ctl::ComPtr<DependencyObject> templatedParent;
-    IFC_RETURN(ownerAsFrameworkElement.Cast<FrameworkElement>()->get_TemplatedParent(&templatedParent));
-
-    auto autoSuggestBox = templatedParent.AsOrNull<xaml_controls::IAutoSuggestBox>();
-    auto ownerAsTextBox = owner.AsOrNull<xaml_controls::ITextBox>();
-    if (autoSuggestBox &&
-        ownerAsTextBox &&
-        autoSuggestBox.Cast<AutoSuggestBox>()->IsEditableTextBoxPart(ownerAsTextBox.Get()))
-    {
-        IFC_RETURN(AccessKeyStringBuilder::GetEffectiveAccessKeyFromElement(templatedParent, returnValue));
-        return S_OK;
-    }
-
-    IFC_RETURN(textBoxAccessKey.CopyTo(returnValue));
-    return S_OK;
 }
 
 _Check_return_ HRESULT TextBoxAutomationPeer::GetDescribedByCoreImpl(_Outptr_ wfc::IIterable<xaml_automation_peers::AutomationPeer*>** returnValue)

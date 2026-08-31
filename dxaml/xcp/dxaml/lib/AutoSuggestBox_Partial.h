@@ -35,11 +35,6 @@ namespace DirectUI
 
         _Check_return_ HRESULT ProgrammaticSubmitQuery();
 
-        bool IsEditableTextBoxPart(_In_ xaml_controls::ITextBox* textBox) const
-        {
-            return m_tpTextBoxPart.Get() == textBox;
-        }
-
     protected:
         _Check_return_ HRESULT PrepareState() override;
 
@@ -125,6 +120,14 @@ namespace DirectUI
         _Check_return_ HRESULT SetTextBoxQueryButtonIcon();
 
         _Check_return_ HRESULT ClearTextBoxQueryButtonIcon();
+
+        _Check_return_ HRESULT UpdateTextBoxAccessKey();
+
+        _Check_return_ HRESULT ClearTextBoxAccessKeyIfOwned();
+
+        _Check_return_ HRESULT OnTextBoxAccessKeyChanged(
+            _In_ xaml::IDependencyObject* sender,
+            _In_ xaml::IDependencyProperty* property);
 
         _Check_return_ HRESULT SubmitQuery(_In_opt_ IInspectable* pChosenSuggestion);
 
@@ -386,6 +389,12 @@ namespace DirectUI
         bool m_ignoreTextChanges{ false };
 
         wrl_wrappers::HString m_userTypedText;
+
+        wrl_wrappers::HString m_propagatedTextBoxAccessKey;
+
+        bool m_ownsTextBoxAccessKey{ false };
+
+        INT64 m_textBoxAccessKeyChangedToken{ 0 };
 
         DOUBLE m_availableSuggestionHeight{ 0. };
 

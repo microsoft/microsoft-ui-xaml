@@ -33,7 +33,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyTextBoxAccessKeyPrecedence)
-            TEST_METHOD_PROPERTY(L"Description", L"Verifies the editable TextBox AccessKey fallback and precedence.")
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies scoped AutoSuggestBox AccessKey propagation and precedence.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_METHOD()
 
