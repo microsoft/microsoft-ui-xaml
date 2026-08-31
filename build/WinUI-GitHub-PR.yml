@@ -146,7 +146,7 @@ extends:
               Write-Host "GitHub PR context validation completed."
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
+      - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
         parameters:
           pipelineKind: GitHubPR
           buildScenarioApps: true
@@ -157,7 +157,7 @@ extends:
           dependsOn: ValidateGitHubPrContext
 
     - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false)) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
+      - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
         parameters:
           stageName: Build_MUXFinalRelease
           pipelineKind: PR-2

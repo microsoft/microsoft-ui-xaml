@@ -17,7 +17,7 @@ stages:
   # Skip the build job if we are reusing the output of a previous build.
   # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
   condition:
-    and(succeeded(), eq(variables['useBuildOutputFromBuildId'],''))
+    and(succeeded(), eq(coalesce(variables['useBuildOutputFromBuildId'], ''), ''))
   dependsOn: ${{ parameters.dependsOn }}
   variables:
   - group: WinUI-InternalFeed
