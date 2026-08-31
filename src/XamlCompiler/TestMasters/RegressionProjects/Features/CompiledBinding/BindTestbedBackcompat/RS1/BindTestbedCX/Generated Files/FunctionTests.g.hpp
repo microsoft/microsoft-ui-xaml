@@ -846,7 +846,9 @@ private:
     {
         ::Platform::String^ p0;
         if (!TryGet_BindTestbedModel_DataModel_StaticStringProperty(p0)) { return; }
-        ::Platform::String^ result = this->GetDataRoot()->Model->FunctionOnModelOneStringArg(p0);
+        ::BindTestbedModel::DataModel^ instance;
+        if (!TryGet_Model(instance) || instance == nullptr) { return; }
+        ::Platform::String^ result = instance->FunctionOnModelOneStringArg(p0);
         if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
         {
             // FunctionTests.xaml line 52

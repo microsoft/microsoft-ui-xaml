@@ -1712,7 +1712,12 @@ End Namespace
                 Dim <#=param.Name#> As <#=param.ValueType#> = <#=param.CodeGen().PathExpression#>
 <#+             }#>
 <#+         }#>
-                Dim result As <#=functionStep.ValueType#> = <#= functionStep.CodeGen().PathExpression #>
+<#+         BindPathStep instanceStep = functionStep.InstanceStep;#>
+<#+         if (instanceStep != null) {#>
+                Dim <#=KnownStrings.FunctionInstanceName#> As <#=instanceStep.ValueType#> = Nothing
+                If Not <#=instanceStep.TryGetValueCodeName#>(<#=KnownStrings.FunctionInstanceName#>)<#=instanceStep.ValueType.IsNullable ? " OrElse " + KnownStrings.FunctionInstanceName + " Is Nothing" : ""#> Then Return
+<#+         }#>
+                Dim result As <#=functionStep.ValueType#> = <#= instanceStep == null ? functionStep.CodeGen().PathExpression : functionStep.CodeGen().InstanceCallExpression(KnownStrings.FunctionInstanceName) #>
 <#+         foreach (int distinctPhase in functionStep.DistinctPhases) {#>
 <#+             Output_Binding_Phased_SetValue(distinctPhase, true, functionStep, true);#>
 <#+             Output_Binding_Phased_SetValue(distinctPhase, false, functionStep, true);#>

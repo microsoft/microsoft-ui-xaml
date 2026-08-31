@@ -267,6 +267,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                     {
                         AddTryGetValueStep(steps, param.Path);
                     }
+
+                    if (functionStep.InstanceStep != null)
+                    {
+                        AddTryGetValueStep(steps, functionStep.InstanceStep);
+                    }
                 }
                 return steps.Values;
             }

@@ -11,6 +11,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         ICodeGenOutput PathExpression { get; }
         ICodeGenOutput UpdateCallParam { get; }
         ICodeGenOutput PathSetExpression(ICodeGenOutput input);
+        ICodeGenOutput InstanceCallExpression(string instanceName);
         ICodeGenOutput MemberAccessOperator { get; }
     }
 
@@ -113,6 +114,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         {
             // Derived steps should all be implementing UpdateCallParam.
             get { throw new NotImplementedException(); }
+        }
+
+        public virtual ICodeGenOutput InstanceCallExpression(string instanceName)
+        {
+            // Only function steps are ever invoked on a separately retrieved instance.
+            throw new NotImplementedException();
         }
     }
 
@@ -466,6 +473,23 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         public override ICodeGenOutput UpdateCallParam
         {
             get { return new LanguageSpecificString(() => String.Empty); }
+        }
+
+        /// <summary>
+        /// The call expression for this function, invoked on an instance held in a local instead of
+        /// by re-evaluating the path that produces it. Used when <see cref="FunctionStep.InstanceStep"/>
+        /// has to be null checked before the call, so that the path is only walked once.
+        /// </summary>
+        public override ICodeGenOutput InstanceCallExpression(string instanceName)
+        {
+            MethodStep method = Instance.Method;
+            var memberAccessOperator = method.Parent.CodeGen().MemberAccessOperator;
+            var paramList = method.Parameters.ForCall();
+            return new LanguageSpecificString(
+                () => $"{instanceName}{memberAccessOperator.CppCXName()}{method.MethodName}({paramList})",
+                () => $"{instanceName}{memberAccessOperator.CppWinRTName()}{method.MethodName}({paramList})",
+                () => $"{instanceName}.{method.MethodName}({paramList})",
+                () => $"{instanceName}.{method.MethodName}({paramList})");
         }
     }
 }

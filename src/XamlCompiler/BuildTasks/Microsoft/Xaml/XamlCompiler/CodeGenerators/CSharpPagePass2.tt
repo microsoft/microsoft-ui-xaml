@@ -1977,7 +1977,12 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
                 <#=param.ValueType#> <#=param.Name#> = <#=param.CodeGen().PathExpression#>;
 <#+             }#>
 <#+         }#>
-                <#=functionStep.ValueType#> result = <#= functionStep.CodeGen().PathExpression #>;
+<#+         BindPathStep instanceStep = functionStep.InstanceStep;#>
+<#+         if (instanceStep != null) {#>
+                <#=instanceStep.ValueType#> <#=KnownStrings.FunctionInstanceName#>;
+                if (!<#=instanceStep.TryGetValueCodeName#>(out <#=KnownStrings.FunctionInstanceName#>)<#=instanceStep.ValueType.IsNullable ? " || " + KnownStrings.FunctionInstanceName + " == null" : ""#>) { return; }
+<#+         }#>
+                <#=functionStep.ValueType#> result = <#= instanceStep == null ? functionStep.CodeGen().PathExpression : functionStep.CodeGen().InstanceCallExpression(KnownStrings.FunctionInstanceName) #>;
 <#+         foreach (int distinctPhase in functionStep.DistinctPhases) {#>
 <#+             Output_Binding_Phased_SetValue(distinctPhase, true, functionStep, true);#>
 <#+             Output_Binding_Phased_SetValue(distinctPhase, false, functionStep, true);#>

@@ -821,7 +821,9 @@ namespace BindTestbed
             {
                 global::System.String p0;
                 if (!TryGet_BindTestbedModel_DataModel_StaticStringProperty(out p0)) { return; }
-                global::System.String result = this.dataRoot.Model.FunctionOnModelOneStringArg(p0);
+                global::BindTestbedModel.DataModel instance;
+                if (!TryGet_Model(out instance) || instance == null) { return; }
+                global::System.String result = instance.FunctionOnModelOneStringArg(p0);
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     // FunctionTests.xaml line 51

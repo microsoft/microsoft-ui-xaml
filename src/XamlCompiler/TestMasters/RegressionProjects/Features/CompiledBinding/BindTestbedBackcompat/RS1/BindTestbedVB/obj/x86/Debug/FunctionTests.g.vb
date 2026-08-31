@@ -635,7 +635,9 @@ Namespace Global.BindTestbed
             Private Sub Invoke_Model_M_FunctionOnModelOneStringArg_1668010001(phase As Integer)
                 Dim p0 As Global.System.String = Nothing
                 If Not TryGet_BindTestbedModel_DataModel_StaticStringProperty(p0) Then Return
-                Dim result As Global.System.String = Me.dataRoot.Model.FunctionOnModelOneStringArg(p0)
+                Dim instance As Global.BindTestbedModel.DataModel = Nothing
+                If Not TryGet_Model(instance) OrElse instance Is Nothing Then Return
+                Dim result As Global.System.String = instance.FunctionOnModelOneStringArg(p0)
                 If (phase And ((1 << 0) Or NOT_PHASED )) <> 0 Then
                     If isobj13TextDisabled = False Then
                         XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(Me.obj13, result, Nothing)

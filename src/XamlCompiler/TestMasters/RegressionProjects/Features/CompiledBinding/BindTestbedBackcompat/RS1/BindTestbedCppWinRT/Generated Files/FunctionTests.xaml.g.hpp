@@ -874,7 +874,9 @@ namespace winrt::BindTestbed::implementation
         {
             ::winrt::hstring p0;
             if (!TryGet_BindTestbedModel_DataModel_StaticStringProperty(p0)) { return; }
-            ::winrt::hstring result = GetDataRoot().Model().FunctionOnModelOneStringArg(p0);
+            ::winrt::BindTestbedModel::DataModel instance = nullptr;
+            if (!TryGet_Model(instance) || !instance) { return; }
+            ::winrt::hstring result = instance.FunctionOnModelOneStringArg(p0);
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
                 // FunctionTests.xaml line 52

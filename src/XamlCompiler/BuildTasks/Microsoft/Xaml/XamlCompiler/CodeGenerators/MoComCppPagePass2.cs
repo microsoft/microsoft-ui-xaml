@@ -2955,13 +2955,38 @@ this.Write(";\r\n");
 
              }
          }
+         BindPathStep instanceStep = functionStep.InstanceStep;
+         if (instanceStep != null) {
+this.Write("        ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(instanceStep.ValueType));
+
+this.Write(" ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(KnownStrings.FunctionInstanceName));
+
+this.Write(";\r\n        if (!");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(instanceStep.TryGetValueCodeName));
+
+this.Write("(");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(KnownStrings.FunctionInstanceName));
+
+this.Write(")");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(instanceStep.ValueType.IsNullable ? " || " + KnownStrings.FunctionInstanceName + " == nullptr" : ""));
+
+this.Write(") { return; }\r\n");
+
+         }
 this.Write("        ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(functionStep.ValueType));
 
 this.Write(" result = ");
 
-this.Write(this.ToStringHelper.ToStringWithCulture(functionStep.CodeGen().PathExpression));
+this.Write(this.ToStringHelper.ToStringWithCulture(instanceStep == null ? functionStep.CodeGen().PathExpression : functionStep.CodeGen().InstanceCallExpression(KnownStrings.FunctionInstanceName)));
 
 this.Write(";\r\n");
 
