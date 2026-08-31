@@ -335,6 +335,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write("        {\r\n");
       Output_UpdateChildListeners_Call(bindStep, "obj");
       Output_Update_Steps(bindStep.ValueType.IsNullable, bindStep.Children, true, "phase");
+      // Dependents are function bindings: a null value is a valid argument, not an unresolved path.
       Output_Update_Steps(false, bindStep.Dependents, false, "phase");
       foreach (int distinctPhase in bindStep.DistinctPhases) { 
           Output_Binding_Phased_SetValue(distinctPhase, true, bindStep, false);

@@ -1854,7 +1854,8 @@ this.Write("(obj)\r\n");
 
                  }
                  Output_Update_Steps(bindStep.ValueType.IsNullable, "Me", bindStep.Children, true, "phase");
-                 Output_Update_Steps(bindStep.ValueType.IsNullable, "Me", bindStep.Dependents, false, "phase");
+                 // Dependents are function bindings: a null value is a valid argument, not an unresolved path.
+                 Output_Update_Steps(false, "Me", bindStep.Dependents, false, "phase");
                  foreach (int distinctPhase in bindStep.DistinctPhases)
                  {
                      Output_Binding_Phased_SetValue(distinctPhase, true, bindStep, false);

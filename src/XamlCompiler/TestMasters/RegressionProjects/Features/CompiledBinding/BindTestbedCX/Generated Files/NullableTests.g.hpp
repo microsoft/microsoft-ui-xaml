@@ -284,10 +284,7 @@ private:
     }
     void Update_Model_NullableDoublePropertyDP(::Platform::IBox<::default::float64>^ obj, int phase)
     {
-        if (obj != nullptr)
-        {
-            this->Update_Model_M_FunctionReturningNullableDouble_1740600808(phase);
-        }
+        this->Update_Model_M_FunctionReturningNullableDouble_1740600808(phase);
         if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
         {
             // NullableTests.xaml line 39

@@ -858,10 +858,7 @@ private:
     }
     void Update_DataContext_Cast_DataContext_To_CastingTestsVM_Prefix(::Platform::String^ obj, int phase)
     {
-        if (obj != nullptr)
-        {
-            this->Update_DataContext_Cast_DataContext_To_CastingTestsVM_M_CombineStringWithInt_1807171632(phase);
-        }
+        this->Update_DataContext_Cast_DataContext_To_CastingTestsVM_M_CombineStringWithInt_1807171632(phase);
     }
     void Update_DataContext_Cast_DataContext_To_CastingTestsVM_Postfix(::default::float64 obj, int phase)
     {

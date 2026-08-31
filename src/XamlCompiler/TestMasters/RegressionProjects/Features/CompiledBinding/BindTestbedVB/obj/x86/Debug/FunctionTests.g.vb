@@ -1100,11 +1100,7 @@ Namespace Global.BindTestbed
                         Me.UpdateFallback_Model_ReentrancyString(phase)
                     End If
                 End If
-                If obj IsNot Nothing Then
-                    Me.Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase)
-                Else
-                    Me.UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase)
-                End If
+                Me.Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase)
             End Sub
             Private Sub Update_Model_M_FunctionOnModelNoArgs_757602046(phase As Integer)
                 If (phase And ((1 << 0) Or NOT_PHASED Or DATA_CHANGED)) <> 0 Then
@@ -1210,9 +1206,7 @@ Namespace Global.BindTestbed
                         Me.Update_BindTestbedModel_DataModel_StaticStringProperty_M_ToString1_757602046(phase)
                     End If
                 End If
-                If obj IsNot Nothing Then
-                    Me.Update_Model_M_FunctionOnModelOneStringArg_1668010001(phase)
-                End If
+                Me.Update_Model_M_FunctionOnModelOneStringArg_1668010001(phase)
             End Sub
             Private Sub Update_BindTestbedModel_DataModel_StaticStringProperty_M_ToString1_757602046(phase As Integer)
                 If (phase And ((1 << 0) Or NOT_PHASED )) <> 0 Then
@@ -1348,9 +1342,7 @@ Namespace Global.BindTestbed
                 End If
             End Sub
             Private Sub Update_Model_NullEmployee_Name(obj As Global.System.String, phase As Integer)
-                If obj IsNot Nothing Then
-                    Me.Update_Model_M_FunctionOnModelNullArg_3348340388(phase)
-                End If
+                Me.Update_Model_M_FunctionOnModelNullArg_3348340388(phase)
             End Sub
             Private Sub Update_Model_M_FunctionOnModelNullArg_3348340388(phase As Integer)
                 If (phase And ((1 << 0) Or NOT_PHASED Or DATA_CHANGED)) <> 0 Then
@@ -1367,9 +1359,7 @@ Namespace Global.BindTestbed
                 End If
             End Sub
             Private Sub Update_Model_StringPropertyDP(obj As Global.System.String, phase As Integer)
-                If obj IsNot Nothing Then
-                    Me.Update_Model_M_FunctionOnModelThreeArgs_706606279(phase)
-                End If
+                Me.Update_Model_M_FunctionOnModelThreeArgs_706606279(phase)
             End Sub
             Private Sub Update_Model_M_FunctionOnModelThreeArgs_706606279(phase As Integer)
                 If (phase And ((1 << 0) Or NOT_PHASED Or DATA_CHANGED)) <> 0 Then
@@ -1405,10 +1395,8 @@ Namespace Global.BindTestbed
                 End If
             End Sub
             Private Sub Update_Model_Employees_I0_Name(obj As Global.System.String, phase As Integer)
-                If obj IsNot Nothing Then
-                    Me.Update_Model_M_FunctionOnModelThreeArgs_2448615814(phase)
-                    Me.Update_Model_M_FunctionOnModelOneStringArg_2532831189(phase)
-                End If
+                Me.Update_Model_M_FunctionOnModelThreeArgs_2448615814(phase)
+                Me.Update_Model_M_FunctionOnModelOneStringArg_2532831189(phase)
             End Sub
             Private Sub Update_Model_Employees_I0_IsManager(obj As Global.System.Boolean, phase As Integer)
                 Me.Update_Model_M_FunctionOnModelThreeArgs_2448615814(phase)
@@ -1438,11 +1426,7 @@ Namespace Global.BindTestbed
                         Me.UpdateFallback_Model_NullEmployee_FirstName_M_ToString1_757602046(phase)
                     End If
                 End If
-                If obj IsNot Nothing Then
-                    Me.Update_Model_M_FunctionOnModelThreeArgs_1187614766(phase)
-                Else
-                    Me.UpdateFallback_Model_M_FunctionOnModelThreeArgs_1187614766(phase)
-                End If
+                Me.Update_Model_M_FunctionOnModelThreeArgs_1187614766(phase)
             End Sub
             Private Sub Update_Model_NullEmployee_FirstName_M_ToString1_757602046(phase As Integer)
                 If (phase And ((1 << 0) Or NOT_PHASED )) <> 0 Then
@@ -1498,9 +1482,7 @@ Namespace Global.BindTestbed
                 End If
             End Sub
             Private Sub Update_Model_Employees_I2_Name(obj As Global.System.String, phase As Integer)
-                If obj IsNot Nothing Then
-                    Me.Update_Model_M_FunctionOnModelOneStringArg_2530340821(phase)
-                End If
+                Me.Update_Model_M_FunctionOnModelOneStringArg_2530340821(phase)
             End Sub
             Private Sub Update_Model_M_FunctionOnModelOneStringArg_2530340821(phase As Integer)
                 If (phase And ((1 << 0) Or NOT_PHASED Or DATA_CHANGED)) <> 0 Then
@@ -1510,11 +1492,7 @@ Namespace Global.BindTestbed
                 End If
             End Sub
             Private Sub Update_Model_ReentrancyString(obj As Global.System.String, phase As Integer)
-                If obj IsNot Nothing Then
-                    Me.Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase)
-                Else
-                    Me.UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase)
-                End If
+                Me.Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase)
             End Sub
             Private Sub Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase As Integer)
                 If (phase And ((1 << 0) Or NOT_PHASED Or DATA_CHANGED)) <> 0 Then
