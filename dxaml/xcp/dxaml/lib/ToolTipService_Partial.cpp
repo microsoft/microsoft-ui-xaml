@@ -394,6 +394,15 @@ ToolTipService::StartSafeZoneCheckTimer(
 
         IFC_RETURN(GetDispatcherQueueForCurrentThread(&dispatcherQueue));
 
+        // IDispatcherQueueStatics::GetForCurrentThread succeeds with a null queue when the
+        // calling thread has no DispatcherQueue (for example, legacy CoreDispatcher-based
+        // hosts). Guard against dereferencing it below: skip the safe-zone timer and let the
+        // ToolTip fall back to its normal pointer-exit close behavior instead of crashing.
+        if (!dispatcherQueue)
+        {
+            return S_OK;
+        }
+
         IFC_RETURN(dispatcherQueue->CreateTimer(&dispatcherQueueTimer));
 
         EventRegistrationToken token;
