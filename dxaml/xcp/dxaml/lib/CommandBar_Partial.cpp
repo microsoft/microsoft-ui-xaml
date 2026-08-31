@@ -2095,6 +2095,11 @@ CommandBar::OnCommandBarElementVisibilityChanged(_In_ xaml_controls::ICommandBar
     if (parentCmdBar)
     {
         IFC_RETURN(parentCmdBar.Cast<CommandBar>()->UpdateVisualState());
+
+        // Secondary commands live in the overflow popup, so collapsing one doesn't resize the
+        // CommandBar and won't refresh the template settings on its own. Do it here so the
+        // overflow button's effective visibility stays in sync.
+        IFC_RETURN(parentCmdBar.Cast<CommandBar>()->UpdateTemplateSettings());
     }
 
     return S_OK;
@@ -2318,15 +2323,18 @@ CommandBar::UpdateTemplateSettings()
     else if (overflowButtonVisibility == xaml_controls::CommandBarOverflowButtonVisibility_Auto)
     {
         // In the auto case, we should show the overflow button in one of four circumstances:
-        // - when we have at least one element in the secondary items collection, 
-        // - or when there is a delta between the compact height and the height of the CommandBar, 
+        // - when we have at least one visible element in the secondary items collection,
+        // - or when there is a delta between the compact height and the height of the CommandBar,
         // - or when there is a Visible ICommandBarLabeledElement Primary Command with a Bottom Label,
         // - or when our closed display mode is something other than compact.
-        UINT32 secondaryItemsCount = 0;
+        //
+        // Collapsed secondary commands don't count - opening the overflow would just show an
+        // empty menu. See https://github.com/microsoft/microsoft-ui-xaml/issues/783.
+        bool hasVisibleSecondaryElements = false;
 
-        IFC_RETURN(m_tpDynamicSecondaryCommands.Get()->get_Size(&secondaryItemsCount));
+        IFC_RETURN(HasVisibleElements(m_tpDynamicSecondaryCommands.Get(), &hasVisibleSecondaryElements));
 
-        if (secondaryItemsCount > 0)
+        if (hasVisibleSecondaryElements)
         {
             shouldShowOverflowButton = true;
         }
