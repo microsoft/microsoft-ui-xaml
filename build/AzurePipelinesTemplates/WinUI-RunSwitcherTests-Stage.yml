@@ -68,15 +68,26 @@ stages:
     - template: WinUI-DownloadPipelineArtifacts-Steps.yml
       parameters:
         enableUseOutputFromPreviousBuild: true
-        artifactName: drop_x86chk
+        itemPattern: '**/?(x86chk|GenXBF|Taef)/**'
         targetPath: $(incomingArtifactsPath)
+
+    # The build publishes each flavor as a 'drop_*' artifact whose contents are rooted under a
+    # 'drop\' folder (e.g. drop\x86chk\TAEF, drop\GenXBF\x86). Merge the downloaded drop_* folders
+    # up into $(incomingArtifactsPath) so the payload lives at $(incomingArtifactsPath)\drop, matching
+    # what CreateTestPayload.ps1 -BinSourceRoot expects (mirrors WinUI-CreateTestPayload-Job.yml).
+    - task: PowerShell@2
+      displayName: Merge downloaded drops to parent
+      inputs:
+        targetType: 'inline'
+        script: |
+          Copy-Item -Path "$(incomingArtifactsPath)\drop_*\*" -Destination "$(incomingArtifactsPath)" -Recurse -Force
 
     - task: powershell@2
       displayName: Prepare test payload
       inputs:
         targetType: filePath
         filePath: test\CreateTestPayload.ps1
-        arguments: -BinSourceRoot $(incomingArtifactsPath) -Platform x86 -Configuration chk -Mode DevTestSuite -ShowPayload -SkipSymbols
+        arguments: -BinSourceRoot $(incomingArtifactsPath)\drop -Platform x86 -Configuration chk -Mode DevTestSuite -ShowPayload -SkipSymbols
 
     # The switcher is engaged via the public CompositionEngine Limited Access Feature API
     # (CompositionEngine::TrySetProcessEngine(System), called from the test's ModuleSetup under
@@ -107,18 +118,24 @@ stages:
 
     # Publish the generated .save.xml trees + diffs/screenshots so switcher baselines can be
     # captured from this run (they are intentionally NOT committed; see PR description).
-    - task: CopyFiles@2
+    # Resilient: ensure the output dir exists and only copy when the test actually produced output,
+    # so a missing XamlTAEFOutput folder (e.g. no trees generated) doesn't error the stage.
+    - task: PowerShell@2
       condition: always()
       displayName: Collect generated trees for baselining
       inputs:
-        sourceFolder: '$(USERPROFILE)\Pictures\XamlTAEFOutput'
-        contents: |
-          **\*.save.xml
-          **\*.out.xml
-          **\*.png
-          **\*.jpg
-        targetFolder: $(ob_outputDirectory)\SwitcherBaselining
-        ignoreMakeDirErrors: true
+        targetType: 'inline'
+        script: |
+          $dest = "$(ob_outputDirectory)\SwitcherBaselining"
+          New-Item -ItemType Directory -Path $dest -Force | Out-Null
+          $src = Join-Path $env:USERPROFILE 'Pictures\XamlTAEFOutput'
+          if (Test-Path $src) {
+            robocopy $src $dest *.save.xml *.out.xml *.png *.jpg /S /NFL /NDL /NJH /NJS | Out-Null
+            if ($LASTEXITCODE -lt 8) { $global:LASTEXITCODE = 0 }
+            Write-Host "Collected switcher baseline output from $src"
+          } else {
+            Write-Host "No XamlTAEFOutput folder at $src - nothing to collect (test produced no trees)."
+          }
 
     - task: PublishPipelineArtifact@1
       condition: always()
