@@ -43,6 +43,7 @@
     <Compile Include="CodeCoverage.cs" />
     <Compile Include="CodeGeneratorProjectContext.cs" />
     <Compile Include="CodeGeneratorTests.cs" />
+    <Compile Include="FunctionBindingCodegenTests.cs" />
     <Compile Include="HarvesterTests.cs" />
     <Compile Include="KnownBugs.cs" />
     <Compile Include="MultipleViewTests.cs" />
