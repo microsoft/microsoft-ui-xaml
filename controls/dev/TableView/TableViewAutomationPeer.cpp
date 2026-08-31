@@ -115,6 +115,11 @@ void TableViewAutomationPeer::RaiseStructureChangedForVirtualizationReset()
     RaiseStructureChanged(winrt::AutomationStructureChangeType::ChildrenInvalidated);
 }
 
+void TableViewAutomationPeer::RaiseStructureChangedForGroupExpansion()
+{
+    RaiseStructureChanged(winrt::AutomationStructureChangeType::ChildrenInvalidated);
+}
+
 void TableViewAutomationPeer::RaiseStructureChanged(winrt::AutomationStructureChangeType const& structureChangeType)
 {
     RaiseStructureChangedEvent(structureChangeType, nullptr);

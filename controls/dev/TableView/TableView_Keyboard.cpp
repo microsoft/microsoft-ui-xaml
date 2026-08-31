@@ -481,18 +481,41 @@ int32_t TableView::GetEstimatedRowsPerPage()
         double rowH = GetDensityRowMinHeight(); // Density is the best fallback before realized rows can be sampled.
         if (auto repeater = m_rowsRepeater.get())
         {
+            // A grouped projection realizes group headers alongside data rows, and a header is
+            // typically taller than a row. Paging moves the focused *data* row, so measure a data
+            // row; only fall back to any realized element when no row has been realized yet.
+            double anyChildH = 0.0;
             const int32_t childCount = winrt::VisualTreeHelper::GetChildrenCount(repeater);
             for (int32_t i = 0; i < childCount; i++)
             {
-                if (auto el = winrt::VisualTreeHelper::GetChild(repeater, i).try_as<winrt::FrameworkElement>())
+                auto const child = winrt::VisualTreeHelper::GetChild(repeater, i);
+                auto const el = child.try_as<winrt::FrameworkElement>();
+                if (!el)
                 {
-                    const auto h = el.ActualHeight();
-                    if (h > 0)
-                    {
-                        rowH = h;
-                        break;
-                    }
+                    continue;
                 }
+
+                const auto h = el.ActualHeight();
+                if (h <= 0)
+                {
+                    continue;
+                }
+
+                if (child.try_as<winrt::TableViewRow>())
+                {
+                    anyChildH = h;
+                    break;
+                }
+
+                if (anyChildH <= 0)
+                {
+                    anyChildH = h;
+                }
+            }
+
+            if (anyChildH > 0)
+            {
+                rowH = anyChildH;
             }
         }
 

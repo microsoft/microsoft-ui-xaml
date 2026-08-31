@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -28,6 +28,20 @@ namespace
 
 namespace RowIdentity
 {
+    namespace
+    {
+        bool TryCanonicalizeStableGroupKey(winrt::IInspectable const& key, winrt::hstring& identity)
+        {
+            identity = {};
+            if (!key)
+            {
+                return false;
+            }
+
+            return TabularShapingHelpers::TabularValueKey::TryGetStablePropertyKey(key, identity, true);
+        }
+    }
+
     TabularShapingHelpers::TabularKeySelector MakeObjectIdentitySelector()
     {
         return [](winrt::IInspectable const& item) -> winrt::IInspectable
@@ -232,6 +246,68 @@ namespace RowIdentity
                 --entry.second;
             }
         }
+    }
+
+    bool TryGetGroupIdentity(
+        winrt::IInspectable const& key,
+        TabularIdentitySelector const& groupIdentitySelector,
+        winrt::hstring& identity,
+        wchar_t const*& reason)
+    {
+        identity = {};
+        if (groupIdentitySelector)
+        {
+            try
+            {
+                identity = groupIdentitySelector(key);
+            }
+            catch (...)
+            {
+                reason = L"group identity selector threw";
+                return false;
+            }
+
+            if (!identity.empty())
+            {
+                return true;
+            }
+
+            reason = L"empty group identity";
+            return false;
+        }
+
+        if (TryCanonicalizeStableGroupKey(key, identity))
+        {
+            return true;
+        }
+
+        reason = key ? L"reference group key without stable identity selector" : L"null group key";
+        return false;
+    }
+
+    bool GroupKeysEqual(winrt::IInspectable const& a, winrt::IInspectable const& b)
+    {
+        if (a == b)
+        {
+            return true;
+        }
+
+        if (!a || !b)
+        {
+            return false;
+        }
+
+        winrt::hstring aIdentity;
+        winrt::hstring bIdentity;
+        if (TryCanonicalizeStableGroupKey(a, aIdentity) &&
+            TryCanonicalizeStableGroupKey(b, bIdentity))
+        {
+            return aIdentity == bIdentity;
+        }
+
+        auto aUnknown = a.try_as<::IUnknown>();
+        auto bUnknown = b.try_as<::IUnknown>();
+        return aUnknown && bUnknown && aUnknown.get() == bUnknown.get();
     }
 
     winrt::hstring StringifyKey(winrt::IInspectable const& key)

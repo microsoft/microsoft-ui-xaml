@@ -59,6 +59,8 @@
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedBrush" Color="#FFFFFF" />                    <!-- TextFillColorPrimary -->
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPointerOverBrush" Color="#FFFFFF" />
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPressedBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundPointerOverBrush" Color="#FFFFFF" />                  <!-- TextFillColorPrimary (subtle pointer-over fill keeps primary text) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundPressedBrush" Color="#FFFFFF" />                     <!-- TextFillColorPrimary -->
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundDisabledBrush" Color="#5DFFFFFF" />                  <!-- TextFillColorDisabled -->
 
             <!-- Header surfaces. Header background bumped from #19 (~10%) to #26 (~15%) during visual tuning for
@@ -152,6 +154,8 @@
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedBrush" Color="#E4000000" />                  <!-- TextFillColorPrimary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPointerOverBrush" Color="#E4000000" />
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPressedBrush" Color="#E4000000" />
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundPointerOverBrush" Color="#E4000000" />              <!-- TextFillColorPrimary (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundPressedBrush" Color="#E4000000" />                 <!-- TextFillColorPrimary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundDisabledBrush" Color="#5C000000" />                  <!-- TextFillColorDisabled (Light) -->
 
             <!-- Header surfaces. Header background bumped from #19 (~10%) to #26 (~15%) during visual tuning for
@@ -238,6 +242,8 @@
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPointerOverBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPressedBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundPointerOverBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundPressedBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundDisabledBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
 
             <!-- Header surfaces -->

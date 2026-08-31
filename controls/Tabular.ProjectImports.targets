@@ -33,12 +33,15 @@
     <Import Project="$(MSBuildThisFileDirectory)dev\DllHost\DllHost.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\Telemetry\Telemetry.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\ResourceHelper\ResourceHelper.vcxitems" Label="Shared" />
-    <Import Project="$(MSBuildThisFileDirectory)dev\SortIndicator\SortIndicator.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\ResizeGripper\ResizeGripper.vcxitems" Label="Shared" />
-    <!-- Tabular shaping stack: layer 1 (shape descriptions + pipeline) and layer 2 (live
-         projection). Grouping and live shaping arrive in later changes. -->
+    <!-- Tabular shaping stack, imported bottom-up: layer 1 (shape descriptions + pipeline),
+         layer 2 (the projection), then layer 3 (the grouping model and its adapter). Live
+         shaping arrives in a later change. -->
     <Import Project="$(MSBuildThisFileDirectory)dev\TabularShaping\TabularShaping.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\ShapedItemsSource\ShapedItemsSource.vcxitems" Label="Shared" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\HierarchicalItemsSource\HierarchicalItemsSource.vcxitems" Label="Shared" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\GroupedSourceAdapter\GroupedSourceAdapter.vcxitems" Label="Shared" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\SortIndicator\SortIndicator.vcxitems" Label="Shared" />
     <!-- TableView control (hosted only in the Tabular binary) -->
     <Import Project="$(MSBuildThisFileDirectory)dev\TableView\TableView.vcxitems" Label="Shared" />
   </ImportGroup>

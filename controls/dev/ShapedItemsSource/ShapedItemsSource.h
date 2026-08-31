@@ -16,18 +16,21 @@
 #include "ShapingHelpers.h"
 #include "RowIdentity.h"
 
+class FlatGroupedSourceAdapter;
+class ShapedGroup;
+
 // Layer 2 of the shaping stack: the LIVE PROJECTION.
 //
 // Layer 1 decides what a shape is and how to apply it to a vector of items. This class owns the
-// shape that currently EXISTS -- the projected rows, the identity index that makes a change
-// locatable, and the subscriptions that keep all of it true as the underlying source mutates. It
-// is the difference between "sort these items" and "stay sorted".
+// shape that currently EXISTS -- the projected rows, the group buckets behind them, the identity
+// index that makes a change locatable, and the subscriptions that keep all of it true as the
+// underlying source mutates. It is the difference between "sort these items" and "stay sorted".
 //
 // It deliberately knows nothing about a control. It produces vectors and reports what kind of
 // projection it produced; an owner above decides what a row means, how to present it, and what
 // to cache against it. Everything that used to make this logic control-specific -- constructing
 // an ItemsSourceView, minting a row-metadata provider, notifying a TableView that its cached
-// projection went stale -- is now delivered through the handlers below, so the same engine
+// projection went stale -- is now delivered through the three handlers below, so the same engine
 // can back any consumer.
 //
 // Threading: UI-thread-affine after construction, the same contract every XAML items source has
@@ -41,6 +44,7 @@ class ShapedItemsSource : public std::enable_shared_from_this<ShapedItemsSource>
 {
 public:
     // What the last rebuild actually produced -- the EFFECTIVE shape, not the requested one. A
+    // grouping request degrades to Flat when group identity is unresolvable or collides, and a
     // source with no usable row identity degrades to Unshaped, a plain 1:1 mirror. Consumers read
     // this to decide how to interpret a row, so it must never report intent.
     enum class ProjectionKind
@@ -49,8 +53,10 @@ public:
         None,
         // A 1:1 mirror of the source, no shaping applied.
         Unshaped,
-        // Filtered and/or sorted rows.
+        // Filtered and/or sorted rows -- raw items, no group headers.
         Flat,
+        // Group headers interleaved with their items, produced through the group adapter.
+        Grouped,
     };
 
     explicit ShapedItemsSource(winrt::IInspectable const& source);
@@ -95,6 +101,10 @@ public:
     // that caches anything derived from it must re-derive. Always fired on the UI thread.
     void SetProjectionRebuiltHandler(std::function<void()> handler) { m_projectionRebuilt = std::move(handler); }
 
+    // Fired only when the projection KIND changed, which is the case where an owner's cached view
+    // and row metadata describe a shape that no longer exists.
+    void SetShapeSwappedHandler(std::function<void()> handler) { m_shapeSwapped = std::move(handler); }
+
     // Fired after a shaping verb rewrote the projection. `reorderOnly` distinguishes a pure
     // re-order, which preserves membership, from a change that may have altered which rows exist.
     void SetShapingChangedHandler(std::function<void(bool reorderOnly)> handler) { m_shapingChanged = std::move(handler); }
@@ -107,6 +117,10 @@ public:
     void SetFilter(winrt::hstring const& axisToken, TabularShapingHelpers::TabularPredicate const& predicate);
     void ClearFilter();
     void ClearFilter(winrt::hstring const& axisToken);
+    void SetGroup(
+        TabularShapingHelpers::TabularKeySelector const& key,
+        RowIdentity::TabularIdentitySelector const& groupIdentitySelector);
+    void ClearGroup();
     void SetSort(
         winrt::hstring const& previousAxisToken,
         winrt::hstring const& axisToken,
@@ -123,10 +137,13 @@ public:
     void DiagnosticName(winrt::hstring const& value) { m_diagnosticName = value; }
     winrt::hstring const& DiagnosticName() const noexcept { return m_diagnosticName; }
     ProjectionKind Kind() const noexcept { return m_kind; }
-    // The flat row vector.
+    bool IsProjectedAsGrouped() const noexcept { return m_projectedAsGrouped; }
+    // The flat shaped row vector: the presented row axis for flat and unshaped projections. Under
+    // a Grouped projection the presented row axis is the GroupedSourceAdapter's computed
+    // ItemsSourceView instead, but this vector is still maintained as the flat shaped projection
+    // (group order, headers excluded) so Rows() stays coherent regardless of grouping.
     winrt::IObservableVector<winrt::IInspectable> Rows() const noexcept { return m_rows; }
-    // The vector an owner should present.
-    winrt::IObservableVector<winrt::IInspectable> CurrentViewProjection() const;
+    std::shared_ptr<FlatGroupedSourceAdapter> GroupedAdapter() const noexcept { return m_groupedAdapter; }
     // The selector every identity consumer must use. Derives identity from each item's object
     // identity, so shaping never depends on the app having a unique domain key.
     TabularShapingHelpers::TabularKeySelector const& IdentitySelector() const noexcept { return EffectiveIdentitySelector(); }
@@ -163,11 +180,12 @@ private:
     void ApplyFilter(std::vector<winrt::IInspectable>& rows) const { m_pipeline.ApplyFilter(rows); }
     void ApplySort(std::vector<winrt::IInspectable>& rows, int32_t afterOrder = -1, int32_t beforeOrder = -1) const { m_pipeline.ApplySort(rows, afterOrder, beforeOrder); }
     void RebuildFlat(std::vector<winrt::IInspectable>& rows);
+    void RebuildGrouped(std::vector<winrt::IInspectable>& rows);
     void RebuildUnshapedRows(std::vector<winrt::IInspectable> const& rows, wchar_t const* reason);
     bool IsIdentityRequired() const;
-    // True when any of Filter / Sort is in force. Distinct from IsIdentityRequired, which is also
-    // true for a merely mutable source: a mutable source with no verbs still wants no identity,
-    // because there is no projection to anchor.
+    // True when any of Filter / Sort / GroupBy is in force. Distinct from IsIdentityRequired,
+    // which is also true for a merely mutable source: a mutable source with no verbs still wants
+    // no identity, because there is no projection to anchor.
     bool HasAnyShapingVerb() const;
     // Every identity consumer funnels through here. Identity comes from each item's object
     // identity, so a row ALWAYS has one and no shaping verb has to refuse to run for want of one.
@@ -180,6 +198,7 @@ private:
     bool HasActiveSort() const;
     bool IsSourceMutable() const;
     bool TryGetRequiredRowIdentity(winrt::IInspectable const& item, winrt::hstring& identity, wchar_t const*& reason) const;
+    bool TryGetGroupIdentity(winrt::IInspectable const& key, winrt::hstring& identity, wchar_t const*& reason) const;
     void ClearFlatRowIdentityTracking();
     void RebuildFlatRowIdentityTracking(std::vector<winrt::IInspectable> const& rows);
     bool TryGetTrackedFlatRowIndex(winrt::hstring const& identity, uint32_t& index) const;
@@ -191,9 +210,11 @@ private:
     TabularShapingHelpers::ShapingPipeline::SortedInsertPlacement SortedInsertPlacementFor(winrt::IInspectable const& item) const;
     bool TryGetSourceItemCount(uint32_t& count) const;
     void RaiseProjectionRebuilt() const { if (m_projectionRebuilt) { m_projectionRebuilt(); } }
+    void RaiseShapeSwapped() const { if (m_shapeSwapped) { m_shapeSwapped(); } }
     void RaiseShapingChanged(bool reorderOnly) const { if (m_shapingChanged) { m_shapingChanged(reorderOnly); } }
 
-    // Single authoritative source. Filtering and sorting derive the projection without mutating it.
+    // Single authoritative source. Filtering, sorting, and grouping derive the projection without
+    // mutating it.
     winrt::IInspectable m_source{ nullptr };
     // Per-object identity, derived from each item's canonical IUnknown pointer. Built once and
     // retained rather than minted per call so the selector's own identity is stable, and so the
@@ -207,9 +228,13 @@ private:
     // would break ties in the OLD sort's order instead of source order. Only valid while
     // HasProjection is true; every non-Refresh mutation of m_rows clears it.
     TabularShapingHelpers::ShapingState m_shapingState{};
+    TabularShapingHelpers::TabularKeySelector m_groupSelector{ nullptr };
+    RowIdentity::TabularIdentitySelector m_groupIdentitySelector{ nullptr };
     ProjectionKind m_kind{ ProjectionKind::None };
+    bool m_projectedAsGrouped{ false };
     winrt::hstring m_diagnosticName{ L"ShapedItemsSource" };
     winrt::IObservableVector<winrt::IInspectable> m_rows{ nullptr };
+    winrt::IObservableVector<winrt::IInspectable> m_groupSource{ nullptr };
     // Identities of the rows currently in the flat projection, and each one's index in it.
     // Maintained incrementally so the sorted fast-path can detect duplicate/empty identities and
     // locate a removed row without an O(n) WinRT ABI scan.
@@ -226,8 +251,11 @@ private:
     uint32_t m_shapingBatchDepth{ 0 };
     bool m_shapingBatchHasShapingChange{ false };
     bool m_shapingBatchHasRefresh{ false };
+    std::unordered_map<winrt::hstring, winrt::com_ptr<ShapedGroup>> m_groupCache;
+    std::shared_ptr<FlatGroupedSourceAdapter> m_groupedAdapter{};
 
     std::function<void()> m_projectionRebuilt{ nullptr };
+    std::function<void()> m_shapeSwapped{ nullptr };
     std::function<void(bool)> m_shapingChanged{ nullptr };
 
     // Resolved once per bound source: what shape the source is and how to read it. Every indexed

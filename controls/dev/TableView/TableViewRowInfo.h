@@ -21,6 +21,11 @@ struct TableViewRowInfo
     int32_t Level{ 0 };
     bool IsExpandable{ false };
     bool IsExpanded{ false };
+    // Rows the node owns. Meaningful on GroupHeader rows, where it is the group's item count and
+    // the single source of truth for expandability: an empty group must present a leaf, not a
+    // chevron that expands into nothing. Always 0 on Data rows today; it becomes the child count
+    // when hierarchical (tree) rows land.
+    int32_t ChildCount{ 0 };
 };
 
 using TableViewRowItemKeySelector = std::function<winrt::hstring(winrt::IInspectable const&)>;
@@ -31,13 +36,14 @@ struct ITableViewRowMetadataProvider
 
     virtual TableViewRowInfo GetRowInfo(int32_t index) = 0;
     virtual winrt::hstring GetIdentity(int32_t index) = 0;
+    // Reverse of GetIdentity. Owned here because this is the only type that knows how a row's
+    // identity is derived; consumers that needed it were each scanning every row and calling
+    // GetIdentity until one matched.
+    virtual bool TryGetIndexForIdentity(winrt::hstring const& identity, int32_t& index) = 0;
     virtual void Expand(winrt::hstring const& key) = 0;
     virtual void Collapse(winrt::hstring const& key) = 0;
     virtual bool Toggle(winrt::hstring const& key) = 0;
 
-    virtual void ExpandGroupObject(winrt::IInspectable const& key) = 0;
-    virtual void CollapseGroupObject(winrt::IInspectable const& key) = 0;
-    virtual bool ToggleGroupObject(winrt::IInspectable const& key) = 0;
     virtual void ExpandAllGroups() = 0;
     virtual void CollapseAllGroups() = 0;
 };
