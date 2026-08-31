@@ -12,6 +12,7 @@
 
 #include "TableView.g.h"
 #include "TableView.properties.h"
+#include "TableViewRowInfo.h"
 
 // ThemeSettings (Microsoft.UI.System) is used below for UI-thread High Contrast change notifications.
 // Included here (not the shared CppWinRTIncludes.h) to keep the rebuild scope local to TableView.
@@ -112,6 +113,11 @@ class TableView :
 {
 public:
     TableView();
+    // Drops the recycle pools the row-template selector caches. Those pools close a
+    // repeater -> template-wrapper -> selector -> template -> pool -> repeater cycle through plain
+    // C++ references the reference tracker cannot walk, so nothing here is collected unless the
+    // one edge we own is cut. See TableViewRowTemplateSelector::Detach.
+    ~TableView();
 
     // IFrameworkElement overrides
     void OnApplyTemplate();
@@ -325,6 +331,23 @@ public:
     // For the automation peers, which cannot reach the private members. Both read the model.
     int32_t SelectedIndexInternal() const;
     winrt::IInspectable SelectedItemInternal() const;
+    // --- Grouped projections (TableView_Grouping.cpp) ---
+    //
+    // Which container type a row-source item realizes as. Item-based rather than index-based
+    // because the element factory is only ever handed the item.
+    TableViewRowKind GetRowKindForItem(winrt::IInspectable const& item) const;
+    bool TryGetTableViewSourceRowInfo(int32_t rowIndex, TableViewRowInfo& rowInfo) const;
+    bool IsTableViewSourceGrouped() const;
+
+    // Band gesture (directionless) and the ExpandCollapse pattern (directional). Both resolve the
+    // target group's identity immediately and apply the mutation on a later turn.
+    void ToggleGroupExpansion(winrt::UIElement const& container);
+    void SetGroupExpansion(winrt::UIElement const& container, bool expand);
+
+    // Public grouping commands (from TableView IDL).
+    void ExpandAllGroups();
+    void CollapseAllGroups();
+
     // The peer resolves the row index of its header through the repeater rather than a tree walk.
     winrt::ItemsRepeater GetRowsRepeaterForPeer() const { return m_rowsRepeater.get(); }
 
@@ -566,15 +589,23 @@ private:
     bool ShouldShowColumnHeaders();
     int32_t GetItemsSourceCount() const;
 
+    void PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& header, int32_t index);
+    void ClearGroupHeaderElement(winrt::TableViewGroupHeader const& header);
+    void UpdateGroupHeaderWidth(winrt::TableViewGroupHeader const& header);
+
     // Split responsibilities driven off the ItemsSource DP:
     //   AdoptItemsSource   - source lifetime. Runs only when ItemsSource actually changes: normalize
     //                        a plain collection into a control-owned TableViewSource, detach the
     //                        previous source, adopt the new one, and wire its owner + handlers.
-    //   RefreshRowsPipeline- pushes the active source's view into the repeater (identity-guarded)
-    //                        and re-resolves empty-state + selection. Runs on every re-entry
-    //                        (template applied, repeater reloaded, shaping verb) with no lifetime work.
+    //   RefreshRowsPipeline- pushes the active source's view into the repeater (identity-guarded),
+    //                        re-reads its row-metadata provider, and re-resolves empty-state +
+    //                        selection. Runs on every re-entry (template applied, repeater
+    //                        reloaded, shaping verb) with no lifetime work.
     void AdoptItemsSource();
     void RefreshRowsPipeline();
+    // Raised by the bound TableViewSource when a shaping verb swapped its projection
+    // (grouped <-> flat), so the cached view / row metadata are re-read.
+    void OnTableViewSourceProjectionChanged();
     // Raised by the bound TableViewSource after a shaping verb rewrote the projection. A
     // programmatic reshape has no input event behind it, so this is the only thing that tells a
     // UIA client its cached rows are stale. reorderOnly separates a pure re-sort (same children,
@@ -605,6 +636,31 @@ private:
     // back-pointer to the owner, so this is not a hard cycle. Reassigned exclusively by
     // AdoptItemsSource, so every other path reads it as a stable answer rather than re-deriving it.
     tracker_ref<winrt::TableViewSource> m_activeSource{ this };
+
+    // Row semantics for the current projection (row kind, identity, group expansion). Null when no
+    // TableViewSource is bound, or when the projection is degraded and carries no shaped identity.
+    TableViewRowMetadataProvider m_tableViewSourceRowMetadata{};
+    // Bumped on every metadata swap so a request captured against the previous provider can tell
+    // that the provider which produced its identity is gone. Identities are value-based strings,
+    // so without this a queued group toggle could resolve against a same-named group in a
+    // brand-new source.
+    uint64_t m_rowMetadataGeneration{ 0 };
+
+    void RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired);    void QueueGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired);
+    void ApplyGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired, uint64_t generation);
+    void RaiseGroupStructureChanged();
+    void SetAllGroupsExpansion(bool expand);
+
+    winrt::hstring StringifyGroupKey(winrt::IInspectable const& key);
+    // Cached because resolving the culture formatter is measurably expensive and group-key text is
+    // produced during measure, once per realized header.
+    winrt::DecimalFormatter GetGroupKeyDecimalFormatter();
+    winrt::DecimalFormatter m_groupKeyDecimalFormatter{ nullptr };
+    int32_t m_groupKeyDefaultFractionDigits{ 0 };
+
+    // Chooses between the row and group-header container templates. Held so ~TableView can drop
+    // the recycle pools it caches; see TableViewRowTemplateSelector::Detach.
+    tracker_ref<winrt::TableViewRowTemplateSelector> m_rowTemplateSelector{ this };
 
     // --- Sorting ---
     //

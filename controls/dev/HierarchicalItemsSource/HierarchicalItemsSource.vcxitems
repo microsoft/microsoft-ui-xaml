@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    HierarchicalItemsSource — grouping vocabulary shared by the shaping stack.
+
+    After the grouped adapter was reverted to materialize a flat header+item list directly, the
+    computed run-table view (GroupRunTable + HierarchicalItemsSourceView) was removed. What remains
+    here is the tabular-agnostic grouping contract (GroupContract) and the expansion INTENT model
+    (GroupExpansionModel) — expand/collapse state keyed by a group's stable string identity so it
+    survives group objects being re-minted by each reshape. Neither depends on any XAML control.
+  -->
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{4C1F8A26-5D73-4E90-9B12-6A7F3E5C8D41}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)GroupContract.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GroupExpansionModel.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)GroupExpansionModel.cpp" />
+  </ItemGroup>
+</Project>

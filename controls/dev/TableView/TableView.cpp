@@ -9,6 +9,8 @@
 #include "TableViewCellsPanel.h"
 #include "TableViewAutomationPeer.h"
 #include "TableViewSource.h"
+#include "TableViewRowTemplateSelector.h"
+#include "TableViewGroupHeader.h"
 #include "SortIndicator.h"
 #include "RuntimeProfiler.h"
 #include "TVDiag.h"
@@ -245,6 +247,16 @@ winrt::Brush TableView::GetGridLineBrush()
     cache.gridLine.highContrast = highContrast;
     cache.gridLine.brush = brush;
     return brush;
+}
+
+TableView::~TableView()
+{
+    // Must run while this control still holds the selector: once anything has been recycled the
+    // pools hang off the cached templates and close a cycle the reference tracker cannot walk.
+    if (auto const selector = m_rowTemplateSelector.get())
+    {
+        winrt::get_self<::TableViewRowTemplateSelector>(selector)->Detach();
+    }
 }
 
 TableView::TableView()
@@ -496,6 +508,13 @@ void TableView::OnApplyTemplate()
 
     if (auto repeater = m_rowsRepeater.get())
     {
+        // Assigned here rather than in the template: the selector needs an owning TableView to map
+        // an item to its row kind, and XAML has no way to hand it one.
+        auto selector = winrt::make<::TableViewRowTemplateSelector>();
+        winrt::get_self<::TableViewRowTemplateSelector>(selector)->SetOwningTableViewInternal(*this);
+        m_rowTemplateSelector.set(selector);
+        repeater.ItemTemplate(selector);
+
         m_rowElementPreparedToken = repeater.ElementPrepared(
             [weakThis](winrt::ItemsRepeater const& sender, winrt::ItemsRepeaterElementPreparedEventArgs const& args)
             {
@@ -886,7 +905,13 @@ void TableView::AdoptItemsSource()
         // stack stays below the control. Weak, because the control owns the source through
         // m_activeSource and a strong capture would be a cycle.
         auto weakThis = get_weak();
-
+        sourceImpl->SetProjectionChangedHandler([weakThis]()
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->OnTableViewSourceProjectionChanged();
+            }
+        });
         sourceImpl->SetShapingChangedHandler([weakThis](bool reorderOnly)
         {
             if (auto strongThis = weakThis.get())
@@ -904,10 +929,18 @@ void TableView::RefreshRowsPipeline()
     // on a source change.
     winrt::IInspectable rowsSource{ nullptr };
 
+    // The provider that produced any previously handed-out row identity is being replaced. Bump the
+    // generation first so a request captured against the old provider can tell it is stale, then
+    // clear it - the branch below re-reads it from the active source when there is one.
+    m_tableViewSourceRowMetadata = nullptr;
+    ++m_rowMetadataGeneration;
+
     if (auto const activeSource = m_activeSource.get())
     {
+        auto* const sourceImpl = winrt::get_self<::TableViewSource>(activeSource);
         // Straight through: for a TableViewSource the row view IS the projection's view.
-        m_rowsItemsSourceView = winrt::get_self<::TableViewSource>(activeSource)->GetItemsSourceView();
+        m_rowsItemsSourceView = sourceImpl->GetItemsSourceView();
+        m_tableViewSourceRowMetadata = sourceImpl->GetRowMetadata();
         rowsSource = m_rowsItemsSourceView ? m_rowsItemsSourceView.as<winrt::IInspectable>() : nullptr;
     }
     else
@@ -934,6 +967,20 @@ void TableView::RefreshRowsPipeline()
         ResolveSelectionAfterSourceChange();
     }
     // else: OnApplyTemplate hasn't run yet; the repeater will be sourced from there.
+}
+
+void TableView::OnTableViewSourceProjectionChanged()
+{
+    // A shaping verb swapped the projected shape after we bound, so the cached view and row
+    // metadata describe the previous projection. Re-read them and re-drive the rows.
+    if (IsEditing())
+    {
+        // The edited item may not exist in the new projection. Forced, for the same reason as an
+        // ItemsSource swap: the shape is already gone by the time a handler could veto it.
+        TerminateEditWithoutVisualRestore();
+    }
+
+    RefreshRowsPipeline();
 }
 
 void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)
@@ -1295,7 +1342,11 @@ void TableView::OnRowElementPrepared(
         RefreshRowSelectionState(row);
         InvalidateMeasure();
     }
-
+    else if (auto header = args.Element().try_as<winrt::TableViewGroupHeader>())
+    {
+        PrepareGroupHeaderElement(header, args.Index());
+        InvalidateMeasure();
+    }
 }
 
 void TableView::OnRowElementClearing(
@@ -1336,7 +1387,11 @@ void TableView::OnRowElementClearing(
         rowImpl->SetOwningTableViewInternal(nullptr);
         InvalidateMeasure();
     }
-
+    else if (auto header = args.Element().try_as<winrt::TableViewGroupHeader>())
+    {
+        ClearGroupHeaderElement(header);
+        InvalidateMeasure();
+    }
 }
 
 void TableView::OnRowElementIndexChanged(
@@ -1346,6 +1401,12 @@ void TableView::OnRowElementIndexChanged(
     auto const row = args.Element().try_as<winrt::TableViewRow>();
     if (!row)
     {
+        // A realized header keeps its element but moves to a new index, and its expansion state is
+        // read from that index's metadata, so it has to be re-prepared.
+        if (auto const header = args.Element().try_as<winrt::TableViewGroupHeader>())
+        {
+            PrepareGroupHeaderElement(header, args.NewIndex());
+        }
         return;
     }
 
@@ -1722,8 +1783,18 @@ void TableView::OnTableViewUnloaded()
     // Drop the ThemeSettings subscription and instance so a subsequent Loaded re-creates it against
     // the (possibly different) window's WindowId. IsHighContrast falls back to AccessibilitySettings
     // while detached.
-    m_themeSettingsChangedRevoker.revoke();
+    //
+    // Order matters. The auto_revoke revoker holds only a weak_ref to ThemeSettings and its revoke()
+    // is noexcept: if remove_Changed throws (which it does at app shutdown, where this Unloaded runs
+    // from DispatcherQueueController::ShutdownQueue and ThemeSettings' underlying window feature is
+    // already detaching, surfacing RPC_E_WRONG_THREAD), the exception escapes the noexcept boundary
+    // and terminates the process -- a try/catch here can never intercept it. So we release our strong
+    // reference FIRST. If it was the last one the object dies, the revoker's weak_ref goes stale and
+    // revoke() becomes a no-op (no ABI call, no throw); if the framework still holds the object it is
+    // alive and remove_Changed succeeds normally. Either way remove_Changed is never called against a
+    // half-torn-down feature.
     m_themeSettings = nullptr;
+    m_themeSettingsChangedRevoker.revoke();
 }
 
 void TableView::OnHeaderBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs& args)

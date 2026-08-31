@@ -15,6 +15,7 @@
 
 #include "pch.h"
 #include "common.h"
+#include "GroupedEntry.h"
 #include "TableView.h"
 #include "TableViewColumn.h"
 #include "TableViewSource.h"
@@ -536,7 +537,11 @@ bool TableView::SyncTableViewSourceSort(
                     rows.reserve(count > 0 ? static_cast<size_t>(count) : 0);
                     for (int32_t i = 0; i < count; ++i)
                     {
-                        if (auto const row = rowsView.GetAt(i))
+                        auto const row = rowsView.GetAt(i);
+                        // In a grouped projection the headers are the only synthesized rows; data
+                        // rows are the app's own items. Rank the data items only - a header is not
+                        // something the app's comparer has ever seen.
+                        if (row && !TryGetGroupedEntry(row))
                         {
                             rows.push_back(row);
                         }

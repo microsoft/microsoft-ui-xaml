@@ -4,8 +4,8 @@
 #include "pch.h"
 #include "common.h"
 #include "TableViewSource.h"
-#include "TableViewProjectionView.h"
-
+#include "RowMetadataProvider.h"
+#include "FlatGroupedSourceAdapter.h"
 #include "ShapedItemsSource.h"
 #include "SharedHelpers.h"
 
@@ -25,7 +25,7 @@ TableViewSource::TableViewSource(winrt::IInspectable const& items) :
     // Handlers are installed before Start() so the very first projection is observed like any
     // later one -- the control never has to special-case its own construction.
     m_engine->SetProjectionRebuiltHandler([this]() { OnProjectionRebuilt(); });
-
+    m_engine->SetShapeSwappedHandler([this]() { NotifyOwnerProjectionChanged(); });
     m_engine->SetShapingChangedHandler([this](bool reorderOnly) { NotifyOwnerShapingChanged(reorderOnly); });
     m_engine->Start();
 }
@@ -50,9 +50,37 @@ winrt::TableViewSource TableViewSource::Filter(winrt::TableViewPredicate const& 
     return *this;
 }
 
+winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector const& key)
+{
+    return GroupBy(key, nullptr);
+}
+
+winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector const& key, winrt::TableViewIdentitySelector const& groupIdentitySelector)
+{
+    if (!key)
+    {
+        throw winrt::hresult_invalid_argument(L"key cannot be null.");
+    }
+
+    RowIdentity::TabularIdentitySelector groupIdentity{ nullptr };
+    if (groupIdentitySelector)
+    {
+        groupIdentity = [groupIdentitySelector](winrt::IInspectable const& item) { return groupIdentitySelector(item); };
+    }
+
+    m_engine->SetGroup([key](winrt::IInspectable const& item) { return key(item); }, groupIdentity);
+    return *this;
+}
+
 winrt::TableViewSource TableViewSource::ClearFilter()
 {
     m_engine->ClearFilter();
+    return *this;
+}
+
+winrt::TableViewSource TableViewSource::ClearGroupBy()
+{
+    m_engine->ClearGroup();
     return *this;
 }
 
@@ -107,58 +135,95 @@ winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousS
     return *this;
 }
 
+bool TableViewSource::IsGrouped() const
+{
+    return m_engine->IsProjectedAsGrouped();
+}
+
 winrt::ItemsSourceView TableViewSource::GetItemsSourceView()
 {
     return m_itemsSourceView.get();
 }
 
-winrt::IObservableVector<winrt::IInspectable> TableViewSource::View()
+TableViewRowMetadataProvider TableViewSource::GetRowMetadata()
 {
-    // A stable wrapper, so a caller that bound to View() keeps seeing the current projection
-    // across a reshape instead of holding the vector that shape produced.
-    if (!m_viewWrapper)
-    {
-        m_viewWrapper = winrt::make_self<TableViewProjectionView>();
-    }
-    m_viewWrapper->SetInner(m_engine->CurrentViewProjection());
-    return m_viewWrapper.as<winrt::IObservableVector<winrt::IInspectable>>();
+    return m_rowMetadata;
 }
-
 
 void TableViewSource::OnProjectionRebuilt()
 {
-    // The control-level reading of the projection: what an ItemsRepeater consumes. The engine
-    // reports which shape it produced; deciding what that shape means for a TableView is this
-    // class's only remaining projection responsibility.
+    // The control-level reading of the projection: what an ItemsRepeater consumes, and how a row
+    // at an index is described. The engine reports which shape it produced; deciding what that
+    // shape means for a TableView is this class's only remaining projection responsibility.
     switch (m_engine->Kind())
     {
+    case ::ShapedItemsSource::ProjectionKind::Grouped:
+    {
+        auto const adapter = m_engine->GroupedAdapter();
+        // No wrap: the grouped view IS an ItemsSourceView, so ItemsRepeater consumes it directly.
+        m_itemsSourceView.set(adapter->Entries());
+        m_rowMetadata = tabularPrimitives::RowMetadataProvider::CreateForGroupedRows(adapter, MakeIdentitySelector());
+        break;
+    }
     case ::ShapedItemsSource::ProjectionKind::Flat:
+    {
+        // tracker_ref, so set through .set(); read the local back into the metadata provider since
+        // CreateForFlatRows takes the concrete ItemsSourceView, not the tracked slot.
+        auto const flatView = winrt::ItemsSourceView{ m_engine->Rows() };
+        m_itemsSourceView.set(flatView);
+        m_rowMetadata = tabularPrimitives::RowMetadataProvider::CreateForFlatRows(flatView, MakeIdentitySelector());
+        break;
+    }
     case ::ShapedItemsSource::ProjectionKind::Unshaped:
+        // An unshaped mirror carries no shaped identity, so there is deliberately no row
+        // metadata: consumers must not read sorted/identity semantics off a degraded projection.
         m_itemsSourceView.set(winrt::ItemsSourceView{ m_engine->Rows() });
+        m_rowMetadata = nullptr;
         break;
     case ::ShapedItemsSource::ProjectionKind::None:
         m_itemsSourceView.set(nullptr);
+        m_rowMetadata = nullptr;
         break;
     }
-
-    RefreshViewWrapper();
 }
 
-
-void TableViewSource::RefreshViewWrapper()
+TableViewRowItemKeySelector TableViewSource::MakeIdentitySelector() const
 {
-    if (m_viewWrapper)
+    // Bridge the engine's Object-returning identity selector to the String-returning selector the
+    // row-metadata provider consumes. The engine derives identity from each item's object identity
+    // and already stringifies it, so this only unwraps the box.
+    auto const keySelector = m_engine->IdentitySelector();
+    if (!keySelector)
     {
-        m_viewWrapper->SetInner(m_engine->CurrentViewProjection());
+        return {};
     }
+
+    return [keySelector](winrt::IInspectable const& item) -> winrt::hstring
+    {
+        winrt::IInspectable key{ nullptr };
+        try
+        {
+            key = keySelector(item);
+        }
+        catch (...)
+        {
+            return L"";
+        }
+        if (auto propertyValue = key.try_as<winrt::IPropertyValue>();
+            propertyValue && propertyValue.Type() == winrt::PropertyType::String)
+        {
+            return propertyValue.GetString();
+        }
+        return {};
+    };
 }
 
 void TableViewSource::SetOwningTableView(winrt::IInspectable const& owner)
 {
     // Sharing one shaped TableViewSource across two TableView controls has no coherent
-    // semantics: shaping verbs (Filter/Sort) mutate a single projection, and the two
+    // semantics: shaping verbs (Filter/Sort/GroupBy) mutate a single projection, and the two
     // controls would compete for it (last-writer-wins) while both cache the ItemsSourceView /
-    // row-metadata the first bind produced. Since only a single owner slot
+    // row-metadata / grouped-ness the first bind produced. Since only a single owner slot
     // exists, silently overwriting m_owningTableView here left the previous owner rendering
     // against stale shape metadata and never receiving projection-shape notifications.
     //
@@ -191,7 +256,16 @@ void TableViewSource::SetOwningTableView(winrt::IInspectable const& owner)
     {
         // Detaching: drop the owner's handlers with the owner itself, so a source that has been
         // swapped out of ItemsSource cannot drive the control it used to belong to.
+        m_projectionChanged = nullptr;
         m_shapingChanged = nullptr;
+    }
+}
+
+void TableViewSource::NotifyOwnerProjectionChanged()
+{
+    if (m_projectionChanged)
+    {
+        m_projectionChanged();
     }
 }
 

@@ -510,6 +510,26 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Tabular.TableViewRowTemplateSelector",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Tabular.TableViewRowTemplateSelector",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.DataTemplateSelector",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::ITableViewRowTemplateSelectorFactory>(L"Microsoft.UI.Xaml.Controls.Tabular.TableViewRowTemplateSelector"); },
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.Tabular.TableViewSelectionMode",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -564,17 +584,8 @@ Entry c_typeEntries[] =
                 /* Arg 3 - Activator func */ 
                 nullptr,
                 /* Arg 4 - Populate properties func */ 
-                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
-                {
-                    xamlType.AddMember(
-                        L"View", /* propertyName */
-                        L"Windows.Foundation.Collections.IObservableVector`1<Object>", /* propertyType */
-                        [](winrt::IInspectable instance) { return instance.as<winrt::TableViewSource>().View(); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                });
+                nullptr
+            );
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }
@@ -811,21 +822,6 @@ Entry c_typeEntries[] =
         []()
         {
             auto xamlType = winrt::make_self<XamlType>((PCWSTR)L"ValueType", (PCWSTR)L"Object" /* BaseTypeName */ , nullptr /* Activator Func */, nullptr /* PopulatePropertiesFunc */ );
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Windows.Foundation.Collections.IObservableVector`1<Object>",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>((PCWSTR)L"Windows.Foundation.Collections.IObservableVector`1<Object>", (PCWSTR)L"Object" /* BaseTypeName */ , nullptr /* Activator Func */, nullptr /* PopulatePropertiesFunc */ );
-            xamlType->SetCollectionAddFunc((std::function<void(winrt::IInspectable const&, winrt::IInspectable const&)>)[](winrt::IInspectable const& collection, winrt::IInspectable const& value)
-            {
-                collection.as<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>>().Append(unbox_value<winrt::IInspectable>(value));
-            });
-
             return static_cast<winrt::IXamlType>(*xamlType);
         }
     },

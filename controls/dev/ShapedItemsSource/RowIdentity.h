@@ -22,6 +22,11 @@
 // are only correct as a pair, and every mutation path has to shift both the same way.
 namespace RowIdentity
 {
+    // A caller-supplied projection from an item to its stable string identity. Distinct from
+    // TabularKeySelector, which returns an arbitrary key object.
+    using TabularIdentitySelector = std::function<winrt::hstring(winrt::IInspectable const& item)>;
+
+
     // The row-identity selector, derived from each item's COM identity (its canonical IUnknown
     // pointer). That is unique among live objects and stable for as long as the object lives, which
     // is exactly the window a projection needs. It is NOT stable across a re-created item -- an app
@@ -83,5 +88,11 @@ namespace RowIdentity
         std::unordered_map<winrt::hstring, uint32_t>& identityToIndex,
         uint32_t removedIndex);
 
+    bool TryGetGroupIdentity(
+        winrt::IInspectable const& key,
+        TabularIdentitySelector const& groupIdentitySelector,
+        winrt::hstring& identity,
+        wchar_t const*& reason);
+    bool GroupKeysEqual(winrt::IInspectable const& a, winrt::IInspectable const& b);
     winrt::hstring StringifyKey(winrt::IInspectable const& key);
 }
