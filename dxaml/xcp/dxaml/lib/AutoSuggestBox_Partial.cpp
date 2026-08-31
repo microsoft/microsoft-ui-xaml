@@ -559,7 +559,6 @@ _Check_return_ HRESULT AutoSuggestBox::ClearTextBoxAccessKeyIfOwned()
         }
     }
     m_ownsTextBoxAccessKey = false;
-    m_ownsTextBoxAccessKey = false;
 
     return S_OK;
 }
