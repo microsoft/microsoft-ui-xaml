@@ -1,682 +1,904 @@
+TableView
+===
+
 # Background
 
-TableView is a preview tabular control for WinUI 3. It presents an `ItemsSource` as rows and a developer-defined `Columns` collection as cells, with optional column headers, gridlines, density, alternating row backgrounds, leading-prefix frozen columns, and an empty-state template. It is display-only by default; **opt-in cell editing** is enabled by clearing `IsReadOnly`.
+`TableView` is a tabular control for WinUI 3. It displays an `ItemsSource` as rows and uses a
+developer-defined `Columns` collection to create the cells in each row.
 
-Rows are virtualized: TableView renders rows with `ItemsRepeater`, so large row counts are virtualized (only on-screen rows plus a small cache are realized).
+The control is intended for data-heavy application experiences such as a process list, file list,
+people directory, or results view. It provides the common behaviors needed by those experiences:
 
-This API is intentionally small: **opt-in cell editing** and **single row selection** on top of the existing read-only data presentation, with cell value automation added to the grid/table peers. Additional interactive features — multiple/extended selection, single-column sort, filtering, grouping, two-level hierarchy, and column resize/reorder — are planned separately. Marquee selection, multi-column sort, column virtualization, and row headers remain out of scope for v1.
+- Text and template columns.
+- Pixel, Auto, and Star column widths.
+- Row virtualization.
+- Column headers and grid lines.
+- Row density and alternating row backgrounds.
+- Frozen leading columns.
+- Single row selection.
+- Opt-in cell editing.
+- Column sorting and resizing.
+- Filtering, sorting, and grouping through `TableViewSource`.
+- Per-cell tooltips.
+- UI Automation support for the table, rows, cells, headers, grouping, selection, and editing.
 
-TableView types are in the preview namespace:
+`TableView` is not intended to be a spreadsheet or a complete replacement for `DataGrid`. It
+focuses on presenting and interacting with a moderate number of columns over a potentially large
+number of rows.
 
-```xaml
-xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular"
-```
+Rows are virtualized with `ItemsRepeater`. Only the rows needed for the viewport and its cache are
+realized. Columns are not virtualized. This design is appropriate for tables with a small or
+moderate number of columns, such as 5 to 50 columns.
 
 # Conceptual pages (How To)
 
 ## How to use TableView
 
-### Basic usage (with a TableViewTextColumn)
+Create a `TableView`, provide an items source, and add one column for each value that should appear
+in a row. The column collection is the content property of `TableView`, so columns can be declared
+directly in XAML or added from code.
 
-Set `TableView.ItemsSource` and add `TableViewTextColumn` instances to `Columns`. `TableViewTextColumn.Binding` is a CLR property, not a dependency property, and accepts a normal XAML `Binding`.
+### Create a basic table
 
 ```xaml
-<Page
-    x:Class="Contoso.App.Views.PeoplePage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular">
-
-    <Grid Padding="24">
-        <tabular:TableView ItemsSource="{x:Bind People}">
-            <tabular:TableView.Columns>
-                <tabular:TableViewTextColumn
-                    Header="Name"
-                    Binding="{Binding Name}" />
-
-                <tabular:TableViewTextColumn
-                    Header="Role"
-                    Binding="{Binding Role}" />
-
-                <tabular:TableViewTextColumn
-                    Header="Location"
-                    Binding="{Binding Location}" />
-            </tabular:TableView.Columns>
-        </tabular:TableView>
-    </Grid>
-</Page>
+<tv:TableView x:Name="Table" />
 ```
 
 ```csharp
-using Microsoft.UI.Xaml.Controls;
-using System.Collections.ObjectModel;
+public ObservableCollection<Person> People { get; } =
+[
+    new Person { Name = "Ada", Role = "Engineer" },
+    new Person { Name = "Grace", Role = "Manager" },
+];
 
-namespace Contoso.App.Views;
-
-public sealed partial class PeoplePage : Page
+var nameColumn = new TableViewTextColumn
 {
-    public ObservableCollection<Person> People { get; } =
-    [
-        new("Asha Rao", "Designer", "Bengaluru"),
-        new("Diego García", "Engineer", "Madrid"),
-        new("Mina Tanaka", "Program Manager", "Tokyo"),
-    ];
-
-    public PeoplePage()
+    Header = "Name",
+    Binding = new Binding
     {
-        InitializeComponent();
-    }
-}
+        Path = new PropertyPath(nameof(Person.Name))
+    },
+    Width = new GridLength(1, GridUnitType.Auto),
+};
 
-public sealed record Person(string Name, string Role, string Location);
-```
-
-### Template columns (custom cell content)
-
-Use `TableViewTemplateColumn.CellTemplate` for custom cell layout or formatting.
-
-```xaml
-<Page
-    x:Class="Contoso.App.Views.OrdersPage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular"
-    xmlns:local="using:Contoso.App.Models">
-
-    <Grid Padding="24">
-        <tabular:TableView ItemsSource="{x:Bind Orders}">
-            <tabular:TableView.Columns>
-                <tabular:TableViewTextColumn
-                    Header="Order"
-                    Binding="{Binding OrderNumber}" />
-
-                <tabular:TableViewTextColumn
-                    Header="Customer"
-                    Binding="{Binding Customer}" />
-
-                <tabular:TableViewTemplateColumn Header="Status">
-                    <tabular:TableViewTemplateColumn.CellTemplate>
-                        <DataTemplate x:DataType="local:Order">
-                            <Border
-                                Padding="8,2"
-                                CornerRadius="10"
-                                Background="{ThemeResource AccentFillColorDefaultBrush}"
-                                HorizontalAlignment="Left">
-                                <TextBlock
-                                    Text="{x:Bind Status}"
-                                    Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
-                            </Border>
-                        </DataTemplate>
-                    </tabular:TableViewTemplateColumn.CellTemplate>
-                </tabular:TableViewTemplateColumn>
-            </tabular:TableView.Columns>
-        </tabular:TableView>
-    </Grid>
-</Page>
-```
-
-```csharp
-using Microsoft.UI.Xaml.Controls;
-using System.Collections.ObjectModel;
-
-namespace Contoso.App.Views;
-
-public sealed partial class OrdersPage : Page
+var roleColumn = new TableViewTextColumn
 {
-    public ObservableCollection<Order> Orders { get; } =
-    [
-        new("SO-1001", "Tailspin Toys", "Ready"),
-        new("SO-1002", "Contoso", "In review"),
-        new("SO-1003", "Fabrikam", "Blocked"),
-    ];
-
-    public OrdersPage()
+    Header = "Role",
+    Binding = new Binding
     {
-        InitializeComponent();
-    }
-}
+        Path = new PropertyPath(nameof(Person.Role))
+    },
+    Width = new GridLength(1, GridUnitType.Star),
+};
 
-public sealed record Order(string OrderNumber, string Customer, string Status);
+Table.Columns.Add(nameColumn);
+Table.Columns.Add(roleColumn);
+Table.ItemsSource = People;
 ```
 
-### Headers, gridlines, and density
+`TableViewTextColumn.Binding` is a normal XAML `Binding`. The generated text cell inherits the row
+item as its data context, so the binding path is evaluated against the item represented by that row.
 
-`HeadersVisibility` controls column-header visibility (`None` or `Column`). Row headers are out of scope, so there are no `Row`/`All` values.
+### Choose column widths
 
-`GridLinesVisibility` controls gridlines. `Density` controls row and cell spacing. Header height matches row height; built-in header and text-cell content is vertically centered.
+`TableViewColumn.Width` is a `GridLength` and supports Pixel, Auto, and Star sizing.
 
-```xaml
-<tabular:TableView
-    ItemsSource="{x:Bind People}"
-    HeadersVisibility="Column"
-    GridLinesVisibility="All"
-    Density="Compact"
-    RowBackground="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-    AlternatingRowBackground="{ThemeResource SubtleFillColorSecondaryBrush}">
-    <tabular:TableView.Columns>
-        <tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}" />
-        <tabular:TableViewTextColumn Header="Role" Binding="{Binding Role}" />
-        <tabular:TableViewTextColumn Header="Location" Binding="{Binding Location}" />
-    </tabular:TableView.Columns>
-</tabular:TableView>
-```
-
-```csharp
-using Microsoft.UI.Xaml.Controls.Tabular;
-
-PeopleTable.HeadersVisibility = TableViewHeadersVisibility.Column;
-PeopleTable.GridLinesVisibility = TableViewGridLinesVisibility.All;
-PeopleTable.Density = TableViewDensity.Compact;
-```
-
-### Frozen (pinned) leading columns
-
-Set `FrozenEdge="Leading"` on a contiguous prefix starting at column 0 to pin those columns to the leading edge. A later `Leading` column is ignored. `Trailing` is reserved.
-
-```xaml
-<tabular:TableView ItemsSource="{x:Bind Orders}">
-    <tabular:TableView.Columns>
-        <tabular:TableViewTextColumn
-            Header="Order"
-            Binding="{Binding OrderNumber}"
-            FrozenEdge="Leading" />
-
-        <tabular:TableViewTextColumn
-            Header="Customer"
-            Binding="{Binding Customer}" />
-
-        <tabular:TableViewTextColumn
-            Header="Status"
-            Binding="{Binding Status}" />
-
-        <tabular:TableViewTextColumn
-            Header="Location"
-            Binding="{Binding Location}" />
-    </tabular:TableView.Columns>
-</tabular:TableView>
-```
-
-```csharp
-using Microsoft.UI.Xaml.Controls.Tabular;
-
-orderNumberColumn.FrozenEdge = TableViewFrozenEdge.Leading;
-```
-
-### Empty-state template
-
-Use `EmptyTemplate` when the table has no rows.
-
-```xaml
-<tabular:TableView ItemsSource="{x:Bind Orders}">
-    <tabular:TableView.EmptyTemplate>
-        <DataTemplate>
-            <StackPanel
-                Padding="32"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Spacing="8">
-                <FontIcon Glyph="&#xE8A5;" FontSize="32" />
-                <TextBlock
-                    Text="No orders yet"
-                    Style="{ThemeResource SubtitleTextBlockStyle}"
-                    HorizontalAlignment="Center" />
-                <TextBlock
-                    Text="New orders will appear here."
-                    HorizontalAlignment="Center" />
-            </StackPanel>
-        </DataTemplate>
-    </tabular:TableView.EmptyTemplate>
-
-    <tabular:TableView.Columns>
-        <tabular:TableViewTextColumn Header="Order" Binding="{Binding OrderNumber}" />
-        <tabular:TableViewTextColumn Header="Customer" Binding="{Binding Customer}" />
-        <tabular:TableViewTextColumn Header="Status" Binding="{Binding Status}" />
-    </tabular:TableView.Columns>
-</tabular:TableView>
-```
-
-```csharp
-Orders.Clear();
-```
-
-### Keyboard navigation & accessibility
-
-TableView supports read-only row focus. Up, Down, Home, End, PageUp, and PageDown move focus through displayed rows.
-
-Read-only UI Automation grid/table peers are provided for the table, rows, cells, and column headers.
-
-```xaml
-<tabular:TableView
-    ItemsSource="{x:Bind People}"
-    IsReadOnly="True"
-    HeadersVisibility="Column"
-    GridLinesVisibility="All">
-    <tabular:TableView.Columns>
-        <tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}" />
-        <tabular:TableViewTextColumn Header="Role" Binding="{Binding Role}" />
-        <tabular:TableViewTextColumn Header="Location" Binding="{Binding Location}" />
-    </tabular:TableView.Columns>
-</tabular:TableView>
-```
-
-```csharp
-// Editing is opt-in. TableView is read-only by default; clear IsReadOnly to enable it.
-PeopleTable.IsReadOnly = false;
-```
-
-C++/WinRT usage follows the same model: create a `Microsoft::UI::Xaml::Controls::Tabular::TableView`, populate its `Columns()` vector, and set `ItemsSource()` to a bindable collection.
-
-### Selecting rows
-
-Selection is **on by default** — `SelectionMode` defaults to `Single`. Set it to `None` for a display-only table. `SelectedItem`/`SelectedIndex` are read-only projections you can observe or bind *from*; drive selection with `Select`/`Deselect`/`DeselectAll`:
-
-```xaml
-<tabular:TableView
-    x:Name="PeopleTable"
-    ItemsSource="{x:Bind People}"
-    SelectionMode="Single"
-    SelectionChanged="OnSelectionChanged" />
-```
-
-```csharp
-private void OnSelectionChanged(TableView sender, SelectionChangedEventArgs args)
-{
-    // One event carries the whole delta: replacing a selection reports both vectors.
-    foreach (var removed in args.RemovedItems) { /* ... */ }
-    foreach (var added in args.AddedItems) { /* ... */ }
-
-    // The state has already settled, so these agree with the args.
-    DetailsPane.Content = sender.SelectedItem;
-}
-```
-
-Or drive it from code:
-
-```csharp
-PeopleTable.Select(0);                   // by index
-bool isSelected = PeopleTable.IsSelected(0);
-PeopleTable.DeselectAll();
-```
-
-Selection follows the **item**, not the index. Inserting a row above the selected one keeps the same item selected and simply shifts `SelectedIndex` (no `SelectionChanged`); removing the selected item clears the selection rather than quietly handing the app the row that took its place.
-
-Selection is also independent of editing. The current cell and an open editor are unaffected by what is selected, and vice versa — so a `CellEditEnding` handler can read `SelectedItem` without worrying about ordering.
-
-### Editing cells
-
-Editing is opt-in. Clear `IsReadOnly` on the control, and optionally set `IsReadOnly` on individual columns to keep them display-only.
-
-```xaml
-<tabular:TableView x:Name="PeopleTable"
-                   ItemsSource="{x:Bind People}"
-                   IsReadOnly="False"
-                   CellEditEnding="OnCellEditEnding">
-    <tabular:TableView.Columns>
-        <tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}" />
-        <tabular:TableViewTextColumn Header="Id"   Binding="{Binding Id}" IsReadOnly="True" />
-    </tabular:TableView.Columns>
-</tabular:TableView>
-```
-
-Editing starts only from user input in this release. There is no programmatic way to open an editor. Gestures follow the standard grid model:
-
-| Gesture | Behaviour |
+| Width | Behavior |
 |---|---|
-| Double-click / double-tap a cell | Begins editing that cell |
-| `F2` | Begins editing the current cell |
-| `Enter` | Commits and closes the editor |
-| `Esc` | Cancels and discards the editor |
-| Moving focus off the cell | Commits |
+| Pixel | Uses the specified number of pixels. |
+| Auto | Sizes to the widest realized header or cell. It can grow when wider content is realized. |
+| Star | Receives a proportional share of the remaining viewport width. |
 
-The data item needs settable properties, and should raise `PropertyChanged` so the display cell refreshes once the edit closes.
-
-**Validating, and rejecting a value:**
+The following table combines all three width kinds:
 
 ```csharp
-private void OnCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs args)
+Table.Columns.Add(new TableViewTextColumn
+{
+    Header = "Name",
+    Binding = new Binding { Path = new PropertyPath(nameof(Person.Name)) },
+    Width = new GridLength(1, GridUnitType.Auto),
+});
+
+Table.Columns.Add(new TableViewTextColumn
+{
+    Header = "Role",
+    Binding = new Binding { Path = new PropertyPath(nameof(Person.Role)) },
+    Width = new GridLength(120, GridUnitType.Pixel),
+});
+
+Table.Columns.Add(new TableViewTemplateColumn
+{
+    Header = "Score",
+    CellTemplate = (DataTemplate)Application.Current.Resources["ScoreCell"],
+    Width = new GridLength(120, GridUnitType.Pixel),
+});
+
+Table.Columns.Add(new TableViewTextColumn
+{
+    Header = "City",
+    Binding = new Binding { Path = new PropertyPath(nameof(Person.City)) },
+    Width = new GridLength(1, GridUnitType.Star),
+});
+
+Table.Columns.Add(new TableViewTextColumn
+{
+    Header = "Biography",
+    Binding = new Binding { Path = new PropertyPath(nameof(Person.Biography)) },
+    Width = new GridLength(2, GridUnitType.Star),
+});
+```
+
+In this example, the Name column sizes to its realized content. Role and Score use fixed widths.
+City and Bio divide the remaining space in a 1 to 2 ratio.
+
+`MinWidth` and `MaxWidth` constrain every width mode:
+
+```csharp
+nameColumn.MinWidth = 120;
+nameColumn.MaxWidth = 240;
+```
+
+`ActualWidth` reports the resolved width after the width mode and constraints have been applied.
+
+### Display custom cell content
+
+Use `TableViewTemplateColumn` when a cell needs more than text. This example uses a `ProgressBar`
+to display a score:
+
+```xaml
+<DataTemplate x:Key="ScoreCell">
+    <Grid Padding="8,2">
+        <ProgressBar
+            Minimum="0"
+            Maximum="100"
+            Value="{Binding Score}"
+            Height="6"
+            VerticalAlignment="Center" />
+    </Grid>
+</DataTemplate>
+```
+
+```csharp
+var scoreColumn = new TableViewTemplateColumn
+{
+    Header = "Score",
+    CellTemplate = (DataTemplate)Application.Current.Resources["ScoreCell"],
+    Width = new GridLength(120, GridUnitType.Pixel),
+};
+
+Table.Columns.Add(scoreColumn);
+```
+
+A template column with no `CellTemplate` displays an empty cell. It does not use
+`dataItem.ToString()` as a fallback.
+
+![A table with Auto, Pixel, and Star columns and custom score cells.](images/tableview-layout.png)
+
+### Edit cells
+
+TableView is read-only by default. Set `IsReadOnly` to `false` to enable editing:
+
+```csharp
+Table.IsReadOnly = false;
+```
+
+A `TableViewTextColumn` creates a `TextBox` editor automatically. The editor uses the column's
+binding and writes the new value when the edit is committed.
+
+Use `CellEditingTemplate` to provide a custom editor. This example uses a display template and a
+separate editing template for a Notes column:
+
+```xaml
+<DataTemplate x:Key="NotesCell">
+    <TextBlock
+        Text="{Binding Notes}"
+        Margin="8,4"
+        VerticalAlignment="Center" />
+</DataTemplate>
+
+<DataTemplate x:Key="NotesEditCell">
+    <TextBox
+        Text="{Binding Notes, Mode=TwoWay}"
+        VerticalAlignment="Center" />
+</DataTemplate>
+```
+
+```csharp
+var notesColumn = new TableViewTemplateColumn
+{
+    Header = "Notes",
+    CellTemplate = (DataTemplate)Application.Current.Resources["NotesCell"],
+    CellEditingTemplate =
+        (DataTemplate)Application.Current.Resources["NotesEditCell"],
+    Width = new GridLength(1, GridUnitType.Auto),
+};
+```
+
+Use classic `{Binding}` in an editing template. TableView locates those binding expressions when it
+commits the editor. Compiled `{x:Bind}` expressions are not discoverable through that mechanism.
+
+The following input starts or closes an edit:
+
+| Input | Behavior |
+|---|---|
+| Double-click or double-tap a cell | Starts editing that cell. |
+| F2 | Starts editing the current cell. |
+| Enter | Commits the edit. |
+| Escape | Cancels the edit. |
+| Move focus away from the cell | Commits the edit. |
+
+`BeginningEdit` can stop an editor from opening. `CellEditEnding` can stop an editor from closing.
+Both events are synchronous. Set `Cancel` before the event handler returns.
+
+```csharp
+private void OnCellEditEnding(
+    TableView sender,
+    TableViewCellEditEndingEventArgs args)
 {
     if (args.EditAction == TableViewEditAction.Commit &&
-        args.Item is Person p && string.IsNullOrWhiteSpace(p.Name))
+        args.Item is Person person &&
+        string.IsNullOrWhiteSpace(person.Name))
     {
-        args.Cancel = true;   // keeps the editor open
+        args.Cancel = true;
     }
 }
 ```
 
-`CellEditEnding` is raised synchronously. Set `Cancel` before the handler returns; the control reads it immediately after the handler completes.
+`CommitEdit()` and `CancelEdit()` allow the application to close the active cell editor.
+`IsEditing` reports whether an edit is active.
 
-A cancelled edit never reaches the data item. Editors use `UpdateSourceTrigger=Explicit`, so cancelling discards the editor and the display element re-reads the unchanged source.
+![An editable table with text and template columns.](images/tableview-editing.png)
+
+### Select rows
+
+`SelectionMode` defaults to `Single`. Set it to `None` when the table should not allow selection.
+
+```csharp
+Table.Select(0);
+
+bool isSelected = Table.IsSelected(0);
+
+Table.Deselect(Table.SelectedIndex);
+
+Table.DeselectAll();
+```
+
+`SelectedItem` and `SelectedIndex` are read-only. Selection is changed through the methods above or
+through pointer and keyboard input.
+
+```csharp
+private void Table_SelectionChanged(
+    TableView sender,
+    SelectionChangedEventArgs args)
+{
+    var selectedItem = sender.SelectedItem as Person;
+    var selectedIndex = sender.SelectedIndex;
+}
+```
+
+Selection follows the item rather than the item's current index. If an item is inserted above the
+selected item, the same item remains selected and `SelectedIndex` changes without raising
+`SelectionChanged`. If the selected item is removed, selection is cleared.
+
+![A table configured for single row selection.](images/tableview-selection.png)
+
+### Configure headers, grid lines, density, and row backgrounds
+
+```csharp
+Table.HeadersVisibility = TableViewHeadersVisibility.Column;
+Table.GridLinesVisibility = TableViewGridLinesVisibility.All;
+Table.Density = TableViewDensity.Compact;
+
+Table.RowBackground =
+    new SolidColorBrush(Color.FromArgb(24, 0, 120, 215));
+
+Table.AlternatingRowBackground =
+    new SolidColorBrush(Color.FromArgb(20, 128, 128, 128));
+```
+
+Use `HeaderTemplate` or `HeaderTemplateSelector` to customize a column header. When both are set,
+`HeaderTemplateSelector` takes precedence.
+
+### Freeze leading columns
+
+Set `FrozenEdge` to `Leading` on a contiguous group of columns starting at the first column:
+
+```csharp
+nameColumn.FrozenEdge = TableViewFrozenEdge.Leading;
+```
+
+The frozen columns stay visible while the rest of the table scrolls horizontally. A later column
+marked `Leading` is not frozen if an unfrozen visible column appears before it. `Trailing` is
+reserved for future trailing-edge freezing.
+
+### Show an empty state
+
+Use `EmptyTemplate` to display content when `ItemsSource` is null or contains no rows:
+
+```xaml
+<DataTemplate x:Key="EmptyState">
+    <StackPanel
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        Spacing="6">
+        <TextBlock Text="No data" FontSize="20" />
+        <TextBlock Text="The table currently has no rows." Opacity="0.7" />
+    </StackPanel>
+</DataTemplate>
+```
+
+```csharp
+Table.EmptyTemplate =
+    (DataTemplate)Application.Current.Resources["EmptyState"];
+```
+
+![A table displaying custom content when it has no rows.](images/tableview-empty.png)
+
+### Sort columns
+
+Set `CanUserSortColumns` to enable or disable header-driven sorting for the table. `CanSort` can
+disable sorting for an individual column.
+
+For a `TableViewTextColumn`, the binding path is used as the sort member path when
+`SortMemberPath` is empty. Other column types should set `SortMemberPath` or provide a
+`CustomSortComparer`.
+
+```xaml
+<tv:TableViewTextColumn
+    Header="Last name"
+    Binding="{Binding LastName}"
+    SortMemberPath="LastName" />
+```
+
+```csharp
+PeopleTable.SortByColumn(lastNameColumn, SortDirection.Ascending);
+PeopleTable.ToggleSortDirection(lastNameColumn);
+PeopleTable.ClearSort();
+```
+
+`SortCycle` controls whether header invocation cycles between ascending and descending, or includes
+an unsorted step.
+
+The active sort state lives on the column, as `TableViewColumn.SortDirection`. There is no
+control-level sort-column property; `Sorted` hands the application the column that changed, and a
+null column there means the sort was cleared. This matches the way a WPF `DataGrid` keeps sort
+state on its columns.
+
+There are two sorting paths:
+
+- When `ItemsSource` is a `TableViewSource`, TableView updates the shaped view directly.
+  `Sorting` is raised before the update and `Sorted` is raised after it. An application that wants
+  to own the ordering can handle `Sorting` and set `Cancel` to `true`, which suppresses the reshape,
+  the column's sort direction, the header indicator, and the `Sorted` event.
+- When `ItemsSource` is a plain collection, TableView still sorts out of the box by ordering an
+  internal projection over that collection. The bound collection is never reordered.
+
+### Sort with a custom comparer
+
+Some orderings cannot be expressed by a single property path. A league standings table, for
+example, ranks each row by points, then by goal difference, then by goals scored, and finally by
+team name for a stable result. Supply that ordering with a `CustomSortComparer`. It takes
+precedence over `SortMemberPath`, so the column sorts entirely through the comparer.
+
+`ITableViewSortComparer` is an interface rather than a delegate, so a comparer can be declared as a
+XAML resource or assigned in code.
+
+```csharp
+public sealed class StandingsRankComparer : ITableViewSortComparer
+{
+    public int Compare(object left, object right)
+    {
+        if (left is not LeagueTeam a || right is not LeagueTeam b)
+        {
+            return 0;
+        }
+
+        int byPoints = b.Points.CompareTo(a.Points);
+        if (byPoints != 0)
+        {
+            return byPoints;
+        }
+
+        int byGoalDifference = b.GoalDifference.CompareTo(a.GoalDifference);
+        if (byGoalDifference != 0)
+        {
+            return byGoalDifference;
+        }
+
+        int byGoalsFor = b.GoalsFor.CompareTo(a.GoalsFor);
+        if (byGoalsFor != 0)
+        {
+            return byGoalsFor;
+        }
+
+        return string.CompareOrdinal(a.Team, b.Team);
+    }
+}
+```
+
+```csharp
+standingColumn.CustomSortComparer = new StandingsRankComparer();
+StandingsTable.SortByColumn(standingColumn, SortDirection.Ascending);
+```
+
+The control ranks the rows once through the comparer, then sorts on the resulting integer ranks.
+Reversing the column direction reverses those ranks without calling the comparer again.
+
+### Compose a multi-axis sort with TableViewSource
+
+Header interaction is single-column: applying a new sort clears the previous one. When several sort
+keys are needed at once, call `Sort` on a `TableViewSource` once for each key. The first key you
+declare is the primary sort, and each later key breaks ties within the previous one. This is the
+same precedence order that `SortDescriptions` uses on a WPF `DataGrid`.
+
+```csharp
+var source = TableViewSource.From(people);
+PeopleTable.ItemsSource = source;
+
+source
+    .Sort(item => ((Person)item).Department, SortDirection.Ascending)
+    .Sort(item => ((Person)item).LastName, SortDirection.Ascending);
+```
+
+Rows are ordered by department first, and people within a department are ordered by last name.
+Re-sorting a key that is already active keeps its place in the precedence order. Passing
+`SortDirection.None` for a key removes that axis, so setting every key to `None` leaves the source
+unsorted.
+
+### Filter and group rows with TableViewSource
+
+`TableViewSource` provides a fluent shaping surface over an existing collection. Keep one
+`TableViewSource` assigned to the table and change its shape in place.
+
+```csharp
+ObservableCollection<Person> people =
+[
+    new Person
+    {
+        Name = "Ada Lovelace",
+        LastName = "Lovelace",
+        Role = "Engineer",
+        Department = "Engineering",
+    },
+    new Person
+    {
+        Name = "Grace Hopper",
+        LastName = "Hopper",
+        Role = "Manager",
+        Department = "Operations",
+    },
+    new Person
+    {
+        Name = "Alan Turing",
+        LastName = "Turing",
+        Role = "Researcher",
+        Department = "Engineering",
+    },
+];
+
+var source = TableViewSource.From(people);
+PeopleTable.ItemsSource = source;
+source.GroupBy(item => ((Person)item).Department);
+```
+
+Grouped rows appear under a header for each key, and each header shows the group's item count.
+
+![A table grouped by department, with a header and item count for each group.](images/tableview-grouping.png)
+
+Filtering and sorting can be combined with grouping:
+
+```csharp
+source
+    .Filter(item => ((Person)item).Department == "Engineering")
+    .Sort(
+        item => ((Person)item).LastName,
+        SortDirection.Ascending)
+    .GroupBy(item => ((Person)item).Department);
+```
+
+Each call changes the retained source and returns that source, which allows fluent chaining.
+
+Use `ClearFilter()`, `ClearSort()`, and `ClearGroupBy()` to remove shaping operations:
+
+```csharp
+source.ClearFilter()
+      .ClearSort()
+      .ClearGroupBy();
+```
+
+Grouped rows use `GroupHeaderTemplate` for their content. TableView supplies the expand and
+collapse chrome around that content.
+
+```xaml
+<tv:TableView x:Name="PeopleTable">
+    <tv:TableView.GroupHeaderTemplate>
+        <DataTemplate>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="{Binding KeyText}" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding ItemCountText}" Opacity="0.7" />
+            </StackPanel>
+        </DataTemplate>
+    </tv:TableView.GroupHeaderTemplate>
+</tv:TableView>
+```
+
+Use `ExpandAllGroups()` and `CollapseAllGroups()` to change every group's expansion state.
+
+Each group header's data context is a `TableViewGroupInfo`. Bind to `KeyText` and `ItemCountText`
+for culture-formatted text, or to `Key`, `ItemCount`, and `IsExpanded` for the raw values.
+
+Because one source is retained and reshaped in place, turning grouping on and off is just another
+call on the same source. Bind the source once, then switch shape at runtime:
+
+```csharp
+if (groupingEnabled)
+{
+    source.GroupBy(item => ((Person)item).Department);
+}
+else
+{
+    source.ClearGroupBy();
+}
+```
+
+#### Group by a reference-type key
+
+`GroupBy` derives a stable identity for each group key so that groups keep their expansion state
+across a reshape. Value-type keys (`String`, `Int32`, `Int64`, `Guid`, `Boolean`, and enums) supply
+that identity automatically. A reference-type key has no built-in identity, so use the second
+`GroupBy` overload to provide one:
+
+```csharp
+source.GroupBy(
+    item => ((Person)item).Manager,
+    key => ((Employee)key).Email);
+```
+
+The first selector produces the group key, and the second produces a stable string identity for that
+key. Passing `null` for the identity selector selects the built-in value-type identity.
+
+### Resize columns
+
+Column resizing is enabled by default. Set `CanUserResizeColumns` to `false` to disable it for the
+whole table. Set `CanResize` to `false` to keep a specific column fixed.
+
+```csharp
+Table.CanUserResizeColumns = true;
+nameColumn.CanResize = true;
+scoreColumn.CanResize = false;
+```
+
+Users can drag the resize affordance at the end of a column header. A focused, resizable header can
+also be resized with the Left and Right arrow keys. Shift uses a larger keyboard step.
+
+Resizing sets the column to a pixel width. If a resize gesture is canceled, the original authored
+`GridLength` is restored, including Auto or Star.
+
+### Provide cell tooltips
+
+`CellToolTipRequested` lets an application supply tooltip content for each realized cell. The
+event is opt-in. When no handler is attached, TableView performs no per-cell tooltip work.
+
+```csharp
+private void OnCellToolTipRequested(
+    TableView sender,
+    TableViewCellToolTipRequestedEventArgs args)
+{
+    if (args.Item is Person person && args.Column == nameColumn)
+    {
+        args.Content = person.Name;
+    }
+}
+```
+
+`Content` can be text, a UI element, or a configured `ToolTip`. Set `ToolTipHelpText` when non-text
+content needs a text equivalent for assistive technology.
+
+Call `InvalidateCellToolTips()` when tooltip data changes independently of the row item or columns.
+The control then requests tooltip content again for realized cells.
 
 # API Pages
 
 ## TableView class
 
-Represents a preview tabular control. It is display-only by default; cell editing is opt-in via `IsReadOnly`.
+Represents a virtualized tabular control that displays items as rows and developer-defined columns
+as cells.
 
-`TableView` derives from `Microsoft.UI.Xaml.Controls.Control` and has `Columns` as its content property.
+`TableView` derives from `Microsoft.UI.Xaml.Controls.Control`. `Columns` is its content property.
 
-Template parts:
+### TableView data and presentation properties
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `ItemsSource` | `Object` | `null` | The row source. A supported collection or `TableViewSource` can be assigned. |
+| `Columns` | `IVector<TableViewColumn>` | Empty | The columns displayed by the table. |
+| `HeadersVisibility` | `TableViewHeadersVisibility` | `Column` | Controls whether the column-header band is visible. |
+| `GridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls horizontal and vertical grid lines. |
+| `Density` | `TableViewDensity` | `Standard` | Controls built-in row height and cell padding. |
+| `RowBackground` | `Brush` | `null` | The background used for rows. |
+| `AlternatingRowBackground` | `Brush` | `null` | The background used for alternating rows. |
+| `EmptyTemplate` | `DataTemplate` | `null` | Content shown when there are no rows. |
+| `GroupHeaderTemplate` | `DataTemplate` | `null` | Content shown inside each group-header container. |
+
+### TableView editing properties
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `IsReadOnly` | `Boolean` | `true` | Disables editing for the whole table when `true`. |
+| `IsEditing` | `Boolean` | `false` | Reports whether a cell editor is active. Read-only. |
+
+### TableView selection properties
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `SelectionMode` | `TableViewSelectionMode` | `Single` | Enables single row selection or disables selection. |
+| `SelectedItem` | `Object` | `null` | The selected data item. Read-only. |
+| `SelectedIndex` | `Int32` | `-1` | The selected row index, or `-1`. Read-only. |
+
+### TableView sorting and resizing properties
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `CanUserSortColumns` | `Boolean` | `true` | Enables header-driven sorting. Programmatic sorting remains available when `false`. |
+| `CanUserResizeColumns` | `Boolean` | `true` | Enables pointer and keyboard column resizing. |
+
+### TableView methods
+
+| Method | Returns | Description |
+|---|---|---|
+| `CommitEdit()` | `Boolean` | Commits and closes the active cell editor. |
+| `CancelEdit()` | `Boolean` | Cancels and closes the active cell editor. |
+| `Select(Int32 index)` | `void` | Selects the row at `index`. A negative index clears selection. |
+| `Deselect(Int32 index)` | `void` | Deselects the row when it is currently selected. |
+| `IsSelected(Int32 index)` | `Boolean` | Returns whether the row is selected. |
+| `DeselectAll()` | `void` | Clears selection. |
+| `SortByColumn(TableViewColumn column, SortDirection direction)` | `Boolean` | Applies the requested single-column sort. |
+| `ToggleSortDirection(TableViewColumn column)` | `Boolean` | Advances the column through `SortCycle`. |
+| `ClearSort()` | `Boolean` | Clears the active sort. |
+| `ExpandAllGroups()` | `void` | Expands every group. |
+| `CollapseAllGroups()` | `void` | Collapses every group. |
+| `InvalidateCellToolTips()` | `void` | Requests tooltip content again for realized cells. |
+
+### TableView events
+
+| Event | Event arguments | Description |
+|---|---|---|
+| `BeginningEdit` | `TableViewBeginningEditEventArgs` | Raised before a cell editor opens. |
+| `CellEditEnding` | `TableViewCellEditEndingEventArgs` | Raised before a cell editor commits or cancels. |
+| `SelectionChanged` | `SelectionChangedEventArgs` | Raised after the selected item changes. |
+| `Sorting` | `TableViewSortingEventArgs` | Raised before TableView applies a sort. Cancel it to own the ordering. |
+| `Sorted` | `TableViewSortedEventArgs` | Raised after sort state has been applied. |
+| `CellToolTipRequested` | `TableViewCellToolTipRequestedEventArgs` | Requests tooltip content for a realized cell. |
+
+### TableView template parts
 
 | Part | Type | Description |
 |---|---|---|
-| `PART_HeaderRow` | FrameworkElement | Header row root. |
-| `PART_HeaderHost` | `Panel` | Host for column header elements. |
-| `PART_RowsRepeater` | `ItemsRepeater` | Repeater that displays rows. |
-| `PART_EmptyStatePresenter` | `ContentControl` | Optional presenter for `EmptyTemplate`. |
-
-### Example Usage
-
-```xaml
-<tabular:TableView
-    x:Name="PeopleTable"
-    ItemsSource="{x:Bind People}"
-    HeadersVisibility="Column"
-    GridLinesVisibility="All"
-    Density="Standard"
-    IsReadOnly="True">
-    <tabular:TableView.Columns>
-        <tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}" />
-        <tabular:TableViewTextColumn Header="Role" Binding="{Binding Role}" />
-        <tabular:TableViewTextColumn Header="Location" Binding="{Binding Location}" />
-    </tabular:TableView.Columns>
-</tabular:TableView>
-```
-
-## TableView properties
-
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `ItemsSource` | `Object` | `null` | Source collection for table rows. |
-| `Columns` | `IVector<TableViewColumn>` | Empty vector | Developer-defined column collection. This is the content property. |
-| `HeadersVisibility` | `TableViewHeadersVisibility` | `Column` | Controls column-header visibility. |
-| `GridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls horizontal and vertical gridlines. |
-| `Density` | `TableViewDensity` | `Standard` | Controls row/cell spacing. |
-| `RowBackground` | `Brush` | `null` | Background brush for rows. |
-| `AlternatingRowBackground` | `Brush` | `null` | Optional alternating row background for banding. |
-| `EmptyTemplate` | `DataTemplate` | `null` | Template displayed when there are no rows. |
-| `IsReadOnly` | `Boolean` | `true` | Gates editing for the whole control. Editing is opt-in: while `true`, user gestures do not open an editor regardless of per-column `IsReadOnly`. Setting it to `true` while a cell is open closes that edit. |
-| `IsEditing` | `Boolean` | `false` | `true` while a cell editor is open, through the matching commit/cancel close. Read-only. |
-| `SelectionMode` | `TableViewSelectionMode` | `Single` | Gates row selection for the whole control. Selection is on by default, matching `ItemsView`, `ListView` and WPF's `DataGrid`; set `None` for a display-only table, which also clears any selection. |
-| `SelectedItem` | `Object` | `null` | The selected data item. **Read-only** — drive selection through `Select`/`Deselect`/`DeselectAll`. |
-| `SelectedIndex` | `Int32` | `-1` | The selected item's index in the `ItemsSource` index space; `-1` is "nothing selected". **Read-only.** |
-
-`SelectedItem` and `SelectedIndex` are two read-only views of the same state and are always coherent. Both are dependency properties, so they can be bound *from* — `{x:Bind Table.SelectedItem.Name, Mode=OneWay}` — but not written. This matches `ItemsView`, whose `SelectedItem` and `CurrentItemIndex` are likewise get-only, and diverges from `Selector`/`ListView`, whose settable properties require a deferral-and-coercion layer to survive markup ordering and two-way bindings. Apps that need to drive selection from a view model do so through `Select(index)`. Selection is independent of editing: opening or closing an edit never changes what is selected.
-
-Selection follows the **item**, not the index. Inserting a row above the selected one keeps the same item selected (its `SelectedIndex` shifts, with no `SelectionChanged`); removing the selected item clears the selection instead of selecting whatever slid into that slot. Replacing `ItemsSource` outright always clears the selection, even if the new source contains the same item.
-
-A selection requested before it can be resolved is **not** queued: `Select(index)` called before `ItemsSource` is set, or while `SelectionMode` is `None`, is a no-op — matching `ItemsView`, whose `Select` is a straight pass-through to `SelectionModel`, and matching this control's own pointer and keyboard paths, which have always ignored a gesture while selection is off. Unlike markup, the caller controls ordering here, so a request that fired later when the mode or source changed would surprise more than it would help.
-
-The one thing that *is* held is the live selection across an unload/reload cycle: unload drains the repeater's `ItemsSource` to release cache work on a detached subtree, and re-sourcing on load hands `SelectionModel` a new view, which clears it. The selected item is stashed and re-selected by identity on reload. `ItemsView` needs no equivalent because it never drains its repeater on unload.
-
-An item that *is* resolvable but is not in `ItemsSource` has no index, so it clears the selection — matching `ListView`.
-
-The current cell is the navigation position and is deliberately independent of editability: a read-only column is still a valid current cell. Editing starts only from user gestures: double-click/double-tap a cell, or press `F2` on the current cell.
-
-## TableView editing methods
-
-| Method | Returns | Description |
-|---|---|---|
-| `CommitEdit()` | `Boolean` | Closes the open **cell** edit, writing the value back. Returns `false` if there is no open edit, a handler vetoed the close, validation rejected the value, or the column could not write the value. |
-| `CancelEdit()` | `Boolean` | Closes the open **cell** edit, discarding the editor so the display cell re-reads the unchanged source. Returns `false` if there is no open edit or a handler vetoed the close. |
-
-## TableView editing events
-
-| Event | Args | Description |
-|---|---|---|
-| `BeginningEdit` | `TableViewBeginningEditEventArgs` | Raised before an edit opens. Set `Cancel` to `true` to prevent it. |
-| `CellEditEnding` | `TableViewCellEditEndingEventArgs` | Raised before a cell edit closes. Vetoable via `Cancel`; the handler must decide before returning. |
-
-`CellEditEnding` is raised synchronously. The control reads `Cancel` immediately after the handler returns, so validation or save decisions must be complete before returning from the handler.
-
-## TableView selection methods
-
-All mutators resolve immediately when selection is on and a source exists; otherwise they are a no-op — `Select` never clears an existing selection to signal rejection. The only state carried across time is the live selection stashed over an unload/reload cycle, which `DeselectAll` and `SelectionMode = None` both discard.
-
-Named to match `ItemsView`, which ships `Select` / `Deselect` / `IsSelected` over an item index. Identity-based overloads are deliberately absent, matching `ItemsView`.
-
-| Method | Returns | Description |
-|---|---|---|
-| `Select(Int32 index)` | `void` | Selects the item at `index`. A negative index clears the selection. |
-| `Deselect(Int32 index)` | `void` | Clears the selection only when `index` is the selected index, so a stale call cannot clobber a newer selection. |
-| `IsSelected(Int32 index)` | `Boolean` | Whether `index` is the selected index. |
-| `DeselectAll()` | `void` | Clears the selection. Works regardless of `SelectionMode`, so turning selection off can always be made to stick. |
-
-## TableView selection events
-
-| Event | Args | Description |
-|---|---|---|
-| `SelectionChanged` | `SelectionChangedEventArgs` | Raised after the selection has settled. Reading `SelectedItem`, `SelectedIndex`, or a row's `IsSelected` inside the handler observes the new state. Replacing a selection raises **one** event carrying both the removed and the added item. |
-
-Selection is raised only for real changes: a re-select of the already-selected row, or an index shift caused by a collection reshape, does not raise `SelectionChanged`.
-
-### Selection gestures
-
-| Gesture | Behaviour |
-|---|---|
-| Pointer | Selects on **release**, for every pointer type — touch included, which reports no pressed button and so is admitted on device type rather than button state — matching `ListViewBaseItem` — which starts only timers and visuals on press and routes the actual selection through the tap interaction on release. Committing on press would select the row a touch pan started on, and would select on a press the user drags away from and cancels. The event is left **unhandled** so a begin-edit gesture on the same press still runs. |
-| <kbd>Up</kbd>/<kbd>Down</kbd>/<kbd>Home</kbd>/<kbd>End</kbd>/<kbd>PageUp</kbd>/<kbd>PageDown</kbd> | Selection follows the keyboard cursor. This matches `ListView`'s default, where `SingleSelectionFollowsFocus` is `true`. When focus is not on a row (the user clicked a header, or tabbed away and back), <kbd>Up</kbd>/<kbd>Down</kbd> resume from the **selected** row rather than restarting at the top. |
-| <kbd>Space</kbd> | Selects the focused row without moving. Only when the row itself has focus — a <kbd>Space</kbd> inside a cell's interactive content belongs to that control. |
-| <kbd>Ctrl</kbd> + click, <kbd>Ctrl</kbd> + <kbd>Space</kbd> | Toggles: selects an unselected row, and **deselects the selected one**. Matches `SingleSelector` and `ListViewBase` single-selection behaviour, and is the only gesture that can clear a selection — without it the app would have to call `DeselectAll`. |
-| <kbd>Ctrl</kbd> + navigation key | Moves the focus cursor **without** changing the selection, matching `ListViewBase`. This is how a keyboard or screen-reader user reviews other rows and returns without disturbing the selection. |
-
-Selection is suppressed while a cell edit is open, because row navigation is: an open editor owns its keys.
-
-### Known limitations
-
-These are understood and deliberately not addressed by single selection:
-
-- **Pointer selection is not blocked during an open edit.** Keyboard navigation is suppressed while editing, but clicking another row moves `SelectedItem` and the highlight immediately. If the resulting commit is then vetoed by validation, the editor stays open on the previous row while the selection has already moved. Whether selection should be blocked, deferred, or allowed to diverge from the edit target is an open decision.
-- **The selection indicator scrolls with the row.** `PART_SelectionIndicator` lives inside the horizontally scrolling row content, so the accent strip scrolls off the leading edge. `TreeViewItem` and `ItemContainer` pin theirs to the container; doing the same here likely means reusing the frozen-column offset mechanism.
-- **A `TableViewTemplateColumn` whose `CellTemplate` sets an explicit `Foreground` overrides the selected foreground.** `PART_CellForegroundPresenter` only reaches cells that *inherit* `Foreground`. `TableViewTextColumn` correctly sets none; template columns are free to, and in High Contrast that renders app-chosen text over `SystemColorHighlightColor`. Template columns should leave `Foreground` unset unless they take responsibility for the selected and High Contrast cases.
-- **The in-file brush fallbacks cannot vary the selection indicator by theme.** `CommonStyles/TabularSurfaces_themeresources.xaml` is the canonical source and maps the indicator to `SystemColorHighlightColor` in High Contrast. The last-resort fallbacks in `TableView.xaml` are a flat dictionary, so the indicator stays `SystemAccentColor` there — a host that does not merge the shared dictionary gets an accent-coloured indicator in High Contrast. The row fills and foregrounds are unaffected: they use `{ThemeResource}` colours that do resolve per theme.
-- **Reconciliation order is load-bearing.** Row chrome is restamped from `ItemsSourceView.CollectionChanged`, which is correct only because `SelectionModel` is handed the repeater's *shared* `ItemsSourceView` and is subscribed ahead of the control. Handing the model a raw source, or reordering those two calls in `ResolveSelectionAfterSourceChange`, silently reintroduces stale-index stamping — and an insert above the selection raises no event to correct it. This is deliberately different from `ItemsView`, which hands the model a raw source and repairs the resulting race afterwards with a dispatcher hop; the ordering here is structural instead.
-- **Adding `Multiple`/`Extended` is not purely additive.** The enum values are appended and the event args already carry both vectors, so the shapes that are expensive to reverse are settled. But `SelectedItems` is deliberately **not** exposed in this release — it would be redundant with `SelectedItem` while at most one row can be selected, and `SelectionModel`'s view leaves `IndexOf` and `GetMany` unimplemented, so `Contains`, `ToList` and `ToArray` throw. It should be added with `Multiple`, where it becomes the only way to read the whole selection and those sharp edges are worth the capability. The gesture layer also routes through `SelectRowIndexFromInteraction(index, toggle)`, which carries no anchor or range state, and `ApplySelection` encodes single-selection semantics; multi-selection needs modifier state threaded through those entry points and an anchor model, closer to `ItemsView`'s `SelectorBase` strategy split.
+| `PART_HeaderRow` | `FrameworkElement` | Root of the column-header band. |
+| `PART_HeaderHost` | `Panel` | Receives the generated column-header elements. |
+| `PART_RowsRepeater` | `ItemsRepeater` | Hosts virtualized row containers. |
+| `PART_EmptyStatePresenter` | `ContentControl` | Hosts `EmptyTemplate`. Optional. |
 
 ## TableViewColumn class
 
-Base class for TableView columns.
-
-`TableViewColumn` derives from `Microsoft.UI.Xaml.DependencyObject` and has `Header` as its content property.
-
-`Width` accepts `Pixel`/`Auto`/`*` (`GridLength`) for forward-compatibility; in v1 only explicit pixel widths are realized — `Auto` and `*` fall back to the default column width. True Auto/Star sizing is deferred.
+Represents the base class for a TableView column. It derives from `DependencyObject` and uses
+`Header` as its content property.
 
 | Property | Type | Default | Description |
 |---|---|---|---|
-| `Header` | `Object` | `null` | Header content for the column. |
-| `HeaderTemplate` | `DataTemplate` | `null` | Template used to display the header. |
-| `HeaderTemplateSelector` | `DataTemplateSelector` | `null` | Template selector used to display the header; takes precedence over `HeaderTemplate` when both are set. |
-| `Width` | `GridLength` | Default column width | Accepts `Pixel`/`Auto`/`*` (`GridLength`) for forward-compatibility; in v1 only explicit pixel widths are realized — `Auto` and `*` fall back to the default column width. True Auto/Star sizing is deferred. |
-| `MinWidth` | `Double` | `20` | Minimum column width. |
-| `MaxWidth` | `Double` | Infinity | Maximum column width. |
-| `ActualWidth` | `Double` | `120` | Read-only realized width. |
-| `FrozenEdge` | `TableViewFrozenEdge` | `None` | Pins only when the column is in the contiguous leading prefix. Later `Leading` columns are ignored; `Trailing` is reserved. |
-| `Visibility` | `Visibility` | `Visible` | Column visibility. |
-
-Methods:
+| `Header` | `Object` | `null` | The column-header content. |
+| `HeaderTemplate` | `DataTemplate` | `null` | The template used to display the header. |
+| `HeaderTemplateSelector` | `DataTemplateSelector` | `null` | Selects the header template. Takes precedence over `HeaderTemplate`. |
+| `Width` | `GridLength` | `120` pixels | The authored Pixel, Auto, or Star width. |
+| `MinWidth` | `Double` | `20` | The minimum resolved width. |
+| `MaxWidth` | `Double` | Positive infinity | The maximum resolved width. |
+| `ActualWidth` | `Double` | `120` | The resolved width. Read-only. |
+| `FrozenEdge` | `TableViewFrozenEdge` | `None` | Freezes the column at a supported table edge. |
+| `Visibility` | `Visibility` | `Visible` | Shows or hides the column. |
+| `IsReadOnly` | `Boolean` | `false` | Prevents editing this column. |
+| `CellEditingTemplate` | `DataTemplate` | `null` | Provides the cell editor. |
+| `CanSort` | `Boolean` | `true` | Enables header-driven sorting for this column. |
+| `SortMemberPath` | `String` | Empty | The row-item property used as the sort key. |
+| `CustomSortComparer` | `ITableViewSortComparer` | `null` | Provides custom item ordering. Takes precedence over `SortMemberPath`. |
+| `SortDirection` | `SortDirection` | `None` | Reports this column's active sort direction. Read-only. |
+| `SortCycle` | `TableViewSortCycle` | `AscendingDescending` | The direction sequence repeated header clicks walk for this column. |
+| `CanResize` | `Boolean` | `true` | Enables user resizing for this column. |
 
 | Method | Description |
 |---|---|
-| `GenerateElement(Object dataItem)` | Generates the cell element for a data item. |
-| `GenerateElementCore(Object dataItem)` | Overridable method used by derived column types to create cell content. |
-| `IsReadOnly` (`Boolean`, default `false`) | Per-column opt-out. A read-only column is still a valid current cell for keyboard navigation, but cannot be edited. |
-| `CellEditingTemplate` (`DataTemplate`, default `null`) | Editing visual for any column type. A column with neither a `CellEditingTemplate` nor a built-in editor is not editable. |
+| `GenerateElement(Object dataItem)` | Creates the display element for a cell. |
+| `GenerateElementCore(Object dataItem)` | Overridable display-element factory for derived columns. |
+| `GetSortMemberPathCore()` | Returns the effective sort member path. |
 
 ## TableViewTextColumn class
 
-A column that generates a data-bound `TextBlock` for each cell, and a `TextBox` when the cell is edited.
+Represents a column that displays bound text and provides a built-in text editor.
 
 `TableViewTextColumn` derives from `TableViewColumn`.
 
-| Member | Type | Description |
+| Property | Type | Description |
 |---|---|---|
-| `Binding` | `Microsoft.UI.Xaml.Data.Binding` | CLR property used to bind generated cell text. This is not a dependency property. |
+| `Binding` | `Microsoft.UI.Xaml.Data.Binding` | The binding applied to the generated `TextBlock` and text editor. This is a CLR property, not a dependency property. |
 
-The editing `TextBox` reuses the column's `Binding` — its `Path`, `Converter`, `ConverterParameter`, `ConverterLanguage`, `TargetNullValue`, `FallbackValue` and source selector are all carried across — but forces `Mode=TwoWay` (a one-way display binding could never write back) and `UpdateSourceTrigger=Explicit`. `Explicit` is what lets the control decide *when* the value lands on the item, so a cancel can discard the editor without mutating the source and a validation failure can hold the edit open; with `PropertyChanged`, every keystroke would already have mutated the item.
-
-The property the column edits is derived from `Binding.Path`, and only for bindings against the row data item: when the binding names an explicit `Source`, `ElementName` or `RelativeSource`, the path is relative to *that* object, so the column reports nothing rather than let the control snapshot and validate the wrong one. A column is never asked to author this path separately — it already knows what it is bound to, and the public "which field is this column about?" concept is the base column's `SortMemberPath`.
-
-Setting `CellEditingTemplate` on a text column replaces the generated `TextBox` entirely, so an app can supply a different editor without subclassing. The built-in text editor selects all text when editing starts, so the first keystroke replaces the value.
-
-Example:
-
-```xaml
-<tabular:TableViewTextColumn
-    Header="Name"
-    Binding="{Binding Name}" />
-```
+When `SortMemberPath` is empty, `GetSortMemberPathCore()` returns `Binding.Path.Path`.
 
 ## TableViewTemplateColumn class
 
-A column that uses a consumer-provided `DataTemplate` for cell content.
+Represents a column whose display content is provided by a data template.
 
 `TableViewTemplateColumn` derives from `TableViewColumn`.
 
 | Property | Type | Default | Description |
 |---|---|---|---|
-| `CellTemplate` | `DataTemplate` | `null` | Template used to display each cell. If null, the generated cell is empty. |
+| `CellTemplate` | `DataTemplate` | `null` | Creates the display content for each cell. |
 
-`CellEditingTemplate` is inherited from `TableViewColumn` — it is not specific to template columns. A template column with no `CellEditingTemplate` is not editable: there is no single value to infer an editor from, and falling back to `CellTemplate` would open an "editor" that silently discards every change.
+`CellEditingTemplate` is inherited from `TableViewColumn`.
 
-The editable value inside a `CellEditingTemplate` should use classic `{Binding}`, not `{x:Bind}`. The base commit discovers editor bindings with `GetBindingExpression`, and compiled `{x:Bind}` bindings are not discoverable that way.
+## TableViewSource class
 
-Example:
+Represents a shapeable view over an existing items collection.
 
-```xaml
-<tabular:TableViewTemplateColumn Header="Status">
-    <tabular:TableViewTemplateColumn.CellTemplate>
-        <DataTemplate x:DataType="local:Order">
-            <TextBlock Text="{x:Bind Status}" />
-        </DataTemplate>
-    </tabular:TableViewTemplateColumn.CellTemplate>
-    <tabular:TableViewTemplateColumn.CellEditingTemplate>
-        <DataTemplate x:DataType="local:Order">
-            <ComboBox ItemsSource="{x:Bind StatusChoices}"
-                      SelectedItem="{Binding Status, Mode=TwoWay}" />
-        </DataTemplate>
-    </tabular:TableViewTemplateColumn.CellEditingTemplate>
-</tabular:TableViewTemplateColumn>
-```
+Create a source with `TableViewSource.From(items)`. Assign the returned object directly to
+`TableView.ItemsSource`.
+
+| Member | Returns | Description |
+|---|---|---|
+| `From(Object items)` | `TableViewSource` | Creates a source over a supported collection. |
+| `Filter(TableViewPredicate predicate)` | `TableViewSource` | Replaces the active filter. |
+| `ClearFilter()` | `TableViewSource` | Removes the active filter. |
+| `Sort(TableViewKeySelector key, SortDirection direction)` | `TableViewSource` | Adds or replaces a sort axis. `SortDirection.None` removes that key's axis. |
+| `ClearSort()` | `TableViewSource` | Removes all sort axes. |
+| `GroupBy(TableViewKeySelector key)` | `TableViewSource` | Groups rows by the selected key. |
+| `GroupBy(TableViewKeySelector key, TableViewIdentitySelector groupIdentitySelector)` | `TableViewSource` | Groups rows and supplies a stable string identity for each group key. `groupIdentitySelector` is optional; passing `null` selects the built-in value-type group identity. |
+| `ClearGroupBy()` | `TableViewSource` | Removes grouping. |
+
+`TableViewSource` is UI-thread affine. Call its shaping methods from the UI thread. Source
+collection notifications can be marshaled to the UI thread by the implementation.
+
+A null source, predicate, or selector is invalid and produces `E_INVALIDARG`.
+
+Rows use object identity. Two different item objects with identical property values remain two
+different rows. This allows sorting, filtering, grouping, selection, and editing to work with
+duplicate-looking data.
+
+## TableViewGroupInfo class
+
+Provides the data context for a group header.
+
+| Property | Type | Description |
+|---|---|---|
+| `Key` | `Object` | The value produced by the group key selector. |
+| `ItemCount` | `Int32` | The number of data rows in the group. |
+| `Level` | `Int32` | The group level. This release uses level 0. |
+| `IsExpandable` | `Boolean` | Whether the group can be expanded or collapsed. |
+| `IsExpanded` | `Boolean` | Whether the group is expanded. |
+| `KeyText` | `String` | Culture-formatted text for `Key`. |
+| `ItemCountText` | `String` | Culture-formatted text for `ItemCount`. |
+
+`TableViewGroupInfo` implements `INotifyPropertyChanged`.
+
+## TableViewGroupHeader class
+
+Represents a generated group-header container. It derives from `ContentControl`.
+
+| Property | Type | Description |
+|---|---|---|
+| `IsExpanded` | `Boolean` | Gets or sets the expansion state. |
+| `IsExpandable` | `Boolean` | Gets or sets whether expansion is available. |
+
+| Event | Description |
+|---|---|
+| `ToggleRequested` | Raised when the user requests an expansion-state change. |
+
+The default template provides the expander chrome. `TableView.GroupHeaderTemplate` supplies only
+the content displayed beside that chrome.
 
 ## TableViewRow class
 
-Represents a generated row in a TableView.
-
-`TableViewRow` derives from `Microsoft.UI.Xaml.Controls.Control`.
-
-Template parts:
-
-| Part | Type | Description |
-|---|---|---|
-| `PART_RootBorder` | `Border` | Row root border. Its `Background` is driven by `CommonStates`. |
-| `PART_CellsHost` | `Panel` | Host for generated cell elements. |
-| `PART_SelectionIndicator` | `UIElement` | **Required.** Leading-edge accent strip; `Opacity` is animated `0 → 1` by the `Selected*` states, which target it by name — a re-template that omits it fails when a row is first selected, not at parse time. |
-
-Visual states:
-
-| Group | States |
-|---|---|
-| `CommonStates` | `Normal`, `PointerOver`, `Pressed`, `Disabled`, `Selected`, `SelectedPointerOver`, `SelectedPressed`, `SelectedDisabled` |
-
-Selected states share the one group rather than living in a second, overlapping one: they animate the same `PART_RootBorder.Background`, so two groups would make the result depend on `GoToState` call order. Encoding both dimensions in the state name is the pattern `TreeViewItem` and `ItemContainer` use.
-
-Properties:
+Represents a realized data-row container. It derives from `Control`.
 
 | Property | Type | Default | Description |
 |---|---|---|---|
-| `IsSelected` | `Boolean` | `false` | Whether the row is the selected row. Read-only: selection is owned by the `TableView`, so a row cannot select itself — apps go through `Select(Int32)` / `Deselect(Int32)` / `DeselectAll()`. Rows are recycled, so this is always re-derived. |
+| `IsSelected` | `Boolean` | `false` | Reports whether the row is selected. Read-only. |
 
-## Enums
+### TableViewRow template parts
+
+| Part | Type | Description |
+|---|---|---|
+| `PART_RootBorder` | `Border` | Draws row chrome and state backgrounds. |
+| `PART_CellsHost` | `Panel` | Hosts the generated cells. |
+| `PART_CellForegroundPresenter` | `ContentPresenter` | Applies selected-state foreground to inheriting cell content. |
+| `PART_SelectionIndicator` | `UIElement` | Draws the selected-row indicator. |
+
+## Event argument classes
+
+| Type | Members |
+|---|---|
+| `TableViewBeginningEditEventArgs` | `Item`, `Column`, `Cancel` |
+| `TableViewCellEditEndingEventArgs` | `Item`, `Column`, `EditAction`, `Cancel` |
+| `TableViewSortingEventArgs` | `Column`, `Direction`, `Cancel` |
+| `TableViewSortedEventArgs` | `Column`, `Direction` |
+| `TableViewCellToolTipRequestedEventArgs` | `Item`, `Column`, `Content`, `ToolTipHelpText` |
+| `TableViewGroupHeaderToggleRequestedEventArgs` | `GroupKey` |
+
+## Enum types
 
 ### TableViewFrozenEdge
 
 | Value | Numeric value | Description |
 |---|---:|---|
-| `None` | 0 | Column is not frozen. |
-| `Leading` | 1 | Column is pinned to the leading edge. Implemented in v1. |
-| `Trailing` | 2 | Reserved for future trailing-edge pinning. |
+| `None` | 0 | The column scrolls normally. |
+| `Leading` | 1 | The column is frozen at the leading edge. |
+| `Trailing` | 2 | Reserved for trailing-edge freezing. |
 
 ### TableViewHeadersVisibility
 
-Flags enum mirroring the `None`/`Column` slots of WPF `DataGridHeadersVisibility`. Row headers are out of scope, so `Row`/`All` (WPF values 2/3) are intentionally not defined.
-
 | Value | Numeric value | Description |
 |---|---:|---|
-| `None` | 0 | No headers. |
-| `Column` | 1 | Column-header strip. |
+| `None` | 0 | Hides column headers. |
+| `Column` | 1 | Shows column headers. |
 
 ### TableViewGridLinesVisibility
 
-Mirrors WPF `DataGridGridLinesVisibility` values exactly.
-
 | Value | Numeric value | Description |
 |---|---:|---|
-| `All` | 0 | Show horizontal and vertical gridlines. |
-| `Horizontal` | 1 | Show horizontal gridlines. |
-| `None` | 2 | Show no gridlines. |
-| `Vertical` | 3 | Show vertical gridlines. |
+| `All` | 0 | Shows horizontal and vertical grid lines. |
+| `Horizontal` | 1 | Shows horizontal grid lines. |
+| `None` | 2 | Hides all grid lines. |
+| `Vertical` | 3 | Shows vertical grid lines. |
 
 ### TableViewDensity
 
 | Value | Numeric value | Description |
 |---|---:|---|
-| `Compact` | 0 | Compact spacing. |
-| `Standard` | 1 | Standard spacing. |
-| `Comfortable` | 2 | Comfortable spacing. |
+| `Compact` | 0 | Uses compact row height and padding. |
+| `Standard` | 1 | Uses standard row height and padding. |
+| `Comfortable` | 2 | Uses comfortable row height and padding. |
 
 ### TableViewSelectionMode
 
-Only `None` and `Single` exist in this release: `Multiple`/`Extended` need an anchor, a range model and Ctrl/Shift gesture handling, none of which single selection implies. New members are appended, so these numeric values stay stable when they arrive.
-
 | Value | Numeric value | Description |
 |---|---:|---|
-| `None` | 0 | Selection is off; a display-only table. |
-| `Single` | 1 | At most one row is selected. **The default.** |
+| `None` | 0 | Disables selection. |
+| `Single` | 1 | Allows one selected row. |
 
 ### TableViewEditAction
 
-How an edit is being closed.
+| Value | Numeric value | Description |
+|---|---:|---|
+| `Commit` | 0 | The edit is closing by committing its value. |
+| `Cancel` | 1 | The edit is closing without committing its value. |
+
+### TableViewSortCycle
 
 | Value | Numeric value | Description |
 |---|---:|---|
-| `Commit` | 0 | The edited value is being written to the source. |
-| `Cancel` | 1 | The edit is being cancelled and the editor is discarded. |
+| `AscendingDescending` | 0 | Cycles between ascending and descending. |
+| `AscendingDescendingNone` | 1 | Adds an unsorted state to the cycle. |
 
-## Editing event args
+### SortDirection
 
-| Type | Members |
+| Value | Numeric value | Description |
+|---|---:|---|
+| `None` | 0 | No sort is applied. |
+| `Ascending` | 1 | Values are ordered from lower to higher. |
+| `Descending` | 2 | Values are ordered from higher to lower. |
+
+## Automation peer classes
+
+| Peer | Supported provider interfaces |
 |---|---|
-| `TableViewBeginningEditEventArgs` | `Item`, `Column` (read-only); `Cancel` (settable) |
-| `TableViewCellEditEndingEventArgs` | `Item`, `Column`, `EditAction` (read-only); `Cancel` (settable) |
-
-## Selection event args
-
-| Type | Members |
-|---|---|
-| `Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs` | `AddedItems`, `RemovedItems` (`IVector<Object>`) |
-
-TableView reuses the **platform** `SelectionChangedEventArgs` rather than defining its own, so a handler can be shared with `ListView`/`ListBox`. Both vectors are snapshots built when the event is raised.
-
-## Automation peers (TableView/Row/Cell/ColumnHeader)
-
-TableView provides UI Automation peers for grid/table accessibility, cell value access, and row selection.
-
-| Peer | Base type | Provider interfaces |
-|---|---|---|
-| `TableViewAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionProvider`, `IGridProvider`, `ITableProvider`, `IItemContainerProvider` |
-| `TableViewRowAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionItemProvider` |
-| `TableViewColumnHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | (none) |
-| `TableViewCellAutomationPeer` | `FrameworkElementAutomationPeer` | `IGridItemProvider`, `ITableItemProvider`, `IValueProvider` |
-
-These peers expose the table structure to assistive technologies. Cell peers also expose their value.
-
-`Selection`/`SelectionItem` are advertised only while `SelectionMode` allows selection — advertising them while it is `None` would tell an AT client the grid is selectable when every `Select()` would be refused. `CanSelectMultiple` is `false` and `IsSelectionRequired` is `false`. `GetSelection()` returns the selected row's provider when that row is realized; a selected row scrolled out of the realization window is reached through `IItemContainerProvider.FindItemByProperty`, which realizes it.
+| `TableViewAutomationPeer` | `ISelectionProvider`, `IGridProvider`, `ITableProvider`, `IItemContainerProvider` |
+| `TableViewRowAutomationPeer` | `ISelectionItemProvider` |
+| `TableViewColumnHeaderAutomationPeer` | `IInvokeProvider` |
+| `TableViewCellAutomationPeer` | `IGridItemProvider`, `ITableItemProvider`, `IValueProvider` |
+| `TableViewGroupHeaderAutomationPeer` | `IExpandCollapseProvider`, `IGridItemProvider` |
 
 # API Details
 
-```idl
+```c# (but really MIDL3)
 namespace Microsoft.UI.Xaml.Controls.Tabular
 {
-    [MUX_PREVIEW, webhosthidden]
     enum TableViewFrozenEdge
     {
         None = 0,
@@ -684,14 +906,13 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Trailing = 2,
     };
 
-    [MUX_PREVIEW, webhosthidden, flags]
+    [flags]
     enum TableViewHeadersVisibility
     {
         None = 0,
         Column = 1,
     };
 
-    [MUX_PREVIEW, webhosthidden]
     enum TableViewGridLinesVisibility
     {
         All = 0,
@@ -700,7 +921,6 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Vertical = 3,
     };
 
-    [MUX_PREVIEW, webhosthidden]
     enum TableViewDensity
     {
         Compact = 0,
@@ -708,38 +928,77 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Comfortable = 2,
     };
 
-    [MUX_PREVIEW, webhosthidden]
-    enum TableViewEditAction
-    {
-        Commit = 0,
-        Cancel = 1,
-    };
-
-    [MUX_PREVIEW, webhosthidden]
     enum TableViewSelectionMode
     {
         None = 0,
         Single = 1,
     };
 
-    [MUX_PREVIEW, webhosthidden]
+    enum TableViewEditAction
+    {
+        Commit = 0,
+        Cancel = 1,
+    };
+
+    enum TableViewSortCycle
+    {
+        AscendingDescending = 0,
+        AscendingDescendingNone = 1,
+    };
+
+    enum SortDirection
+    {
+        None = 0,
+        Ascending = 1,
+        Descending = 2,
+    };
+
+    delegate Boolean TableViewPredicate(Object item);
+    delegate Object TableViewKeySelector(Object item);
+    delegate String TableViewIdentitySelector(Object item);
+
+    interface ITableViewSortComparer
+    {
+        Int32 Compare(Object left, Object right);
+    };
+
     runtimeclass TableViewBeginningEditEventArgs
     {
         Object Item { get; };
-        Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn Column { get; };
+        TableViewColumn Column { get; };
         Boolean Cancel;
     };
 
-    [MUX_PREVIEW, webhosthidden]
     runtimeclass TableViewCellEditEndingEventArgs
     {
         Object Item { get; };
-        Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn Column { get; };
-        Microsoft.UI.Xaml.Controls.Tabular.TableViewEditAction EditAction { get; };
+        TableViewColumn Column { get; };
+        TableViewEditAction EditAction { get; };
         Boolean Cancel;
     };
 
-    [MUX_PREVIEW, webhosthidden, contentproperty("Header")]
+    runtimeclass TableViewSortingEventArgs
+    {
+        TableViewColumn Column { get; };
+        SortDirection Direction { get; };
+        Boolean Cancel;
+    };
+
+    runtimeclass TableViewSortedEventArgs
+    {
+        TableViewColumn Column { get; };
+        SortDirection Direction { get; };
+    };
+
+    runtimeclass TableViewCellToolTipRequestedEventArgs
+    {
+        Object Item { get; };
+        TableViewColumn Column { get; };
+        Object Content;
+        String ToolTipHelpText;
+    };
+
+    [contentproperty("Header")]
     unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     {
         TableViewColumn();
@@ -747,88 +1006,130 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Object Header;
         Microsoft.UI.Xaml.DataTemplate HeaderTemplate;
         Microsoft.UI.Xaml.Controls.DataTemplateSelector HeaderTemplateSelector;
+
         Microsoft.UI.Xaml.GridLength Width;
         Double MinWidth;
         Double MaxWidth;
         Double ActualWidth { get; };
-        Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge FrozenEdge;
-        Microsoft.UI.Xaml.Visibility Visibility;
 
-        Microsoft.UI.Xaml.FrameworkElement GenerateElement(Object dataItem);
-        overridable Microsoft.UI.Xaml.FrameworkElement GenerateElementCore(Object dataItem);
+        TableViewFrozenEdge FrozenEdge;
+        Microsoft.UI.Xaml.Visibility Visibility;
 
         Boolean IsReadOnly;
         Microsoft.UI.Xaml.DataTemplate CellEditingTemplate;
 
-        static Microsoft.UI.Xaml.DependencyProperty HeaderProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateSelectorProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty WidthProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty MinWidthProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty MaxWidthProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty ActualWidthProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty FrozenEdgeProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty VisibilityProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty CellEditingTemplateProperty { get; };
+        Boolean CanSort;
+        String SortMemberPath;
+        ITableViewSortComparer CustomSortComparer;
+        SortDirection SortDirection { get; };
+        TableViewSortCycle SortCycle;
+
+        Boolean CanResize;
+
+        Microsoft.UI.Xaml.FrameworkElement GenerateElement(Object dataItem);
+        overridable Microsoft.UI.Xaml.FrameworkElement GenerateElementCore(Object dataItem);
+        overridable String GetSortMemberPathCore();
     };
 
-    [MUX_PREVIEW, webhosthidden]
-    unsealed runtimeclass TableViewTextColumn : Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn
+    unsealed runtimeclass TableViewTextColumn : TableViewColumn
     {
         TableViewTextColumn();
-
         Microsoft.UI.Xaml.Data.Binding Binding;
     };
 
-    [MUX_PREVIEW, webhosthidden]
-    unsealed runtimeclass TableViewTemplateColumn : Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn
+    unsealed runtimeclass TableViewTemplateColumn : TableViewColumn
     {
         TableViewTemplateColumn();
-
         Microsoft.UI.Xaml.DataTemplate CellTemplate;
-
-        static Microsoft.UI.Xaml.DependencyProperty CellTemplateProperty { get; };
     };
 
-    [MUX_PREVIEW, webhosthidden]
-    unsealed runtimeclass TableViewRow : Microsoft.UI.Xaml.Controls.Control
+    runtimeclass TableViewSource
+    {
+        static TableViewSource From(Object items);
+
+        TableViewSource Filter(TableViewPredicate predicate);
+        TableViewSource ClearFilter();
+
+        TableViewSource Sort(
+            TableViewKeySelector key,
+            SortDirection direction);
+        TableViewSource ClearSort();
+
+        TableViewSource GroupBy(TableViewKeySelector key);
+        TableViewSource GroupBy(
+            TableViewKeySelector key,
+            TableViewIdentitySelector groupIdentitySelector);
+        TableViewSource ClearGroupBy();
+    };
+
+    runtimeclass TableViewGroupInfo :
+        Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+    {
+        Object Key { get; };
+        Int32 ItemCount { get; };
+        Int32 Level { get; };
+        Boolean IsExpandable { get; };
+        Boolean IsExpanded { get; };
+        String KeyText { get; };
+        String ItemCountText { get; };
+    };
+
+    runtimeclass TableViewGroupHeaderToggleRequestedEventArgs
+    {
+        Object GroupKey { get; };
+    };
+
+    unsealed runtimeclass TableViewGroupHeader :
+        Microsoft.UI.Xaml.Controls.ContentControl
+    {
+        TableViewGroupHeader();
+
+        Boolean IsExpanded;
+        Boolean IsExpandable;
+
+        event Windows.Foundation.TypedEventHandler<
+            TableViewGroupHeader,
+            TableViewGroupHeaderToggleRequestedEventArgs> ToggleRequested;
+    };
+
+    unsealed runtimeclass TableViewRow :
+        Microsoft.UI.Xaml.Controls.Control
     {
         TableViewRow();
-
         Boolean IsSelected { get; };
-
-        static Microsoft.UI.Xaml.DependencyProperty IsSelectedProperty { get; };
     };
 
-    [MUX_PREVIEW, webhosthidden, contentproperty("Columns")]
-    unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
+    [contentproperty("Columns")]
+    unsealed runtimeclass TableView :
+        Microsoft.UI.Xaml.Controls.Control
     {
         TableView();
 
         Object ItemsSource;
-        Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn> Columns { get; };
-        Microsoft.UI.Xaml.Controls.Tabular.TableViewHeadersVisibility HeadersVisibility;
-        Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility GridLinesVisibility;
+        Windows.Foundation.Collections.IVector<TableViewColumn> Columns { get; };
+
+        TableViewHeadersVisibility HeadersVisibility;
+        TableViewGridLinesVisibility GridLinesVisibility;
+        TableViewDensity Density;
         Microsoft.UI.Xaml.Media.Brush RowBackground;
         Microsoft.UI.Xaml.Media.Brush AlternatingRowBackground;
         Microsoft.UI.Xaml.DataTemplate EmptyTemplate;
-        Microsoft.UI.Xaml.Controls.Tabular.TableViewDensity Density;
+        Microsoft.UI.Xaml.DataTemplate GroupHeaderTemplate;
+
         Boolean IsReadOnly;
-
-        // ----- Editing -----
-
         Boolean IsEditing { get; };
-
         Boolean CommitEdit();
         Boolean CancelEdit();
 
-        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.Tabular.TableViewBeginningEditEventArgs> BeginningEdit;
-        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.Tabular.TableViewCellEditEndingEventArgs> CellEditEnding;
+        event Windows.Foundation.TypedEventHandler<
+            TableView,
+            TableViewBeginningEditEventArgs> BeginningEdit;
 
-        // ----- Selection -----
+        event Windows.Foundation.TypedEventHandler<
+            TableView,
+            TableViewCellEditEndingEventArgs> CellEditEnding;
 
-        Microsoft.UI.Xaml.Controls.Tabular.TableViewSelectionMode SelectionMode;
+        TableViewSelectionMode SelectionMode;
         Object SelectedItem { get; };
         Int32 SelectedIndex { get; };
 
@@ -837,143 +1138,101 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Boolean IsSelected(Int32 index);
         void DeselectAll();
 
-        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs> SelectionChanged;
+        event Windows.Foundation.TypedEventHandler<
+            TableView,
+            Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs>
+            SelectionChanged;
 
-        static Microsoft.UI.Xaml.DependencyProperty ItemsSourceProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty HeadersVisibilityProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty GridLinesVisibilityProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty RowBackgroundProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty AlternatingRowBackgroundProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty EmptyTemplateProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty DensityProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty SelectionModeProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty SelectedItemProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty SelectedIndexProperty { get; };
-    };
+        Boolean CanUserSortColumns;
 
-    [MUX_PREVIEW, webhosthidden]
-    unsealed runtimeclass TableViewAutomationPeer :
-        Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
-        Microsoft.UI.Xaml.Automation.Provider.ISelectionProvider,
-        Microsoft.UI.Xaml.Automation.Provider.IGridProvider,
-        Microsoft.UI.Xaml.Automation.Provider.ITableProvider,
-        Microsoft.UI.Xaml.Automation.Provider.IItemContainerProvider
-    {
-        TableViewAutomationPeer(Microsoft.UI.Xaml.Controls.Tabular.TableView owner);
-    };
+        Boolean SortByColumn(
+            TableViewColumn column,
+            SortDirection direction);
+        Boolean ToggleSortDirection(TableViewColumn column);
+        Boolean ClearSort();
 
-    [MUX_PREVIEW, webhosthidden]
-    unsealed runtimeclass TableViewRowAutomationPeer :
-        Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
-        Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider
-    {
-        TableViewRowAutomationPeer(Microsoft.UI.Xaml.Controls.Tabular.TableViewRow owner);
-    };
+        event Windows.Foundation.TypedEventHandler<
+            TableView,
+            TableViewSortingEventArgs> Sorting;
 
-    [MUX_PREVIEW, webhosthidden]
-    unsealed runtimeclass TableViewColumnHeaderAutomationPeer :
-        Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
-    {
-        TableViewColumnHeaderAutomationPeer(
-            Microsoft.UI.Xaml.Controls.Tabular.TableView owner,
-            Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn column);
-    };
+        event Windows.Foundation.TypedEventHandler<
+            TableView,
+            TableViewSortedEventArgs> Sorted;
 
-    [MUX_PREVIEW, webhosthidden]
-    unsealed runtimeclass TableViewCellAutomationPeer :
-        Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
-        Microsoft.UI.Xaml.Automation.Provider.IGridItemProvider,
-        Microsoft.UI.Xaml.Automation.Provider.ITableItemProvider,
-        Microsoft.UI.Xaml.Automation.Provider.IValueProvider
-    {
-        TableViewCellAutomationPeer(
-            Microsoft.UI.Xaml.FrameworkElement cell,
-            Microsoft.UI.Xaml.Controls.Tabular.TableViewRow row,
-            Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn column,
-            Int32 columnIndex);
+        Boolean CanUserResizeColumns;
+
+        void ExpandAllGroups();
+        void CollapseAllGroups();
+
+        event Windows.Foundation.TypedEventHandler<
+            TableView,
+            TableViewCellToolTipRequestedEventArgs>
+            CellToolTipRequested;
+
+        void InvalidateCellToolTips();
     };
 }
 ```
 
 # Appendix
 
-## Cell editing scope
+## Keyboard and pointer behavior
 
-This release adds **opt-in cell editing** and **single row selection** on top of the display-only TableView. The remaining interactive v1 features (multiple/extended selection, sorting, grouping, cell keyboard navigation, column resize/reorder) are planned separately and land additively.
+| Input | Behavior |
+|---|---|
+| Click or tap a row | Selects the row on release when selection is enabled. |
+| Up or Down | Moves to the previous or next row. Selection follows focus in single-selection mode. |
+| Home or End | Moves to the first or last row. |
+| Page Up or Page Down | Moves by approximately one viewport. |
+| Ctrl plus a navigation key | Moves focus without changing selection. |
+| Space | Selects the focused row. |
+| Ctrl plus Space | Toggles the focused row in single-selection mode. |
+| Double-click or double-tap a cell | Starts editing the cell. |
+| F2 | Starts editing the current cell. |
+| Enter while editing | Commits the cell edit. |
+| Escape while editing | Cancels the cell edit. |
+| Invoke a sortable header | Advances that column through `SortCycle`. |
+| Drag a resizable header edge | Resizes the column. |
+| Left or Right on a focused resizable header | Resizes the column by one keyboard increment. |
+| Shift plus Left or Right | Resizes by the larger keyboard increment. |
 
-Added here:
+An active editor owns its keyboard input. Row navigation does not move the editor out of the
+realization window.
 
-- Control-level opt-in through `IsReadOnly`, plus per-column `IsReadOnly`.
-- Editors supplied by built-in columns, or by `CellEditingTemplate` on the base `TableViewColumn`; `TableViewTextColumn` produces a `TextBox` when no template is supplied.
-- Edit lifecycle API: `CommitEdit`, `CancelEdit`, and `IsEditing`. Editing starts from user gestures only.
-- Vetoable events `BeginningEdit` and `CellEditEnding`. `CellEditEnding` is synchronous, so handlers must set `Cancel` before returning.
-- Rollback for a cancelled cell edit by using `UpdateSourceTrigger=Explicit`; the source is unchanged until commit, so cancelling discards the editor and re-displays the original value.
-- Validation via `INotifyDataErrorInfo`, scoped to the property the column edits. The edited property is derived from the column's `Binding` rather than authored separately, so it stays one concept with the base column's `SortMemberPath`.
-- Gestures: double-click/double-tap, `F2`, `Enter`, `Esc`, and commit on focus loss. The pointer gesture is handled by `TableViewRow`, which owns its cells and can therefore resolve which cell a press landed on; the control keeps the edit state machine.
+## Editing model
 
-### Editing is cell-scoped in this release
+Editing is cell-scoped. `CommitEdit()` writes the active editor's value to the data item.
+`CancelEdit()` discards the pending editor value.
 
-`CommitEdit()` and `CancelEdit()` close the open **cell** edit. There is no row-scoped commit or
-cancel, and no `RowEditEnding`, because a row transaction cannot yet be closed on its own - the edit
-state machine models "a cell editor is open" and nothing else. Both arrive with row editing rather
-than shipping as API that silently does nothing.
+The built-in text editor uses `UpdateSourceTrigger=Explicit`. This keeps the pending value in the
+editor until TableView accepts the commit. It also allows Escape or `CancelEdit()` to close the
+editor without first modifying the data item.
 
-### When the edited value reaches the data item
+There is no row-level edit transaction in this version. Committing one cell updates the item
+immediately.
 
-**A commit at cell scope writes to the data item immediately.** This differs from WPF's DataGrid and
-is worth stating explicitly, because the difference is invisible until an app tries to cancel a row.
+## Sorting model
 
-WPF keeps pending values in the row's `BindingGroup`, and the values reach the item when
-`BindingGroup.CommitEdit()` runs at row scope. Cancelling the row therefore reverts every cell
-edited in it, with no cooperation from the data item.
+Only one TableView column is the active sort column. `SortByColumn` clears the previous column's
+sort state before applying the new state.
 
-WinUI has no `BindingGroup`. TableView instead binds the editor with
-`UpdateSourceTrigger=Explicit` and writes on commit, which keeps `Esc` restorable for the cell being
-edited. The consequences:
+The shaping engine can internally order more than one sort axis for composition with grouping, but
+the TableView control exposes a single-column sort interaction.
 
-- Cancelling a cell reverts that cell because the pending value never reached the item.
-- There is no row-level transaction in this release.
-- An app observing `PropertyChanged` sees one notification per cell commit, not one per row.
+## Grouping model
 
-Deliberately out of scope for cell editing: multi-cell row transactions and editing a11y
-announcements (blocked on localized resource strings).
+Grouping is single-level. The row axis contains both data rows and generated group-header rows.
+Group headers do not represent application data items and are not included in data-item sorting or
+selection.
 
-The display-only base delivered previously:
+Collapsing a group hides its data rows without removing them from the shaped data set.
 
-- Preview API surface for display-only TableView.
-- Developer-defined columns through `TableView.Columns`.
-- Text cells through `TableViewTextColumn`.
-- Custom templated cells through `TableViewTemplateColumn`.
-- Column-header strip rendering.
-- Row virtualization through `ItemsRepeater`.
-- Gridline visibility.
-- Density settings.
-- Row and alternating row background brushes.
-- Empty-state template.
-- Leading-prefix frozen columns.
-- Read-only keyboard row-focus navigation.
-- Read-only UI Automation grid/table peers.
+## Out of scope
 
-## Deferred post-single-selection (still v1)
-
-These ship additively in a later change — they are part of v1, not non-goals:
-
-- Row selection: multiple/extended (Ctrl/Shift range selection). **Single selection ships here.**
-- Single-column sort and filtering.
-- Grouping and two-level hierarchy.
-- Column resize and reorder.
-
-## Non-goals (out of scope for v1)
-
-- Replacing DataGrid.
+- Multiple and extended row selection.
 - Marquee selection.
-- Multi-column sort.
+- Public multi-column sort interaction.
 - Column virtualization.
 - Row headers.
-- Hierarchy deeper than two levels; row drag-drop.
-- Spreadsheet-like interaction.
-- Spreadsheet-scale column counts (100+) — `TableView` realizes a cell per visible column per row and targets ~5–50 columns.
-
-Theme-XBF emission is suppressed in this release, and is tracked separately.
+- Spreadsheet-style cell ranges and formulas.
+- Hierarchy deeper than the supported grouping and hierarchy model.
