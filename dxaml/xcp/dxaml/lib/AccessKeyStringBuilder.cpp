@@ -113,33 +113,5 @@ _Check_return_ HRESULT AccessKeyStringBuilder::GetAccessKeyMessageFromElement(_I
     return S_OK;
 }
 
-_Check_return_ HRESULT AccessKeyStringBuilder::GetEffectiveAccessKeyFromElement(
-    _In_ ctl::ComPtr<DependencyObject>& spOwner,
-    _Out_ HSTRING* returnValue)
-{
-    ctl::ComPtr<IInspectable> localValue;
-    ctl::ComPtr<xaml::IDependencyObject> ownerAsDependencyObject;
-    xaml::IDependencyProperty* accessKeyProperty = nullptr;
-    BOOLEAN isUnset = FALSE;
-
-    IFC_RETURN(spOwner.As(&ownerAsDependencyObject));
-
-    MetadataAPI::GetIDependencyProperty(
-        KnownPropertyIndex::AutomationProperties_AccessKey,
-        &accessKeyProperty);
-    IFC_RETURN(spOwner->ReadLocalValue(accessKeyProperty, &localValue));
-    IFC_RETURN(DependencyPropertyFactory::IsUnsetValue(localValue.Get(), isUnset));
-
-    if (isUnset)
-    {
-        IFC_RETURN(GetAccessKeyMessageFromElement(spOwner, returnValue));
-    }
-    else
-    {
-        IFC_RETURN(AutomationProperties::GetAccessKeyStatic(ownerAsDependencyObject.Get(), returnValue));
-    }
-
-    return S_OK;
-}
 
 
