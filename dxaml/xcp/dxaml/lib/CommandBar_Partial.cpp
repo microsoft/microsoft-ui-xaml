@@ -2094,12 +2094,19 @@ CommandBar::OnCommandBarElementVisibilityChanged(_In_ xaml_controls::ICommandBar
 
     if (parentCmdBar)
     {
-        IFC_RETURN(parentCmdBar.Cast<CommandBar>()->UpdateVisualState());
+        auto cmdBar = parentCmdBar.Cast<CommandBar>();
+        IFC_RETURN(cmdBar->UpdateVisualState());
+
+        xaml_controls::CommandBarOverflowButtonVisibility overflowButtonVisibility{};
+        IFC_RETURN(cmdBar->get_OverflowButtonVisibility(&overflowButtonVisibility));
 
         // Secondary commands live in the overflow popup, so collapsing one doesn't resize the
         // CommandBar and won't refresh the template settings on its own. Do it here so the
         // overflow button's effective visibility stays in sync.
-        IFC_RETURN(parentCmdBar.Cast<CommandBar>()->UpdateTemplateSettings());
+        if (overflowButtonVisibility == xaml_controls::CommandBarOverflowButtonVisibility_Auto)
+        {
+            IFC_RETURN(cmdBar->UpdateTemplateSettings());
+        }
     }
 
     return S_OK;
