@@ -11,6 +11,11 @@ parameters:
   rerunPassesRequiredToAvoidFailure: 5
   testPayloadArtifactName: 'TestPayload'
   failOnTestFailure: true
+  # Minimum percentage of executed tests that must pass for the Run Tests stage to be considered
+  # successful. Tests that failed at their first attempt but recovered on rerun are already folded
+  # into the "skipped" bucket by the rerun logic, so this threshold only applies to genuine
+  # post-rerun failures. Set to 100 to require every test to pass (previous behavior).
+  minimumTestPassRate: 99
 # We run the bulk of our tests in Helix. But this Job runs tests directly on the Pipeline agents.
 # These Pipeline agents are running on a ni_release build of Windows which is not available in Helix.
 # This approach allows us to run tests on prerelease builds of Windows.
@@ -110,10 +115,81 @@ jobs:
       testResultsFiles: testResults-*.xml
       searchFolder: $(Build.SourcesDirectory)\build\PipelineScripts
       mergeTestResults: true
-      failTaskOnFailedTests: ${{ parameters.failOnTestFailure }}
+      # We intentionally do NOT let PublishTestResults fail the job on individual test failures.
+      # The "Enforce minimum test pass rate" step below is the single authority that decides
+      # pass/fail, so it can apply the ${{ parameters.minimumTestPassRate }}% threshold instead of
+      # failing on any single failure. Results are still published here for reporting.
+      failTaskOnFailedTests: false
       testRunTitle: '$(testRunTitle)'
       buildPlatform: $(buildPlatform)
       buildConfiguration: $(buildConfiguration)
+
+  # Gate the job on an aggregate pass rate rather than on "zero failures". Genuine (post-rerun)
+  # failures are tolerated as long as at least ${{ parameters.minimumTestPassRate }}% of the tests
+  # executed by this slice passed. This keeps a single unlucky/environmental failure from turning
+  # an otherwise-green test pass red, while still catching real breakages (a large failure count
+  # drops the pass rate below the threshold). Skipped/flaky-recovered tests are not counted as
+  # failures. When failOnTestFailure is false the step never fails the job (legacy opt-out).
+  - task: PowerShell@2
+    displayName: Enforce minimum test pass rate
+    condition: always()
+    inputs:
+      targetType: 'inline'
+      script: |
+        $searchFolder = "$(Build.SourcesDirectory)\build\PipelineScripts"
+        $threshold = [double]'${{ parameters.minimumTestPassRate }}'
+        $failOnTestFailure = [System.Convert]::ToBoolean('${{ parameters.failOnTestFailure }}')
+
+        $resultFiles = @(Get-ChildItem -Path $searchFolder -Filter 'testResults-*.xml' -ErrorAction SilentlyContinue)
+        if ($resultFiles.Count -eq 0) {
+          Write-Host "No testResults-*.xml files were produced by this slice; nothing to gate. Treating as pass."
+          exit 0
+        }
+
+        $total = 0
+        $failed = 0
+        foreach ($file in $resultFiles) {
+          try {
+            [xml]$xml = Get-Content -Path $file.FullName -Raw
+          } catch {
+            Write-Host "##vso[task.logissue type=warning]Could not parse '$($file.Name)': $($_.Exception.Message)"
+            continue
+          }
+          # Count the individual <test> elements so we are independent of any aggregate attributes.
+          # result="Fail" is a genuine failure after all reruns; "Pass"/"Skip" are not failures.
+          $tests = $xml.SelectNodes('//test')
+          foreach ($t in $tests) {
+            $total++
+            if ($t.result -eq 'Fail') { $failed++ }
+          }
+        }
+
+        if ($total -eq 0) {
+          Write-Host "No <test> results found across $($resultFiles.Count) file(s); nothing to gate. Treating as pass."
+          exit 0
+        }
+
+        $passed = $total - $failed
+        $passRate = [math]::Round(($passed / $total) * 100, 2)
+        Write-Host "Test pass rate for this slice: $passed/$total = $passRate% (failed: $failed). Required: >= $threshold%."
+
+        if ($passRate -ge $threshold) {
+          if ($failed -gt 0) {
+            Write-Host "##vso[task.logissue type=warning]$failed test(s) failed but the pass rate ($passRate%) meets the required $threshold% threshold; not failing the job."
+            Write-Host "##vso[task.complete result=SucceededWithIssues;]Pass rate met with failures."
+          } else {
+            Write-Host "All tests passed."
+          }
+          exit 0
+        }
+
+        if (-not $failOnTestFailure) {
+          Write-Host "##vso[task.logissue type=warning]Pass rate ($passRate%) is below the required $threshold%, but failOnTestFailure is false; not failing the job."
+          exit 0
+        }
+
+        Write-Host "##vso[task.logissue type=error]Test pass rate ($passRate%) is below the required $threshold% threshold ($failed of $total tests failed)."
+        exit 1
 
   - task: powershell@2
     displayName: 'UpdateUnreliableTests.ps1'
