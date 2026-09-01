@@ -264,7 +264,6 @@ MediaPlayerElement::OnPropertyChanged2(_In_ const PropertyChangedParams& args)
             if (args.m_pDP->GetIndex() == KnownPropertyIndex::MediaPlayerElement_MediaPlayer)
             {
                 IFC_RETURN(get_MediaPlayer(&m_spMediaPlayer));
-                m_resumeMediaPlayerOnEnter = false;
                 IFC_RETURN(UpdateTransportControlsState());
                 IFC_RETURN(UpdateAutoPlay());
                 IFC_RETURN(UpdateSource());
@@ -701,12 +700,6 @@ MediaPlayerElement::EnterImpl(
     {
         IFC_RETURN(UpdateAutoPlay());
 
-        if (m_resumeMediaPlayerOnEnter && m_spMediaPlayer)
-        {
-            m_resumeMediaPlayerOnEnter = false;
-            LOG_IF_FAILED(m_spMediaPlayer->Play());
-        }
-
         IFC_RETURN(UpdateTimedTextSource());
     }
 
@@ -728,8 +721,8 @@ MediaPlayerElement::LeaveImpl(
         IFC_RETURN(m_spTimedTextSource->SetMediaPlayer(nullptr));
     }
 
-    bool shouldPauseMediaPlayer = bLive && !bVisualTreeBeingReset;
-    if (bLive && bVisualTreeBeingReset)
+    bool shouldPauseMediaPlayer = false;
+    if (bLive)
     {
         if (CContentRoot* contentRoot = VisualTree::GetContentRootForElement(GetHandle()))
         {
@@ -739,7 +732,7 @@ MediaPlayerElement::LeaveImpl(
 
     IFC_RETURN(__super::LeaveImpl(bLive, bSkipNameRegistration, bCoercedIsEnabled, bVisualTreeBeingReset));
 
-    if (shouldPauseMediaPlayer && m_spMediaPlayer && !m_resumeMediaPlayerOnEnter)
+    if (shouldPauseMediaPlayer && m_spMediaPlayer)
     {
         ctl::ComPtr<wmp::IMediaPlayer3> spMediaPlayer3;
         ctl::ComPtr<wmp::IMediaPlaybackSession> spPlaybackSession;
@@ -763,11 +756,7 @@ MediaPlayerElement::LeaveImpl(
             (playbackState == wmp::MediaPlaybackState_Playing ||
              playbackState == wmp::MediaPlaybackState_Buffering))
         {
-            const HRESULT pauseResult = m_spMediaPlayer->Pause();
-            if (SUCCEEDED(pauseResult))
-            {
-                m_resumeMediaPlayerOnEnter = true;
-            }
+            IGNOREHR(m_spMediaPlayer->Pause());
         }
     }
 
