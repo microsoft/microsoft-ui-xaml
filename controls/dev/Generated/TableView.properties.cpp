@@ -32,7 +32,6 @@ GlobalDependencyProperty TableViewProperties::s_SelectionModeProperty{ nullptr }
 TableViewProperties::TableViewProperties()
     : m_beginningEditEventSource{static_cast<TableView*>(this)}
     , m_cellEditEndingEventSource{static_cast<TableView*>(this)}
-    , m_cellToolTipRequestedEventSource{static_cast<TableView*>(this)}
     , m_selectionChangedEventSource{static_cast<TableView*>(this)}
     , m_sortedEventSource{static_cast<TableView*>(this)}
     , m_sortingEventSource{static_cast<TableView*>(this)}
@@ -537,16 +536,6 @@ winrt::event_token TableViewProperties::CellEditEnding(winrt::TypedEventHandler<
 void TableViewProperties::CellEditEnding(winrt::event_token const& token)
 {
     m_cellEditEndingEventSource.remove(token);
-}
-
-winrt::event_token TableViewProperties::CellToolTipRequested(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewCellToolTipRequestedEventArgs> const& value)
-{
-    return m_cellToolTipRequestedEventSource.add(value);
-}
-
-void TableViewProperties::CellToolTipRequested(winrt::event_token const& token)
-{
-    m_cellToolTipRequestedEventSource.remove(token);
 }
 
 winrt::event_token TableViewProperties::SelectionChanged(winrt::TypedEventHandler<winrt::TableView, winrt::SelectionChangedEventArgs> const& value)

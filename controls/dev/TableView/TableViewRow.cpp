@@ -4,9 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TableViewRow.h"
-#include "TableViewAutomationHelpers.h"
 #include "TableViewToolTipHelpers.h"
-#include "TableViewCellToolTipRequestedEventArgs.h"
 #include "TableView.h"
 #include "TableViewColumn.h"
 #include "TableViewCellsPanel.h"
@@ -17,10 +15,6 @@ static constexpr std::wstring_view s_CellsHostPartName{ L"PART_CellsHost"sv };
 
 namespace
 {
-    // One pass, plus replays for app code that mutates the row from a CellToolTipRequested handler.
-    // Shared by both drain loops so a handler cannot get more replays by entering the other one.
-    constexpr int c_maxCellDrainPasses = 3;
-
     constexpr winrt::Thickness s_verticalThickness{ 0, 0, 1, 0 };
     constexpr winrt::Thickness s_zeroThickness{ 0, 0, 0, 0 };
 
@@ -290,9 +284,8 @@ void TableViewRow::OnDataContextChanged(
 {
     // On recycle ItemsRepeater updates the row's DataContext; cells pick up the new item reactively
     // via inheritance (they are not restamped). RebuildCells is still called so index-dependent visuals
-    // (alternating-row banding, frozen pinning) refresh for the new position. RebuildCells owns the
-    // re-entry policy for both rebuilds and the tooltip pass; a bare guard here would drop the
-    // request instead of recording it.
+    // (alternating-row banding, frozen pinning) refresh for the new position. RebuildCells guards
+    // against re-entry from child DataContext propagation.
     RebuildCells();
 }
 
@@ -550,60 +543,20 @@ void TableViewRow::InvalidateCells()
 
 void TableViewRow::RebuildCells()
 {
-    // A handler can drop the last reference to this row.
-    auto strongThis = get_strong();
-
-    if (m_isRebuildingCells || m_isRefreshingCellToolTips)
-    {
-        RebuildCellsCore();
-        return;
-    }
-
-    // Replays a rebuild an app handler queued. Calls the Core primitives, never the public
-    // RefreshCellToolTips, which drains too and would nest a fresh counter instead of tripping the
-    // cap. Beyond it the app is livelocking the UI thread, so the request is dropped.
-    for (int pass = 0; pass < c_maxCellDrainPasses; ++pass)
-    {
-        m_rebuildCellsPending = false;
-        m_refreshCellToolTipsPending = false;
-        RebuildCellsCore();
-        RefreshCellToolTipsGuarded();
-
-        // A refresh requested from inside the pass, such as an edit that closed under a handler,
-        // needs another: its cell was excluded from the targets this one took.
-        if (!m_rebuildCellsPending && !m_refreshCellToolTipsPending)
-        {
-            break;
-        }
-    }
-
-    if (m_rebuildCellsPending || m_refreshCellToolTipsPending)
-    {
-        TVDiag::LogRetailF(L"[TableViewRow] Dropping pending cell work after %d drain passes.",
-            c_maxCellDrainPasses);
-        m_rebuildCellsPending = false;
-        m_refreshCellToolTipsPending = false;
-    }
-}
-
-void TableViewRow::RebuildCellsCore()
-{
     auto host = m_cellsHost.get();
     if (!host)
     {
         return;
     }
 
-    // Re-entry guard. See OnDataContextChanged. A request that arrives while we are rebuilding, or
-    // while the tooltip pass is calling into app code, is recorded rather than dropped: rebuilding
-    // mid-pass would detach the very wrappers that pass is still applying tooltips to.
-    if (m_isRebuildingCells || m_isRefreshingCellToolTips)
+    // Re-entry guard. See OnDataContextChanged. Cell tooltips no longer call into app code from
+    // this path - they are bindings evaluated by the framework - so a plain guard is enough.
+    if (m_isRebuildingCells)
     {
-        m_rebuildCellsPending = true;
         return;
     }
     m_isRebuildingCells = true;
-    // Synchronous RAII guard: captures this only until RebuildCellsCore returns.
+    // Synchronous RAII guard: captures this only until RebuildCells returns.
     auto rebuildGuard = wil::scope_exit([this]() { m_isRebuildingCells = false; });
 
     auto owner = GetOwningTableView();
@@ -828,6 +781,13 @@ void TableViewRow::RebuildCellsCore()
             AttachCellContent(cellWrapper, cellElement);
         }
 
+        // Opt-in per-cell tooltip. Set once: the binding evaluates against the row's inherited
+        // DataContext, so a recycled row re-resolves with no realization-time work.
+        if (auto const toolTipBinding = column.CellToolTipBinding())
+        {
+            TableViewDetails::ApplyCellToolTipBinding(cellWrapper, toolTipBinding);
+        }
+
         host.Children().Append(cellWrapper);
     }
 
@@ -841,229 +801,12 @@ void TableViewRow::RebuildCellsCore()
     RefreshRowBackground();
 }
 
-void TableViewRow::RefreshCellToolTips()
-{
-    // A handler can drop the last reference to this row.
-    auto strongThis = get_strong();
-
-    // A drain is already running and owns the replay. Record the request rather than dropping it:
-    // that drain took its targets before this call, so the cell this refresh is about is not in them.
-    if (m_isRebuildingCells || m_isRefreshingCellToolTips)
-    {
-        m_refreshCellToolTipsPending = true;
-        RefreshCellToolTipsGuarded();
-        return;
-    }
-
-    // Reached directly (invalidate, edit close), so this owns the drain: a rebuild a handler queued
-    // must be replayed here, or the row stays stamped for the previous state. Iterative over the
-    // Core primitives - calling RebuildCells would start a second drain and recurse.
-    bool rebuiltOnLastPass = false;
-    for (int pass = 0; pass < c_maxCellDrainPasses; ++pass)
-    {
-        m_refreshCellToolTipsPending = false;
-        RefreshCellToolTipsGuarded();
-        rebuiltOnLastPass = false;
-
-        if (m_rebuildCellsPending)
-        {
-            m_rebuildCellsPending = false;
-            RebuildCellsCore();
-            rebuiltOnLastPass = true;
-            continue;
-        }
-
-        // A refresh requested from inside the pass needs another: its cell was excluded from the
-        // targets this one took.
-        if (!m_refreshCellToolTipsPending)
-        {
-            return;
-        }
-    }
-
-    // Only when the budget ran out mid-rebuild: those cells carry the previous item's tooltips and
-    // nothing else will resolve them. A refresh-only backlog is dropped instead, so app code is
-    // never raised more than c_maxCellDrainPasses times.
-    if (rebuiltOnLastPass)
-    {
-        m_refreshCellToolTipsPending = false;
-        RefreshCellToolTipsGuarded();
-    }
-
-    if (m_rebuildCellsPending || m_refreshCellToolTipsPending)
-    {
-        TVDiag::LogRetailF(L"[TableViewRow] Dropping pending cell work after %d drain passes.",
-            c_maxCellDrainPasses);
-        m_rebuildCellsPending = false;
-        m_refreshCellToolTipsPending = false;
-    }
-}
-
-// Callers run from framework callbacks, where an escaping handler exception is a fail-fast.
-void TableViewRow::RefreshCellToolTipsGuarded()
-{
-    try
-    {
-        RefreshCellToolTipsCore();
-    }
-    catch (...)
-    {
-        TVDiag::LogRetailF(L"[TableViewRow] The cell tooltip pass failed (HRESULT 0x%08X). Continuing.",
-            static_cast<unsigned int>(winrt::to_hresult()));
-    }
-}
-
-void TableViewRow::RefreshCellToolTipsCore()
-{
-    // Innermost guard: the drains also test this flag to decide ownership, but the pass must be
-    // non-re-entrant from every entry point because it is what calls app code.
-    if (m_isRefreshingCellToolTips)
-    {
-        return;
-    }
-
-    auto const host = m_cellsHost.get();
-    if (!host)
-    {
-        return;
-    }
-
-    auto strongThis = get_strong();
-    m_isRefreshingCellToolTips = true;
-    auto refreshGuard = wil::scope_exit([this]() { m_isRefreshingCellToolTips = false; });
-
-    auto const owner = GetOwningTableView();
-    // No owner: an owned tooltip can hold app content, so release it rather than pin it in the pool.
-    if (!owner)
-    {
-        ClearOwnedCellToolTips(host);
-        return;
-    }
-
-    auto const ownerImpl = winrt::get_self<TableView>(owner);
-
-    // Opt-in: with no handler this is one event_source test, unless a previous pass left tooltips.
-    if (!ownerImpl->HasCellToolTipHandler())
-    {
-        if (m_hasOwnedCellToolTips)
-        {
-            ClearOwnedCellToolTips(host);
-        }
-        return;
-    }
-
-    // Snapshot before raising: a handler may mutate Columns or the cell children. Moved to a local
-    // so a nested pass cannot clear it mid-iteration; capacity is handed back.
-    auto targets = std::move(m_toolTipTargets);
-    targets.clear();
-    auto const children = host.Children();
-    const uint32_t count = children.Size();
-    targets.reserve(count);
-    auto const editingWrapper = m_editingCellWrapper.get();
-    for (uint32_t i = 0; i < count; ++i)
-    {
-        // The wrapper, not the display element: it fills the cell and is the UIA cell node.
-        auto const cellWrapper = children.GetAt(i).try_as<winrt::Border>();
-        if (!cellWrapper)
-        {
-            continue;
-        }
-
-        // An open editor owns its cell; retract rather than skip, or the tooltip is left enabled.
-        if (cellWrapper == editingWrapper)
-        {
-            TableViewDetails::ClearOwnedToolTip(cellWrapper);
-            continue;
-        }
-
-        if (auto const column = GetCellOwningColumn(cellWrapper))
-        {
-            targets.emplace_back(column, cellWrapper);
-        }
-        else
-        {
-            // No resolvable column, so the pass cannot re-resolve this cell. Drop any tooltip the
-            // control owns rather than leave one the owned-tooltip flag will not account for.
-            TableViewDetails::ClearOwnedToolTip(cellWrapper);
-        }
-    }
-
-    // A handler can throw before any cell is visited, so the flag stays conservatively true unless
-    // the pass completed.
-    bool anyOwned = false;
-    bool passCompleted = false;
-    auto passGuard = wil::scope_exit([&]()
-        {
-            m_hasOwnedCellToolTips = passCompleted ? anyOwned : true;
-            targets.clear();
-            m_toolTipTargets = std::move(targets);
-        });
-
-    auto const dataItem = ownerImpl->UnwrapEditingDataItem(DataContext());
-    bool anyPointerOnly = false;
-    for (auto const& target : targets)
-    {
-        // Covers the raise as well as the apply: a throwing handler must not escape into the
-        // framework callback this pass runs from, and app content may already be parented.
-        try
-        {
-            auto const args = ownerImpl->RaiseCellToolTipRequested(target.first, dataItem);
-            auto const content = args->Content();
-
-            // Re-read rather than trusted from the snapshot: a handler can start an edit on this
-            // very cell, and applying here would put a tooltip over a live editor.
-            if (target.second == m_editingCellWrapper.get())
-            {
-                TableViewDetails::ClearOwnedToolTip(target.second);
-                continue;
-            }
-
-            // Non-string content with no accessible text is pointer-only. Reported once per pass
-            // rather than per cell, since a whole column would otherwise log on every scroll.
-            anyPointerOnly = anyPointerOnly ||
-                (content && args->AutomationHelpText().empty() && !TableViewDetails::TryGetString(content));
-
-            const bool owned = content
-                ? TableViewDetails::SetOwnedToolTip(
-                    target.second,
-                    content,
-                    args->AutomationHelpText(),
-                    winrt::PlacementMode::Mouse)
-                : (TableViewDetails::ClearOwnedToolTip(target.second), false);
-
-            anyOwned = anyOwned || owned;
-        }
-        catch (...)
-        {
-            // Drop this cell's tooltip rather than leave the previous item's text on it: once the
-            // row recycles that content belongs to a different item.
-            try
-            {
-                TableViewDetails::ClearOwnedToolTip(target.second);
-            }
-            catch (...)
-            {
-                // Assume the element still holds something: the row must revisit it, not skip it.
-                anyOwned = true;
-            }
-
-            TVDiag::LogRetailF(L"[TableViewRow] Resolving a cell tooltip failed (HRESULT 0x%08X).",
-                static_cast<unsigned int>(winrt::to_hresult()));
-        }
-    }
-
-    if (anyPointerOnly)
-    {
-        TVDiag::LogRetailF(L"[TableViewRow] A cell tooltip is pointer-only: its content is not text and "
-            L"CellToolTipRequestedEventArgs.AutomationHelpText was not set.");
-    }
-
-    passCompleted = true;
-}
-
+// Recycle-out. Always walks: the restamp fast-path revives tooltips through the binding without
+// going through cell creation, so a cached "row has tooltips" flag would go stale and strand app
+// content in the recycle pool. Cells with no tooltip cost one attached-property read.
 void TableViewRow::ReleaseCellToolTips()
 {
-    if (auto const host = m_cellsHost.get(); host && m_hasOwnedCellToolTips)
+    if (auto const host = m_cellsHost.get())
     {
         ClearOwnedCellToolTips(host);
     }
@@ -1080,8 +823,6 @@ void TableViewRow::ClearOwnedCellToolTips(const winrt::Panel& host)
             TableViewDetails::ClearOwnedToolTip(cellWrapper);
         }
     }
-
-    m_hasOwnedCellToolTips = false;
 }
 
 // Installs a generated display element as a cell's content, including the ContentPresenter wiring a
@@ -1367,9 +1108,9 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
     m_editingElement.set(nullptr);
     m_editingDisplayElement.set(nullptr);
 
-    // The tooltip pass retracts the editing cell's tooltip while the editor is open; nothing else
-    // brings it back, so re-resolve now that the cell is a display cell again.
-    RefreshCellToolTips();
+    // Beginning the edit retracted this cell's tooltip. The bound value did not change, so nothing
+    // else would bring it back now that the cell is a display cell again.
+    TableViewDetails::RefreshOwnedToolTip(cellWrapper);
 }
 
 void TableViewRow::AbandonCellEdit()
@@ -1378,9 +1119,10 @@ void TableViewRow::AbandonCellEdit()
     // pass, where moving focus re-enters the framework and trips the re-entrancy guard. Replacing
     // the child does not - and it must happen, or the row keeps showing a TextBox after the edit
     // closed, and over a different item once recycled.
-    if (auto const cellWrapper = m_editingCellWrapper.get())
+    auto const editedWrapper = m_editingCellWrapper.get();
+    if (editedWrapper)
     {
-        cellWrapper.Child(m_editingDisplayElement.get());
+        editedWrapper.Child(m_editingDisplayElement.get());
     }
 
     m_editingColumn.set(nullptr);
@@ -1388,8 +1130,8 @@ void TableViewRow::AbandonCellEdit()
     m_editingElement.set(nullptr);
     m_editingDisplayElement.set(nullptr);
 
-    // The cell is a display cell again; re-resolve the tooltip the edit retracted.
-    RefreshCellToolTips();
+    // The cell is a display cell again; restore the tooltip the edit retracted.
+    TableViewDetails::RefreshOwnedToolTip(editedWrapper);
 }
 
 // Pointer entry point for editing, and the only place a pointer establishes the current cell.

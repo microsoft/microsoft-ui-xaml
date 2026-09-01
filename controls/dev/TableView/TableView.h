@@ -86,8 +86,6 @@ struct TableViewResourceCache
     double lastFrozenColumnsHorizontalOffset{ 0.0 };
 };
 
-class TableViewCellToolTipRequestedEventArgs;
-
 namespace TabularShapingHelpers { class CustomSortRankAdapter; }
 
 // The control's half of the TableViewSource sort axis. The projection is addressed by an opaque
@@ -197,18 +195,6 @@ public:
 
     // Pin rebuilt rows immediately when leading-frozen columns are active.
     void PinFrozenColumnsForRow(const winrt::TableViewRow& row);
-
-    // Internal — true while at least one CellToolTipRequested handler is attached, so the cell
-    // realization path can skip all per-cell tooltip work when nobody is listening.
-    bool HasCellToolTipHandler() const { return static_cast<bool>(m_cellToolTipRequestedEventSource); }
-
-    // Internal — raises CellToolTipRequested for one cell and returns the args the handler filled in.
-    winrt::com_ptr<TableViewCellToolTipRequestedEventArgs> RaiseCellToolTipRequested(
-        const winrt::TableViewColumn& column,
-        const winrt::IInspectable& item);
-
-    // Queues a coalesced tooltip re-resolve for every realized cell (public, from the IDL).
-    void InvalidateCellToolTips();
 
     // Requested by a cell panel (header/row) during measure when a realized cell's own measured width
     // changed (grow or shrink). Invalidates our measure synchronously so ResolveColumnWidths re-runs in
@@ -726,14 +712,6 @@ private:
     // Set while a coalesced RebuildHeaders is pending on the dispatcher; collapses a burst of column
     // changes into one rebuild. UI-thread only (all column callbacks arrive on the UI thread).
     bool m_rebuildHeadersQueued{ false };
-    void RefreshCellToolTipsOnRealizedRows();
-    // A coalesced cell-tooltip re-resolve is pending on the dispatcher (InvalidateCellToolTips).
-    bool m_cellToolTipRefreshQueued{ false };
-    // An invalidate arrived while a pass was queued or running; coalesced into one follow-up.
-    bool m_cellToolTipRefreshDirty{ false };
-    // Consecutive handler-requested follow-up passes, capped so an unconditionally-invalidating
-    // handler is dropped rather than pegging the UI thread.
-    int m_cellToolTipRefreshPasses{ 0 };
 
     // Per-instance resource cache; replaces the former process-global map keyed by `this`.
     TableViewResourceCache m_resourceCache{};

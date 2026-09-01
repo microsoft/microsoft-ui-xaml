@@ -4,12 +4,13 @@
 #pragma once
 
 #include "GlobalDependencyProperty.h"
+#include "TVDiag.h"
 
 #include <optional>
 
 namespace TableViewDetails
 {
-    // The published HelpText is recorded rather than re-derived: it is not always the content.
+    // The published HelpText is recorded, not re-derived: it is not always the tooltip's content.
     struct CellToolTipRecord : winrt::implements<CellToolTipRecord, winrt::IInspectable>
     {
         winrt::ToolTip ToolTip{ nullptr };
@@ -17,6 +18,10 @@ namespace TableViewDetails
     };
 
     inline GlobalDependencyProperty s_cellToolTipRecordProperty{ nullptr };
+
+    // Holds the evaluated CellToolTipBinding value. The binding lives on the cell wrapper, so the
+    // row's DataContext drives it and a recycled row re-resolves through ordinary inheritance.
+    inline GlobalDependencyProperty s_cellToolTipValueProperty{ nullptr };
 
     inline winrt::DependencyProperty EnsureCellToolTipRecordProperty()
     {
@@ -38,6 +43,7 @@ namespace TableViewDetails
     inline void ClearCellToolTipProperties()
     {
         s_cellToolTipRecordProperty = nullptr;
+        s_cellToolTipValueProperty = nullptr;
     }
 
     inline winrt::com_ptr<CellToolTipRecord> GetRecord(const winrt::FrameworkElement& element)
@@ -80,8 +86,7 @@ namespace TableViewDetails
         record.PublishedHelpText = {};
     }
 
-    // Neutralized in place rather than detached, so a recycled cell reuses the ToolTip. Matches
-    // TabViewItem.
+    // Neutralized in place rather than detached, so a recycled cell reuses the ToolTip. Matches TabViewItem.
     inline void ClearOwnedToolTip(const winrt::FrameworkElement& element)
     {
         auto const record = GetRecord(element);
@@ -114,7 +119,6 @@ namespace TableViewDetails
     inline bool SetOwnedToolTip(
         const winrt::FrameworkElement& element,
         const winrt::IInspectable& content,
-        const winrt::hstring& helpTextOverride,
         winrt::PlacementMode placement)
     {
         if (!element)
@@ -123,8 +127,7 @@ namespace TableViewDetails
         }
 
         auto record = GetRecord(element);
-        // The raw value, not a ToolTip-narrowed one: ToolTipService stores whatever the app set, and
-        // a bare string would otherwise read as an empty slot.
+        // The raw value, not a ToolTip-narrowed one: a bare string would otherwise read as empty.
         auto const existingValue = winrt::ToolTipService::GetToolTip(element);
         auto const owned = (record && record->ToolTip && record->ToolTip == existingValue.try_as<winrt::ToolTip>())
             ? record->ToolTip : nullptr;
@@ -175,15 +178,15 @@ namespace TableViewDetails
             toolTip.Content(content);
             toolTip.Placement(placement);
 
-            // Recorded before attaching: a throw then reads as "not ours" rather than orphaning a
+            // Record before attaching: a throw then reads as "not ours" rather than orphaning a
             // tooltip nothing can clear.
             record->ToolTip = toolTip;
             winrt::ToolTipService::SetToolTip(element, toolTip);
         }
 
-        // Published unconditionally; TableViewCellAutomationPeer suppresses it at UIA query time if
-        // it merely repeats the cell's own text. Comparing here would race the cell's binding.
-        auto const helpText = !helpTextOverride.empty() ? helpTextOverride : (text ? *text : winrt::hstring{});
+        // Published unconditionally and recorded; TableViewCellAutomationPeer decides at query time
+        // whether it merely repeats the cell's own text. Comparing here would race the cell's binding.
+        auto const helpText = text ? *text : winrt::hstring{};
         if (!helpText.empty() &&
             winrt::AutomationProperties::GetHelpText(element).empty())
         {
@@ -192,5 +195,90 @@ namespace TableViewDetails
         }
 
         return true;
+    }
+
+    // The bound value did not change, so only an explicit re-apply restores a tooltip an edit retracted.
+    inline void RefreshOwnedToolTip(const winrt::FrameworkElement& element)
+    {
+        if (!element || !s_cellToolTipValueProperty)
+        {
+            return;
+        }
+
+        if (auto const value = element.GetValue(s_cellToolTipValueProperty))
+        {
+            SetOwnedToolTip(element, value, winrt::PlacementMode::Mouse);
+        }
+        else
+        {
+            ClearOwnedToolTip(element);
+        }
+    }
+
+    // The whole per-cell update path: no event, no invalidation, no realization-time work.
+    inline void OnCellToolTipValueChanged(
+        const winrt::DependencyObject& sender,
+        const winrt::DependencyPropertyChangedEventArgs& args)
+    {
+        auto const element = sender.try_as<winrt::FrameworkElement>();
+        if (!element)
+        {
+            return;
+        }
+
+        // Contained: this runs from the property system, where an escaping exception is a fail-fast.
+        try
+        {
+            if (auto const value = args.NewValue())
+            {
+                SetOwnedToolTip(element, value, winrt::PlacementMode::Mouse);
+            }
+            else
+            {
+                ClearOwnedToolTip(element);
+            }
+        }
+        catch (...)
+        {
+            TVDiag::LogRetailF(L"[TableView] Applying a cell tooltip value failed (HRESULT 0x%08X).",
+                static_cast<unsigned int>(winrt::to_hresult()));
+        }
+    }
+
+    inline winrt::DependencyProperty EnsureCellToolTipValueProperty()
+    {
+        if (!s_cellToolTipValueProperty)
+        {
+            s_cellToolTipValueProperty = InitializeDependencyProperty(
+                L"TableViewCellToolTipValue",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::TableView>(),
+                true /* isAttached */,
+                nullptr /* defaultValue */,
+                winrt::PropertyChangedCallback(&OnCellToolTipValueChanged));
+        }
+
+        return s_cellToolTipValueProperty;
+    }
+
+    // Set once when the cell is created; the binding then tracks the row's DataContext.
+    inline void ApplyCellToolTipBinding(
+        const winrt::FrameworkElement& element,
+        const winrt::Microsoft::UI::Xaml::Data::Binding& binding)
+    {
+        if (!element)
+        {
+            return;
+        }
+
+        if (binding)
+        {
+            winrt::BindingOperations::SetBinding(element, EnsureCellToolTipValueProperty(), binding);
+        }
+        else if (s_cellToolTipValueProperty)
+        {
+            // Clears the binding as well as the value; the change callback retracts the tooltip.
+            element.ClearValue(s_cellToolTipValueProperty);
+        }
     }
 }

@@ -9,6 +9,7 @@
 #include "TableViewColumnHeaderAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
+#include "TableViewToolTipHelpers.h"
 #include "TableViewCellAutomationPeer.properties.cpp"
 
 #include <string>
@@ -103,11 +104,18 @@ winrt::hstring TableViewCellAutomationPeer::GetCellValueText()
 hstring TableViewCellAutomationPeer::GetHelpTextCore()
 {
     auto const helpText = __super::GetHelpTextCore();
+    if (helpText.empty())
+    {
+        return helpText;
+    }
 
-    // Resolved here rather than when the tooltip is attached: at that point the cell's content is
-    // freshly generated and its binding has not produced a value yet, so the texts always compare
-    // unequal and the value would be announced twice.
-    if (!helpText.empty() && helpText == GetCellValueText())
+    auto const record = TableViewDetails::GetRecord(Owner().try_as<winrt::FrameworkElement>());
+
+    // Resolved at query time, not at attach: the cell's own binding may not have produced a value
+    // when the tooltip is applied. Gated on the record so text the app set is never dropped.
+    if (record && !record->PublishedHelpText.empty() &&
+        helpText == record->PublishedHelpText &&
+        helpText == GetCellValueText())
     {
         return {};
     }
