@@ -128,6 +128,9 @@ namespace MU_X_XTI_NAMESPACE
 {
     [webhosthidden]
     [default_interface]
+    // Unlike MUXC's XamlControlsXamlMetaDataProvider, this type is new in the merged public winmd,
+    // so it needs an explicit contract version or the WinMD compat static test reports VERSION_NO.
+    [MUX_PUBLIC_V12]
     runtimeclass XamlControlsTabularXamlMetaDataProvider
     // IXMP needs to be implemented by a public type in our assembly, but it doesn't need to be
     // named anything special. Let's leverage the fact that we have this existing runtimeclass
@@ -144,7 +147,8 @@ namespace MU_XC_NAMESPACE
 {
     [webhosthidden]
     [default_interface]
-    [MUX_PUBLIC]
+    // Not MUX_PUBLIC: this type has never shipped, so it belongs to the in-development contract.
+    [MUX_PUBLIC_V12]
     runtimeclass TabularControlsResources : Microsoft.UI.Xaml.ResourceDictionary
     {
         TabularControlsResources();
