@@ -33,7 +33,7 @@ GroupedSourceAdapter::GroupedSourceAdapter()
     // Expansion intent lives in the model; the projection reacts to it in one place so a per-group
     // toggle and a programmatic ExpandAll reach the projection by exactly one path.
     m_expansion.SetChangedHandler(
-        [this](HierarchicalItemsSource::GroupExpansionModel::Change const& change)
+        [this](TabularShapingHelpers::RowExpansionModel::Change const& change)
         {
             OnExpansionChanged(change);
         });
@@ -129,7 +129,7 @@ void GroupedSourceAdapter::Rebuild()
                 // Compute the group's stable identity ONCE. A value-typed key (string department,
                 // int year) yields a stable string that survives the key object being re-minted by
                 // the next shaping pass; a non-value key has none.
-                const auto identity = HierarchicalItemsSource::GetGroupKeyIdentity(group);
+                const auto identity = TabularShapingHelpers::GetGroupKeyIdentity(group);
 
                 // The expansion-intent key: prefixed identity when the group has one, else a fall
                 // back to the group object's own stable lookup key.
@@ -253,7 +253,7 @@ void GroupedSourceAdapter::CollapseAll()
     m_expansion.SetAllExpanded(false);
 }
 
-void GroupedSourceAdapter::OnExpansionChanged(HierarchicalItemsSource::GroupExpansionModel::Change const& /*change*/)
+void GroupedSourceAdapter::OnExpansionChanged(TabularShapingHelpers::RowExpansionModel::Change const& /*change*/)
 {
     // The whole simplification in one line: every expansion change — one group or all — is a full
     // Rebuild that ends in a Reset. No ranged splice, no run table. The cost is that a toggle drops
@@ -276,7 +276,7 @@ winrt::hstring GroupedSourceAdapter::GetGroupIntentKey(winrt::IInspectable const
 {
     // A value-typed key (a string department, an int year) yields a stable string that survives the
     // key object being re-minted by the next shaping pass.
-    const auto identity = HierarchicalItemsSource::GetGroupKeyIdentity(group);
+    const auto identity = TabularShapingHelpers::GetGroupKeyIdentity(group);
     if (!identity.empty())
     {
         return L"identity:" + identity;

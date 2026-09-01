@@ -3,11 +3,11 @@
 
 #include "pch.h"
 #include "common.h"
-#include "GroupExpansionModel.h"
+#include "RowExpansionModel.h"
 
-namespace HierarchicalItemsSource
+namespace TabularShapingHelpers
 {
-    void GroupExpansionModel::SetDefaultExpanded(bool expanded)
+    void RowExpansionModel::SetDefaultExpanded(bool expanded)
     {
         if (m_defaultExpanded == expanded && m_nonDefault.empty())
         {
@@ -34,7 +34,7 @@ namespace HierarchicalItemsSource
         RaiseChanged(std::move(change));
     }
 
-    bool GroupExpansionModel::IsExpanded(winrt::hstring const& key) const
+    bool RowExpansionModel::IsExpanded(winrt::hstring const& key) const
     {
         const bool defaultExpanded = m_defaultExpanded;
         if (key.empty())
@@ -48,7 +48,7 @@ namespace HierarchicalItemsSource
         return m_nonDefault.find(key) != m_nonDefault.end() ? !defaultExpanded : defaultExpanded;
     }
 
-    void GroupExpansionModel::SetExpanded(winrt::hstring const& key, bool isExpanded)
+    void RowExpansionModel::SetExpanded(winrt::hstring const& key, bool isExpanded)
     {
         if (key.empty() || IsExpanded(key) == isExpanded)
         {
@@ -73,12 +73,12 @@ namespace HierarchicalItemsSource
         RaiseChanged(std::move(change));
     }
 
-    void GroupExpansionModel::SetAllExpanded(bool isExpanded)
+    void RowExpansionModel::SetAllExpanded(bool isExpanded)
     {
         SetDefaultExpanded(isExpanded);
     }
 
-    void GroupExpansionModel::RetainOnly(std::unordered_set<winrt::hstring> const& liveKeys)
+    void RowExpansionModel::RetainOnly(std::unordered_set<winrt::hstring> const& liveKeys)
     {
         for (auto it = m_nonDefault.begin(); it != m_nonDefault.end();)
         {
@@ -86,7 +86,7 @@ namespace HierarchicalItemsSource
         }
     }
 
-    void GroupExpansionModel::Clear()
+    void RowExpansionModel::Clear()
     {
         if (m_nonDefault.empty())
         {
@@ -101,7 +101,7 @@ namespace HierarchicalItemsSource
         RaiseChanged(std::move(change));
     }
 
-    void GroupExpansionModel::RaiseChanged(Change change) const
+    void RowExpansionModel::RaiseChanged(Change change) const
     {
         if (m_changed)
         {

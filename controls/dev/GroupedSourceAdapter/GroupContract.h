@@ -21,7 +21,7 @@
 //
 // Layer 3 owns this because layer 3 is the layer that CONSUMES the contract. Layer 2 implements it
 // without depending on this header, which keeps the two siblings rather than a stack.
-namespace HierarchicalItemsSource
+namespace TabularShapingHelpers
 {
     // The group's key. A group that declares no key is its own key, which keeps a plain
     // collection-of-collections source working unchanged.
