@@ -34,7 +34,11 @@ jobs:
         demands: ImageOverride -equals Win11-25H2
       ${{ if eq( parameters.testOS, 'Win11-23H2') }}:
         demands: ImageOverride -equals Win11-23H2
-  timeoutInMinutes: 100
+  # Set to 0 (the maximum / no explicit limit for self-hosted 1ES agents) so that slow agent checkout
+  # (git-fetch retries) plus very verbose test logging cannot trip the job-level timeout. Hitting the
+  # previous 100-minute cap was auto-cancelling RunTests jobs whose tests actually pass and triggering
+  # pipeline retry storms. The Run Tests step below keeps its own 90-minute timeout to bound test hangs.
+  timeoutInMinutes: 0
   strategy:
     ${{ if eq( parameters.testSuite, 'DevTestSuite') }}:
       parallel: 20
