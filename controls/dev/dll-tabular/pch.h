@@ -12,7 +12,7 @@
 // This bloats the file size of MUXC.dll by 50%, so we turn this C++/WinRT feature off.
 #define WINRT_NO_SOURCE_LOCATION
 
-#pragma warning(disable : 6221) // Disable implicit cast warning for C++/WinRT headers (tracked by Bug 17528784: C++/WinRT headers trigger C6221 comparing e.code() to int-typed things)
+#pragma warning(disable : 6221) // C++/WinRT headers trigger C6221 comparing e.code() to int-typed things.
 
 // Disable factory caching in CppWinRT as the global COM pointers that are released during dll/process
 // unload are not safe. Setting this makes CppWinRT just call get_activation_factory directly every time.
@@ -396,10 +396,10 @@ void constexpr specialize_guids()
 // Primitives namespace is currently empty (no tabular primitives yet); its
 // forward-declared sub-namespaces keep the using-directives well-formed.
 #include "winrt/Microsoft.UI.Xaml.Controls.Tabular.h"
-// Framework-internal primitives (SortIndicator) live in the private namespace, which Tabular shares
-// verbatim with MUXC -- see MU_PRIVATE_CONTROLS_NAMESPACE in Microsoft.UI.Xaml.Controls.Tabular.idl.
-// The generated metadata provider names those types unqualified, so alias the namespace here for the
-// same reason the public Tabular one is aliased.
+// Framework-internal primitives (SortIndicator, ResizeGripper) live in the private namespace, which
+// Tabular shares verbatim with MUXC -- see MU_PRIVATE_CONTROLS_NAMESPACE in
+// Microsoft.UI.Xaml.Controls.Tabular.idl. The generated metadata provider names those types
+// unqualified, so alias the namespace here for the same reason the public Tabular one is aliased.
 #include "winrt/Microsoft.UI.Private.Controls.h"
 namespace winrt::Microsoft::UI::Xaml::Controls::Tabular { namespace implementation {} namespace factory_implementation {} }
 namespace winrt::Microsoft::UI::Xaml::Controls::Tabular::Primitives { namespace implementation {} namespace factory_implementation {} }

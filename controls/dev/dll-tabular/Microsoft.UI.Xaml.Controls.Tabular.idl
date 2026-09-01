@@ -14,22 +14,17 @@
 // ===========================================================================
 // Tabular controls DLL (Microsoft.UI.Xaml.Controls.Tabular) metadata IDL.
 //
-// This is a renamed copy of controls\idl\Microsoft.UI.Xaml.Controls.idl. The
-// Tabular DLL references MUXC's component winmd from C++/WinRT (so future tabular
-// controls can consume MUXC types -- ItemsRepeater / SelectionModel / ItemsSourceView /
-// ItemContainer* etc. -- across the binary boundary, and so the shared Telemetry
-// TypeLogging.cpp can stringify MUXC enums). MUXC's winmd already owns
-// XamlControlsXamlMetaDataProvider and XamlControlsResources, so the Tabular DLL
-// must PRODUCE differently-named types to avoid duplicate-runtimeclass collisions
-// in the C++/WinRT projection: XamlControlsTabularXamlMetaDataProvider and
-// TabularControlsResources.
+// This is a renamed copy of controls\idl\Microsoft.UI.Xaml.Controls.idl. MUXC's
+// winmd already owns XamlControlsXamlMetaDataProvider and XamlControlsResources,
+// so the Tabular DLL PRODUCEs differently-named types to avoid duplicate-runtimeclass
+// collisions: XamlControlsTabularXamlMetaDataProvider and TabularControlsResources.
 //
-// The MUX custom attribute definitions and the MUX_* macros are kept verbatim
-// because tabular control IDLs (added later) depend on them. They do NOT collide
-// with MUXC's winmd because MIDL never references MUXC's winmd (only C++/WinRT does,
-// and C++/WinRT does not project attribute types). This file is the FIRST entry in
-// the Tabular project's @(Midl) (see controls\Tabular.ProjectImports.targets) so
-// these macros and attributes are visible to all control IDLs merged after it.
+// The Microsoft.UI.Xaml.CustomAttributes types (MUXHasCustomActivationFactoryAttribute
+// etc.) are NOT redeclared here — MIDL references MUXC's winmd (see
+// controls\Tabular.ProjectImports.targets), which already defines them. Only the
+// MUX_* macros are kept verbatim, since tabular control IDLs depend on them. This
+// file is the FIRST entry in the Tabular project's @(Midl) so those macros are
+// visible to all control IDLs merged after it.
 // ===========================================================================
 
 namespace features
@@ -41,73 +36,6 @@ namespace features
     // In release, the experimental feature is disabled, removing it from the final WinMD
     feature_name Feature_Experimental = { AlwaysDisabled, FALSE };
 #endif
-}
-
-namespace Microsoft.UI.Xaml.CustomAttributes
-{
-    [attributeusage(target_runtimeclass)]
-    [version(0x00000001)]
-    [webhosthidden]
-    attribute MUXHasCustomActivationFactoryAttribute
-    {
-    }
-
-    [attributeusage(target_runtimeclass, target_enum, target_struct, target_interface, target_delegate, target_property, target_method)]
-    [version(0x00000001)]
-    [webhosthidden]
-    attribute MUXPropertyNeedsDependencyPropertyFieldAttribute
-    {
-    }
-
-    [attributeusage(target_runtimeclass, target_enum, target_struct, target_interface, target_delegate, target_property, target_method)]
-    [version(0x00000001)]
-    [webhosthidden]
-    attribute MUXPropertyChangedCallbackAttribute
-    {
-        boolean enable;
-    }
-
-    [attributeusage(target_runtimeclass, target_enum, target_struct, target_interface, target_delegate, target_property, target_method)]
-    [version(0x00000001)]
-    [webhosthidden]
-    attribute MUXPropertyChangedCallbackMethodNameAttribute
-    {
-        String value;
-    }
-
-    [attributeusage(target_runtimeclass, target_enum, target_struct, target_interface, target_delegate, target_property, target_method)]
-    [version(0x00000001)]
-    [webhosthidden]
-    attribute MUXPropertyValidationCallbackAttribute
-    {
-        String value;
-    }
-
-    [attributeusage(target_property, target_method)]
-    [version(0x00000001)]
-    [webhosthidden]
-    attribute MUXPropertyDefaultValueAttribute
-    {
-        String value;
-    }
-
-    [attributeusage(target_property, target_method)]
-    [version(0x00000001)]
-    [webhosthidden]
-    attribute MUXPropertyTypeAttribute
-    {
-        String value;
-    }
-
-#include "DPCodeGenAttributes.idl"
-
-    [attributeusage(target_runtimeclass, target_enum, target_struct, target_interface, target_delegate, target_property, target_method)]
-    [attributename("muxoverrideensureproperties")]
-    [version(0x00000001)]
-    [webhosthidden]
-    attribute MUXOverrideEnsurePropertiesAttribute
-    {
-    }
 }
 
 // These attributes are used to indicate the state of an API from a consumer's perspective:

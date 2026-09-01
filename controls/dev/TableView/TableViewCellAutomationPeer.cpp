@@ -206,7 +206,13 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewCellAutomationPeer::
             if (auto const owner = winrt::get_self<TableViewRow>(row)->GetOwningTableView())
             {
                 auto const headerPeer = winrt::make<TableViewColumnHeaderAutomationPeer>(owner, column);
-                headers.push_back(ProviderFromPeer(headerPeer));
+
+                // A provider array must not contain nulls - UIA marshals every element. An empty
+                // array correctly reports "this cell has no reachable column header".
+                if (auto const provider = ProviderFromPeer(headerPeer))
+                {
+                    headers.push_back(provider);
+                }
             }
         }
     }

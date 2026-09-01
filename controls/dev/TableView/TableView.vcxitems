@@ -33,14 +33,17 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewColumnHeaderAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewCellAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupHeader.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewRowTemplateSelector.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewRowInfo.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewProjectionView.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupHeaderAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupHeaderToggleRequestedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupingHelpers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupInfo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewBeginningEditEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewCellEditEndingEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSortingEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSortedEventArgs.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableView.properties.cpp" />
@@ -50,6 +53,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewRow.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewCellsPanel.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewGroupHeader.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Columns.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Keyboard.cpp" />
@@ -66,8 +70,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewGroupHeader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewGroupHeaderAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewGroupInfo.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSource.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Editing.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_EditingInput.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Sort.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Selection.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -85,6 +91,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)TableViewSource.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)TableView.idl" />
   </ItemGroup>
 </Project>

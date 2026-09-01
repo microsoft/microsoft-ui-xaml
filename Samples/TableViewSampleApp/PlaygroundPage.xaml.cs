@@ -5,18 +5,10 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
 using Microsoft.UI.Xaml.Controls.Tabular;
-// Disambiguate the real split-binary control types from the stale mock projection
-// (Microsoft.UI.Xaml.Controls.TableView*) that the mock Microsoft.WinUI.dll still carries.
-using TableViewTextColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTextColumn;
-using TableViewTemplateColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTemplateColumn;
-using TableViewHeadersVisibility = Microsoft.UI.Xaml.Controls.Tabular.TableViewHeadersVisibility;
-using TableViewGridLinesVisibility = Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility;
-using TableViewDensity = Microsoft.UI.Xaml.Controls.Tabular.TableViewDensity;
-using TableViewFrozenEdge = Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge;
 
 namespace TableViewSampleApp;
 
-// Interactive playground: builds a TableView (real split-binary control) with one column of each
+// Interactive playground: builds a TableView (control) with one column of each
 // kind, then wires the left panel so every public API can be exercised live. Data lives in Data.cs.
 public sealed partial class PlaygroundPage : Page
 {
