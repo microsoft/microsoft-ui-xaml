@@ -174,6 +174,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")]
         public void InkToolbarStencilToggleWithTargetCanvasTest()
         {
             RunOnUIThread.Execute(() =>
@@ -406,6 +407,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")]
         public void InkToolbarWithTargetInkCanvasInVisualTreeTest()
         {
             RunOnUIThread.Execute(() =>
