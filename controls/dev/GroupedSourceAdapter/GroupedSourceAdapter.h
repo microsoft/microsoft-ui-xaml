@@ -13,7 +13,7 @@
 
 #include <winrt/Microsoft.UI.Dispatching.h>
 
-#include "GroupExpansionModel.h"
+#include "RowExpansionModel.h"
 
 // Single-responsibility grouped adapter.
 //
@@ -48,7 +48,7 @@
 //
 // What it KEEPS, because these are orthogonal to how rows are stored:
 //
-//   * Expansion INTENT (GroupExpansionModel), keyed by the group's stable string identity so it
+//   * Expansion INTENT (RowExpansionModel), keyed by the group's stable string identity so it
 //     survives group objects being re-minted by each reshape. A change here just triggers Rebuild.
 //   * Source and inner-group subscription with UI-thread affinity and GC-safe (weak) callbacks.
 //   * Empty groups are preserved (app-authored structure), matching the current adapter.
@@ -90,7 +90,7 @@ private:
     void Rebuild();
     bool OnUiThread() const;
     void AssertRebuildOnUiThread() const;
-    void OnExpansionChanged(HierarchicalItemsSource::GroupExpansionModel::Change const& change);
+    void OnExpansionChanged(TabularShapingHelpers::RowExpansionModel::Change const& change);
 
     void AttachToSource();
     void DetachFromSource();
@@ -110,7 +110,7 @@ private:
     winrt::ItemsSourceView m_entriesView{ nullptr };
 
     // Expand/collapse intent, keyed by group identity string so it survives reshapes.
-    HierarchicalItemsSource::GroupExpansionModel m_expansion;
+    TabularShapingHelpers::RowExpansionModel m_expansion;
 
     // Key->group map of the last Rebuild's live groups, for ResolveLiveGroupByIdentity.
     std::unordered_map<winrt::hstring, winrt::IInspectable> m_liveGroupsByIdentityKey;

@@ -39,7 +39,6 @@
          shaping arrives in a later change. -->
     <Import Project="$(MSBuildThisFileDirectory)dev\TabularShaping\TabularShaping.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\ShapedItemsSource\ShapedItemsSource.vcxitems" Label="Shared" />
-    <Import Project="$(MSBuildThisFileDirectory)dev\HierarchicalItemsSource\HierarchicalItemsSource.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\GroupedSourceAdapter\GroupedSourceAdapter.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\SortIndicator\SortIndicator.vcxitems" Label="Shared" />
     <!-- TableView control (hosted only in the Tabular binary) -->

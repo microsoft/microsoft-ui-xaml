@@ -363,13 +363,13 @@ winrt::hstring RowMetadataProvider::GetGroupKey(winrt::IInspectable const& group
     // grouped adapter uses. The two MUST agree: an expansion key produced here is handed back to
     // the adapter's identity lookup, and a mismatch would silently degrade every expand/collapse
     // to the O(rows) scan below.
-    const auto identity = HierarchicalItemsSource::GetGroupKeyIdentity(group);
+    const auto identity = TabularShapingHelpers::GetGroupKeyIdentity(group);
     if (!identity.empty())
     {
         return identity;
     }
 
-    return GetCanonicalGroupKey(HierarchicalItemsSource::GetGroupKeyObject(group));
+    return GetCanonicalGroupKey(TabularShapingHelpers::GetGroupKeyObject(group));
 }
 
 winrt::hstring RowMetadataProvider::GetGroupExpansionKey(winrt::IInspectable const& group) const

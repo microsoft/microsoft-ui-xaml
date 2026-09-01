@@ -12,14 +12,16 @@
 
 #include <winrt/Windows.Foundation.h>
 
-// Layer 3 of the Tabular shaping stack: expand/collapse INTENT, separated from the structure the
-// intent applies to.
+// Layer 1 of the Tabular shaping stack: expand/collapse INTENT, separated from the structure the
+// intent applies to. Shared by both flattening axes — grouping keys it by a group's stable
+// identity, hierarchy keys it by a node's stable identity — which is why it lives in layer 1
+// rather than beside either adapter.
 //
-// A group's expansion state looks like it belongs on the group, but it does not. Groups are
-// derived: the shaping layer above re-mints them on every reshape, so state stored on a group
-// dies with each sort, filter or regroup — which is exactly why "collapse a group, then re-sort"
-// used to lose the collapse. Expansion is a property of the USER's intent about a KEY, and it
-// outlives every group object that key ever had.
+// A group's (or node's) expansion state looks like it belongs on the group, but it does not.
+// Groups are derived: the shaping layer above re-mints them on every reshape, so state stored on
+// a group dies with each sort, filter or regroup — which is exactly why "collapse a group, then
+// re-sort" used to lose the collapse. Expansion is a property of the USER's intent about a KEY,
+// and it outlives every group object that key ever had.
 //
 // So this type stores intent keyed by a caller-supplied string, holds no reference to any group,
 // and knows nothing about rows, runs or a projection. What it owns is the one non-obvious rule:
@@ -31,9 +33,9 @@
 // Deliberately free of WinRT collection types, XAML and any tabular vocabulary: a TreeView, a
 // grouped ItemsRepeater or an app-authored hierarchy can use it directly, and it is testable
 // with no dispatcher and no host.
-namespace HierarchicalItemsSource
+namespace TabularShapingHelpers
 {
-    class GroupExpansionModel
+    class RowExpansionModel
     {
     public:
         // Keys whose resolved state changed, and what they changed TO. Empty `Keys` with
