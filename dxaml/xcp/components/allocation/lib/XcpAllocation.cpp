@@ -58,28 +58,35 @@ _Check_return_ size_t XcpAllocation::OSMemoryGetBlockSize(_In_opt_ const void *p
 #define COUNT_ALLOC 1
 #endif
 
+#if COUNT_ALLOC && defined(XAMLPROFILER_ENABLED)
+#define COUNT_OUTSTANDING_ALLOC 1
+#endif
+
 #if COUNT_ALLOC
 std::atomic<size_t> g_allocCount = 0;
 std::atomic<size_t> g_allocSize = 0;
 std::atomic<size_t> g_deallocCount = 0;
+#endif
+
+#if COUNT_OUTSTANDING_ALLOC
 std::atomic<size_t> g_outstandingAllocCount = 0;
 std::atomic<size_t> g_outstandingAllocSize = 0;
 #endif
 
+#if COUNT_OUTSTANDING_ALLOC
 namespace
 {
     void RecordOutstandingAllocation(_In_ const void *pAddress)
     {
-#if COUNT_ALLOC
         const size_t cSize = XcpAllocation::OSMemoryGetBlockSize(pAddress);
         if (cSize != 0)
         {
             g_outstandingAllocCount.fetch_add(1, std::memory_order_relaxed);
             g_outstandingAllocSize.fetch_add(cSize, std::memory_order_relaxed);
         }
-#endif
     }
 }
+#endif
 
 size_t XcpAllocation::GetAllocationCount()
 {
@@ -110,7 +117,7 @@ size_t XcpAllocation::GetDeallocationCount()
 
 size_t XcpAllocation::GetOutstandingAllocationCount()
 {
-#if COUNT_ALLOC
+#if COUNT_OUTSTANDING_ALLOC
     return g_outstandingAllocCount.load(std::memory_order_relaxed);
 #else
     return 0;
@@ -119,7 +126,7 @@ size_t XcpAllocation::GetOutstandingAllocationCount()
 
 size_t XcpAllocation::GetOutstandingAllocationSize()
 {
-#if COUNT_ALLOC
+#if COUNT_OUTSTANDING_ALLOC
     return g_outstandingAllocSize.load(std::memory_order_relaxed);
 #else
     return 0;
@@ -177,7 +184,9 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateFailFast(_In_ size_t cSize)
     if (pAddress)
     {
         UpdateAllocatedMemory(cSize);
+#if COUNT_OUTSTANDING_ALLOC
         RecordOutstandingAllocation(pAddress);
+#endif
     }
     else
     {
@@ -213,7 +222,9 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateZeroMemoryFailFast(_In_ size
     if (pAddress)
     {
         UpdateAllocatedMemory(cSize);
+#if COUNT_OUTSTANDING_ALLOC
         RecordOutstandingAllocation(pAddress);
+#endif
     }
     else
     {
@@ -263,7 +274,9 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateNoFailFast(_In_ size_t cSize
     if (pAddress)
     {
         UpdateAllocatedMemory(cSize);
+#if COUNT_OUTSTANDING_ALLOC
         RecordOutstandingAllocation(pAddress);
+#endif
     }
 
     return pAddress;
@@ -282,7 +295,7 @@ _Check_return_ void *XcpAllocation::OSMemoryResize(_Frees_ptr_opt_ void *pAddres
 
     const bool trackMemory = g_memoryTrackingEnabled;
     bool needBlockSize = trackMemory;
-#if COUNT_ALLOC
+#if COUNT_OUTSTANDING_ALLOC
     needBlockSize = true;
 #endif
 
@@ -312,7 +325,7 @@ _Check_return_ void *XcpAllocation::OSMemoryResize(_Frees_ptr_opt_ void *pAddres
         UpdateAllocatedMemory(static_cast<INT64>(cSize) - static_cast<INT64>(cOldSize));
     }
 
-#if COUNT_ALLOC
+#if COUNT_OUTSTANDING_ALLOC
     if (newAddress)
     {
         const size_t cNewSize = XcpAllocation::OSMemoryGetBlockSize(newAddress);
@@ -336,7 +349,7 @@ void XcpAllocation::OSMemoryFree(_Frees_ptr_opt_ void *pAddress)
 
     const bool trackMemory = g_memoryTrackingEnabled;
     bool needBlockSize = trackMemory;
-#if COUNT_ALLOC
+#if COUNT_OUTSTANDING_ALLOC
     needBlockSize = true;
 #endif
 
@@ -356,6 +369,9 @@ void XcpAllocation::OSMemoryFree(_Frees_ptr_opt_ void *pAddress)
 
 #if COUNT_ALLOC
     g_deallocCount.fetch_add(1, std::memory_order_relaxed);
+#endif
+
+#if COUNT_OUTSTANDING_ALLOC
     if (cSize != 0)
     {
         g_outstandingAllocCount.fetch_sub(1, std::memory_order_relaxed);
