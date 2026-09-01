@@ -128,6 +128,7 @@ namespace MU_X_XTI_NAMESPACE
 {
     [webhosthidden]
     [default_interface]
+    [MUX_PREVIEW]
     runtimeclass XamlControlsTabularXamlMetaDataProvider
     // IXMP needs to be implemented by a public type in our assembly, but it doesn't need to be
     // named anything special. Let's leverage the fact that we have this existing runtimeclass
@@ -144,7 +145,7 @@ namespace MU_XC_NAMESPACE
 {
     [webhosthidden]
     [default_interface]
-    [MUX_PUBLIC]
+    [MUX_PREVIEW]
     runtimeclass TabularControlsResources : Microsoft.UI.Xaml.ResourceDictionary
     {
         TabularControlsResources();
