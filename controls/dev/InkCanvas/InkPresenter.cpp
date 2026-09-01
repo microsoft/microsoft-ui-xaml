@@ -674,98 +674,89 @@ muxc::InkUnprocessedInput InkPresenter::UnprocessedInput()
 
 muxc::InkSynchronizer InkPresenter::ActivateCustomDrying()
 {
-    // Snapshot the app-set input configuration on the UI thread (where these mirrors live) so the rebuilt
-    // presenter can restore it - the rebuild otherwise starts from OS defaults. Reading here avoids a
-    // cross-thread read inside the ink-thread work item.
+    // Snapshot the app-set input configuration on the UI thread (avoids a cross-thread read inside the
+    // ink-thread work item); the rebuilt presenter restores it.
     auto mode = m_inputProcessingConfiguration ? m_inputProcessingConfiguration.Mode() : muxc::InkInputProcessingMode::Inking;
     auto rightDrag = m_inputProcessingConfiguration ? m_inputProcessingConfiguration.RightDragAction() : muxc::InkInputRightDragAction::LeaveUnprocessed;
     bool barrelButton = m_inputConfiguration ? m_inputConfiguration.IsPrimaryBarrelButtonInputEnabled() : true;
     bool eraserInput = m_inputConfiguration ? m_inputConfiguration.IsEraserInputEnabled() : true;
 
-    // Ensure the stable mirror exists (UWP parity: repeated calls return the same identity) BEFORE the
-    // synchronous work item, so the work item can adopt the OS synchronizer into it on the ink thread.
-    if (!m_customDryMirror)
+    // Create the projected synchronizer on the UI (calling) thread, where the app invokes it - a proxy
+    // created on the ink thread crashes when called cross-apartment. Stable across repeated calls.
+    if (!m_customDrySynchronizer)
     {
-        m_customDryMirror = winrt::make<InkSynchronizer>(winrt::weak_ref<muxc::InkPresenter>{ *this });
+        m_customDrySynchronizer = winrt::make<InkSynchronizer>(winrt::weak_ref<muxc::InkPresenter>{ *this });
     }
 
-    // The OS only allows ActivateCustomDrying before the presenter has started processing input. The
-    // lifted InkCanvas roots + sizes the presenter on load, which starts it, so a runtime activation on
-    // that same presenter is "too late" (E_ILLEGAL_METHOD_CALL) - and starting is irreversible, so
-    // detaching the root visual / zeroing the size does NOT undo it (verified). To honor a runtime
-    // activation we therefore build a FRESH OS presenter and wire it in the exact order the OS custom-
-    // dry contract requires - create -> SetRootVisual(device) -> SetCommitRequestHandler ->
-    // ActivateCustomDrying -> configure/subscribe -> SetSize - then swap it in for the started one.
+    // Idempotent (UWP parity): the first call rebuilds + activates on the ink thread; repeated calls
+    // return the same synchronizer.
     RunInkPresenterWorkItemSync(
-        [this, mode, rightDrag, barrelButton, eraserInput](inking::InkPresenter const& oldPresenter)
+        [this, mode, rightDrag, barrelButton, eraserInput](inking::InkPresenter const& startedPresenter)
         {
-            // Idempotent (UWP parity): repeated calls return the same synchronizer with no side effects,
-            // so do not rebuild the presenter if custom drying is already active.
-            if (m_customDryActive)
+            if (!m_customDryActive)
             {
-                return;
-            }
-
-            // Carry the current physical size across to the replacement, then stop the started presenter
-            // from presenting into the shared ink visual before the new one takes it over.
-            float width = 0, height = 0;
-            oldPresenter.as<IInkPresenterDesktop>()->GetSize(&width, &height);
-            oldPresenter.as<IInkPresenterDesktop>()->SetRootVisual(nullptr, nullptr);
-
-            // Fresh presenter, then bind the render target together with the composition DEVICE via
-            // SetRootVisual - device = m_compositionDevice, NOT nullptr. The normal-inking path passes
-            // nullptr (it relies only on the commit handler); custom drying needs the real device to wire
-            // up the wet->dry handoff - with a null device BeginDry fails with E_UNEXPECTED. Size is still
-            // 0 so the presenter has not "started" (activation is still allowed).
-            auto newDesktop = winrt::capture<IInkPresenterDesktop>(m_inkHost, &IInkDesktopHost::CreateInkPresenter);
-            auto newPresenter = newDesktop.as<inking::InkPresenter>();
-
-            if (m_rootVisual)
-            {
-                winrt::check_hresult(newDesktop->SetRootVisual(m_rootVisual.get(), m_compositionDevice.get()));
-            }
-            if (m_compositionDevice)
-            {
-                auto commitHandler = winrt::make_self<InkCommitRequestHandler>(m_compositionDevice);
-                winrt::check_hresult(newDesktop->SetCommitRequestHandler(commitHandler.as<IInkCommitRequestHandler>().get()));
-            }
-            // Adopt the OS InkSynchronizer into the mirror, which owns it and the dry-transaction state;
-            // this proxy keeps only the projected mirror, never the raw OS synchronizer. m_customDrySync
-            // lets the in-context StrokesCollected callback drive the mirror's ink-thread BeginDry.
-            auto syncImpl = winrt::get_self<::InkSynchronizer>(m_customDryMirror);
-            syncImpl->AdoptOsSynchronizer(newPresenter.ActivateCustomDrying());
-            m_customDrySync = syncImpl;
-            m_customDryActive = true;
-
-            // Adopt the new presenter (wires stroke/input forwarding) and restore the configuration the
-            // app had applied to the replaced one.
-            InitializeOsPresenter(newPresenter);
-            newPresenter.InputDeviceTypes(m_inputDeviceTypes);
-            newPresenter.IsInputEnabled(m_isInputEnabled);
-            if (m_defaultDrawingAttributes)
-            {
-                newPresenter.UpdateDefaultDrawingAttributes(m_defaultDrawingAttributes);
-            }
-            newPresenter.HighContrastAdjustment(
-                static_cast<inking::InkHighContrastAdjustment>(static_cast<int32_t>(m_highContrastAdjustment)));
-            newPresenter.InputProcessingConfiguration().Mode(
-                static_cast<inking::InkInputProcessingMode>(static_cast<int32_t>(mode)));
-            newPresenter.InputProcessingConfiguration().RightDragAction(
-                static_cast<inking::InkInputRightDragAction>(static_cast<int32_t>(rightDrag)));
-            newPresenter.InputConfiguration().IsPrimaryBarrelButtonInputEnabled(barrelButton);
-            newPresenter.InputConfiguration().IsEraserInputEnabled(eraserInput);
-
-            // Start it (input begins) now that custom-dry is engaged with the render target set.
-            winrt::check_hresult(newDesktop->SetSize(width, height));
-            if (m_compositionDevice)
-            {
-                winrt::check_hresult(m_compositionDevice->Commit());
+                RebuildOsPresenterForCustomDrying(startedPresenter, mode, rightDrag, barrelButton, eraserInput);
+                m_customDryActive = true;
             }
         },
         /* propagateException */ true,
         /* pumpMessages */ false);
 
-    return m_customDryMirror;
+    return m_customDrySynchronizer;
+}
+
+void InkPresenter::RebuildOsPresenterForCustomDrying(inking::InkPresenter const& startedPresenter,
+    muxc::InkInputProcessingMode mode, muxc::InkInputRightDragAction rightDrag, bool barrelButton, bool eraserInput)
+{
+    // Carry the size across, then stop the started presenter from presenting into the shared ink visual.
+    float width = 0;
+    float height = 0;
+    startedPresenter.as<IInkPresenterDesktop>()->GetSize(&width, &height);
+    startedPresenter.as<IInkPresenterDesktop>()->SetRootVisual(nullptr, nullptr);
+
+    // SetRootVisual gets the composition DEVICE (not nullptr): custom drying needs it for the wet->dry
+    // handoff; a null device makes BeginDry fail with E_UNEXPECTED. Size is still 0, so activation is legal.
+    auto customDryDesktop = winrt::capture<IInkPresenterDesktop>(m_inkHost, &IInkDesktopHost::CreateInkPresenter);
+    auto customDryPresenter = customDryDesktop.as<inking::InkPresenter>();
+    if (m_rootVisual)
+    {
+        winrt::check_hresult(customDryDesktop->SetRootVisual(m_rootVisual.get(), m_compositionDevice.get()));
+    }
+    if (m_compositionDevice)
+    {
+        auto commitHandler = winrt::make_self<InkCommitRequestHandler>(m_compositionDevice);
+        winrt::check_hresult(customDryDesktop->SetCommitRequestHandler(commitHandler.as<IInkCommitRequestHandler>().get()));
+    }
+
+    // Inject the OS synchronizer (from ActivateCustomDrying) into the UI-thread-created proxy.
+    // m_customDrySync lets the in-context StrokesCollected callback drive its ink-thread BeginDry.
+    auto syncImpl = winrt::get_self<::InkSynchronizer>(m_customDrySynchronizer);
+    syncImpl->AdoptOsSynchronizer(customDryPresenter.ActivateCustomDrying());
+    m_customDrySync = syncImpl;
+
+    // Adopt the fresh presenter and restore the config the app had set (a fresh presenter = OS defaults).
+    InitializeOsPresenter(customDryPresenter);
+    customDryPresenter.InputDeviceTypes(m_inputDeviceTypes);
+    customDryPresenter.IsInputEnabled(m_isInputEnabled);
+    if (m_defaultDrawingAttributes)
+    {
+        customDryPresenter.UpdateDefaultDrawingAttributes(m_defaultDrawingAttributes);
+    }
+    customDryPresenter.HighContrastAdjustment(
+        static_cast<inking::InkHighContrastAdjustment>(static_cast<int32_t>(m_highContrastAdjustment)));
+    customDryPresenter.InputProcessingConfiguration().Mode(
+        static_cast<inking::InkInputProcessingMode>(static_cast<int32_t>(mode)));
+    customDryPresenter.InputProcessingConfiguration().RightDragAction(
+        static_cast<inking::InkInputRightDragAction>(static_cast<int32_t>(rightDrag)));
+    customDryPresenter.InputConfiguration().IsPrimaryBarrelButtonInputEnabled(barrelButton);
+    customDryPresenter.InputConfiguration().IsEraserInputEnabled(eraserInput);
+
+    // Start it (input begins) now that custom drying is engaged.
+    winrt::check_hresult(customDryDesktop->SetSize(width, height));
+    if (m_compositionDevice)
+    {
+        winrt::check_hresult(m_compositionDevice->Commit());
+    }
 }
 
 void InkPresenter::SetCompositionDevice(winrt::com_ptr<IDCompositionDevice> const& device)

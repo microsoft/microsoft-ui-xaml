@@ -290,14 +290,11 @@ namespace ScratchPadApp
                 }
 
                 _inkSynchronizer.EndDry();
-                // Verify the originals were actually removed from InkCanvas (not just covered by the red).
-                int surfaceLeft = InkSurface.InkPresenter.StrokeContainer.GetStrokes().Count;
                 CustomDryText.Text =
                     $"collection #{_customDryCollections}: app rendered {n} stroke(s) (tinted)" +
                     (n == 0 ? "  <- EMPTY" : "") +
-                    $"\ntotal dried = {_customDryStrokesTotal}" +
-                    $"\nInkCanvas now holds {surfaceLeft} (expect 0 = removed)";
-                App.Log($"CustomDry BeginDry={n}, app-rendered, EndDry ok; InkSurface container = {surfaceLeft}");
+                    $"\ntotal dried = {_customDryStrokesTotal}";
+                App.Log($"CustomDry BeginDry={n}, app-rendered, EndDry ok");
             }
             catch (Exception ex)
             {

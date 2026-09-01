@@ -270,8 +270,9 @@ public:
     winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> BeginDry();
     void EndDry();
 
-    // Internal (not on the winmd surface). Adopts the OS InkSynchronizer handed back by the owning
-    // presenter's OS ActivateCustomDrying. Called once on the ink thread when custom drying is activated.
+    // Internal (not on the winmd surface). Injects the OS InkSynchronizer (from the presenter's OS
+    // ActivateCustomDrying) into this UI-thread-created proxy. Called on the ink thread, where the OS
+    // synchronizer is valid.
     void AdoptOsSynchronizer(inking::InkSynchronizer const& osSynchronizer) noexcept { m_osSynchronizer = osSynchronizer; }
 
     // Internal (not on the winmd surface). Runs the OS BeginDry in-context on the ink thread, inside the
@@ -384,6 +385,12 @@ private:
     // via m_uiDispatcher -> raise our events).
     void InitializeOsPresenter(inking::InkPresenter const& osPresenter);
 
+    // Runs on the ink thread. The OS forbids ActivateCustomDrying after the presenter has started (our
+    // InkCanvas starts it on load), so we build a fresh presenter, activate it while unstarted, restore
+    // the app's configuration, and swap it in. Sets m_customDrySynchronizer / m_customDrySync.
+    void RebuildOsPresenterForCustomDrying(inking::InkPresenter const& startedPresenter,
+        muxc::InkInputProcessingMode mode, muxc::InkInputRightDragAction rightDrag, bool barrelButton, bool eraserInput);
+
     // The shared ink host (owns the ink thread), handed in by InkCanvas at construction. Used to
     // queue work items; the OS presenter is created and serviced on that thread.
     winrt::com_ptr<IInkDesktopHost> m_inkHost{ nullptr };
@@ -419,14 +426,14 @@ private:
     muxc::InkStrokeInput m_strokeInput{ nullptr };
     muxc::InkUnprocessedInput m_unprocessedInput{ nullptr };
 
-    // Custom-drying: the stable mirror handed back by ActivateCustomDrying (UI-thread cached; repeated
-    // calls return the same identity, UWP parity). It owns the OS InkSynchronizer and the dry-transaction
-    // state; this proxy keeps only the projected mirror, never the raw OS inking::InkSynchronizer.
-    muxc::InkSynchronizer m_customDryMirror{ nullptr };
+    // Custom drying: the synchronizer handed back by ActivateCustomDrying (UI-thread cached; repeated
+    // calls return the same instance, UWP parity). It wraps the OS InkSynchronizer and owns the
+    // dry-transaction state; this proxy keeps only this projected wrapper, never the raw OS one.
+    muxc::InkSynchronizer m_customDrySynchronizer{ nullptr };
 
-    // Non-owning pointer to m_customDryMirror's implementation, so the in-context StrokesCollected
+    // Non-owning pointer to m_customDrySynchronizer's implementation, so the in-context StrokesCollected
     // callback can drive its ink-thread BeginDry. Set on the ink thread when custom drying is activated;
-    // valid for this proxy's lifetime (m_customDryMirror owns the object). Ink-thread only.
+    // valid for this proxy's lifetime (m_customDrySynchronizer owns the object). Ink-thread only.
     InkSynchronizer* m_customDrySync{ nullptr };
 
     // The shared DComp device, BORROWED from the InkCanvas/ThreadData that owns it (a per-UI-thread
