@@ -87,6 +87,24 @@ Cleanup:
     RRETURN(hr);
 }
 
+_Check_return_ HRESULT
+FrameworkElement::SetCompiledBindingImpl(
+    _In_ IDependencyProperty* pDP,
+    _In_ xaml_data::ICompiledBindingGetter* getter)
+{
+    ctl::ComPtr<DependencyPropertyHandle> spDP;
+    ctl::ComPtr<IInspectable> spDataContext;
+
+    IFC_RETURN(ctl::do_query_interface(spDP, pDP));
+    IFC_RETURN(get_DataContext(&spDataContext));
+
+    return DXamlCore::SetCompiledBinding(
+        spDataContext.Get(),
+        getter,
+        this,
+        spDP->GetDP()->GetIndex());
+}
+
 // Exposes the markup-only {ThemeResource} mechanism to code. Resolves the key against the current
 // tree location using a non-diagnostics tree walk, then installs a live theme resource binding on the
 // target property so it re-resolves on theme changes - reusing the same engine as markup.

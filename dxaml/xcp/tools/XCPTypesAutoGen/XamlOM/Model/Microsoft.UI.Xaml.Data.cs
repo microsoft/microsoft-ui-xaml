@@ -606,6 +606,13 @@ namespace Microsoft.UI.Xaml.Data
 
     public delegate void PropertyChangedEventHandler(Windows.Foundation.Object sender, Microsoft.UI.Xaml.Data.PropertyChangedEventArgs e);
 
+    // Getter for a programmatic compiled binding: maps a source object (typically the DataContext)
+    // to the value for the bound target property. Code-behind analog of an {x:Bind} expression's
+    // generated getter. Non-generic at the ABI (source and result are Object) because WinRT cannot
+    // express user-defined generic delegates; typed, boxing-free wrappers are layered on top in the
+    // language projections.
+    public delegate Windows.Foundation.Object CompiledBindingGetter(Windows.Foundation.Object source);
+
     [CodeGen(partial: true)]
     [DXamlIdlGroup("coretypes2")]
     [TypeFlags(IsCreateableFromXAML = false)]

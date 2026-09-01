@@ -962,6 +962,52 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        [TestMethod]
+        public void ValidateCodeAuthoredDataTemplateSupportsCompiledBinding()
+        {
+            var items = new[]
+            {
+                new DisplayNameViewModel("Item 1"),
+                new DisplayNameViewModel("Item 2"),
+                new DisplayNameViewModel("Item 3"),
+            };
+
+            RunOnUIThread.Execute(() =>
+            {
+                var template = new DataTemplate(() =>
+                {
+                    var textBlock = new TextBlock();
+                    textBlock.SetCompiledBinding(
+                        TextBlock.TextProperty,
+                        source => ((DisplayNameViewModel)source).DisplayName);
+                    return textBlock;
+                });
+
+                var repeater = new ItemsRepeater()
+                {
+                    ItemsSource = items,
+                    ItemTemplate = template,
+                };
+
+                Content = new ItemsRepeaterScrollHost()
+                {
+                    Width = 400,
+                    Height = 800,
+                    ScrollViewer = new ScrollViewer { Content = repeater }
+                };
+
+                Content.UpdateLayout();
+
+                for (int i = 0; i < items.Length; i++)
+                {
+                    var element = repeater.TryGetElement(i) as TextBlock;
+                    Verify.IsNotNull(element, $"Element {i} should be realized from the code-authored template.");
+                    Verify.AreSame(items[i], element.DataContext);
+                    Verify.AreEqual(items[i].DisplayName, element.Text);
+                }
+            });
+        }
+
         // Asserts each realized ItemsRepeater element reflects its item via DataContext, a {Binding} on Text,
         // and DataContextChanged, and that every element is a distinct instance the callback produced.
         private static void VerifyRealizedElements(ItemsRepeater repeater, IList<string> items, List<UIElement> created, Dictionary<TextBlock, object> changedContexts)
@@ -982,6 +1028,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             // Each item maps to a distinct element instance.
             Verify.AreEqual(items.Count, realized.Distinct().Count());
+        }
+
+        private class DisplayNameViewModel
+        {
+            public DisplayNameViewModel(string displayName)
+            {
+                DisplayName = displayName;
+            }
+
+            public string DisplayName { get; }
         }
 
     }

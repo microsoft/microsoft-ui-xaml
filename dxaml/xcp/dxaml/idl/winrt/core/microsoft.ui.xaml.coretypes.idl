@@ -1566,6 +1566,10 @@ namespace Microsoft.UI.Xaml.Data
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
+    delegate Object CompiledBindingGetter(Object source);
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
+    [webhosthidden]
     delegate void CurrentChangingEventHandler(Object sender, Microsoft.UI.Xaml.Data.CurrentChangingEventArgs e);
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
@@ -2556,6 +2560,7 @@ namespace Microsoft.UI.Xaml
         [interface_name("Microsoft.UI.Xaml.IFrameworkElementFeature_ExperimentalApi")]
         {
             void SetThemeResourceBinding(Microsoft.UI.Xaml.DependencyProperty property, String resourceKey);
+            void SetCompiledBinding(Microsoft.UI.Xaml.DependencyProperty dp, Microsoft.UI.Xaml.Data.CompiledBindingGetter getter);
         }
     };
 
