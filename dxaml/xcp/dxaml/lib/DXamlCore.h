@@ -645,6 +645,16 @@ namespace DirectUI
             _In_ CDependencyObject* target,
             KnownPropertyIndex targetPropertyIndex);
 
+        // Programmatic OneWay compiled binding: installs a CompiledBindingExpression that produces
+        // the target property's value by invoking the app-supplied getter delegate against source,
+        // re-evaluating whenever source raises INotifyPropertyChanged. This is the runtime primitive
+        // behind a code-behind SetBinding(dp, getter) overload (the code analog of {x:Bind}).
+        static _Check_return_ HRESULT SetCompiledBinding(
+            _In_ IInspectable* source,
+            _In_ xaml_data::ICompiledBindingGetter* getter,
+            _In_ DependencyObject* target,
+            KnownPropertyIndex targetPropertyIndex);
+
         void RegisterForChangeVisualStateOnDynamicScrollbarsSettingChanged(_In_ Control* control);
         void UnregisterFromDynamicScrollbarsSettingChanged(_In_ Control* element);
         _Check_return_ HRESULT OnAutoHideScrollbarsChanged();

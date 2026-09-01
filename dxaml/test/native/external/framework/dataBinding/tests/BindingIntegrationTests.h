@@ -108,6 +108,31 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                     L"Create a tree set data context on root, create a binding on the leaf, then override that binding and verify the explicit value sticks")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CanSetDataContextForCompiledBinding)
+                TEST_METHOD_PROPERTY(L"Description",
+                    L"Set a compiled binding before and after setting DataContext and verify the value propagates")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CanSetDataContextViaSetValueForCompiledBinding)
+                TEST_METHOD_PROPERTY(L"Description",
+                    L"Set a compiled binding before and after setting DataContext via SetValue and verify the value propagates")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CanSetCompiledBindingDataContextAtMultipleLevels)
+                TEST_METHOD_PROPERTY(L"Description",
+                    L"Verify compiled bindings follow local and inherited DataContext changes at multiple levels")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CanLocalValueOverrideCompiledBinding)
+                TEST_METHOD_PROPERTY(L"Description",
+                    L"Override a compiled binding with a local value and verify later source changes do not replace it")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CanOverwriteClassicAndCompiledBindings)
+                TEST_METHOD_PROPERTY(L"Description",
+                    L"Verify classic and compiled bindings replace one another on the same target property")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(CanContentPresenterUpdateContentBinding)
                 TEST_METHOD_PROPERTY(L"Description",
                     L"Create a Binding for ContentPresenter.Content and ensure that the Content template is created on first layout.")
@@ -186,6 +211,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(CanGetBindingExpressionGetBinding)
                 TEST_METHOD_PROPERTY(L"Description",
                     L"Verify that GetBindingExpression returns non-null when a binding is set")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CanGetBindingExpressionForCompiledBinding)
+                TEST_METHOD_PROPERTY(L"Description",
+                    L"Verify that GetBindingExpression does not expose a compiled binding")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(CanBindToCollectionIndexer)

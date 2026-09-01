@@ -92,6 +92,7 @@
 #include "BindingExpression.g.h"
 #include "PropertyPath.g.h"
 #include "DirectSourceBindingExpression.h"
+#include "CompiledBindingExpression.h"
 #include "Callback.h"
 #include "DxamlCoreTestHooks.g.h"
 #include "NullKeyedResource.g.h"
@@ -4707,6 +4708,26 @@ bool DXamlCore::TryGetXamlIslandBoundsForElement(_In_opt_ CDependencyObject* dep
         source,
         pSourceProperty,
         converter,
+        spExpression.ReleaseAndGetAddressOf()));
+
+    // Attach the expression to the target using the public SetExpressionCore method
+    IFC_RETURN(target->SetExpressionCore(pTargetProperty, spExpression.Get(), ::BaseValueSourceUnknown));
+
+    return S_OK;
+}
+
+/* static */ _Check_return_ HRESULT DXamlCore::SetCompiledBinding(
+    _In_ IInspectable* source,
+    _In_ xaml_data::ICompiledBindingGetter* getter,
+    _In_ DependencyObject* target,
+    KnownPropertyIndex targetPropertyIndex)
+{
+    const auto* pTargetProperty = MetadataAPI::GetDependencyPropertyByIndex(targetPropertyIndex);
+
+    ctl::ComPtr<CompiledBindingExpression> spExpression;
+    IFC_RETURN(CompiledBindingExpression::Create(
+        source,
+        getter,
         spExpression.ReleaseAndGetAddressOf()));
 
     // Attach the expression to the target using the public SetExpressionCore method

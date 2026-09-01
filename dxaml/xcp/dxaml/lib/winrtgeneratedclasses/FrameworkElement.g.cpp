@@ -1178,6 +1178,27 @@ Cleanup:
     RRETURN(hr);
 }
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FrameworkElementGenerated::SetCompiledBinding(_In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pDp, _In_ ABI::Microsoft::UI::Xaml::Data::ICompiledBindingGetter* pGetter)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "FrameworkElement_SetCompiledBinding", 0);
+    }
+    ARG_NOTNULL(pDp, "dp");
+    ARG_NOTNULL(pGetter, "getter");
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<FrameworkElement*>(this)->SetCompiledBindingImpl(pDp, pGetter));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "FrameworkElement_SetCompiledBinding", hr);
+    }
+    RRETURN(hr);
+}
+#endif
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FrameworkElementGenerated::SetThemeResourceBinding(_In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pProperty, _In_ HSTRING resourceKey)
 {
     HRESULT hr = S_OK;
