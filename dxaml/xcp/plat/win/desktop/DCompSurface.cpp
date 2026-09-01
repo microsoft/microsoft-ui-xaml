@@ -1120,6 +1120,8 @@ DCompSurface::Resize(
 
     ASSERT(m_compositionSurfaceHelper.HasSurface());
 
+    IFC(m_compositionSurfaceHelper.Resize(width, height));
+
 #ifdef XAMLPROFILER_ENABLED
     TraceProfilerMemoryChange(false);
 #endif
@@ -1128,8 +1130,6 @@ DCompSurface::Resize(
     {
         UpdateMemoryFootprint(FALSE);
     }
-
-    IFC(m_compositionSurfaceHelper.Resize(width, height));
 
     // If the surface size changed, then we clear out the pending update list. If the surface became smaller,
     // the existing surface updates can draw to a part of the surface that exceeds the new smaller bounds. If
