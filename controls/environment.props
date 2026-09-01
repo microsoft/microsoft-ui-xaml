@@ -22,8 +22,10 @@
     <PlatformTarget Condition="'$(PlatformTarget)' == '' and '$(Platform)' == 'Win32'">x86</PlatformTarget>
     <PlatformTarget Condition="'$(PlatformTarget)' == ''">$(Platform)</PlatformTarget>
     <EnableTypeInfoReflection>false</EnableTypeInfoReflection>
-    <!-- Use 64-bit compilers because 32-bit compilers run out of heap space -->
-    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+    <!-- Use 64-bit compilers because 32-bit compilers run out of heap space.
+         Prefer the native host arch (arm64 on an arm64 host) to avoid emulation. -->
+    <PreferredToolArchitecture Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' != 'Arm64'">x64</PreferredToolArchitecture>
+    <PreferredToolArchitecture Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64'">arm64</PreferredToolArchitecture>
 
     <!-- We're generating our own AppX manifest files, so we don't care that we're referencing WinMDs without providing reference DLLs. -->
     <MSBuildWarningsAsMessages>APPX1707</MSBuildWarningsAsMessages>

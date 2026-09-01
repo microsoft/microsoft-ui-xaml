@@ -35,8 +35,10 @@
     <AppContainerApplication>true</AppContainerApplication>
     <ApplicationType>Windows Store</ApplicationType>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
-    <!-- Use 64-bit compilers because 32-bit compilers run out of heap space -->
-    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+    <!-- Use 64-bit compilers because 32-bit compilers run out of heap space.
+         Prefer the native host arch (arm64 on an arm64 host) to avoid emulation. -->
+    <PreferredToolArchitecture Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' != 'Arm64'">x64</PreferredToolArchitecture>
+    <PreferredToolArchitecture Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64'">arm64</PreferredToolArchitecture>
     <ScriptPath>..\..\tools\</ScriptPath>
     <ForceMuiRes>true</ForceMuiRes>
     <Use64BitLinker>true</Use64BitLinker>

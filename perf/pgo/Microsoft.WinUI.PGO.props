@@ -24,8 +24,19 @@
 
   <Import Project="$(PkgMicrosoft_PGO_Helpers_Cpp)\build\Microsoft.PGO-Helpers.Cpp.props" />
 
-  <!-- Since we are running on a x64 machine, use x64 version of pgomger.exe -->
-  <PropertyGroup Condition="'$(PGOPlatformShortName)' == 'ARM64' or '$(PGOPlatformShortName)' == 'ARM'">
+  <!--
+      pgomgr.exe (PGO profile merge) is a host tool: it only needs to run on the
+      build machine, and pgomgr /merge is target-agnostic (e.g. an x64 pgomgr can
+      merge ARM64 profile data - see the non-arm64 case below). So select it by the
+      native HOST architecture to run it natively instead of emulated.
+  -->
+  <PropertyGroup Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64'">
+    <PGOMgrToolPath>$(VCToolsInstallDir)bin\Hostarm64\arm64\pgomgr.exe</PGOMgrToolPath>
+  </PropertyGroup>
+
+  <!-- On a non-arm64 (x64) build machine there is no runnable ARM/ARM64 pgomgr, so
+       use the native x64 pgomgr to merge ARM/ARM64 target profile data. -->
+  <PropertyGroup Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' != 'Arm64' and ('$(PGOPlatformShortName)' == 'ARM64' or '$(PGOPlatformShortName)' == 'ARM')">
     <PGOMgrToolPath>$(VCToolsInstallDir)bin\Hostx64\x64\pgomgr.exe</PGOMgrToolPath>
   </PropertyGroup>
 

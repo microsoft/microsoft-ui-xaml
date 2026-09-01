@@ -9,6 +9,11 @@ param(
 
 Import-Module -Name $PSScriptRoot\..\MSBuildFunctions.psm1 -DisableNameChecking
 
+# Select the MSBuild that matches the native host architecture so we run it
+# natively instead of emulated. Falls back to amd64 for any host that is neither
+# arm64 nor amd64 (e.g. x86, or a future architecture such as RISC-V).
+$hostArch = if ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq [System.Runtime.InteropServices.Architecture]::Arm64) { 'arm64' } else { 'amd64' }
+
 #is VS installed on this machine?
 if (Test-Path -Path "${env:ProgramFiles(x86)}\Microsoft Visual Studio\") {
     $msBuildInstallations = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -requires Microsoft.Component.MSBuild -property InstallationPath -prerelease
@@ -17,7 +22,7 @@ if (Test-Path -Path "${env:ProgramFiles(x86)}\Microsoft Visual Studio\") {
     Write-Host
 
     foreach ($msBuildInstallation in $msBuildInstallations) {
-        $msBuildPath = (Join-Path $msBuildInstallation "MSBuild\Current\Bin\amd64\msbuild.exe")
+        $msBuildPath = (Join-Path $msBuildInstallation "MSBuild\Current\Bin\$hostArch\msbuild.exe")
         if (Test-Path $msBuildPath) {
             $msBuildVersion = & $msBuildPath -version -noLogo
             Write-Host "$msBuildPath (v$msBuildVersion)"
@@ -53,7 +58,7 @@ else {
     }
 
     # Check if global VS is valid
-    $msbuildUpToDate = Test-MSBuild (Join-Path $vsInstallDir "MSBuild\Current\Bin\amd64\msbuild.exe")
+    $msbuildUpToDate = Test-MSBuild (Join-Path $vsInstallDir "MSBuild\Current\Bin\$hostArch\msbuild.exe")
 }
 
 # If globally installed VS is out of date, or we're ignoring it, switch to using VS build tools
@@ -61,7 +66,7 @@ if (-not $msbuildUpToDate) {
     $useVsBuildTools = $true
     $vsInstallDir = $installDir;
     # Check if VS build tools is valid
-    $msbuildUpToDate = Test-MSBuild (Join-Path $vsInstallDir "MSBuild\Current\Bin\amd64\msbuild.exe")
+    $msbuildUpToDate = Test-MSBuild (Join-Path $vsInstallDir "MSBuild\Current\Bin\$hostArch\msbuild.exe")
 }
 
 if ($useVsBuildTools) {

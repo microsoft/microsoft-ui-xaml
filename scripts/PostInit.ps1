@@ -50,6 +50,15 @@ if (($buildPlatform -ne "x86") -and ($buildPlatform -ne "x64"))
     $mainPkgs.Add("packages.$buildPlatform.config")
 }
 
+# On an arm64 build host we also build an arm64 GenXbf.dll (see BuildGenXbfForMSBuild.csproj),
+# which links against the arm64 Windows SDK. Restore it even for x86/x64 product targets so
+# that GenXbf link step can find the arm64 SDK libs (e.g. kernel32.lib).
+if (([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq [System.Runtime.InteropServices.Architecture]::Arm64) -and
+    (-not ($mainPkgs -contains "packages.arm64.config")))
+{
+    $mainPkgs.Add("packages.arm64.config")
+}
+
 Write-Host "Restoring packages for build platform $buildPlatform..." -NoNewline
 $installed = 0
 foreach ($pkg in $mainPkgs)

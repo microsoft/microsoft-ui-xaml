@@ -82,7 +82,8 @@ set "OBJ=%REPO%\BuildOutput\obj\%CONFIG%\src\XamlCompiler\Tests\UnitTests"
 set "PROD=%REPO%\BuildOutput\bin\%CONFIG%\Product"
 set "EXE=%REPO%\BuildOutput\obj\%CONFIG%\src\XamlCompiler\Exe\Microsoft.UI.Xaml.Markup.Compiler.Executable"
 set "DST=%REPO%\src\XamlCompiler\Tests\UnitTests\UnitTestingBin"
-set "MSB=%REPO%\.buildtools\MSBuild\Current\Bin\amd64\MSBuild.exe"
+call "%REPO%\scripts\init\SetHostArch.cmd"
+set "MSB=%REPO%\.buildtools\MSBuild\Current\Bin\%_HostArch%\MSBuild.exe"
 
 echo [INFO] Repo:     %REPO%
 echo [INFO] Config:   %CONFIG%   (Platform=%PLATFORM%, Flavor=%FLAVOR%)
