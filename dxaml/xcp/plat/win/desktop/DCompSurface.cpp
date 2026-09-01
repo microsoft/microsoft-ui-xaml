@@ -1423,10 +1423,15 @@ void DCompSurface::TraceProfilerMemoryChange(bool isAllocation)
         return;
     }
 
+    const uint64_t estimatedSizeBytes =
+        static_cast<uint64_t>(GetWidthWithGutters()) *
+        static_cast<uint64_t>(GetHeightWithGutters()) *
+        static_cast<uint64_t>(GetPixelStride());
+
     XamlProfilerTracing::DCompSurfaceMemoryChanged(
         reinterpret_cast<uint64_t>(this),
         isAllocation,
-        static_cast<uint64_t>(GetTextureSizeInBytes()),
+        estimatedSizeBytes,
         GetWidthWithGutters(),
         GetHeightWithGutters(),
         GetPixelStride(),
