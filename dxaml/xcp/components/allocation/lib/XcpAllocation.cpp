@@ -62,7 +62,24 @@ _Check_return_ size_t XcpAllocation::OSMemoryGetBlockSize(_In_opt_ const void *p
 std::atomic<size_t> g_allocCount = 0;
 std::atomic<size_t> g_allocSize = 0;
 std::atomic<size_t> g_deallocCount = 0;
+std::atomic<size_t> g_outstandingAllocCount = 0;
+std::atomic<size_t> g_outstandingAllocSize = 0;
 #endif
+
+namespace
+{
+    void RecordOutstandingAllocation(_In_ const void *pAddress)
+    {
+#if COUNT_ALLOC
+        const size_t cSize = XcpAllocation::OSMemoryGetBlockSize(pAddress);
+        if (cSize != 0)
+        {
+            g_outstandingAllocCount.fetch_add(1, std::memory_order_relaxed);
+            g_outstandingAllocSize.fetch_add(cSize, std::memory_order_relaxed);
+        }
+#endif
+    }
+}
 
 size_t XcpAllocation::GetAllocationCount()
 {
@@ -89,6 +106,36 @@ size_t XcpAllocation::GetDeallocationCount()
 #else
     return 0;
 #endif
+}
+
+size_t XcpAllocation::GetOutstandingAllocationCount()
+{
+#if COUNT_ALLOC
+    return g_outstandingAllocCount.load(std::memory_order_relaxed);
+#else
+    return 0;
+#endif
+}
+
+size_t XcpAllocation::GetOutstandingAllocationSize()
+{
+#if COUNT_ALLOC
+    return g_outstandingAllocSize.load(std::memory_order_relaxed);
+#else
+    return 0;
+#endif
+}
+
+uint64_t XcpAllocation::GetHeapHandle()
+{
+    EnsureHeap();
+    return reinterpret_cast<uint64_t>(ghHeap);
+}
+
+bool XcpAllocation::IsUsingPrivateHeap()
+{
+    EnsureHeap();
+    return ghHeap != GetProcessHeap();
 }
 
 void XcpAllocation::EnableMemoryTracking()
@@ -130,6 +177,7 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateFailFast(_In_ size_t cSize)
     if (pAddress)
     {
         UpdateAllocatedMemory(cSize);
+        RecordOutstandingAllocation(pAddress);
     }
     else
     {
@@ -165,6 +213,7 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateZeroMemoryFailFast(_In_ size
     if (pAddress)
     {
         UpdateAllocatedMemory(cSize);
+        RecordOutstandingAllocation(pAddress);
     }
     else
     {
@@ -214,6 +263,7 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateNoFailFast(_In_ size_t cSize
     if (pAddress)
     {
         UpdateAllocatedMemory(cSize);
+        RecordOutstandingAllocation(pAddress);
     }
 
     return pAddress;
@@ -230,12 +280,14 @@ _Check_return_ void *XcpAllocation::OSMemoryResize(_Frees_ptr_opt_ void *pAddres
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 #endif
 
-    // Skip the HeapSize call entirely when tracking is disabled which saves a
-    // kernel call per realloc.
     const bool trackMemory = g_memoryTrackingEnabled;
+    bool needBlockSize = trackMemory;
+#if COUNT_ALLOC
+    needBlockSize = true;
+#endif
 
     size_t cOldSize = 0;
-    if (trackMemory && pAddress)
+    if (needBlockSize && pAddress)
     {
         cOldSize = HeapSize(ghHeap, 0, pAddress);
         ASSERT(cOldSize != (SIZE_T)-1);
@@ -260,6 +312,21 @@ _Check_return_ void *XcpAllocation::OSMemoryResize(_Frees_ptr_opt_ void *pAddres
         UpdateAllocatedMemory(static_cast<INT64>(cSize) - static_cast<INT64>(cOldSize));
     }
 
+#if COUNT_ALLOC
+    if (newAddress)
+    {
+        const size_t cNewSize = XcpAllocation::OSMemoryGetBlockSize(newAddress);
+        if (cNewSize >= cOldSize)
+        {
+            g_outstandingAllocSize.fetch_add(cNewSize - cOldSize, std::memory_order_relaxed);
+        }
+        else
+        {
+            g_outstandingAllocSize.fetch_sub(cOldSize - cNewSize, std::memory_order_relaxed);
+        }
+    }
+#endif
+
     return newAddress;
 }
 
@@ -267,19 +334,33 @@ void XcpAllocation::OSMemoryFree(_Frees_ptr_opt_ void *pAddress)
 {
     EnsureHeap();
 
-    // Skip the HeapSize call entirely when tracking is disabled to give
-    // unmanaged apps near-zero tracking overhead.
-    if (pAddress && g_memoryTrackingEnabled)
+    const bool trackMemory = g_memoryTrackingEnabled;
+    bool needBlockSize = trackMemory;
+#if COUNT_ALLOC
+    needBlockSize = true;
+#endif
+
+    size_t cSize = 0;
+    if (needBlockSize && pAddress)
     {
-        size_t cSize = HeapSize(ghHeap, 0, pAddress);
+        cSize = HeapSize(ghHeap, 0, pAddress);
         ASSERT(cSize != (SIZE_T)-1);
-        UpdateAllocatedMemory(-(INT64)cSize);
+
+        if (g_memoryTrackingEnabled)
+        {
+            UpdateAllocatedMemory(-(INT64)cSize);
+        }
     }
 
     HeapFree(ghHeap, 0, pAddress);
 
 #if COUNT_ALLOC
     g_deallocCount.fetch_add(1, std::memory_order_relaxed);
+    if (cSize != 0)
+    {
+        g_outstandingAllocCount.fetch_sub(1, std::memory_order_relaxed);
+        g_outstandingAllocSize.fetch_sub(cSize, std::memory_order_relaxed);
+    }
 #endif
 
 #if TRACE_ALLOC

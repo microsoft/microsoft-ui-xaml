@@ -8,6 +8,9 @@
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include <PixelFormat.h>
+#ifdef XAMLPROFILER_ENABLED
+#include "XamlProfilerTracing.h"
+#endif
 
 #include "XcpAllocation.h"
 
@@ -189,6 +192,10 @@ DCompSurface::InitializeSurface(
         UpdateMemoryFootprint(TRUE);
     }
 
+#ifdef XAMLPROFILER_ENABLED
+    TraceProfilerMemoryChange(true);
+#endif
+
     if (m_spWinRTSurface == nullptr)
     {
         // Wrap with an ICompositionSurface
@@ -274,6 +281,10 @@ DCompSurface::InitializeSurface(
             m_pCompositionSurface, &m_spWinRTSurface));
     }
 
+#ifdef XAMLPROFILER_ENABLED
+    TraceProfilerMemoryChange(true);
+#endif
+
     IFCFAILFAST(m_compositionSurfaceHelper.Initialize(m_pCompositionSurface));
 
     return S_OK;
@@ -350,13 +361,20 @@ void DCompSurface::ReleaseLegacyDCompResources(bool resetWucSurface)
         }
     }
 
-    m_d3dDevice.reset();
-    m_surfaceUpdates.clear();
+#ifdef XAMLPROFILER_ENABLED
+    if (m_pCompositionSurface != nullptr || m_pVirtualCompositionSurface != nullptr)
+    {
+        TraceProfilerMemoryChange(false);
+    }
+#endif
 
     if (m_pVirtualCompositionSurface == nullptr)
     {
         UpdateMemoryFootprint(FALSE);
     }
+
+    m_d3dDevice.reset();
+    m_surfaceUpdates.clear();
 
     if (m_pSystemMemoryBitsForUIThread != NULL)
     {
@@ -763,6 +781,10 @@ DCompSurface::CopySubresource(
         sourceBoxWithGutters.bottom = pSource->GetHeight();
     }
 
+#ifdef XAMLPROFILER_ENABLED
+    TraceProfilerTextureObserved(pDestD3DResource, dstOffsetWithGutters);
+#endif
+
     // Nobody should be staging from heap memory
     ASSERT(pSource->IsDriverVisible());
 
@@ -917,6 +939,10 @@ DCompSurface::BeginDraw(
     pOffsetIntoSurface->x = offset.x;
     pOffsetIntoSurface->y = offset.y;
 
+#ifdef XAMLPROFILER_ENABLED
+    TraceProfilerTextureObserved(*ppSurface, offset);
+#endif
+
     if (s_traceDCompSurfaceUpdates)
     {
         m_updateRects.push_back(rect);
@@ -968,6 +994,10 @@ DCompSurface::BeginDrawWithGutters(
     // before drawing to the 'real' offset into the texture, not into the gutter region.
     pOffsetIntoSurface->x = offset.x;
     pOffsetIntoSurface->y = offset.y;
+
+#ifdef XAMLPROFILER_ENABLED
+    TraceProfilerTextureObserved(*ppSurface, offset);
+#endif
 
     if (s_traceDCompSurfaceUpdates)
     {
@@ -1090,6 +1120,10 @@ DCompSurface::Resize(
 
     ASSERT(m_compositionSurfaceHelper.HasSurface());
 
+#ifdef XAMLPROFILER_ENABLED
+    TraceProfilerMemoryChange(false);
+#endif
+
     if (!IsVirtual())
     {
         UpdateMemoryFootprint(FALSE);
@@ -1116,6 +1150,10 @@ DCompSurface::Resize(
     {
         UpdateMemoryFootprint(TRUE);
     }
+
+#ifdef XAMLPROFILER_ENABLED
+    TraceProfilerMemoryChange(true);
+#endif
 
 Cleanup:
     RRETURN(hr);
@@ -1328,6 +1366,121 @@ DCompSurface::GetTextureSizeInBytes() const
 {
     return GetWidthWithGutters() * GetHeightWithGutters() * GetPixelStride();
 }
+
+#ifdef XAMLPROFILER_ENABLED
+void DCompSurface::TraceProfilerTextureObserved(
+    _In_ IUnknown* updateObject,
+    const POINT& offset) noexcept
+{
+    if (!XamlProfilerTracing::IsEnabled())
+    {
+        return;
+    }
+
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
+    if (FAILED(updateObject->QueryInterface(IID_PPV_ARGS(&texture))))
+    {
+        Microsoft::WRL::ComPtr<ID2D1DeviceContext> deviceContext;
+        Microsoft::WRL::ComPtr<ID2D1Image> target;
+        Microsoft::WRL::ComPtr<ID2D1Bitmap1> targetBitmap;
+        Microsoft::WRL::ComPtr<IDXGISurface> targetSurface;
+
+        if (FAILED(updateObject->QueryInterface(IID_PPV_ARGS(&deviceContext))))
+        {
+            return;
+        }
+
+        deviceContext->GetTarget(&target);
+        if (target == nullptr ||
+            FAILED(target.As(&targetBitmap)) ||
+            FAILED(targetBitmap->GetSurface(&targetSurface)) ||
+            FAILED(targetSurface.As(&texture)))
+        {
+            return;
+        }
+    }
+
+    D3D11_TEXTURE2D_DESC desc = {};
+    texture->GetDesc(&desc);
+
+    XamlProfilerTracing::DCompSurfaceTextureObserved(
+        reinterpret_cast<uint64_t>(this),
+        reinterpret_cast<uint64_t>(texture.Get()),
+        desc.Width,
+        desc.Height,
+        desc.MipLevels,
+        desc.ArraySize,
+        static_cast<uint32_t>(desc.Format),
+        desc.SampleDesc.Count,
+        offset.x,
+        offset.y);
+}
+
+void DCompSurface::TraceProfilerMemoryChange(bool isAllocation)
+{
+    if (!XamlProfilerTracing::IsEnabled())
+    {
+        return;
+    }
+
+    XamlProfilerTracing::DCompSurfaceMemoryChanged(
+        reinterpret_cast<uint64_t>(this),
+        isAllocation,
+        static_cast<uint64_t>(GetTextureSizeInBytes()),
+        GetWidthWithGutters(),
+        GetHeightWithGutters(),
+        GetPixelStride(),
+        IsVirtual());
+    XamlProfilerTracing::XamlHeapSnapshot(
+        XcpAllocation::GetHeapHandle(),
+        XcpAllocation::IsUsingPrivateHeap(),
+        XcpAllocation::GetOutstandingAllocationSize(),
+        XcpAllocation::GetOutstandingAllocationCount(),
+        XcpAllocation::GetAllocationSize(),
+        XcpAllocation::GetAllocationCount(),
+        XcpAllocation::GetDeallocationCount());
+
+    if (m_d3dDevice == nullptr)
+    {
+        return;
+    }
+
+    DXGI_QUERY_VIDEO_MEMORY_INFO localInfo{};
+    DXGI_QUERY_VIDEO_MEMORY_INFO nonLocalInfo{};
+    bool localAvailable = false;
+    bool nonLocalAvailable = false;
+
+    CD3D11SharedDeviceGuard guard;
+    if (SUCCEEDED(m_d3dDevice->TakeLockAndCheckDeviceLost(&guard)))
+    {
+        Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
+        Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
+        Microsoft::WRL::ComPtr<IDXGIAdapter3> adapter3;
+
+        if (SUCCEEDED(m_d3dDevice->GetDevice(&guard)->QueryInterface(IID_PPV_ARGS(&dxgiDevice))) &&
+            SUCCEEDED(dxgiDevice->GetAdapter(&adapter)) &&
+            SUCCEEDED(adapter.As(&adapter3)))
+        {
+            localAvailable = SUCCEEDED(adapter3->QueryVideoMemoryInfo(
+                0,
+                DXGI_MEMORY_SEGMENT_GROUP_LOCAL,
+                &localInfo));
+            nonLocalAvailable = SUCCEEDED(adapter3->QueryVideoMemoryInfo(
+                0,
+                DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL,
+                &nonLocalInfo));
+        }
+    }
+
+    XamlProfilerTracing::GpuMemorySnapshot(
+        localInfo.CurrentUsage,
+        localInfo.Budget,
+        localAvailable,
+        nonLocalInfo.CurrentUsage,
+        nonLocalInfo.Budget,
+        nonLocalAvailable);
+}
+#endif
 
 //-------------------------------------------------------------------------
 //
