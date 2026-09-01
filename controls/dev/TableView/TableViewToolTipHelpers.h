@@ -23,7 +23,7 @@ namespace TableViewDetails
     // row's DataContext drives it and a recycled row re-resolves through ordinary inheritance.
     inline GlobalDependencyProperty s_cellToolTipValueProperty{ nullptr };
 
-    inline winrt::DependencyProperty EnsureCellToolTipRecordProperty()
+    inline void EnsureCellToolTipRecordProperty()
     {
         if (!s_cellToolTipRecordProperty)
         {
@@ -35,8 +35,6 @@ namespace TableViewDetails
                 nullptr /* defaultValue */,
                 nullptr /* propertyChangedCallback */);
         }
-
-        return s_cellToolTipRecordProperty;
     }
 
     // Called from the generated ClearTypeProperties so a XAML re-init re-registers against the new core.
@@ -144,7 +142,15 @@ namespace TableViewDetails
 
         // A ToolTip as content would render nested inside ours, and the control owns placement.
         auto const text = TryGetString(content);
-        if (!content || (text && text->empty()) || content.try_as<winrt::ToolTip>())
+        if (content && content.try_as<winrt::ToolTip>())
+        {
+            TVDiag::LogRetailF(L"[TableView] A CellToolTipBinding value must be tooltip content, "
+                L"not a ToolTip; the cell has no tooltip.");
+            ClearOwnedToolTip(element);
+            return false;
+        }
+
+        if (!content || (text && text->empty()))
         {
             ClearOwnedToolTip(element);
             return false;
@@ -266,19 +272,9 @@ namespace TableViewDetails
         const winrt::FrameworkElement& element,
         const winrt::Microsoft::UI::Xaml::Data::Binding& binding)
     {
-        if (!element)
-        {
-            return;
-        }
-
-        if (binding)
+        if (element && binding)
         {
             winrt::BindingOperations::SetBinding(element, EnsureCellToolTipValueProperty(), binding);
-        }
-        else if (s_cellToolTipValueProperty)
-        {
-            // Clears the binding as well as the value; the change callback retracts the tooltip.
-            element.ClearValue(s_cellToolTipValueProperty);
         }
     }
 }
