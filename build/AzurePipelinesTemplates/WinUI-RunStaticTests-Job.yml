@@ -4,7 +4,6 @@ parameters:
   runTestJobName: 'RunStaticTests'
   dependsOn: ''
   MUXFinalRelease: false
-  windowsAppSdkVersion: 'latest'
 
 jobs:
 - job: ${{ parameters.runTestJobName }}
@@ -16,14 +15,9 @@ jobs:
   variables:
     artifactsDir: $(Build.SourcesDirectory)\Artifacts
     packagesDir: $(Agent.TempDirectory)\WinUI-RunStaticTests-Job\packages
-    winMDVersionVerifyLcrVersion: 'latest'
     ob_outputDirectory: '$(Build.SourcesDirectory)\out'
     ob_sdl_codeSignValidation_excludes: '-|packaging\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**;-|**\Microsoft.Internal.FrameworkUdk.dll'
     ob_sdl_prefast_enabled: false   # this job does no native build
-    ${{ if ne(parameters.windowsAppSdkVersion, 'latest') }}:
-      windowsAppSdkVersionArgument: '-Version ${{ parameters.windowsAppSdkVersion }}'
-    ${{ else }}:
-      windowsAppSdkVersionArgument: ''
 
   steps:
   # This is a temporarily workaround to avoid getting non-fatal "folder C:\__t\NativeCompilerPrefast not found"
@@ -44,23 +38,23 @@ jobs:
 
   # In this pipeline configuration, 'NuGetCommand' is ambiguous so the specific task guid must be used instead
   # See known NuGet task issue notes.
-  # Install the latest public release by default, or the version supplied by the caller.
+  # Install the latest public release.
   - task: NuGetCommand@2
     displayName: 'NuGet install Microsoft.WindowsAppSDK'
     inputs:
       command: 'custom'
-      arguments: 'install Microsoft.WindowsAppSDK $(windowsAppSdkVersionArgument) -OutputDirectory $(packagesDir) -ConfigFile $(Build.SourcesDirectory)\nuget.config -NonInteractive'
+      arguments: 'install Microsoft.WindowsAppSDK -OutputDirectory $(packagesDir) -ConfigFile $(Build.SourcesDirectory)\nuget.config -NonInteractive'
 
   - task: DownloadPackage@1
-    displayName: 'Download WinMDVersionVerifyLcr $(winMDVersionVerifyLcrVersion)'
+    displayName: 'Download latest WinMDVersionVerifyLcr'
     condition: and(succeeded(), ne(variables['System.PullRequest.IsFork'], 'True'))
     inputs:
       packageType: 'nuget'
       feed: 'WinUI.Dependencies'
       definition: 'WinMDVersionVerifyLcr'
-      version: '$(winMDVersionVerifyLcrVersion)'
+      version: 'latest'
       extract: true
-      downloadPath: '$(packagesDir)\WinMDVersionVerifyLcr\$(winMDVersionVerifyLcrVersion)'
+      downloadPath: '$(packagesDir)\WinMDVersionVerifyLcr'
 
   - template: WinUI-DownloadPipelineArtifacts-Steps.yml
     parameters:
@@ -75,7 +69,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: $(Build.SourcesDirectory)\build\PipelineScripts\VerifyWinMDCompat.ps1
-      arguments: -WinMDPath '$(artifactsDir)\packaging\Release\lib\uap10.0' -PackagesDirectory '$(packagesDir)' -WinMDVersionVerifyLcrVersion '$(winMDVersionVerifyLcrVersion)' -isRelease:$${{ parameters.MUXFinalRelease }}
+      arguments: -WinMDPath '$(artifactsDir)\packaging\Release\lib\uap10.0' -PackagesDirectory '$(packagesDir)' -isRelease:$${{ parameters.MUXFinalRelease }}
       pwsh: true
 
   - powershell: |

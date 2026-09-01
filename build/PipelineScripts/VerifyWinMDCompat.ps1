@@ -10,8 +10,6 @@ param(
     [Parameter(Mandatory = $false)]
     [string]$WinAppSDKWinUIVersion = "",
     [Parameter(Mandatory = $false)]
-    [string]$WinMDVersionVerifyLcrVersion = "",
-    [Parameter(Mandatory = $false)]
     [bool]$isRelease = $false
 )
 
@@ -110,19 +108,10 @@ if (-not $env:BUILD_BUILDID)
     $nugetResultCode = $?
 }
 
-if ($WinMDVersionVerifyLcrVersion)
-{
-    $WinMDVersionVerifyLcrVersionToUse = $WinMDVersionVerifyLcrVersion
-    Write-Host "Specific WinMDVersionVerifyLcr version specified: $WinMDVersionVerifyLcrVersionToUse"
-}
-else
-{
-    $WinMDVersionVerifyLcrVersionToUse = Get-LatestVersion "WinMDVersionVerifyLcr"
-}
-
-$winMDVersionVerifyLcrPath = [System.IO.Path]::Combine($PackagesDirectory, "WinMDVersionVerifyLcr", $WinMDVersionVerifyLcrVersionToUse, "WinMDVersionVerifyLcr.exe")
+$winMDVersionVerifyLcrPath = [System.IO.Path]::Combine($PackagesDirectory, "WinMDVersionVerifyLcr", "WinMDVersionVerifyLcr.exe")
 if (-not (Test-Path $winMDVersionVerifyLcrPath))
 {
+    $WinMDVersionVerifyLcrVersionToUse = Get-LatestVersion "WinMDVersionVerifyLcr"
     $winMDVersionVerifyLcrPath = [System.IO.Path]::Combine($PackagesDirectory, "WinMDVersionVerifyLcr.$WinMDVersionVerifyLcrVersionToUse", "WinMDVersionVerifyLcr.exe")
 }
 
