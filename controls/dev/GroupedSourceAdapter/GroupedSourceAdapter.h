@@ -15,16 +15,16 @@
 
 #include "GroupExpansionModel.h"
 
-// PROTOTYPE — reverted single-responsibility grouped adapter.
+// Single-responsibility grouped adapter.
 //
-// This is the design the reviewers asked to bring back: the adapter has ONE job, taking the
-// shaped grouped source and MATERIALIZING it into one flat list of rows — header, items, header,
-// items — held in an ordinary IObservableVector. That vector is then wrapped in an ItemsSourceView
-// and handed to the ItemsRepeater. There is no HierarchicalItemsSourceView, no GroupRunTable, no
-// computed/virtualized axis, and no per-row key surface.
+// The adapter has ONE job: take the shaped grouped source and MATERIALIZE it into one flat list
+// of rows — header, items, header, items — held in an ordinary IObservableVector. That vector is
+// then wrapped in an ItemsSourceView and handed to the ItemsRepeater. There is no
+// HierarchicalItemsSourceView, no GroupRunTable, no computed/virtualized axis, and no per-row key
+// surface.
 //
-// What it deliberately drops relative to the current computed adapter, and why the drop is the
-// whole point of the revert:
+// What it deliberately drops relative to a computed adapter, and why the drop is the
+// whole point:
 //
 //   * No lazy row minting. Rebuild walks every group and pushes every visible row up front, so a
 //     grouped bind allocates one header object per group plus (for expanded groups) nothing per
@@ -52,21 +52,21 @@
 //     survives group objects being re-minted by each reshape. A change here just triggers Rebuild.
 //   * Source and inner-group subscription with UI-thread affinity and GC-safe (weak) callbacks.
 //   * Empty groups are preserved (app-authored structure), matching the current adapter.
-class FlatGroupedSourceAdapter : public std::enable_shared_from_this<FlatGroupedSourceAdapter>
+class GroupedSourceAdapter : public std::enable_shared_from_this<GroupedSourceAdapter>
 {
 public:
     // UI-thread-affine: construct on a UI thread with a DispatcherQueue. Source notifications are
     // required to arrive on this thread and are applied synchronously; the queue is captured only
     // to assert that affinity in chk. Constructing off a UI thread throws RPC_E_WRONG_THREAD.
-    FlatGroupedSourceAdapter();
-    ~FlatGroupedSourceAdapter();
+    GroupedSourceAdapter();
+    ~GroupedSourceAdapter();
 
     // The flat row axis the repeater consumes: a single ItemsSourceView wrapping the materialized
     // observable vector. It is created ONCE over m_entries (which is stable for the adapter's
     // lifetime and only ever ReplaceAll'd), so the identity a consumer captures stays valid across
     // rebuilds — the same contract the computed adapter's Entries() had. Because the wrapped object
     // is a plain IObservableVector, the repeater reaches it through InspectingDataSource, which
-    // reports no key mapping — this is the container-preservation cost of the reverted design.
+    // reports no key mapping — this is the container-preservation cost of this design.
     winrt::ItemsSourceView Entries() const { return m_entriesView; }
 
     winrt::IInspectable Source() const { return m_source; }
@@ -142,4 +142,4 @@ private:
     bool m_pendingRebuild{ false };
 };
 
-using FlatGroupedSourceAdapterPtr = std::shared_ptr<FlatGroupedSourceAdapter>;
+using GroupedSourceAdapterPtr = std::shared_ptr<GroupedSourceAdapter>;

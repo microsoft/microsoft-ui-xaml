@@ -5,7 +5,7 @@
 #include "common.h"
 #include "RowMetadataProvider.h"
 #include "TableViewRowInfo.h"
-#include "FlatGroupedSourceAdapter.h"
+#include "GroupedSourceAdapter.h"
 #include "GroupedEntry.h"
 #include "GroupContract.h"
 #include "ShapingHelpers.h"
@@ -67,7 +67,7 @@ TableViewRowMetadataProvider RowMetadataProvider::CreateForFlatRows(
 
 TableViewRowMetadataProvider RowMetadataProvider::CreateForGroupedRows(
     winrt::ItemsSourceView const& rows,
-    FlatGroupedSourceAdapterPtr const& adapter,
+    GroupedSourceAdapterPtr const& adapter,
     ItemKeySelector const& itemKeySelector)
 {
     return std::make_shared<RowMetadataProvider>(
@@ -79,7 +79,7 @@ TableViewRowMetadataProvider RowMetadataProvider::CreateForGroupedRows(
 }
 
 TableViewRowMetadataProvider RowMetadataProvider::CreateForGroupedRows(
-    FlatGroupedSourceAdapterPtr const& adapter,
+    GroupedSourceAdapterPtr const& adapter,
     ItemKeySelector const& itemKeySelector)
 {
     return CreateForGroupedRows(adapter ? adapter->Entries() : nullptr, adapter, itemKeySelector);
@@ -89,7 +89,7 @@ RowMetadataProvider::RowMetadataProvider(
     SourceKind sourceKind,
     winrt::ItemsSourceView const& flatRows,
     winrt::ItemsSourceView const& groupedRows,
-    FlatGroupedSourceAdapterPtr const& groupedAdapter,
+    GroupedSourceAdapterPtr const& groupedAdapter,
     ItemKeySelector const& itemKeySelector) :
     m_sourceKind(sourceKind),
     m_flatRows(flatRows),

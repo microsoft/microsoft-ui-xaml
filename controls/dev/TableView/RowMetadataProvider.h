@@ -10,7 +10,7 @@
 
 #include "TableViewRowInfo.h"
 #include "GroupedEntry.h"
-#include "FlatGroupedSourceAdapter.h"
+#include "GroupedSourceAdapter.h"
 
 namespace winrt::Microsoft::UI::Xaml::Controls::Tabular::Primitives::implementation
 {
@@ -33,10 +33,10 @@ public:
         ItemKeySelector const& itemKeySelector = {});
     static TableViewRowMetadataProvider CreateForGroupedRows(
         winrt::ItemsSourceView const& rows,
-        FlatGroupedSourceAdapterPtr const& adapter = nullptr,
+        GroupedSourceAdapterPtr const& adapter = nullptr,
         ItemKeySelector const& itemKeySelector = {});
     static TableViewRowMetadataProvider CreateForGroupedRows(
-        FlatGroupedSourceAdapterPtr const& adapter,
+        GroupedSourceAdapterPtr const& adapter,
         ItemKeySelector const& itemKeySelector = {});
 
     TableViewRowInfo GetRowInfo(int32_t index) override;
@@ -60,7 +60,7 @@ public:
         SourceKind sourceKind,
         winrt::ItemsSourceView const& flatRows,
         winrt::ItemsSourceView const& groupedRows,
-        FlatGroupedSourceAdapterPtr const& groupedAdapter,
+        GroupedSourceAdapterPtr const& groupedAdapter,
         ItemKeySelector const& itemKeySelector);
 
 private:
@@ -88,7 +88,7 @@ private:
     SourceKind m_sourceKind{ SourceKind::Flat };
     winrt::ItemsSourceView m_flatRows{ nullptr };
     winrt::ItemsSourceView m_groupedRows{ nullptr };
-    FlatGroupedSourceAdapterPtr m_groupedAdapter{};
+    GroupedSourceAdapterPtr m_groupedAdapter{};
     ItemKeySelector m_itemKeySelector{};
 
     // Lazily built identity -> row index over the rows this provider wraps. Rebuilt wholesale

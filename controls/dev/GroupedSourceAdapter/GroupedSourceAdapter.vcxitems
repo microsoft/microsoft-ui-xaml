@@ -16,10 +16,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)GroupedEntry.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FlatGroupedSourceAdapter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GroupedSourceAdapter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)GroupedEntry.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FlatGroupedSourceAdapter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)GroupedSourceAdapter.cpp" />
   </ItemGroup>
 </Project>

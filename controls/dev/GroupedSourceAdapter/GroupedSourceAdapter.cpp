@@ -3,7 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
-#include "FlatGroupedSourceAdapter.h"
+#include "GroupedSourceAdapter.h"
 #include "GroupedEntry.h"
 #include "RuntimeProfiler.h"
 #include "ShapingHelpers.h"
@@ -16,14 +16,14 @@
 
 #include "GroupContract.h"
 
-FlatGroupedSourceAdapter::FlatGroupedSourceAdapter()
+GroupedSourceAdapter::GroupedSourceAdapter()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_GroupedSourceAdapter);
 
     auto queue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
     if (!queue)
     {
-        throw winrt::hresult_error(RPC_E_WRONG_THREAD, L"FlatGroupedSourceAdapter must be constructed on a UI thread.");
+        throw winrt::hresult_error(RPC_E_WRONG_THREAD, L"GroupedSourceAdapter must be constructed on a UI thread.");
     }
     m_uiQueue = winrt::make_weak(queue);
 
@@ -39,12 +39,12 @@ FlatGroupedSourceAdapter::FlatGroupedSourceAdapter()
         });
 }
 
-FlatGroupedSourceAdapter::~FlatGroupedSourceAdapter()
+GroupedSourceAdapter::~GroupedSourceAdapter()
 {
     DetachFromSource();
 }
 
-void FlatGroupedSourceAdapter::Source(winrt::IInspectable const& value)
+void GroupedSourceAdapter::Source(winrt::IInspectable const& value)
 {
     if (m_source == value)
     {
@@ -57,13 +57,13 @@ void FlatGroupedSourceAdapter::Source(winrt::IInspectable const& value)
     Rebuild();
 }
 
-void FlatGroupedSourceAdapter::DetachSourceQuietly()
+void GroupedSourceAdapter::DetachSourceQuietly()
 {
     DetachFromSource();
     m_source = nullptr;
 }
 
-void FlatGroupedSourceAdapter::IncludeGroupHeaders(bool value)
+void GroupedSourceAdapter::IncludeGroupHeaders(bool value)
 {
     if (m_includeGroupHeaders == value)
     {
@@ -76,7 +76,7 @@ void FlatGroupedSourceAdapter::IncludeGroupHeaders(bool value)
 
 // --- The one responsibility: materialize the flat list -----------------------------------------
 
-void FlatGroupedSourceAdapter::Rebuild()
+void GroupedSourceAdapter::Rebuild()
 {
     // Projection mutations are UI-thread-affine. Source notifications are required to arrive on the
     // owning UI thread and reach here synchronously; off-thread delivery is app misuse.
@@ -175,7 +175,7 @@ void FlatGroupedSourceAdapter::Rebuild()
                 if (isExpanded)
                 {
                     // Data rows ARE the app items — no wrapper. This is the memory win the current
-                    // stack already has; the revert keeps it.
+                    // stack already has.
                     for (auto const& item : items)
                     {
                         built.push_back(item);
@@ -203,13 +203,13 @@ void FlatGroupedSourceAdapter::Rebuild()
     }
 }
 
-bool FlatGroupedSourceAdapter::OnUiThread() const
+bool GroupedSourceAdapter::OnUiThread() const
 {
     auto const queue = m_uiQueue.get();
     return queue && queue.HasThreadAccess();
 }
 
-void FlatGroupedSourceAdapter::AssertRebuildOnUiThread() const
+void GroupedSourceAdapter::AssertRebuildOnUiThread() const
 {
     // A source bound off the UI thread captures no queue, so affinity can't be proven either way
     // and the assert stands down rather than firing on something it cannot judge.
@@ -218,12 +218,12 @@ void FlatGroupedSourceAdapter::AssertRebuildOnUiThread() const
 
 // --- Expansion ---------------------------------------------------------------------------------
 
-bool FlatGroupedSourceAdapter::IsGroupExpanded(winrt::IInspectable const& group)
+bool GroupedSourceAdapter::IsGroupExpanded(winrt::IInspectable const& group)
 {
     return m_expansion.IsExpanded(GetGroupIntentKey(group));
 }
 
-void FlatGroupedSourceAdapter::SetGroupExpanded(winrt::IInspectable const& group, bool isExpanded)
+void GroupedSourceAdapter::SetGroupExpanded(winrt::IInspectable const& group, bool isExpanded)
 {
     if (!group)
     {
@@ -241,19 +241,19 @@ void FlatGroupedSourceAdapter::SetGroupExpanded(winrt::IInspectable const& group
     m_expansion.SetExpanded(key, isExpanded);
 }
 
-void FlatGroupedSourceAdapter::ExpandAll()
+void GroupedSourceAdapter::ExpandAll()
 {
     // Moves the BASELINE, so groups that do not exist yet also arrive expanded — "expand all" is an
     // intent, not a loop over the groups that happen to be live now.
     m_expansion.SetAllExpanded(true);
 }
 
-void FlatGroupedSourceAdapter::CollapseAll()
+void GroupedSourceAdapter::CollapseAll()
 {
     m_expansion.SetAllExpanded(false);
 }
 
-void FlatGroupedSourceAdapter::OnExpansionChanged(HierarchicalItemsSource::GroupExpansionModel::Change const& /*change*/)
+void GroupedSourceAdapter::OnExpansionChanged(HierarchicalItemsSource::GroupExpansionModel::Change const& /*change*/)
 {
     // The whole simplification in one line: every expansion change — one group or all — is a full
     // Rebuild that ends in a Reset. No ranged splice, no run table. The cost is that a toggle drops
@@ -261,7 +261,7 @@ void FlatGroupedSourceAdapter::OnExpansionChanged(HierarchicalItemsSource::Group
     Rebuild();
 }
 
-winrt::IInspectable FlatGroupedSourceAdapter::ResolveLiveGroupByIdentity(winrt::hstring const& groupKey) const
+winrt::IInspectable GroupedSourceAdapter::ResolveLiveGroupByIdentity(winrt::hstring const& groupKey) const
 {
     if (groupKey.empty() || m_ambiguousLiveGroupIdentityKeys.find(groupKey) != m_ambiguousLiveGroupIdentityKeys.end())
     {
@@ -272,7 +272,7 @@ winrt::IInspectable FlatGroupedSourceAdapter::ResolveLiveGroupByIdentity(winrt::
     return it != m_liveGroupsByIdentityKey.end() ? it->second : nullptr;
 }
 
-winrt::hstring FlatGroupedSourceAdapter::GetGroupIntentKey(winrt::IInspectable const& group)
+winrt::hstring GroupedSourceAdapter::GetGroupIntentKey(winrt::IInspectable const& group)
 {
     // A value-typed key (a string department, an int year) yields a stable string that survives the
     // key object being re-minted by the next shaping pass.
@@ -289,7 +289,7 @@ winrt::hstring FlatGroupedSourceAdapter::GetGroupIntentKey(winrt::IInspectable c
 
 // --- Source / group subscription ---------------------------------------------------------------
 
-void FlatGroupedSourceAdapter::AttachToSource()
+void GroupedSourceAdapter::AttachToSource()
 {
     auto src = Source();
     if (!src)
@@ -328,7 +328,7 @@ void FlatGroupedSourceAdapter::AttachToSource()
     }
 }
 
-void FlatGroupedSourceAdapter::DetachFromSource()
+void GroupedSourceAdapter::DetachFromSource()
 {
     auto attached = m_attachedSourceForRevocation;
     if (attached)
@@ -363,7 +363,7 @@ void FlatGroupedSourceAdapter::DetachFromSource()
     UnsubscribeFromAllGroups();
 }
 
-void FlatGroupedSourceAdapter::SubscribeToGroup(winrt::IInspectable const& group)
+void GroupedSourceAdapter::SubscribeToGroup(winrt::IInspectable const& group)
 {
     if (!group)
     {
@@ -406,7 +406,7 @@ void FlatGroupedSourceAdapter::SubscribeToGroup(winrt::IInspectable const& group
     }
 }
 
-void FlatGroupedSourceAdapter::UnsubscribeFromAllGroups()
+void GroupedSourceAdapter::UnsubscribeFromAllGroups()
 {
     // Teardown is UI-thread-guaranteed by the owning ReferenceTrackers (TableViewSource / TableView),
     // so revoking here never crosses threads. SafeRevokeWith + the weak_from_this callbacks remain

@@ -454,7 +454,19 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
 
     if (auto const entry = TryGetGroupedEntry(header.DataContext()))
     {
-        groupKey = entry->Group();
+        // TableViewGroupInfo.Key is contracted (TableView.idl) as the GroupBy key, not the
+        // internal group object. entry->Group() is the ShapedGroup (an ICollectionViewGroup);
+        // unwrap it to the key it carries so an app template binding {Binding Key} sees the key
+        // value, not the projection wrapper. KeyText / display is unaffected either way.
+        auto const groupObject = entry->Group();
+        if (auto const collectionViewGroup = groupObject.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>())
+        {
+            groupKey = collectionViewGroup.Group();
+        }
+        else
+        {
+            groupKey = groupObject;
+        }
         itemCount = entry->GroupItemCount();
         isExpanded = hasRowInfo ? rowInfo.IsExpanded : entry->IsExpanded();
         isExpandable = hasRowInfo ? rowInfo.IsExpandable : (entry->GroupItemCount() > 0);
