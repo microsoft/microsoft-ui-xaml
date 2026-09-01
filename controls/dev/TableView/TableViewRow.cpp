@@ -284,8 +284,12 @@ void TableViewRow::OnDataContextChanged(
 {
     // On recycle ItemsRepeater updates the row's DataContext; cells pick up the new item reactively
     // via inheritance (they are not restamped). RebuildCells is still called so index-dependent visuals
-    // (alternating-row banding, frozen pinning) refresh for the new position. RebuildCells guards
-    // against re-entry from child DataContext propagation.
+    // (alternating-row banding, frozen pinning) refresh for the new position. Guard against re-entry
+    // from child DataContext propagation.
+    if (m_isRebuildingCells)
+    {
+        return;
+    }
     RebuildCells();
 }
 
@@ -549,8 +553,7 @@ void TableViewRow::RebuildCells()
         return;
     }
 
-    // Re-entry guard. See OnDataContextChanged. Cell tooltips no longer call into app code from
-    // this path - they are bindings evaluated by the framework - so a plain guard is enough.
+    // Re-entry guard. See OnDataContextChanged.
     if (m_isRebuildingCells)
     {
         return;
@@ -781,8 +784,7 @@ void TableViewRow::RebuildCells()
             AttachCellContent(cellWrapper, cellElement);
         }
 
-        // Opt-in per-cell tooltip. Set once: the binding evaluates against the row's inherited
-        // DataContext, so a recycled row re-resolves with no realization-time work.
+        // Opt-in per-cell tooltip. Set once; the binding then tracks the row's inherited DataContext.
         if (auto const toolTipBinding = column.CellToolTipBinding())
         {
             TableViewDetails::ApplyCellToolTipBinding(cellWrapper, toolTipBinding);
@@ -801,9 +803,8 @@ void TableViewRow::RebuildCells()
     RefreshRowBackground();
 }
 
-// Recycle-out. Always walks: the restamp fast-path revives tooltips through the binding without
-// going through cell creation, so a cached "row has tooltips" flag would go stale and strand app
-// content in the recycle pool. Cells with no tooltip cost one attached-property read.
+// Recycle-out. Always walks: the restamp fast-path revives tooltips through the binding, so a
+// cached per-row flag would go stale and strand app content in the pool.
 void TableViewRow::ReleaseCellToolTips()
 {
     if (auto const host = m_cellsHost.get())
@@ -1108,8 +1109,7 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
     m_editingElement.set(nullptr);
     m_editingDisplayElement.set(nullptr);
 
-    // Beginning the edit retracted this cell's tooltip. The bound value did not change, so nothing
-    // else would bring it back now that the cell is a display cell again.
+    // The bound value did not change, so only an explicit re-apply restores what the edit retracted.
     TableViewDetails::RefreshOwnedToolTip(cellWrapper);
 }
 
@@ -1119,10 +1119,10 @@ void TableViewRow::AbandonCellEdit()
     // pass, where moving focus re-enters the framework and trips the re-entrancy guard. Replacing
     // the child does not - and it must happen, or the row keeps showing a TextBox after the edit
     // closed, and over a different item once recycled.
-    auto const editedWrapper = m_editingCellWrapper.get();
-    if (editedWrapper)
+    auto const cellWrapper = m_editingCellWrapper.get();
+    if (cellWrapper)
     {
-        editedWrapper.Child(m_editingDisplayElement.get());
+        cellWrapper.Child(m_editingDisplayElement.get());
     }
 
     m_editingColumn.set(nullptr);
@@ -1131,7 +1131,7 @@ void TableViewRow::AbandonCellEdit()
     m_editingDisplayElement.set(nullptr);
 
     // The cell is a display cell again; restore the tooltip the edit retracted.
-    TableViewDetails::RefreshOwnedToolTip(editedWrapper);
+    TableViewDetails::RefreshOwnedToolTip(cellWrapper);
 }
 
 // Pointer entry point for editing, and the only place a pointer establishes the current cell.

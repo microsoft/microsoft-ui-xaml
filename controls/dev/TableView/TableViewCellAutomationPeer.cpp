@@ -98,7 +98,36 @@ winrt::hstring TableViewCellAutomationPeer::GetColumnHeaderText()
 
 winrt::hstring TableViewCellAutomationPeer::GetCellValueText()
 {
-    return GetCellValueTextFromWrapper(Owner().try_as<winrt::FrameworkElement>());
+    auto const cell = Owner().try_as<winrt::FrameworkElement>();
+    if (!cell)
+    {
+        return {};
+    }
+
+    // The cell wrapper's child is the column-generated content.
+    winrt::FrameworkElement content{ nullptr };
+    if (auto const border = cell.try_as<winrt::Border>())
+    {
+        content = border.Child().try_as<winrt::FrameworkElement>();
+    }
+    if (!content)
+    {
+        content = cell;
+    }
+
+    // Common text-column case: read the generated TextBlock.
+    if (auto const textBlock = content.try_as<winrt::TextBlock>())
+    {
+        return textBlock.Text();
+    }
+
+    // Template content uses the standard UIA name computation.
+    if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(content))
+    {
+        return peer.GetName();
+    }
+
+    return {};
 }
 
 hstring TableViewCellAutomationPeer::GetHelpTextCore()
@@ -111,8 +140,8 @@ hstring TableViewCellAutomationPeer::GetHelpTextCore()
 
     auto const record = TableViewDetails::GetRecord(Owner().try_as<winrt::FrameworkElement>());
 
-    // Resolved at query time, not at attach: the cell's own binding may not have produced a value
-    // when the tooltip is applied. Gated on the record so text the app set is never dropped.
+    // Resolved here, not at attach, where the cell's binding may not have produced a value yet.
+    // Gated on the record so text the app set is never dropped.
     if (record && !record->PublishedHelpText.empty() &&
         helpText == record->PublishedHelpText &&
         helpText == GetCellValueText())

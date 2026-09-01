@@ -358,8 +358,7 @@ void TableViewColumn::CellToolTipBinding(const winrt::Microsoft::UI::Xaml::Data:
 {
     m_cellToolTipBinding.set(value);
 
-    // Realized cells carry the previous binding. This is the only invalidation the feature needs:
-    // once a cell carries the binding, the row's DataContext drives every later update.
+    // Realized cells carry the previous binding. The only invalidation this feature needs.
     NotifyCellContentChanged();
 }
 

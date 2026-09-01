@@ -50,37 +50,3 @@ inline std::optional<winrt::hstring> TryGetColumnHeaderString(winrt::TableViewCo
     }
     return std::nullopt;
 }
-
-// The text a realized cell reports to UIA: the generated TextBlock for a text column, otherwise the
-// standard UIA name of the column-generated content. Shared by TableViewCellAutomationPeer's name
-// and help-text composition, so the two cannot drift. Only called from the peer, so the automation
-// peer it may allocate is created when UIA is actually asking.
-inline winrt::hstring GetCellValueTextFromWrapper(winrt::FrameworkElement const& cellWrapper)
-{
-    if (!cellWrapper)
-    {
-        return {};
-    }
-
-    winrt::FrameworkElement content{ nullptr };
-    if (auto const border = cellWrapper.try_as<winrt::Border>())
-    {
-        content = border.Child().try_as<winrt::FrameworkElement>();
-    }
-    if (!content)
-    {
-        content = cellWrapper;
-    }
-
-    if (auto const textBlock = content.try_as<winrt::TextBlock>())
-    {
-        return textBlock.Text();
-    }
-
-    if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(content))
-    {
-        return peer.GetName();
-    }
-
-    return {};
-}
