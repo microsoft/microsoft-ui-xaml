@@ -6,6 +6,7 @@
 #include "MediaPlayerPresenter_partial.h"
 #include "MediaPlayerElement.h"
 #include "MediaPlayerPresenter.h"
+#include "MediaPlayerExtensions.h"
 #include "MediaTransportControls_partial.h"
 #include "Panel_partial.h"
 #include "ContentPresenter_partial.h"
@@ -734,15 +735,10 @@ MediaPlayerElement::LeaveImpl(
 
     if (shouldPauseMediaPlayer && m_spMediaPlayer)
     {
-        ctl::ComPtr<wmp::IMediaPlayer3> spMediaPlayer3;
         ctl::ComPtr<wmp::IMediaPlaybackSession> spPlaybackSession;
         wmp::MediaPlaybackState playbackState{};
 
-        HRESULT stateResult = m_spMediaPlayer.As(&spMediaPlayer3);
-        if (SUCCEEDED(stateResult))
-        {
-            stateResult = spMediaPlayer3->get_PlaybackSession(&spPlaybackSession);
-        }
+        HRESULT stateResult = MediaPlayer_GetCurrentPlaybackSession(m_spMediaPlayer.Get(), &spPlaybackSession);
         if (SUCCEEDED(stateResult) && spPlaybackSession)
         {
             stateResult = spPlaybackSession->get_PlaybackState(&playbackState);
