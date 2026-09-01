@@ -5,7 +5,7 @@
 #include "common.h"
 #include "TableViewSource.h"
 #include "RowMetadataProvider.h"
-#include "FlatGroupedSourceAdapter.h"
+#include "GroupedSourceAdapter.h"
 #include "ShapedItemsSource.h"
 #include "SharedHelpers.h"
 

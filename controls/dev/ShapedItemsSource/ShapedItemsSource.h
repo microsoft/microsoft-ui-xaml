@@ -16,7 +16,7 @@
 #include "ShapingHelpers.h"
 #include "RowIdentity.h"
 
-class FlatGroupedSourceAdapter;
+class GroupedSourceAdapter;
 class ShapedGroup;
 
 // Layer 2 of the shaping stack: the LIVE PROJECTION.
@@ -143,7 +143,7 @@ public:
     // ItemsSourceView instead, but this vector is still maintained as the flat shaped projection
     // (group order, headers excluded) so Rows() stays coherent regardless of grouping.
     winrt::IObservableVector<winrt::IInspectable> Rows() const noexcept { return m_rows; }
-    std::shared_ptr<FlatGroupedSourceAdapter> GroupedAdapter() const noexcept { return m_groupedAdapter; }
+    std::shared_ptr<GroupedSourceAdapter> GroupedAdapter() const noexcept { return m_groupedAdapter; }
     // The selector every identity consumer must use. Derives identity from each item's object
     // identity, so shaping never depends on the app having a unique domain key.
     TabularShapingHelpers::TabularKeySelector const& IdentitySelector() const noexcept { return EffectiveIdentitySelector(); }
@@ -252,7 +252,7 @@ private:
     bool m_shapingBatchHasShapingChange{ false };
     bool m_shapingBatchHasRefresh{ false };
     std::unordered_map<winrt::hstring, winrt::com_ptr<ShapedGroup>> m_groupCache;
-    std::shared_ptr<FlatGroupedSourceAdapter> m_groupedAdapter{};
+    std::shared_ptr<GroupedSourceAdapter> m_groupedAdapter{};
 
     std::function<void()> m_projectionRebuilt{ nullptr };
     std::function<void()> m_shapeSwapped{ nullptr };

@@ -285,7 +285,10 @@
         <Setter Property="Padding" Value="{ThemeResource TableViewGroupHeaderPadding}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="IsTabStop" Value="False" />
+        <!-- Focusable so keyboard users can expand/collapse: TableViewGroupHeader::OnKeyDown
+             handles Enter/Space (toggle) and Right/Left (expand/collapse), matching TreeViewItem. -->
+        <Setter Property="IsTabStop" Value="True" />
+        <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="ContentTemplate" Value="{StaticResource TableViewDefaultGroupHeaderContentTemplate}" />
         <Setter Property="Template">
             <Setter.Value>

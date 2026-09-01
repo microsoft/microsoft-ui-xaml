@@ -694,6 +694,9 @@ private:
     void QueueClearSortAfterColumnRemoval();
     bool m_clearSortAfterColumnRemovalQueued{ false };
     void AppendSortIndicatorVisual(const winrt::Panel& host, const winrt::TableViewColumn& column);
+    // The chevron is code-created into a nested host panel, so its programmatic Name is not in any
+    // XAML namescope and FindName cannot resolve it. Locate it by type via a child walk instead.
+    static winrt::SortIndicator FindSortIndicator(const winrt::Panel& root);
     static winrt::SortIndicatorDirection ToSortIndicatorDirection(winrt::SortDirection direction);
 
     // v1 is single-column sort, so this holds at most one entry. It stays a vector because the

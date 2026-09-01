@@ -1548,6 +1548,14 @@ void TableView::RebuildHeaders()
             // opted-out column carries no chevron and no click handler at all.
             if (canUserSortColumns && column.CanSort())
             {
+                // The header cell is a Grid, and a Grid with a null Background is not hit-test
+                // visible in its empty regions. The header content presenter and the chevron host
+                // below are both effectively non-hit-testable in their padding, so without an
+                // explicit brush a tap that misses the header glyphs never reaches the Tapped
+                // handler and the column never sorts. A transparent fill makes the WHOLE cell the
+                // click target, matching the group-header band and WPF DataGrid column headers.
+                headerCell.Background(winrt::SolidColorBrush{ winrt::Colors::Transparent() });
+
                 // Hosted in its own panel so the chevron sits on the logical trailing edge without
                 // competing with the header content's Stretch alignment.
                 winrt::StackPanel indicatorHost;
@@ -1627,6 +1635,33 @@ winrt::SortIndicatorDirection TableView::ToSortIndicatorDirection(winrt::SortDir
     }
 }
 
+winrt::SortIndicator TableView::FindSortIndicator(const winrt::Panel& root)
+{
+    if (!root)
+    {
+        return nullptr;
+    }
+
+    // The chevron lives one level down inside its own host StackPanel today, but recurse so a
+    // future template tweak that nests it deeper does not silently break the refresh.
+    for (auto const& child : root.Children())
+    {
+        if (auto const indicator = child.try_as<winrt::SortIndicator>())
+        {
+            return indicator;
+        }
+        if (auto const childPanel = child.try_as<winrt::Panel>())
+        {
+            if (auto const found = FindSortIndicator(childPanel))
+            {
+                return found;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
 void TableView::RefreshSortIndicators()
 {
     auto host = m_headerHost.get();
@@ -1637,7 +1672,7 @@ void TableView::RefreshSortIndicators()
 
     for (auto const& child : host.Children())
     {
-        auto const headerCell = child.try_as<winrt::FrameworkElement>();
+        auto const headerCell = child.try_as<winrt::Panel>();
         if (!headerCell)
         {
             continue;
@@ -1649,9 +1684,10 @@ void TableView::RefreshSortIndicators()
             continue;
         }
 
-        // FindName rather than a cached element list: header cells are rebuilt wholesale, so a
-        // cache would have to be invalidated in lockstep with every rebuild.
-        if (auto const indicator = headerCell.FindName(winrt::hstring{ s_SortIndicatorName }).try_as<winrt::SortIndicator>())
+        // A child walk by type rather than FindName: the indicator is code-created into a nested
+        // host panel, so its Name was never registered in a namescope and FindName returns null --
+        // which left a programmatic sort (no header rebuild) with a stale chevron.
+        if (auto const indicator = FindSortIndicator(headerCell))
         {
             indicator.Direction(ToSortIndicatorDirection(column.SortDirection()));
         }
