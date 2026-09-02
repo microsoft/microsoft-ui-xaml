@@ -2038,12 +2038,14 @@ IFACEMETHODIMP DxamlCoreTestHooks::GetAllContentIslands(_In_ xaml_hosting::IDesk
     return S_OK;
 }
 
-IFACEMETHODIMP DxamlCoreTestHooks::HasWindowPlaceholder(_In_ xaml::IWindow* window, _Out_ BOOLEAN* hasPlaceholder)
+IFACEMETHODIMP DxamlCoreTestHooks::HasWindowPlaceholder(_In_opt_ xaml::IWindow* window, _Out_ BOOLEAN* hasPlaceholder)
 {
+    IFCPTR_RETURN(hasPlaceholder);
     *hasPlaceholder = FALSE;
 
-    ctl::ComPtr<DirectUI::Window> windowPeer;
-    IFC_RETURN(window->QueryInterface(IID_PPV_ARGS(&windowPeer)));
+    // Follows the established hook pattern: a null window resolves to the app's first window.
+    ctl::ComPtr<DirectUI::Window> windowPeer = GetTargetWindow(window);
+    IFCEXPECT_RETURN(windowPeer);
 
     // Only top-level desktop windows can hold a placeholder. Fail rather than report FALSE for
     // anything we can't resolve, so a caller can't confuse "not applicable" with "no placeholder".

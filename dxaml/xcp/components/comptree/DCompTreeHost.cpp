@@ -2537,11 +2537,20 @@ _Check_return_ HRESULT DCompTreeHost::PrepareXamlIslandForWindowShow(
     return CommitMainDevice();
 }
 
-bool DCompTreeHost::HasXamlIslandWindowPlaceholder(_In_ CXamlIslandRoot* xamlIslandRoot) const
+_Check_return_ HRESULT DCompTreeHost::HasXamlIslandWindowPlaceholder(
+    _In_ CXamlIslandRoot* xamlIslandRoot,
+    _Out_ bool* hasPlaceholder) const
 {
+    *hasPlaceholder = false;
+
+    // An island with no render data has no placeholder state to report at all. Fail instead of
+    // answering false, so a caller cannot mistake missing state for "no placeholder installed".
     auto islandData = m_islandRenderData.find(xamlIslandRoot);
-    return islandData != m_islandRenderData.end()
-        && islandData->second.windowPlaceholderVisual != nullptr;
+    IFCEXPECT_RETURN(islandData != m_islandRenderData.end());
+
+    *hasPlaceholder = islandData->second.windowPlaceholderVisual != nullptr;
+
+    return S_OK;
 }
 
 void DCompTreeHost::UpdateXamlIslandTargetSize(_In_ CXamlIslandRoot* xamlIslandRoot)

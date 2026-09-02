@@ -1257,7 +1257,7 @@ _Check_return_ HRESULT DesktopWindowImpl::HasActiveWindowPlaceholder(_Out_ bool*
     DCompTreeHost* dcompTreeHost = coreIsland->GetDCompTreeHost();
     IFCEXPECT_RETURN(dcompTreeHost);
 
-    *hasPlaceholder = dcompTreeHost->HasXamlIslandWindowPlaceholder(coreIsland);
+    IFC_RETURN(dcompTreeHost->HasXamlIslandWindowPlaceholder(coreIsland, hasPlaceholder));
 
     return S_OK;
 }

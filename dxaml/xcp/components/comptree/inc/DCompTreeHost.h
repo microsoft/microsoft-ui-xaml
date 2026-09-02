@@ -326,7 +326,10 @@ public:
     _Check_return_ HRESULT PrepareXamlIslandForWindowShow(
         _In_ CXamlIslandRoot* xamlIslandRoot,
         _In_ UINT32 backgroundColor);
-    bool HasXamlIslandWindowPlaceholder(_In_ CXamlIslandRoot* xamlIslandRoot) const;
+    // Fails if the island has no render data entry, so missing state is never reported as false.
+    _Check_return_ HRESULT HasXamlIslandWindowPlaceholder(
+        _In_ CXamlIslandRoot* xamlIslandRoot,
+        _Out_ bool* hasPlaceholder) const;
     void UpdateXamlIslandTargetSize(_In_ CXamlIslandRoot* xamlIslandRoot);
     void RemoveXamlIslandTarget(_In_ CXamlIslandRoot* xamlIslandRoot);
     _Check_return_ HRESULT ConnectXamlIslandTargetRoots();

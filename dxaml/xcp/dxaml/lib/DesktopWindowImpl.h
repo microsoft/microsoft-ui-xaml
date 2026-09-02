@@ -125,7 +125,8 @@ namespace DirectUI
 
         // Reports whether this window's top-level island currently holds the window
         // placeholder visual installed before the first rendered frame. Fails if the
-        // island cannot be resolved, so callers cannot mistake that for "no placeholder".
+        // island or its render data cannot be resolved, so callers cannot mistake
+        // missing state for "no placeholder".
         _Check_return_ HRESULT HasActiveWindowPlaceholder(_Out_ bool* hasPlaceholder);
 
     public:

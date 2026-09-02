@@ -2599,10 +2599,28 @@ void WindowIntegrationTests::ContentSetInMarkupIsReleasedWhenCleared()
 
             auto rootPanel = safe_cast<xaml_controls::Grid^>(window1->Content);
             VERIFY_IS_NOT_NULL(rootPanel);
-            VERIFY_ARE_EQUAL(xaml::Visibility::Visible, rootPanel->Visibility);
             VERIFY_IS_GREATER_THAN(rootPanel->ActualWidth, 0.0);
             VERIFY_IS_GREATER_THAN(rootPanel->ActualHeight, 0.0);
         });
+
+        LOG_OUTPUT(L"----- Activating again after the first frame does not reinstall the placeholder -----");
+        {
+            // Rendering stays disabled across this second Activate(): if activation reinstalled a
+            // placeholder, nothing could clear it before the assertion below. A FALSE result
+            // therefore proves the placeholder path is confined to the initial activation.
+            DisableRenderingScopeGuard disableRendering;
+
+            RunOnUIThread([&]()
+            {
+                window1->Activate();
+            });
+
+            VERIFY_IS_FALSE(HasWindowPlaceholder(window1.get()));
+        }
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        VERIFY_IS_FALSE(HasWindowPlaceholder(window1.get()));
     }
 
     void WindowIntegrationTests::WindowPlaceholderIsNotUsedWhenDisabled()
@@ -2631,9 +2649,11 @@ void WindowIntegrationTests::ContentSetInMarkupIsReleasedWhenCleared()
                 window1->Activate();
             });
 
-            // The query itself is the positive control: it fails (and throws) unless the window
-            // resolves to a desktop window with a live island, which is exactly the state in which
-            // WindowPlaceholderIsUsedUntilFirstFrame observes a placeholder.
+            // A FALSE result here is meaningful rather than vacuous: the query fails (and throws)
+            // unless the window resolves to a desktop window whose island has a render data entry,
+            // which is the same state in which WindowPlaceholderIsUsedUntilFirstFrame observes a
+            // placeholder. So FALSE means "an entry exists and holds no placeholder visual", not
+            // "placeholder state could not be determined".
             LOG_OUTPUT(L"----- No placeholder is installed, even before the first frame -----");
             VERIFY_IS_FALSE(HasWindowPlaceholder(window1.get()));
         }

@@ -931,7 +931,8 @@ namespace Private.Infrastructure
         HRESULT GetDeallocationCount([out, retval] UINT64* count);
 
         // Returns whether the window's top-level island currently holds the window placeholder
-        // visual installed before the first rendered frame.
+        // visual installed before the first rendered frame. Fails if the window or its island
+        // render data cannot be resolved, so missing state is never reported as FALSE.
         HRESULT HasWindowPlaceholder([in] Microsoft.UI.Xaml.Window* window, [out, retval] BOOLEAN* hasPlaceholder);
     }
 
