@@ -21,19 +21,27 @@ special, exactly like the [ChartApp](../ChartApp) samples.
 
 ## Build
 
-From the repo root:
+`TableView` is not in any published `Microsoft.WindowsAppSDK.WinUI` package yet, so this sample can
+only build against a **locally packed** component. Building the project on its own resolves the
+package from the feed and fails with `CS0234: The type or namespace name 'Tabular' does not exist`.
+
+The supported flow packs the component and passes the matching version for you:
 
 ```
-.\initrun.ps1 msb /q /restore Samples\TableViewSampleApp\TableViewSampleApp.csproj /p:Platform=x64
+.\Build.cmd product
+.\Build.cmd samples
 ```
 
-The sample resolves `Microsoft.WindowsAppSDK.WinUI` at `$(WinUIVersion)`. To run against a locally
-built control, pack the component and point the build at that version:
+To iterate on just this app, pack once and point the build at that version:
 
 ```
 .\pack.component.cmd /version 3.0.0-mylocal
 .\initrun.ps1 msb /q /restore Samples\TableViewSampleApp\TableViewSampleApp.csproj /p:Platform=x64 /p:WinUIVersion=3.0.0-mylocal
 ```
+
+Re-run `pack.component.cmd` after every control change — NuGet caches by version, so reuse the
+version only if you also clear `packages\microsoft.windowsappsdk.winui\`, and prefer a fresh version
+string when in doubt.
 
 ## Run
 

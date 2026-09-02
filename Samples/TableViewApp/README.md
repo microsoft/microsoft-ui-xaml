@@ -36,16 +36,25 @@ Those are separate paths and either can fail alone, so a conformance check wants
 
 ## Build and run
 
+`TableView` is not in any published `Microsoft.WindowsAppSDK.WinUI` package yet, so these apps only
+compile against a locally packed component — `Build.cmd samples` packs it and passes the matching
+version:
+
 ```
-.\initrun.ps1 msb /restore Samples\TableViewApp\TableViewAppCsPackaged\TableViewAppCsPackaged.csproj /p:Platform=x64
+.\Build.cmd product
+.\Build.cmd samples
 ```
 
-To test a locally built control, pack the component and override the version:
+Building one project on its own resolves the package from the feed instead and fails with
+`CS0234: The type or namespace name 'Tabular' does not exist`. To iterate on a single app, pack once
+and override the version:
 
 ```
 .\pack.component.cmd /version 3.0.0-mylocal
-... /p:WinUIVersion=3.0.0-mylocal
+.\initrun.ps1 msb /restore Samples\TableViewApp\TableViewAppCsPackaged\TableViewAppCsPackaged.csproj /p:Platform=x64 /p:WinUIVersion=3.0.0-mylocal
 ```
+
+NuGet caches by version, so re-pack under a fresh version string after changing the control.
 
 The unpackaged apps run straight from their output directory. The packaged apps produce a loose
 layout; register it with `Add-AppxPackage -Register <outdir>\AppxManifest.xml` and launch from Start.
