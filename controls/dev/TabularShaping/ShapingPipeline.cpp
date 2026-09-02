@@ -191,6 +191,7 @@ namespace TabularShapingHelpers
         winrt::hstring const& axisToken,
         TabularKeySelector const& key,
         winrt::Windows::Foundation::IUnknown const& keyIdentity,
+        winrt::hstring const& sortMemberPath,
         SortDirection direction)
     {
         if (!previousAxisToken.empty() && previousAxisToken != axisToken)
@@ -216,6 +217,7 @@ namespace TabularShapingHelpers
             {
                 it->Key = key;
                 it->KeyIdentity = keyIdentity;
+                it->SortMemberPath = sortMemberPath;
                 it->Direction = direction;
                 // Match WPF DataGrid.DefaultSort: re-sorting an already-sorted axis replaces it
                 // in place and keeps its existing precedence slot (Order is left untouched), rather
@@ -233,7 +235,7 @@ namespace TabularShapingHelpers
             // A brand-new axis takes the next (largest) Order, which under earliest-first
             // precedence appends it as the least significant tie-break -- the analog of WPF's
             // SortDescriptions.Add.
-            m_sorts.push_back({ axisToken, key, keyIdentity, direction, NextVerbOrder(), MintDescriptionId(L's') });
+            m_sorts.push_back({ axisToken, key, keyIdentity, sortMemberPath, direction, NextVerbOrder(), MintDescriptionId(L's') });
         }
     }
 
@@ -250,6 +252,23 @@ namespace TabularShapingHelpers
                 m_sorts.begin(),
                 m_sorts.end(),
                 [&axisToken](SortAxis const& axis) { return axis.AxisToken == axisToken; }),
+            m_sorts.end());
+    }
+
+    void ShapingPipeline::ClearSortsExcept(winrt::hstring const& axisToken) noexcept
+    {
+        if (axisToken.empty())
+        {
+            // No axis to preserve: an empty token identifies no single axis.
+            ClearSorts();
+            return;
+        }
+
+        m_sorts.erase(
+            std::remove_if(
+                m_sorts.begin(),
+                m_sorts.end(),
+                [&axisToken](SortAxis const& axis) { return axis.AxisToken != axisToken; }),
             m_sorts.end());
     }
 

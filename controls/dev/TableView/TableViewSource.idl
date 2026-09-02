@@ -56,6 +56,27 @@ runtimeclass TableViewSource
     // every axis to None leaves the source unsorted. When several axes are active the FIRST one
     // declared is the primary sort and each later axis breaks ties within the previous, matching
     // WPF DataGrid's SortDescriptions order; re-sorting an existing axis keeps its position.
+    //
+    // Both overloads are LAST WRITER WINS against TableView's own sort: declaring a sort here
+    // replaces the control's axis rather than stacking behind it, so the rows are ordered by this
+    // axis alone. What differs is what the headers can say about it.
+    //
+    // sortMemberPath names the property this axis sorts on and is the preferred form. The path is
+    // evaluated by the same binding-based evaluator a column uses for its SortMemberPath, so a
+    // path that displays also sorts (dotted paths and indexers included), and a bound TableView
+    // can match the path to a column and light that column's sort indicator. Re-sorting the same
+    // path replaces that axis in place rather than adding a second one.
+    // Throws E_INVALIDARG when sortMemberPath is empty.
+    // Overload metadata is frozen at v1 — without it MIDL bakes Sort2 into the ABI.
+    [method_name("SortByPath")]
+    TableViewSource Sort(String sortMemberPath, SortDirection direction);
+
+    // keySelector form: for keys no property path expresses — computed, multi-field, normalized,
+    // or the identity of a primitive collection. The axis is ANONYMOUS: nothing names a property,
+    // so a bound TableView cannot attribute it to a column and clears every sort indicator
+    // instead of leaving one describing a sort that is no longer primary. Prefer the
+    // sortMemberPath overload whenever the key is a property.
+    [default_overload] [method_name("Sort")]
     TableViewSource Sort(TableViewKeySelector keySelector, SortDirection direction);
 
     // ClearFilter / ClearGroupBy / ClearSort: never throw, and idempotent: with no stage present

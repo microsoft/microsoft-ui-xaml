@@ -990,6 +990,14 @@ void TableView::OnTableViewSourceProjectionChanged()
 
 void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)
 {
+    // The app may have declared or cleared a sort straight on the source, which the control has no
+    // other way to learn about. Reconcile before anything else so the chevrons never outlive the
+    // axis they describe.
+    if (!m_isApplyingControlInitiatedSort)
+    {
+        QueueReconcileSortStateWithSource();
+    }
+
     // A programmatic shaping verb rewrites the projection with no input event behind it, so
     // nothing else tells a UIA client that the rows it cached are stale. A pure re-order keeps the
     // same children in a new order; anything else can add or remove them.

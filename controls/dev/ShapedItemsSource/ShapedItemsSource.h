@@ -126,9 +126,28 @@ public:
         winrt::hstring const& axisToken,
         TabularShapingHelpers::TabularKeySelector const& key,
         winrt::Windows::Foundation::IUnknown const& keyIdentity,
+        winrt::hstring const& sortMemberPath,
         winrt::SortDirection direction);
     void ClearSorts();
     void ClearSort(winrt::hstring const& axisToken);
+    // Drops every sort axis except axisToken. Lets a consumer that owns ONE axis assert itself as
+    // the only sort without having to know the tokens of axes it did not declare.
+    void ClearSortsExcept(winrt::hstring const& axisToken);
+
+    // What an active sort axis looks like from outside the engine. Enough for a consumer to tell
+    // an axis it declared from one it did not, and to say which property a foreign axis sorts on.
+    struct ActiveSortAxisInfo
+    {
+        winrt::hstring AxisToken;
+        // Empty when the axis was declared with a delegate no property path expresses.
+        winrt::hstring SortMemberPath;
+        winrt::SortDirection Direction{ winrt::SortDirection::None };
+    };
+
+    // The active sort axes in precedence order (index 0 is the primary sort). An untokenized axis
+    // reports an empty token, so a consumer can tell "an axis I do not own exists" from "only mine
+    // exists".
+    std::vector<ActiveSortAxisInfo> ActiveSortAxisInfos() const;
 
     // -- projection -----------------------------------------------------------------------
     // Name this engine uses to prefix caller-facing diagnostics. Layer 2 must not hardcode a

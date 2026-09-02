@@ -560,6 +560,17 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     // the control can display. Sorting is raised first; cancel it to own the ordering instead.
     // The active sort state lives on the column, as TableViewColumn.SortDirection; Sorted hands
     // the app the column that changed, and a null column there means the sort was cleared.
+    //
+    // LAST WRITER WINS with TableViewSource.Sort. The control owns exactly one sort axis and
+    // publishes the header chevron from it, while TableViewSource.Sort declares an independent
+    // axis the control cannot address. So the two reconcile rather than stack:
+    //  * Sorting through the control clears any axis the app declared on the source.
+    //  * Declaring a sort on the source clears the control's axis and every column's
+    //    SortDirection, and raises Sorted with a null column: the app now owns the ordering, and
+    //    no chevron is left claiming an axis that is not the primary sort.
+    //  * ClearSort() clears every axis, including one the app declared.
+    // Without this the earlier-declared axis would silently outrank the later one while the
+    // chevron advertised the loser.
 
     // Control-wide gate for the click-to-sort UX. When false no sort affordance is built and
     // header clicks do not sort; programmatic sorting still works. The per-column cycle policy is

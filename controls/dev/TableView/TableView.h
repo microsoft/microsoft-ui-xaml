@@ -639,6 +639,20 @@ private:
     // UIA client its cached rows are stale. reorderOnly separates a pure re-sort (same children,
     // new order) from a membership change.
     void OnTableViewSourceShapingChanged(bool reorderOnly);
+    // Last writer wins between the two sort front-ends. The control owns ONE axis and publishes
+    // the chevron from it; TableViewSource.Sort declares an untokenized axis the control cannot
+    // address. When the app declares or clears a sort directly on the source, the control stands
+    // down: it drops its own axis and every column's SortDirection, so the rows are ordered by
+    // exactly one sort and no chevron claims an axis that is not primary (or no longer exists).
+    void ReconcileSortStateWithSource();
+    void QueueReconcileSortStateWithSource();
+    // Suppresses ReconcileSortStateWithSource for the duration of a control-initiated verb, whose
+    // own source mutations would otherwise read as the app taking over.
+    [[nodiscard]] auto BeginControlInitiatedSortScope()
+    {
+        m_isApplyingControlInitiatedSort = true;
+        return gsl::finally([this]() { m_isApplyingControlInitiatedSort = false; });
+    }
     // EmptyTemplate shows only for null or empty row sources.
     void UpdateEmptyState();
     void UpdateEmptyStateCollectionChangedSubscription();
@@ -760,6 +774,10 @@ private:
     winrt::event_token m_headerHostLoadedToken{};
     // Set while a drag is in flight, so Escape can reach the gripper that owns it.
     std::shared_ptr<ColumnResizeDragState> m_activeColumnResizeDrag{};
+    // True while a control-initiated sort verb is mutating the source. Its own mutations must not
+    // be mistaken for the app declaring a sort behind the control's back.
+    bool m_isApplyingControlInitiatedSort{ false };
+    bool m_sortReconcileQueued{ false };
     winrt::event_token m_rowsRepeaterLoadedToken{};
     winrt::event_token m_pendingFocusLayoutToken{};
     // Deferred restore of keyboard focus to a group header after a toggle reshape recycles it.

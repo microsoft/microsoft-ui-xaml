@@ -37,6 +37,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewRowInfo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RowMetadataProvider.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SortMemberPathResolver.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupHeaderAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupHeaderToggleRequestedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupingHelpers.h" />

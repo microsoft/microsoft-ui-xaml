@@ -7,6 +7,7 @@
 #include "RowMetadataProvider.h"
 #include "GroupedSourceAdapter.h"
 #include "ShapedItemsSource.h"
+#include "SortMemberPathResolver.h"
 #include "SharedHelpers.h"
 
 namespace
@@ -96,17 +97,64 @@ winrt::TableViewSource TableViewSource::ClearSort(winrt::hstring const& sortAxis
     return *this;
 }
 
+winrt::TableViewSource TableViewSource::ClearSortsExcept(winrt::hstring const& sortAxisToken)
+{
+    m_engine->ClearSortsExcept(sortAxisToken);
+    return *this;
+}
+
+std::vector<TableViewSource::ActiveSortAxisInfo> TableViewSource::ActiveSortAxisInfos() const
+{
+    std::vector<ActiveSortAxisInfo> infos;
+    for (auto const& axis : m_engine->ActiveSortAxisInfos())
+    {
+        infos.push_back({ axis.AxisToken, axis.SortMemberPath, axis.Direction });
+    }
+    return infos;
+}
+
+winrt::hstring TableViewSource::SortAxisTokenForPath(winrt::hstring const& sortMemberPath)
+{
+    // Distinct from the control's "column:<address>" tokens, so a path-declared axis and a
+    // column-declared axis are never mistaken for one another even when they sort the same
+    // property. Tokenizing at all is what makes re-sorting the same path REPLACE its axis: an
+    // untokenized axis is matched by delegate identity, and every call would synthesize a fresh
+    // delegate, so Sort("Name", Asc) followed by Sort("Name", Desc) would stack two axes.
+    return L"path:" + sortMemberPath;
+}
+
 winrt::TableViewSource TableViewSource::Sort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction)
 {
-    return SortCore({}, {}, key, direction);
+    return SortCore({}, {}, key, {}, direction);
 }
 
-winrt::TableViewSource TableViewSource::SortReplacing(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::SortDirection direction)
+winrt::TableViewSource TableViewSource::Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
 {
-    return SortCore(previousSortAxisToken, sortAxisToken, key, direction);
+    if (sortMemberPath.empty())
+    {
+        throw winrt::hresult_invalid_argument(L"sortMemberPath cannot be empty.");
+    }
+
+    // One resolver per axis, captured by the selector and reused across every comparison: the
+    // binding is built once per path, so steady-state cost is a DataContext write plus a property
+    // read rather than a fresh binding per item.
+    auto resolver = std::make_shared<SortMemberPathResolver>(sortMemberPath);
+    winrt::TableViewKeySelector key{
+        [resolver](winrt::IInspectable const& item) -> winrt::IInspectable
+        {
+            return resolver->Resolve(item);
+        }
+    };
+
+    return SortCore({}, SortAxisTokenForPath(sortMemberPath), key, sortMemberPath, direction);
 }
 
-winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::SortDirection direction)
+winrt::TableViewSource TableViewSource::SortReplacing(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
+{
+    return SortCore(previousSortAxisToken, sortAxisToken, key, sortMemberPath, direction);
+}
+
+winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
 {
     if (!key)
     {
@@ -131,6 +179,7 @@ winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousS
         sortAxisToken,
         [key](winrt::IInspectable const& item) { return key(item); },
         key.as<winrt::Windows::Foundation::IUnknown>(),
+        sortMemberPath,
         direction);
     return *this;
 }
