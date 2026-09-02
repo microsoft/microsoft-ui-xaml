@@ -49,7 +49,8 @@ static ComPtr<xaml_settings_abi::IXamlOptionalChangesStatics> GetStatics()
 }
 
 static const auto c_iconNoGrid = xaml_settings_abi::XamlChangeId_IconNoGridOptimization;
-static constexpr auto c_skipWindowRedirectionSurface = static_cast<xaml_settings_abi::XamlChangeId>(63530879);
+static const auto c_skipWindowRedirectionSurface = static_cast<xaml_settings_abi::XamlChangeId>(
+    xaml_settings::XamlChangeId::SkipWindowRedirectionSurface);
 
 // ---------------------------------------------------------------------------
 // Setup / Cleanup
