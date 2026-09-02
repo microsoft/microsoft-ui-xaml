@@ -434,6 +434,10 @@ void TableView::OnApplyTemplate()
     }
     if (auto oldHeaderHost = m_headerHost.get())
     {
+        // The band is about to be abandoned: unwind owned tooltips before it goes, or a live popup
+        // keeps hosting content parented into the old cells.
+        ReleaseHeaderToolTips(oldHeaderHost);
+
         // Mirror the rowsRepeater Loaded cleanup for the header host.
         if (m_headerHostLoadedToken.value)
         {
@@ -1382,6 +1386,14 @@ static winrt::hstring GetColumnHeaderText(const winrt::TableViewColumn& column)
     return {};
 }
 
+// Shared transparent fill for header cells, matching the row cell wrapper. Static because the
+// value never varies and headers are rebuilt on every column change.
+static winrt::Brush HeaderCellTransparentBrush()
+{
+    static const winrt::SolidColorBrush s_transparent{ winrt::Colors::Transparent() };
+    return s_transparent;
+}
+
 void TableView::ReleaseHeaderToolTips(const winrt::Panel& host)
 {
     if (!host)
@@ -1389,14 +1401,22 @@ void TableView::ReleaseHeaderToolTips(const winrt::Panel& host)
         return;
     }
 
+    // Snapshot: closing a tooltip raises Closed into app code, which can mutate Columns and
+    // re-enter RebuildHeaders, clearing the collection this loop is walking.
     auto const children = host.Children();
-    const uint32_t count = children.Size();
-    for (uint32_t i = 0; i < count; ++i)
+    std::vector<winrt::FrameworkElement> cells;
+    cells.reserve(children.Size());
+    for (uint32_t i = 0; i < children.Size(); ++i)
     {
         if (auto const headerCell = children.GetAt(i).try_as<winrt::FrameworkElement>())
         {
-            TableViewDetails::ClearOwnedToolTip(headerCell);
+            cells.push_back(headerCell);
         }
+    }
+
+    for (auto const& headerCell : cells)
+    {
+        TableViewDetails::ClearOwnedToolTip(headerCell);
     }
 }
 
@@ -1468,6 +1488,9 @@ void TableView::RebuildHeaders()
             winrt::AutomationProperties::SetAccessibilityView(headerCell, winrt::AccessibilityView::Content);
             // Match the body row min-height so the header band and rows render at the same height.
             headerCell.MinHeight(cachedRowMinHeight);
+            // A Panel with no Background takes no pointer input where it has no child, so the
+            // tooltip and the click-to-sort target would both be dead over the cell's padding.
+            headerCell.Background(HeaderCellTransparentBrush());
 
             // No Width binding: TableViewCellsPanel arranges header cells at the column's ActualWidth;
             // an explicit Width would defeat the panel's unconstrained Auto measured-width measurement.

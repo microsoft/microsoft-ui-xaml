@@ -73,20 +73,6 @@ namespace TableViewDetails
         return std::nullopt;
     }
 
-    // Tooltip text for peers that publish it themselves; AutomationProperties never reaches a
-    // virtual peer.
-    inline std::optional<winrt::hstring> TryGetOwnedToolTipText(const winrt::FrameworkElement& element)
-    {
-        auto const record = GetRecord(element);
-        if (!record || !record->ToolTip ||
-            record->ToolTip != winrt::ToolTipService::GetToolTip(element).try_as<winrt::ToolTip>())
-        {
-            return std::nullopt;
-        }
-
-        return TryGetString(record->ToolTip.Content());
-    }
-
     inline void RetractPublishedHelpText(const winrt::FrameworkElement& element, CellToolTipRecord& record)
     {
         if (!record.PublishedHelpText.empty() &&
@@ -296,15 +282,34 @@ namespace TableViewDetails
     }
 
     // Headers are rebuilt wholesale, never recycled, so there is no binding or refresh path.
+    // Contained: both call sites run from the property system or a header rebuild, where an
+    // escaping exception is a fail-fast, and app-supplied content can throw (a UIElement already
+    // parented by another cell's tooltip).
     inline void ApplyHeaderToolTip(
         const winrt::FrameworkElement& element,
         const winrt::IInspectable& content)
     {
-        SetOwnedToolTip(
-            element,
-            content,
-            winrt::PlacementMode::Mouse,
-            false /* publishHelpText */,
-            L"HeaderToolTip");
+        try
+        {
+            const bool attached = SetOwnedToolTip(
+                element,
+                content,
+                winrt::PlacementMode::Mouse,
+                false /* publishHelpText */,
+                L"HeaderToolTip");
+
+            // Rich content is a legitimate choice, but it is mouse-only: the header peer reports
+            // string content and nothing else, so an author gets no other signal.
+            if (attached && !TryGetString(content))
+            {
+                TVDiag::DbgLogF(L"[TableView] HeaderToolTip content is not a string; it shows on "
+                    L"hover but is not reported to assistive technology.");
+            }
+        }
+        catch (...)
+        {
+            TVDiag::LogRetailF(L"[TableView] Applying a header tooltip failed (HRESULT 0x%08X).",
+                static_cast<unsigned int>(winrt::to_hresult()));
+        }
     }
 }

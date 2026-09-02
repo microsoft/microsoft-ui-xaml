@@ -165,15 +165,13 @@ hstring TableViewColumnHeaderAutomationPeer::GetHelpTextCore()
         }
     }
 
-    // Read from the realized header: this peer is virtual, so the element's AutomationProperties
-    // would never reach a client. String content only, matching the cell rule.
+    // Read from the column, not the realized header: this peer is virtual and can be queried before
+    // the band is built or while it is being rebuilt, and the column carries the value the control
+    // would apply anyway. String content only; rich content is mouse-only, matching the cell rule.
     winrt::hstring toolTipText{};
-    if (auto const headerElement = GetHeaderElement())
+    if (auto const text = TableViewDetails::TryGetString(column.HeaderToolTip()))
     {
-        if (auto const text = TableViewDetails::TryGetOwnedToolTipText(headerElement))
-        {
-            toolTipText = *text;
-        }
+        toolTipText = *text;
     }
 
     // Dropped when it merely repeats the header's own name, so it is not announced twice. Only a

@@ -501,7 +501,7 @@ Methods:
 | `IsReadOnly` (`Boolean`, default `false`) | Per-column opt-out. A read-only column is still a valid current cell for keyboard navigation, but cannot be edited. |
 | `CellEditingTemplate` (`DataTemplate`, default `null`) | Editing visual for any column type. A column with neither a `CellEditingTemplate` nor a built-in editor is not editable. |
 | `CellToolTipBinding` (`Binding`, default `null`) | Opt-in per-cell tooltip. The binding is evaluated against each row's data item; its value becomes the cell's tooltip content — a string, or anything a `ToolTip` can host. `null` or an empty string means no tooltip for that cell. Use an `IValueConverter` for computed content. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column (same shape as `TableViewTextColumn.Binding`). |
-| `HeaderToolTip` (`Object`, default `null`) | Opt-in tooltip for this column's header. The value is the tooltip's content — a string, or anything a `ToolTip` can host. `null` or an empty string means no header tooltip. A dependency property, not a `Binding`: a header is not bound against a row, so there is nothing to defer. |
+| `HeaderToolTip` (`Object`, default `null`) | Opt-in tooltip for this column's header. The value is the tooltip's content — a string, or anything a `ToolTip` can host, but *not* a `ToolTip` itself: the control owns the `ToolTip` and its placement, so a `ToolTip` value is rejected and the header gets none. `null` or an empty string means no header tooltip. A `UIElement` is parented by that header's `ToolTip`, so each column needs its own instance. A dependency property, not a `Binding`: a header is not bound against a row, so there is nothing to defer. |
 
 ### Cell tooltips
 
@@ -541,7 +541,9 @@ Placement and ownership match the cell path, including leaving an app-set toolti
 String content is reported as the header's UIA help text by
 `TableViewColumnHeaderAutomationPeer`, joined with the column's sort state when it has one — the
 header peer is virtual, so it publishes the text itself rather than through
-`AutomationProperties.HelpText`. As with cells, non-string content is mouse-only.
+`AutomationProperties.HelpText`, and it reads the value from the column so the answer does not
+depend on whether the header is currently realized. As with cells, non-string content is
+mouse-only: pair it with `Header` text that carries the same information when it matters.
 
 ## TableViewTextColumn class
 

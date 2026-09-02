@@ -39,6 +39,7 @@
             <Button x:Name="CheckHeaderUia" Content="Check header UIA help" Click="OnCheckHeaderUia"/>
             <Button x:Name="CheckHeaderTips" Content="Check header tooltips" Click="OnCheckHeaderTips"/>
             <Button x:Name="MutateHeaderTips" Content="Mutate header tooltips" Click="OnMutateHeaderTips"/>
+            <Button x:Name="CheckHeaderHitTest" Content="Header hit-test" Click="OnCheckHeaderHitTest"/>
             <Button x:Name="SortHeaders" Content="Sort (rebuild headers)" Click="OnSortHeaders"/>
         </StackPanel>
 

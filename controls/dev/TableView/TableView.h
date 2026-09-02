@@ -151,7 +151,6 @@ public:
 
     // Neutralizes control-owned header tooltips before the header band is discarded.
     void ReleaseHeaderToolTips(const winrt::Panel& host);
-
     // Toggling it adds or removes every gripper, so the header band is rebuilt.
     void OnCanUserResizeColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 

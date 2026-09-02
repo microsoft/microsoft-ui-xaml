@@ -426,6 +426,32 @@ public sealed partial class ToolTipsPage : Page
         Status.Text = tagged > 0 ? sb.ToString() : "no header cells found";
     }
 
+    // Hit-tests each header cell near its trailing edge - padding, away from the header glyphs.
+    // A Panel with no Background takes no pointer input there, so the tooltip would never open.
+    private void OnCheckHeaderHitTest(object sender, RoutedEventArgs e)
+    {
+        var sb = new StringBuilder();
+
+        foreach (var element in Descendants(Table).OfType<FrameworkElement>())
+        {
+            if (element.Tag is not TableViewColumn column || element is Border)
+            {
+                continue;
+            }
+
+            var origin = element.TransformToVisual(null).TransformPoint(new Windows.Foundation.Point(0, 0));
+            var probe = new Windows.Foundation.Point(
+                origin.X + element.ActualWidth - 14,
+                origin.Y + (element.ActualHeight / 2));
+
+            var hits = VisualTreeHelper.FindElementsInHostCoordinates(probe, Table);
+            bool reachesCell = hits.Any(h => ReferenceEquals(h, element));
+            sb.Append($"[{column.Header}] {(reachesCell ? "HIT" : "MISS")}   ");
+        }
+
+        Status.Text = sb.Length > 0 ? sb.ToString() : "no header cells found";
+    }
+
     // Exercises the in-place update path (OnColumnHeaderToolTipChanged): change one, retract one.
     private void OnMutateHeaderTips(object sender, RoutedEventArgs e)
     {
