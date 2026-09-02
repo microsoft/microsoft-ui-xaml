@@ -145,6 +145,137 @@ extends:
 
               Write-Host "GitHub PR context validation completed."
 
+    # Scans the PR title and description for banned words; comments and fails the check on a match.
+    - stage: ValidatePrContent
+      displayName: Validate PR title and description
+      dependsOn: []
+      jobs:
+      - job: ValidatePrContent
+        displayName: Validate PR title and description
+        pool:
+          type: windows
+        variables:
+          ob_outputDirectory: '$(Build.SourcesDirectory)\out'
+          bannedWord: ''
+          needComment: 'false'
+        steps:
+        - checkout: self
+          submodules: false
+          fetchDepth: 1
+          fetchTags: false
+
+        # Fetch the banned-words list at runtime as a masked secret.
+        # Failure here fails only this stage, not the whole PR build.
+        - task: AzureKeyVault@2
+          displayName: Fetch banned-words list from Key Vault
+          inputs:
+            azureSubscription: 'WinUITeamKeyVault'
+            KeyVaultName: 'WinUITeamKeyVault'
+            SecretsFilter: 'PRBannedWords'
+            RunAsPreJob: false
+
+        - task: PowerShell@2
+          displayName: Scan PR title and description for banned words
+          env:
+            BANNED_WORDS: $(PRBannedWords)
+          inputs:
+            targetType: inline
+            script: |
+              $ErrorActionPreference = 'Stop'
+              $ProgressPreference = 'SilentlyContinue'
+
+              if ($env:BUILD_REASON -ne 'PullRequest') {
+                Write-Host "Not a pull request build (Build.Reason=$env:BUILD_REASON). Skipping PR content validation."
+                return
+              }
+
+              $repo = $env:BUILD_REPOSITORY_NAME
+              $prNumber = $env:SYSTEM_PULLREQUEST_PULLREQUESTNUMBER
+              Write-Host "Repository: $repo"
+              Write-Host "Pull request number: $prNumber"
+
+              if ([string]::IsNullOrEmpty($prNumber)) {
+                Write-Host "##vso[task.logissue type=error]No GitHub pull request number available to validate."
+                Write-Host "##vso[task.complete result=Failed;]Missing PR number."
+                return
+              }
+
+              # Fail if the list is missing so an empty regex can't match every PR.
+              if ([string]::IsNullOrWhiteSpace($env:BANNED_WORDS)) {
+                Write-Host "##vso[task.logissue type=error]Banned-words list is empty or not available to this pipeline."
+                Write-Host "##vso[task.complete result=Failed;]Banned-words list not configured."
+                return
+              }
+
+              $headers = @{
+                'User-Agent' = 'winui-pr-content-check'
+                Accept       = 'application/vnd.github+json'
+              }
+
+              # This repo is public, so PR content is read without authentication.
+              $pr = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/pulls/$prNumber" -Headers $headers -Method Get
+
+              # Skip automated bot PRs (e.g. dotnet-maestro[bot]) so they aren't blocked.
+              if ($pr.user.type -eq 'Bot') {
+                Write-Host "Automated bot PR detected (user.login=$($pr.user.login)). Skipping checks."
+                return
+              }
+
+              $prTitle = [string]$pr.title
+              $prBody  = [string]$pr.body
+              Write-Host "Title: $prTitle"
+
+              # Turn the comma-separated list into a regex alternation.
+              $Regex = $env:BANNED_WORDS
+              $Regex = $Regex -replace ',$', ''
+              $Regex = $Regex -replace ',,', ','
+              $Regex = $Regex.Replace(',', '|')
+
+              $content = "$prTitle`n$prBody"
+              if ($content -notmatch $Regex) {
+                Write-Host "SUCCESS: The PR title and description do not contain banned words."
+                return
+              }
+
+              $banned = $matches[0]
+              Write-Host "##vso[task.logissue type=error]Pull request title or description contains one or more banned words: $banned"
+              Write-Host "##vso[task.setvariable variable=bannedWord]$banned"
+
+              # Marker so re-runs don't post duplicate comments.
+              $marker = "<!-- winui-pr-content-policheck -->"
+              $existing = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/issues/$prNumber/comments" -Headers $headers -Method Get
+              $alreadyPosted = $false
+              foreach ($c in $existing) {
+                if ($c.body -like "*$marker*") { $alreadyPosted = $true; break }
+              }
+              if ($alreadyPosted) {
+                Write-Host "Banned-word comment already present on PR #$prNumber."
+              } else {
+                Write-Host "##vso[task.setvariable variable=needComment]true"
+              }
+
+        # Post the comment via the WinUI GitHub service connection.
+        - task: GitHubComment@0
+          displayName: Comment on PR about banned words
+          condition: and(succeeded(), eq(variables['needComment'], 'true'))
+          inputs:
+            gitHubConnection: 'WinUI'
+            repositoryName: '$(Build.Repository.Name)'
+            id: '$(System.PullRequest.PullRequestNumber)'
+            comment: |
+              <!-- winui-pr-content-policheck -->
+              :no_entry: This PR's title or description contains a word that should not be shared publicly (for example a company or product name). Banned word found: **$(bannedWord)**. Please update the PR title/description so it is safe to share publicly, then re-run the check.
+
+        - task: PowerShell@2
+          displayName: Fail the check if banned words were found
+          condition: and(always(), ne(variables['bannedWord'], ''))
+          inputs:
+            targetType: inline
+            script: |
+              Write-Host "##vso[task.logissue type=error]Pull request contains banned words: $(bannedWord)"
+              Write-Host "##vso[task.complete result=Failed;]Pull request contains banned words."
+
+
     - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
         parameters:
