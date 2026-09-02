@@ -86,7 +86,7 @@ namespace DirectUI
         bool m_bRegisteredForSourceChanges = false;                    // Flag indicating registration with source's PropertyChanged event
         bool m_bRegisteredForDataContextChanges = false;
         bool m_ignoreSourceChanges = false;                            // Flag to ignore source notifications while we are producing a value
-        bool m_pendingDataContextChange = false;
+        bool m_dataContextChangedDuringEvaluation = false;
 
         // Re-invoke the getter and push the value into the target when the source changes.
         _Check_return_ HRESULT OnSourceChanged();
