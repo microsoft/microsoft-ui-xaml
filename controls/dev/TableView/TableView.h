@@ -413,6 +413,14 @@ private:
     void UpdateSelectionCollectionChangedSubscription();
     void OnSelectionItemsSourceCollectionChanged(const winrt::IInspectable& sender, const winrt::IInspectable& args);
 
+    // Subscribed AHEAD of the SelectionModel so it runs first on a projection Reset (filter/sort/
+    // regroup re-materializing the rows in place). SelectionModel clears on a Reset because the
+    // indices it holds are gone; this detector captures the still-selected item by object identity
+    // BEFORE that clear and arms an identity-based restore, so a selected row that survives the
+    // reshape keeps its selection instead of being dropped.
+    void UpdateSelectionResetDetectorSubscription();
+    void OnSelectionSourceReset(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
+
     // Re-points the model at a new ItemsSource and re-selects anything held across a reload.
     void ResolveSelectionAfterSourceChange();
     // Unload drains the repeater's source; re-sourcing on load clears the model. Hold the selected
@@ -439,6 +447,19 @@ private:
     // not drop it. Nothing else defers.
     tracker_ref<winrt::IInspectable> m_pendingSelectedItem{ this };
 
+    // The last INTENTIONALLY selected item (user gesture, programmatic set, or a restore), captured
+    // by object identity in ApplySelection - the single selection writer. Unlike SelectedItem, it
+    // is NOT cleared by a projection Reset that drops the model's indices, so it is the anchor an
+    // identity-based restore re-selects against after a filter/sort/regroup reshape. A genuine
+    // deselect flows through ApplySelection(-1) and nulls it, so an intentional clear is never
+    // "restored".
+    tracker_ref<winrt::IInspectable> m_stickySelectedItem{ this };
+
+    // Armed by OnSelectionSourceReset when a Reset drops the selection with a surviving sticky item,
+    // consumed by OnSelectionItemsSourceCollectionChanged to run the identity restore once the
+    // model has reconciled.
+    bool m_resetSelectionRestorePending{ false };
+
     // Bumped on every publish so a re-entrant one can tell that a newer selection overtook it and
     // it must not finish its own (now stale) notification.
     uint32_t m_selectionVersion{ 0 };
@@ -448,6 +469,9 @@ private:
     bool m_isRestoringSelection{ false };
 
     winrt::ItemsSourceView::CollectionChanged_revoker m_selectionCollectionChangedRevoker{};
+
+    // Fires ahead of the SelectionModel on a projection Reset; see OnSelectionSourceReset.
+    winrt::ItemsSourceView::CollectionChanged_revoker m_selectionResetDetectorRevoker{};
 
 private:
     // Explicit edit lifecycle, replacing four independent booleans whose 16 nominal combinations
