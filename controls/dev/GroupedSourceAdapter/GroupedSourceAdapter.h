@@ -32,12 +32,14 @@
 //     is O(groups); the memory that scared the original change (a wrapper per data row) is already
 //     gone because data rows are no longer wrapped.
 //
-//   * No fast paths. Every source change, every inner-group change, and every expand/collapse is a
-//     full Rebuild that ends in one ReplaceAll — i.e. one Reset into the repeater. That is the
-//     simplification: the ranged-splice machinery (TryApplyExpansionSplice,
-//     TryApplyIncrementalInnerGroupChangeIncc, the run table that computed the affected range) is
-//     gone. The cost is that a toggle or a single-item edit drops and re-realizes every container,
-//     and the scroll/selection/focus that rode on them. Acceptable only if v1 scale is small.
+//   * Few fast paths. Every source change and every inner-group change is still a full Rebuild that
+//     ends in one ReplaceAll — i.e. one Reset into the repeater. The one exception is a single-group
+//     expand/collapse: that splices just the toggled group's data rows into/out of the flat vector
+//     (TryApplyExpansionSplice) so unaffected containers — and the scroll/selection/focus riding on
+//     them — survive. Bulk expansion (ExpandAll/CollapseAll) and anything the splice can't resolve
+//     fall back to the Reset. The heavier ranged machinery a computed adapter carried
+//     (TryApplyIncrementalInnerGroupChangeIncc, the run table that computed the affected range) is
+//     still gone.
 //
 //   * No IKeyIndexMapping / KeyFromIndex. Because Entries() is a plain IObservableVector, the
 //     repeater reaches it through InspectingDataSource, which reports HasKeyIndexMapping only for a
@@ -62,11 +64,13 @@ public:
     ~GroupedSourceAdapter();
 
     // The flat row axis the repeater consumes: a single ItemsSourceView wrapping the materialized
-    // observable vector. It is created ONCE over m_entries (which is stable for the adapter's
-    // lifetime and only ever ReplaceAll'd), so the identity a consumer captures stays valid across
-    // rebuilds — the same contract the computed adapter's Entries() had. Because the wrapped object
-    // is a plain IObservableVector, the repeater reaches it through InspectingDataSource, which
-    // reports no key mapping — this is the container-preservation cost of this design.
+    // observable vector. It is created ONCE over m_entries (whose object identity is stable for the
+    // adapter's lifetime — Rebuild ReplaceAll's its contents and a single-group toggle splices them
+    // in place, but the vector instance never changes), so the identity a consumer captures stays
+    // valid across rebuilds — the same contract the computed adapter's Entries() had. Because the
+    // wrapped object is a plain IObservableVector, the repeater reaches it through
+    // InspectingDataSource, which reports no key mapping — this is the container-preservation cost
+    // of this design.
     winrt::ItemsSourceView Entries() const { return m_entriesView; }
 
     winrt::IInspectable Source() const { return m_source; }
@@ -92,6 +96,14 @@ private:
     void AssertRebuildOnUiThread() const;
     void OnExpansionChanged(TabularShapingHelpers::RowExpansionModel::Change const& change);
 
+    // Incremental expand/collapse of a SINGLE group: flips the group's header slot and splices just
+    // that group's data rows into/out of the flat projection, instead of dropping and re-realizing
+    // every container via a full Rebuild + Reset. Returns false when the group/header can't be
+    // resolved incrementally (mid-reshape, header not materialized, count desync); the caller then
+    // falls back to Rebuild, which is authoritative. Bulk changes (ExpandAll/CollapseAll, baseline
+    // moves) never take this path — they stay a single Reset.
+    bool TryApplyExpansionSplice(winrt::hstring const& intentKey, bool expand);
+
     void AttachToSource();
     void DetachFromSource();
     void SubscribeToGroup(winrt::IInspectable const& group);
@@ -102,7 +114,8 @@ private:
     winrt::IInspectable m_source{ nullptr };
     bool m_includeGroupHeaders{ true };
 
-    // THE flat projection. Materialized in full on every Rebuild via a single ReplaceAll.
+    // THE flat projection. Materialized in full on every Rebuild via a single ReplaceAll; a single-
+    // group expand/collapse splices that group's rows in place (SetAt/InsertAt/RemoveAt).
     winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> m_entries{
         winrt::single_threaded_observable_vector<winrt::IInspectable>() };
 

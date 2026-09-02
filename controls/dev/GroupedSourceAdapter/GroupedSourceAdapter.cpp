@@ -253,12 +253,127 @@ void GroupedSourceAdapter::CollapseAll()
     m_expansion.SetAllExpanded(false);
 }
 
-void GroupedSourceAdapter::OnExpansionChanged(TabularShapingHelpers::RowExpansionModel::Change const& /*change*/)
+void GroupedSourceAdapter::OnExpansionChanged(TabularShapingHelpers::RowExpansionModel::Change const& change)
 {
-    // The whole simplification in one line: every expansion change — one group or all — is a full
-    // Rebuild that ends in a Reset. No ranged splice, no run table. The cost is that a toggle drops
-    // and re-realizes every container; acceptable only at small scale.
-    Rebuild();
+    AssertRebuildOnUiThread();
+
+    if (m_rebuildInFlight)
+    {
+        // A change raised synchronously while a Rebuild/splice is unwinding. m_expansion already
+        // reflects the new intent, so remember it and let the outer operation run one coalesced
+        // Rebuild afterward rather than nesting.
+        m_pendingRebuild = true;
+        return;
+    }
+
+    // Only a single-group toggle can be a ranged splice. A baseline move (ExpandAll/CollapseAll)
+    // or a multi-key batch shifts the whole visible-row set, for which a full Rebuild ending in one
+    // Reset is both correct and cheapest.
+    if (change.AffectsAllKeys || change.Keys.size() != 1)
+    {
+        Rebuild();
+        return;
+    }
+
+    bool runPending = false;
+    bool applied = false;
+    {
+        m_rebuildInFlight = true;
+        m_pendingRebuild = false;
+        auto resetGuard = wil::scope_exit([this, &runPending]() noexcept
+        {
+            m_rebuildInFlight = false;
+            runPending = m_pendingRebuild;
+            m_pendingRebuild = false;
+        });
+
+        applied = TryApplyExpansionSplice(change.Keys.front(), change.IsExpanded);
+    }
+
+    // A re-entrant request, or an incremental splice that couldn't resolve the group, resolves to a
+    // single authoritative Rebuild after the guard unwinds.
+    if (runPending || !applied)
+    {
+        Rebuild();
+    }
+}
+
+bool GroupedSourceAdapter::TryApplyExpansionSplice(winrt::hstring const& intentKey, bool expand)
+{
+    // A headerless projection has no anchor to splice against (and can't show a collapse); the
+    // intent is still stored, but the visible rows must come from a full Rebuild.
+    if (!m_includeGroupHeaders)
+    {
+        return false;
+    }
+
+    const uint32_t count = m_entries.Size();
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        auto const entry = TryGetGroupedEntry(m_entries.GetAt(i));
+        if (!entry)
+        {
+            continue;
+        }
+
+        auto const group = entry->Group();
+        if (GetGroupIntentKey(group) != intentKey)
+        {
+            continue;
+        }
+
+        // Header found. If its stored state already matches the target, the projection is already
+        // coherent for this group; nothing to splice.
+        if (entry->IsExpanded() == expand)
+        {
+            return true;
+        }
+
+        const int32_t groupItemCount = entry->GroupItemCount();
+
+        // Re-mint the header with the new expansion flag (GroupedEntry is immutable). One Replace at
+        // i refreshes the chevron/automation without touching any other row.
+        m_entries.SetAt(i, winrt::make<::GroupedEntry>(group, groupItemCount, expand));
+
+        if (expand)
+        {
+            // Materialize this group's data rows and insert them immediately after the header. The
+            // stored count must agree with the live enumeration; a mismatch means the group content
+            // changed without a notification we processed, so defer to Rebuild for coherence.
+            auto items = TabularShapingHelpers::EnumerateInspectableItems(group);
+            if (static_cast<int32_t>(items.size()) != groupItemCount)
+            {
+                return false;
+            }
+
+            uint32_t insertAt = i + 1;
+            for (auto const& item : items)
+            {
+                m_entries.InsertAt(insertAt++, item);
+            }
+        }
+        else
+        {
+            // Collapse: remove exactly this group's data rows, which occupy the slots right after
+            // the header up to the next header (or the end). If a slot isn't a data row where one is
+            // expected, the projection isn't shaped the way this fast path assumes -> Rebuild.
+            const uint32_t firstData = i + 1;
+            for (int32_t removed = 0; removed < groupItemCount; ++removed)
+            {
+                if (firstData >= m_entries.Size() || TryGetGroupedEntry(m_entries.GetAt(firstData)))
+                {
+                    return false;
+                }
+                m_entries.RemoveAt(firstData);
+            }
+        }
+
+        return true;
+    }
+
+    // The header for this key isn't materialized in the projection (mid-reshape); let Rebuild
+    // reconcile from source.
+    return false;
 }
 
 winrt::IInspectable GroupedSourceAdapter::ResolveLiveGroupByIdentity(winrt::hstring const& groupKey) const
