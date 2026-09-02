@@ -19,7 +19,7 @@ PropertyProviderPropertyAccess::Initialize(
     m_pOwnerNoRef = pOwner;
 
     SetPtrValue(m_tpSource, pSource);
-    SetPtrValue(m_tpProperty, pProperty);
+    m_spProperty = pProperty;
 
     m_pPropertyType = pPropertyType;
 
@@ -112,7 +112,7 @@ PropertyProviderPropertyAccess::GetValue(_COM_Outptr_result_maybenull_ IInspecta
 {
     if (IsConnected())
     {
-        IFC_RETURN(m_tpProperty->GetValue(m_tpSource.Get(), ppValue));
+        IFC_RETURN(m_spProperty->GetValue(m_tpSource.Get(), ppValue));
     }
     else
     {
@@ -126,7 +126,7 @@ HRESULT
 PropertyProviderPropertyAccess::SetValue(_In_ IInspectable *pValue)
 {
     IFCEXPECT_RETURN(IsConnected());
-    IFC_RETURN(m_tpProperty->SetValue(m_tpSource.Get(), pValue));
+    IFC_RETURN(m_spProperty->SetValue(m_tpSource.Get(), pValue));
     return S_OK;
 }
 
@@ -184,16 +184,8 @@ PropertyProviderPropertyAccess::TryReconnect(_In_ IInspectable* pSource, _In_ BO
             IFC_RETURN(WindowsCompareStringOrdinal(m_sourceType.Get().Name, newSourceType.Get().Name, &nResult));
             if (nResult == 0)
             {
-                // The cached property may have been collected while this accessor was disconnected.
-                ctl::ComPtr<xaml_data::ICustomProperty> spProperty;
-                IFC_RETURN(spCPP->GetCustomProperty(wrl_wrappers::HStringReference(GetPropertyName()).Get(), spProperty.ReleaseAndGetAddressOf()));
-                SetPtrValue(m_tpProperty, spProperty.Get());
-
-                if (spProperty)
-                {
-                    IFC_RETURN(SetSource(pSource, fListenToChanges));
-                    bConnected = TRUE;
-                }
+                IFC_RETURN(SetSource(pSource, fListenToChanges));
+                bConnected = TRUE;
             }
         }
     }

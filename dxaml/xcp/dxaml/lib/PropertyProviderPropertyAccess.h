@@ -26,7 +26,7 @@ public:
     _Check_return_ HRESULT GetType(_Outptr_ const CClassInfo **ppType) override
     { *ppType = m_pPropertyType; return S_OK; }
     bool IsConnected() override
-    { return m_tpProperty && m_tpSource; }
+    { return m_spProperty && m_tpSource; }
     _Check_return_ HRESULT SetSource(_In_opt_ IInspectable *pSource, _In_ BOOLEAN fListenToChanges) override;
     _Check_return_ HRESULT GetSource(_COM_Outptr_result_maybenull_ IInspectable **ppSource) override;
     _Check_return_ HRESULT GetSourceType(_Outptr_ const CClassInfo **ppType) override;
@@ -62,7 +62,14 @@ private:
 
     IPropertyAccessHost *m_pOwnerNoRef = nullptr;
     TypeNamePtr m_sourceType;
-    TrackerPtr<xaml_data::ICustomProperty> m_tpProperty;
+
+    // The property descriptor is owned by this accessor, so it is held with a strong reference
+    // instead of a TrackerPtr. A tracker reference only keeps a CCW alive while this object is
+    // reachable during the reference tracker walk, but a source that is still alive keeps raising
+    // change notifications into accessors whose binding target has already become unreachable
+    // (for example a discarded item container waiting for its deferred final release). Reusing a
+    // descriptor that the GC collected in the meantime is a use-after-free.
+    ctl::ComPtr<xaml_data::ICustomProperty> m_spProperty;
     TrackerPtr<xaml_data::ICustomPropertyProvider> m_tpSource;
     const CClassInfo *m_pPropertyType = nullptr;
 };
