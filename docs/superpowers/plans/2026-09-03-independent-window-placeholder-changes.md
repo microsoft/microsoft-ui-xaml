@@ -14,7 +14,7 @@
 - `SkipWindowRedirectionSurface = 63530879` controls only `WS_EX_NOREDIRECTIONBITMAP` and `WM_ERASEBKGND`.
 - `WindowPlaceholderVisual = 63530880` controls only placeholder composition.
 - Neither change participates in the general performance opt-in.
-- The sample defaults to redirection on and placeholder off.
+- The sample defaults to no-redirection off and placeholder off.
 - Preserve unrelated generated InkToolbar modifications.
 
 ---
@@ -161,7 +161,7 @@ git commit -m "Separate window redirection and placeholder behavior" `
 **Interfaces:**
 - Produces: `g_redirectionMode`
 - Produces: `g_placeholderMode`
-- Accepts: `--redirection=on|off`
+- Accepts: `--no-redirection=on|off`
 - Accepts: `--placeholder=on|off`
 
 - [ ] **Step 1: Define independent sample state**
@@ -183,7 +183,7 @@ Default `g_redirectionMode` to `On` and `g_placeholderMode` to `Off`. Parse each
 switch independently. If both `on` and `off` occur for either switch, show:
 
 ```text
-Specify only one value for each of --redirection=on|off and --placeholder=on|off.
+Specify only one value for each of --no-redirection=on|off and --placeholder=on|off.
 ```
 
 - [ ] **Step 3: Configure both optional changes before XAML initialization**
@@ -198,8 +198,8 @@ constexpr auto WindowPlaceholderVisualChange =
     static_cast<XamlChangeId>(63530880);
 ```
 
-Enable `SkipWindowRedirectionSurfaceChange` when redirection is off and disable it
-when redirection is on. Enable or disable `WindowPlaceholderVisualChange` directly
+Enable or disable `SkipWindowRedirectionSurfaceChange` directly from the
+no-redirection switch. Enable or disable `WindowPlaceholderVisualChange` directly
 from the placeholder switch.
 
 - [ ] **Step 4: Display the selected matrix**
@@ -215,10 +215,10 @@ Build Debug x64, copy the locally built `Microsoft.UI.Xaml.dll` into the sample
 output, and launch:
 
 ```text
---redirection=on  --placeholder=off
---redirection=off --placeholder=off
---redirection=on  --placeholder=on
---redirection=off --placeholder=on
+--no-redirection=off --placeholder=off
+--no-redirection=on  --placeholder=off
+--no-redirection=off --placeholder=on
+--no-redirection=on  --placeholder=on
 ```
 
 Also launch one conflicting redirection command and one conflicting placeholder

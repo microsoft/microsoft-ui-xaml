@@ -51,16 +51,39 @@ namespace winrt::WindowPlaceholderVisual::implementation
         heading.Foreground(SolidColorBrush(Windows::UI::Colors::White()));
         panel.Children().Append(heading);
 
-        const auto mode = g_placeholderMode == PlaceholderMode::On ? L"ON" : L"OFF";
-        const auto otherMode = g_placeholderMode == PlaceholderMode::On ? L"off" : L"on";
+        const bool noRedirectionEnabled = g_noRedirectionMode == FeatureMode::On;
+        const bool placeholderEnabled = g_placeholderMode == FeatureMode::On;
+        const auto noRedirectionMode = noRedirectionEnabled ? L"ON" : L"OFF";
+        const auto placeholderMode = placeholderEnabled ? L"ON" : L"OFF";
         const auto requestedTheme =
             Application::Current().RequestedTheme() == ApplicationTheme::Dark ? L"Dark" : L"Light";
 
-        auto modeText = TextBlock();
-        modeText.Text(hstring{ std::wstring{ L"Window placeholder mode: " } + mode });
-        modeText.FontSize(22);
-        modeText.Foreground(SolidColorBrush(Windows::UI::Color{ 0xff, 0xff, 0xd7, 0x00 }));
-        panel.Children().Append(modeText);
+        auto noRedirectionText = TextBlock();
+        noRedirectionText.Text(hstring{
+            std::wstring{ L"No-redirection change: " } + noRedirectionMode });
+        noRedirectionText.FontSize(22);
+        noRedirectionText.Foreground(
+            SolidColorBrush(Windows::UI::Color{ 0xff, 0xff, 0xd7, 0x00 }));
+        panel.Children().Append(noRedirectionText);
+
+        auto placeholderText = TextBlock();
+        placeholderText.Text(hstring{
+            std::wstring{ L"Window placeholder change: " } + placeholderMode });
+        placeholderText.FontSize(22);
+        placeholderText.Foreground(
+            SolidColorBrush(Windows::UI::Color{ 0xff, 0xff, 0xd7, 0x00 }));
+        panel.Children().Append(placeholderText);
+
+        const wchar_t* combination =
+            noRedirectionEnabled
+                ? (placeholderEnabled ? L"Combined mitigation" : L"No redirection only")
+                : (placeholderEnabled ? L"Placeholder only" : L"Baseline");
+
+        auto combinationText = TextBlock();
+        combinationText.Text(hstring{ std::wstring{ L"Combination: " } + combination });
+        combinationText.FontSize(20);
+        combinationText.Foreground(SolidColorBrush(Windows::UI::Colors::White()));
+        panel.Children().Append(combinationText);
 
         auto themeText = TextBlock();
         themeText.Text(L"Application requested theme: " + hstring{ requestedTheme });
@@ -70,7 +93,7 @@ namespace winrt::WindowPlaceholderVisual::implementation
 
         auto instructions = TextBlock();
         instructions.Text(hstring{
-            std::wstring{ L"Compare with: WindowPlaceholderVisual.exe --placeholder=" } + otherMode });
+            L"Launch with --no-redirection=on|off --placeholder=on|off to compare all four combinations." });
         instructions.FontSize(18);
         instructions.TextWrapping(TextWrapping::Wrap);
         instructions.Foreground(SolidColorBrush(Windows::UI::Colors::White()));

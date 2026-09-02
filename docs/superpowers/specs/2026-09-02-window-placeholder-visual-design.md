@@ -103,32 +103,31 @@ exists.
 
 The C++/WinRT desktop sample accepts two independent switches:
 
-- `--redirection=on|off`: `on` retains the normal redirection bitmap by disabling
-  `SkipWindowRedirectionSurface`; `off` enables
+- `--no-redirection=on|off`: directly enables or disables
   `SkipWindowRedirectionSurface`.
 - `--placeholder=on|off`: independently enables or disables
   `WindowPlaceholderVisual`.
 
-Both defaults preserve current behavior: redirection is on and the placeholder is
-off. Conflicting values for either switch are rejected before XAML initialization.
+Both defaults preserve current behavior: no-redirection is off and the placeholder
+is off. Conflicting values for either switch are rejected before XAML initialization.
 The window displays both selected states, identifies the active matrix combination,
 and intentionally delays visibly distinct content so all four combinations can be
 compared:
 
-1. Redirection on, placeholder off: baseline.
-2. Redirection off, placeholder off: isolated no-redirection behavior.
-3. Redirection on, placeholder on: isolated placeholder behavior.
-4. Redirection off, placeholder on: intended combined mitigation.
+1. No-redirection off, placeholder off: baseline.
+2. No-redirection on, placeholder off: isolated no-redirection behavior.
+3. No-redirection off, placeholder on: isolated placeholder behavior.
+4. No-redirection on, placeholder on: intended combined mitigation.
 
 ## Testing
 
 Add desktop window integration coverage for all four optional-change combinations:
 
-- Redirection on, placeholder off: no extended style and no placeholder.
-- Redirection off, placeholder off: extended style and no placeholder.
-- Redirection on, placeholder on: no extended style and a placeholder until the
+- No-redirection off, placeholder off: no extended style and no placeholder.
+- No-redirection on, placeholder off: extended style and no placeholder.
+- No-redirection off, placeholder on: no extended style and a placeholder until the
   first frame.
-- Redirection off, placeholder on: extended style and a placeholder until the first
+- No-redirection on, placeholder on: extended style and a placeholder until the first
   frame.
 - Placeholder preparation occurs only on initial activation.
 - Placeholder is removed after the real XAML root is connected.

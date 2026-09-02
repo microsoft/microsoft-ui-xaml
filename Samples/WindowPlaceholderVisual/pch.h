@@ -24,10 +24,11 @@
 
 #define DISABLE_XAML_GENERATED_MAIN
 
-enum class PlaceholderMode
+enum class FeatureMode
 {
     Off,
     On,
 };
 
-extern PlaceholderMode g_placeholderMode;
+extern FeatureMode g_noRedirectionMode;
+extern FeatureMode g_placeholderMode;
