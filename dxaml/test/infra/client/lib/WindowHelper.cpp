@@ -2108,6 +2108,10 @@ std::vector<std::pair<xaml_settings::XamlChangeId, bool>> GetXamlOptionalChanges
             {
                 changeId = xaml_settings::XamlChangeId_DeferContextFlyoutInit;
             }
+            else if (_wcsicmp(name.c_str(), L"SkipWindowRedirectionSurface") == 0)
+            {
+                changeId = xaml_settings::XamlChangeId_SkipWindowRedirectionSurface;
+            }
 
             if (changeId == xaml_settings::XamlChangeId__Reserved)
             {

@@ -25,6 +25,7 @@
 #include "Microsoft.UI.Windowing.h"
 #include <FrameworkUdk/Theming.h>
 #include <Microsoft.UI.Interop.h>
+#include <OptionalChangeState.h>
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -1252,6 +1253,11 @@ LRESULT DesktopWindowImpl::OnMessage(
             return LResultFromHResult(OnNonClientRegionButtonUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
         case WM_ERASEBKGND:
         {
+            if (OptionalChangeState::IsSkipWindowRedirectionSurfaceEnabled())
+            {
+                return 1;
+            }
+
             Theming::Theme appTheme = Theming::Theme::None;
             ctl::ComPtr<xaml::IUIElement> content;
             if(!m_bIsClosed && SUCCEEDED(get_ContentImpl(&content)) && content)
@@ -1667,8 +1673,13 @@ void DesktopWindowImpl::RegisterDesktopWindowClass()
 
 void DesktopWindowImpl::CreateDesktopWindow()
 {
+    const DWORD extendedStyle =
+        OptionalChangeState::IsSkipWindowRedirectionSurfaceEnabled()
+            ? WS_EX_NOREDIRECTIONBITMAP
+            : 0;
+
     _CreateWindow(
-        0,                                 // Extended Style
+        extendedStyle,                     // Extended Style
         s_windowClassName,                 // name of window class
         s_defaultWindowTitle,              // title-bar string
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,  // top-level window
