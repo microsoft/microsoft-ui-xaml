@@ -1009,6 +1009,10 @@ _Check_return_ HRESULT DCompTreeHost::ConnectXamlIslandTargetRoots()
                 IFCFAILFAST(content->QueryInterface(IID_PPV_ARGS(&contentIslandExperimental)));
                 IFC_RETURN(contentIslandExperimental->put_Root(wucVisual));
 
+                const bool replacedWindowPlaceholder =
+                    renderData.windowPlaceholderVisual != nullptr;
+                renderData.windowPlaceholderVisual.Reset();
+
                 xamlIslandRoot->SetRootVisual(wucVisual);
 
                 renderData.contentConnected = true;
@@ -1031,6 +1035,10 @@ _Check_return_ HRESULT DCompTreeHost::ConnectXamlIslandTargetRoots()
                 if (m_needsFrameRateVisual)
                 {
                     ShowUIThreadCounters();
+                }
+
+                if (m_needsFrameRateVisual || replacedWindowPlaceholder)
+                {
                     IFC_RETURN(CommitMainDevice());
                 }
 
@@ -2483,6 +2491,59 @@ void DCompTreeHost::AddXamlIslandTarget(_In_ CXamlIslandRoot* xamlIslandRoot)
     }
 }
 
+_Check_return_ HRESULT DCompTreeHost::PrepareXamlIslandForWindowShow(
+    _In_ CXamlIslandRoot* xamlIslandRoot,
+    _In_ UINT32 backgroundColor)
+{
+    auto islandData = m_islandRenderData.find(xamlIslandRoot);
+    IFCEXPECT_RETURN(islandData != m_islandRenderData.end());
+
+    auto& renderData = islandData->second;
+    if (renderData.contentConnected || renderData.windowPlaceholderVisual)
+    {
+        return S_OK;
+    }
+
+    wrl::ComPtr<WUComp::ICompositionColorBrush> colorBrush;
+    IFC_RETURN(GetCompositor()->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
+    IFC_RETURN(colorBrush->put_Color(ColorUtils::GetWUColor(backgroundColor)));
+
+    wrl::ComPtr<WUComp::ICompositionBrush> brush;
+    IFC_RETURN(colorBrush.As(&brush));
+
+    wrl::ComPtr<WUComp::ISpriteVisual> spriteVisual;
+    IFC_RETURN(GetCompositor()->CreateSpriteVisual(spriteVisual.ReleaseAndGetAddressOf()));
+    IFC_RETURN(spriteVisual->put_Brush(brush.Get()));
+
+    wrl::ComPtr<WUComp::IVisual> windowPlaceholderVisual;
+    IFC_RETURN(spriteVisual.As(&windowPlaceholderVisual));
+
+    const auto xamlIslandRootSize = xamlIslandRoot->GetSize();
+    wfn::Vector2 placeholderSize;
+    placeholderSize.X = xamlIslandRootSize.Width;
+    placeholderSize.Y = xamlIslandRootSize.Height;
+    IFC_RETURN(windowPlaceholderVisual->put_Size(placeholderSize));
+
+    auto contentIsland = xamlIslandRoot->GetContentIsland();
+    IFCEXPECT_RETURN(contentIsland);
+
+    wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
+    IFC_RETURN(contentIsland->QueryInterface(
+        IID_PPV_ARGS(contentIslandExperimental.ReleaseAndGetAddressOf())));
+    IFC_RETURN(contentIslandExperimental->put_Root(windowPlaceholderVisual.Get()));
+
+    renderData.windowPlaceholderVisual = std::move(windowPlaceholderVisual);
+
+    return CommitMainDevice();
+}
+
+bool DCompTreeHost::HasXamlIslandWindowPlaceholder(_In_ CXamlIslandRoot* xamlIslandRoot) const
+{
+    auto islandData = m_islandRenderData.find(xamlIslandRoot);
+    return islandData != m_islandRenderData.end()
+        && islandData->second.windowPlaceholderVisual != nullptr;
+}
+
 void DCompTreeHost::UpdateXamlIslandTargetSize(_In_ CXamlIslandRoot* xamlIslandRoot)
 {
     if(xamlIslandRoot)
@@ -2490,14 +2551,23 @@ void DCompTreeHost::UpdateXamlIslandTargetSize(_In_ CXamlIslandRoot* xamlIslandR
         auto islandData = m_islandRenderData.find(xamlIslandRoot);
         if (islandData != m_islandRenderData.end())
         {
+            const auto xamlIslandRootSize = xamlIslandRoot->GetSize();
+
             // If XamlIslandRoot size is set before WindowsPresentTarget has been
             // created, the target size will be set in EnsureXamlIslandTargetRoots
             // on WindowsPresentTarget's creation.
             if(islandData->second.windowsPresentTarget)
             {
-                auto xamlIslandRootSize = xamlIslandRoot->GetSize();
                 IFCFAILFAST(islandData->second.windowsPresentTarget->SetWidth(static_cast<XUINT32>(xamlIslandRootSize.Width)));
                 IFCFAILFAST(islandData->second.windowsPresentTarget->SetHeight(static_cast<XUINT32>(xamlIslandRootSize.Height)));
+            }
+
+            if (islandData->second.windowPlaceholderVisual)
+            {
+                wfn::Vector2 placeholderSize;
+                placeholderSize.X = xamlIslandRootSize.Width;
+                placeholderSize.Y = xamlIslandRootSize.Height;
+                IFCFAILFAST(islandData->second.windowPlaceholderVisual->put_Size(placeholderSize));
             }
         }
 
@@ -2523,6 +2593,25 @@ void DCompTreeHost::RemoveXamlIslandTarget(_In_ CXamlIslandRoot* xamlIslandRoot)
     if (refreshFrameRateVisual)
     {
         HideUIThreadCounters();
+    }
+
+    if (islandData->second.windowPlaceholderVisual)
+    {
+        if (auto contentIsland = xamlIslandRoot->GetContentIsland())
+        {
+            wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
+            HRESULT hr = contentIsland->QueryInterface(
+                IID_PPV_ARGS(contentIslandExperimental.ReleaseAndGetAddressOf()));
+            if (SUCCEEDED(hr))
+            {
+                hr = contentIslandExperimental->put_Root(nullptr);
+            }
+
+            if (FAILED(hr) && hr != RO_E_CLOSED)
+            {
+                IFCFAILFAST(hr);
+            }
+        }
     }
 
     m_islandRenderData.erase(islandData);
