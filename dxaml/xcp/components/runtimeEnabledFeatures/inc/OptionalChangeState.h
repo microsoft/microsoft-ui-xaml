@@ -29,6 +29,7 @@ namespace OptionalChangeState
     constexpr int BitIndex_DefaultStyleOptimizations = 2;
     constexpr int BitIndex_DeferContextFlyoutInit = 3;
     constexpr int BitIndex_SkipWindowRedirectionSurface = 4;
+    constexpr int BitIndex_WindowPlaceholderVisual = 5;
 
     inline bool IsOptionalChangeEnabled(int bitIndex)
     {
@@ -59,5 +60,10 @@ namespace OptionalChangeState
     inline bool IsSkipWindowRedirectionSurfaceEnabled()
     {
         return IsOptionalChangeEnabled(BitIndex_SkipWindowRedirectionSurface);
+    }
+
+    inline bool IsWindowPlaceholderVisualEnabled()
+    {
+        return IsOptionalChangeEnabled(BitIndex_WindowPlaceholderVisual);
     }
 }

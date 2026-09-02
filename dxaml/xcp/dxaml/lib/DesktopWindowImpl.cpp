@@ -440,7 +440,7 @@ _Check_return_ HRESULT DesktopWindowImpl::ActivateImpl()
             IFC_RETURN(ApplyPendingClientSizeIfNeeded());
         }
 
-        if (OptionalChangeState::IsSkipWindowRedirectionSurfaceEnabled())
+        if (OptionalChangeState::IsWindowPlaceholderVisualEnabled())
         {
             ctl::ComPtr<DirectUI::XamlIslandRoot> xamlIslandRoot;
             ctl::ComPtr<xaml_hosting::IXamlIslandRoot> island =
