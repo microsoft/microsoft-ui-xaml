@@ -877,7 +877,7 @@ namespace Framework { namespace DataBinding {
                 Platform::Exception,
                 [](Platform::Exception^ exception)
                 {
-                    return exception->HResult == E_INVALID_OPERATION;
+                    return exception->HResult == HRESULT_FROM_WIN32(ERROR_INVALID_OPERATION);
                 });
         });
     }
