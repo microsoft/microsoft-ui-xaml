@@ -228,7 +228,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     var panel = new WrapPanel
                     {
                         Orientation = orientation,
-                        ItemsStretch = WrapPanelItemsStretch.Last
+                        ItemsStretch = WrapPanelItemsStretch.Last,
+                        Padding = orientation == Orientation.Horizontal ?
+                            new Thickness(0, 0, 10, 0) :
+                            new Thickness(0, 0, 0, 10)
                     };
 
                     for (int i = 0; i < 3; i++)
@@ -242,15 +245,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     panel.Children.Add(lastChild);
 
                     var panelSize = orientation == Orientation.Horizontal ?
-                        new Size(132, 88) :
-                        new Size(88, 132);
+                        new Size(142, 88) :
+                        new Size(88, 142);
 
                     panel.Measure(panelSize);
                     panel.Arrange(new Rect(0, 0, panelSize.Width, panelSize.Height));
 
                     var expectedLastChildLayoutSlot = orientation == Orientation.Horizontal ?
-                        new Rect(0, 44, 132, 44) :
-                        new Rect(44, 0, 44, 132);
+                        new Rect(0, 44, 142, 44) :
+                        new Rect(44, 0, 44, 142);
                     Verify.AreEqual(
                         expectedLastChildLayoutSlot,
                         LayoutInformation.GetLayoutSlot(lastChild),
