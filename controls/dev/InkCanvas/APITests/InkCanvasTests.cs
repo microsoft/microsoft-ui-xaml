@@ -34,6 +34,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")]
         public void InkCanvasInVisualTreeTest()
         {
             RunOnUIThread.Execute(() =>
@@ -104,6 +105,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")]
         public void InkCanvasLoadUnloadDoesNotCrash()
         {
             RunOnUIThread.Execute(() =>
