@@ -31,5 +31,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(FocusedTextBoxAtCoreShutdown)
+            TEST_METHOD_PROPERTY(L"Description", L"Tear down the core with a focused TextBox still in the tree without faulting in input services.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        END_TEST_METHOD()
     };
 } } } } } }
