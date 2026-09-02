@@ -33,6 +33,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that the EffectiveViewportChanged event can be unregistered correctly.")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(ValidateEffectiveViewportChangedWithNonInvertibleTransform)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates that a non-invertible transform reports an invalid viewport instead of failing the layout pass.")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(ThrowsExceptionIfLayoutIsInvalidatedDuringViewportWalk)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that the IsViewport override cannot be used to invalidate layout.")
             END_TEST_METHOD()
