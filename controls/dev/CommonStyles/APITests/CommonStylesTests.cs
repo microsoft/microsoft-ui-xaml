@@ -373,6 +373,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     @"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' 
                         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> 
                             <StackPanel.Resources>
+                                <x:Double x:Key='AppBarButtonLabelFontSize'>18</x:Double>
                                 <Visibility x:Key='AppBarButtonHasFlyoutChevronVisibility'>Collapsed</Visibility>
                                 <SolidColorBrush x:Key='AppBarButtonSubItemChevronForeground' Color='Red' />
                                 <x:String x:Key='AppBarButtonFlyoutGlyph'>&#xE972;</x:String>
@@ -382,9 +383,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                                 <x:Double x:Key='AppBarButtonSecondarySubItemChevronFontSize'>14</x:Double>
                                 <Thickness x:Key='AppBarButtonSecondarySubItemChevronMargin'>-25,20,12,0</Thickness>
                             </StackPanel.Resources>
-                            <AppBarButton x:Name='TestAppBarButton'/>
+                            <AppBarButton x:Name='TestAppBarButton' Label='Test label'/>
                       </StackPanel>");
-
+                appBarButton = (AppBarButton)root.FindName("TestAppBarButton");
                 appBarButton = (AppBarButton)root.FindName("TestAppBarButton");
                 appBarButton.Loaded += (sender, args) => { appBarButtonLoadedEvent.Set(); };
                 Content = root;
@@ -399,7 +400,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Panel subItemChevronPanel = (Panel)GetVisualChildByName(appBarButton, "SubItemChevronPanel");
                 FontIcon subItemChevron = (FontIcon)GetVisualChildByName(appBarButton, "SubItemChevron");
                 FontIcon overflowSubItemChevron = (FontIcon)GetVisualChildByName(appBarButton, "OverflowSubItemChevron");
+                TextBlock textLabel = (TextBlock)GetVisualChildByName(appBarButton, "TextLabel");
 
+                Verify.AreEqual(18.0, textLabel.FontSize);
                 Verify.AreEqual((Visibility)root.Resources["AppBarButtonHasFlyoutChevronVisibility"], subItemChevronPanel.Visibility);
 
                 Verify.AreEqual((string)root.Resources["AppBarButtonFlyoutGlyph"], subItemChevron.Glyph);

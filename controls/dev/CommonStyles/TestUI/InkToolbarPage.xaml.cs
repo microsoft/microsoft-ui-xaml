@@ -37,7 +37,7 @@ namespace MUXControlsTestApp
             };
             InkToolbar.IsStencilButtonCheckedChanged += (s, e) =>
             {
-                StatusText.Text = "Stencil checked changed";
+                StatusText.Text = "Ruler (stencil) checked: " + InkToolbar.IsStencilButtonChecked;
             };
         }
     }

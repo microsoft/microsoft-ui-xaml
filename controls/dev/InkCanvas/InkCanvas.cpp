@@ -432,10 +432,10 @@ void InkCanvas::AttachToLiftedCompositor()
 
     auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
 
-    m_systemVisualLink = winrt::ContentExternalOutputLink::Create(compositor);
+    m_systemVisualLink = ContentExternalLinkHelper::OutputLink::Create(compositor);
     m_systemVisualLink.IsAboveContent(true);
 
-    winrt::com_ptr<IDCompositionTarget> target = m_systemVisualLink.as<IDCompositionTarget>();
+    winrt::com_ptr<IDCompositionTarget> target = m_systemVisualLink.DCompTarget();
     winrt::check_hresult(target->SetRoot(m_inkRootVisual.get()));
 
     winrt::check_hresult(m_threadData->m_compositionDevice->Commit());
