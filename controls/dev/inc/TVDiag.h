@@ -8,7 +8,9 @@
 #include <strsafe.h>
 #include <windows.h>
 
-// TVDiag — logging helper for TableView code.
+// TVDiag — logging helpers for TableView code.
+//
+// DbgLogF is #ifdef DBG-gated so retail builds drop both the call and any format-string cost.
 //
 // LogRetailF is retail-visible. Use ONLY where the control silently swallows something an app
 // author would need to diagnose, and where the alternative is behaviour that is indistinguishable
@@ -39,4 +41,19 @@ namespace TVDiag
         details::EmitV(format, args);
         va_end(args);
     }
+
+#ifdef DBG
+    inline void DbgLogF(_In_z_ _Printf_format_string_ wchar_t const* format, ...)
+    {
+        va_list args;
+        va_start(args, format);
+        details::EmitV(format, args);
+        va_end(args);
+    }
+#else
+    inline void DbgLogF(_In_z_ _Printf_format_string_ wchar_t const* /*format*/, ...) noexcept
+    {
+        // no-op in retail
+    }
+#endif
 }
