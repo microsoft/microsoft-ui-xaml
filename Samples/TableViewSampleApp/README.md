@@ -82,10 +82,13 @@ visible on purpose.
 - `EmptyTemplate`
 - `TableViewTextColumn` and `TableViewTemplateColumn` (custom cell content)
 
-## Known issue
+The **Filter / sort / group** page exercises the data-shaping surface:
 
-Using an `EmptyTemplate` that contains a `FontIcon` can crash at startup while the empty state is
-first shown. Prefer text or shape content in the `EmptyTemplate` until this is resolved.
+- `TableViewSource.Filter` / `ClearFilter` — text and predicate filters
+- `TableViewSource.GroupBy` / `ClearGroupBy` — grouping by a value-type key
+- `TableViewSource.Sort` / `ClearSort` — programmatic sort with `SortDirection`
+- `TableView.CanUserSortColumns`, `SortByColumn`, `ClearSort`, `Sorting` / `Sorted`
+- `GroupHeaderTemplate` (custom vs. built-in), `ExpandAllGroups` / `CollapseAllGroups`
 
 ## More detail
 
