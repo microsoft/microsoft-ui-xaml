@@ -48,6 +48,13 @@
                 <DisableAnalyzeExternal />
                 <AdditionalOptions Condition="'$(Platform)'=='arm64ec'">/arm64EC %(ClCompile.AdditionalOptions)</AdditionalOptions>
             </ClCompile>
+            <ClCompile Include="..\GamepadKeyRoutingLightup.cpp">
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <PrecompiledHeaderFile />
+                <PrecompiledHeaderOutputFile />
+                <DisableAnalyzeExternal />
+                <AdditionalOptions Condition="'$(Platform)'=='arm64ec'">/arm64EC %(ClCompile.AdditionalOptions)</AdditionalOptions>
+            </ClCompile>
         </ItemGroup>
     </Target>
 
