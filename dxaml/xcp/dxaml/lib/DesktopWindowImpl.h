@@ -123,6 +123,11 @@ namespace DirectUI
         void SetHasSizeOverrides(bool hasSizeOverrides) override;
         void SetShrinkApplicationViewVisibleBounds(bool enabled) override;
 
+        // Reports whether this window's top-level island currently holds the window
+        // placeholder visual installed before the first rendered frame. Fails if the
+        // island cannot be resolved, so callers cannot mistake that for "no placeholder".
+        _Check_return_ HRESULT HasActiveWindowPlaceholder(_Out_ bool* hasPlaceholder);
+
     public:
         LRESULT OnMessage(
             UINT const message,

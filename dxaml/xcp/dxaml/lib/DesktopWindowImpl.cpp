@@ -1239,6 +1239,29 @@ UINT32 DesktopWindowImpl::GetEffectiveWindowBackgroundColor()
     return m_dxamlCoreNoRef->GetHandle()->GetFrameworkTheming()->GetHwndBackground(appTheme);
 }
 
+_Check_return_ HRESULT DesktopWindowImpl::HasActiveWindowPlaceholder(_Out_ bool* hasPlaceholder)
+{
+    *hasPlaceholder = false;
+
+    IFCEXPECT_RETURN(m_desktopWindowXamlSource);
+
+    ctl::ComPtr<xaml_hosting::IXamlIslandRoot> island = m_desktopWindowXamlSource->GetXamlIslandRootNoRef();
+    IFCEXPECT_RETURN(island);
+
+    ctl::ComPtr<DirectUI::XamlIslandRoot> xamlIslandRoot;
+    IFC_RETURN(island.As(&xamlIslandRoot));
+
+    auto coreIsland = static_cast<CXamlIslandRoot*>(xamlIslandRoot->GetHandle());
+    IFCEXPECT_RETURN(coreIsland);
+
+    DCompTreeHost* dcompTreeHost = coreIsland->GetDCompTreeHost();
+    IFCEXPECT_RETURN(dcompTreeHost);
+
+    *hasPlaceholder = dcompTreeHost->HasXamlIslandWindowPlaceholder(coreIsland);
+
+    return S_OK;
+}
+
 LRESULT DesktopWindowImpl::OnMessage(
     UINT uMsg,
     WPARAM wParam,

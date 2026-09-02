@@ -3653,6 +3653,22 @@ HRESULT WindowHelper::GetWindows(_Outptr_ wfc::IVectorView<xaml::Window*>** wind
     COM_END
 }
 
+HRESULT WindowHelper::HasWindowPlaceholder(_In_ xaml::IWindow* window, _Out_ BOOLEAN* hasPlaceholder)
+{
+    COM_START_GROUP(L"WindowHelper::HasWindowPlaceholder")
+    {
+        *hasPlaceholder = FALSE;
+
+        BOOLEAN result = FALSE;
+        RunOnUIThread([&]() {
+            LogThrow_IfFailed(GetTestHooks()->HasWindowPlaceholder(window, &result));
+        });
+
+        *hasPlaceholder = result;
+    }
+    COM_END
+}
+
 HRESULT WindowHelper::DetachMemoryManagerEvents()
 {
     COM_START

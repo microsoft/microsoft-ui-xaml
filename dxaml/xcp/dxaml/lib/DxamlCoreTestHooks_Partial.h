@@ -308,6 +308,8 @@ namespace DirectUI
         IFACEMETHOD_(size_t, GetAllocationSize)() override;
         IFACEMETHOD_(size_t, GetDeallocationCount)() override;
 
+        IFACEMETHOD(HasWindowPlaceholder)(_In_ xaml::IWindow* window, _Out_ BOOLEAN* hasPlaceholder) override;
+
     protected:
         _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID riid, _Outptr_ void **ppvObject) override;
 
