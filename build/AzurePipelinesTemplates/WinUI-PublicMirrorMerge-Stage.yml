@@ -3,11 +3,19 @@ parameters:
   type: string
 - name: targetBranchName
   type: string
+- name: dependsOnStage
+  type: string
+  default: ''
 
 stages:
 - stage: IntegratePublicMirror
   displayName: Integrate public mirror
-  dependsOn: []
+  ${{ if parameters.dependsOnStage }}:
+    dependsOn:
+    - ${{ parameters.dependsOnStage }}
+  ${{ else }}:
+    dependsOn: []
+  lockBehavior: runLatest
   jobs:
   - job: MergePublicMirror
     displayName: Merge public mirror
@@ -15,11 +23,15 @@ stages:
       type: windows
     timeoutInMinutes: 30
     variables:
-      ob_outputDirectory: '$(Build.SourcesDirectory)\out'
-      ob_git_skip_checkout_none: true
-      repositoryRelativePath: 's\repository'
+    - group: WinUI-GitHub-Main-Integration-Lock
+    - name: ob_outputDirectory
+      value: '$(Build.SourcesDirectory)\out'
+    - name: ob_git_skip_checkout_none
+      value: true
+    - name: repositoryRelativePath
+      value: 's\repository'
     steps:
-    - checkout: self
+    - checkout: targetRepository
       submodules: false
       persistCredentials: true
       fetchDepth: 1
