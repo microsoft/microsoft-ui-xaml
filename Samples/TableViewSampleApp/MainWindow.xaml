@@ -19,6 +19,7 @@
             <controls:NavigationViewItem Content="Interactive cells" Tag="interactive"/>
             <controls:NavigationViewItem Content="Selection" Tag="selection"/>
             <controls:NavigationViewItem Content="Cell tooltips" Tag="tooltips"/>
+            <controls:NavigationViewItem Content="Filter / sort / group" Tag="shaping"/>
         </controls:NavigationView.MenuItems>
 
         <Frame x:Name="ContentFrame"/>

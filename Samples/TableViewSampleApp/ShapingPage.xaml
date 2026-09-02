@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.ShapingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular">
+
+    <Page.Resources>
+        <!-- GroupHeaderTemplate binds the TableViewGroupInfo projection the control hands the
+             header: Key / ItemCount for raw values, KeyText / ItemCountText for the
+             culture-formatted strings the built-in template uses. The expander glyph is owned by
+             the control's TableViewGroupHeader template, not by this content template. -->
+        <DataTemplate x:Key="GroupHeader">
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <TextBlock Text="{Binding KeyText}" FontWeight="SemiBold"/>
+                <Border Background="{ThemeResource SystemFillColorAttentionBackgroundBrush}"
+                        CornerRadius="10" Padding="8,1">
+                    <TextBlock Text="{Binding ItemCountText}" FontSize="12" Opacity="0.8"/>
+                </Border>
+            </StackPanel>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid Padding="12" RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Spacing="2">
+            <TextBlock Text="Filtering, sorting and grouping" FontSize="18" FontWeight="SemiBold"/>
+            <TextBlock Opacity="0.7" FontSize="12" TextWrapping="Wrap"
+                       Text="Filter and GroupBy are stages declared on ONE TableViewSource, so they compose — filter narrows the rows, group buckets what survives. Sort has two front-ends and they converge rather than stack: 'via TableView' calls SortByColumn, which owns the header chevron; 'via TableViewSource' calls the fluent Sort verb, which has no column to light up. Whichever runs last wins and clears the other, so exactly one sort is ever in force — switch the dropdown after sorting, or click a header while sorted via the source, to watch the chevron follow. Selection re-anchors to the same item across a reshape, so select a row and then filter or sort to watch it follow."/>
+        </StackPanel>
+
+        <!-- Filter -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="Filter:" VerticalAlignment="Center" Width="52"/>
+            <TextBox x:Name="FilterBox" Width="220" PlaceholderText="name, role or city"
+                     TextChanged="Filter_Changed"/>
+            <CheckBox x:Name="HighScoresOnly" Content="Score &#8805; 50" Checked="Filter_Toggled" Unchecked="Filter_Toggled"/>
+            <Button Content="Clear filter" Click="ClearFilter_Click"/>
+        </StackPanel>
+
+        <!-- Group -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="Group:" VerticalAlignment="Center" Width="52"/>
+            <ComboBox x:Name="GroupCombo" Width="160" SelectionChanged="Group_Changed">
+                <ComboBoxItem Content="None" IsSelected="True"/>
+                <ComboBoxItem Content="Role"/>
+                <ComboBoxItem Content="City"/>
+                <ComboBoxItem Content="Score band"/>
+            </ComboBox>
+            <Button Content="Expand all" Click="ExpandAll_Click"/>
+            <Button Content="Collapse all" Click="CollapseAll_Click"/>
+            <CheckBox x:Name="CustomHeaderToggle" Content="Custom GroupHeaderTemplate"
+                      Checked="GroupHeaderTemplate_Toggled" Unchecked="GroupHeaderTemplate_Toggled"/>
+        </StackPanel>
+
+        <!-- Sort -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="Sort:" VerticalAlignment="Center" Width="52"/>
+            <ComboBox x:Name="SortCombo" Width="160" SelectionChanged="Sort_Changed">
+                <ComboBoxItem Content="None" IsSelected="True"/>
+                <ComboBoxItem Content="Name"/>
+                <ComboBoxItem Content="Role"/>
+                <ComboBoxItem Content="City"/>
+                <ComboBoxItem Content="Score"/>
+                <ComboBoxItem Content="Joined"/>
+            </ComboBox>
+            <ComboBox x:Name="DirectionCombo" Width="140" SelectionChanged="Sort_Changed">
+                <ComboBoxItem Content="Ascending" IsSelected="True"/>
+                <ComboBoxItem Content="Descending"/>            </ComboBox>
+            <ComboBox x:Name="ViaCombo" Width="230" SelectionChanged="Sort_Changed">
+                <ComboBoxItem Content="via TableView" IsSelected="True"/>
+                <ComboBoxItem Content="via source (path)"/>
+                <ComboBoxItem Content="via source (key)"/>
+            </ComboBox>
+            <CheckBox x:Name="HeaderSortToggle" Content="Click-to-sort headers"
+                      Checked="HeaderSort_Toggled" Unchecked="HeaderSort_Toggled"/>
+            <Button Content="Clear sort" Click="ClearSort_Click"/>
+        </StackPanel>
+
+        <Border Grid.Row="4" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
+            <tv:TableView x:Name="Table" SelectionMode="Single"/>
+        </Border>
+
+        <TextBlock x:Name="StatusText" Grid.Row="5" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>
+    </Grid>
+</Page>

@@ -90,6 +90,14 @@ visible on purpose.
 - `EmptyTemplate`
 - `TableViewTextColumn` and `TableViewTemplateColumn` (custom cell content)
 
+The **Filter / sort / group** page exercises the data-shaping surface:
+
+- `TableViewSource.Filter` / `ClearFilter` — text and predicate filters
+- `TableViewSource.GroupBy` / `ClearGroupBy` — grouping by a value-type key
+- `TableViewSource.Sort` / `ClearSort` — programmatic sort with `SortDirection`
+- `TableView.CanUserSortColumns`, `SortByColumn`, `ClearSort`, `Sorting` / `Sorted`
+- `GroupHeaderTemplate` (custom vs. built-in), `ExpandAllGroups` / `CollapseAllGroups`
+
 ## More detail
 
 See [AGENTS.md](AGENTS.md).
