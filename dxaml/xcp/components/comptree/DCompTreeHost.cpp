@@ -2551,23 +2551,28 @@ void DCompTreeHost::UpdateXamlIslandTargetSize(_In_ CXamlIslandRoot* xamlIslandR
         auto islandData = m_islandRenderData.find(xamlIslandRoot);
         if (islandData != m_islandRenderData.end())
         {
-            const auto xamlIslandRootSize = xamlIslandRoot->GetSize();
+            auto& renderData = islandData->second;
+            if (!renderData.windowsPresentTarget && !renderData.windowPlaceholderVisual)
+            {
+                return;
+            }
 
+            const auto xamlIslandRootSize = xamlIslandRoot->GetSize();
             // If XamlIslandRoot size is set before WindowsPresentTarget has been
             // created, the target size will be set in EnsureXamlIslandTargetRoots
             // on WindowsPresentTarget's creation.
-            if(islandData->second.windowsPresentTarget)
+            if(renderData.windowsPresentTarget)
             {
-                IFCFAILFAST(islandData->second.windowsPresentTarget->SetWidth(static_cast<XUINT32>(xamlIslandRootSize.Width)));
-                IFCFAILFAST(islandData->second.windowsPresentTarget->SetHeight(static_cast<XUINT32>(xamlIslandRootSize.Height)));
+                IFCFAILFAST(renderData.windowsPresentTarget->SetWidth(static_cast<XUINT32>(xamlIslandRootSize.Width)));
+                IFCFAILFAST(renderData.windowsPresentTarget->SetHeight(static_cast<XUINT32>(xamlIslandRootSize.Height)));
             }
 
-            if (islandData->second.windowPlaceholderVisual)
+            if (renderData.windowPlaceholderVisual)
             {
                 wfn::Vector2 placeholderSize;
                 placeholderSize.X = xamlIslandRootSize.Width;
                 placeholderSize.Y = xamlIslandRootSize.Height;
-                IFCFAILFAST(islandData->second.windowPlaceholderVisual->put_Size(placeholderSize));
+                IFCFAILFAST(renderData.windowPlaceholderVisual->put_Size(placeholderSize));
             }
         }
 

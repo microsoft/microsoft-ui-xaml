@@ -194,6 +194,7 @@ namespace DirectUI
         void Shutdown();
         static _Check_return_ Window* GetMUXWindowFromHwnd(_In_ DXamlCore *dxamlCore, _In_ const HWND& hwnd);
         _Check_return_ HRESULT CheckIsWindowClosed();
+        UINT32 GetEffectiveWindowBackgroundColor();
         _Check_return_ HRESULT OnDesktopWindowXamlSourceTakeFocusRequested(_In_ xaml::Hosting::IDesktopWindowXamlSource* desktopWindowXamlSource, _In_ xaml::Hosting::IDesktopWindowXamlSourceTakeFocusRequestedEventArgs* args);
         _Check_return_ HRESULT RestoreFocus(_Outptr_ xaml_hosting::IXamlSourceFocusNavigationResult** ppEventSource);
         void SetFocusToContentIsland();
