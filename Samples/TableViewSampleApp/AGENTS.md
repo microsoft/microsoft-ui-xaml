@@ -64,8 +64,3 @@ file. XAML usage raises `WMC1501` once per page; those are deliberately left vis
 `Program.cs` provides `Main` and the project defines `DISABLE_XAML_GENERATED_MAIN`, following the
 [DisableXamlGeneratedMain](../DisableXamlGeneratedMain) sample. This is a normal WinUI pattern, not a
 workaround.
-
-## Known issue
-
-An `EmptyTemplate` containing a `FontIcon` can crash at startup while the empty state is first shown.
-Prefer text or shape content in the `EmptyTemplate` until this is resolved.

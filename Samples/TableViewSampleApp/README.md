@@ -82,11 +82,6 @@ visible on purpose.
 - `EmptyTemplate`
 - `TableViewTextColumn` and `TableViewTemplateColumn` (custom cell content)
 
-## Known issue
-
-Using an `EmptyTemplate` that contains a `FontIcon` can crash at startup while the empty state is
-first shown. Prefer text or shape content in the `EmptyTemplate` until this is resolved.
-
 ## More detail
 
 See [AGENTS.md](AGENTS.md).
