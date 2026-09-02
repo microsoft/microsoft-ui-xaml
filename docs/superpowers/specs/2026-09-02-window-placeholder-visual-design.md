@@ -2,9 +2,9 @@
 
 ## Goal
 
-When `XamlChangeId.SkipWindowRedirectionSurface` is enabled, create WinUI top-level
-windows with `WS_EX_NOREDIRECTIONBITMAP` while still guaranteeing that DWM has
-meaningful, theme-appropriate content before the window is shown.
+Allow WinUI top-level windows to independently opt into
+`WS_EX_NOREDIRECTIONBITMAP` and a theme-appropriate placeholder visual. This permits
+validation of each mitigation independently as well as the intended combined mode.
 
 The feature remains fully contained behind `XamlOptionalChanges`. Disabled behavior
 is unchanged.
@@ -32,26 +32,29 @@ state, resizing, commit, replacement, and cleanup.
 
 ## Optional Change
 
-Add `XamlChangeId.SkipWindowRedirectionSurface`, using tracking ID `63530879`, to the
-XamlOM model and generated/public enum surfaces. Add a corresponding bit to
-`OptionalChangeState` and map it in `XamlOptionalChanges_Partial.cpp`.
+Use two independent `XamlChangeId` values and `OptionalChangeState` bits:
 
-The change is an explicit opt-in and is not enabled by the general performance
-opt-in. It controls both parts of the safe behavior:
+- `SkipWindowRedirectionSurface`, tracking ID `63530879`, controls creation-time
+  `WS_EX_NOREDIRECTIONBITMAP` and the corresponding `WM_ERASEBKGND` behavior.
+- `WindowPlaceholderVisual`, prototype ID `63530880`, controls placeholder creation,
+  commit, replacement, sizing, and cleanup.
 
-1. Create the top-level HWND with `WS_EX_NOREDIRECTIONBITMAP`.
-2. Present a theme-colored placeholder visual before first activation.
+Both changes are explicit opt-ins, default off, and are not enabled by the general
+performance opt-in. They may be enabled or disabled in any combination before XAML
+initialization.
 
-Tests and the validation sample may enable or disable the change before XAML
+Tests and the validation sample may enable or disable either change before XAML
 initialization.
 
 ## Window Creation and Activation
 
-`DesktopWindowImpl::CreateDesktopWindow` passes `WS_EX_NOREDIRECTIONBITMAP` when the
-optional change is enabled. `WM_ERASEBKGND` returns handled without GDI painting in
-that mode because the HWND has no redirection bitmap.
+`DesktopWindowImpl::CreateDesktopWindow` passes `WS_EX_NOREDIRECTIONBITMAP` only when
+`SkipWindowRedirectionSurface` is enabled. `WM_ERASEBKGND` returns handled without
+GDI painting only in that mode because the HWND has no redirection bitmap.
 
-During the first `DesktopWindowImpl::ActivateImpl`, before `ShowWindow`:
+When `WindowPlaceholderVisual` is enabled, the first
+`DesktopWindowImpl::ActivateImpl` performs the following before `ShowWindow`,
+regardless of the redirection-surface state:
 
 1. Resolve the window's `CXamlIslandRoot` from its `DesktopWindowXamlSource`.
 2. Read the current client size.
@@ -98,24 +101,35 @@ exists.
 
 ## Validation Sample
 
-Add a small C++/WinRT desktop sample under `Samples` with a custom entry point. It
-accepts:
+The C++/WinRT desktop sample accepts two independent switches:
 
-- `--placeholder=on`: enables `SkipWindowRedirectionSurface` before
-  `Application::Start`.
-- `--placeholder=off`: explicitly disables it before `Application::Start`.
+- `--redirection=on|off`: `on` retains the normal redirection bitmap by disabling
+  `SkipWindowRedirectionSurface`; `off` enables
+  `SkipWindowRedirectionSurface`.
+- `--placeholder=on|off`: independently enables or disables
+  `WindowPlaceholderVisual`.
 
-The default is off so launching without arguments preserves current behavior. The
-window displays the selected mode and intentionally delays creation of visibly
-distinct content briefly after activation, making startup flashing easy to compare.
-The placeholder color follows the current system theme.
+Both defaults preserve current behavior: redirection is on and the placeholder is
+off. Conflicting values for either switch are rejected before XAML initialization.
+The window displays both selected states, identifies the active matrix combination,
+and intentionally delays visibly distinct content so all four combinations can be
+compared:
+
+1. Redirection on, placeholder off: baseline.
+2. Redirection off, placeholder off: isolated no-redirection behavior.
+3. Redirection on, placeholder on: isolated placeholder behavior.
+4. Redirection off, placeholder on: intended combined mitigation.
 
 ## Testing
 
-Add desktop window integration coverage for:
+Add desktop window integration coverage for all four optional-change combinations:
 
-- Optional change disabled: existing extended style and activation behavior.
-- Optional change enabled: `WS_EX_NOREDIRECTIONBITMAP` is present at creation.
+- Redirection on, placeholder off: no extended style and no placeholder.
+- Redirection off, placeholder off: extended style and no placeholder.
+- Redirection on, placeholder on: no extended style and a placeholder until the
+  first frame.
+- Redirection off, placeholder on: extended style and a placeholder until the first
+  frame.
 - Placeholder preparation occurs only on initial activation.
 - Placeholder is removed after the real XAML root is connected.
 - Placeholder state is cleaned up if the window closes before first content.
@@ -131,4 +145,3 @@ Placeholder creation and the pre-show commit are part of initial activation. Fai
 propagate through the existing HRESULT path rather than showing an uninitialized
 no-redirection window. Teardown tolerates an island or bridge already being closed,
 following existing ContentIsland cleanup behavior.
-
