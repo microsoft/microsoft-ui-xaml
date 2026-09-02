@@ -40,6 +40,8 @@ variables:
 - template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
 - template: build\AzurePipelinesTemplates\WinUI-BuildVariables.yml@WinUIInternal
 - group: WinUI-Variable-Library
+# Secret PRBannedWords: banned-words list for the PR title/description check.
+- group: WinUI-InternalFeed
 - name: WindowsContainerImage
   value: 'onebranch.azurecr.io/windows/ltsc2022/vse2022:latest'
 
@@ -163,16 +165,6 @@ extends:
           submodules: false
           fetchDepth: 1
           fetchTags: false
-
-        # Fetch the banned-words list at runtime as a masked secret.
-        # Failure here fails only this stage, not the whole PR build.
-        - task: AzureKeyVault@2
-          displayName: Fetch banned-words list from Key Vault
-          inputs:
-            azureSubscription: 'WinUITeamKeyVault'
-            KeyVaultName: 'WinUITeamKeyVault'
-            SecretsFilter: 'PRBannedWords'
-            RunAsPreJob: false
 
         - task: PowerShell@2
           displayName: Scan PR title and description for banned words
