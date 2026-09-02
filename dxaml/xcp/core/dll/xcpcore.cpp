@@ -1573,7 +1573,7 @@ _Check_return_ HRESULT CCoreServices::ClearDefaultLanguageString()
 //
 //------------------------------------------------------------------------
 
-_Check_return_ HRESULT CCoreServices::ResetState()
+_Check_return_ HRESULT CCoreServices::ResetState(bool resetInputServices)
 {
     HRESULT recordHr = S_OK;
 
@@ -1596,7 +1596,10 @@ _Check_return_ HRESULT CCoreServices::ResetState()
     }
 
     m_pMainVisualTree = nullptr;
-    m_inputServices = nullptr;
+    if (resetInputServices)
+    {
+        m_inputServices = nullptr;
+    }
 
     // Release some stuff
 
@@ -10254,11 +10257,9 @@ HRESULT CCoreServices::ShutdownToIdle()
     m_spXamlSchemaContext.reset();
     m_spXamlNodeStreamCacheManager.reset();
 
-    auto inputServices = m_inputServices;
-    IFC_RETURN(ResetState());
+    IFC_RETURN(ResetState(false /* resetInputServices */));
 
-    // Text core teardown can re-enter input services.
-    m_inputServices = std::move(inputServices);
+    ASSERT(m_inputServices != nullptr);
     delete m_pTextCore;
     m_pTextCore = NULL;
     m_inputServices = nullptr;
