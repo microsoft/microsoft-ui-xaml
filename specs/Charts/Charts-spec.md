@@ -505,6 +505,8 @@ TargetSeries.DataMarkerOverrides[2] =
     new DataMarkerOverride(MarkerShape.Diamond, highlight);
 ```
 
+![Area, bar, and line series with legend, axes, grid lines, labels, markers, and a highlighted point](./images/chart-all-adornments.png)
+
 ## A bar chart
 
 ```xaml
