@@ -50,11 +50,32 @@ public:
     winrt::TableViewSource GroupBy(winrt::TableViewKeySelector const& key);
     winrt::TableViewSource GroupBy(winrt::TableViewKeySelector const& key, winrt::TableViewIdentitySelector const& groupIdentitySelector);
     winrt::TableViewSource Sort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction);
-    winrt::TableViewSource SortReplacing(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::SortDirection direction);
+    winrt::TableViewSource Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
+    winrt::TableViewSource SortReplacing(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
     winrt::TableViewSource ClearFilter();
     winrt::TableViewSource ClearGroupBy();
     winrt::TableViewSource ClearSort();
     winrt::TableViewSource ClearSort(winrt::hstring const& sortAxisToken);
+    // Internal, for the owning control: make sortAxisToken the ONLY sort axis, dropping any the
+    // app declared through the fluent Sort verb (which is untokenized and so unaddressable by
+    // token). Keeps the control's single-axis contract true when both front-ends are used.
+    winrt::TableViewSource ClearSortsExcept(winrt::hstring const& sortAxisToken);
+    // Internal: the active sort axes in precedence order, so the owner can detect an axis it does
+    // not own and, when that axis names a property, attribute it to a column. Restated here
+    // rather than surfacing the engine's own struct: this class is the translation layer, and
+    // layer 2 stays out of the control's headers.
+    struct ActiveSortAxisInfo
+    {
+        winrt::hstring AxisToken;
+        // Empty when the axis was declared with a key selector no property path expresses.
+        winrt::hstring SortMemberPath;
+        winrt::SortDirection Direction{ winrt::SortDirection::None };
+    };
+    std::vector<ActiveSortAxisInfo> ActiveSortAxisInfos() const;
+
+    // The axis token a path-declared sort owns. Exposed so the owning control can recognize its
+    // own path-based axis, and so re-sorting one path replaces it instead of stacking.
+    static winrt::hstring SortAxisTokenForPath(winrt::hstring const& sortMemberPath);
 
     // UI-thread affine after construction/binding: shaping verbs and projection mutation must
     // run on the owning UI thread. Only source change notifications are marshaled back here.
@@ -85,7 +106,7 @@ public:
     void SetShapingChangedHandler(std::function<void(bool)> handler) { m_shapingChanged = std::move(handler); }
 
 private:
-    winrt::TableViewSource SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::SortDirection direction);
+    winrt::TableViewSource SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
     // Re-derives everything this class caches from the shape the engine just produced.
     void OnProjectionRebuilt();
     TableViewRowItemKeySelector MakeIdentitySelector() const;

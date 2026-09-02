@@ -144,9 +144,10 @@ void ShapedItemsSource::SetSort(
     winrt::hstring const& axisToken,
     TabularShapingHelpers::TabularKeySelector const& key,
     winrt::Windows::Foundation::IUnknown const& keyIdentity,
+    winrt::hstring const& sortMemberPath,
     winrt::SortDirection direction)
 {
-    m_pipeline.SetSort(previousAxisToken, axisToken, key, keyIdentity, direction);
+    m_pipeline.SetSort(previousAxisToken, axisToken, key, keyIdentity, sortMemberPath, direction);
     ApplyShapingChange();
 }
 
@@ -160,6 +161,22 @@ void ShapedItemsSource::ClearSort(winrt::hstring const& axisToken)
 {
     m_pipeline.ClearSort(axisToken);
     ApplyShapingChange();
+}
+
+void ShapedItemsSource::ClearSortsExcept(winrt::hstring const& axisToken)
+{
+    m_pipeline.ClearSortsExcept(axisToken);
+    ApplyShapingChange();
+}
+
+std::vector<ShapedItemsSource::ActiveSortAxisInfo> ShapedItemsSource::ActiveSortAxisInfos() const
+{
+    std::vector<ActiveSortAxisInfo> infos;
+    for (auto const& axis : m_pipeline.ActiveSortAxes(-1, -1))
+    {
+        infos.push_back({ axis.AxisToken, axis.SortMemberPath, axis.Direction });
+    }
+    return infos;
 }
 
 void ShapedItemsSource::ApplyShapingChange()
