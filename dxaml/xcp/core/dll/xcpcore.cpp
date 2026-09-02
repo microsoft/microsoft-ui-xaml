@@ -10254,10 +10254,14 @@ HRESULT CCoreServices::ShutdownToIdle()
     m_spXamlSchemaContext.reset();
     m_spXamlNodeStreamCacheManager.reset();
 
+    auto inputServices = m_inputServices;
     IFC_RETURN(ResetState());
 
+    // Text core teardown can re-enter input services.
+    m_inputServices = std::move(inputServices);
     delete m_pTextCore;
     m_pTextCore = NULL;
+    m_inputServices = nullptr;
 
     // Proactively release our D3D device lost listener to guarantee we synchronize with any pending callback that might be in-flight.
     ReleaseDeviceLostListener();
