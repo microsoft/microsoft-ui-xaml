@@ -149,6 +149,9 @@ public:
     // TableViewColumn calls this when header templates change so realized headers refresh.
     void RebuildHeaders();
 
+    // Neutralizes control-owned header tooltips before the header band is discarded.
+    void ReleaseHeaderToolTips(const winrt::Panel& host);
+
     // Toggling it adds or removes every gripper, so the header band is rebuilt.
     void OnCanUserResizeColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
@@ -188,6 +191,11 @@ public:
     // TableViewColumn calls this when Header / HeaderTemplate / HeaderTemplateSelector changes so
     // headers re-render and Auto columns recompute their content width.
     void OnColumnHeaderChanged(const winrt::TableViewColumn& column);
+
+    // TableViewColumn calls this when HeaderToolTip changes. Re-applies on the realized header cell
+    // in place; a rebuild would be both wasteful and destructive here, since the header band owns
+    // focus and the sort affordance.
+    void OnColumnHeaderToolTipChanged(const winrt::TableViewColumn& column);
 
     // TableViewColumn calls this when FrozenEdge changes so headers re-render and the leading-frozen
     // band re-pins.

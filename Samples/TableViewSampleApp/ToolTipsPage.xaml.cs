@@ -81,9 +81,25 @@ public sealed partial class ToolTipsPage : Page
         Table.ItemsSource = Data.Make();
 
         AttachToolTipBindings();
+        AttachHeaderToolTips();
 
         // Score deliberately never gets a binding: no tooltip should ever appear over that column.
         UpdateStatus();
+    }
+
+    private void AttachHeaderToolTips()
+    {
+        _nameColumn.HeaderToolTip = "Full name, as entered";
+        _cityColumn.HeaderToolTip = "City the person works from";
+
+        // Repeats the header's own text: the peer drops it so it is not announced twice.
+        _scoreColumn.HeaderToolTip = "Score";
+
+        // Non-string header content: mouse only, and never reported as help text.
+        var card = new StackPanel { Spacing = 4 };
+        card.Children.Add(new TextBlock { Text = "Bio", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold });
+        card.Children.Add(new TextBlock { Text = "Free-form summary", Opacity = 0.75 });
+        _bioColumn.HeaderToolTip = card;
     }
 
     private void AttachToolTipBindings()
@@ -318,5 +334,34 @@ public sealed partial class ToolTipsPage : Page
         }
 
         Status.Text = sb2.ToString();
+    }
+
+    // Header peers are virtual, so their help text comes from TableViewColumnHeaderAutomationPeer -
+    // HeaderToolTip text composed with the column's sort state.
+    private void OnCheckHeaderUia(object sender, RoutedEventArgs e)
+    {
+        var tablePeer = FrameworkElementAutomationPeer.CreatePeerForElement(Table);
+        if (tablePeer is null)
+        {
+            Status.Text = "UIA: no TableView peer";
+            return;
+        }
+
+        var sb = new StringBuilder("headers: ");
+        int found = 0;
+
+        foreach (var child in tablePeer.GetChildren() ?? new List<AutomationPeer>())
+        {
+            if (child.GetClassName() != "TableViewColumnHeader")
+            {
+                continue;
+            }
+
+            found++;
+            var help = child.GetHelpText();
+            sb.Append($"[{child.GetName()}] \"{help}\"   ");
+        }
+
+        Status.Text = found > 0 ? sb.ToString() : "UIA: no header peers found";
     }
 }

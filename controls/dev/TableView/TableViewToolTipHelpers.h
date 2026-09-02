@@ -73,6 +73,20 @@ namespace TableViewDetails
         return std::nullopt;
     }
 
+    // Tooltip text for peers that publish it themselves; AutomationProperties never reaches a
+    // virtual peer.
+    inline std::optional<winrt::hstring> TryGetOwnedToolTipText(const winrt::FrameworkElement& element)
+    {
+        auto const record = GetRecord(element);
+        if (!record || !record->ToolTip ||
+            record->ToolTip != winrt::ToolTipService::GetToolTip(element).try_as<winrt::ToolTip>())
+        {
+            return std::nullopt;
+        }
+
+        return TryGetString(record->ToolTip.Content());
+    }
+
     inline void RetractPublishedHelpText(const winrt::FrameworkElement& element, CellToolTipRecord& record)
     {
         if (!record.PublishedHelpText.empty() &&
@@ -113,11 +127,13 @@ namespace TableViewDetails
     }
 
     // Returns whether the element is left carrying a control-owned tooltip. Never touches one the
-    // app set itself.
+    // app set itself. publishHelpText is false when a peer publishes the text instead.
     inline bool SetOwnedToolTip(
         const winrt::FrameworkElement& element,
         const winrt::IInspectable& content,
-        winrt::PlacementMode placement)
+        winrt::PlacementMode placement,
+        bool publishHelpText = true,
+        const wchar_t* propertyName = L"CellToolTipBinding")
     {
         if (!element)
         {
@@ -144,8 +160,8 @@ namespace TableViewDetails
         auto const text = TryGetString(content);
         if (content && content.try_as<winrt::ToolTip>())
         {
-            TVDiag::LogRetailF(L"[TableView] A CellToolTipBinding value must be tooltip content, "
-                L"not a ToolTip; the cell has no tooltip.");
+            TVDiag::LogRetailF(L"[TableView] A %ls value must be tooltip content, "
+                L"not a ToolTip; the element has no tooltip.", propertyName);
             ClearOwnedToolTip(element);
             return false;
         }
@@ -193,7 +209,8 @@ namespace TableViewDetails
         // Published unconditionally and recorded; TableViewCellAutomationPeer decides at query time
         // whether it merely repeats the cell's own text. Comparing here would race the cell's binding.
         auto const helpText = text ? *text : winrt::hstring{};
-        if (!helpText.empty() &&
+        if (publishHelpText &&
+            !helpText.empty() &&
             winrt::AutomationProperties::GetHelpText(element).empty())
         {
             winrt::AutomationProperties::SetHelpText(element, helpText);
@@ -276,5 +293,18 @@ namespace TableViewDetails
         {
             winrt::BindingOperations::SetBinding(element, EnsureCellToolTipValueProperty(), binding);
         }
+    }
+
+    // Headers are rebuilt wholesale, never recycled, so there is no binding or refresh path.
+    inline void ApplyHeaderToolTip(
+        const winrt::FrameworkElement& element,
+        const winrt::IInspectable& content)
+    {
+        SetOwnedToolTip(
+            element,
+            content,
+            winrt::PlacementMode::Mouse,
+            false /* publishHelpText */,
+            L"HeaderToolTip");
     }
 }

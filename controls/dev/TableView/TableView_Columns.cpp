@@ -7,6 +7,7 @@
 #include "TableViewColumn.h"
 #include "TableViewRow.h"
 #include "TableViewCellsPanel.h"
+#include "TableViewToolTipHelpers.h"
 #include "TVDiag.h"
 
 #include <algorithm>
@@ -426,6 +427,26 @@ void TableView::OnColumnHeaderChanged(const winrt::TableViewColumn& column)
         winrt::get_self<TableViewColumn>(column)->ResetDesiredWidthInternal();
     }
     InvalidateMeasure();
+}
+
+void TableView::OnColumnHeaderToolTipChanged(const winrt::TableViewColumn& column)
+{
+    if (!column)
+    {
+        return;
+    }
+
+    // Only the realized header carries a tooltip; RebuildHeaders reads the current value when it runs.
+    auto const host = m_headerHost.get();
+    if (!host)
+    {
+        return;
+    }
+
+    if (auto const headerCell = TableViewCellsPanel::CellForColumn(host, column))
+    {
+        TableViewDetails::ApplyHeaderToolTip(headerCell, column.HeaderToolTip());
+    }
 }
 
 void TableView::OnColumnFrozenEdgeChanged(const winrt::TableViewColumn& column)

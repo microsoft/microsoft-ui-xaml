@@ -113,6 +113,11 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.Controls.DataTemplateSelector HeaderTemplateSelector { get; set; };
 
+    // Opt-in column-header tooltip content; null or an empty string means no tooltip. A plain DP,
+    // not a Binding property: a header is not bound against a row, so there is nothing to defer.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Object HeaderToolTip { get; set; };
+
     // Width carries GridLength intent; ActualWidth is the resolved, MinWidth/MaxWidth-clamped
     // pixels (see TableView_Layout.cpp). Pixel = exact; Auto = widest realized cell (grows within a
     // data set); Star = a proportional share of the body viewport after fixed columns.
@@ -215,6 +220,7 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     static Microsoft.UI.Xaml.DependencyProperty HeaderProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateSelectorProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty HeaderToolTipProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty WidthProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty MinWidthProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty MaxWidthProperty { get; };

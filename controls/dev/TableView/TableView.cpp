@@ -7,6 +7,7 @@
 #include "TableViewColumn.h"
 #include "TableViewRow.h"
 #include "TableViewCellsPanel.h"
+#include "TableViewToolTipHelpers.h"
 #include "TableViewAutomationPeer.h"
 #include "TableViewSource.h"
 #include "SortIndicator.h"
@@ -1381,6 +1382,24 @@ static winrt::hstring GetColumnHeaderText(const winrt::TableViewColumn& column)
     return {};
 }
 
+void TableView::ReleaseHeaderToolTips(const winrt::Panel& host)
+{
+    if (!host)
+    {
+        return;
+    }
+
+    auto const children = host.Children();
+    const uint32_t count = children.Size();
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        if (auto const headerCell = children.GetAt(i).try_as<winrt::FrameworkElement>())
+        {
+            TableViewDetails::ClearOwnedToolTip(headerCell);
+        }
+    }
+}
+
 void TableView::RebuildHeaders()
 {
     auto host = m_headerHost.get();
@@ -1388,6 +1407,10 @@ void TableView::RebuildHeaders()
     {
         return;
     }
+
+    // Close any owned tooltip before its host is discarded; clearing an open tooltip's element is
+    // the reentrant CPopup::RemoveChild shape.
+    ReleaseHeaderToolTips(host);
 
     host.Children().Clear();
 
@@ -1482,6 +1505,9 @@ void TableView::RebuildHeaders()
 
             // Tag header cells so frozen-column refresh can map them back to columns.
             headerCell.Tag(column);
+
+            // No HelpText: the header's peer is virtual, so it composes the text instead.
+            TableViewDetails::ApplyHeaderToolTip(headerCell, column.HeaderToolTip());
 
             // Sort affordance. Gated on both the control-wide and the per-column opt-in, so an
             // opted-out column carries no chevron and no click handler at all.

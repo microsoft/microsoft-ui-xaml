@@ -501,6 +501,7 @@ Methods:
 | `IsReadOnly` (`Boolean`, default `false`) | Per-column opt-out. A read-only column is still a valid current cell for keyboard navigation, but cannot be edited. |
 | `CellEditingTemplate` (`DataTemplate`, default `null`) | Editing visual for any column type. A column with neither a `CellEditingTemplate` nor a built-in editor is not editable. |
 | `CellToolTipBinding` (`Binding`, default `null`) | Opt-in per-cell tooltip. The binding is evaluated against each row's data item; its value becomes the cell's tooltip content — a string, or anything a `ToolTip` can host. `null` or an empty string means no tooltip for that cell. Use an `IValueConverter` for computed content. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column (same shape as `TableViewTextColumn.Binding`). |
+| `HeaderToolTip` (`Object`, default `null`) | Opt-in tooltip for this column's header. The value is the tooltip's content — a string, or anything a `ToolTip` can host. `null` or an empty string means no header tooltip. A dependency property, not a `Binding`: a header is not bound against a row, so there is nothing to defer. |
 
 ### Cell tooltips
 
@@ -521,6 +522,26 @@ The control owns the `ToolTip` and its placement (`PlacementMode.Mouse`), so the
 tooltip's *content*, not a `ToolTip`. A `UIElement` is parented by that cell's `ToolTip`, so a
 converter must return a fresh element per evaluation. A tooltip the app sets inside the column's own
 cell template is never touched; the control's tooltip covers the rest of the cell.
+
+### Column header tooltips
+
+`HeaderToolTip` is the header-side counterpart, and covers the whole header cell — content, padding
+and sort affordance:
+
+```xml
+<tabular:TableViewTextColumn Header="Notes"
+                             Binding="{Binding Notes}"
+                             HeaderToolTip="Free-form notes captured at intake" />
+```
+
+Header cells are rebuilt rather than recycled, so the value is read from the column when the header
+is built and re-applied in place when it changes; there is no binding and no invalidation API.
+Placement and ownership match the cell path, including leaving an app-set tooltip alone.
+
+String content is reported as the header's UIA help text by
+`TableViewColumnHeaderAutomationPeer`, joined with the column's sort state when it has one — the
+header peer is virtual, so it publishes the text itself rather than through
+`AutomationProperties.HelpText`. As with cells, non-string content is mouse-only.
 
 ## TableViewTextColumn class
 
@@ -778,6 +799,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Object Header;
         Microsoft.UI.Xaml.DataTemplate HeaderTemplate;
         Microsoft.UI.Xaml.Controls.DataTemplateSelector HeaderTemplateSelector;
+        Object HeaderToolTip;
         Microsoft.UI.Xaml.GridLength Width;
         Double MinWidth;
         Double MaxWidth;
@@ -795,6 +817,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         static Microsoft.UI.Xaml.DependencyProperty HeaderProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateSelectorProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty HeaderToolTipProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty WidthProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty MinWidthProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty MaxWidthProperty { get; };
