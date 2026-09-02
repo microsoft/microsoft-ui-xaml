@@ -48,7 +48,7 @@ void SystemBackdropElement::OnPropertyChanged(const winrt::DependencyPropertyCha
             {
                 if (m_backdropLink)
                 {
-                    oldSystemBackdrop.OnTargetDisconnected(m_backdropLink);
+                    oldSystemBackdrop.OnTargetDisconnected(m_backdropLink.SystemBackdropTarget());
                 }
                 m_registeredWithSystemBackdrop = false;
             }
@@ -193,7 +193,7 @@ void SystemBackdropElement::EnsureCompositionResources()
 
     if (!m_backdropLink)
     {
-        m_backdropLink = winrt::ContentExternalBackdropLink::Create(m_compositor);
+        m_backdropLink = ContentExternalLinkHelper::BackdropLink::Create(m_compositor);
         winrt::Microsoft::UI::Xaml::Hosting::ElementCompositionPreview::SetElementChildVisual(*this, m_backdropLink.PlacementVisual());
     }
 }
@@ -212,7 +212,7 @@ void SystemBackdropElement::TryConnectSystemBackdrop()
 
         if (xamlRoot && m_systemBackdrop)
         {
-            m_systemBackdrop.OnTargetConnected(m_backdropLink, xamlRoot);
+            m_systemBackdrop.OnTargetConnected(m_backdropLink.SystemBackdropTarget(), xamlRoot);
             m_registeredWithSystemBackdrop = true;
         }
     }
@@ -222,7 +222,7 @@ void SystemBackdropElement::ReleaseCompositionResources()
 {
     if (m_systemBackdrop && m_backdropLink)
     {
-        m_systemBackdrop.OnTargetDisconnected(m_backdropLink);
+        m_systemBackdrop.OnTargetDisconnected(m_backdropLink.SystemBackdropTarget());
     }
     m_backdropLink = nullptr;
     m_compositor = nullptr;
