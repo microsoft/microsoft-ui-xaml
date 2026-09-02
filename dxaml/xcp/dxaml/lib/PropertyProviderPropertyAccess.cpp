@@ -184,8 +184,16 @@ PropertyProviderPropertyAccess::TryReconnect(_In_ IInspectable* pSource, _In_ BO
             IFC_RETURN(WindowsCompareStringOrdinal(m_sourceType.Get().Name, newSourceType.Get().Name, &nResult));
             if (nResult == 0)
             {
-                IFC_RETURN(SetSource(pSource, fListenToChanges));
-                bConnected = TRUE;
+                // The cached property may have been collected while this accessor was disconnected.
+                ctl::ComPtr<xaml_data::ICustomProperty> spProperty;
+                IFC_RETURN(spCPP->GetCustomProperty(wrl_wrappers::HStringReference(GetPropertyName()).Get(), spProperty.ReleaseAndGetAddressOf()));
+                SetPtrValue(m_tpProperty, spProperty.Get());
+
+                if (spProperty)
+                {
+                    IFC_RETURN(SetSource(pSource, fListenToChanges));
+                    bConnected = TRUE;
+                }
             }
         }
     }
