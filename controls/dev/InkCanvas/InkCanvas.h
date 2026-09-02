@@ -4,7 +4,8 @@
 #pragma once
 
 #include "InkCanvas.g.h"
-#include "dcomp.h"
+#include <dcomp.h>
+#include <CppWinrtContentExternalOutputLinkHelper.h>
 #include <windows.ui.input.inking.h>
 #include <inkpresenterdesktop.h>
 #include <map>
@@ -72,7 +73,7 @@ private:
     muxc::InkPresenter m_inkPresenterProxy{ nullptr };
 
     // ContentExternalOutputLink host for the lifted compositor path; null on the system path.
-    winrt::IContentExternalOutputLink m_systemVisualLink{ nullptr };
+    ContentExternalLinkHelper::OutputLink m_systemVisualLink{ nullptr };
 
     // Writer-side DComp target from the system splice; roots the ink visual under the MUC visual and
     // is released in DetachFromVisualLink. Null on the lifted path.

@@ -18,6 +18,7 @@
             <controls:NavigationViewItem Content="Mixed columns" Tag="mixed"/>
             <controls:NavigationViewItem Content="Interactive cells" Tag="interactive"/>
             <controls:NavigationViewItem Content="Selection" Tag="selection"/>
+            <controls:NavigationViewItem Content="Cell tooltips" Tag="tooltips"/>
         </controls:NavigationView.MenuItems>
 
         <Frame x:Name="ContentFrame"/>

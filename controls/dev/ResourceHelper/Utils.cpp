@@ -12,7 +12,7 @@ winrt::hstring StringUtil::FormatString(std::wstring_view formatString, ...)
     LPVOID formattedString = nullptr;
 
     // Format the string
-    FormatMessage(
+    const DWORD formattedLength = FormatMessage(
         FORMAT_MESSAGE_ALLOCATE_BUFFER |
         FORMAT_MESSAGE_FROM_STRING,
         formatString.data(),
@@ -23,6 +23,12 @@ winrt::hstring StringUtil::FormatString(std::wstring_view formatString, ...)
         &pArgs);
 
     va_end(pArgs);
+
+    if (formattedLength == 0 || formattedString == nullptr)
+    {
+        LocalFree(formattedString);
+        return {};
+    }
 
     winrt::hstring result((LPTSTR)formattedString);
     LocalFree(formattedString);
