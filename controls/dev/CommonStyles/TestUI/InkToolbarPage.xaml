@@ -21,10 +21,11 @@
                     TargetInkCanvas="{x:Bind inkCanvas}"/>
 
         <!-- Status readout so the new events are observable during manual testing. -->
-        <TextBlock x:Name="StatusText"
-                   Grid.Row="0" Grid.Column="1"
-                   VerticalAlignment="Center"
-                   Text="Ready"/>
+        <StackPanel Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+            <TextBlock x:Name="StatusText" Text="Ready"/>
+            <TextBlock Text="Open a pen flyout to see the Colors and Size labels. Click the ruler to toggle the stencil."
+                       TextWrapping="Wrap" MaxWidth="260" FontSize="12" Opacity="0.7"/>
+        </StackPanel>
 
         <!-- The drawing surface. -->
         <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"

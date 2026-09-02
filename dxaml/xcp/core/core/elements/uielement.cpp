@@ -4731,6 +4731,23 @@ CUIElement::TransformToGlobalCoordinateSpaceThroughViewports(
     return S_OK;
 }
 
+// Empty rect at +/-infinity: the effective viewport walk's "no usable viewport" sentinel.
+static void SetRectToInvalidViewport(_Out_ XRECTF& rect)
+{
+    rect.X = rect.Y = std::numeric_limits<float>::infinity();
+    rect.Width = rect.Height = -std::numeric_limits<float>::infinity();
+}
+
+// False only for a singular 2D transform (e.g. an animated 0 scale); the same determinant gate Invert uses.
+static bool ViewportTransformIsInvertible(_In_ CGeneralTransform* transform)
+{
+    auto* t = do_pointer_cast<CTransform>(transform);
+    if (!t) { return true; }
+    CMILMatrix mat;
+    t->GetTransform(&mat);
+    return mat.GetDeterminant() != 0.0f;
+}
+
 _Check_return_ HRESULT
 CUIElement::TransformToElementCoordinateSpaceThroughViewports(
     _In_ const std::vector<TransformToPreviousViewport>& transformsToViewports,
@@ -4751,12 +4768,23 @@ CUIElement::TransformToElementCoordinateSpaceThroughViewports(
         IFC_RETURN(TransformToVisual(transformsToViewports.back().GetElement(), &transform));
     }
 
+    // A non-invertible transform in the chain has no global -> local conversion; report the sentinel.
     XRECTF transformedRect = {};
     for (const auto& transformToViewport : transformsToViewports)
     {
+        if (!ViewportTransformIsInvertible(transformToViewport.GetTransform()))
+        {
+            SetRectToInvalidViewport(rect);
+            return S_OK;
+        }
         IFC_RETURN(transformToViewport.GetTransform()->TransformRectInverse(rect, &transformedRect));
         rect = transformedRect;
         transformedRect = {};
+    }
+    if (!ViewportTransformIsInvertible(transform))
+    {
+        SetRectToInvalidViewport(rect);
+        return S_OK;
     }
     IFC_RETURN(transform->TransformRectInverse(rect, &transformedRect));
     rect = transformedRect;
@@ -4821,8 +4849,7 @@ CUIElement::ComputeEffectiveViewportChangedEventArgsAndNotifyLayoutManager(
     {
         // If the effective viewport is invalid in at least one direction,
         // it results in an empty rect.
-        ev.X = ev.Y = std::numeric_limits<float>::infinity();
-        ev.Width = ev.Height = -std::numeric_limits<float>::infinity();
+        SetRectToInvalidViewport(ev);
     }
 
     XRECTF mv = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -4839,8 +4866,7 @@ CUIElement::ComputeEffectiveViewportChangedEventArgsAndNotifyLayoutManager(
     {
         // By design, the max viewport should never be an invalid rect.
         ASSERT(false);
-        mv.X = mv.Y = std::numeric_limits<float>::infinity();
-        mv.Width = mv.Height = -std::numeric_limits<float>::infinity();
+        SetRectToInvalidViewport(mv);
     }
 
     float dx = 0.0f;

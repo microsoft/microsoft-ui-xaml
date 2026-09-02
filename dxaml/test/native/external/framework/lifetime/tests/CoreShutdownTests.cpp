@@ -109,4 +109,52 @@ void CoreShutdownTests::RoutedEventArgsCleanup()
     preservedArgs = nullptr;
 }
 
+// Regression test for the shutdown access violation in CInputServices::GetPrimaryRegisteredIslandInputSite.
+//
+// A TextBox that still has focus when the core is torn down is kept alive by the text core rather than
+// by the visual tree, so it outlives ResetCoreWindowVisualTree and is destroyed by CCoreServices::~CCoreServices
+// at "delete m_pTextCore". That teardown synchronously re-enters input:
+//   CTextBoxBase::Destroy -> OnTxInPlaceDeactivate -> ShowGrippers -> TxGetWindow
+//     -> CDependencyObject::GetElementIslandInputSite -> CInputServices::GetPrimaryRegisteredIslandInputSite
+// m_inputServices is an xref_ptr, so resetting it before the text core is deleted destroys CInputServices
+// and that callback then runs on a null instance, faulting while reading m_islandInputSiteRegistrations.
+//
+// The test deliberately leaves the focused TextBox in the tree across shutdown. It fails as an access
+// violation (0xC0000005) if the reset is ordered before the text core teardown.
+void CoreShutdownTests::FocusedTextBoxAtCoreShutdown()
+{
+    TestServices::WindowHelper->InitializeXaml();
+
+    auto shutdownGuard = wil::scope_exit([]
+    {
+        TestServices::WindowHelper->ShutdownXaml();
+    });
+
+    xaml_controls::TextBox^ textBox = nullptr;
+
+    RunOnUIThread([&]
+    {
+        textBox = ref new xaml_controls::TextBox();
+        textBox->Text = L"focused text input at shutdown";
+        TestServices::WindowHelper->WindowContent = textBox;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    // Focus activates the RichEdit host in place, which is what arms the deactivation callback below.
+    RunOnUIThread([&]
+    {
+        VERIFY_IS_TRUE(textBox->Focus(xaml::FocusState::Programmatic));
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    // Release the test's reference but deliberately leave the TextBox focused and in the tree, so the
+    // text core owns the final reference and drops it during core destruction.
+    RunOnUIThread([&]
+    {
+        textBox = nullptr;
+    });
+
+    shutdownGuard.reset();
+}
+
 } } } } } }
