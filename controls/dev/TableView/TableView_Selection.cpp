@@ -596,6 +596,15 @@ void TableView::SelectRowIndexFromInteraction(int32_t index, bool toggle)
         return;
     }
 
+    // Group headers share the flat projection's index space with data rows but are not selectable.
+    // Keyboard navigation legitimately lands focus on a header (to expand/collapse it); when it
+    // does, leave the existing data selection untouched rather than moving it to - or clearing it
+    // against - a header index. Selection-follows-focus resumes on the next data row.
+    if (index >= 0 && IsGroupHeaderRow(index))
+    {
+        return;
+    }
+
     // An explicit gesture settles the question - drop anything held for a reload.
     ClearPendingSelection();
 

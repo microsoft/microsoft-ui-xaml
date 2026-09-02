@@ -422,6 +422,11 @@ void TableView::OnApplyTemplate()
         LayoutUpdated(m_pendingFocusLayoutToken);
         m_pendingFocusLayoutToken = {};
     }
+    if (m_pendingGroupFocusLayoutToken.value)
+    {
+        LayoutUpdated(m_pendingGroupFocusLayoutToken);
+        m_pendingGroupFocusLayoutToken = {};
+    }
     if (auto oldRepeater = m_rowsRepeater.get())
     {
         // Drop per-template Loaded handlers so old elements cannot keep this alive.
@@ -1827,6 +1832,14 @@ void TableView::OnTableViewUnloaded()
         LayoutUpdated(m_pendingFocusLayoutToken);
         m_pendingFocusLayoutToken = {};
     }
+
+    if (m_pendingGroupFocusLayoutToken.value)
+    {
+        LayoutUpdated(m_pendingGroupFocusLayoutToken);
+        m_pendingGroupFocusLayoutToken = {};
+    }
+    m_pendingGroupFocusIdentity.clear();
+    m_pendingGroupFocusState = winrt::FocusState::Unfocused;
 
     // Null ItemsSource on unload to release repeater cache work before it ticks on a detached subtree.
     // OnRowsRepeaterLoaded re-sources cached pages when they return.

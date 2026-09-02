@@ -96,6 +96,12 @@ bool TableView::IsTableViewSourceGrouped() const
     return false;
 }
 
+bool TableView::IsGroupHeaderRow(int32_t index) const
+{
+    TableViewRowInfo rowInfo{};
+    return TryGetTableViewSourceRowInfo(index, rowInfo) && rowInfo.Kind == TableViewRowKind::GroupHeader;
+}
+
 // ---------------------------------------------------------------------------------------------
 // Expansion
 // ---------------------------------------------------------------------------------------------
@@ -139,7 +145,59 @@ void TableView::RequestGroupExpansion(winrt::UIElement const& container, std::op
         }
     }
 
+    // Capture keyboard focus on this header (if any) so it can be restored after the deferred
+    // reshape recycles the container. Done here, while the container still owns focus.
+    CaptureGroupHeaderFocusForRestore(container, identity);
+
     QueueGroupExpansionByIdentity(identity, desired);
+}
+
+void TableView::CaptureGroupHeaderFocusForRestore(winrt::UIElement const& container, winrt::hstring const& identity)
+{
+    // Clear any prior capture: a fresh toggle supersedes an earlier one whose restore has not run.
+    m_pendingGroupFocusIdentity.clear();
+    m_pendingGroupFocusState = winrt::FocusState::Unfocused;
+
+    if (identity.empty() || !container)
+    {
+        return;
+    }
+
+    auto const root = XamlRoot();
+    if (!root)
+    {
+        return;
+    }
+
+    // Only restore when THIS header container (or a descendant) currently holds focus: that is the
+    // gesture the reshape is about to strand. A UIA Expand()/Collapse() or a programmatic toggle on
+    // an unfocused group must not yank focus across the table.
+    auto focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
+    bool focusInContainer = false;
+    for (winrt::DependencyObject node = focused; node; node = winrt::VisualTreeHelper::GetParent(node))
+    {
+        if (node == container)
+        {
+            focusInContainer = true;
+            break;
+        }
+    }
+    if (!focusInContainer)
+    {
+        return;
+    }
+
+    if (auto const control = container.try_as<winrt::Control>())
+    {
+        // Pointer focus draws no focus visual, so there is nothing to restore for a band click.
+        // Keyboard (and programmatic, e.g. a test driving Focus) carry a visual worth preserving.
+        const auto state = control.FocusState();
+        if (state == winrt::FocusState::Keyboard || state == winrt::FocusState::Programmatic)
+        {
+            m_pendingGroupFocusIdentity = identity;
+            m_pendingGroupFocusState = state;
+        }
+    }
 }
 
 // Directional request from a UIA provider or the band gesture. Identity is resolved here, while
@@ -241,6 +299,96 @@ void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, st
     if (changed)
     {
         RaiseGroupStructureChanged();
+    }
+
+    // Restore keyboard focus to the toggled header even when nothing structurally changed: a
+    // non-expandable/no-op toggle still ran the container through the reshape path, and leaving
+    // focus stranded is the very bug this guards. Matches on identity, so an unrelated queued
+    // toggle does not consume this restore.
+    RestoreGroupHeaderFocusIfPending(identity);
+}
+
+void TableView::RestoreGroupHeaderFocusIfPending(winrt::hstring const& identity)
+{
+    if (m_pendingGroupFocusIdentity.empty() || m_pendingGroupFocusIdentity != identity)
+    {
+        return;
+    }
+
+    const auto focusState = m_pendingGroupFocusState;
+    m_pendingGroupFocusIdentity.clear();
+    m_pendingGroupFocusState = winrt::FocusState::Unfocused;
+
+    // Defer to after the reshape's relayout. The reprojection triggered by the toggle recycles the
+    // header container during the next layout pass; focusing now would land on a container layout
+    // is about to recycle, dropping focus a second time. A one-shot LayoutUpdated fires once the
+    // tree has settled, mirroring FocusRow's deferred-focus pattern.
+    if (m_pendingGroupFocusLayoutToken.value)
+    {
+        LayoutUpdated(m_pendingGroupFocusLayoutToken);
+        m_pendingGroupFocusLayoutToken = {};
+    }
+
+    auto weakThis = get_weak();
+    m_pendingGroupFocusLayoutToken = LayoutUpdated(
+        [weakThis, identity, focusState](winrt::IInspectable const&, winrt::IInspectable const&)
+        {
+            auto strongThis = weakThis.get();
+            if (!strongThis)
+            {
+                return;
+            }
+
+            if (strongThis->m_pendingGroupFocusLayoutToken.value)
+            {
+                strongThis->LayoutUpdated(strongThis->m_pendingGroupFocusLayoutToken);
+                strongThis->m_pendingGroupFocusLayoutToken = {};
+            }
+
+            strongThis->FocusGroupHeaderByIdentity(identity, focusState);
+        });
+}
+
+void TableView::FocusGroupHeaderByIdentity(winrt::hstring const& identity, winrt::FocusState focusState)
+{
+    if (identity.empty() || !m_tableViewSourceRowMetadata)
+    {
+        return;
+    }
+
+    int32_t index = -1;
+    if (!m_tableViewSourceRowMetadata->TryGetIndexForIdentity(identity, index) || index < 0)
+    {
+        return;
+    }
+
+    auto repeater = m_rowsRepeater.get();
+    if (!repeater)
+    {
+        return;
+    }
+
+    auto element = repeater.GetOrCreateElement(index);
+    if (!element)
+    {
+        return;
+    }
+
+    // Only a group header is a valid target: after a re-sort or source swap the identity's index
+    // could now name a data row, and focusing that with a header's intent would be wrong.
+    if (!element.try_as<winrt::TableViewGroupHeader>())
+    {
+        return;
+    }
+
+    if (auto const frameworkElement = element.try_as<winrt::FrameworkElement>())
+    {
+        frameworkElement.StartBringIntoView();
+    }
+
+    if (auto const control = element.try_as<winrt::Control>())
+    {
+        control.Focus(focusState);
     }
 }
 
