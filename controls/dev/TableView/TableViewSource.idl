@@ -1,0 +1,52 @@
+namespace MU_XC_NAMESPACE
+{
+
+[MUX_PREVIEW]
+[webhosthidden]
+delegate Boolean TableViewPredicate(Object item);
+
+[MUX_PREVIEW]
+[webhosthidden]
+delegate Object TableViewKeySelector(Object item);
+
+[MUX_PREVIEW]
+[webhosthidden]
+// Sealed deliberately: TableView drives the concrete implementation, so an override of a shaping
+// verb would be bypassed. Unsealing later is compatible; sealing later is not.
+runtimeclass TableViewSource
+{
+    // Whole class:
+    //  * Null items, predicate, or keySelector throws E_INVALIDARG. (Note this differs from
+    //    TableView's command surface, which no-ops on bad input.)
+    //  * UI-thread affinity, like any XAML items source. The underlying collection must also
+    //    raise its change notifications on that thread; raising them from a background thread
+    //    is not supported. The verbs hold no lock.
+    //  * Rows are identified by their item's OBJECT identity; there is no app-supplied row key.
+    //    So selection and focus re-anchor across a reshape, but NOT across an item being
+    //    re-created, and the same object in two rows fails fast at materialization.
+
+    // The shaped projection consumed by TableView. Read-only: enumeration and VectorChanged are
+    // supported, mutating members throw. Shape it through From/Filter/Sort/Clear*.
+    Windows.Foundation.Collections.IObservableVector<Object> View{ get; };
+
+    // Accepts the same collection interfaces as ItemsSourceView: IVector<Object> (so also
+    // IObservableVector<Object>), IBindableVector, IIterable<Object>, or IBindableIterable.
+    // Anything else throws E_INVALIDARG. View is populated by the time From returns.
+    static TableViewSource From(Object items);
+
+    // Use ClearFilter() to remove an existing filter rather than passing a pass-everything one.
+    TableViewSource Filter(TableViewPredicate predicate);
+
+    // SortDirection.None removes that key's sort axis rather than seeding a stage, so sorting
+    // every axis to None leaves the source unsorted. When several axes are active the FIRST one
+    // declared is the primary sort and each later axis breaks ties within the previous, matching
+    // WPF DataGrid's SortDescriptions order; re-sorting an existing axis keeps its position.
+    TableViewSource Sort(TableViewKeySelector keySelector, SortDirection direction);
+
+    // Never throw, and idempotent: with no stage present these do nothing at all, not even a
+    // rebuild.
+    TableViewSource ClearFilter();
+    TableViewSource ClearSort();
+}
+
+}

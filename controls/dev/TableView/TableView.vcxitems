@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{A6A0F121-3A2D-4B61-9D5E-8E6B1F4D5A22}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);TABLEVIEW_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TableView.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TableViewColumn.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TableViewTextColumn.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TableViewTemplateColumn.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TableViewRow.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TableViewCellsPanel.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TableViewGroupHeader.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableView.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewColumn.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTextColumn.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTemplateColumn.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewRow.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewCellsPanel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewRowAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewColumnHeaderAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewCellAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupHeader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewRowInfo.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewProjectionView.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupHeaderAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupHeaderToggleRequestedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupingHelpers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupInfo.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewBeginningEditEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewCellEditEndingEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewToolTipHelpers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSortingEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSortedEventArgs.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableView.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewColumn.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewTextColumn.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewTemplateColumn.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewRow.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewCellsPanel.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewGroupHeader.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableView.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Columns.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Keyboard.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Layout.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewColumn.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewTextColumn.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewTemplateColumn.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewRow.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewCellsPanel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewRowAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewColumnHeaderAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewCellAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewGroupHeader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewGroupHeaderAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewGroupInfo.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Editing.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableView_EditingInput.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Sort.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Selection.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Localized strings consumed via ResourceAccessor::GetLocalizedStringResource(SR_TableView*).
+         The 'en-us' literal here is rewritten to '**' by ExpandEnUSPRIResourceToWildcards in
+         Microsoft.UI.Xaml.Common.targets, which is how the other locales get picked up. -->
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)TableView.xaml">
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TableView_themeresources.xaml">
+      <Type>ThemeResources</Type>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)TableViewSource.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)TableView.idl" />
+  </ItemGroup>
+</Project>
