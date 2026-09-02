@@ -205,7 +205,7 @@
     <LiftedIXPInternalPackagePath>$(NugetPackageDirectory)\$(LiftedIXPInternalPackageName)\$(IxpInternalPackageVersion)</LiftedIXPInternalPackagePath>
     <LiftedIXPInternalPGIRuntimePath>$(LiftedIXPInternalPackagePath)\runtimes\win10-$(NugetArch)\native\pgi</LiftedIXPInternalPGIRuntimePath>
 
-    <LiftedIXPIncludePaths>$(LiftedIXPIncludePath);$(WinUIDetailsIncludePath)\LiftedIXP;$(FrameworkUdkPackagePath)\include\;$(LiftedIXPGeneratedIncludePath)</LiftedIXPIncludePaths>
+    <LiftedIXPIncludePaths>$(LiftedIXPIncludePath);$(WinUIDetailsIncludePath)\LiftedIXP;$(WinUIDetailsIncludePath)\Misc;$(FrameworkUdkPackagePath)\include\;$(LiftedIXPGeneratedIncludePath)</LiftedIXPIncludePaths>
   </PropertyGroup>
 
   <!-- Lifted MRT paths -->
