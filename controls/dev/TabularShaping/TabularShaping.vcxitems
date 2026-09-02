@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    TabularShaping — the shared shaping substrate.
+
+    ShapingHelpers is consumed by three components (TableViewSource/TableViewSourceIdentity/
+    TableView_Sort, and GroupedSourceAdapter), so it is build-owned here rather than by any one
+    of them.
+
+    SortDirection.idl is here for the same reason: the enum is named by TableViewSource,
+    TableViewColumn and TableViewSortingEventArgs, so no single consumer should own it.
+
+    Consumers include it as "ShapingHelpers.h"; this file's AdditionalIncludeDirectories makes
+    that resolve for every project that imports it.
+  -->
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{7B3E1D64-9C2A-4F58-A1E7-2D9C4B8F0A13}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ShapingHelpers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ShapingDescriptions.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ShapingPipeline.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ShapingHelpers.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ShapingDescriptions.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ShapingPipeline.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)SortDirection.idl" />
+  </ItemGroup>
+</Project>
