@@ -34,7 +34,7 @@
       <Enumclass>false</Enumclass>
     </Midl>
     <Link>
-      <AdditionalDependencies>user32.lib;mincore.lib;dxguid.lib;dcomp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>user32.lib;mincore.lib;dxguid.lib;dcomp.lib;$(WinUIDetailsRuntimesPath)\Microsoft.UI.Xaml.Internal2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <!-- Microsoft.winmd will contain the definition of both public, preview and private types. -->
       <WindowsMetadataFile>$(OutDir)$(ProjectWinMDName)</WindowsMetadataFile>
       <GenerateMapFile>true</GenerateMapFile>
@@ -58,6 +58,7 @@
         $(WindowsSDK_IncludePath)\winrt;
         $(MSBuildProjectDirectory)\..\inc;
         $(MSBuildProjectDirectory)\..\Generated;
+        $(WinUIDetailsIncludePath)\Misc;
         $(OutDir);
       </AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>
@@ -84,7 +85,10 @@
       <!-- Disable RTTI to keep binary size down (adds about 50% to release dll size) -->
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <ControlFlowGuard>Guard</ControlFlowGuard>
-      <PreprocessorDefinitions>DISABLE_WINRT_DEPRECATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- _ALLOW_COROUTINE_ABI_MISMATCH is necessary since we link Microsoft.UI.Xaml.Internal2.lib which
+          builds with stdcpp17 the same as MUX. We build with stdcpp20. There's no sharing of coroutines so this
+          is safe for now, but may hide issues in the future. -->
+      <PreprocessorDefinitions>DISABLE_WINRT_DEPRECATION;_ALLOW_COROUTINE_ABI_MISMATCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <!-- Disable multi-proc building on low powered machines, such as the lab machines -->
       <MultiProcessorCompilation Condition="'$(TF_BUILD)'=='True' AND $(NUMBER_OF_PROCESSORS) &lt;= 4">false</MultiProcessorCompilation>

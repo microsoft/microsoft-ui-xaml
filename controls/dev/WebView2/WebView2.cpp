@@ -5,7 +5,6 @@
 #include "common.h"
 #include <wil/cppwinrt_helpers.h>  // For wil::resume_foreground (marshals coroutine continuation to the UI DispatcherQueue)
 #include <corewindow.h>
-#include "dcomp.h"
 #include "InvokableCallbackHelper.h"
 #include "winrt\Microsoft.UI.Input.DragDrop.h"
 #include "shobjidl_core.h"
@@ -1881,14 +1880,14 @@ void WebView2::CreateAndSetVisual()
     if (!m_systemVisualBridge)
     {
         winrt::Compositor compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
-        m_systemVisualBridge = winrt::ContentExternalOutputLink::Create(compositor);
+        m_systemVisualBridge = ContentExternalLinkHelper::OutputLink::Create(compositor);
     }
     UpdateDefaultVisualBackgroundColor();
 
     SetCoreWebViewAndVisualSize(static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight()));
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, m_systemVisualBridge.PlacementVisual());
 
-    winrt::com_ptr<IDCompositionTarget> sharedTarget = m_systemVisualBridge.as<IDCompositionTarget>();
+    winrt::com_ptr<IDCompositionTarget> sharedTarget = m_systemVisualBridge.DCompTarget();
     auto coreWebView2CompositionControllerInterop = m_coreWebViewCompositionController.as<ICoreWebView2CompositionControllerInterop>();
     winrt::check_hresult(coreWebView2CompositionControllerInterop->put_RootVisualTarget(sharedTarget.get()));
 }
