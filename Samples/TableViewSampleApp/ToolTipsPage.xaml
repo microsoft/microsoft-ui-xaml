@@ -37,6 +37,9 @@
             <Button x:Name="CheckOwnership" Content="Check app-owned cells" Click="OnCheckOwnership"/>
             <Button x:Name="CheckUiaHelp" Content="Check UIA help text" Click="OnCheckUiaHelp"/>
             <Button x:Name="CheckHeaderUia" Content="Check header UIA help" Click="OnCheckHeaderUia"/>
+            <Button x:Name="CheckHeaderTips" Content="Check header tooltips" Click="OnCheckHeaderTips"/>
+            <Button x:Name="MutateHeaderTips" Content="Mutate header tooltips" Click="OnMutateHeaderTips"/>
+            <Button x:Name="SortHeaders" Content="Sort (rebuild headers)" Click="OnSortHeaders"/>
         </StackPanel>
 
         <Border Grid.Row="2" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">

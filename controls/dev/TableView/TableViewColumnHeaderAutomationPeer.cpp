@@ -34,6 +34,20 @@ namespace
             static_cast<int32_t>((identity >> 32) & 0xffffffffull)
         };
     }
+
+    // Resource lookup throws when the component's resources cannot be resolved. Help text is
+    // supplementary, so degrade to nothing rather than let the failure escape into UIA.
+    winrt::hstring TryGetLocalizedString(const std::wstring_view& resourceName)
+    {
+        try
+        {
+            return ResourceAccessor::GetLocalizedStringResource(resourceName);
+        }
+        catch (...)
+        {
+            return {};
+        }
+    }
 }
 
 TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(
@@ -139,14 +153,14 @@ hstring TableViewColumnHeaderAutomationPeer::GetHelpTextCore()
         switch (column.SortDirection())
         {
         case winrt::SortDirection::Ascending:
-            sortText = ResourceAccessor::GetLocalizedStringResource(SR_TableViewSortAscendingHelpText);
+            sortText = TryGetLocalizedString(SR_TableViewSortAscendingHelpText);
             break;
         case winrt::SortDirection::Descending:
-            sortText = ResourceAccessor::GetLocalizedStringResource(SR_TableViewSortDescendingHelpText);
+            sortText = TryGetLocalizedString(SR_TableViewSortDescendingHelpText);
             break;
         case winrt::SortDirection::None:
         default:
-            sortText = ResourceAccessor::GetLocalizedStringResource(SR_TableViewSortNoneHelpText);
+            sortText = TryGetLocalizedString(SR_TableViewSortNoneHelpText);
             break;
         }
     }
@@ -180,7 +194,7 @@ hstring TableViewColumnHeaderAutomationPeer::GetHelpTextCore()
     }
 
     // Both carry information a sighted user gets at a glance, so neither is dropped.
-    auto const format = ResourceAccessor::GetLocalizedStringResource(SR_TableViewColumnHeaderHelpTextFormat);
+    auto const format = TryGetLocalizedString(SR_TableViewColumnHeaderHelpTextFormat);
     if (format.empty())
     {
         return toolTipText;
