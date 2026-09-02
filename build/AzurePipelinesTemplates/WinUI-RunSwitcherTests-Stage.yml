@@ -97,19 +97,29 @@ stages:
     # signal that the test pool needs the switcher feature enabled.
 
     - task: powershell@2
-      displayName: Run Switcher Tests (WPF)
+      displayName: Run Switcher Tests (UAP)
       timeoutInMinutes: 120
       inputs:
         targetType: inline
         workingDirectory: $(testPayloadDirInner)
         script: |
+          # SwitcherTests are declared RunAs=UAP (packaged host) with no @Hosting:Mode property. Run them
+          # under UAP hosting to match - the regular DevTestSuite loads and runs this same test DLL under
+          # UAP, whereas forcing WPF failed to load Microsoft.UI.Xaml.Tests.External.Foundation.dll
+          # (0x8007007E). -forceHostingMode is required: without it runtests.ps1 adds
+          # "and (@Hosting:Mode='UAP')" to the selection query, which excludes the SwitcherTests (they
+          # have no @Hosting:Mode); -forceHostingMode keeps the name-based selection and still passes
+          # /p:HostingMode=UAP so te loads the DLL in the UAP app container. The LAF token in
+          # CompositionSwitcherLafToken must therefore be the UAP packaged-host token
+          # (family XamlTAEFTests_8wekyb3d8bbwe), not the WPF/centennial one.
+          #
           # Capture te's console output so we can enforce a real result. te.exe returns exit code 0
           # when tests are Blocked (e.g. the test DLL or a dependency fails to load), which would
           # otherwise let this stage pass green without actually running the switcher tests. Parse the
           # TAEF summary and fail on Blocked>0 or Passed==0 so a "didn't actually run" is never a pass.
           $consoleLog = Join-Path "$(ob_outputDirectory)" 'switcher-te-console.log'
           New-Item -ItemType Directory -Path "$(ob_outputDirectory)" -Force | Out-Null
-          .\runtests.cmd "${{ parameters.testSelector }}" -HostingMode:WPF /p:SwitcherMode=true /p:SwitcherLafToken=$(CompositionSwitcherLafToken) /reportLoadingIssue 2>&1 | Tee-Object -FilePath $consoleLog
+          .\runtests.cmd "${{ parameters.testSelector }}" -HostingMode:UAP -forceHostingMode /p:SwitcherMode=true /p:SwitcherLafToken=$(CompositionSwitcherLafToken) /reportLoadingIssue 2>&1 | Tee-Object -FilePath $consoleLog
           $teExit = $LASTEXITCODE
 
           $summaryLine = Select-String -Path $consoleLog -Pattern 'Summary:\s*Total=(\d+).*?Passed=(\d+).*?Failed=(\d+).*?Blocked=(\d+)' | Select-Object -Last 1
