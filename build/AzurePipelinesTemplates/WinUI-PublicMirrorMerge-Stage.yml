@@ -6,6 +6,9 @@ parameters:
 - name: dependsOnStage
   type: string
   default: ''
+- name: checkoutRepository
+  type: string
+  default: self
 
 stages:
 - stage: IntegratePublicMirror
@@ -31,7 +34,7 @@ stages:
     - name: repositoryRelativePath
       value: 's\repository'
     steps:
-    - checkout: targetRepository
+    - checkout: ${{ parameters.checkoutRepository }}
       submodules: false
       persistCredentials: true
       fetchDepth: 1

@@ -66,3 +66,4 @@ extends:
         sourceBranchName: github/internal/main
         targetBranchName: user/gpaskaleva/mirror-integration-target
         dependsOnStage: Source
+        checkoutRepository: targetRepository
