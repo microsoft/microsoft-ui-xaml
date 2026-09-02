@@ -179,36 +179,34 @@ _Check_return_ HRESULT CompiledBindingExpression::GetValue(
     IFCEXPECT_RETURN(m_pTarget);
     IFCEXPECT_RETURN(m_pTargetProperty);
 
-    // A getter can synchronously change DataContext. Re-evaluate against the replacement source
-    // before returning so the outer property-system update cannot overwrite the refreshed value.
     m_ignoreSourceChanges = true;
     auto ignoreSourceChangesGuard = wil::scope_exit([&]
     {
         m_ignoreSourceChanges = false;
     });
 
+    m_dataContextChangedDuringEvaluation = false;
+
+    ctl::ComPtr<IInspectable> spSource;
+    IFC_RETURN(GetSource(&spSource));
+
     ctl::ComPtr<IInspectable> spValue;
-    do
+    if (spSource == nullptr)
     {
-        m_pendingDataContextChange = false;
-
-        ctl::ComPtr<IInspectable> spSource;
-        IFC_RETURN(GetSource(&spSource));
-        spValue.Reset();
-
-        if (spSource == nullptr)
-        {
-            IFC_RETURN(m_pTarget->GetDefaultValueInternal(
-                m_pTargetProperty,
-                spValue.ReleaseAndGetAddressOf()));
-        }
-        else
-        {
-            // SYNC_CALL_TO_APP DIRECT - This next line may directly call out to app code.
-            IFC_RETURN(m_spGetter->Invoke(spSource.Get(), spValue.ReleaseAndGetAddressOf()));
-        }
+        IFC_RETURN(m_pTarget->GetDefaultValueInternal(
+            m_pTargetProperty,
+            spValue.ReleaseAndGetAddressOf()));
     }
-    while (m_pendingDataContextChange);
+    else
+    {
+        // SYNC_CALL_TO_APP DIRECT - This next line may directly call out to app code.
+        IFC_RETURN(m_spGetter->Invoke(spSource.Get(), spValue.ReleaseAndGetAddressOf()));
+    }
+
+    if (m_dataContextChangedDuringEvaluation)
+    {
+        return E_INVALID_OPERATION;
+    }
 
     *ppValue = spValue.Detach();
     return S_OK;
@@ -332,7 +330,7 @@ _Check_return_ HRESULT CompiledBindingExpression::OnDataContextChanged(
 
     if (m_ignoreSourceChanges)
     {
-        m_pendingDataContextChange = true;
+        m_dataContextChangedDuringEvaluation = true;
         return S_OK;
     }
 

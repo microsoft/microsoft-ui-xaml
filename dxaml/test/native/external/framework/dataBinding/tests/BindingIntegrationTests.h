@@ -113,6 +113,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                     L"Set a compiled binding before and after setting DataContext and verify the value propagates")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CanChangeDataContextForCompiledBinding)
+                TEST_METHOD_PROPERTY(L"Description",
+                    L"Change a compiled binding's DataContext object and verify it follows the new source")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CannotChangeDataContextDuringCompiledBindingEvaluation)
+                TEST_METHOD_PROPERTY(L"Description",
+                    L"Verify changing DataContext from a compiled binding getter fails with an invalid operation")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(CanSetDataContextViaSetValueForCompiledBinding)
                 TEST_METHOD_PROPERTY(L"Description",
                     L"Set a compiled binding before and after setting DataContext via SetValue and verify the value propagates")
