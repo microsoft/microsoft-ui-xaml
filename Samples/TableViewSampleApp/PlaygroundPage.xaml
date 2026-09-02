@@ -16,7 +16,7 @@
             <StackPanel Spacing="6">
                 <TextBlock Text="TableView Playground" FontSize="18" FontWeight="SemiBold"/>
                 <TextBlock Opacity="0.7" FontSize="12" TextWrapping="Wrap"
-                           Text="Real Microsoft.UI.Xaml.Controls.Tabular.dll. Columns: Name (Text/Auto), Role &amp; City (Text/*), Score (Template/120px). Tweak any control below to exercise the API live."/>
+                           Text="Columns: Name (Text/Auto), Role &amp; City (Text/*), Score (Template/120px). Tweak any control below to exercise the API live."/>
 
                 <TextBlock Text="Name column width" FontWeight="SemiBold" Margin="0,8,0,0"/>
                 <ComboBox x:Name="WidthCombo" HorizontalAlignment="Stretch" SelectionChanged="Width_Changed">
