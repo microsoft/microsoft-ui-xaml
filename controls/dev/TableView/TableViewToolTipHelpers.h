@@ -282,9 +282,8 @@ namespace TableViewDetails
     }
 
     // Headers are rebuilt wholesale, never recycled, so there is no binding or refresh path.
-    // Contained: both call sites run from the property system or a header rebuild, where an
-    // escaping exception is a fail-fast, and app-supplied content can throw (a UIElement already
-    // parented by another cell's tooltip).
+    // Contained: both call sites are fail-fast contexts, and app content can throw (a UIElement
+    // already parented by another header's tooltip).
     inline void ApplyHeaderToolTip(
         const winrt::FrameworkElement& element,
         const winrt::IInspectable& content)
@@ -298,8 +297,7 @@ namespace TableViewDetails
                 false /* publishHelpText */,
                 L"HeaderToolTip");
 
-            // Rich content is a legitimate choice, but it is mouse-only: the header peer reports
-            // string content and nothing else, so an author gets no other signal.
+            // Mouse-only: the peer reports string content only, and nothing else signals this.
             if (attached && !TryGetString(content))
             {
                 TVDiag::DbgLogF(L"[TableView] HeaderToolTip content is not a string; it shows on "

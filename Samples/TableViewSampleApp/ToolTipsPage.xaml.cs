@@ -116,8 +116,7 @@ public sealed partial class ToolTipsPage : Page
         card.Children.Add(new TextBlock { Text = "Free-form summary", Opacity = 0.75 });
         _bioColumn.HeaderToolTip = card;
 
-        // Isolates the two help-text paths: an unsortable column reports only its tooltip, so it
-        // never touches the sort strings or the composition format.
+        // Isolates the two help-text paths: an unsortable column reports only its tooltip.
         _unsortedTipColumn.CanSort = false;
         _unsortedTipColumn.HeaderToolTip = "Unsortable, tooltip only";
         _unsortedBareColumn.CanSort = false;
@@ -357,9 +356,8 @@ public sealed partial class ToolTipsPage : Page
         Status.Text = sb2.ToString();
     }
 
-    // Header peers are virtual, so their help text comes from TableViewColumnHeaderAutomationPeer -
-    // HeaderToolTip text composed with the column's sort state. They are reached through the table
-    // provider rather than the peer's children.
+    // Header peers are virtual, so their help text comes from the peer, and they are reached
+    // through the table provider rather than the peer's children.
     private void OnCheckHeaderUia(object sender, RoutedEventArgs e)
     {
         var tablePeer = FrameworkElementAutomationPeer.CreatePeerForElement(Table);
@@ -393,8 +391,7 @@ public sealed partial class ToolTipsPage : Page
         Status.Text = sb.ToString();
     }
 
-    // Walks the realized header cells and reports whether each carries a ToolTip, so the visual
-    // side of HeaderToolTip is verifiable without hovering.
+    // Reports whether each header carries a ToolTip, verifiable without hovering.
     private void OnCheckHeaderTips(object sender, RoutedEventArgs e)
     {
         var sb = new StringBuilder();
@@ -426,8 +423,8 @@ public sealed partial class ToolTipsPage : Page
         Status.Text = tagged > 0 ? sb.ToString() : "no header cells found";
     }
 
-    // Hit-tests each header cell near its trailing edge - padding, away from the header glyphs.
-    // A Panel with no Background takes no pointer input there, so the tooltip would never open.
+    // Hit-tests each header near its trailing edge, away from the glyphs: a cell that misses there
+    // would never open its tooltip.
     private void OnCheckHeaderHitTest(object sender, RoutedEventArgs e)
     {
         var sb = new StringBuilder();

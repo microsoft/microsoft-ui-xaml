@@ -263,8 +263,7 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
     }
     else if (property == s_HeaderToolTipProperty)
     {
-        // Not the header branch above: that recomputes Auto width and re-renders the band, which a
-        // tooltip change does not need.
+        // Not the header branch above: that recomputes Auto width, which a tooltip cannot change.
         if (auto owner = GetOwningTableView())
         {
             winrt::get_self<TableView>(owner)->OnColumnHeaderToolTipChanged(*this);
