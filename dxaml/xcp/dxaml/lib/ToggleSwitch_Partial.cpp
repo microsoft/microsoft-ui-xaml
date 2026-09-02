@@ -28,6 +28,8 @@ ToggleSwitch::ToggleSwitch() :
 
     m_maxCurtainTranslation(0),
     m_maxKnobTranslation(0),
+    m_dragVisualClampMax(-1),
+    m_dragVisualClampMin(-1),
 
     m_minCurtainTranslation(0),
     m_minKnobTranslation(0),
@@ -456,6 +458,20 @@ ToggleSwitch::SetTranslations()
         translation = std::min(m_knobTranslation, m_maxKnobTranslation);
         translation = std::max(translation, m_minKnobTranslation);
 
+        // Keep the expanded knob visual inside the track without changing the
+        // translation range used for toggle thresholds and animations.
+        if (m_isDragging)
+        {
+            if (m_dragVisualClampMax >= 0)
+            {
+                translation = std::min(translation, m_dragVisualClampMax);
+            }
+            if (m_dragVisualClampMin >= 0)
+            {
+                translation = std::max(translation, m_dragVisualClampMin);
+            }
+        }
+
         IFC(m_spKnobTransform->put_X(translation));
 
         if (pToggleSwitchTemplateSettingsNoRef)
@@ -813,6 +829,7 @@ ToggleSwitch::DragStartedHandler(
     IFC(Focus(xaml::FocusState_Pointer, &isFocused));
     IFC(GetTranslations());
     IFC(UpdateVisualState(TRUE));
+    IFC(AdjustTranslationBoundsForDrag());
     IFC(SetTranslations());
 
 Cleanup:
@@ -852,12 +869,14 @@ ToggleSwitch::DragCompletedHandler(
 
     IFC(pArgs->get_Canceled(&isCanceled));
 
+    m_isDragging = FALSE;
+    m_dragVisualClampMax = -1;
+    m_dragVisualClampMin = -1;
+
     if (isCanceled)
     {
         goto Cleanup;
     }
-
-    m_isDragging = FALSE;
 
     IFC(MoveCompleted(m_wasDragged));
 
@@ -997,6 +1016,71 @@ Cleanup:
     RRETURN(hr);
 }
 
+_Check_return_ HRESULT
+ToggleSwitch::AdjustTranslationBoundsForDrag()
+{
+    m_dragVisualClampMax = -1;
+    m_dragVisualClampMin = -1;
+
+    if (!m_tpKnob || !m_tpKnobBounds)
+    {
+        return S_OK;
+    }
+
+    BOOLEAN isOn = FALSE;
+    IFC_RETURN(get_IsOn(&isOn));
+
+    ctl::ComPtr<xaml::IDependencyObject> spKnobVisualDO;
+    if (!isOn)
+    {
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"SwitchKnobOff")).Get(), &spKnobVisualDO));
+    }
+    else
+    {
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"SwitchKnobOn")).Get(), &spKnobVisualDO));
+    }
+
+    auto spKnobVisualElement = spKnobVisualDO.AsOrNull<xaml::IFrameworkElement>();
+    auto spKnobVisualUIElement = spKnobVisualDO.AsOrNull<xaml::IUIElement>();
+
+    if (spKnobVisualElement && spKnobVisualUIElement)
+    {
+        DOUBLE knobWidth = 0;
+        DOUBLE knobVisualWidth = 0;
+        ctl::ComPtr<xaml::IUIElement> spKnobUIElement;
+        ctl::ComPtr<xaml_media::IGeneralTransform> spTransform;
+        wf::Point knobVisualOrigin = {};
+
+        IFC_RETURN(m_tpKnob->get_ActualWidth(&knobWidth));
+        IFC_RETURN(spKnobVisualElement->get_ActualWidth(&knobVisualWidth));
+        IFC_RETURN(m_tpKnob.As(&spKnobUIElement));
+        IFC_RETURN(spKnobVisualUIElement->TransformToVisual(spKnobUIElement.Get(), &spTransform));
+        IFC_RETURN(spTransform->TransformPoint({}, &knobVisualOrigin));
+
+        if (!isOn)
+        {
+            const DOUBLE restingMargin = knobVisualOrigin.X;
+            const DOUBLE clampMax = m_maxKnobTranslation - restingMargin;
+            if (restingMargin > 0 && clampMax >= m_minKnobTranslation)
+            {
+                m_dragVisualClampMax = clampMax;
+            }
+        }
+        else
+        {
+            const DOUBLE restingMargin =
+                knobWidth - knobVisualOrigin.X - knobVisualWidth;
+            const DOUBLE clampMin = m_minKnobTranslation + restingMargin;
+            if (restingMargin > 0 && clampMin <= m_maxKnobTranslation)
+            {
+                m_dragVisualClampMin = clampMin;
+            }
+        }
+    }
+
+    return S_OK;
+}
+
 // Whether the given key may cause the ToggleSwitch to toggle.
 BOOLEAN
 ToggleSwitch::HandlesKey(
@@ -1018,6 +1102,8 @@ _Check_return_ HRESULT ToggleSwitch::OnIsEnabledChanged(_In_ IsEnabledChangedEve
     if (!bIsEnabled)
     {
         m_isDragging = FALSE;
+        m_dragVisualClampMax = -1;
+        m_dragVisualClampMin = -1;
         m_isPointerOver = FALSE;
     }
     IFC(UpdateVisualState());
@@ -1037,6 +1123,8 @@ ToggleSwitch::OnVisibilityChanged()
     if (xaml::Visibility_Visible != visibility)
     {
         m_isDragging = FALSE;
+        m_dragVisualClampMax = -1;
+        m_dragVisualClampMin = -1;
         m_isPointerOver = FALSE;
     }
 

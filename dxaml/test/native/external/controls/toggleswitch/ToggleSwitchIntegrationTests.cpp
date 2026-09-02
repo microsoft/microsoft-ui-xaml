@@ -652,4 +652,105 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         RunOnUIThread([&]() { VERIFY_IS_FALSE(toggleSwitch->IsOn); });
     }
 
+    void ToggleSwitchIntegrationTests::KnobMaintainsMarginsFromTrackDuringDrag()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::ToggleSwitch^ toggleSwitch = nullptr;
+        xaml::FrameworkElement^ knob = nullptr;
+        xaml::FrameworkElement^ knobBounds = nullptr;
+        xaml::FrameworkElement^ knobOff = nullptr;
+        xaml::FrameworkElement^ knobOn = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            toggleSwitch = ref new xaml_controls::ToggleSwitch();
+            toggleSwitch->IsOn = false;
+            toggleSwitch->HorizontalAlignment = xaml::HorizontalAlignment::Center;
+            TestServices::WindowHelper->WindowContent = toggleSwitch;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            knob = TreeHelper::GetVisualChildByName(toggleSwitch, L"SwitchKnob");
+            knobBounds = TreeHelper::GetVisualChildByName(toggleSwitch, L"SwitchKnobBounds");
+            knobOff = TreeHelper::GetVisualChildByName(toggleSwitch, L"SwitchKnobOff");
+            knobOn = TreeHelper::GetVisualChildByName(toggleSwitch, L"SwitchKnobOn");
+            VERIFY_IS_NOT_NULL(knob);
+            VERIFY_IS_NOT_NULL(knobBounds);
+            VERIFY_IS_NOT_NULL(knobOff);
+            VERIFY_IS_NOT_NULL(knobOn);
+        });
+
+        auto dragAndVerifyMargin = [&](bool isOn, int dragDeltaX)
+        {
+            RunOnUIThread([&]()
+            {
+                toggleSwitch->IsOn = isOn;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            bool isMouseButtonDown = false;
+            TestCleanupWrapper releaseMouse([&]()
+            {
+                if (isMouseButtonDown)
+                {
+                    TestServices::InputHelper->MouseButtonUp(knob, 0, 0, MouseButton::Left);
+                    TestServices::WindowHelper->WaitForIdle();
+                }
+            });
+
+            TestServices::InputHelper->MouseButtonDown(knob, 0, 0, MouseButton::Left);
+            isMouseButtonDown = true;
+            TestServices::WindowHelper->WaitForIdle();
+
+            TestServices::InputHelper->MoveMouse(knob, dragDeltaX, 0);
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                VERIFY_IS_TRUE(ControlHelper::IsInVisualState(toggleSwitch, L"CommonStates", L"Pressed"));
+                VERIFY_IS_TRUE(ControlHelper::IsInVisualState(toggleSwitch, L"ToggleStates", L"Dragging"));
+
+                auto knobVisual = isOn ? knobOn : knobOff;
+                const auto knobVisualOrigin =
+                    knobVisual->TransformToVisual(knobBounds)->TransformPoint({ 0, 0 });
+                const double knobVisualWidth = knobVisual->ActualWidth;
+                const double trackWidth = knobBounds->ActualWidth;
+
+                LOG_OUTPUT(
+                    L"IsOn: %d, knob visual origin: %f, knob visual width: %f, track width: %f",
+                    isOn,
+                    knobVisualOrigin.X,
+                    knobVisualWidth,
+                    trackWidth);
+
+                if (isOn)
+                {
+                    VERIFY_IS_GREATER_THAN(
+                        knobVisualOrigin.X,
+                        0.0,
+                        L"Knob left edge should not touch the track boundary while dragging from On.");
+                }
+                else
+                {
+                    VERIFY_IS_LESS_THAN(
+                        knobVisualOrigin.X + knobVisualWidth,
+                        trackWidth,
+                        L"Knob right edge should not touch the track boundary while dragging from Off.");
+                }
+            });
+
+            TestServices::InputHelper->MouseButtonUp(knob, 0, 0, MouseButton::Left);
+            isMouseButtonDown = false;
+            TestServices::WindowHelper->WaitForIdle();
+        };
+
+        LOG_OUTPUT(L"Dragging from Off toward the right track boundary.");
+        dragAndVerifyMargin(false /*isOn*/, 100 /*dragDeltaX*/);
+
+        LOG_OUTPUT(L"Dragging from On toward the left track boundary.");
+        dragAndVerifyMargin(true /*isOn*/, -100 /*dragDeltaX*/);
+    }
+
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::ToggleSwitch

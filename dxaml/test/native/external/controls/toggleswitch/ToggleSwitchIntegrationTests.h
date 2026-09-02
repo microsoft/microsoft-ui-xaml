@@ -71,7 +71,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(DoesNotToggleUsingDirectionalKeys)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that pressing Home, End, Up, Down, Left, and Right does not toggle the state of the control.")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(KnobMaintainsMarginsFromTrackDuringDrag)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that the knob maintains proper margins from track boundaries when dragged in its expanded/pressed state.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
     };
 
 } } } } } }
-
