@@ -4,8 +4,8 @@ Charts
 # Background
 
 WinUI has no first-party charting control. `Microsoft.UI.Xaml.Controls.Charts` adds one. The
-namespace ships in its own API contract, `WinUIChartingContract`, so that it can version
-independently of the rest of WinUI.
+namespace ships in its own API contract, `WinUIChartingContract`, to track when Charts APIs
+become available while remaining aligned with Windows App SDK releases.
 
 The public surface has three parts:
 
@@ -21,8 +21,8 @@ Two decisions in the shape of the API are worth stating up front, because the re
 depends on them.
 
 **Data is dimensional, and each dimension is addressed through a handle.** A series does not take
-a collection of point objects. It takes two `Samples` objects — one for the x dimension and one
-for the y dimension. A `Samples` object is not a collection: it is a `DependencyObject` *handle*
+a collection of point objects. It takes two `Samples` objects — one for the X dimension and one
+for the Y dimension. A `Samples` object is not a collection: it is a `DependencyObject` *handle*
 whose `ItemsSource` points at the collection that supplies the values. The word *samples* here
 means *the data samples plotted by a chart series*; it has nothing to do with sample apps or
 sample code. A series references a handle by object identity, so one handle can feed several
@@ -72,9 +72,6 @@ xmlns:charts="using:Microsoft.UI.Xaml.Controls.Charts"
 ```
 
 ![A line chart of monthly profit](./images/chart-line-basic.png)
-
-_Spec note: every image in this spec is a placeholder. Screenshots will be captured from the
-Charts test app and added before the spec is published._
 
 A series names a handle by reference. In markup that reference is `{x:Bind}` or `{x:Reference}` to
 the handle's `x:Name`; in code it is the `Samples` object itself. There is no string-keyed lookup.
@@ -212,8 +209,8 @@ intact, so it can be added to another chart.
 ## How to change how a series looks
 
 Every series shares a set of presentation properties on `CartesianSeries`: `Stroke`,
-`StrokeThickness`, `ShowDataLabels`, `ShowDataMarkers`, `MarkerShape`, `DataLabelBrush`, and
-`DataMarkerBrush`. The concrete series add what is specific to them: `LineSeries.StrokeDashStyle`,
+`StrokeThickness`, `StrokeDashStyle`, `ShowDataLabels`, `ShowDataMarkers`, `MarkerShape`,
+`DataLabelBrush`, and `DataMarkerBrush`. The concrete series add what is specific to them:
 `AreaSeries.Fill`, and `BarSeries.Fill` and `BarSeries.Orientation`.
 
 Leave a stroke, fill, or marker brush null to use the chart palette. A null data-label brush
@@ -245,7 +242,7 @@ different:
 
 | Property                                                                  | Null                                  | Non-`SolidColorBrush`                       |
 |---------------------------------------------------------------------------|---------------------------------------|----------------------------------------------|
-| `CartesianAxis.GridLineMajorBrush`, `GridLineMinorBrush`, `TickBrush`, `TickLabelBrush`, `AxisLineBrush` | Resolves the keyed theme resource.    | **Neutral translucent gray** — no theme fallback. |
+| `CartesianAxis.GridLineMajorBrush`, `GridLineMinorBrush`, `TickBrush`, `TickLabelBrush`, `AxisLineBrush` | Resolves the keyed theme resource.    | Retains the value, writes a diagnostic, and resolves the keyed theme resource. |
 | `CartesianSeries.Stroke`, `DataMarkerBrush`, `AreaSeries.Fill`, `BarSeries.Fill` | Takes the series' palette color for that role. | Takes the series' palette color for that role. |
 | `DataMarkerOverride.Brush`                                                 | Inherits `DataMarkerBrush`, then the marker palette color. | Inherits `DataMarkerBrush`, then the marker palette color. |
 | `CartesianSeries.DataLabelBrush`                                           | Falls back to `Chart.Foreground`.      | Falls back to `Chart.Foreground`.             |
@@ -253,10 +250,9 @@ different:
 | `Chart.Background`                                                          | Renders transparent.                   | Renders transparent.                           |
 | `Chart.Foreground`                                                          | Uses the renderer's default text color. | Uses the renderer's default text color.       |
 
-The distinction matters in practice: give an axis a `LinearGradientBrush` and that axis element
-turns gray, whereas giving a series one leaves the series in its palette color. Set
-`SolidColorBrush` values throughout, and use a keyed theme resource when you want the color to
-follow the theme.
+Set `SolidColorBrush` values throughout. An unsupported axis brush falls back to its keyed theme
+resource, whereas an unsupported series brush falls back to the corresponding palette or
+foreground color.
 
 Series and per-point override brushes stay live after assignment: changing the `Color` of a
 `SolidColorBrush` updates the rendered elements that reference it. Axis brush properties are
@@ -327,12 +323,10 @@ into scope, then override any of them:
 ```
 
 The keys are listed under [XamlChartsResources class](#xamlchartsresources-class). To change one
-axis only, set the brush property on that axis instead; an axis brush property resolves to its
-theme resource only while it is null.
+axis only, set the brush property on that axis instead.
 
-> Set axis brushes to `SolidColorBrush` values. An axis brush of any other type is used as set —
-> it does not revert to the theme resource — and the axis element draws in a neutral translucent
-> gray, because the renderer reads a color only from a `SolidColorBrush`.
+> Set axis brushes to `SolidColorBrush` values. An axis brush of any other type retains its
+> property value, writes a diagnostic, and falls back to the corresponding theme resource.
 
 # Examples
 
@@ -370,7 +364,7 @@ theme resource only while it is null.
         YValues="{x:Bind Profit, Mode=OneTime}" /&gt;
 &lt;/charts:Chart&gt;</pre>
     </td>
-    <td><img src="./images/chart-xaml-example.png" alt="Rendered chart" width="250"/></td>
+    <td><img src="./images/chart-language-example.png" alt="Rendered chart" width="250"/></td>
   </tr>
   <tr>
     <td><b>C#</b></td>
@@ -405,7 +399,7 @@ chart.Series.Add(new LineSeries
     YValues = profit
 });</pre>
     </td>
-    <td><img src="./images/chart-csharp-example.png" alt="Rendered chart" width="250"/></td>
+    <td><img src="./images/chart-language-example.png" alt="Rendered chart" width="250"/></td>
   </tr>
   <tr>
     <td><b>C++/WinRT</b></td>
@@ -447,9 +441,69 @@ series.XValues(month);
 series.YValues(profit);
 chart.Series().Append(series);</pre>
     </td>
-    <td><img src="./images/chart-cpp-example.png" alt="Rendered chart" width="250"/></td>
+    <td><img src="./images/chart-language-example.png" alt="Rendered chart" width="250"/></td>
   </tr>
 </table>
+
+## Style all three series
+
+The stroke, label, and marker properties inherited from `CartesianSeries` apply consistently to
+Line, Area, and Bar series. Area and Bar series additionally provide `Fill`; Bar provides
+`Orientation`.
+
+```xaml
+<charts:Chart ShowLegend="True" LegendTitle="Monthly results">
+    <charts:Chart.Data>
+        <charts:Samples x:Name="Month"    ItemsSource="{x:Bind Months, Mode=OneTime}" />
+        <charts:Samples x:Name="Actual"   ItemsSource="{x:Bind Actuals, Mode=OneTime}" />
+        <charts:Samples x:Name="Forecast" ItemsSource="{x:Bind Forecasts, Mode=OneTime}" />
+        <charts:Samples x:Name="Target"   ItemsSource="{x:Bind Targets, Mode=OneTime}" />
+    </charts:Chart.Data>
+
+    <charts:AreaSeries Title="Forecast"
+                       XValues="{x:Bind Month, Mode=OneTime}"
+                       YValues="{x:Bind Forecast, Mode=OneTime}"
+                       Fill="LightSteelBlue"
+                       Stroke="SteelBlue"
+                       StrokeThickness="2"
+                       StrokeDashStyle="Dot"
+                       ShowDataMarkers="True"
+                       MarkerShape="Square"
+                       DataMarkerBrush="SteelBlue" />
+
+    <charts:BarSeries Title="Actual"
+                      Orientation="Vertical"
+                      XValues="{x:Bind Month, Mode=OneTime}"
+                      YValues="{x:Bind Actual, Mode=OneTime}"
+                      Fill="SeaGreen"
+                      Stroke="DarkGreen"
+                      StrokeThickness="1"
+                      ShowDataLabels="True"
+                      DataLabelBrush="DarkGreen" />
+
+    <charts:LineSeries x:Name="TargetSeries"
+                       Title="Target"
+                       XValues="{x:Bind Month, Mode=OneTime}"
+                       YValues="{x:Bind Target, Mode=OneTime}"
+                       Stroke="Firebrick"
+                       StrokeThickness="2"
+                       StrokeDashStyle="Dash"
+                       ShowDataMarkers="True"
+                       MarkerShape="Diamond"
+                       DataMarkerBrush="Firebrick" />
+</charts:Chart>
+```
+
+Per-point overrides are populated in code because the override maps are not dependency
+properties:
+
+```csharp
+var highlight = new SolidColorBrush(Colors.Gold);
+TargetSeries.DataLabelOverrides[2] =
+    new DataLabelOverride("Peak", highlight);
+TargetSeries.DataMarkerOverrides[2] =
+    new DataMarkerOverride(MarkerShape.Diamond, highlight);
+```
 
 ## A bar chart
 
@@ -833,19 +887,16 @@ the corresponding keyed resource — `ChartsGridLineMajorBrush`, `ChartsGridLine
 `ChartsTickBrush`, `ChartsTickLabelBrush`, or `ChartsAxisLineBrush` — looked up first in the
 chart's own `Resources` dictionary and then in `Application.Current.Resources`.
 
-The theme resource is consulted **only** when the property is null. A brush you set explicitly is
-always the brush that is used, whatever its type. `SolidColorBrush` is the only brush type the
-renderer reads a color from: set any other brush type and the axis element draws in a neutral
-translucent gray (RGB 128, 128, 128 at 25% alpha) rather than reverting to the theme.
+`SolidColorBrush` is the only brush type the renderer reads a color from. If the property is null,
+cannot be read, or contains another brush type, its value is retained and the corresponding theme
+resource is used instead. An unsupported property brush also writes a diagnostic.
 
 This differs from the series brushes. `CartesianSeries.Stroke`, `AreaSeries.Fill`, `BarSeries.Fill`,
 `DataMarkerBrush`, and `DataLabelBrush` do fall back — to the series' palette color, or to
-`Chart.Foreground` for labels — when the brush is not a `SolidColorBrush`. Axis brushes have no
-such fallback.
+`Chart.Foreground` for labels — rather than to a keyed axis resource.
 
-If both the property and the theme lookup initially yield nothing, no color is applied and the
-axis element keeps the renderer's own color. If a color was applied earlier, a later failed
-resolution can leave that last applied color in place.
+If neither the property nor the theme resource supplies a color, the local renderer color is
+cleared and the renderer's own default applies.
 
 Axis brush colors are re-applied when the brush property changes or the axis reconnects. They are
 not currently refreshed when `ActualTheme` changes, and changing `SolidColorBrush.Color` in place
@@ -902,7 +953,7 @@ its properties are nullable, and null means "choose this from the data".
                    GridLines="Major" />
 ```
 
-![A value axis fixed to 0-100 with major ticks every 25](./images/chart-linear-axis.png)
+![A value axis fixed to 0-100 with major ticks every 25](./images/chart-axes.png)
 
 ```csharp
 var axis = new LinearAxis { Minimum = 0, Maximum = 100, Spacing = 25 };
@@ -1088,6 +1139,7 @@ public class CartesianSeries : DependencyObject
     public Samples YValues { get; set; }
     public Brush Stroke { get; set; }
     public double StrokeThickness { get; set; }
+    public StrokeDashStyle StrokeDashStyle { get; set; }
     public bool ShowDataLabels { get; set; }
     public bool ShowDataMarkers { get; set; }
     public MarkerShape MarkerShape { get; set; }
@@ -1130,6 +1182,11 @@ points you have overridden.
 Brush properties supply a color, not a paint, and their fallbacks differ from the axis brushes —
 see [How brushes are used](#how-brushes-are-used) and
 [How the palette works](#how-the-palette-works).
+
+## CartesianSeries.StrokeDashStyle property
+
+Gets or sets the dash pattern used to draw the series outline. The default is
+`StrokeDashStyle.Solid`.
 
 ## CartesianSeries.XValues property
 
@@ -1257,6 +1314,7 @@ is independent of `Stroke`.
 | `IsVisible`                 | Gets or sets whether the series is displayed. Defaults to `true`. A hidden series stays in `Chart.Series` and keeps its palette slots. |
 | `Stroke`                    | Gets or sets the brush from which the series outline color is resolved. Defaults to `null`.           |
 | `StrokeThickness`           | Gets or sets the thickness of the series outline. Defaults to `1.0`. See the remarks below.           |
+| `StrokeDashStyle`           | Gets or sets the dash pattern used to draw the series outline. Defaults to `StrokeDashStyle.Solid`.    |
 | `ShowDataLabels`            | Gets or sets whether a default label is displayed for each data point without an override. Defaults to `false`. |
 | `ShowDataMarkers`           | Gets or sets whether a default marker is displayed for each data point without an override. Defaults to `false`. |
 | `MarkerShape`               | Gets or sets the default marker shape for data points. Defaults to `MarkerShape.Circle`.              |
@@ -1268,6 +1326,7 @@ is independent of `Stroke`.
 | `YValuesProperty`           | Identifies the YValues dependency property.                                                           |
 | `StrokeProperty`            | Identifies the Stroke dependency property.                                                            |
 | `StrokeThicknessProperty`   | Identifies the StrokeThickness dependency property.                                                   |
+| `StrokeDashStyleProperty`   | Identifies the StrokeDashStyle dependency property.                                                   |
 | `ShowDataLabelsProperty`    | Identifies the ShowDataLabels dependency property.                                                    |
 | `ShowDataMarkersProperty`   | Identifies the ShowDataMarkers dependency property.                                                   |
 | `MarkerShapeProperty`       | Identifies the MarkerShape dependency property.                                                       |
@@ -1289,7 +1348,6 @@ Represents a Cartesian series that connects data points with line segments.
 public class LineSeries : CartesianSeries
 {
     public LineSeries();
-    public StrokeDashStyle StrokeDashStyle { get; set; }
 }
 ```
 
@@ -1304,16 +1362,11 @@ public class LineSeries : CartesianSeries
 
 ![A solid actuals line and a dashed forecast line](./images/chart-line-dash.png)
 
-## LineSeries.StrokeDashStyle property
-
-Gets or sets the dash pattern used to draw the line. The default is `StrokeDashStyle.Solid`.
-
 ## Other LineSeries members
 
-| Name                        | Description                                            |
-|-----------------------------|--------------------------------------------------------|
-| `LineSeries()`              | Initializes a new instance of the LineSeries class.     |
-| `StrokeDashStyleProperty`   | Identifies the StrokeDashStyle dependency property.     |
+| Name           | Description                                        |
+|----------------|----------------------------------------------------|
+| `LineSeries()` | Initializes a new instance of the LineSeries class. |
 
 ## AreaSeries class
 
@@ -1374,7 +1427,7 @@ public class BarSeries : CartesianSeries
                   Fill="SeaGreen" />
 ```
 
-![A vertical bar chart](./images/chart-bar-vertical.png)
+![A vertical bar chart](./images/chart-bar.png)
 
 ## BarSeries.Orientation property
 
@@ -1600,11 +1653,11 @@ Specifies the value used to sort a category axis.
 
 Specifies which set of grid lines a Cartesian axis displays.
 
-| Value   | Description                                        |
-|---------|----------------------------------------------------|
-| `None`  | Displays no grid lines. The default.                |
-| `Major` | Displays grid lines at major tick positions.        |
-| `Minor` | Displays grid lines at minor tick positions.        |
+| Value   | Description                                              |
+|---------|----------------------------------------------------------|
+| `None`  | Displays no grid lines. The default.                     |
+| `Major` | Displays grid lines at major tick positions.             |
+| `Minor` | Displays grid lines at minor (and major) tick positions. |
 
 Grid lines are not affected by `Axis.IsVisible`; hiding an axis does not hide its grid lines.
 
@@ -1612,13 +1665,13 @@ Grid lines are not affected by `Axis.IsVisible`; hiding an axis does not hide it
 
 Specifies the interval used for major ticks on a date-time axis.
 
-| Value   | Description                                                                          |
-|---------|---------------------------------------------------------------------------------------|
-| `Auto`  | Selects an interval based on the axis range and available axis length. The default.    |
-| `Day`   | Uses day intervals.                                                                    |
-| `Week`  | Uses week intervals.                                                                   |
-| `Month` | Uses month intervals.                                                                  |
-| `Year`  | Uses year intervals.                                                                   |
+| Value   | Description                                                                    |
+|---------|--------------------------------------------------------------------------------|
+| `Auto`  | Selects an interval based on the axis range and available length. The default. |
+| `Day`   | Uses day intervals.                                                            |
+| `Week`  | Uses week intervals.                                                           |
+| `Month` | Uses month intervals.                                                          |
+| `Year`  | Uses year intervals.                                                           |
 
 # API Details
 
@@ -1956,6 +2009,8 @@ namespace Microsoft.UI.Xaml.Controls.Charts
         Microsoft.UI.Xaml.Media.Brush Stroke;
         /// Gets or sets the thickness of the series outline.
         Double StrokeThickness;
+        /// Gets or sets the dash pattern used to draw the series outline.
+        StrokeDashStyle StrokeDashStyle;
         /// Gets or sets whether a default label is displayed for each data point without an override.
         Boolean ShowDataLabels;
         /// Gets or sets whether a default marker is displayed for each data point without an override.
@@ -1988,6 +2043,8 @@ namespace Microsoft.UI.Xaml.Controls.Charts
         static Microsoft.UI.Xaml.DependencyProperty StrokeProperty{ get; };
         /// Identifies the StrokeThickness dependency property.
         static Microsoft.UI.Xaml.DependencyProperty StrokeThicknessProperty{ get; };
+        /// Identifies the StrokeDashStyle dependency property.
+        static Microsoft.UI.Xaml.DependencyProperty StrokeDashStyleProperty{ get; };
         /// Identifies the ShowDataLabels dependency property.
         static Microsoft.UI.Xaml.DependencyProperty ShowDataLabelsProperty{ get; };
         /// Identifies the ShowDataMarkers dependency property.
@@ -2007,12 +2064,6 @@ namespace Microsoft.UI.Xaml.Controls.Charts
     {
         /// Initializes a new instance of the LineSeries class.
         LineSeries();
-
-        /// Gets or sets the dash pattern used to draw the line.
-        StrokeDashStyle StrokeDashStyle;
-
-        /// Identifies the StrokeDashStyle dependency property.
-        static Microsoft.UI.Xaml.DependencyProperty StrokeDashStyleProperty{ get; };
     }
 
     /// Represents a Cartesian series that displays data as a filled area.
@@ -2091,13 +2142,13 @@ back to.
 | `CartesianSeries` | `XValues`, `YValues`            | `null`                                    |
 | `CartesianSeries` | `Stroke`                        | `null` (palette)                          |
 | `CartesianSeries` | `StrokeThickness`               | `1.0`                                     |
+| `CartesianSeries` | `StrokeDashStyle`               | `StrokeDashStyle.Solid`                   |
 | `CartesianSeries` | `ShowDataLabels`                | `false`                                   |
 | `CartesianSeries` | `ShowDataMarkers`               | `false`                                   |
 | `CartesianSeries` | `MarkerShape`                   | `MarkerShape.Circle`                      |
 | `CartesianSeries` | `DataLabelBrush`                | `null` (falls back to `Chart.Foreground`) |
 | `CartesianSeries` | `DataMarkerBrush`               | `null` (palette)                          |
 | `CartesianSeries` | `XAxis`, `YAxis`                | `null` (automatic)                        |
-| `LineSeries`      | `StrokeDashStyle`               | `StrokeDashStyle.Solid`                   |
 | `AreaSeries`      | `Fill`                          | `null` (palette)                          |
 | `BarSeries`       | `Fill`                          | `null` (palette)                          |
 | `BarSeries`       | `Orientation`                   | `BarOrientation.Horizontal`               |
@@ -2134,12 +2185,6 @@ animation.
 Unlike `RangeBase.Minimum` and `Maximum`, `LinearAxis.Minimum` and `Maximum` are nullable, null
 means automatic, and an inverted pair is rejected rather than coerced.
 
-**Open question for API review.** Whether the seven should stay as plain properties is worth an
-explicit decision, because the ones most likely to be bound or animated — a `LinearAxis` range
-driven by a zoom control, for example — are exactly the ones that cannot be. The alternative is to
-make them dependency properties and move validation to a trace-and-fall-back model, matching the
-rest of the surface.
-
 ## Design decisions
 
 These are the design decisions recorded for the current shape of the API.
@@ -2165,8 +2210,3 @@ cases, such as a `List<double>` or an `ObservableCollection<double>`, need nothi
 **A data source is identified by object reference, not by name.** `Samples` has no `Name` property, and
 `XValues`/`YValues` take the object. In markup the reference is `{x:Bind}` or `{x:Reference}` to an
 `x:Name`.
-
-## Notes on the screenshots
-
-Every image referenced in this spec is a placeholder under `./images/`. They will be captured from
-the Charts test app and added before the spec is published.
