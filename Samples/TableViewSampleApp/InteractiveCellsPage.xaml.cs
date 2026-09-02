@@ -1,8 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-// Disambiguate the real split-binary column type from the stale mock projection.
-using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
+using Microsoft.UI.Xaml.Controls.Tabular;
 
 namespace TableViewSampleApp;
 
