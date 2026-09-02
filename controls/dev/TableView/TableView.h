@@ -338,6 +338,10 @@ public:
     TableViewRowKind GetRowKindForItem(winrt::IInspectable const& item) const;
     bool TryGetTableViewSourceRowInfo(int32_t rowIndex, TableViewRowInfo& rowInfo) const;
     bool IsTableViewSourceGrouped() const;
+    // True when the flat row at `index` is a group header rather than a data row. Group headers
+    // share the flat projection (and its index space) with data rows, but are not selectable and
+    // must be recognized by keyboard navigation as valid focus anchors.
+    bool IsGroupHeaderRow(int32_t index) const;
 
     // Band gesture (directionless) and the ExpandCollapse pattern (directional). Both resolve the
     // target group's identity immediately and apply the mutation on a later turn.
@@ -651,6 +655,15 @@ private:
     void RaiseGroupStructureChanged();
     void SetAllGroupsExpansion(bool expand);
 
+    // Keyboard-driven group toggle loses focus without this: the Enter/Space toggle defers a
+    // structural reshape that recycles the focused header container, dropping focus (and its
+    // visual) to nothing. Capture the header's identity + FocusState at gesture time, then restore
+    // focus to the same group's header once the reshape's relayout has settled. Only keyboard /
+    // programmatic focus is restored -- a pointer toggle carries no focus visual.
+    void CaptureGroupHeaderFocusForRestore(winrt::UIElement const& container, winrt::hstring const& identity);
+    void RestoreGroupHeaderFocusIfPending(winrt::hstring const& identity);
+    void FocusGroupHeaderByIdentity(winrt::hstring const& identity, winrt::FocusState focusState);
+
     winrt::hstring StringifyGroupKey(winrt::IInspectable const& key);
     // Cached because resolving the culture formatter is measurably expensive and group-key text is
     // produced during measure, once per realized header.
@@ -725,6 +738,12 @@ private:
     std::shared_ptr<ColumnResizeDragState> m_activeColumnResizeDrag{};
     winrt::event_token m_rowsRepeaterLoadedToken{};
     winrt::event_token m_pendingFocusLayoutToken{};
+    // Deferred restore of keyboard focus to a group header after a toggle reshape recycles it.
+    // Separate from m_pendingFocusLayoutToken (row focus) so a row-focus request and a group-focus
+    // restore in flight at once cannot clobber each other's one-shot LayoutUpdated token.
+    winrt::event_token m_pendingGroupFocusLayoutToken{};
+    winrt::hstring m_pendingGroupFocusIdentity{};
+    winrt::FocusState m_pendingGroupFocusState{ winrt::FocusState::Unfocused };
     winrt::ItemsSourceView::CollectionChanged_revoker m_emptyStateCollectionChangedRevoker{};
     // ActualThemeChanged refreshes imperatively-resolved brushes that ItemsRepeater rows do not re-pump.
     winrt::event_token m_actualThemeChangedToken{};
