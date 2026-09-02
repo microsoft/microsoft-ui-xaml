@@ -250,6 +250,10 @@ DCompSurface::InitializeSurface(
 
         SetInterface(m_pCompositionSurface, m_pVirtualCompositionSurface);
 
+#ifdef XAMLPROFILER_ENABLED
+        TraceProfilerMemoryChange(true);
+#endif
+
         // Wrap with an ICompositionSurface
         auto hr = pDCompTreeHost->GetCompositionHelper()->CreateCompositionSurfaceForDCompositionSurface(
             m_pVirtualCompositionSurface, &m_spWinRTSurface);
@@ -276,14 +280,14 @@ DCompSurface::InitializeSurface(
 
         UpdateMemoryFootprint(TRUE);
 
+#ifdef XAMLPROFILER_ENABLED
+        TraceProfilerMemoryChange(true);
+#endif
+
         // Wrap with an ICompositionSurface
         IFC_RETURN(pDCompTreeHost->GetCompositionHelper()->CreateCompositionSurfaceForDCompositionSurface(
             m_pCompositionSurface, &m_spWinRTSurface));
     }
-
-#ifdef XAMLPROFILER_ENABLED
-    TraceProfilerMemoryChange(true);
-#endif
 
     IFCFAILFAST(m_compositionSurfaceHelper.Initialize(m_pCompositionSurface));
 
@@ -368,13 +372,13 @@ void DCompSurface::ReleaseLegacyDCompResources(bool resetWucSurface)
     }
 #endif
 
+    m_d3dDevice.reset();
+    m_surfaceUpdates.clear();
+
     if (m_pVirtualCompositionSurface == nullptr)
     {
         UpdateMemoryFootprint(FALSE);
     }
-
-    m_d3dDevice.reset();
-    m_surfaceUpdates.clear();
 
     if (m_pSystemMemoryBitsForUIThread != NULL)
     {
@@ -1120,16 +1124,16 @@ DCompSurface::Resize(
 
     ASSERT(m_compositionSurfaceHelper.HasSurface());
 
+    if (!IsVirtual())
+    {
+        UpdateMemoryFootprint(FALSE);
+    }
+
     IFC(m_compositionSurfaceHelper.Resize(width, height));
 
 #ifdef XAMLPROFILER_ENABLED
     TraceProfilerMemoryChange(false);
 #endif
-
-    if (!IsVirtual())
-    {
-        UpdateMemoryFootprint(FALSE);
-    }
 
     // If the surface size changed, then we clear out the pending update list. If the surface became smaller,
     // the existing surface updates can draw to a part of the surface that exceeds the new smaller bounds. If

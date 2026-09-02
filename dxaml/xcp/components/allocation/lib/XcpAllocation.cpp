@@ -79,11 +79,8 @@ namespace
     void RecordOutstandingAllocation(_In_ const void *pAddress)
     {
         const size_t cSize = XcpAllocation::OSMemoryGetBlockSize(pAddress);
-        if (cSize != 0)
-        {
-            g_outstandingAllocCount.fetch_add(1, std::memory_order_relaxed);
-            g_outstandingAllocSize.fetch_add(cSize, std::memory_order_relaxed);
-        }
+        g_outstandingAllocCount.fetch_add(1, std::memory_order_relaxed);
+        g_outstandingAllocSize.fetch_add(cSize, std::memory_order_relaxed);
     }
 }
 #endif
@@ -372,7 +369,7 @@ void XcpAllocation::OSMemoryFree(_Frees_ptr_opt_ void *pAddress)
 #endif
 
 #if COUNT_OUTSTANDING_ALLOC
-    if (cSize != 0)
+    if (pAddress != nullptr)
     {
         g_outstandingAllocCount.fetch_sub(1, std::memory_order_relaxed);
         g_outstandingAllocSize.fetch_sub(cSize, std::memory_order_relaxed);
