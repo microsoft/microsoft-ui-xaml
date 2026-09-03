@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControlsTestApp;
@@ -170,6 +170,116 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(Microsoft.UI.ColorHelper.FromArgb(255, 0, 255, 0), colorSpectrum.Color);
                 Verify.AreEqual(new Vector4() { X = 120.0f, Y = 1.0f, Z = 1.0f, W = 1.0f }, colorSpectrum.HsvColor);
             });
+        }
+
+        [TestMethod]
+        public void ColorSpectrumDefaultsToLeftToRightUnderInheritedRightToLeft()
+        {
+            ColorSpectrum colorSpectrum = null;
+            StackPanel rootPanel = null;
+            Grid physicalHost = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Default Shape is Box and default Components is HueValue, so hue maps to the X axis.
+                // A low hue (red) should therefore sit on the left of the spectrum when it flows LeftToRight.
+                colorSpectrum = new ColorSpectrum
+                {
+                    Width = 300,
+                    Height = 300,
+                    HsvColor = new Vector4() { X = 0.0f, Y = 1.0f, Z = 1.0f, W = 1.0f }
+                };
+                rootPanel = new StackPanel { FlowDirection = FlowDirection.RightToLeft };
+                rootPanel.Children.Add(colorSpectrum);
+
+                // physicalHost keeps its default LeftToRight flow direction, so its coordinate space matches the
+                // on-screen (physical) layout. Measuring the ellipse against it captures the FlowDirection mirror,
+                // which lives at the ColorSpectrum boundary and is therefore invisible from within the control.
+                physicalHost = new Grid();
+                physicalHost.Children.Add(rootPanel);
+            });
+
+            // Loading the control applies its default style, which sets FlowDirection to LeftToRight.
+            SetAsRootAndWaitForColorSpectrumFill(physicalHost);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(
+                    FlowDirection.LeftToRight,
+                    colorSpectrum.FlowDirection,
+                    "ColorSpectrum should default to LeftToRight even when the parent flow direction is RightToLeft.");
+
+                // Property value alone is a proxy; verify the rendered selection ellipse actually lands on the
+                // LeftToRight-expected side. A low hue must render on the left half of the control. This assertion
+                // fails prior to the fix because the inherited RightToLeft mirrors the spectrum and places it on the right.
+                Verify.IsTrue(
+                    IsSelectionEllipseOnLeftHalf(colorSpectrum, physicalHost),
+                    "A low hue should render on the left half of the spectrum when it flows LeftToRight.");
+            });
+        }
+
+        [TestMethod]
+        public void ColorSpectrumRespectsExplicitRightToLeft()
+        {
+            ColorSpectrum colorSpectrum = null;
+            StackPanel rootPanel = null;
+            Grid physicalHost = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Explicitly setting FlowDirection on the control should win over the style default.
+                colorSpectrum = new ColorSpectrum
+                {
+                    FlowDirection = FlowDirection.RightToLeft,
+                    Width = 300,
+                    Height = 300,
+                    HsvColor = new Vector4() { X = 0.0f, Y = 1.0f, Z = 1.0f, W = 1.0f }
+                };
+                rootPanel = new StackPanel();
+                rootPanel.Children.Add(colorSpectrum);
+
+                // physicalHost stays LeftToRight so its coordinate space reflects the on-screen layout, allowing the
+                // ellipse measurement to observe the mirror produced by the control's explicit RightToLeft flow.
+                physicalHost = new Grid();
+                physicalHost.Children.Add(rootPanel);
+            });
+
+            SetAsRootAndWaitForColorSpectrumFill(physicalHost);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(
+                    FlowDirection.RightToLeft,
+                    colorSpectrum.FlowDirection,
+                    "An explicitly set FlowDirection of RightToLeft should be preserved.");
+
+                // With an explicit RightToLeft the spectrum is intentionally mirrored, so a low hue must render
+                // on the right half of the control. This guards against the fix over-broadly forcing LeftToRight.
+                Verify.IsFalse(
+                    IsSelectionEllipseOnLeftHalf(colorSpectrum, physicalHost),
+                    "A low hue should render on the right half of the spectrum when it is explicitly set to flow RightToLeft.");
+            });
+        }
+
+        // Returns true when the selection ellipse renders on the left half of the ColorSpectrum as it appears on
+        // screen. The FlowDirection mirror lives at the ColorSpectrum boundary, so transforming a descendant to the
+        // control's own coordinate space would NOT include it -- the logical position is identical for LeftToRight
+        // and RightToLeft. Measuring against physicalReference (an ancestor that keeps the default LeftToRight flow)
+        // crosses that boundary, so the returned side reflects the actual mirrored layout.
+        private bool IsSelectionEllipseOnLeftHalf(ColorSpectrum colorSpectrum, FrameworkElement physicalReference)
+        {
+            var selectionEllipsePanel = VisualTreeUtils.FindVisualChildByName(colorSpectrum, "SelectionEllipsePanel") as FrameworkElement;
+            Verify.IsNotNull(selectionEllipsePanel);
+
+            var ellipseToReference = selectionEllipsePanel.TransformToVisual(physicalReference);
+            double ellipseCenterX = ellipseToReference.TransformPoint(
+                new Point(selectionEllipsePanel.ActualWidth / 2, selectionEllipsePanel.ActualHeight / 2)).X;
+
+            var spectrumToReference = colorSpectrum.TransformToVisual(physicalReference);
+            double spectrumCenterX = spectrumToReference.TransformPoint(
+                new Point(colorSpectrum.ActualWidth / 2, colorSpectrum.ActualHeight / 2)).X;
+
+            return ellipseCenterX < spectrumCenterX;
         }
 
         [TestMethod]
