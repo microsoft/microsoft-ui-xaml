@@ -79,8 +79,6 @@ runtimeclass TableViewSource
     [default_overload] [method_name("Sort")]
     TableViewSource Sort(TableViewKeySelector keySelector, SortDirection direction);
 
-    // ClearFilter / ClearGroupBy / ClearSort: never throw, and idempotent: with no stage present
-    // they do nothing at all, not even a rebuild.
     TableViewSource ClearFilter();
     TableViewSource ClearGroupBy();
     TableViewSource ClearSort();

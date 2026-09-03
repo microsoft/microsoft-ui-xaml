@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -24,8 +24,7 @@ namespace RowIdentity
 {
     // A caller-supplied projection from an item to its stable string identity. Distinct from
     // TabularKeySelector, which returns an arbitrary key object.
-    using TabularIdentitySelector = std::function<winrt::hstring(winrt::IInspectable const& item)>;
-
+    using IdentitySelector = std::function<winrt::hstring(winrt::IInspectable const& item)>;
 
     // The row-identity selector, derived from each item's COM identity (its canonical IUnknown
     // pointer). That is unique among live objects and stable for as long as the object lives, which
@@ -90,7 +89,7 @@ namespace RowIdentity
 
     bool TryGetGroupIdentity(
         winrt::IInspectable const& key,
-        TabularIdentitySelector const& groupIdentitySelector,
+        IdentitySelector const& groupIdentitySelector,
         winrt::hstring& identity,
         wchar_t const*& reason);
     bool GroupKeysEqual(winrt::IInspectable const& a, winrt::IInspectable const& b);
