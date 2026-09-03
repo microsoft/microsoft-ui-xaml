@@ -27,6 +27,9 @@
 #include <Microsoft.UI.Dispatching.Interop.h>
 #include <Microsoft.Windows.ApplicationModel.Resources.h>
 #include "GamepadKeyRoutingLightup.h"
+#include "XamlOptionalChanges.g.h"
+#include "XamlOptionalChanges_Partial.h"
+#include <OptionalChangeState.h>
 
 using namespace RuntimeFeatureBehavior;
 using namespace DirectUI;
@@ -165,6 +168,10 @@ _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IAp
 {
     g_spApplicationInitializationCallback = pCallback;
 
+    // Application.Start() is the full-app entry point. Lock optional changes before reading
+    // them so app code cannot modify the selected behavior after startup has begun.
+    std::ignore = XamlOptionalChanges::LockInternal();
+
     // Determine which AppPolicyWindowingModel the application is using.
     //
     //     AppPolicyWindowingModel_None
@@ -182,10 +189,12 @@ _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IAp
     if (policy == AppPolicyWindowingModel_ClassicDesktop ||
         policy == AppPolicyWindowingModel_Universal)
     {
-        // Full WinUI app: enable gamepad-to-key routing for the process, so XAML's keyboard
-        // navigation responds to a gamepad by default the way it did in System XAML. 
-        //
-        VERIFYHR(EnableGamepadKeyRouting());
+        if (OptionalChangeState::IsGamepadKeyRoutingEnabled())
+        {
+            // Full WinUI app: enable gamepad-to-key routing for the process, so XAML's
+            // keyboard navigation responds to a gamepad the way it did in System XAML.
+            VERIFYHR(EnableGamepadKeyRouting());
+        }
     }
 
     if (policy == AppPolicyWindowingModel_ClassicDesktop)
