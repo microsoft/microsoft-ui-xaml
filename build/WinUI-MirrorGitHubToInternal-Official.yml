@@ -64,6 +64,6 @@ extends:
     - template: AzurePipelinesTemplates\WinUI-PublicMirrorMerge-Stage.yml@self
       parameters:
         sourceBranchName: user/gpaskaleva/github-internal-main-test
-        targetBranchName: user/gpaskaleva/mirror-integration-target
+        targetBranchName: user/gpaskaleva/mirror-integration-target-bootstrap
         dependsOnStage: Source
         checkoutRepository: targetRepository
