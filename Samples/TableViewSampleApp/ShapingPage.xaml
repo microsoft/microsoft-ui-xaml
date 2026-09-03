@@ -58,7 +58,7 @@
             </ComboBox>
             <Button Content="Expand all" Click="ExpandAll_Click"/>
             <Button Content="Collapse all" Click="CollapseAll_Click"/>
-            <CheckBox x:Name="CustomHeaderToggle" Content="Custom GroupHeaderTemplate"
+            <CheckBox x:Name="CustomHeaderToggle" Content="Custom GroupHeaderTemplate" IsChecked="True"
                       Checked="GroupHeaderTemplate_Toggled" Unchecked="GroupHeaderTemplate_Toggled"/>
         </StackPanel>
 
@@ -81,7 +81,7 @@
                 <ComboBoxItem Content="via source (path)"/>
                 <ComboBoxItem Content="via source (key)"/>
             </ComboBox>
-            <CheckBox x:Name="HeaderSortToggle" Content="Click-to-sort headers"
+            <CheckBox x:Name="HeaderSortToggle" Content="Click-to-sort headers" IsChecked="True"
                       Checked="HeaderSort_Toggled" Unchecked="HeaderSort_Toggled"/>
             <Button Content="Clear sort" Click="ClearSort_Click"/>
         </StackPanel>
