@@ -3,15 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-// Disambiguate the real split-binary control types from the stale mock projection
-// (Microsoft.UI.Xaml.Controls.TableView*) that the mock Microsoft.WinUI.dll still carries.
-using SortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
-using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
-using TableViewKeySelector = Microsoft.UI.Xaml.Controls.Tabular.TableViewKeySelector;
-using TableViewPredicate = Microsoft.UI.Xaml.Controls.Tabular.TableViewPredicate;
-using TableViewSortCycle = Microsoft.UI.Xaml.Controls.Tabular.TableViewSortCycle;
-using TableViewSortedEventArgs = Microsoft.UI.Xaml.Controls.Tabular.TableViewSortedEventArgs;
-using TableViewSource = Microsoft.UI.Xaml.Controls.Tabular.TableViewSource;
+using Microsoft.UI.Xaml.Controls.Tabular;
 
 namespace TableViewSampleApp;
 
@@ -42,12 +34,7 @@ public sealed partial class ShapingPage : Page
         Table.Sorted += Table_Sorted;
         Table.SelectionChanged += (s, e) => UpdateStatus();
 
-        // Seeded here, not in markup: assigning ToggleButton.IsChecked from XAML needs
-        // Nullable<Boolean> registered as a known type, which this split-binary app does not carry
-        // (the same gap TabularControlsResources works around for Nullable<Double>).
-        CustomHeaderToggle.IsChecked = true;
-        HeaderSortToggle.IsChecked = true;
-
+        Table.CanUserSortColumns = HeaderSortToggle.IsChecked == true;
         UpdateCycleHint();
 
         _ready = true;
@@ -226,12 +213,25 @@ public sealed partial class ShapingPage : Page
     private void CollapseAll_Click(object sender, RoutedEventArgs e) => Table.CollapseAllGroups();
 
     private void GroupHeaderTemplate_Toggled(object sender, RoutedEventArgs e)
-        => Table.GroupHeaderTemplate = CustomHeaderToggle.IsChecked == true
+    {
+        if (!_ready)
+        {
+            return;   // fires while XAML seeds IsChecked, before Table exists
+        }
+
+        // null falls back to the control's built-in KeyText / ItemCountText header
+        Table.GroupHeaderTemplate = CustomHeaderToggle.IsChecked == true
             ? (DataTemplate)Resources["GroupHeader"]
-            : null;   // null falls back to the control's built-in KeyText / ItemCountText header
+            : null;
+    }
 
     private void HeaderSort_Toggled(object sender, RoutedEventArgs e)
     {
+        if (!_ready)
+        {
+            return;
+        }
+
         Table.CanUserSortColumns = HeaderSortToggle.IsChecked == true;
         UpdateCycleHint();
     }
