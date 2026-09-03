@@ -9,6 +9,7 @@ using SortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
 using TableViewKeySelector = Microsoft.UI.Xaml.Controls.Tabular.TableViewKeySelector;
 using TableViewPredicate = Microsoft.UI.Xaml.Controls.Tabular.TableViewPredicate;
+using TableViewSortCycle = Microsoft.UI.Xaml.Controls.Tabular.TableViewSortCycle;
 using TableViewSortedEventArgs = Microsoft.UI.Xaml.Controls.Tabular.TableViewSortedEventArgs;
 using TableViewSource = Microsoft.UI.Xaml.Controls.Tabular.TableViewSource;
 
@@ -22,6 +23,10 @@ public sealed partial class ShapingPage : Page
     private readonly List<Item> _items = Data.Make();
     private TableViewSource _source = null!;
     private bool _ready;   // guards combo SelectionChanged that fires during XAML load
+
+    // The cycle each column was built with. Kept so "As authored" can put back the per-column
+    // choices - Score deliberately opens Descending - after the combo has overridden them all.
+    private readonly Dictionary<TableViewColumn, TableViewSortCycle> _authoredCycles = new();
 
     public ShapingPage()
     {
@@ -43,6 +48,8 @@ public sealed partial class ShapingPage : Page
         CustomHeaderToggle.IsChecked = true;
         HeaderSortToggle.IsChecked = true;
 
+        UpdateCycleHint();
+
         _ready = true;
         UpdateStatus();
     }
@@ -57,10 +64,15 @@ public sealed partial class ShapingPage : Page
         Table.Columns.Add(SampleColumns.Text("City", nameof(Item.City), SampleColumns.Star()));
 
         var score = SampleColumns.Text("Score", nameof(Item.Score), SampleColumns.Pixels(90));
-        score.SortCycle = Microsoft.UI.Xaml.Controls.Tabular.TableViewSortCycle.DescendingAscendingNone;
+        score.SortCycle = TableViewSortCycle.DescendingAscendingNone;
         Table.Columns.Add(score);
 
         Table.Columns.Add(SampleColumns.Text("Joined", nameof(Item.Joined), SampleColumns.Pixels(220)));
+
+        foreach (var column in Table.Columns)
+        {
+            _authoredCycles[column] = column.SortCycle;
+        }
     }
 
     // ---- Shaping ----
@@ -219,7 +231,50 @@ public sealed partial class ShapingPage : Page
             : null;   // null falls back to the control's built-in KeyText / ItemCountText header
 
     private void HeaderSort_Toggled(object sender, RoutedEventArgs e)
-        => Table.CanUserSortColumns = HeaderSortToggle.IsChecked == true;
+    {
+        Table.CanUserSortColumns = HeaderSortToggle.IsChecked == true;
+        UpdateCycleHint();
+    }
+
+    // SortCycle is per column and governs only what a HEADER CLICK walks through; it has no say
+    // over a programmatic SortByColumn or a sort declared on the source. Index 0 restores the
+    // authored per-column cycles, so Score keeps opening Descending; any other index overrides
+    // every column so one cycle can be observed end to end.
+    private void SortCycle_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_ready)
+        {
+            return;
+        }
+
+        foreach (var column in Table.Columns)
+        {
+            column.SortCycle = CycleCombo.SelectedIndex switch
+            {
+                1 => TableViewSortCycle.AscendingDescending,
+                2 => TableViewSortCycle.AscendingDescendingNone,
+                3 => TableViewSortCycle.DescendingAscending,
+                4 => TableViewSortCycle.DescendingAscendingNone,
+                _ => _authoredCycles.TryGetValue(column, out var authored) ? authored : column.SortCycle,
+            };
+        }
+
+        UpdateCycleHint();
+        UpdateStatus();
+    }
+
+    private void UpdateCycleHint()
+    {
+        if (HeaderSortToggle.IsChecked != true)
+        {
+            CycleHint.Text = "click-to-sort is off, so no cycle is reachable";
+            return;
+        }
+
+        CycleHint.Text = CycleCombo.SelectedIndex == 0
+            ? "per column as built: Score starts Descending, the rest Ascending"
+            : "applied to every column; a cycle without None never returns to unsorted by clicking";
+    }
 
     private void ClearSort_Click(object sender, RoutedEventArgs e)
     {
@@ -288,7 +343,7 @@ public sealed partial class ShapingPage : Page
 
         StatusText.Text =
             $"rows {visible.Count}/{_items.Count}   filter '{text}'{(highOnly ? " + score>=50" : "")}   " +
-            $"group {groupPart}   sort {sortPart}   " +
+            $"group {groupPart}   sort {sortPart}   cycle {((ComboBoxItem)CycleCombo.SelectedItem).Content}   " +
             $"selected {(selected is null ? "none" : $"'{selected.Name}' @ {Table.SelectedIndex}")}";
     }
 }

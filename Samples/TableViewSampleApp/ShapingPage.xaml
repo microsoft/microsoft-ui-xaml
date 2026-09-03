@@ -27,6 +27,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -85,10 +86,25 @@
             <Button Content="Clear sort" Click="ClearSort_Click"/>
         </StackPanel>
 
-        <Border Grid.Row="4" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
+        <!-- Sort cycle: what a header click walks through, per column. Only reachable when
+             click-to-sort is on. -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="Cycle:" VerticalAlignment="Center" Width="52"/>
+            <ComboBox x:Name="CycleCombo" Width="260" SelectionChanged="SortCycle_Changed">
+                <ComboBoxItem Content="As authored" IsSelected="True"/>
+                <ComboBoxItem Content="AscendingDescending"/>
+                <ComboBoxItem Content="AscendingDescendingNone"/>
+                <ComboBoxItem Content="DescendingAscending"/>
+                <ComboBoxItem Content="DescendingAscendingNone"/>
+            </ComboBox>
+            <TextBlock x:Name="CycleHint" VerticalAlignment="Center" Opacity="0.7" FontSize="12"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <Border Grid.Row="5" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
             <tv:TableView x:Name="Table" SelectionMode="Single"/>
         </Border>
 
-        <TextBlock x:Name="StatusText" Grid.Row="5" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>
+        <TextBlock x:Name="StatusText" Grid.Row="6" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>
     </Grid>
 </Page>
