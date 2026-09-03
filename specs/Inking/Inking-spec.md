@@ -79,6 +79,70 @@ the ABI identical to UWP's `get_*` accessors.
 `InkPresenter.StrokeContainer` is get/set in UWP; the mirror exposes it read-only (`get`) because the
 presenter owns its container - strokes are still added and removed through the container's own methods.
 
+## Verified member diff by type (UWP vs WinUI 3)
+
+The tables below are the exact per-type diff. They were produced by extracting the UWP IDL from
+`Windows.winmd` (UnionMetadata **10.0.26100.0**) with `winmdidl.exe` and comparing it member-by-member
+against the WinUI 3 mirror IDL. "same" means identical name and signature. Only the rows that differ
+are called out; every member not listed is present unchanged.
+
+### `InkPresenter`
+
+| UWP member (`Windows.UI.Input.Inking.InkPresenter`) | WinUI 3 (`Microsoft.UI.Xaml.Controls.InkPresenter`) |
+|---|---|
+| `IsInputEnabled`, `InputDeviceTypes`, `CopyDefaultDrawingAttributes()`, `UpdateDefaultDrawingAttributes()`, `SetPredefinedConfiguration()`, `UnprocessedInput`, `StrokeInput`, `InputProcessingConfiguration`, `InputConfiguration`, `StrokesCollected`, `StrokesErased` | same |
+| `ActivateCustomDrying()` -> `InkSynchronizer` | **same** (custom drying is ported) |
+| `HighContrastAdjustment` (property) | `GetHighContrastAdjustment()` / `SetHighContrastAdjustment()` (methods) |
+| `StrokeContainer` (get/set) | `StrokeContainer` (get only) |
+
+### `InkSynchronizer` (custom drying)
+
+| UWP member | WinUI 3 |
+|---|---|
+| `BeginDry()` -> `IVectorView<InkStroke>` | same |
+| `EndDry()` | same |
+
+The whole custom-drying contract is a 1:1 mirror - nothing here is deferred.
+
+### `InkStrokeContainer`
+
+| UWP member | WinUI 3 |
+|---|---|
+| `GetStrokes()`, `GetStrokeById()`, `AddStroke()`, `AddStrokes()`, `Clear()`, `DeleteSelected()`, `MoveSelected()`, `SelectWithLine()`, `SelectWithPolyLine()`, `BoundingRect`, `CopySelectedToClipboard()`, `PasteFromClipboard()`, `CanPasteFromClipboard()`, `LoadAsync()`, `SaveAsync()`, `SaveWithFormatAsync()` | same |
+| `UpdateRecognitionResults()`, `GetRecognitionResults()` | **not ported** (handwriting recognition) |
+
+### `InkStrokeInput` / `InkUnprocessedInput`
+
+| UWP member | WinUI 3 |
+|---|---|
+| stroke / pointer events (`Windows.UI.Core.PointerEventArgs`) | same |
+| `InkPresenter` (property) | `GetInkPresenter()` (method) |
+
+### `InkInputConfiguration`
+
+| UWP member | WinUI 3 |
+|---|---|
+| `IsPrimaryBarrelButtonInputEnabled`, `IsEraserInputEnabled` | same |
+| `IsPenHapticFeedbackEnabled` (`IInkInputConfiguration2`) | **not ported** |
+
+### `InkToolbar`
+
+| UWP member | WinUI 3 |
+|---|---|
+| `InitialControls`, `ActiveTool`, `TargetInkCanvas`, `InkDrawingAttributes`, `IsRulerButtonChecked`, `IsStencilButtonChecked`, `ButtonFlyoutPlacement`, `Orientation`, `GetToolButton()`, `GetToggleButton()`, `GetMenuButton()`, `ActiveToolChanged`, `InkDrawingAttributesChanged`, `EraseAllClicked`, `IsStencilButtonCheckedChanged` | same |
+| `TargetInkPresenter` -> `InkPresenter` (`IInkToolbar3`) | same type (`InkPresenter`), now the lifted mirror `InkPresenter` |
+| `IsRulerButtonCheckedChanged` (deprecated in UWP) | not carried forward (superseded by `IsStencilButtonCheckedChanged`) |
+| - | `EraserFlyoutItemClicked` (**new**, see below) |
+
+### `InkToolbarToolButton` / `InkToolbarToggleButton` / `InkToolbarEraserButton`
+
+| UWP member | WinUI 3 |
+|---|---|
+| `InkToolbarToolButton`: `ToolKind`, `IsExtensionGlyphShown` | same (UWP `IInkToolbarToolButton` has **no** `ToggleKind`) |
+| `InkToolbarToggleButton`: `ToggleKind` | same |
+| `InkToolbarEraserButton`: `IsClearAllVisible` (`IInkToolbarEraserButton2`) | same |
+| - | `InkToolbarEraserButton.SelectedEraser`, `IsStrokeEraserVisible`, `ArePrecisionErasersVisible` (**new**) |
+
 ## New in WinUI 3 (not public in UWP)
 
 A few members are public here that were not public UWP APIs. They are called out so the review can
@@ -93,17 +157,25 @@ decide each one on purpose:
 
 ## Not ported in this preview
 
-Present on the UWP types, intentionally left out of the `[MUX_PREVIEW]` surface and tracked as
-follow-up (see the [Not yet in this preview](#not-yet-in-this-preview) appendix):
+Custom drying **is** ported and is not a follow-up item: `InkPresenter.ActivateCustomDrying()` returns
+an `InkSynchronizer` whose `BeginDry()` / `EndDry()` match UWP exactly - see
+[Custom drying](#custom-drying-app-rendered-dry-ink) below.
 
-- The pen-flyout live wet-stroke preview.
-- The `UseSystemColorsWhenNecessary` high-contrast default-palette filtering.
-- `InkInputConfiguration.IsPenHapticFeedbackEnabled` - the pen haptic-feedback toggle is not yet plumbed through the lifted stack.
-- Surface Dial / `RadialController` integration.
+The list below is the complete set of UWP inking capabilities intentionally absent from the
+`[MUX_PREVIEW]` surface. Each row was verified by diffing the mirror types against the UWP metadata
+(`Windows.winmd`, UnionMetadata 10.0.26100.0), not assumed:
 
-Custom drying (`InkPresenter.ActivateCustomDrying()` and the `InkSynchronizer` it returns) **is**
-included in this preview - see [Custom drying](#custom-drying-app-rendered-dry-ink) below. Every other
-member on the UWP inking types is present with the same name and signature.
+| Not ported | Where it lived in UWP | Effect |
+|---|---|---|
+| Handwriting recognition | `InkStrokeContainer.UpdateRecognitionResults` / `GetRecognitionResults`, plus the separate `InkManager` / `InkRecognizer` / `InkRecognizerContainer` / `InkRecognitionResult` classes | The mirror `InkStrokeContainer` drops the two recognition methods; the recognition classes are not projected. Text recognition is not available through this surface. |
+| Swapping the stroke container | `InkPresenter.StrokeContainer` set accessor | The mirror exposes `StrokeContainer` get-only; strokes are still added/removed through the container, but the container instance itself cannot be replaced. |
+| Pen haptic feedback | `InkInputConfiguration.IsPenHapticFeedbackEnabled` (`IInkInputConfiguration2`) | Not plumbed through the lifted stack. |
+| High-contrast default palette | `UseSystemColorsWhenNecessary` default-mode contrast filtering | Other high-contrast modes and toolbar chrome adapt normally; only the default-palette filtering is absent. |
+| Pen-flyout live wet-stroke preview | Toolbar pen flyout | The stroke logic ports; re-hosting the wet preview in the lifted framework is out of scope here. |
+| Surface Dial / `RadialController` | System radial-controller ink integration | Not part of this preview; it is a separate system feature, not an `InkPresenter` / `InkToolbar` member. |
+
+Every other member on the UWP inking types is present with the same name and signature, modulo the
+three `property -> method` shape changes noted above.
 
 # Conceptual pages (How To)
 
