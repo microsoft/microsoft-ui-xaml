@@ -16,8 +16,8 @@ Please file questions and discussions as discussions, not issues.
 
 Feature proposals for WinUI 3 are categorized based on the likely timeframe in which the feature team can consider them.
 
-1. 	Short-term, less than a year
-2.	Long-term, not likely in the next year
+1. Short-term, less than a year
+2. Long-term, not likely in the next year
 
 All feature proposals are automatically categorized as long-term and unlikely to be considered, although the WinUI team might change the priority based on customer and business needs. If the WinUI team does close a feature proposal, we will indicate the reason why and how it fits into our plans. Closing a proposal does not mean that the team will never consider it. We encourage the community to add comments or interact with a proposal at any time, even a closed one, to signal its importance to the team.
 
