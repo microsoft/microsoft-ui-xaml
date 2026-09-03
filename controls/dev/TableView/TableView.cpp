@@ -1330,7 +1330,10 @@ void TableView::OnRowElementClearing(
             }
         }
 
-        winrt::get_self<TableViewRow>(row)->SetOwningTableViewInternal(nullptr);
+        auto const rowImpl = winrt::get_self<TableViewRow>(row);
+        // Release app-supplied tooltip content rather than pinning it in the recycle pool.
+        rowImpl->ReleaseCellToolTips();
+        rowImpl->SetOwningTableViewInternal(nullptr);
         InvalidateMeasure();
     }
 

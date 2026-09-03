@@ -204,6 +204,10 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.DataTemplate CellEditingTemplate { get; set; };
 
+    // Opt-in per-cell tooltip content, bound against the row's data item; null or empty means no
+    // tooltip. A CLR property, not a DP, so XAML passes the Binding through unevaluated.
+    Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
+
     // The editing hooks a derived column would override - GenerateEditingElement, PrepareCellForEdit,
     // CommitCellEdit, CancelCellEdit - are internal in this release. The built-in columns use them,
     // but a CellEditingTemplate is the supported way to customise an editor here, so publishing the

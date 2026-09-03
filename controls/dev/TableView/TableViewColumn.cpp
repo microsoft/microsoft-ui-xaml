@@ -349,6 +349,19 @@ void TableViewColumn::NotifyCellContentChanged()
     }
 }
 
+winrt::Microsoft::UI::Xaml::Data::Binding TableViewColumn::CellToolTipBinding()
+{
+    return m_cellToolTipBinding.get();
+}
+
+void TableViewColumn::CellToolTipBinding(const winrt::Microsoft::UI::Xaml::Data::Binding& value)
+{
+    m_cellToolTipBinding.set(value);
+
+    // Realized cells carry the previous binding. The only invalidation this feature needs.
+    NotifyCellContentChanged();
+}
+
 bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
 {
     // Keep the owner weak to avoid TableView -> Columns -> Column -> TableView cycles.

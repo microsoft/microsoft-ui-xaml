@@ -261,6 +261,14 @@ Entry c_typeEntries[] =
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"CellToolTipBinding", /* propertyName */
+                        L"Microsoft.UI.Xaml.Data.Binding", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::TableViewColumn>().CellToolTipBinding(); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TableViewColumn>().CellToolTipBinding(value ? value.as<winrt::Microsoft::UI::Xaml::Data::Binding>() : nullptr); },
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
                 });
 
             return static_cast<winrt::IXamlType>(*xamlType);
@@ -853,6 +861,7 @@ std::wstring_view c_knownNamespacePrefixes[] =
 #include "TableViewGroupHeader.properties.h"
 #include "TableViewRow.properties.h"
 #include "TableViewTemplateColumn.properties.h"
+#include "TableViewToolTipHelpers.h"
 
 namespace {
 
@@ -865,6 +874,7 @@ void ClearTypeProperties()
     TableViewGroupHeaderProperties::ClearProperties();
     TableViewRowProperties::ClearProperties();
     TableViewTemplateColumnProperties::ClearProperties();
+    TableViewDetails::ClearCellToolTipProperties();
 }
 
 }
