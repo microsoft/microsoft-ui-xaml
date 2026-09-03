@@ -188,8 +188,7 @@ public:
     // headers re-render and Auto columns recompute their content width.
     void OnColumnHeaderChanged(const winrt::TableViewColumn& column);
 
-    // TableViewColumn calls this when HeaderToolTip changes. Re-applied in place: a rebuild would
-    // drop header focus and re-stamp the sort affordance.
+    // Re-applied in place: a rebuild would drop header focus and re-stamp the sort affordance.
     void OnColumnHeaderToolTipChanged(const winrt::TableViewColumn& column);
 
     // TableViewColumn calls this when FrozenEdge changes so headers re-render and the leading-frozen

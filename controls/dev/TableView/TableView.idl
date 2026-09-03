@@ -113,8 +113,8 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.Controls.DataTemplateSelector HeaderTemplateSelector { get; set; };
 
-    // Opt-in column-header tooltip content; null or an empty string means no tooltip. A plain DP,
-    // not a Binding property: a header is not bound against a row, so there is nothing to defer.
+    // Opt-in header tooltip content; null or empty means no tooltip. Not a Binding property: a
+    // header is not bound against a row, so there is nothing to defer.
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Object HeaderToolTip { get; set; };
 

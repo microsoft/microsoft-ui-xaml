@@ -35,8 +35,7 @@ namespace
         };
     }
 
-    // Lookup throws when component resources are unresolvable; help text is supplementary, so
-    // degrade rather than let the failure escape into UIA.
+    // Help text is supplementary: degrade instead of letting a resource failure escape into UIA.
     winrt::hstring TryGetLocalizedString(const std::wstring_view& resourceName)
     {
         try
@@ -165,15 +164,15 @@ hstring TableViewColumnHeaderAutomationPeer::GetHelpTextCore()
         }
     }
 
-    // From the column, not the realized header: this peer is virtual and can be queried before the
-    // band exists. String content only; rich content is mouse-only, matching the cell rule.
+    // From the column, not the realized header: the peer can be queried before the band exists.
+    // String only; rich content is mouse-only, as with cells.
     winrt::hstring toolTipText{};
     if (auto const text = TableViewDetails::TryGetString(column.HeaderToolTip()))
     {
         toolTipText = *text;
     }
 
-    // Dropped when it repeats the header's own name, so it is not announced twice.
+    // Dropped when it repeats the header name, to avoid a double announcement.
     if (!toolTipText.empty() && toolTipText == GetNameCore())
     {
         toolTipText = {};
@@ -189,7 +188,7 @@ hstring TableViewColumnHeaderAutomationPeer::GetHelpTextCore()
         return toolTipText;
     }
 
-    // Both carry information a sighted user gets at a glance, so neither is dropped.
+    // A sighted user gets both at a glance, so neither is dropped.
     auto const format = TryGetLocalizedString(SR_TableViewColumnHeaderHelpTextFormat);
     if (format.empty())
     {

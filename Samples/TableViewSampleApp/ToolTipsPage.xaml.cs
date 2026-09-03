@@ -356,8 +356,7 @@ public sealed partial class ToolTipsPage : Page
         Status.Text = sb2.ToString();
     }
 
-    // Header peers are virtual, so their help text comes from the peer, and they are reached
-    // through the table provider rather than the peer's children.
+    // Header peers are virtual: reach them through the table provider, not the peer's children.
     private void OnCheckHeaderUia(object sender, RoutedEventArgs e)
     {
         var tablePeer = FrameworkElementAutomationPeer.CreatePeerForElement(Table);
@@ -423,8 +422,7 @@ public sealed partial class ToolTipsPage : Page
         Status.Text = tagged > 0 ? sb.ToString() : "no header cells found";
     }
 
-    // Hit-tests each header near its trailing edge, away from the glyphs: a cell that misses there
-    // would never open its tooltip.
+    // Hit-test near the trailing edge, away from the glyphs: a miss there means no tooltip.
     private void OnCheckHeaderHitTest(object sender, RoutedEventArgs e)
     {
         var sb = new StringBuilder();

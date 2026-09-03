@@ -434,7 +434,7 @@ void TableView::OnApplyTemplate()
     }
     if (auto oldHeaderHost = m_headerHost.get())
     {
-        // A live popup would keep hosting content parented into the band being abandoned.
+        // A live popup would still host content parented into the abandoned band.
         ReleaseHeaderToolTips(oldHeaderHost);
 
         // Mirror the rowsRepeater Loaded cleanup for the header host.
@@ -1392,8 +1392,7 @@ void TableView::ReleaseHeaderToolTips(const winrt::Panel& host)
         return;
     }
 
-    // Snapshot: closing a tooltip raises Closed into app code, which can re-enter RebuildHeaders
-    // and clear the collection this loop is walking.
+    // Snapshot: Closed runs app code that can re-enter RebuildHeaders and clear this collection.
     auto const children = host.Children();
     std::vector<winrt::FrameworkElement> cells;
     cells.reserve(children.Size());
@@ -1419,8 +1418,7 @@ void TableView::RebuildHeaders()
         return;
     }
 
-    // Close owned tooltips first: clearing the host out from under a live popup tears down its
-    // child reentrantly.
+    // Clearing the host under a live popup tears its child down reentrantly.
     ReleaseHeaderToolTips(host);
 
     host.Children().Clear();
@@ -1480,8 +1478,8 @@ void TableView::RebuildHeaders()
             winrt::AutomationProperties::SetAccessibilityView(headerCell, winrt::AccessibilityView::Content);
             // Match the body row min-height so the header band and rows render at the same height.
             headerCell.MinHeight(cachedRowMinHeight);
-            // No Background means no pointer input over the padding, leaving both the tooltip and
-            // the click-to-sort target dead there.
+            // Without a fill the padding takes no pointer input, killing the tooltip and
+            // click-to-sort there.
             headerCell.Background(cachedHeaderCellFill);
 
             // No Width binding: TableViewCellsPanel arranges header cells at the column's ActualWidth;

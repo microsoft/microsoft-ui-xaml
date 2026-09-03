@@ -203,6 +203,13 @@ namespace TableViewDetails
             record->PublishedHelpText = helpText;
         }
 
+        // Both paths report string content only.
+        if (!text)
+        {
+            TVDiag::DbgLogF(L"[TableView] %ls content is not a string; it shows on hover but is "
+                L"not reported to assistive technology.", propertyName);
+        }
+
         return true;
     }
 
@@ -281,28 +288,20 @@ namespace TableViewDetails
         }
     }
 
-    // Headers are rebuilt wholesale, never recycled, so there is no binding or refresh path.
-    // Contained: both call sites are fail-fast contexts, and app content can throw (a UIElement
-    // already parented by another header's tooltip).
+    // Headers rebuild wholesale, so there is no binding or refresh path. Contained: both call sites
+    // are fail-fast, and app content can throw (a UIElement already parented by another header).
     inline void ApplyHeaderToolTip(
         const winrt::FrameworkElement& element,
         const winrt::IInspectable& content)
     {
         try
         {
-            const bool attached = SetOwnedToolTip(
+            SetOwnedToolTip(
                 element,
                 content,
                 winrt::PlacementMode::Mouse,
                 false /* publishHelpText */,
                 L"HeaderToolTip");
-
-            // Mouse-only: the peer reports string content only, and nothing else signals this.
-            if (attached && !TryGetString(content))
-            {
-                TVDiag::DbgLogF(L"[TableView] HeaderToolTip content is not a string; it shows on "
-                    L"hover but is not reported to assistive technology.");
-            }
         }
         catch (...)
         {
