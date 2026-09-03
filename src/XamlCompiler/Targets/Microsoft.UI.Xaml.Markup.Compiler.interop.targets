@@ -180,6 +180,14 @@ Licensed under the MIT License. See LICENSE in the project root for license info
 
         <!-- Use Intermediate dir if XamlGeneratedOutputPath is not defined -->
         <XamlGeneratedOutputPath Condition="'$(XamlGeneratedOutputPath)' == ''">$(IntermediateOutputPath)</XamlGeneratedOutputPath>
+
+        <!-- Normalize OutputPath to always have a trailing slash. When building from the command line,
+             OutputPath may be passed without a trailing separator (e.g. -p:OutputPath=output). Because
+             that sets a global property, Microsoft.Common.CurrentVersion.targets' own trailing-slash
+             normalization is a no-op, so a derived property is required. Without it, OutputPath would
+             concatenate directly with the relative path and produce files like outputApp.xbf in the
+             wrong directory. -->
+        <_XamlNormalizedOutputPath>$([MSBuild]::EnsureTrailingSlash('$(OutputPath)'))</_XamlNormalizedOutputPath>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(XamlCompilerTaskPath) == ''">
@@ -211,7 +219,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
 
     <ItemGroup>
         <XamlIntermediateAssembly Condition="'$(ManagedAssembly)'!='false'" Include="$(XamlGeneratedOutputPath)intermediatexaml\$(TargetName)$(TargetExt)"/>
-        <XamlIntermediateAssembly Condition="'$(ManagedAssembly)'=='false'" Include="$(OutputPath)\$(TargetName).winmd"/>
+        <XamlIntermediateAssembly Condition="'$(ManagedAssembly)'=='false'" Include="$(_XamlNormalizedOutputPath)$(TargetName).winmd"/>
     </ItemGroup>
 
     <!--
@@ -905,8 +913,8 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             <GeneratedXamlSrc0 Condition="'%(AllProjectXamlPages.Link)'!=''" Include="@(AllProjectXamlPages->'$(XamlGeneratedOutputPath)%(Link)')" />
             <GeneratedXamlSrc0 Condition="'%(AllProjectXamlPages.Link)'==''" Include="@(AllProjectXamlPages->'$(XamlGeneratedOutputPath)$([MSBuild]::MakeRelative('$(ProjectDir)','%(Identity)'))')" />
 
-            <GeneratedXamlDest0 Condition="'%(AllProjectXamlPages.Link)'!=''" Include="@(AllProjectXamlPages->'$(OutputPath)%(Link)')" />
-            <GeneratedXamlDest0 Condition="'%(AllProjectXamlPages.Link)'==''" Include="@(AllProjectXamlPages->'$(OutputPath)$([MSBuild]::MakeRelative('$(ProjectDir)','%(Identity)'))')" />
+            <GeneratedXamlDest0 Condition="'%(AllProjectXamlPages.Link)'!=''" Include="@(AllProjectXamlPages->'$(_XamlNormalizedOutputPath)%(Link)')" />
+            <GeneratedXamlDest0 Condition="'%(AllProjectXamlPages.Link)'==''" Include="@(AllProjectXamlPages->'$(_XamlNormalizedOutputPath)$([MSBuild]::MakeRelative('$(ProjectDir)','%(Identity)'))')" />
         </ItemGroup>
 
         <!-- Swap in the XBF suffix if appropriate. -->
@@ -922,7 +930,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <!-- if we converted SDK XAML into XBF, add the XBF to the list, and remove the XAML from the list -->
         <ItemGroup Condition="'$(DisableXbfGeneration)' != 'true' and '@(SdkXamlItems)' != ''">
             <GeneratedSdkXamlSrc0 Include="@(SdkXamlItems->'$(XamlGeneratedOutputPath)%(TargetPath)')" />
-            <GeneratedSdkXamlDest0 Include="@(SdkXamlItems->'$(OutputPath)\%(TargetPath)')" />
+            <GeneratedSdkXamlDest0 Include="@(SdkXamlItems->'$(_XamlNormalizedOutputPath)%(TargetPath)')" />
 
             <GeneratedXamlSrc Include="%(GeneratedSdkXamlSrc0.RelativeDir)%(GeneratedSdkXamlSrc0.Filename).xbf" >
                 <ReferenceSourceTarget>ExpandSDKReference</ReferenceSourceTarget>
@@ -935,7 +943,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
 
         <ItemGroup Condition="'$(XamlRootsLog)' != ''">
             <GeneratedXamlSrc Include="$(XamlGeneratedOutputPath)\$(XamlRootsLog)" />
-            <GeneratedXamlDest Include="$(OutputPath)\$(XamlRootsLog)" />
+            <GeneratedXamlDest Include="$(_XamlNormalizedOutputPath)$(XamlRootsLog)" />
         </ItemGroup>
 
         <Message Importance="low" Text="(Out) Prep_GeneratedXamlSrc == @(GeneratedXamlSrc)" />
@@ -989,7 +997,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
 
         <PropertyGroup>
             <XamlPackagingRootFolder Condition="'$(GenerateLibraryLayout)' == 'true'">$(XamlGeneratedOutputPath)</XamlPackagingRootFolder>
-            <XamlPackagingRootFolder Condition="'$(GenerateLibraryLayout)' != 'true'">$(OutputPath)\</XamlPackagingRootFolder>
+            <XamlPackagingRootFolder Condition="'$(GenerateLibraryLayout)' != 'true'">$(_XamlNormalizedOutputPath)</XamlPackagingRootFolder>
         </PropertyGroup>
 
         <AssignTargetPath Files="@(ProcessedXamlFilesFullPath)" RootFolder="$(XamlPackagingRootFolder)">
@@ -1023,7 +1031,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         </ItemGroup>
 
         <Copy SourceFiles="@(_LayoutFile)"
-              DestinationFiles="@(_LayoutFile->'$(OutputPath)\%(TargetPath)')"
+              DestinationFiles="@(_LayoutFile->'$(_XamlNormalizedOutputPath)%(TargetPath)')"
               SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
               OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
               Retries="$(CopyRetryCount)"
