@@ -43,9 +43,6 @@ public:
     void Source(winrt::IInspectable const& value);
     void DetachSourceQuietly();
 
-    bool IncludeGroupHeaders() const { return m_includeGroupHeaders; }
-    void IncludeGroupHeaders(bool value);
-
     // Per-group expand / collapse intent. The group OBJECT is translated to the model's stable
     // string key here; the model raises Changed, which rebuilds.
     bool IsGroupExpanded(winrt::IInspectable const& group);
@@ -78,7 +75,6 @@ private:
     static winrt::hstring GetGroupIntentKey(winrt::IInspectable const& group);
 
     winrt::IInspectable m_source{ nullptr };
-    bool m_includeGroupHeaders{ true };
 
     // THE flat projection. Materialized in full on every Rebuild via a single ReplaceAll; a single-
     // group expand/collapse splices that group's rows in place (SetAt/InsertAt/RemoveAt).
