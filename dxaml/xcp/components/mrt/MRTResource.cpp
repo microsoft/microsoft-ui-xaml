@@ -7,6 +7,7 @@
 #include <palmemory.h>
 #include <PalResourceManager.h>
 #include <shlwapi.h>
+#include <memorybuffer.h>
 
 #include "FilePathResource.h"
 #include "MRTKnownQualifierNames.h"
@@ -41,7 +42,9 @@ CMRTResource::CMRTResource(_In_ IPALUri* pResourceUri, _In_ IPALUri* pPhysicalRe
 
 CMRTResource::~CMRTResource()
 {
-    CoTaskMemFree(m_embeddedDataBuffer);
+    // m_embeddedDataBuffer points into the read-only memory-mapped resource projected by
+    // m_spEmbeddedDataMemoryBuffer / m_spEmbeddedDataBufferReference. Those ComPtrs release the
+    // mapping; the pointer itself is not owned and must not be freed.
 }
 
 // See IPALResource::Load().
@@ -222,11 +225,25 @@ _Check_return_ HRESULT CMRTResource::EnsureEmbeddedDataResource()
 {
     ASSERT(m_pFilePathResource == nullptr);
 
-    if (m_embeddedDataBuffer == nullptr)
+    if (m_spEmbeddedDataBufferReference == nullptr)
     {
-        IFC_RETURN(m_pResourceCandidate->get_ValueAsBytes(
-            &m_embeddedDataBufferSize,
-            &m_embeddedDataBuffer));
+        // Use the zero-copy accessor: ValueAsMemoryBuffer() projects the embedded resource bytes
+        // in place from the memory-mapped PRI instead of marshalling a full copy across the ABI
+        // (as get_ValueAsBytes does). The IMemoryBuffer and its IMemoryBufferReference are held as
+        // members so the projected bytes stay valid (and the mapping stays pinned) for the lifetime
+        // of this resource, matching the non-owning CBufferMemory created in Load().
+        wrl::ComPtr<mwar::IResourceCandidate2> resourceCandidate2;
+        IFC_RETURN(m_pResourceCandidate.As(&resourceCandidate2));
+
+        IFC_RETURN(resourceCandidate2->ValueAsMemoryBuffer(&m_spEmbeddedDataMemoryBuffer));
+        IFC_RETURN(m_spEmbeddedDataMemoryBuffer->CreateReference(&m_spEmbeddedDataBufferReference));
+
+        wrl::ComPtr<wf_::IMemoryBufferByteAccess> bufferByteAccess;
+        IFC_RETURN(m_spEmbeddedDataBufferReference.As(&bufferByteAccess));
+
+        // The returned buffer is a read-only (PAGE_READONLY) view; it is only read here and by the
+        // non-owning PAL memory wrapper. Never write through m_embeddedDataBuffer.
+        IFC_RETURN(bufferByteAccess->GetBuffer(&m_embeddedDataBuffer, &m_embeddedDataBufferSize));
     }
 
     return S_OK;

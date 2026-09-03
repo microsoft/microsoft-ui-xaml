@@ -43,4 +43,10 @@ private:
     xref_ptr<IPALUri> m_pPhysicalResourceUri;
     BYTE* m_embeddedDataBuffer = nullptr;
     std::uint32_t m_embeddedDataBufferSize = 0;
+
+    // Zero-copy embedded-data backing: ValueAsMemoryBuffer() projects the resource bytes in place.
+    // These are kept alive for the lifetime of this resource so m_embeddedDataBuffer (which points
+    // into the read-only mapping) stays valid, and so the mapping stays pinned.
+    wrl::ComPtr<wf::IMemoryBuffer> m_spEmbeddedDataMemoryBuffer;
+    wrl::ComPtr<wf::IMemoryBufferReference> m_spEmbeddedDataBufferReference;
 };
