@@ -1439,7 +1439,7 @@ void DCompSurface::TraceProfilerMemoryChange(bool isAllocation)
         GetWidthWithGutters(),
         GetHeightWithGutters(),
         GetPixelStride(),
-        IsVirtual());
+        m_pVirtualCompositionSurface != nullptr);
     XamlProfilerTracing::XamlHeapSnapshot(
         XcpAllocation::GetHeapHandle(),
         XcpAllocation::IsUsingPrivateHeap(),
