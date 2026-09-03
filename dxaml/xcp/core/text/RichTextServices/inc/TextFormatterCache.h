@@ -30,9 +30,16 @@ namespace RichTextServices
         // Release resources associated with the TextFormatterCache.
         ~TextFormatterCache();
 
-        // Acquires TextFormatter for exclusive use.
+        // Acquires TextFormatter for exclusive use. When pPreferredTextFormatter is supplied it is
+        // checked out in preference to any other formatter so continuation formatting runs on the
+        // exact formatter (LineServices context) that produced a previous line break, to which the
+        // break record is bound. The preferred formatter is taken from the free list if present, or
+        // re-registered if it was evicted by ReleaseUnusedTextFormatters but is still alive (kept by
+        // a cached break record's reference). Only when no preferred formatter is supplied is an
+        // arbitrary cached or newly created formatter returned.
         Result::Enum AcquireTextFormatter(
-            _Outptr_ TextFormatter **ppTextFormatter
+            _Outptr_ TextFormatter **ppTextFormatter,
+            _In_opt_ TextFormatter *pPreferredTextFormatter = nullptr
             );
 
         // Releases TextFormatter and makes it available for reuse.

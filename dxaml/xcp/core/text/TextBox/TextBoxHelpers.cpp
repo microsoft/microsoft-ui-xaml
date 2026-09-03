@@ -594,7 +594,8 @@ Cleanup:
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CTextFormatterFactory::GetTextFormatter(
     _In_ CCoreServices *pCore,
-    _Outptr_ TextFormatter **ppTextFormatter
+    _Outptr_ TextFormatter **ppTextFormatter,
+    _In_opt_ TextFormatter *pPreferredTextFormatter
     )
 {
     HRESULT hr = S_OK;
@@ -602,7 +603,7 @@ _Check_return_ HRESULT CTextFormatterFactory::GetTextFormatter(
 
     IFC(GetTextFormatterCache(pCore, &pTextFormatterCache));
 
-    IFC(RichTextServicesHelper::MapTxErr(pTextFormatterCache->AcquireTextFormatter(ppTextFormatter)));
+    IFC(RichTextServicesHelper::MapTxErr(pTextFormatterCache->AcquireTextFormatter(ppTextFormatter, pPreferredTextFormatter)));
 
 Cleanup:
     return hr;
