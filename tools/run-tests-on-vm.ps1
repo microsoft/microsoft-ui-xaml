@@ -8,7 +8,7 @@
 #   .\run-tests-on-vm.ps1 -VMName "MyVM" "Button*" -HostingMode WPF
 #   .\run-tests-on-vm.ps1 -VMName "MyVM" "MyTest" -SkipPayload
 #   .\run-tests-on-vm.ps1 -VMName "MyVM" "MyTest" -FullCopy
-#   .\run-tests-on-vm.ps1 -VMName "MyVM" -Stop          # kill any running test
+#   .\run-tests-on-vm.ps1 -VMName "MyVM" -Stop
 #
 # First run will prompt for VM credentials and cache them (encrypted, per-user).
 # Subsequent runs reuse the cached credential automatically.
@@ -37,7 +37,7 @@ param(
     [switch]$SkipPayload,
 
     # CreateTestPayload mode. Most tests use DevTestSuite.
-    [ValidateSet("Auto", "DevTestSuite", "All", "PGO")]
+    [ValidateSet("Auto", "DevTestSuite")]
     [string]$Mode = "Auto",
 
     # Force a full copy instead of incremental
@@ -153,7 +153,7 @@ function Connect-TestVM {
         Write-Host "Error: PS Direct requires local admin or 'Hyper-V Administrators' membership." -ForegroundColor Red
         Write-Host ""
         Write-Host "  One-time fix (run once from an admin prompt, then log out and back in):" -ForegroundColor Yellow
-        Write-Host "    Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member `$env:USERNAME" -ForegroundColor White
+        Write-Host "    Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member (whoami)" -ForegroundColor White
         exit 1
     }
 
@@ -659,7 +659,7 @@ echo %ERRORLEVEL% > "$exitFile"
 
 # -- Resolve platform/config --------------------------------------------
 if (-not $Platform) {
-    $Platform = if ($env:BUILDPLATFORM) { $env:BUILDPLATFORM } else { "x86" }
+    $Platform = if ($env:BUILDPLATFORM) { $env:BUILDPLATFORM } else { "x64" }
 }
 if (-not $Configuration) {
     $Configuration = if ($env:_BuildType) { $env:_BuildType } else { "chk" }
@@ -668,7 +668,7 @@ if (-not $Configuration) {
 $Flavor = "$Platform$Configuration"
 $repoRoot = $env:reporoot
 if (-not $repoRoot -or -not (Test-Path $repoRoot)) {
-    Write-Host "Error: reporoot env var is not set. Run via initrun.ps1 or from a WinUI dev prompt." -ForegroundColor Red
+    Write-Host "Error: reporoot env var is not set. Run from a WinUI dev prompt." -ForegroundColor Red
     exit 1
 }
 
