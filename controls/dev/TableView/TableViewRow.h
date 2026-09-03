@@ -55,6 +55,10 @@ public:
     void RefreshDensity();
     // Rebuild realized cells when column content changes at runtime.
     void RefreshCells();
+
+    // Releases control-owned cell tooltips (recycle-out).
+    void ReleaseCellToolTips();
+
     // Apply a column's current visibility to this row's matching cell (the row owns its cells,
     // so TableView asks the row instead of reaching into the row's cell panel). The visibility is
     // passed in (snapshotted once by the caller) so header and all rows apply the same value.
@@ -128,6 +132,7 @@ private:
         const winrt::Microsoft::UI::Xaml::DependencyPropertyChangedEventArgs& args);
 
     void RebuildCells();
+    void ClearOwnedCellToolTips(const winrt::Panel& host);
 
     // Coalesces a burst of Columns-collection changes into a single cell rebuild on the next
     // dispatcher tick (each realized row observes Columns, so N bulk edits would otherwise cost N

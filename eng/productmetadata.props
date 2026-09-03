@@ -53,10 +53,10 @@
     </MuxControlsWinMD>
     <!-- Tabular merges into the public winmd on the same terms as Charts above, from the
          metadata-only idl project rather than the DLL project, mirroring MUXC's entry.
-         Excluded from MUXFinalRelease: every Tabular type is [MUX_PREVIEW]/[MUX_INTERNAL], so the
-         public winmd keeps 6 of 93 types there. Registrations derive from the unmerged winmd and
-         would still be emitted, naming a DLL packaging does not build - the APPX0703 mismatch - so
-         metadata and registrations are dropped together. Revisit when TableView leaves [MUX_PREVIEW]. -->
+         Excluded from MUXFinalRelease: every Tabular type is [MUX_PREVIEW]/[MUX_INTERNAL], so
+         nothing survives there, and the DLL is not packaged in that configuration either -
+         dropping metadata and registrations together also avoids an APPX0703 mismatch.
+         Revisit when TableView leaves [MUX_PREVIEW]. -->
     <MuxControlsWinMD Include="$(XamlBuildOutputRoot)\controls\idl-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd"
                       Condition="'$(MUXFinalRelease)' != 'true'">
       <ImplementationDll>Microsoft.UI.Xaml.Controls.Tabular.dll</ImplementationDll>
