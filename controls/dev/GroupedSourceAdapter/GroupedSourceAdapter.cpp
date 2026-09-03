@@ -63,17 +63,6 @@ void GroupedSourceAdapter::DetachSourceQuietly()
     m_source = nullptr;
 }
 
-void GroupedSourceAdapter::IncludeGroupHeaders(bool value)
-{
-    if (m_includeGroupHeaders == value)
-    {
-        return;
-    }
-
-    m_includeGroupHeaders = value;
-    Rebuild();
-}
-
 // --- The one responsibility: materialize the flat list -----------------------------------------
 
 void GroupedSourceAdapter::Rebuild()
@@ -167,10 +156,7 @@ void GroupedSourceAdapter::Rebuild()
                 // Collapsed groups still present a header (chrome stays targetable) but contribute no
                 // data rows. The header carries the resolved count and expansion state so chevron
                 // chrome and the automation peer read them without re-resolving against the adapter.
-                if (m_includeGroupHeaders)
-                {
-                    built.push_back(winrt::make<::GroupedEntry>(group, groupItemCount, isExpanded));
-                }
+                built.push_back(winrt::make<::GroupedEntry>(group, groupItemCount, isExpanded));
 
                 if (isExpanded)
                 {
@@ -300,13 +286,6 @@ void GroupedSourceAdapter::OnExpansionChanged(TabularShapingHelpers::RowExpansio
 
 bool GroupedSourceAdapter::TryApplyExpansionSplice(winrt::hstring const& intentKey, bool expand)
 {
-    // A headerless projection has no anchor to splice against (and can't show a collapse); the
-    // intent is still stored, but the visible rows must come from a full Rebuild.
-    if (!m_includeGroupHeaders)
-    {
-        return false;
-    }
-
     const uint32_t count = m_entries.Size();
     for (uint32_t i = 0; i < count; ++i)
     {

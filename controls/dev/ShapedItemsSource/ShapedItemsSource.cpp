@@ -1315,7 +1315,6 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     if (!m_groupedAdapter)
     {
         m_groupedAdapter = std::make_shared<GroupedSourceAdapter>();
-        m_groupedAdapter->IncludeGroupHeaders(true);
     }
     else
     {
