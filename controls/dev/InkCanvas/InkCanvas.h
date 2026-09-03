@@ -63,7 +63,7 @@ private:
     void PositionInkVisual();
     // Roots the ink visual under the given target and hands the composition device to the presenter.
     // Shared by both compositor paths.
-    void RootInkVisual(IDCompositionTarget* target);
+    void SetInkRootVisual(IDCompositionTarget* target);
 
     std::shared_ptr<ThreadData> m_threadData;
  

@@ -358,7 +358,7 @@ void InkCanvas::AttachInkVisualToPresenter()
 
 // Roots the ink visual under the given target and hands the shared composition device to the presenter
 // (used to present the wet-container clear while custom drying). Shared by both compositor paths.
-void InkCanvas::RootInkVisual(IDCompositionTarget* target)
+void InkCanvas::SetInkRootVisual(IDCompositionTarget* target)
 {
     winrt::check_hresult(target->SetRoot(m_inkRootVisual.get()));
     winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->SetCompositionDevice(m_threadData->m_compositionDevice);
@@ -398,7 +398,7 @@ void InkCanvas::AttachToSystemCompositor()
 #endif
         desktopDevice.get(),
         m_systemDCompTarget.put()));
-    RootInkVisual(m_systemDCompTarget.get());
+    SetInkRootVisual(m_systemDCompTarget.get());
     winrt::check_hresult(m_threadData->m_compositionDevice->Commit());
 
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, mucRootVisual);
@@ -431,7 +431,7 @@ void InkCanvas::AttachToLiftedCompositor()
     m_systemVisualLink.IsAboveContent(true);
 
     winrt::com_ptr<IDCompositionTarget> target = m_systemVisualLink.DCompTarget();
-    RootInkVisual(target.get());
+    SetInkRootVisual(target.get());
 
     winrt::check_hresult(m_threadData->m_compositionDevice->Commit());
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, m_systemVisualLink.PlacementVisual());
