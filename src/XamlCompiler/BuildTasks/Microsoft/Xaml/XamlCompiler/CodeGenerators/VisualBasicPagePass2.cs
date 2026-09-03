@@ -3484,7 +3484,7 @@ this.Write(this.ToStringHelper.ToStringWithCulture(step.ValueType));
 
 this.Write(") As Boolean\r\n");
 
-         if (step is RootStep || !step.Parent.IsIncludedInUpdate) {
+         if (!step.IsRetrievedThroughParent) {
 this.Write("                val = ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(step.CodeGen().PathExpression));

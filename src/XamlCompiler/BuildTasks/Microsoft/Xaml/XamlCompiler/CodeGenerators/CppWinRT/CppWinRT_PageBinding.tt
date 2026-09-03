@@ -1017,7 +1017,7 @@
 
         bool <#=step.TryGetValueCodeName#>(<#=step.ValueType#>& val)
         {
-<#+         if (step is RootStep || !step.Parent.IsIncludedInUpdate) {#>
+<#+         if (!step.IsRetrievedThroughParent) {#>
             val = <#=step.CodeGen().PathExpression#>;
             return true;
 <#+         }#>

@@ -1999,7 +1999,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 
             private bool <#=step.TryGetValueCodeName#>(out <#=step.ValueType#> val)
             {
-<#+         if (step is RootStep || !step.Parent.IsIncludedInUpdate) {#>
+<#+         if (!step.IsRetrievedThroughParent) {#>
                 val = <#=step.CodeGen().PathExpression#>;
                 return true;
 <#+         }#>

@@ -1733,7 +1733,7 @@ End Namespace
 <#+     {#>
 
             Private Function <#=step.TryGetValueCodeName#>(<Global.System.Runtime.InteropServices.Out()> ByRef val As <#=step.ValueType#>) As Boolean
-<#+         if (step is RootStep || !step.Parent.IsIncludedInUpdate) {#>
+<#+         if (!step.IsRetrievedThroughParent) {#>
                 val = <#=step.CodeGen().PathExpression#>
                 Return True
 <#+         }#>

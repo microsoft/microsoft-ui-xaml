@@ -282,7 +282,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             if (step.IsIncludedInUpdate)
             {
                 steps[step.TryGetValueCodeName] = step;
-                if (step.Parent != null)
+                if (step.IsRetrievedThroughParent)
                 {
                     AddTryGetValueStep(steps, step.Parent);
                 }
