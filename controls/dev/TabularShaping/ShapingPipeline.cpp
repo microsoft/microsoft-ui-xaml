@@ -9,7 +9,7 @@
 #include <string>
 #include <utility>
 
-namespace TabularShapingHelpers
+namespace ShapingHelpers
 {
     using SortDirection = winrt::SortDirection;
 
@@ -18,12 +18,12 @@ namespace TabularShapingHelpers
         return winrt::hstring{ std::wstring{ prefix } + std::to_wstring(m_nextDescriptionId++) };
     }
 
-    void ShapingPipeline::SetFilter(TabularPredicate const& predicate)
+    void ShapingPipeline::SetFilter(Predicate const& predicate)
     {
         SetFilter(winrt::hstring{}, predicate);
     }
 
-    void ShapingPipeline::SetFilter(winrt::hstring const& axisToken, TabularPredicate const& predicate)
+    void ShapingPipeline::SetFilter(winrt::hstring const& axisToken, Predicate const& predicate)
     {
         if (!predicate)
         {
@@ -65,7 +65,7 @@ namespace TabularShapingHelpers
             m_filters.end());
     }
 
-    int32_t ShapingPipeline::MarkGroupVerb(TabularKeySelector const& key)
+    int32_t ShapingPipeline::MarkGroupVerb(KeySelector const& key)
     {
         m_groupKey = key;
         m_groupDescriptionId = MintDescriptionId(L'g');
@@ -189,7 +189,7 @@ namespace TabularShapingHelpers
     void ShapingPipeline::SetSort(
         winrt::hstring const& previousAxisToken,
         winrt::hstring const& axisToken,
-        TabularKeySelector const& key,
+        KeySelector const& key,
         winrt::Windows::Foundation::IUnknown const& keyIdentity,
         winrt::hstring const& sortMemberPath,
         SortDirection direction)
@@ -352,7 +352,7 @@ namespace TabularShapingHelpers
             auto const& axis = axes[i];
             winrt::IInspectable rowKey{ nullptr };
             try { rowKey = axis.Key(row); } catch (...) { rowKey = nullptr; }
-            const int cmp = TabularValueComparer::Compare(itemKeys[i], rowKey);
+            const int cmp = ValueComparer::Compare(itemKeys[i], rowKey);
             if (cmp != 0)
             {
                 return axis.Direction == SortDirection::Ascending ? cmp : -cmp;

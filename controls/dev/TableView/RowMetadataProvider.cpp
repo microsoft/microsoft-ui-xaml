@@ -363,13 +363,13 @@ winrt::hstring RowMetadataProvider::GetGroupKey(winrt::IInspectable const& group
     // grouped adapter uses. The two MUST agree: an expansion key produced here is handed back to
     // the adapter's identity lookup, and a mismatch would silently degrade every expand/collapse
     // to the O(rows) scan below.
-    const auto identity = TabularShapingHelpers::GetGroupKeyIdentity(group);
+    const auto identity = ShapingHelpers::GetGroupKeyIdentity(group);
     if (!identity.empty())
     {
         return identity;
     }
 
-    return GetCanonicalGroupKey(TabularShapingHelpers::GetGroupKeyObject(group));
+    return GetCanonicalGroupKey(ShapingHelpers::GetGroupKeyObject(group));
 }
 
 winrt::hstring RowMetadataProvider::GetGroupExpansionKey(winrt::IInspectable const& group) const
@@ -452,7 +452,7 @@ winrt::hstring RowMetadataProvider::GetCanonicalGroupKey(winrt::IInspectable con
     // rejectEmptyString keeps the existing contract that an empty key string means "no usable
     // canonical key", which the caller reads as "fall back to comparing the key objects".
     winrt::hstring canonicalKey;
-    if (!TabularShapingHelpers::TabularValueKey::TryGetStablePropertyKey(key, canonicalKey, true))
+    if (!ShapingHelpers::ValueKey::TryGetStablePropertyKey(key, canonicalKey, true))
     {
         return L"";
     }

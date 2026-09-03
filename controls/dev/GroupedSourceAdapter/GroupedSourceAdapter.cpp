@@ -7,7 +7,7 @@
 #include "GroupedEntry.h"
 #include "RuntimeProfiler.h"
 #include "ShapingHelpers.h"
-#include "TabularRevoke.h"
+#include "ShapingRevoke.h"
 
 #include <string_view>
 
@@ -33,7 +33,7 @@ GroupedSourceAdapter::GroupedSourceAdapter()
     // Expansion intent lives in the model; the projection reacts to it in one place so a per-group
     // toggle and a programmatic ExpandAll reach the projection by exactly one path.
     m_expansion.SetChangedHandler(
-        [this](TabularShapingHelpers::RowExpansionModel::Change const& change)
+        [this](ShapingHelpers::RowExpansionModel::Change const& change)
         {
             OnExpansionChanged(change);
         });
@@ -107,7 +107,7 @@ void GroupedSourceAdapter::Rebuild()
         if (source)
         {
             // Source must be iterable; each element is itself an iterable group.
-            auto groups = TabularShapingHelpers::EnumerateInspectableItems(source);
+            auto groups = ShapingHelpers::EnumerateInspectableItems(source);
             for (auto const& group : groups)
             {
                 if (!group)
@@ -118,13 +118,13 @@ void GroupedSourceAdapter::Rebuild()
                 // Compute the group's stable identity ONCE. A value-typed key (string department,
                 // int year) yields a stable string that survives the key object being re-minted by
                 // the next shaping pass; a non-value key has none.
-                const auto identity = TabularShapingHelpers::GetGroupKeyIdentity(group);
+                const auto identity = ShapingHelpers::GetGroupKeyIdentity(group);
 
                 // The expansion-intent key: prefixed identity when the group has one, else a fall
                 // back to the group object's own stable lookup key.
                 const auto intentKey = !identity.empty()
                     ? winrt::hstring{ L"identity:" + identity }
-                    : TabularShapingHelpers::TabularValueKey::ToObjectLookupKey(group, true);
+                    : ShapingHelpers::ValueKey::ToObjectLookupKey(group, true);
                 if (!intentKey.empty())
                 {
                     liveGroupKeys.insert(intentKey);
@@ -149,7 +149,7 @@ void GroupedSourceAdapter::Rebuild()
                 // An empty group is NOT dropped: group existence is source-owned (a bucket exists
                 // only if the app authored it — a Kanban column, an "Uncategorized" bucket, an empty
                 // drag target), so it must stay targetable.
-                auto items = TabularShapingHelpers::EnumerateInspectableItems(group);
+                auto items = ShapingHelpers::EnumerateInspectableItems(group);
                 const int32_t groupItemCount = static_cast<int32_t>(items.size());
                 const bool isExpanded = m_expansion.IsExpanded(intentKey);
 
@@ -239,7 +239,7 @@ void GroupedSourceAdapter::CollapseAll()
     m_expansion.SetAllExpanded(false);
 }
 
-void GroupedSourceAdapter::OnExpansionChanged(TabularShapingHelpers::RowExpansionModel::Change const& change)
+void GroupedSourceAdapter::OnExpansionChanged(ShapingHelpers::RowExpansionModel::Change const& change)
 {
     AssertRebuildOnUiThread();
 
@@ -319,7 +319,7 @@ bool GroupedSourceAdapter::TryApplyExpansionSplice(winrt::hstring const& intentK
             // Materialize this group's data rows and insert them immediately after the header. The
             // stored count must agree with the live enumeration; a mismatch means the group content
             // changed without a notification we processed, so defer to Rebuild for coherence.
-            auto items = TabularShapingHelpers::EnumerateInspectableItems(group);
+            auto items = ShapingHelpers::EnumerateInspectableItems(group);
             if (static_cast<int32_t>(items.size()) != groupItemCount)
             {
                 return false;
@@ -370,7 +370,7 @@ winrt::hstring GroupedSourceAdapter::GetGroupIntentKey(winrt::IInspectable const
 {
     // A value-typed key (a string department, an int year) yields a stable string that survives the
     // key object being re-minted by the next shaping pass.
-    const auto identity = TabularShapingHelpers::GetGroupKeyIdentity(group);
+    const auto identity = ShapingHelpers::GetGroupKeyIdentity(group);
     if (!identity.empty())
     {
         return L"identity:" + identity;
@@ -378,7 +378,7 @@ winrt::hstring GroupedSourceAdapter::GetGroupIntentKey(winrt::IInspectable const
 
     // A group whose key is not a value type has no stable string form; fall back to the group
     // object's own identity, stable across rebuilds because the producer reuses one instance per bucket.
-    return TabularShapingHelpers::TabularValueKey::ToObjectLookupKey(group, true);
+    return ShapingHelpers::ValueKey::ToObjectLookupKey(group, true);
 }
 
 // --- Source / group subscription ---------------------------------------------------------------
@@ -431,21 +431,21 @@ void GroupedSourceAdapter::DetachFromSource()
         {
             if (auto incc = attached.try_as<winrt::Microsoft::UI::Xaml::Interop::INotifyCollectionChanged>())
             {
-                TabularShapingHelpers::SafeRevokeWith([&] { incc.CollectionChanged(m_outerCollectionChangedToken); });
+                ShapingHelpers::SafeRevokeWith([&] { incc.CollectionChanged(m_outerCollectionChangedToken); });
             }
         }
         if (m_outerVectorChangedToken.value != 0)
         {
             if (auto obs = attached.try_as<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>>())
             {
-                TabularShapingHelpers::SafeRevokeWith([&] { obs.VectorChanged(m_outerVectorChangedToken); });
+                ShapingHelpers::SafeRevokeWith([&] { obs.VectorChanged(m_outerVectorChangedToken); });
             }
         }
         if (m_outerBindableVectorChangedToken.value != 0)
         {
             if (auto bobs = attached.try_as<winrt::Microsoft::UI::Xaml::Interop::IBindableObservableVector>())
             {
-                TabularShapingHelpers::SafeRevokeWith([&] { bobs.VectorChanged(m_outerBindableVectorChangedToken); });
+                ShapingHelpers::SafeRevokeWith([&] { bobs.VectorChanged(m_outerBindableVectorChangedToken); });
             }
         }
     }
@@ -516,21 +516,21 @@ void GroupedSourceAdapter::UnsubscribeFromAllGroups()
         {
             if (auto incc = strong.try_as<winrt::Microsoft::UI::Xaml::Interop::INotifyCollectionChanged>())
             {
-                TabularShapingHelpers::SafeRevokeWith([&] { incc.CollectionChanged(sub.CollectionToken); });
+                ShapingHelpers::SafeRevokeWith([&] { incc.CollectionChanged(sub.CollectionToken); });
             }
         }
         if (sub.Token.value != 0)
         {
             if (auto obs = strong.try_as<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>>())
             {
-                TabularShapingHelpers::SafeRevokeWith([&] { obs.VectorChanged(sub.Token); });
+                ShapingHelpers::SafeRevokeWith([&] { obs.VectorChanged(sub.Token); });
             }
         }
         if (sub.BindableToken.value != 0)
         {
             if (auto bobs = strong.try_as<winrt::Microsoft::UI::Xaml::Interop::IBindableObservableVector>())
             {
-                TabularShapingHelpers::SafeRevokeWith([&] { bobs.VectorChanged(sub.BindableToken); });
+                ShapingHelpers::SafeRevokeWith([&] { bobs.VectorChanged(sub.BindableToken); });
             }
         }
     }

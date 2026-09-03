@@ -397,7 +397,7 @@ winrt::TableViewKeySelector TableView::GetTableViewSourceSortKeySelector(
     const bool sortMemberPathChanged = m_tableViewSourceSort.MemberPath != sortMemberPath;
     if (!m_tableViewSourceSort.CustomSortState)
     {
-        m_tableViewSourceSort.CustomSortState = std::make_shared<TabularShapingHelpers::CustomSortRankAdapter>();
+        m_tableViewSourceSort.CustomSortState = std::make_shared<ShapingHelpers::CustomSortRankAdapter>();
     }
     m_tableViewSourceSort.MemberPath = sortMemberPath;
     m_tableViewSourceSort.ResetCustomSort();
@@ -478,7 +478,7 @@ bool TableView::SyncTableViewSourceSort(
 
                 if (auto const& rankAdapter = m_tableViewSourceSort.CustomSortState)
                 {
-                    TabularShapingHelpers::TabularPairwiseComparer comparer =
+                    ShapingHelpers::PairwiseComparer comparer =
                         [customComparer](winrt::IInspectable const& a, winrt::IInspectable const& b)
                         {
                             return static_cast<int>(customComparer.Compare(a, b));

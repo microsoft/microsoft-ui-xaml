@@ -30,7 +30,7 @@ class ShapedGroup : public winrt::implements<
     winrt::Windows::Foundation::Collections::IIterable<winrt::IInspectable>,
     winrt::Microsoft::UI::Xaml::Data::ICustomPropertyProvider,
     winrt::Windows::Foundation::IStringable,
-    TabularShapingHelpers::ITabularGroupIdentity>
+    ShapingHelpers::IGroupIdentity>
 {
 public:
     ShapedGroup(winrt::IInspectable const& key, winrt::hstring const& groupKey);
@@ -55,7 +55,7 @@ public:
     // expansion state has to survive that.
     winrt::hstring GroupKey() const;
 
-    // ITabularGroupIdentity — the layer-1 contract through which layer 3 reads the identity above
+    // IGroupIdentity — the layer-1 contract through which layer 3 reads the identity above
     // without depending on this type.
     winrt::hstring StableGroupIdentity() const override;
 

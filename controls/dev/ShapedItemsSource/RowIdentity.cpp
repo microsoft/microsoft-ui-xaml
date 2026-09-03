@@ -38,11 +38,11 @@ namespace RowIdentity
                 return false;
             }
 
-            return TabularShapingHelpers::TabularValueKey::TryGetStablePropertyKey(key, identity, true);
+            return ShapingHelpers::ValueKey::TryGetStablePropertyKey(key, identity, true);
         }
     }
 
-    TabularShapingHelpers::TabularKeySelector MakeObjectIdentitySelector()
+    ShapingHelpers::KeySelector MakeObjectIdentitySelector()
     {
         return [](winrt::IInspectable const& item) -> winrt::IInspectable
         {
@@ -66,7 +66,7 @@ namespace RowIdentity
 
     bool TryGetRequiredRowIdentity(
         winrt::IInspectable const& item,
-        TabularShapingHelpers::TabularKeySelector const& keySelector,
+        ShapingHelpers::KeySelector const& keySelector,
         winrt::hstring& identity,
         wchar_t const*& reason)
     {
@@ -119,7 +119,7 @@ namespace RowIdentity
 
     bool ValidateRowIdentities(
         std::vector<winrt::IInspectable> const& rows,
-        TabularShapingHelpers::TabularKeySelector const& keySelector,
+        ShapingHelpers::KeySelector const& keySelector,
         wchar_t const*& reason)
     {
         std::unordered_set<winrt::hstring> identities;
@@ -156,7 +156,7 @@ namespace RowIdentity
     void RebuildFlatRowIdentityTracking(
         std::vector<winrt::IInspectable> const& rows,
         bool identityRequired,
-        TabularShapingHelpers::TabularKeySelector const& keySelector,
+        ShapingHelpers::KeySelector const& keySelector,
         std::unordered_set<winrt::hstring>& identities,
         std::unordered_map<winrt::hstring, uint32_t>& identityToIndex)
     {
@@ -200,7 +200,7 @@ namespace RowIdentity
     bool TryGetTrackedFlatRowIndex(
         winrt::hstring const& identity,
         winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& rows,
-        TabularShapingHelpers::TabularKeySelector const& keySelector,
+        ShapingHelpers::KeySelector const& keySelector,
         std::unordered_map<winrt::hstring, uint32_t> const& identityToIndex,
         uint32_t& index)
     {
@@ -312,6 +312,6 @@ namespace RowIdentity
 
     winrt::hstring StringifyKey(winrt::IInspectable const& key)
     {
-        return TabularShapingHelpers::TabularValueKey::ToString(key);
+        return ShapingHelpers::ValueKey::ToString(key);
     }
 }

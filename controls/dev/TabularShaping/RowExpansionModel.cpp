@@ -5,7 +5,7 @@
 #include "common.h"
 #include "RowExpansionModel.h"
 
-namespace TabularShapingHelpers
+namespace ShapingHelpers
 {
     void RowExpansionModel::SetDefaultExpanded(bool expanded)
     {
