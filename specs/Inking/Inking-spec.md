@@ -28,8 +28,37 @@ contract. The public names live in `Microsoft.UI.Xaml.Controls` and
 # API diff from WinUI 2 (UWP)
 
 This WinUI 3 stack is a port of the UWP inking surface, so nearly every type keeps its exact member
-shape. The meaningful delta is the short set of member changes below; the namespace move and the reused
-types are noted briefly at the end of this section.
+shape. This section is the full diff: why there is a diff at all, the namespace move, the handful of
+member-shape changes, the small set of members that are new in WinUI 3, and what is not ported in this
+preview.
+
+## Why there is a diff at all
+
+UWP inking ran the whole stack inside the app's view process. In WinUI 3 the underlying OS ink objects
+(`Windows.UI.Input.Inking.InkPresenter` and everything reached through it) are thread-affine to a
+dedicated ink thread that is **not** the XAML UI thread. The WinUI 3 `InkPresenter`,
+`InkStrokeContainer`, `InkStrokeInput`, `InkUnprocessedInput`, and the input-configuration types are
+therefore not the OS types - they are thin **mirrors** that live on the UI thread and marshal every
+call across to the ink thread. Almost the entire diff below falls out of that threading model rather
+than out of any behavior change: a mirror that also has to project into XAML metadata cannot always
+keep the exact UWP member shape.
+
+## Namespace move and re-implementation
+
+The public types move out of the OS namespaces into the WinUI 3 namespaces:
+
+| UWP namespace | WinUI 3 namespace |
+|---|---|
+| `Windows.UI.Xaml.Controls` (`InkCanvas`, `InkToolbar`, toolbar buttons) | `Microsoft.UI.Xaml.Controls` |
+| `Windows.UI.Input.Inking` (`InkPresenter` and the objects it owns) | `Microsoft.UI.Xaml.Controls` (re-declared as mirrors) |
+| automation peers | `Microsoft.UI.Xaml.Automation.Peers` |
+
+The key point is that WinUI 3 does **not** hand the app the OS inking objects. `InkPresenter`,
+`InkStrokeContainer`, `InkStrokeInput`, `InkUnprocessedInput`, and the input-configuration types are
+our own ink-thread-marshaled mirrors, not `Windows.UI.Input.Inking` objects. Only the leaf data types
+that are already thread-agnostic - `InkStroke`, `InkDrawingAttributes`, `InkStrokeBuilder`,
+`InkPresenterRuler` / `InkPresenterProtractor`, `InkPersistenceFormat`, and `CoreInputDeviceTypes` -
+are reused from `Windows.UI.Input.Inking` unchanged.
 
 ## Member shape changes
 
@@ -42,26 +71,39 @@ generation - none of them changes behavior.
 | `InkStrokeInput.InkPresenter` (property) | `GetInkPresenter()` (method) | A property forms a metadata cycle with `InkPresenter.StrokeInput`. UWP's `get_InkPresenter` is already a method at the ABI. |
 | `InkUnprocessedInput.InkPresenter` (property) | `GetInkPresenter()` (method) | Same cycle with `InkPresenter.UnprocessedInput`. |
 
+These three are the mirror hitting a limitation in how XAML metadata is generated for a WinUI 3 type
+that mirrors a same-named OS type. Teaching the generator to emit a property here (so the shape matches
+UWP exactly) is a reasonable follow-up; for the preview the method shape is the safe choice and keeps
+the ABI identical to UWP's `get_*` accessors.
+
 `InkPresenter.StrokeContainer` is get/set in UWP; the mirror exposes it read-only (`get`) because the
 presenter owns its container - strokes are still added and removed through the container's own methods.
+
+## New in WinUI 3 (not public in UWP)
+
+A few members are public here that were not public UWP APIs. They are called out so the review can
+decide each one on purpose:
+
+| Member | Kind | Why it is public |
+|---|---|---|
+| `InkToolbar.EraserFlyoutItemClicked` + `InkToolbarEraserFlyoutItemClickedEventArgs` | event | The eraser flyout (stroke eraser / precision erasers / clear-all) is a first-party WinUI 3 template. The event lets an app observe or handle an eraser-flyout selection before the toolbar acts on it; UWP handled this only internally. |
+| `InkToolbarEraserFlyoutItemKind` | enum | Names the items in that eraser flyout so the event args and the visibility toggles below can refer to them. Not a public type in UWP. |
+| `InkToolbarEraserKind` | enum | The selected eraser mode (`Stroke` / `PrecisionSmall` / `PrecisionLarge`) surfaced through `InkToolbarEraserButton.SelectedEraser`. Not public in UWP. |
+| `InkToolbarEraserButton.IsStrokeEraserVisible`, `ArePrecisionErasersVisible` | properties | Let an app show or hide the individual eraser-flyout items, matching the existing `IsClearAllVisible`. UWP did not expose these toggles. |
 
 ## Not ported in this preview
 
 Present on the UWP types, intentionally left out of the `[MUX_PREVIEW]` surface and tracked as
 follow-up (see the [Not yet in this preview](#not-yet-in-this-preview) appendix):
 
-- `InkPresenter.ActivateCustomDrying()` and the `InkSynchronizer` it returns - app-driven rendering of dry ink.
 - The pen-flyout live wet-stroke preview.
 - The `UseSystemColorsWhenNecessary` high-contrast default-palette filtering.
+- `InkInputConfiguration.IsPenHapticFeedbackEnabled` - the pen haptic-feedback toggle is not yet plumbed through the lifted stack.
+- Surface Dial / `RadialController` integration.
 
-Every other member on the UWP inking types is present with the same name and signature.
-
-**Namespaces and reused types.** The UWP types move from `Windows.UI.Xaml.Controls` and
-`Windows.UI.Input.Inking` into `Microsoft.UI.Xaml.Controls` (automation peers into
-`Microsoft.UI.Xaml.Automation.Peers`). `InkPresenter`, `InkStrokeContainer`, `InkStrokeInput`,
-`InkUnprocessedInput`, and the input-configuration types are re-declared as ink-thread-marshaled
-mirrors; `InkStroke`, `InkDrawingAttributes`, `InkStrokeBuilder`, the rulers, `InkPersistenceFormat`,
-and `CoreInputDeviceTypes` are reused from `Windows.UI.Input.Inking` unchanged.
+Custom drying (`InkPresenter.ActivateCustomDrying()` and the `InkSynchronizer` it returns) **is**
+included in this preview - see [Custom drying](#custom-drying-app-rendered-dry-ink) below. Every other
+member on the UWP inking types is present with the same name and signature.
 
 # Conceptual pages (How To)
 
@@ -198,6 +240,15 @@ Highlighter tool (translucent strokes).
 ### Remarks
 
 - **Preview**: every type here is `[MUX_PREVIEW]` and ships in the experimental channel first.
+- **Rendering (Visual Layer external content)**: `InkCanvas` presents its wet and dry ink through a
+  system composition visual bridged into the XAML tree (the lifted `ContentExternalOutputLink` on the
+  lifted path, or a system-visual splice on the system-compositor path). It is therefore subject to the
+  Visual Layer [external content](https://learn.microsoft.com/windows/apps/develop/composition/visual-layer#external-content)
+  limitations: XAML clipping, transforms, opacity, and z-order apply to the surface, but effects that
+  need to read the ink pixels back (for example a XAML effect brush sampling the surface, or a
+  `RenderTargetBitmap` capture of the ink) do not compose over the ink. `InkCanvas` belongs on the
+  element list on that page. To snapshot ink, render the strokes yourself from the
+  `InkStrokeContainer` rather than capturing the surface.
 - **Threading and synchronous members**: `InkPresenter` and everything reached through it
   (`StrokeContainer`, `StrokeInput`, `UnprocessedInput`, the configuration objects) are thin mirrors
   of thread-affine OS ink objects. Most members are **synchronous** - they block the caller until the
@@ -208,6 +259,46 @@ Highlighter tool (translucent strokes).
 - **Stroke model**: strokes are `Windows.UI.Input.Inking.InkStroke` - the OS stroke type is reused, so
   serialization (`InkStrokeContainer.SaveAsync` / `LoadAsync`, ISF / GIF formats) and interop with
   `InkStrokeBuilder` behave identically to UWP.
+
+## Custom drying (app-rendered dry ink)
+
+By default the `InkPresenter` renders committed ("dry") strokes for you. **Custom drying** hands that
+job to the app: you receive each stroke the moment the presenter commits it and draw it into your own
+visual. This is what a note-taking or document app uses to apply a custom brush, run ink through its
+own document model, or composite ink with other content.
+
+Turn it on once, before the first stroke, by calling `InkPresenter.ActivateCustomDrying()`. It returns
+an `InkSynchronizer`. From then on, handle `StrokesCollected` and bracket your rendering with
+`BeginDry` / `EndDry`:
+
+```csharp
+// Once, at setup - before any stroke is drawn.
+var presenter = InkSurface.InkPresenter;
+InkSynchronizer synchronizer = presenter.ActivateCustomDrying();
+
+presenter.StrokesCollected += (s, e) =>
+{
+    // BeginDry hands back the just-committed strokes and holds the wet layer up so there is no gap.
+    var strokes = synchronizer.BeginDry();
+
+    // Render the strokes into your own canvas / visual however you like (custom brush, effects, ...).
+    foreach (var stroke in strokes)
+    {
+        RenderDryStroke(stroke);   // app-owned rendering
+    }
+
+    // Release the wet layer now that your dry ink is on screen.
+    synchronizer.EndDry();
+};
+```
+
+> [!NOTE]
+> Call `ActivateCustomDrying()` before the first stroke is collected. `BeginDry` is only valid from
+> inside the `StrokesCollected` handler (it runs in context on the presenter's commit), and every
+> `BeginDry` must be paired with an `EndDry`. If you never activate custom drying, the presenter dries
+> ink for you and none of this is needed.
+
+![Custom drying: app-rendered dry strokes next to default drying](./inking-customdry.png)
 
 # API Pages
 
@@ -257,8 +348,35 @@ The configuration and event hub for an `InkCanvas`, mirroring `Windows.UI.Input.
 | `InputConfiguration` | property | `InkInputConfiguration` (barrel-button, eraser input toggles). |
 | `StrokeInput` | property | `InkStrokeInput` - raw stroke lifecycle events. |
 | `UnprocessedInput` | property | `InkUnprocessedInput` - pointer events not turned into ink. |
+| `ActivateCustomDrying()` | method | Switches the presenter into custom drying and returns an `InkSynchronizer` so the app renders dry ink itself. Call before the first stroke is collected. See [Custom drying](#custom-drying-app-rendered-dry-ink). |
 | `StrokesCollected` | event | Raised when wet ink is committed to dry strokes. Args: `InkStrokesCollectedEventArgs`. |
 | `StrokesErased` | event | Raised when strokes are erased. Args: `InkStrokesErasedEventArgs`. |
+
+## InkPresenter.ActivateCustomDrying method
+
+Switches the presenter into **custom drying** and returns the `InkSynchronizer` the app uses to render
+dry ink itself. In the default (system) drying mode the presenter renders committed strokes as dry
+ink for you. With custom drying the app takes that over: it receives the strokes the presenter just
+committed and draws them into its own visual, which is what lets an app apply custom brushes, effects,
+or its own document model to dry ink.
+
+Call `ActivateCustomDrying()` once, before the first stroke is collected. It returns an
+`InkSynchronizer`; from then on `StrokesCollected` is your cue to run a `BeginDry` / render / `EndDry`
+cycle (see [Custom drying](#custom-drying-app-rendered-dry-ink)).
+
+## InkSynchronizer class
+
+Returned by `InkPresenter.ActivateCustomDrying()`. Brackets the app's own rendering of dry ink so the
+presenter does not also draw the same strokes.
+
+| Member | Kind | Description |
+|---|---|---|
+| `BeginDry()` | method | Returns the strokes the presenter just committed and holds the wet layer up so there is no gap between the wet stroke disappearing and the app's dry ink appearing. |
+| `EndDry()` | method | Releases the wet layer after the app has rendered the strokes as dry ink. |
+
+The underlying OS synchronizer is thread-affine to the ink thread, so both calls marshal there through
+the owning `InkPresenter`. `BeginDry` runs in context inside the presenter's commit, so call it from
+the `StrokesCollected` handler and pair every `BeginDry` with an `EndDry`.
 
 ## InkStrokeContainer class
 
@@ -274,6 +392,10 @@ Key members: `GetStrokes()`, `AddStroke` / `AddStrokes`, `Clear()`, `GetStrokeBy
 > `BoundingRect` returns, and `SelectWithLine` / `SelectWithPolyLine` expect, physical-pixel
 > coordinates. Scale by `XamlRoot.RasterizationScale` when converting to or from XAML DIP space (for
 > example when feeding a lasso path back into the XAML tree).
+>
+> This is the same as UWP in the sense that the OS presenter has always worked in physical pixels; what
+> is new is only that WinUI 3 XAML is DIP-based, so the physical-to-DIP scale is now something the app
+> applies explicitly at the boundary.
 
 ## InkStrokeInput class
 
@@ -281,6 +403,13 @@ Raw stroke lifecycle, re-raised on the UI thread. Events: `StrokeStarted`, `Stro
 `StrokeEnded`, `StrokeCanceled` (all
 `TypedEventHandler<InkStrokeInput, Windows.UI.Core.PointerEventArgs>`). `GetInkPresenter()` returns the
 owning presenter (method, not property - see the note above).
+
+> [!NOTE]
+> These events carry `Windows.UI.Core.PointerEventArgs`, not `Microsoft.UI.Input.PointerEventArgs`. The
+> argument is produced by the OS `InkPresenter` on the ink thread and passed straight through by the
+> mirror, so keeping the W.U.C type avoids a per-event conversion on the raw input path and matches the
+> exact UWP signature. Switching to `Microsoft.UI.Input.PointerEventArgs` for consistency with the rest
+> of WinAppSDK is an open question for the review; it would add a marshaling conversion per event.
 
 ## InkUnprocessedInput class
 
@@ -400,6 +529,7 @@ namespace Microsoft.UI.Xaml.Controls
     {
         Boolean IsPrimaryBarrelButtonInputEnabled;
         Boolean IsEraserInputEnabled;
+        // UWP's IsPenHapticFeedbackEnabled is intentionally omitted in this preview (not yet plumbed).
     }
 
     [MUX_PREVIEW]
@@ -434,6 +564,16 @@ namespace Microsoft.UI.Xaml.Controls
     }
 
     [MUX_PREVIEW]
+    runtimeclass InkSynchronizer
+    {
+        // Take over rendering of dry (committed) ink. BeginDry hands back the strokes the presenter
+        // just committed and holds the wet layer; the app renders them as dry ink and calls EndDry to
+        // release the wet layer. Both calls marshal to the ink thread through the owning InkPresenter.
+        Windows.Foundation.Collections.IVectorView<Windows.UI.Input.Inking.InkStroke> BeginDry();
+        void EndDry();
+    }
+
+    [MUX_PREVIEW]
     runtimeclass InkPresenter
     {
         Windows.UI.Core.CoreInputDeviceTypes InputDeviceTypes;
@@ -448,6 +588,9 @@ namespace Microsoft.UI.Xaml.Controls
         InkInputConfiguration InputConfiguration{ get; };
         InkStrokeInput StrokeInput{ get; };
         InkUnprocessedInput UnprocessedInput{ get; };
+        // Switch into custom-drying mode and return the synchronizer the app uses to render dry ink.
+        // Must be called before the first stroke is collected.
+        InkSynchronizer ActivateCustomDrying();
         event Windows.Foundation.TypedEventHandler<InkPresenter, InkStrokesCollectedEventArgs> StrokesCollected;
         event Windows.Foundation.TypedEventHandler<InkPresenter, InkStrokesErasedEventArgs> StrokesErased;
     }
@@ -502,7 +645,7 @@ namespace Microsoft.UI.Xaml.Controls
         InkToolbarButtonFlyoutPlacement ButtonFlyoutPlacement;
         [MUX_DEFAULT_VALUE("winrt::Orientation::Horizontal")]
         Microsoft.UI.Xaml.Controls.Orientation Orientation;
-        Object TargetInkPresenter;
+        InkPresenter TargetInkPresenter;
         event Windows.Foundation.TypedEventHandler<InkToolbar, Object> ActiveToolChanged;
         event Windows.Foundation.TypedEventHandler<InkToolbar, Object> InkDrawingAttributesChanged;
         event Windows.Foundation.TypedEventHandler<InkToolbar, Object> EraseAllClicked;
@@ -572,7 +715,6 @@ namespace Microsoft.UI.Xaml.Controls
     {
         InkToolbarTool ToolKind{ get; };
         Boolean IsExtensionGlyphShown;
-        InkToolbarToggle ToggleKind{ get; };
     };
 
     [MUX_PREVIEW] unsealed runtimeclass InkToolbarCustomToggleButton : InkToolbarToggleButton { [method_name("CreateInstance")] InkToolbarCustomToggleButton(); };
@@ -685,7 +827,7 @@ the API above and are tracked as follow-up work:
 | Area | Notes |
 |---|---|
 | Live stroke preview (pen-flyout wet preview) | The stroke logic ports from UWP; re-hosting the wet preview in the lifted framework is follow-up work. |
-| Custom drying (`ActivateCustomDrying` / `InkSynchronizer`) | App-driven rendering of dry ink. Not in the current preview surface; planned as a follow-up. |
 | High-contrast default palette | The `UseSystemColorsWhenNecessary` default-mode contrast filtering is not yet ported; other high-contrast modes and toolbar chrome adapt normally. |
+| Pen haptic feedback | `InkInputConfiguration.IsPenHapticFeedbackEnabled` is not yet plumbed through the lifted stack. |
 | Per-color localized color names | Uncommon colors fall back to an `RGB r,g,b` string, matching UWP's fallback. |
 | Surface Dial / RadialController integration | Out of scope for this preview. |
