@@ -1385,13 +1385,6 @@ static winrt::hstring GetColumnHeaderText(const winrt::TableViewColumn& column)
     return {};
 }
 
-// Static: the value never varies and headers rebuild on every column change.
-static winrt::Brush HeaderCellTransparentBrush()
-{
-    static const winrt::SolidColorBrush s_transparent{ winrt::Colors::Transparent() };
-    return s_transparent;
-}
-
 void TableView::ReleaseHeaderToolTips(const winrt::Panel& host)
 {
     if (!host)
@@ -1426,7 +1419,8 @@ void TableView::RebuildHeaders()
         return;
     }
 
-    // Clearing an open tooltip's host is the reentrant CPopup::RemoveChild shape.
+    // Close owned tooltips first: clearing the host out from under a live popup tears down its
+    // child reentrantly.
     ReleaseHeaderToolTips(host);
 
     host.Children().Clear();
@@ -1439,6 +1433,7 @@ void TableView::RebuildHeaders()
     // Header cells share the density row min-height so the header band matches the body rows.
     const double cachedRowMinHeight = GetDensityRowMinHeight();
     const double cachedHeaderFontSize = GetHeaderFontSize();
+    const winrt::Brush cachedHeaderCellFill = winrt::SolidColorBrush{ winrt::Colors::Transparent() };
     // unbox_value_or, not unbox_value: the key is app-overridable and a non-double would throw out
     // of RebuildHeaders; a non-positive or non-finite override would flow straight into Width().
     double cachedResizeGripperWidth = winrt::unbox_value_or<double>(
@@ -1487,7 +1482,7 @@ void TableView::RebuildHeaders()
             headerCell.MinHeight(cachedRowMinHeight);
             // No Background means no pointer input over the padding, leaving both the tooltip and
             // the click-to-sort target dead there.
-            headerCell.Background(HeaderCellTransparentBrush());
+            headerCell.Background(cachedHeaderCellFill);
 
             // No Width binding: TableViewCellsPanel arranges header cells at the column's ActualWidth;
             // an explicit Width would defeat the panel's unconstrained Auto measured-width measurement.
