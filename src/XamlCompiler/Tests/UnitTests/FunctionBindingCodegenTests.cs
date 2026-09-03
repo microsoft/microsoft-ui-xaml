@@ -29,7 +29,8 @@ namespace UnitTests
             string page = String.Format(
                 @"<Page x:Class='LibManagedDll.BindPathParserClass'
                 xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
-                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>{0}</Page>",
+                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                xmlns:dll='using:LibManagedDll'>{0}</Page>",
                 xaml);
 
             var context = new CodeGeneratorProjectContext(new Version(KnownVersions.Latest), "FunctionBindingCodegen");
@@ -115,6 +116,66 @@ namespace UnitTests
                 @"global::System\.String p0;\s*" +
                 @"if \(!TryGet_StringProperty\(out p0\)\) \{ return; \}\s*" +
                 @"global::System\.String result = this\.dataRoot\.FormatTitle\(p0\);");
+        }
+
+        /// <summary>
+        /// A path that starts at a named element inside a template is rooted at the element root, a
+        /// synthetic step standing in for the namescope rather than for a value, so it has to be
+        /// read straight off the bindings class instead of being walked to through that root.
+        /// </summary>
+        private const string NamedElementTemplate = @"
+            <ContentControl>
+                <ContentControl.ContentTemplate>
+                    <DataTemplate x:DataType='dll:BindPathParserClass'>
+                        <Grid>
+                            <dll:NamedElementForPathing x:Name='helper'/>
+                            {0}
+                        </Grid>
+                    </DataTemplate>
+                </ContentControl.ContentTemplate>
+            </ContentControl>";
+
+        [TestMethod]
+        public void FunctionBinding_RetrievesNamedElementInstanceInTemplate()
+        {
+            string code = GenerateBindings(
+                String.Format(NamedElementTemplate, "<TextBlock Text='{x:Bind helper.Format(StringProperty)}'/>"),
+                CodeGenLanguage.CSharp);
+
+            AssertGenerated(code,
+                @"private bool TryGet_helper\(out global::LibManagedDll\.NamedElementForPathing val\)\s*\{\s*" +
+                @"val = this\.obj\d+;\s*return true;\s*\}");
+        }
+
+        [TestMethod]
+        public void FunctionBinding_RetrievesNamedElementInstanceInTemplate_VisualBasic()
+        {
+            string code = GenerateBindings(
+                String.Format(NamedElementTemplate, "<TextBlock Text='{x:Bind helper.Format(StringProperty)}'/>"),
+                CodeGenLanguage.VisualBasic);
+
+            AssertGenerated(code,
+                @"Private Function TryGet_helper\(<Global\.System\.Runtime\.InteropServices\.Out\(\)> ByRef val As " +
+                @"Global\.LibManagedDll\.NamedElementForPathing\) As Boolean\s*" +
+                @"val = Me\.obj\d+\s*Return True\s*End Function");
+        }
+
+        [TestMethod]
+        public void FunctionBinding_RetrievesNamedElementArgumentInTemplate()
+        {
+            string code = GenerateBindings(
+                String.Format(NamedElementTemplate, "<TextBlock Text='{x:Bind FormatTitle(helper.Value)}'/>"),
+                CodeGenLanguage.CSharp);
+
+            // The step for the named element itself is read directly, and the step below it is
+            // walked to through that one as usual.
+            AssertGenerated(code,
+                @"private bool TryGet_helper\(out global::LibManagedDll\.NamedElementForPathing val\)\s*\{\s*" +
+                @"val = this\.obj\d+;\s*return true;\s*\}");
+            AssertGenerated(code,
+                @"private bool TryGet_helper_Value\(out global::System\.String val\)\s*\{\s*" +
+                @"global::LibManagedDll\.NamedElementForPathing obj;\s*" +
+                @"if \(TryGet_helper\(out obj\) && obj != null\)");
         }
     }
 }

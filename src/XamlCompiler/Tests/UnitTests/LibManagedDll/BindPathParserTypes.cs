@@ -15,6 +15,13 @@ namespace LibManagedDll
         public string Format(string value) { return String.Format("Format: {0}", value); }
     }
 
+    public class NamedElementForPathing : FrameworkElement
+    {
+        public string Value { get; set; }
+
+        public string Format(string value) { return String.Format("Format: {0}", value); }
+    }
+
     public class BindPathParserClass
     {
         public Color[] Rainbow = {
