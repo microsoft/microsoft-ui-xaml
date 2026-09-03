@@ -63,7 +63,7 @@ winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector cons
         throw winrt::hresult_invalid_argument(L"key cannot be null.");
     }
 
-    RowIdentity::TabularIdentitySelector groupIdentity{ nullptr };
+    RowIdentity::IdentitySelector groupIdentity{ nullptr };
     if (groupIdentitySelector)
     {
         groupIdentity = [groupIdentitySelector](winrt::IInspectable const& item) { return groupIdentitySelector(item); };

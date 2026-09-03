@@ -18,42 +18,8 @@
 // Single-responsibility grouped adapter.
 //
 // The adapter has ONE job: take the shaped grouped source and MATERIALIZE it into one flat list
-// of rows — header, items, header, items — held in an ordinary IObservableVector. That vector is
-// then wrapped in an ItemsSourceView and handed to the ItemsRepeater. There is no
-// HierarchicalItemsSourceView, no GroupRunTable, no computed/virtualized axis, and no per-row key
-// surface.
-//
-// What it deliberately drops relative to a computed adapter, and why the drop is the
-// whole point:
-//
-//   * No lazy row minting. Rebuild walks every group and pushes every visible row up front, so a
-//     grouped bind allocates one header object per group plus (for expanded groups) nothing per
-//     data row — data rows are the raw app items, so they cost only the vector slot. Header count
-//     is O(groups); the memory that scared the original change (a wrapper per data row) is already
-//     gone because data rows are no longer wrapped.
-//
-//   * Few fast paths. Every source change and every inner-group change is still a full Rebuild that
-//     ends in one ReplaceAll — i.e. one Reset into the repeater. The one exception is a single-group
-//     expand/collapse: that splices just the toggled group's data rows into/out of the flat vector
-//     (TryApplyExpansionSplice) so unaffected containers — and the scroll/selection/focus riding on
-//     them — survive. Bulk expansion (ExpandAll/CollapseAll) and anything the splice can't resolve
-//     fall back to the Reset. The heavier ranged machinery a computed adapter carried
-//     (TryApplyIncrementalInnerGroupChangeIncc, the run table that computed the affected range) is
-//     still gone.
-//
-//   * No IKeyIndexMapping / KeyFromIndex. Because Entries() is a plain IObservableVector, the
-//     repeater reaches it through InspectingDataSource, which reports HasKeyIndexMapping only for a
-//     source that implements IKeyIndexMapping. This adapter does not, so container preservation
-//     across a reshape falls back to index-based reuse — a sort or filter re-templates rows rather
-//     than key-rematching them. (The computed view implemented IItemsSourceView directly precisely
-//     to keep that surface.)
-//
-// What it KEEPS, because these are orthogonal to how rows are stored:
-//
-//   * Expansion INTENT (RowExpansionModel), keyed by the group's stable string identity so it
-//     survives group objects being re-minted by each reshape. A change here just triggers Rebuild.
-//   * Source and inner-group subscription with UI-thread affinity and GC-safe (weak) callbacks.
-//   * Empty groups are preserved (app-authored structure), matching the current adapter.
+// of rows — header, items, header, items — held in an ordinary IObservableVector. That vector
+// can then be wrapped in an ItemsSourceView and handed to the ItemsRepeater by the control. 
 class GroupedSourceAdapter : public std::enable_shared_from_this<GroupedSourceAdapter>
 {
 public:

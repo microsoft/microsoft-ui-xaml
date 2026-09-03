@@ -123,7 +123,7 @@ void ShapedItemsSource::ClearFilter(winrt::hstring const& axisToken)
 
 void ShapedItemsSource::SetGroup(
     TabularShapingHelpers::TabularKeySelector const& key,
-    RowIdentity::TabularIdentitySelector const& groupIdentitySelector)
+    RowIdentity::IdentitySelector const& groupIdentitySelector)
 {
     m_groupSelector = key;
     m_groupIdentitySelector = groupIdentitySelector;

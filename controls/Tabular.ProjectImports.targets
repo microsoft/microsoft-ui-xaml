@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <!--
-  Imports for the parallel Microsoft.UI.Xaml.Controls.Tabular.dll ("TabularControls").
-  Scoped subset of ProjectImports.targets: the TableView control plus the shared helper
-  infra it requires. TableView is hosted ONLY in the Tabular winmd (it is not added to
-  MUXC's controls\ProjectImports.targets), which avoids duplicate-type collisions when the
-  Tabular DLL references the MUXC winmd for ItemsRepeater / ScrollView / ScrollPresenter
-  (which stay in MUXC).
+  Imports for the parallel Microsoft.UI.Xaml.Controls.Tabular.dll ("TabularControls"):
+  the TableView control plus the shared helper infra it requires. TableView is hosted only
+  in the Tabular winmd, so the Tabular DLL can reference the MUXC winmd for ItemsRepeater /
+  ScrollView / ScrollPresenter without duplicate-type collisions.
   See docs/design-notes/TabularControls/TableView-dev-spec.md.
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -17,12 +15,12 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <!--
-    Swap in the Tabular-renamed metadata IDL: it produces XamlControlsTabularXamlMetaDataProvider +
-    TabularControlsResources instead of MUXC's XamlControlsXamlMetaDataProvider + XamlControlsResources,
-    avoiding duplicate-runtimeclass collisions. MIDL also references MUXC's unmerged winmd (below) so
-    the shared CustomAttributes resolve from there instead of being redeclared here — redeclaring them
-    caused MDM2009 duplicate-type once both winmds merged into public metadata. Must be the FIRST
-    @(Midl) entry so its MUX_* macros are visible to every control IDL merged after it. -->
+    The Tabular-renamed metadata IDL produces XamlControlsTabularXamlMetaDataProvider +
+    TabularControlsResources instead of MUXC's XamlControlsXamlMetaDataProvider +
+    XamlControlsResources, avoiding duplicate-runtimeclass collisions. MIDL references MUXC's
+    unmerged winmd so the shared CustomAttributes resolve from there rather than being redeclared.
+    Must be the FIRST @(Midl) entry so its MUX_* macros are visible to every control IDL merged
+    after it. -->
   <ItemGroup>
     <Midl Remove="$(MUXCProjectRoot)idl\Microsoft.UI.Xaml.Controls.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)dev\dll-tabular\Microsoft.UI.Xaml.Controls.Tabular.idl" />
@@ -34,9 +32,6 @@
     <Import Project="$(MSBuildThisFileDirectory)dev\Telemetry\Telemetry.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\ResourceHelper\ResourceHelper.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\ResizeGripper\ResizeGripper.vcxitems" Label="Shared" />
-    <!-- Tabular shaping stack, imported bottom-up: layer 1 (shape descriptions + pipeline),
-         layer 2 (the projection), then layer 3 (the grouping model and its adapter). Live
-         shaping arrives in a later change. -->
     <Import Project="$(MSBuildThisFileDirectory)dev\TabularShaping\TabularShaping.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\ShapedItemsSource\ShapedItemsSource.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\GroupedSourceAdapter\GroupedSourceAdapter.vcxitems" Label="Shared" />

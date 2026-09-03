@@ -119,7 +119,7 @@ public:
     void ClearFilter(winrt::hstring const& axisToken);
     void SetGroup(
         TabularShapingHelpers::TabularKeySelector const& key,
-        RowIdentity::TabularIdentitySelector const& groupIdentitySelector);
+        RowIdentity::IdentitySelector const& groupIdentitySelector);
     void ClearGroup();
     void SetSort(
         winrt::hstring const& previousAxisToken,
@@ -248,7 +248,7 @@ private:
     // HasProjection is true; every non-Refresh mutation of m_rows clears it.
     TabularShapingHelpers::ShapingState m_shapingState{};
     TabularShapingHelpers::TabularKeySelector m_groupSelector{ nullptr };
-    RowIdentity::TabularIdentitySelector m_groupIdentitySelector{ nullptr };
+    RowIdentity::IdentitySelector m_groupIdentitySelector{ nullptr };
     ProjectionKind m_kind{ ProjectionKind::None };
     bool m_projectedAsGrouped{ false };
     winrt::hstring m_diagnosticName{ L"ShapedItemsSource" };
