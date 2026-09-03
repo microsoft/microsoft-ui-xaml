@@ -64,9 +64,11 @@ public sealed partial class ShapingPage : Page
 
     // ---- Shaping ----
 
-    // Rebuilds all three stages from the current UI state. Each verb replaces its own stage, so
-    // re-applying one never disturbs the other two.
-    private void ApplyShape()
+    // Each verb is an independent stage on the one source, so a change only re-declares its own.
+    // Re-declaring a stage that did not change is not free: every declaration re-mints the
+    // description id the engine diffs on, so reapplying GroupBy and Sort on every keystroke would
+    // force a re-bucket and a re-sort that the filter change never needed.
+    private void ApplyFilter()
     {
         if (!_ready)
         {
@@ -86,6 +88,16 @@ public sealed partial class ShapingPage : Page
             _source.Filter(new TableViewPredicate(item => Matches((Item)item, text, highOnly)));
         }
 
+        UpdateStatus();
+    }
+
+    private void ApplyGroup()
+    {
+        if (!_ready)
+        {
+            return;
+        }
+
         var groupKey = GroupKey();
         if (groupKey is null)
         {
@@ -97,16 +109,26 @@ public sealed partial class ShapingPage : Page
             _source.GroupBy(new TableViewKeySelector(item => groupKey((Item)item)));
         }
 
-        // Three front-ends over one sort. Sorting through the CONTROL owns the header chevron.
-        // Sorting through the SOURCE by PATH is the fluent data-layer verb naming a property, so
-        // the control can still find the column and light it. Sorting through the source by KEY is
-        // anonymous - no property is named, so no chevron can honestly describe it.
-        //
-        // The control's sort replaces whatever came before it, but the source's Sort COMPOSES:
-        // a second axis refines the first rather than replacing it, which is how multi-key sorts
-        // are declared. Only an axis with the same token is replaced in place, and each path owns
-        // its own token. This page offers a single sort, so it clears first - drop the ClearSort
-        // and picking Name then Role would sort by Name, ties broken by Role.
+        UpdateStatus();
+    }
+
+    // Three front-ends over one sort. Sorting through the CONTROL owns the header chevron.
+    // Sorting through the SOURCE by PATH is the fluent data-layer verb naming a property, so
+    // the control can still find the column and light it. Sorting through the source by KEY is
+    // anonymous - no property is named, so no chevron can honestly describe it.
+    //
+    // The control's sort replaces whatever came before it, but the source's Sort COMPOSES:
+    // a second axis refines the first rather than replacing it, which is how multi-key sorts
+    // are declared. Only an axis with the same token is replaced in place, and each path owns
+    // its own token. This page offers a single sort, so it clears first - drop the ClearSort
+    // and picking Name then Role would sort by Name, ties broken by Role.
+    private void ApplySort()
+    {
+        if (!_ready)
+        {
+            return;
+        }
+
         var sortColumn = SortColumn();
         if (sortColumn is null)
         {
@@ -193,20 +215,20 @@ public sealed partial class ShapingPage : Page
 
     // ---- Handlers ----
 
-    private void Filter_Changed(object sender, TextChangedEventArgs e) => ApplyShape();
+    private void Filter_Changed(object sender, TextChangedEventArgs e) => ApplyFilter();
 
-    private void Filter_Toggled(object sender, RoutedEventArgs e) => ApplyShape();
+    private void Filter_Toggled(object sender, RoutedEventArgs e) => ApplyFilter();
 
     private void ClearFilter_Click(object sender, RoutedEventArgs e)
     {
         FilterBox.Text = string.Empty;
         HighScoresOnly.IsChecked = false;
-        ApplyShape();
+        ApplyFilter();
     }
 
-    private void Group_Changed(object sender, SelectionChangedEventArgs e) => ApplyShape();
+    private void Group_Changed(object sender, SelectionChangedEventArgs e) => ApplyGroup();
 
-    private void Sort_Changed(object sender, SelectionChangedEventArgs e) => ApplyShape();
+    private void Sort_Changed(object sender, SelectionChangedEventArgs e) => ApplySort();
 
     private void ExpandAll_Click(object sender, RoutedEventArgs e) => Table.ExpandAllGroups();
 
@@ -278,18 +300,18 @@ public sealed partial class ShapingPage : Page
 
     private void ClearSort_Click(object sender, RoutedEventArgs e)
     {
-        SortCombo.SelectedIndex = 0;   // re-enters ApplyShape, which clears both sort states
+        SortCombo.SelectedIndex = 0;   // re-enters ApplySort, which clears both sort states
     }
 
     // Header clicks reshape the same source the Sort row drives, so the readout has to follow the
     // control's state, not just the combo.
     // A header click changes the control's sort behind the Sort row's back. Mirror it into the
-    // combos, or the next filter/group change would re-enter ApplyShape and stomp the header's
-    // sort with the combos' stale selection.
+    // combos, or the next change in the Sort row would apply the combos' stale selection over the
+    // sort the header just established.
     private void Table_Sorted(object sender, TableViewSortedEventArgs args)
     {
         var wasReady = _ready;
-        _ready = false;   // suppress the SelectionChanged re-entry into ApplyShape
+        _ready = false;   // suppress the SelectionChanged re-entry into ApplySort
         try
         {
             var column = args.Column;
