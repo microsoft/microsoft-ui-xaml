@@ -65,6 +65,8 @@
 #include "IXamlTestHooks-errors.h"
 #include "DesktopWindowXamlSource_Partial.h"
 #include "XamlIslandRoot_Partial.h"
+#include "Window_Partial.h"
+#include "DesktopWindowImpl.h"
 #include "HWWalk.h"
 #include "LoadLibraryAbs.h"
 #include "xcpwindow.h"
@@ -2032,6 +2034,29 @@ IFACEMETHODIMP DxamlCoreTestHooks::GetAllContentIslands(_In_ xaml_hosting::IDesk
             }
         }
     }
+
+    return S_OK;
+}
+
+IFACEMETHODIMP DxamlCoreTestHooks::HasWindowPlaceholder(_In_opt_ xaml::IWindow* window, _Out_ BOOLEAN* hasPlaceholder)
+{
+    IFCPTR_RETURN(hasPlaceholder);
+    *hasPlaceholder = FALSE;
+
+    // Follows the established hook pattern: a null window resolves to the app's first window.
+    ctl::ComPtr<DirectUI::Window> windowPeer = GetTargetWindow(window);
+    IFCEXPECT_RETURN(windowPeer);
+
+    // Only top-level desktop windows can hold a placeholder. Fail rather than report FALSE for
+    // anything we can't resolve, so a caller can't confuse "not applicable" with "no placeholder".
+    DirectUI::WindowImpl* windowImplNoRef = windowPeer->GetWindowImpl();
+    IFCEXPECT_RETURN(windowImplNoRef);
+    IFCEXPECT_RETURN(windowImplNoRef->GetWindowType() == WindowType::DesktopWindow);
+
+    bool hasActivePlaceholder = false;
+    IFC_RETURN(static_cast<DesktopWindowImpl*>(windowImplNoRef)->HasActiveWindowPlaceholder(&hasActivePlaceholder));
+
+    *hasPlaceholder = hasActivePlaceholder ? TRUE : FALSE;
 
     return S_OK;
 }

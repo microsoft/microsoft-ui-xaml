@@ -18,6 +18,7 @@
 #include "FrameworkTheming.h"
 #include "WindowHelpers.h"
 #include "XamlIslandRoot_Partial.h"
+#include "DCompTreeHost.h"
 #include "XamlTelemetry.h"
 #include <Theme.h>
 #include <dwmapi.h>
@@ -25,6 +26,7 @@
 #include "Microsoft.UI.Windowing.h"
 #include <FrameworkUdk/Theming.h>
 #include <Microsoft.UI.Interop.h>
+#include <OptionalChangeState.h>
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -436,6 +438,19 @@ _Check_return_ HRESULT DesktopWindowImpl::ActivateImpl()
         if (AreNewWindowingApisEnabled())
         {
             IFC_RETURN(ApplyPendingClientSizeIfNeeded());
+        }
+
+        if (OptionalChangeState::IsWindowPlaceholderVisualEnabled())
+        {
+            ctl::ComPtr<DirectUI::XamlIslandRoot> xamlIslandRoot;
+            ctl::ComPtr<xaml_hosting::IXamlIslandRoot> island =
+                m_desktopWindowXamlSource->GetXamlIslandRootNoRef();
+            IFC_RETURN(island.As(&xamlIslandRoot));
+
+            auto coreIsland = static_cast<CXamlIslandRoot*>(xamlIslandRoot->GetHandle());
+            IFC_RETURN(coreIsland->GetDCompTreeHost()->PrepareXamlIslandForWindowShow(
+                coreIsland,
+                GetEffectiveWindowBackgroundColor()));
         }
     }
 
@@ -1203,6 +1218,50 @@ LRESULT LResultFromHResult(HRESULT hr)
     return 0;
 }
 
+UINT32 DesktopWindowImpl::GetEffectiveWindowBackgroundColor()
+{
+    Theming::Theme appTheme = Theming::Theme::None;
+    ctl::ComPtr<xaml::IUIElement> content;
+    if (!m_bIsClosed && SUCCEEDED(get_ContentImpl(&content)) && content)
+    {
+        ctl::ComPtr<DirectUI::FrameworkElement> contentAsFE;
+        VERIFYHR(content.As<DirectUI::FrameworkElement>(&contentAsFE));
+        ASSERT(contentAsFE != nullptr);
+
+        xaml::ElementTheme actualTheme;
+        VERIFYHR(contentAsFE->get_ActualTheme(&actualTheme));
+        if (actualTheme != xaml::ElementTheme_Default)
+        {
+            appTheme = actualTheme == xaml::ElementTheme_Light ? Theming::Theme::Light : Theming::Theme::Dark;
+        }
+    }
+
+    return m_dxamlCoreNoRef->GetHandle()->GetFrameworkTheming()->GetHwndBackground(appTheme);
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::HasActiveWindowPlaceholder(_Out_ bool* hasPlaceholder)
+{
+    *hasPlaceholder = false;
+
+    IFCEXPECT_RETURN(m_desktopWindowXamlSource);
+
+    ctl::ComPtr<xaml_hosting::IXamlIslandRoot> island = m_desktopWindowXamlSource->GetXamlIslandRootNoRef();
+    IFCEXPECT_RETURN(island);
+
+    ctl::ComPtr<DirectUI::XamlIslandRoot> xamlIslandRoot;
+    IFC_RETURN(island.As(&xamlIslandRoot));
+
+    auto coreIsland = static_cast<CXamlIslandRoot*>(xamlIslandRoot->GetHandle());
+    IFCEXPECT_RETURN(coreIsland);
+
+    DCompTreeHost* dcompTreeHost = coreIsland->GetDCompTreeHost();
+    IFCEXPECT_RETURN(dcompTreeHost);
+
+    IFC_RETURN(dcompTreeHost->HasXamlIslandWindowPlaceholder(coreIsland, hasPlaceholder));
+
+    return S_OK;
+}
+
 LRESULT DesktopWindowImpl::OnMessage(
     UINT uMsg,
     WPARAM wParam,
@@ -1252,24 +1311,13 @@ LRESULT DesktopWindowImpl::OnMessage(
             return LResultFromHResult(OnNonClientRegionButtonUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
         case WM_ERASEBKGND:
         {
-            Theming::Theme appTheme = Theming::Theme::None;
-            ctl::ComPtr<xaml::IUIElement> content;
-            if(!m_bIsClosed && SUCCEEDED(get_ContentImpl(&content)) && content)
+            if (OptionalChangeState::IsSkipWindowRedirectionSurfaceEnabled())
             {
-                ctl::ComPtr<DirectUI::FrameworkElement> contentAsFE;
-                VERIFYHR(content.As<DirectUI::FrameworkElement>(&contentAsFE));
-                ASSERT(contentAsFE != nullptr);
-
-                xaml::ElementTheme actualTheme;
-                VERIFYHR(contentAsFE->get_ActualTheme(&actualTheme));
-                if (actualTheme != xaml::ElementTheme_Default)
-                {
-                    appTheme = actualTheme == xaml::ElementTheme_Light ? Theming::Theme::Light : Theming::Theme::Dark;
-                }
+                return 1;
             }
 
             auto hdc = (HDC)wParam;
-            auto color = ColorUtils::GetWUColor(dxamlCore->GetHandle()->GetFrameworkTheming()->GetHwndBackground(appTheme));
+            auto color = ColorUtils::GetWUColor(GetEffectiveWindowBackgroundColor());
             RECT rc = WindowHelpers::GetClientWindowCoordinates(m_hwnd.get());
             auto oldColor  = ::SetBkColor(hdc, RGB(color.R, color.G, color.B));
             ASSERT(oldColor != CLR_INVALID);
@@ -1667,8 +1715,13 @@ void DesktopWindowImpl::RegisterDesktopWindowClass()
 
 void DesktopWindowImpl::CreateDesktopWindow()
 {
+    const DWORD extendedStyle =
+        OptionalChangeState::IsSkipWindowRedirectionSurfaceEnabled()
+            ? WS_EX_NOREDIRECTIONBITMAP
+            : 0;
+
     _CreateWindow(
-        0,                                 // Extended Style
+        extendedStyle,                     // Extended Style
         s_windowClassName,                 // name of window class
         s_defaultWindowTitle,              // title-bar string
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,  // top-level window
