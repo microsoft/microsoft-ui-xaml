@@ -21,7 +21,7 @@
 //
 // Layer 3 owns this because layer 3 is the layer that CONSUMES the contract. Layer 2 implements it
 // without depending on this header, which keeps the two siblings rather than a stack.
-namespace TabularShapingHelpers
+namespace ShapingHelpers
 {
     // The group's key. A group that declares no key is its own key, which keeps a plain
     // collection-of-collections source working unchanged.
@@ -50,7 +50,7 @@ namespace TabularShapingHelpers
         // reference-typed key.
         if (group)
         {
-            if (auto const identityProvider = group.try_as<TabularShapingHelpers::ITabularGroupIdentity>())
+            if (auto const identityProvider = group.try_as<ShapingHelpers::IGroupIdentity>())
             {
                 if (auto const identity = identityProvider->StableGroupIdentity(); !identity.empty())
                 {
@@ -59,7 +59,7 @@ namespace TabularShapingHelpers
             }
         }
 
-        const auto key = TabularShapingHelpers::TabularValueKey::ToObjectLookupKey(GetGroupKeyObject(group), true);
+        const auto key = ShapingHelpers::ValueKey::ToObjectLookupKey(GetGroupKeyObject(group), true);
 
         constexpr std::wstring_view valuePrefix{ L"value:" };
         const std::wstring_view keyView{ key.c_str(), key.size() };

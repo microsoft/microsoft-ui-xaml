@@ -9,7 +9,7 @@
 #include "SharedHelpers.h"
 #include "TVDiag.h"
 #include "ShapingHelpers.h"
-#include "TabularRevoke.h"
+#include "ShapingRevoke.h"
 #include "ShapedGroup.h"
 
 #include <cmath>
@@ -97,13 +97,13 @@ void ShapedItemsSource::EndShapingBatch()
     }
 }
 
-void ShapedItemsSource::SetFilter(TabularShapingHelpers::TabularPredicate const& predicate)
+void ShapedItemsSource::SetFilter(ShapingHelpers::Predicate const& predicate)
 {
     m_pipeline.SetFilter(predicate);
     ApplyShapingChange();
 }
 
-void ShapedItemsSource::SetFilter(winrt::hstring const& axisToken, TabularShapingHelpers::TabularPredicate const& predicate)
+void ShapedItemsSource::SetFilter(winrt::hstring const& axisToken, ShapingHelpers::Predicate const& predicate)
 {
     m_pipeline.SetFilter(axisToken, predicate);
     ApplyShapingChange();
@@ -122,7 +122,7 @@ void ShapedItemsSource::ClearFilter(winrt::hstring const& axisToken)
 }
 
 void ShapedItemsSource::SetGroup(
-    TabularShapingHelpers::TabularKeySelector const& key,
+    ShapingHelpers::KeySelector const& key,
     RowIdentity::IdentitySelector const& groupIdentitySelector)
 {
     m_groupSelector = key;
@@ -142,7 +142,7 @@ void ShapedItemsSource::ClearGroup()
 void ShapedItemsSource::SetSort(
     winrt::hstring const& previousAxisToken,
     winrt::hstring const& axisToken,
-    TabularShapingHelpers::TabularKeySelector const& key,
+    ShapingHelpers::KeySelector const& key,
     winrt::Windows::Foundation::IUnknown const& keyIdentity,
     winrt::hstring const& sortMemberPath,
     winrt::SortDirection direction)
@@ -225,12 +225,12 @@ void ShapedItemsSource::ApplyShapingChange()
 // also does NOT preserve realized containers — ReplaceAll is still a Reset, so the repeater
 // re-realizes exactly as it would after a Refresh. Preserving containers across a re-order would
 // require emitting Move notifications instead.
-bool ShapedItemsSource::TryApplyShapingDeltaInPlace(TabularShapingHelpers::ShapingDelta const& delta)
+bool ShapedItemsSource::TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta const& delta)
 {
     // Only a pure re-order is safe to do against rows already in hand. Anything touching
     // membership or bucketing needs the source, the group cache and the projection swap that
     // only Refresh performs.
-    if (delta.RequiredWork != TabularShapingHelpers::ShapingWork::ReSortWithinBuckets)
+    if (delta.RequiredWork != ShapingHelpers::ShapingWork::ReSortWithinBuckets)
     {
         return false;
     }
@@ -278,7 +278,7 @@ bool ShapedItemsSource::TryApplyShapingDeltaInPlace(TabularShapingHelpers::Shapi
 
     // Re-seats Items on FilteredSource (source order) and re-sorts, so ties break exactly as a
     // full reshape of the same spec would.
-    TabularShapingHelpers::Reshape(m_shapingState, m_pipeline.CommittedSpec(), delta);
+    ShapingHelpers::Reshape(m_shapingState, m_pipeline.CommittedSpec(), delta);
 
     m_rows.ReplaceAll(m_shapingState.Items);
     RebuildFlatRowIdentityTracking(m_shapingState.Items);
@@ -300,7 +300,7 @@ void ShapedItemsSource::SubscribeToSourceCollectionChanges()
 
     // Classify the source once, here, where it is bound. Every later indexed read, count and
     // observability check reads off this resolution instead of re-probing.
-    m_sourceAccessor = TabularShapingHelpers::CollectionAccessor{ m_source };
+    m_sourceAccessor = ShapingHelpers::CollectionAccessor{ m_source };
 
     if (!m_source)
     {
@@ -357,9 +357,9 @@ void ShapedItemsSource::UnsubscribeFromSourceCollectionChanges()
     // SafeRevoke still swallows the benign failure an app can cause by tearing the publisher down
     // first. (Every handler also holds a weak reference, so an un-revoked subscription is already
     // inert once this object dies.)
-    TabularShapingHelpers::SafeRevoke(m_sourceCollectionChangedRevoker);
-    TabularShapingHelpers::SafeRevoke(m_sourceVectorChangedRevoker);
-    TabularShapingHelpers::SafeRevoke(m_sourceBindableVectorChangedRevoker);
+    ShapingHelpers::SafeRevoke(m_sourceCollectionChangedRevoker);
+    ShapingHelpers::SafeRevoke(m_sourceVectorChangedRevoker);
+    ShapingHelpers::SafeRevoke(m_sourceBindableVectorChangedRevoker);
 }
 
 void ShapedItemsSource::OnSourceCollectionChanged()
@@ -1191,7 +1191,7 @@ void ShapedItemsSource::RebuildFlat(std::vector<winrt::IInspectable>& rows)
 
 std::vector<winrt::IInspectable> ShapedItemsSource::Materialize(winrt::IInspectable const& source)
 {
-    return TabularShapingHelpers::EnumerateInspectableItems(source, true);
+    return ShapingHelpers::EnumerateInspectableItems(source, true);
 }
 
 void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
@@ -1206,9 +1206,9 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     // are applied per bucket below, preserving the group order while sorting within each group.
     ApplySort(rows, -1, m_pipeline.GroupOrder());
 
-    std::vector<TabularShapingHelpers::KeyedBucket> keyedBuckets;
+    std::vector<ShapingHelpers::KeyedBucket> keyedBuckets;
     wchar_t const* degradeReason = nullptr;
-    const bool grouped = TabularShapingHelpers::BucketizeToGroups(
+    const bool grouped = ShapingHelpers::BucketizeToGroups(
         rows,
         [this](winrt::IInspectable const& item) -> winrt::IInspectable
         {
@@ -1350,7 +1350,7 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     RaiseProjectionRebuilt();
 }
 
-TabularShapingHelpers::ShapingPipeline::SortedInsertPlacement ShapedItemsSource::SortedInsertPlacementFor(winrt::IInspectable const& item) const
+ShapingHelpers::ShapingPipeline::SortedInsertPlacement ShapedItemsSource::SortedInsertPlacementFor(winrt::IInspectable const& item) const
 {
     return m_pipeline.SortedInsertPlacementFor(
         item,

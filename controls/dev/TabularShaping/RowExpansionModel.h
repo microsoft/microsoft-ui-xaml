@@ -33,7 +33,7 @@
 // Deliberately free of WinRT collection types, XAML and any tabular vocabulary: a TreeView, a
 // grouped ItemsRepeater or an app-authored hierarchy can use it directly, and it is testable
 // with no dispatcher and no host.
-namespace TabularShapingHelpers
+namespace ShapingHelpers
 {
     class RowExpansionModel
     {

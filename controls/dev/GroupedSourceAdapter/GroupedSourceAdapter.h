@@ -57,7 +57,7 @@ private:
     void Rebuild();
     bool OnUiThread() const;
     void AssertRebuildOnUiThread() const;
-    void OnExpansionChanged(TabularShapingHelpers::RowExpansionModel::Change const& change);
+    void OnExpansionChanged(ShapingHelpers::RowExpansionModel::Change const& change);
 
     // Incremental expand/collapse of a SINGLE group: flips the group's header slot and splices just
     // that group's data rows into/out of the flat projection, instead of dropping and re-realizing
@@ -85,7 +85,7 @@ private:
     winrt::ItemsSourceView m_entriesView{ nullptr };
 
     // Expand/collapse intent, keyed by group identity string so it survives reshapes.
-    TabularShapingHelpers::RowExpansionModel m_expansion;
+    ShapingHelpers::RowExpansionModel m_expansion;
 
     // Key->group map of the last Rebuild's live groups, for ResolveLiveGroupByIdentity.
     std::unordered_map<winrt::hstring, winrt::IInspectable> m_liveGroupsByIdentityKey;

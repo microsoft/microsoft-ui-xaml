@@ -87,7 +87,7 @@ struct TableViewResourceCache
     double lastFrozenColumnsHorizontalOffset{ 0.0 };
 };
 
-namespace TabularShapingHelpers { class CustomSortRankAdapter; }
+namespace ShapingHelpers { class CustomSortRankAdapter; }
 
 // The control's half of the TableViewSource sort axis. The projection is addressed by an opaque
 // axis token, so re-sorting the same column replaces its axis rather than stacking a second one.
@@ -99,7 +99,7 @@ struct TableViewSourceSortBinding
     // The rank adapter for a CustomSortComparer column. Owned by the control but implemented in the
     // shaping engine: the control feeds it the column's comparer, the engine turns that into the
     // integer sort keys the projection consumes.
-    std::shared_ptr<TabularShapingHelpers::CustomSortRankAdapter> CustomSortState;
+    std::shared_ptr<ShapingHelpers::CustomSortRankAdapter> CustomSortState;
 
     // Drops any comparer and its ranks without discarding the selector: the selector closes over
     // the state by shared_ptr, so replacing it would orphan the live closure.

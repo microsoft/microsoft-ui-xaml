@@ -113,18 +113,18 @@ public:
     // Filters are conjunctive. The untokenized overloads are the single-filter shorthand; the
     // tokenized ones let independent filter sources (a column filter and a search box, say) be
     // declared and retracted without knowing about each other.
-    void SetFilter(TabularShapingHelpers::TabularPredicate const& predicate);
-    void SetFilter(winrt::hstring const& axisToken, TabularShapingHelpers::TabularPredicate const& predicate);
+    void SetFilter(ShapingHelpers::Predicate const& predicate);
+    void SetFilter(winrt::hstring const& axisToken, ShapingHelpers::Predicate const& predicate);
     void ClearFilter();
     void ClearFilter(winrt::hstring const& axisToken);
     void SetGroup(
-        TabularShapingHelpers::TabularKeySelector const& key,
+        ShapingHelpers::KeySelector const& key,
         RowIdentity::IdentitySelector const& groupIdentitySelector);
     void ClearGroup();
     void SetSort(
         winrt::hstring const& previousAxisToken,
         winrt::hstring const& axisToken,
-        TabularShapingHelpers::TabularKeySelector const& key,
+        ShapingHelpers::KeySelector const& key,
         winrt::Windows::Foundation::IUnknown const& keyIdentity,
         winrt::hstring const& sortMemberPath,
         winrt::SortDirection direction);
@@ -165,7 +165,7 @@ public:
     std::shared_ptr<GroupedSourceAdapter> GroupedAdapter() const noexcept { return m_groupedAdapter; }
     // The selector every identity consumer must use. Derives identity from each item's object
     // identity, so shaping never depends on the app having a unique domain key.
-    TabularShapingHelpers::TabularKeySelector const& IdentitySelector() const noexcept { return EffectiveIdentitySelector(); }
+    ShapingHelpers::KeySelector const& IdentitySelector() const noexcept { return EffectiveIdentitySelector(); }
 
     void Refresh();
 
@@ -193,7 +193,7 @@ private:
     void ApplyIncrementalVectorChange(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
     bool TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
     void ApplyShapingChange();
-    bool TryApplyShapingDeltaInPlace(TabularShapingHelpers::ShapingDelta const& delta);
+    bool TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta const& delta);
     void InvalidateShapingState();
     static std::vector<winrt::IInspectable> Materialize(winrt::IInspectable const& source);
     void ApplyFilter(std::vector<winrt::IInspectable>& rows) const { m_pipeline.ApplyFilter(rows); }
@@ -208,7 +208,7 @@ private:
     bool HasAnyShapingVerb() const;
     // Every identity consumer funnels through here. Identity comes from each item's object
     // identity, so a row ALWAYS has one and no shaping verb has to refuse to run for want of one.
-    TabularShapingHelpers::TabularKeySelector const& EffectiveIdentitySelector() const noexcept
+    ShapingHelpers::KeySelector const& EffectiveIdentitySelector() const noexcept
     {
         return m_intrinsicKeySelector;
     }
@@ -226,7 +226,7 @@ private:
     static winrt::hstring StringifyKey(winrt::IInspectable const& key);
     // Prefixes a caller-facing message with the consumer's diagnostic name.
     winrt::hstring Diagnostic(std::wstring_view text) const;
-    TabularShapingHelpers::ShapingPipeline::SortedInsertPlacement SortedInsertPlacementFor(winrt::IInspectable const& item) const;
+    ShapingHelpers::ShapingPipeline::SortedInsertPlacement SortedInsertPlacementFor(winrt::IInspectable const& item) const;
     bool TryGetSourceItemCount(uint32_t& count) const;
     void RaiseProjectionRebuilt() const { if (m_projectionRebuilt) { m_projectionRebuilt(); } }
     void RaiseShapeSwapped() const { if (m_shapeSwapped) { m_shapeSwapped(); } }
@@ -238,16 +238,16 @@ private:
     // Per-object identity, derived from each item's canonical IUnknown pointer. Built once and
     // retained rather than minted per call so the selector's own identity is stable, and so the
     // cost is paid once instead of on every row projection.
-    TabularShapingHelpers::TabularKeySelector m_intrinsicKeySelector{ RowIdentity::MakeObjectIdentitySelector() };
+    ShapingHelpers::KeySelector m_intrinsicKeySelector{ RowIdentity::MakeObjectIdentitySelector() };
     // The recipe: which verbs are in force and in what order. This class keeps the projection.
-    TabularShapingHelpers::ShapingPipeline m_pipeline{};
+    ShapingHelpers::ShapingPipeline m_pipeline{};
     // Retained layer-1 projection state for the FLAT path: the post-filter rows in source order
     // plus the shaped output. Holding FilteredSource is what makes an in-place re-sort produce
     // exactly what a full rebuild would -- a stable sort seeded from the previously sorted order
     // would break ties in the OLD sort's order instead of source order. Only valid while
     // HasProjection is true; every non-Refresh mutation of m_rows clears it.
-    TabularShapingHelpers::ShapingState m_shapingState{};
-    TabularShapingHelpers::TabularKeySelector m_groupSelector{ nullptr };
+    ShapingHelpers::ShapingState m_shapingState{};
+    ShapingHelpers::KeySelector m_groupSelector{ nullptr };
     RowIdentity::IdentitySelector m_groupIdentitySelector{ nullptr };
     ProjectionKind m_kind{ ProjectionKind::None };
     bool m_projectedAsGrouped{ false };
@@ -280,7 +280,7 @@ private:
     // Resolved once per bound source: what shape the source is and how to read it. Every indexed
     // read, count and observability question in this class goes through it, so no two of them can
     // disagree about what the source supports.
-    TabularShapingHelpers::CollectionAccessor m_sourceAccessor{};
+    ShapingHelpers::CollectionAccessor m_sourceAccessor{};
 
     winrt::Microsoft::UI::Xaml::Interop::INotifyCollectionChanged::CollectionChanged_revoker m_sourceCollectionChangedRevoker{};
     winrt::IObservableVector<winrt::IInspectable>::VectorChanged_revoker m_sourceVectorChangedRevoker{};
