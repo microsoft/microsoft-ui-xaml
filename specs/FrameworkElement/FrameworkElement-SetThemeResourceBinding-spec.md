@@ -1,5 +1,4 @@
-FrameworkElement.SetThemeResourceBinding
-===
+# FrameworkElement.SetThemeResourceBinding
 
 # Background
 
