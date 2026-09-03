@@ -58,12 +58,12 @@ extends:
     stages:
     - template: AzurePipelinesTemplates\WinUI-MirrorGitHubToInternal-Stage.yml@self
       parameters:
-        sourceBranchName: main
-        targetBranchName: github/internal/main
+        sourceBranchName: user/gpaskaleva/mirror-e2e
+        targetBranchName: user/gpaskaleva/github-internal-main-test
     # TODO: switch targetBranchName to main once the mirror pipeline identity has push/bypass permission on main.
     - template: AzurePipelinesTemplates\WinUI-PublicMirrorMerge-Stage.yml@self
       parameters:
-        sourceBranchName: github/internal/main
+        sourceBranchName: user/gpaskaleva/github-internal-main-test
         targetBranchName: user/gpaskaleva/mirror-integration-target
         dependsOnStage: Source
         checkoutRepository: targetRepository
