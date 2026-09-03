@@ -270,7 +270,4 @@ command at the root of the repo:
 
 * `OneTimeSetup.cmd -Install MSBuild` installs or modifies Visual Studio 2022 Build Tools. To use
   Visual Studio 2026, import the repository's `.vsconfig` file into that installation instead.
-* `init.cmd` may select an installed Visual Studio Build Tools instance instead of a full Visual
-  Studio installation. If initialization reports missing `Microsoft.NET.Sdk` or
-  `Microsoft.Windows.UI.Xaml.*.targets` files under a Visual Studio installation, use Visual Studio
-  Installer to add the components from `.vsconfig` to that installation.
+* `init.cmd` sets up the build environment and can install or update build tools when required.
