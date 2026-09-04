@@ -273,13 +273,6 @@ for ($publishAttempt = 1; $publishAttempt -le $maximumPublishAttempts; $publishA
     Write-Host "Created integration merge '$mergeCommit'."
     Write-Host "##[endgroup]"
 
-    $prePushDelay = 0
-    [int]::TryParse($env:MIRROR_TEST_PREPUSH_DELAY_SECONDS, [ref]$prePushDelay) | Out-Null
-    if ($prePushDelay -gt 0) {
-        Write-Host "##[warning]TEST ONLY: pausing $prePushDelay s before publish to widen the concurrency window."
-        Start-Sleep -Seconds $prePushDelay
-    }
-
     Write-Host "##[group]Publishing integration merge"
     $pushResult = Get-GitCommandResult -Repository $repositoryFullPath -Arguments @(
         "push",

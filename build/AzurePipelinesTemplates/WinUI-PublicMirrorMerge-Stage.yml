@@ -9,9 +9,6 @@ parameters:
 - name: checkoutRepository
   type: string
   default: self
-- name: prePushDelaySeconds
-  type: number
-  default: 0
 
 stages:
 - stage: IntegratePublicMirror
@@ -47,8 +44,6 @@ stages:
 
     - task: PowerShell@2
       displayName: Merge public mirror into internal branch
-      env:
-        MIRROR_TEST_PREPUSH_DELAY_SECONDS: ${{ parameters.prePushDelaySeconds }}
       inputs:
         workingDirectory: '$(Pipeline.Workspace)'
         filePath: '$(Pipeline.Workspace)\$(repositoryRelativePath)\scripts\MergePublicMirrorIntoInternalBranch.ps1'

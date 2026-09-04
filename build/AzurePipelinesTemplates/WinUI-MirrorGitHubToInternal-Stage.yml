@@ -7,6 +7,9 @@ parameters:
   displayName: Internal ADO target branch to update
   type: string
   default: github/internal/main
+- name: postMirrorDelaySeconds
+  type: number
+  default: 0
 
 stages:
 - stage: Source
@@ -52,3 +55,12 @@ stages:
           -TargetBranchName '${{ parameters.targetBranchName }}'
           -SourceRemoteUrlPattern '$(GitHubToAdoMirrorSourceRemoteUrlPattern)'
           -TargetRemoteUrlPattern '$(GitHubToAdoMirrorTargetRemoteUrlPattern)'
+
+    - ${{ if gt(parameters.postMirrorDelaySeconds, 0) }}:
+      - task: PowerShell@2
+        displayName: 'TEST ONLY: pause after mirror (before integrate lock)'
+        inputs:
+          targetType: inline
+          script: |
+            Write-Host "##[warning]TEST ONLY: pausing ${{ parameters.postMirrorDelaySeconds }} s after mirror, before the integrate stage lock."
+            Start-Sleep -Seconds ${{ parameters.postMirrorDelaySeconds }}

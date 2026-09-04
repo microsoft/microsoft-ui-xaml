@@ -12,8 +12,8 @@
 #               -> user/gpaskaleva/mirror-integration-target-bootstrap (bootstrap-based => clean merge)
 
 parameters:
-- name: prePushDelaySeconds
-  displayName: 'TEST ONLY: pause N seconds before integrate publish (force a concurrency race)'
+- name: postMirrorDelaySeconds
+  displayName: 'TEST ONLY: pause N seconds after mirror, before the integrate lock (force a reversed-order race)'
   type: number
   default: 0
 
@@ -59,10 +59,10 @@ extends:
       parameters:
         sourceBranchName: user/gpaskaleva/mirror-e2e
         targetBranchName: user/gpaskaleva/github-internal-main-test
+        postMirrorDelaySeconds: ${{ parameters.postMirrorDelaySeconds }}
     - template: AzurePipelinesTemplates\WinUI-PublicMirrorMerge-Stage.yml@self
       parameters:
         sourceBranchName: user/gpaskaleva/github-internal-main-test
         targetBranchName: user/gpaskaleva/mirror-integration-target-bootstrap
         dependsOnStage: Source
         checkoutRepository: targetRepository
-        prePushDelaySeconds: ${{ parameters.prePushDelaySeconds }}
