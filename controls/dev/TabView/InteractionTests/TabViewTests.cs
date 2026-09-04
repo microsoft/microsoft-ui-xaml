@@ -782,6 +782,56 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies that dragging a tab shows the drag visual when the TabView allows dragging.")]
+        public void VerifyTabEntersDragVisualStateWhenDraggingIsEnabled()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                FindElement.ByName<Button>("ResetFirstTabDragDropVisualStateLogButton").InvokeAndWait();
+
+                InputHelper.MouseDragDistance(FindElement.ByName("FirstTab"), 200, Direction.East, 4000);
+
+                FindElement.ByName<Button>("GetFirstTabDragDropVisualStateButton").InvokeAndWait();
+
+                var visitedStates = FindElement.ByName<TextBlock>("FirstTabDragDropVisualStateLogTextBlock").DocumentText;
+                Verify.IsTrue(visitedStates.Contains("DragDropVisualVisible"),
+                    $"The dragged tab should enter the DragDropVisualVisible state. Visited states: '{visitedStates}'.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a tab neither enters nor gets stuck in the drag visual state when the TabView disallows dragging.")]
+        [TestProperty("RegressionBug", "10749")]
+        public void VerifyTabDoesNotEnterDragVisualStateWhenDraggingIsDisabled()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                Log.Comment("Disallow both reordering and dragging of tabs.");
+                FindElement.ByName<CheckBox>("CanDragTabsCheckBox").Uncheck();
+                FindElement.ByName<CheckBox>("CanReorderTabsCheckBox").Uncheck();
+
+                FindElement.ByName<Button>("ResetFirstTabDragDropVisualStateLogButton").InvokeAndWait();
+
+                Log.Comment("Drag the first tab away from the tab strip and release the pointer outside of it.");
+                var firstTab = FindElement.ByName("FirstTab");
+                InputHelper.LeftMouseButtonDown(firstTab);
+                InputHelper.MoveMouse(firstTab, 40, 0);
+                InputHelper.MoveMouse(firstTab, 300, 200);
+                InputHelper.LeftMouseButtonUp();
+
+                FindElement.ByName<Button>("GetFirstTabDragDropVisualStateButton").InvokeAndWait();
+
+                var visitedStates = FindElement.ByName<TextBlock>("FirstTabDragDropVisualStateLogTextBlock").DocumentText;
+                Verify.IsFalse(visitedStates.Contains("DragDropVisualVisible"),
+                    $"The tab should never enter the DragDropVisualVisible state while the TabView disallows dragging. Visited states: '{visitedStates}'.");
+
+                var currentState = FindElement.ByName<TextBlock>("FirstTabDragDropVisualStateTextBlock").DocumentText;
+                Verify.AreNotEqual("DragDropVisualVisible", currentState,
+                    "The tab should not be left in the drag visual state.");
+            }
+        }
+
+        [TestMethod]
         public void ScrollButtonToolTipTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
