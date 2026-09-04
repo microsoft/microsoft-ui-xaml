@@ -142,6 +142,26 @@ function Test-GitAncestor {
     throw "Unable to determine whether '$PossibleAncestor' is an ancestor of '$Commit'."
 }
 
+function Reset-PathToTarget {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Repository,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TargetCommit,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Pathspec
+    )
+
+    $existsInTarget = Get-GitCommandResult -Repository $Repository -Arguments @("cat-file", "-e", "${TargetCommit}:$Pathspec")
+    if ($existsInTarget.ExitCode -eq 0) {
+        Invoke-GitCommand -Repository $Repository -Arguments @("checkout", $TargetCommit, "--", $Pathspec)
+    } else {
+        Invoke-GitCommand -Repository $Repository -Arguments @("rm", "-r", "--force", "--ignore-unmatch", "--", $Pathspec)
+    }
+}
+
 $repositoryFullPath = [IO.Path]::GetFullPath([IO.Path]::Combine($pwd, $RepositoryDirectory))
 if (-not (Test-Path -LiteralPath $repositoryFullPath -PathType Container)) {
     throw "RepositoryDirectory '$RepositoryDirectory' does not identify an existing directory."
@@ -234,6 +254,18 @@ for ($publishAttempt = 1; $publishAttempt -le $maximumPublishAttempts; $publishA
         exit 0
     }
 
+    $restorePathsListText = Get-GitCommandOutput -Repository $repositoryFullPath -Arguments @(
+        "show",
+        "${sourceCommit}:build/PipelineScripts/WinUISourceMirroringRestorePaths.txt"
+    )
+    $restorePathspecs = @(
+        $restorePathsListText -split "`n" |
+            ForEach-Object { $_.Trim() } |
+            Where-Object { $_ -and (-not $_.StartsWith("#")) } |
+            ForEach-Object { $_ -replace "\\", "/" }
+    )
+    Write-Host "Preserving $($restorePathspecs.Count) divergent path(s) at the target's version during integration."
+
     Write-Host "##[group]Creating integration merge"
     Invoke-GitCommand -Repository $repositoryFullPath -Arguments @("checkout", "--detach", $targetTrackingRef)
 
@@ -251,16 +283,37 @@ for ($publishAttempt = 1; $publishAttempt -le $maximumPublishAttempts; $publishA
     $mergeResult = Get-GitCommandResult -Repository $repositoryFullPath -Arguments @(
         "merge",
         "--no-ff",
-        "--no-edit",
-        "-m",
-        "Merge GitHub main into $TargetBranchName",
+        "--no-commit",
         $sourceTrackingRef
     )
-    if ($mergeResult.ExitCode) {
+    $mergeHeadResult = Get-GitCommandResult -Repository $repositoryFullPath -Arguments @("rev-parse", "-q", "--verify", "MERGE_HEAD")
+    if ($mergeHeadResult.ExitCode) {
+        & git -C $repositoryFullPath merge --abort 2>$null
+        throw "Unable to start the integration merge of '$SourceBranchName'.`n$($mergeResult.Output)"
+    }
+
+    # Keep divergent paths from crossing repositories. WinUISourceMirroringRestorePaths.txt lists
+    # paths where GitHub and the internal repo intentionally differ; the outbound mirror preserves
+    # GitHub's copies, and inbound we likewise preserve the target's. Reset each listed path to the
+    # target's version. This runs even on a clean merge, so source-only paths that merged without a
+    # conflict (e.g. specs) are dropped, not just modify/delete conflicts.
+    foreach ($restorePathspec in $restorePathspecs) {
+        Reset-PathToTarget -Repository $repositoryFullPath -TargetCommit $targetCommit -Pathspec $restorePathspec
+    }
+
+    $unmergedPaths = Get-GitCommandOutput -Repository $repositoryFullPath -Arguments @("diff", "--name-only", "--diff-filter=U")
+    if (-not [string]::IsNullOrWhiteSpace($unmergedPaths)) {
         $conflicts = Get-GitCommandOutput -Repository $repositoryFullPath -Arguments @("status", "--short")
         & git -C $repositoryFullPath merge --abort 2>$null
-        throw "Unable to integrate '$SourceBranchName' because the merge has conflicts.`n$conflicts"
+        throw "Unable to integrate '$SourceBranchName' because the merge has conflicts outside the restore-path list.`n$conflicts"
     }
+
+    Invoke-GitCommand -Repository $repositoryFullPath -Arguments @(
+        "commit",
+        "--no-edit",
+        "-m",
+        "Merge GitHub main into $TargetBranchName"
+    )
 
     $mergeCommit = Get-GitCommandOutput -Repository $repositoryFullPath -Arguments @("rev-parse", "HEAD")
     $mergeParents = (Get-GitCommandOutput -Repository $repositoryFullPath -Arguments @(
