@@ -23,6 +23,7 @@
 #include "microsoft.ui.input.h"
 #include "XamlRoot.g.h"
 #include "Value.h"
+#include <OptionalChangeState.h>
 
 using WindowChrome = DirectUI::WindowChrome;
 using VisualTreeHelper = DirectUI::VisualTreeHelper;
@@ -168,8 +169,13 @@ LRESULT CWindowChrome::OnCreate()
 //   and returns it. If the border is disabled, then this method will return 0.
 // Return Value:
 // - the height of the border above the title bar or 0 if it's disabled
-int CWindowChrome::GetTopBorderHeight() const noexcept
+int CWindowChrome::GetTopBorderHeight()
 {
+    if (OptionalChangeState::ShouldAlignExtendsContentIntoTitleBarBehavior())
+    {
+        return GetAlignedTopBorderHeight();
+    }
+
     // No border when maximized, or when the titlebar is invisible (by being in
     // fullscreen or focus mode).
     if (!IsTitlebarVisible() || IsMaximized(m_topLevelWindow))
@@ -190,6 +196,78 @@ int CWindowChrome::GetTopBorderHeight() const noexcept
 bool CWindowChrome::IsTitlebarVisible() const
 {
     return IsChromeActive();
+}
+
+int CWindowChrome::GetAlignedTopBorderHeight()
+{
+    ASSERT(OptionalChangeState::ShouldAlignExtendsContentIntoTitleBarBehavior());
+
+    // Match the existing Window.ExtendsContentIntoTitleBar geometry, but use
+    // AppWindow as the source so a direct AppWindow assignment is understood.
+    if (!IsAppWindowTitleBarExtended() || IsMaximized(m_topLevelWindow))
+    {
+        return 0;
+    }
+
+    return topBorderVisibleHeight;
+}
+
+bool CWindowChrome::IsAppWindowTitleBarExtended()
+{
+    bool extendsContentIntoTitleBar = false;
+    IFCFAILFAST(GetPeer()->GetIsAppWindowTitleBarExtended(&extendsContentIntoTitleBar));
+    return extendsContentIntoTitleBar;
+}
+
+_Check_return_ HRESULT CWindowChrome::UpdateDwmFrameMargins(int topBorderHeight)
+{
+    ASSERT(WindowHelpers::ShouldApplyDwmTopBorderWorkaround(m_topLevelWindow));
+
+    int topFrameMargin = 0;
+    if (topBorderHeight > 0)
+    {
+        RECT frame = {};
+        const UINT dpi = ::GetDpiForWindow(m_topLevelWindow);
+        const DWORD style = static_cast<DWORD>(::GetWindowLongPtrW(m_topLevelWindow, GWL_STYLE));
+        const DWORD exStyle = static_cast<DWORD>(::GetWindowLongPtrW(m_topLevelWindow, GWL_EXSTYLE));
+
+        IFCW32_RETURN(::AdjustWindowRectExForDpi(
+            &frame,
+            style,
+            ::GetMenu(m_topLevelWindow) != nullptr,
+            exStyle,
+            dpi));
+
+        // Windows 10 needs the complete top frame extended into the client area.
+        // Extending only the uncovered row gives incorrect inactive-window colors.
+        topFrameMargin = static_cast<int>(std::max<LONG>(-frame.top, topBorderVisibleHeight));
+    }
+
+    if ((!m_appliedDwmTopFrameMargin && topFrameMargin == 0) ||
+        (m_appliedDwmTopFrameMargin && *m_appliedDwmTopFrameMargin == topFrameMargin))
+    {
+        // WinUI has not changed the margins for this window, or the WinUI-owned
+        // value is already current. Do not issue an unnecessary all-margin write.
+        return S_OK;
+    }
+
+    // DwmExtendFrameIntoClientArea writes all four margins and has no getter.
+    // Once WinUI reserves this row, it owns the complete margin set for the
+    // window. A zero value clears that WinUI-owned set when the row is removed.
+    MARGINS margins = {};
+    margins.cyTopHeight = topFrameMargin;
+    IFC_RETURN(::DwmExtendFrameIntoClientArea(m_topLevelWindow, &margins));
+
+    if (topFrameMargin > 0)
+    {
+        m_appliedDwmTopFrameMargin = topFrameMargin;
+    }
+    else
+    {
+        m_appliedDwmTopFrameMargin.reset();
+    }
+
+    return S_OK;
 }
 
 void CWindowChrome::UpdateContainerSize(WPARAM wParam, LPARAM lParam)
@@ -223,6 +301,12 @@ void CWindowChrome::UpdateBridgeWindowSizePosition()
     const auto windowWidth = RectHelpers::rectWidth(clientRect);
     const auto windowHeight = RectHelpers::rectHeight(clientRect);
     const auto topBorderHeight = WindowHelpers::ClampToShortMax(GetTopBorderHeight(), 0);
+
+    if (WindowHelpers::ShouldApplyDwmTopBorderWorkaround(m_topLevelWindow))
+    {
+        TRACE_HR_NORETURN(UpdateDwmFrameMargins(topBorderHeight));
+    }
+
     const COORD newIslandPos = { 0, topBorderHeight };
     
 

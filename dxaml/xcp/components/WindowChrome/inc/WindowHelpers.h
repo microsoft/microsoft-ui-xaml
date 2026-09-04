@@ -42,6 +42,7 @@ namespace WindowHelpers
     wf::Point ClientPhysicaltoLogicalPoint(HWND targetWindow,  wf::Point physicalPt) noexcept;
     wf::Point ScreenPhysicaltoClientLogicalPoint(HWND targetWindow,  wf::Point physicalPt) noexcept;
     short ClampToShortMax(const long value, const short min) noexcept;
+    bool ShouldApplyDwmTopBorderWorkaround(HWND hwnd) noexcept;
 
     RECT GetClientAreaLogicalRectForUIElement(_In_ CUIElement* uiElement) noexcept;
     RECT GetClientAreaPhysicalRectForUIElement(_In_ CUIElement* uiElement, float scale) noexcept;

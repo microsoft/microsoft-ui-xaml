@@ -201,6 +201,33 @@ ctl::ComPtr<ixp::IAppWindow> WindowChrome::GetAppWindow() const
     return appWindow;
 }
 
+_Check_return_ HRESULT WindowChrome::GetIsAppWindowTitleBarExtended(_Out_ bool* value) const
+{
+    *value = false;
+
+    // Window messages can reenter while the Window is being created or torn
+    // down. A missing DesktopWindow or AppWindow means ECITB is not active.
+    if (!m_desktopWindow)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<ixp::IAppWindow> appWindow;
+    IFC_RETURN(m_desktopWindow->get_AppWindowImpl(&appWindow));
+    if (!appWindow)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<ixp::IAppWindowTitleBar> appWindowTitleBar;
+    IFC_RETURN(appWindow->get_TitleBar(&appWindowTitleBar));
+
+    boolean extendsContentIntoTitleBar = false;
+    IFC_RETURN(appWindowTitleBar->get_ExtendsContentIntoTitleBar(&extendsContentIntoTitleBar));
+    *value = !!extendsContentIntoTitleBar;
+    return S_OK;
+}
+
 bool WindowChrome::CanDrag() const
 {
     CWindowChrome* coreWindowChrome = static_cast<CWindowChrome*>(GetHandle());
@@ -209,6 +236,12 @@ bool WindowChrome::CanDrag() const
         return coreWindowChrome->CanDrag();
     }
     return false;
+}
+
+int WindowChrome::GetTopBorderHeight()
+{
+    const auto chrome = static_cast<CWindowChrome*>(GetHandle());
+    return chrome ? chrome->GetTopBorderHeight() : 0;
 }
 
 void WindowChrome::UpdateCanDragStatus(bool enabled)

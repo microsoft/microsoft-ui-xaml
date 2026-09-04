@@ -56,6 +56,17 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ECITBEntryPointsReserveTopBorder)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the one-pixel top border reserved by both ECITB entry points.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ECITBEntryPointsPreserveCompatBehavior)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates legacy ECITB geometry when the optional change is disabled.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{AlignExtendsContentIntoTitleBarBehavior:false}")
+        END_TEST_METHOD()
+
 #ifdef MUX_PRERELEASE
         // Experimental Width/Height properties on Window are only present in prerelease builds.
         BEGIN_TEST_METHOD(CanGetSetWindowWidthHeight)
@@ -194,6 +205,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the markup-loaded Window content tree is released (not held for the Window's lifetime) once Window.Content is cleared.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
+
+    private:
+        void VerifyECITBEntryPointOffsets(bool expectedChangeEnabled);
 
     };
 

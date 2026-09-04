@@ -23,6 +23,44 @@ using namespace test_infra;
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Controls { namespace Window {
 
+namespace
+{
+    HWND FindDesktopChildSiteBridge(HWND parentWindow)
+    {
+        HWND bridgeWindow = nullptr;
+        ::EnumChildWindows(
+            parentWindow,
+            [](HWND childWindow, LPARAM result) -> BOOL
+            {
+                wchar_t className[128]{};
+                if (::GetClassNameW(childWindow, className, ARRAYSIZE(className)) > 0 &&
+                    wcscmp(className, L"Microsoft.UI.Content.DesktopChildSiteBridge") == 0)
+                {
+                    *reinterpret_cast<HWND*>(result) = childWindow;
+                    return FALSE;
+                }
+
+                return TRUE;
+            },
+            reinterpret_cast<LPARAM>(&bridgeWindow));
+
+        return bridgeWindow;
+    }
+
+    int GetDesktopChildSiteBridgeTopOffset(HWND parentWindow)
+    {
+        const HWND bridgeWindow = FindDesktopChildSiteBridge(parentWindow);
+        VERIFY_IS_TRUE(bridgeWindow != nullptr, L"The Window should host XAML in a DesktopChildSiteBridge.");
+
+        POINT clientOrigin{};
+        VERIFY_IS_TRUE(!!::ClientToScreen(parentWindow, &clientOrigin));
+
+        RECT bridgeRect{};
+        VERIFY_IS_TRUE(!!::GetWindowRect(bridgeWindow, &bridgeRect));
+        return bridgeRect.top - clientOrigin.y;
+    }
+}
+
     void LogWindowGeometry(const wchar_t* label, HWND windowHandle, xaml::Window^ window)
     {
         RECT outerRect{};
@@ -271,6 +309,75 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             auto systemBackdropBrush = compositionSupportsSystemBackdrop->SystemBackdrop;
             VERIFY_IS_NOT_NULL(systemBackdropBrush);
         });
+    }
+
+    void WindowIntegrationTests::ECITBEntryPointsReserveTopBorder()
+    {
+        VerifyECITBEntryPointOffsets(true);
+    }
+
+    void WindowIntegrationTests::ECITBEntryPointsPreserveCompatBehavior()
+    {
+        VerifyECITBEntryPointOffsets(false);
+    }
+
+    void WindowIntegrationTests::VerifyECITBEntryPointOffsets(bool expectedChangeEnabled)
+    {
+        TestCleanupWrapper cleanup;
+        const bool isChangeEnabled = xaml_settings::XamlOptionalChanges::IsChangeEnabled(
+            xaml_settings::XamlChangeId::AlignExtendsContentIntoTitleBarBehavior);
+        VERIFY_ARE_EQUAL(expectedChangeEnabled, isChangeEnabled);
+
+        auto createWindow = [&](WindowAutoCloser& window, HWND& windowHandle)
+        {
+            RunOnUIThread([&]()
+            {
+                window.Attach(safe_cast<xaml::Window^>(xaml_markup::XamlReader::Load(
+                    L"<Window xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                    L"xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                    L"  <Grid Background='Magenta'/>"
+                    L"</Window>")));
+                window->Activate();
+
+                IWindowNative* windowNative = nullptr;
+                VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window.get())->QueryInterface(
+                    __uuidof(IWindowNative), reinterpret_cast<void**>(&windowNative)));
+                VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+                windowNative->Release();
+            });
+            TestServices::WindowHelper->WaitForIdle();
+        };
+        auto verifyTopOffset = [](HWND windowHandle, int expectedOffset, const wchar_t* message)
+        {
+            const int actualOffset = GetDesktopChildSiteBridgeTopOffset(windowHandle);
+            LOG_OUTPUT(L"%s Expected offset=%d, actual offset=%d", message, expectedOffset, actualOffset);
+            VERIFY_ARE_EQUAL(expectedOffset, actualOffset, message);
+        };
+
+        WindowAutoCloser windowEntryPoint;
+        HWND windowEntryPointHandle = nullptr;
+        createWindow(windowEntryPoint, windowEntryPointHandle);
+        verifyTopOffset(windowEntryPointHandle, 0, L"Window ECITB off should place XAML at the client origin.");
+        RunOnUIThread([&]() { windowEntryPoint->ExtendsContentIntoTitleBar = true; });
+        TestServices::WindowHelper->WaitForIdle();
+        verifyTopOffset(windowEntryPointHandle, 1, L"Window ECITB on should reserve the top border.");
+        RunOnUIThread([&]() { windowEntryPoint->ExtendsContentIntoTitleBar = false; });
+        TestServices::WindowHelper->WaitForIdle();
+        verifyTopOffset(windowEntryPointHandle, 0, L"Window ECITB off should remove the top border.");
+
+        WindowAutoCloser appWindowEntryPoint;
+        HWND appWindowEntryPointHandle = nullptr;
+        createWindow(appWindowEntryPoint, appWindowEntryPointHandle);
+        verifyTopOffset(appWindowEntryPointHandle, 0, L"AppWindow ECITB off should place XAML at the client origin.");
+        RunOnUIThread([&]() { appWindowEntryPoint->AppWindow->TitleBar->ExtendsContentIntoTitleBar = true; });
+        TestServices::WindowHelper->WaitForIdle();
+        verifyTopOffset(
+            appWindowEntryPointHandle,
+            isChangeEnabled ? 1 : 0,
+            L"Direct AppWindow ECITB should use the optional-change geometry.");
+        RunOnUIThread([&]() { appWindowEntryPoint->AppWindow->TitleBar->ExtendsContentIntoTitleBar = false; });
+        TestServices::WindowHelper->WaitForIdle();
+        verifyTopOffset(appWindowEntryPointHandle, 0, L"AppWindow ECITB off should remove the top border.");
     }
 
 #ifdef MUX_PRERELEASE
