@@ -257,10 +257,10 @@ private:
 // Mirror of Windows.UI.Input.Inking.InkSynchronizer, returned by InkPresenter.ActivateCustomDrying.
 // Lets the app render committed ("dry") ink itself: BeginDry hands back the strokes the presenter just
 // committed and suppresses the presenter's own dry rendering; EndDry releases the wet-ink layer once
-// the app has drawn them. This mirror OWNS the OS InkSynchronizer (adopted on the ink thread from the
-// presenter's OS ActivateCustomDrying) and the dry-transaction state; the OS synchronizer is thread-
-// affine to the ink thread, so BeginDry/EndDry marshal onto it through the owning InkPresenter proxy's
-// work queue. The InkPresenter keeps this projected mirror, never the raw OS inking::InkSynchronizer.
+// the app has drawn them. UWP returns the OS InkSynchronizer directly; this mirror exists only because
+// that object is thread-affine to the ink thread, so it forwards BeginDry/EndDry through the owning
+// InkPresenter proxy's work queue and holds no dry-transaction state of its own. The InkPresenter keeps
+// this projected mirror, never the raw OS inking::InkSynchronizer.
 class InkSynchronizer :
     public winrt::implementation::InkSynchronizerT<InkSynchronizer>
 {
@@ -275,30 +275,12 @@ public:
     // synchronizer is valid.
     void AdoptOsSynchronizer(inking::InkSynchronizer const& osSynchronizer) noexcept { m_osSynchronizer = osSynchronizer; }
 
-    // Internal (not on the winmd surface). Runs the OS BeginDry in-context on the ink thread, inside the
-    // OS StrokesCollected callback (the only point BeginDry is valid): holds the wet layer up and captures
-    // the just-committed strokes for the app's BeginDry to drain. Ink-thread only.
-    void BeginDryInContext();
-
 private:
     winrt::weak_ref<muxc::InkPresenter> m_owner{ nullptr };
 
     // The OS InkSynchronizer this mirror fronts (from OS ActivateCustomDrying). Thread-affine to the ink
     // thread; only ever touched inside ink-thread work items. Null until custom drying is activated.
     inking::InkSynchronizer m_osSynchronizer{ nullptr };
-
-    // Strokes captured by the in-context BeginDry (ink thread) and drained by the app's BeginDry (which
-    // marshals to the ink thread). Ink-thread only.
-    std::vector<inking::InkStroke> m_pendingDryStrokes;
-
-    // True between the in-context BeginDry and its matching EndDry (the app drives EndDry once it has
-    // painted its dry ink, so the wet layer stays up until then). Guards a second BeginDry while a dry is
-    // still open when a burst outruns EndDry. Ink-thread only.
-    bool m_dryInProgress{ false };
-
-    // HRESULT of the most recent in-context BeginDry; S_OK on success. The app's BeginDry re-throws it so
-    // a genuine failure surfaces there instead of being swallowed. Ink-thread only.
-    HRESULT m_lastDryHr{ S_OK };
 };
 
 // Manipulable subset of Windows.UI.Input.Inking.InkPresenter. The OS presenter can only be created
@@ -421,14 +403,9 @@ private:
     muxc::InkUnprocessedInput m_unprocessedInput{ nullptr };
 
     // Custom drying: the synchronizer handed back by ActivateCustomDrying (UI-thread cached; repeated
-    // calls return the same instance, UWP parity). It wraps the OS InkSynchronizer and owns the
-    // dry-transaction state; this proxy keeps only this projected wrapper, never the raw OS one.
+    // calls return the same instance, UWP parity). It fronts the OS InkSynchronizer; this proxy keeps
+    // only this projected wrapper, never the raw OS one.
     muxc::InkSynchronizer m_customDrySynchronizer{ nullptr };
-
-    // Non-owning pointer to m_customDrySynchronizer's implementation, so the in-context StrokesCollected
-    // callback can drive its ink-thread BeginDry. Set on the ink thread when custom drying is activated;
-    // valid for this proxy's lifetime (m_customDrySynchronizer owns the object). Ink-thread only.
-    InkSynchronizer* m_customDrySync{ nullptr };
 
     // The shared DComp device, BORROWED from the InkCanvas/ThreadData that owns it (a per-UI-thread
     // singleton shared by every InkCanvas on the thread). Held only to pass as the SetRootVisual device
