@@ -340,6 +340,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that adding elements to the secondary collection or changing the value of ClosedDisplayMode changes the visibility of the more button.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateMoreButtonHidesWhenAllSecondaryCommandsAreCollapsed)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that the more button is collapsed while every secondary command is collapsed, and comes back once one of them becomes visible.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(ValidateButtonsMoveToAndFromOverflowWithoutSizeChange)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that AppBarButtons move to and from the overflow as expected when sizing the CommandBar less than the size it minimally needs to display all its content, and then sizing it to be larger than that.")
         END_TEST_METHOD()
