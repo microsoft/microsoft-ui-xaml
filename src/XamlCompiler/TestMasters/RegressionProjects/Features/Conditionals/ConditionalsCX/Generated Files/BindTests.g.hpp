@@ -1109,10 +1109,7 @@ private:
     void Update_Model_Org_Employees(::ConditionalControls::IObservableCollection^ obj, int phase)
     {
         this->_bindingsTracking->UpdateCollectionChangedListener(obj, &cacheCC_Model_Org_Employees, &tokenCC_Model_Org_Employees);
-        if (obj != nullptr)
-        {
-            this->Update_ConditionalControls_Organization_M_IsNonEmpty_2973382484(phase);
-        }
+        this->Update_ConditionalControls_Organization_M_IsNonEmpty_2973382484(phase);
         if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
         {
             // BindTests.xaml line 72

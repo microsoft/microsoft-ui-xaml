@@ -940,7 +940,9 @@ namespace BindTestbed
             {
                 global::System.String p0;
                 if (!TryGet_BindTestbedModel_DataModel_StaticStringProperty(out p0)) { return; }
-                global::System.String result = this.dataRoot.Model.FunctionOnModelOneStringArg(p0);
+                global::BindTestbedModel.DataModel instance;
+                if (!TryGet_Model(out instance) || instance == null) { return; }
+                global::System.String result = instance.FunctionOnModelOneStringArg(p0);
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     // FunctionTests.xaml line 51
@@ -1444,14 +1446,7 @@ namespace BindTestbed
                         this.UpdateFallback_Model_ReentrancyString(phase);
                     }
                 }
-                if (obj != null)
-                {
-                    this.Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
-                }
-                else
-                {
-                    this.UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
-                }
+                this.Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
             }
             private void Update_Model_M_FunctionOnModelNoArgs_757602046(int phase)
             {
@@ -1598,10 +1593,7 @@ namespace BindTestbed
                         this.Update_BindTestbedModel_DataModel_StaticStringProperty_M_ToString1_757602046(phase);
                     }
                 }
-                if (obj != null)
-                {
-                    this.Update_Model_M_FunctionOnModelOneStringArg_1668010001(phase);
-                }
+                this.Update_Model_M_FunctionOnModelOneStringArg_1668010001(phase);
             }
             private void Update_BindTestbedModel_DataModel_StaticStringProperty_M_ToString1_757602046(int phase)
             {
@@ -1794,10 +1786,7 @@ namespace BindTestbed
             }
             private void Update_Model_NullEmployee_Name(global::System.String obj, int phase)
             {
-                if (obj != null)
-                {
-                    this.Update_Model_M_FunctionOnModelNullArg_3348340388(phase);
-                }
+                this.Update_Model_M_FunctionOnModelNullArg_3348340388(phase);
             }
             private void Update_Model_M_FunctionOnModelNullArg_3348340388(int phase)
             {
@@ -1821,10 +1810,7 @@ namespace BindTestbed
             }
             private void Update_Model_StringPropertyDP(global::System.String obj, int phase)
             {
-                if (obj != null)
-                {
-                    this.Update_Model_M_FunctionOnModelThreeArgs_706606279(phase);
-                }
+                this.Update_Model_M_FunctionOnModelThreeArgs_706606279(phase);
             }
             private void Update_Model_M_FunctionOnModelThreeArgs_706606279(int phase)
             {
@@ -1876,11 +1862,8 @@ namespace BindTestbed
             }
             private void Update_Model_Employees_I0_Name(global::System.String obj, int phase)
             {
-                if (obj != null)
-                {
-                    this.Update_Model_M_FunctionOnModelThreeArgs_2448615814(phase);
-                    this.Update_Model_M_FunctionOnModelOneStringArg_2532831189(phase);
-                }
+                this.Update_Model_M_FunctionOnModelThreeArgs_2448615814(phase);
+                this.Update_Model_M_FunctionOnModelOneStringArg_2532831189(phase);
             }
             private void Update_Model_Employees_I0_IsManager(global::System.Boolean obj, int phase)
             {
@@ -1923,14 +1906,7 @@ namespace BindTestbed
                         this.UpdateFallback_Model_NullEmployee_FirstName_M_ToString1_757602046(phase);
                     }
                 }
-                if (obj != null)
-                {
-                    this.Update_Model_M_FunctionOnModelThreeArgs_1187614766(phase);
-                }
-                else
-                {
-                    this.UpdateFallback_Model_M_FunctionOnModelThreeArgs_1187614766(phase);
-                }
+                this.Update_Model_M_FunctionOnModelThreeArgs_1187614766(phase);
             }
             private void Update_Model_NullEmployee_FirstName_M_ToString1_757602046(int phase)
             {
@@ -2009,10 +1985,7 @@ namespace BindTestbed
             }
             private void Update_Model_Employees_I2_Name(global::System.String obj, int phase)
             {
-                if (obj != null)
-                {
-                    this.Update_Model_M_FunctionOnModelOneStringArg_2530340821(phase);
-                }
+                this.Update_Model_M_FunctionOnModelOneStringArg_2530340821(phase);
             }
             private void Update_Model_M_FunctionOnModelOneStringArg_2530340821(int phase)
             {
@@ -2026,14 +1999,7 @@ namespace BindTestbed
             }
             private void Update_Model_ReentrancyString(global::System.String obj, int phase)
             {
-                if (obj != null)
-                {
-                    this.Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
-                }
-                else
-                {
-                    this.UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
-                }
+                this.Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
             }
             private void Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(int phase)
             {

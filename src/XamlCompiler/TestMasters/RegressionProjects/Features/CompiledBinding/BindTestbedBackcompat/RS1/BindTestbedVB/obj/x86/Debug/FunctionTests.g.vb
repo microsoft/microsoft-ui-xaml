@@ -635,7 +635,9 @@ Namespace Global.BindTestbed
             Private Sub Invoke_Model_M_FunctionOnModelOneStringArg_1668010001(phase As Integer)
                 Dim p0 As Global.System.String = Nothing
                 If Not TryGet_BindTestbedModel_DataModel_StaticStringProperty(p0) Then Return
-                Dim result As Global.System.String = Me.dataRoot.Model.FunctionOnModelOneStringArg(p0)
+                Dim instance As Global.BindTestbedModel.DataModel = Nothing
+                If Not TryGet_Model(instance) OrElse instance Is Nothing Then Return
+                Dim result As Global.System.String = instance.FunctionOnModelOneStringArg(p0)
                 If (phase And ((1 << 0) Or NOT_PHASED )) <> 0 Then
                     If isobj13TextDisabled = False Then
                         XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(Me.obj13, result, Nothing)
@@ -1045,9 +1047,7 @@ Namespace Global.BindTestbed
                         Me.Update_BindTestbedModel_DataModel_StaticStringProperty_M_ToString_757602046(phase)
                     End If
                 End If
-                If obj IsNot Nothing Then
-                    Me.Update_Model_M_FunctionOnModelOneStringArg_1668010001(phase)
-                End If
+                Me.Update_Model_M_FunctionOnModelOneStringArg_1668010001(phase)
             End Sub
             Private Sub Update_BindTestbedModel_DataModel_StaticStringProperty_M_ToString_757602046(phase As Integer)
                 If (phase And ((1 << 0) Or NOT_PHASED )) <> 0 Then
@@ -1156,9 +1156,7 @@ Namespace Global.BindTestbed
                 End If
             End Sub
             Private Sub Update_Model_StringPropertyDP(obj As Global.System.String, phase As Integer)
-                If obj IsNot Nothing Then
-                    Me.Update_Model_M_FunctionOnModelThreeArgs_706606279(phase)
-                End If
+                Me.Update_Model_M_FunctionOnModelThreeArgs_706606279(phase)
             End Sub
             Private Sub Update_Model_M_FunctionOnModelThreeArgs_706606279(phase As Integer)
                 If (phase And ((1 << 0) Or NOT_PHASED Or DATA_CHANGED)) <> 0 Then
@@ -1193,9 +1191,7 @@ Namespace Global.BindTestbed
                 End If
             End Sub
             Private Sub Update_Model_Employees_I0_Name(obj As Global.System.String, phase As Integer)
-                If obj IsNot Nothing Then
-                    Me.Update_Model_M_FunctionOnModelThreeArgs_2448615814(phase)
-                End If
+                Me.Update_Model_M_FunctionOnModelThreeArgs_2448615814(phase)
             End Sub
             Private Sub Update_Model_Employees_I0_IsManager(obj As Global.System.Boolean, phase As Integer)
                 Me.Update_Model_M_FunctionOnModelThreeArgs_2448615814(phase)
@@ -1249,11 +1245,7 @@ Namespace Global.BindTestbed
                         Me.UpdateFallback_Model_NullEmployee_FirstName_M_ToString_757602046(phase)
                     End If
                 End If
-                If obj IsNot Nothing Then
-                    Me.Update_Model_M_FunctionOnModelThreeArgs_1187614766(phase)
-                Else
-                    Me.UpdateFallback_Model_M_FunctionOnModelThreeArgs_1187614766(phase)
-                End If
+                Me.Update_Model_M_FunctionOnModelThreeArgs_1187614766(phase)
             End Sub
             Private Sub Update_Model_NullEmployee_FirstName_M_ToString_757602046(phase As Integer)
                 If (phase And ((1 << 0) Or NOT_PHASED )) <> 0 Then

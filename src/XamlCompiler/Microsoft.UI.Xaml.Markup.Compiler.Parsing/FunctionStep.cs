@@ -39,6 +39,30 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public bool RequiresSafeParameterRetrieval => true;
 
         /// <summary>
+        /// The step producing the instance the method is invoked on, or null when that instance is
+        /// already known to be non null wherever this function can be scheduled from.
+        /// A function binding is scheduled either as a child of that step, which is only updated
+        /// while its own value is non null, or as a dependent of one of its path parameters. So the
+        /// instance only needs to be retrieved safely when a parameter sits outside of its path.
+        /// </summary>
+        public BindPathStep InstanceStep
+        {
+            get
+            {
+                if (Parent is StaticRootStep)
+                {
+                    return null;
+                }
+
+                bool isScheduledOutsideInstancePath = Parameters
+                    .OfType<FunctionPathParam>()
+                    .Any(param => !param.Path.Parents.Any(step => step.CodeName == Parent.CodeName));
+
+                return isScheduledOutsideInstancePath ? Parent : null;
+            }
+        }
+
+        /// <summary>
         /// ValueTypeIsConditional indicates if a step if of a conditional type. It is different than
         /// checking ApiInformation on the step itself, which is used to tell to not use that step unless the 
         /// ApiInformation check is satisfied. This checks against the step value type itself.
