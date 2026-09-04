@@ -177,6 +177,10 @@ Invoke-GitCommand -Repository $repositoryFullPath -Arguments @("config", "user.n
 Invoke-GitCommand -Repository $repositoryFullPath -Arguments @("config", "user.email", "winui-github-integration@microsoft.com")
 
 $maximumPublishAttempts = 3
+# Safety net for the rare case where the target moves between our fetch and
+# our push (e.g. a manual/admin push or another writer). A non-fast-forward
+# rejection triggers a re-fetch and rebuild on the new tip. Our own runs are
+# already serialized by the stage's runLatest lock, so this seldom fires.
 for ($publishAttempt = 1; $publishAttempt -le $maximumPublishAttempts; $publishAttempt++) {
     Write-Host "##[group]Fetching integration branches (attempt $publishAttempt of $maximumPublishAttempts)"
     $fetchArguments = @(

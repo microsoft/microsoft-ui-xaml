@@ -65,5 +65,5 @@ extends:
       parameters:
         sourceBranchName: github/internal/main
         targetBranchName: user/gpaskaleva/mirror-integration-target
-        dependsOnStage: Source
+        dependsOnStage: FastForwardPublicMirror
         checkoutRepository: targetRepository
