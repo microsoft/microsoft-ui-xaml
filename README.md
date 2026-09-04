@@ -73,7 +73,7 @@ For information on how to contribute, please see [Contributing to WinUI](CONTRIB
 > [WinUI OSS Update post](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700) to check the
 > latest status.
 >
-> For the latest code and updates, use the [`winui3/main`](https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/main) branch.
+> For the latest code and updates, use the [`main`](https://github.com/microsoft/microsoft-ui-xaml/tree/main) branch.
 
 ## 🛣️ Roadmap
 
