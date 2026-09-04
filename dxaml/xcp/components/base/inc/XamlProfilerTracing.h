@@ -115,6 +115,18 @@ public:
         bool, IsLive,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
+    // Snapshot of XAML allocator-owned CPU heap blocks. This excludes GPU texture backing and
+    // process allocations owned by other components/runtimes.
+    DEFINE_TRACELOGGING_EVENT_PARAM7(XamlHeapSnapshot,
+        uint64_t, HeapHandle,
+        bool,     IsPrivateHeap,
+        uint64_t, OutstandingBytes,
+        uint64_t, OutstandingAllocationCount,
+        uint64_t, CumulativeAllocatedBytes,
+        uint64_t, CumulativeAllocationCount,
+        uint64_t, CumulativeDeallocationCount,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
     // =====================================================================
     // Peer Association Events
     // =====================================================================
@@ -266,6 +278,60 @@ public:
     // Fired when a composition target/island root is cleared (Root set to null).
     DEFINE_TRACELOGGING_EVENT_PARAM1(WucVisualRootCleared,
         uint64_t, TargetId,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // =====================================================================
+    // GPU Memory Events
+    // =====================================================================
+
+    // Reports the lifecycle and logical dimensions of a DComp surface. EstimatedSizeBytes
+    // is width-with-gutters * height-with-gutters * pixel stride. It is useful for attribution,
+    // but is not exact committed VRAM because DComp may atlas, share, or sparsely tile surfaces.
+    DEFINE_TRACELOGGING_EVENT_PARAM7(DCompSurfaceMemoryChanged,
+        uint64_t, SurfaceId,
+        bool,     IsAllocation,
+        uint64_t, EstimatedSizeBytes,
+        uint32_t, Width,
+        uint32_t, Height,
+        uint32_t, PixelStride,
+        bool,     IsVirtual,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // Reports the transient D3D11 texture exposed by DComp during BeginDraw. For atlased
+    // surfaces, Width/Height describe the shared backing texture and OffsetX/OffsetY locate
+    // this surface's update region within it. The resource must not be retained after EndDraw.
+    DEFINE_TRACELOGGING_EVENT_PARAM10(DCompSurfaceTextureObserved,
+        uint64_t, SurfaceId,
+        uint64_t, ResourceId,
+        uint32_t, Width,
+        uint32_t, Height,
+        uint32_t, MipLevels,
+        uint32_t, ArraySize,
+        uint32_t, Format,
+        uint32_t, SampleCount,
+        int32_t,  OffsetX,
+        int32_t,  OffsetY,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // Associates a rendered IVisual with the DComp surface used by one of its brush roles.
+    // SurfaceId == 0 clears the role. Role 0 is the brush texture; role 1 is the mask texture.
+    // VisualId joins the existing WUC events, whose OwnerCompNodeId joins CompPeerLinked.
+    DEFINE_TRACELOGGING_EVENT_PARAM3(VisualSurfaceChanged,
+        uint64_t, VisualId,
+        uint64_t, SurfaceId,
+        uint32_t, Role,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // Driver-reported memory usage for this process on the D3D device's adapter. This is the
+    // closest available view of committed GPU memory, but allocations owned by DWM/DComp may
+    // be charged outside the app process.
+    DEFINE_TRACELOGGING_EVENT_PARAM6(GpuMemorySnapshot,
+        uint64_t, LocalCurrentUsage,
+        uint64_t, LocalBudget,
+        bool,     LocalAvailable,
+        uint64_t, NonLocalCurrentUsage,
+        uint64_t, NonLocalBudget,
+        bool,     NonLocalAvailable,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 };
 

@@ -1,0 +1,1 @@
+Test PR7 marker for GitHub main to Azure DevOps internal main pipeline validation.

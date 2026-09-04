@@ -7,6 +7,7 @@
 #include "TableViewColumn.h"
 #include "TableViewRow.h"
 #include "TableViewCellsPanel.h"
+#include "TableViewToolTipHelpers.h"
 #include "TableViewAutomationPeer.h"
 #include "TableViewSource.h"
 #include "SortIndicator.h"
@@ -433,6 +434,9 @@ void TableView::OnApplyTemplate()
     }
     if (auto oldHeaderHost = m_headerHost.get())
     {
+        // A live popup would still host content parented into the abandoned band.
+        ReleaseHeaderToolTips(oldHeaderHost);
+
         // Mirror the rowsRepeater Loaded cleanup for the header host.
         if (m_headerHostLoadedToken.value)
         {
@@ -1381,6 +1385,31 @@ static winrt::hstring GetColumnHeaderText(const winrt::TableViewColumn& column)
     return {};
 }
 
+void TableView::ReleaseHeaderToolTips(const winrt::Panel& host)
+{
+    if (!host)
+    {
+        return;
+    }
+
+    // Snapshot: Closed runs app code that can re-enter RebuildHeaders and clear this collection.
+    auto const children = host.Children();
+    std::vector<winrt::FrameworkElement> cells;
+    cells.reserve(children.Size());
+    for (uint32_t i = 0; i < children.Size(); ++i)
+    {
+        if (auto const headerCell = children.GetAt(i).try_as<winrt::FrameworkElement>())
+        {
+            cells.push_back(headerCell);
+        }
+    }
+
+    for (auto const& headerCell : cells)
+    {
+        TableViewDetails::ClearOwnedToolTip(headerCell);
+    }
+}
+
 void TableView::RebuildHeaders()
 {
     auto host = m_headerHost.get();
@@ -1388,6 +1417,9 @@ void TableView::RebuildHeaders()
     {
         return;
     }
+
+    // Clearing the host under a live popup tears its child down reentrantly.
+    ReleaseHeaderToolTips(host);
 
     host.Children().Clear();
 
@@ -1399,6 +1431,7 @@ void TableView::RebuildHeaders()
     // Header cells share the density row min-height so the header band matches the body rows.
     const double cachedRowMinHeight = GetDensityRowMinHeight();
     const double cachedHeaderFontSize = GetHeaderFontSize();
+    const winrt::Brush cachedHeaderCellFill = winrt::SolidColorBrush{ winrt::Colors::Transparent() };
     // unbox_value_or, not unbox_value: the key is app-overridable and a non-double would throw out
     // of RebuildHeaders; a non-positive or non-finite override would flow straight into Width().
     double cachedResizeGripperWidth = winrt::unbox_value_or<double>(
@@ -1445,6 +1478,9 @@ void TableView::RebuildHeaders()
             winrt::AutomationProperties::SetAccessibilityView(headerCell, winrt::AccessibilityView::Content);
             // Match the body row min-height so the header band and rows render at the same height.
             headerCell.MinHeight(cachedRowMinHeight);
+            // Without a fill the padding takes no pointer input, killing the tooltip and
+            // click-to-sort there.
+            headerCell.Background(cachedHeaderCellFill);
 
             // No Width binding: TableViewCellsPanel arranges header cells at the column's ActualWidth;
             // an explicit Width would defeat the panel's unconstrained Auto measured-width measurement.
@@ -1482,6 +1518,9 @@ void TableView::RebuildHeaders()
 
             // Tag header cells so frozen-column refresh can map them back to columns.
             headerCell.Tag(column);
+
+            // No HelpText: the header's peer is virtual and composes the text itself.
+            TableViewDetails::ApplyHeaderToolTip(headerCell, column.HeaderToolTip());
 
             // Sort affordance. Gated on both the control-wide and the per-column opt-in, so an
             // opted-out column carries no chevron and no click handler at all.

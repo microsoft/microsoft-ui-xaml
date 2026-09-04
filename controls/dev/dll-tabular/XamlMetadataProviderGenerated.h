@@ -243,6 +243,7 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"Header", L"Object", statics.HeaderProperty(), true /* isContent */);
                         xamlType.AddDPMember(L"HeaderTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.HeaderTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeaderTemplateSelector", L"Microsoft.UI.Xaml.Controls.DataTemplateSelector", statics.HeaderTemplateSelectorProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"HeaderToolTip", L"Object", statics.HeaderToolTipProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"IsReadOnly", L"Boolean", statics.IsReadOnlyProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"MaxWidth", L"Double", statics.MaxWidthProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"MinWidth", L"Double", statics.MinWidthProperty(), false /* isContent */);

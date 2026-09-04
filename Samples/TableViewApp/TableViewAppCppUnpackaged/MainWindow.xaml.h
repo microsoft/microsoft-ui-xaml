@@ -16,10 +16,6 @@ namespace winrt::TableViewAppCppUnpackaged::implementation
             winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
 
     private:
-        winrt::Microsoft::UI::Xaml::Controls::Tabular::TableViewTemplateColumn MakeColumn(
-            winrt::hstring const& header,
-            winrt::hstring const& templateKey);
-
         winrt::Windows::Foundation::Collections::IObservableVector<winrt::Windows::Foundation::IInspectable> m_people{ nullptr };
     };
 }
