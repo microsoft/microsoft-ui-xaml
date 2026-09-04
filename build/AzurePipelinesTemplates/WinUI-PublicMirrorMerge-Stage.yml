@@ -33,7 +33,16 @@ stages:
       value: true
     - name: repositoryRelativePath
       value: 's\repository'
+    - name: scriptsRelativePath
+      value: 's\scripts'
     steps:
+    - checkout: self
+      submodules: false
+      persistCredentials: false
+      fetchDepth: 1
+      fetchTags: false
+      path: '$(scriptsRelativePath)'
+      displayName: Checkout pipeline scripts from GitHub source
     - checkout: ${{ parameters.checkoutRepository }}
       submodules: false
       persistCredentials: true
@@ -46,7 +55,7 @@ stages:
       displayName: Merge public mirror into internal branch
       inputs:
         workingDirectory: '$(Pipeline.Workspace)'
-        filePath: '$(Pipeline.Workspace)\$(repositoryRelativePath)\scripts\MergePublicMirrorIntoInternalBranch.ps1'
+        filePath: '$(Pipeline.Workspace)\$(scriptsRelativePath)\scripts\MergePublicMirrorIntoInternalBranch.ps1'
         arguments: >
           -RepositoryDirectory '$(repositoryRelativePath)'
           -SourceBranchName '${{ parameters.sourceBranchName }}'
