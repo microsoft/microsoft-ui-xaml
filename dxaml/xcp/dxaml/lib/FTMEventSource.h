@@ -165,10 +165,10 @@ public:
             }
         }
 
-        if (i == size)
-        {
-            IFC(E_FAIL);
-        }
+        // If the cookie wasn't found, treat this as a no-op rather than a failure. This can legitimately
+        // happen if the event source was already cleared (e.g. via Clear(), which eagerly revokes all
+        // registrations when the owning object is closed/shut down) before the caller got a chance to
+        // explicitly unsubscribe with the token it was given from Add().
 
     Cleanup:
         RRETURN(hr);
