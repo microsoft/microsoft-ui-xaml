@@ -53,11 +53,11 @@ void RunOnInkHostThread(winrt::weak_ref<muxc::InkPresenter> const& presenter, st
     }
 }
 
-void RunOnInkHostThreadSync(winrt::weak_ref<muxc::InkPresenter> const& presenter, std::function<void(inking::InkPresenter const&)> workItem, bool propagateException, bool pumpMessages)
+void RunOnInkHostThreadSync(winrt::weak_ref<muxc::InkPresenter> const& presenter, std::function<void(inking::InkPresenter const&)> workItem, bool pumpMessages)
 {
     if (auto strong = presenter.get())
     {
-        winrt::get_self<::InkPresenter>(strong)->RunInkPresenterWorkItemSync(std::move(workItem), propagateException, pumpMessages);
+        winrt::get_self<::InkPresenter>(strong)->RunInkPresenterWorkItemSync(std::move(workItem), pumpMessages);
     }
 }
 
@@ -95,7 +95,7 @@ winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> InkStrok
                 snapshot.push_back(stroke);
             }
         },
-        /* propagateException */ false, /* pumpMessages */ false);
+        /* pumpMessages */ false);
 
     return winrt::single_threaded_vector<inking::InkStroke>(std::move(snapshot)).GetView();
 }
@@ -141,7 +141,7 @@ winrt::Windows::Foundation::IAsyncAction InkStrokeContainer::SaveAsync(winrt::Wi
             // Run the OS async to completion on the ink thread that owns the container.
             presenter.StrokeContainer().SaveAsync(outputStream).get();
         },
-        /* propagateException */ true, /* pumpMessages */ false);
+        /* pumpMessages */ false);
 }
 
 winrt::Windows::Foundation::IAsyncAction InkStrokeContainer::SaveAsync(winrt::Windows::Storage::Streams::IOutputStream outputStream, inking::InkPersistenceFormat inkPersistenceFormat)
@@ -157,7 +157,7 @@ winrt::Windows::Foundation::IAsyncAction InkStrokeContainer::SaveAsync(winrt::Wi
             // Run the OS async to completion on the ink thread that owns the container.
             presenter.StrokeContainer().SaveAsync(outputStream, inkPersistenceFormat).get();
         },
-        /* propagateException */ true, /* pumpMessages */ false);
+        /* pumpMessages */ false);
 }
 
 winrt::Windows::Foundation::IAsyncAction InkStrokeContainer::LoadAsync(winrt::Windows::Storage::Streams::IInputStream inputStream)
@@ -171,7 +171,7 @@ winrt::Windows::Foundation::IAsyncAction InkStrokeContainer::LoadAsync(winrt::Wi
         {
             presenter.StrokeContainer().LoadAsync(inputStream).get();
         },
-        /* propagateException */ true, /* pumpMessages */ false);
+        /* pumpMessages */ false);
 }
 
 // Selection / query members. Each marshals a single call to the OS container on the ink
@@ -187,7 +187,7 @@ inking::InkStroke InkStrokeContainer::GetStrokeById(uint32_t id)
         {
             result = presenter.StrokeContainer().GetStrokeById(id);
         },
-        /* propagateException */ false, /* pumpMessages */ false);
+        /* pumpMessages */ false);
     return result;
 }
 
@@ -199,7 +199,7 @@ winrt::Windows::Foundation::Rect InkStrokeContainer::DeleteSelected()
         {
             result = presenter.StrokeContainer().DeleteSelected();
         },
-        /* propagateException */ false, /* pumpMessages */ false);
+        /* pumpMessages */ false);
     return result;
 }
 
@@ -211,7 +211,7 @@ winrt::Windows::Foundation::Rect InkStrokeContainer::MoveSelected(winrt::Windows
         {
             result = presenter.StrokeContainer().MoveSelected(translation);
         },
-        /* propagateException */ false, /* pumpMessages */ false);
+        /* pumpMessages */ false);
     return result;
 }
 
@@ -223,7 +223,7 @@ winrt::Windows::Foundation::Rect InkStrokeContainer::SelectWithLine(winrt::Windo
         {
             result = presenter.StrokeContainer().SelectWithLine(from, to);
         },
-        /* propagateException */ false, /* pumpMessages */ false);
+        /* pumpMessages */ false);
     return result;
 }
 
@@ -245,7 +245,7 @@ winrt::Windows::Foundation::Rect InkStrokeContainer::SelectWithPolyLine(winrt::W
             for (auto const& p : snapshot) { vec.Append(p); }
             result = presenter.StrokeContainer().SelectWithPolyLine(vec);
         },
-        /* propagateException */ false, /* pumpMessages */ false);
+        /* pumpMessages */ false);
     return result;
 }
 
@@ -258,14 +258,14 @@ winrt::Windows::Foundation::Rect InkStrokeContainer::BoundingRect()
         {
             result = presenter.StrokeContainer().BoundingRect();
         },
-        /* propagateException */ false, /* pumpMessages */ false);
+        /* pumpMessages */ false);
     return result;
 }
 
 // Clipboard members. The OS container is thread-affine, so these run on the ink thread like
-// the other container operations. Copy/Paste propagate failures so the app sees the HRESULT
-// (e.g. an empty selection on copy, or an incompatible clipboard payload on paste) instead of
-// a silent no-op; the returned Rect from paste is the invalidated region.
+// the other container operations. Failures surface to the app as an HRESULT (e.g. an empty
+// selection on copy, or an incompatible clipboard payload on paste); the returned Rect from
+// paste is the invalidated region.
 void InkStrokeContainer::CopySelectedToClipboard()
 {
     RunOnInkHostThreadSync(m_owner,
@@ -273,7 +273,7 @@ void InkStrokeContainer::CopySelectedToClipboard()
         {
             presenter.StrokeContainer().CopySelectedToClipboard();
         },
-        /* propagateException */ true, /* pumpMessages */ true);
+        /* pumpMessages */ true);
 }
 
 winrt::Windows::Foundation::Rect InkStrokeContainer::PasteFromClipboard(winrt::Windows::Foundation::Point const& position)
@@ -284,20 +284,19 @@ winrt::Windows::Foundation::Rect InkStrokeContainer::PasteFromClipboard(winrt::W
         {
             result = presenter.StrokeContainer().PasteFromClipboard(position);
         },
-        /* propagateException */ true, /* pumpMessages */ true);
+        /* pumpMessages */ true);
     return result;
 }
 
 bool InkStrokeContainer::CanPasteFromClipboard()
 {
-    // Query: best-effort, so a failure just reports "cannot paste" rather than throwing.
     bool result = false;
     RunOnInkHostThreadSync(m_owner,
         [&result](inking::InkPresenter const& presenter)
         {
             result = presenter.StrokeContainer().CanPasteFromClipboard();
         },
-        /* propagateException */ false, /* pumpMessages */ true);
+        /* pumpMessages */ true);
     return result;
 }
 
@@ -428,7 +427,7 @@ void InkPresenter::QueueInkPresenterWorkItem(std::function<void(inking::InkPrese
 // deadlock. INVARIANT: a work item posted here must not synchronously call back to the UI thread
 // (the wait is non-pumping); anything needing UI/app objects uses the async path (SaveAsync /
 // LoadAsync resume_background() first, so the UI thread is never the one blocked).
-void InkPresenter::RunInkPresenterWorkItemSync(std::function<void(inking::InkPresenter const&)> workItem, bool propagateException, bool pumpMessages)
+void InkPresenter::RunInkPresenterWorkItemSync(std::function<void(inking::InkPresenter const&)> workItem, bool pumpMessages)
 {
     if (!m_inkHost)
     {
@@ -437,19 +436,9 @@ void InkPresenter::RunInkPresenterWorkItemSync(std::function<void(inking::InkPre
 
     if (::GetCurrentThreadId() == m_inkThreadId)
     {
-        try
+        if (m_osPresenter)
         {
-            if (m_osPresenter)
-            {
-                workItem(m_osPresenter);
-            }
-        }
-        catch (...)
-        {
-            if (propagateException)
-            {
-                throw;
-            }
+            workItem(m_osPresenter);
         }
         return;
     }
@@ -472,8 +461,8 @@ void InkPresenter::RunInkPresenterWorkItemSync(std::function<void(inking::InkPre
             }
             catch (...)
             {
-                // Capture rather than swallow: SaveAsync/LoadAsync opt into re-propagation so a
-                // failed save/load is reported to the app. Best-effort getters ignore this.
+                // Captured here and rethrown on the calling thread below: the ink thread has no way
+                // to raise it at the caller.
                 workError = std::current_exception();
             }
             ::SetEvent(doneEvent.get());
@@ -499,7 +488,7 @@ void InkPresenter::RunInkPresenterWorkItemSync(std::function<void(inking::InkPre
         ::WaitForSingleObject(doneEvent.get(), INFINITE);
     }
 
-    if (propagateException && workError)
+    if (workError)
     {
         std::rethrow_exception(workError);
     }
@@ -595,7 +584,7 @@ winrt::InkDrawingAttributes InkPresenter::CopyDefaultDrawingAttributes()
         {
             result = presenter.CopyDefaultDrawingAttributes();
         },
-        /* propagateException */ false, /* pumpMessages */ false);
+        /* pumpMessages */ false);
 
     if (!result)
     {
@@ -674,29 +663,35 @@ muxc::InkUnprocessedInput InkPresenter::UnprocessedInput()
 
 muxc::InkSynchronizer InkPresenter::ActivateCustomDrying()
 {
-    // Create the projected synchronizer on the UI (calling) thread, where the app invokes it - a proxy
-    // created on the ink thread crashes when called cross-apartment. Stable across repeated calls.
-    if (!m_customDrySynchronizer)
+    // Idempotent (UWP parity): activate once; repeated calls return the same synchronizer.
+    if (m_customDrySynchronizer)
     {
-        m_customDrySynchronizer = winrt::make<InkSynchronizer>(winrt::weak_ref<muxc::InkPresenter>{ *this });
+        return m_customDrySynchronizer;
     }
 
-    // Idempotent (UWP parity): activate once on the ink thread; repeated calls return the same
-    // synchronizer. The OS only permits this before input is activated, which is why InkCanvas holds
-    // the presenter at 0x0 until app configuration has run (see InkCanvas::UpdateInkPresenterSize).
+    // Created on the UI (calling) thread, where the app invokes it - a proxy created on the ink thread
+    // crashes when called cross-apartment.
+    auto customDrySynchronizer = winrt::make<InkSynchronizer>(winrt::weak_ref<muxc::InkPresenter>{ *this });
+
+    // The OS only permits this before input is activated, which is why InkCanvas holds the presenter
+    // at 0x0 until app configuration has run (see InkCanvas::UpdateInkPresenterSize).
+    bool activated = false;
     RunInkPresenterWorkItemSync(
-        [this](inking::InkPresenter const& osPresenter)
+        [&](inking::InkPresenter const& osPresenter)
         {
-            if (!m_customDryActive)
-            {
-                winrt::get_self<::InkSynchronizer>(m_customDrySynchronizer)
-                    ->AdoptOsSynchronizer(osPresenter.ActivateCustomDrying());
-                m_customDryActive = true;
-            }
+            winrt::get_self<::InkSynchronizer>(customDrySynchronizer)->Initialize(osPresenter.ActivateCustomDrying());
+            activated = true;
         },
-        /* propagateException */ true,
         /* pumpMessages */ false);
 
+    // The work item never ran: no ink host, or the OS presenter has not been created yet. Report it
+    // rather than handing back a synchronizer whose BeginDry would silently do nothing.
+    if (!activated)
+    {
+        throw winrt::hresult_error(E_ILLEGAL_METHOD_CALL, L"InkPresenter is not ready for custom drying.");
+    }
+
+    m_customDrySynchronizer = customDrySynchronizer;
     return m_customDrySynchronizer;
 }
 
@@ -736,7 +731,6 @@ winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> InkSynch
                 dry.GetMany(0, strokes);
             }
         },
-        /* propagateException */ true,
         /* pumpMessages */ false);
     // Build the returned collection on the calling (UI) thread so the app is never handed an
     // ink-thread-affine object.
@@ -753,7 +747,6 @@ void InkSynchronizer::EndDry()
                 m_osSynchronizer.EndDry();
             }
         },
-        /* propagateException */ true,
         /* pumpMessages */ false);
 }
 

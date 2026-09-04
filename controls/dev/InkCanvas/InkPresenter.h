@@ -59,12 +59,12 @@ private:
 // of reaching into the proxy's work queue directly; the queue lives on the InkPresenter proxy, which
 // is the sole owner of the thread-affine OS presenter and the ink host reference.
 void RunOnInkHostThread(winrt::weak_ref<muxc::InkPresenter> const& presenter, std::function<void(inking::InkPresenter const&)> workItem);
-// Synchronous marshal onto the ink host thread. propagateException rethrows a work-item failure on the
-// caller (false for best-effort getters). pumpMessages uses a COM-pumping wait (COWAIT_DISPATCH_CALLS)
-// instead of a plain blocking wait - required for OLE-clipboard work that can call back into the
-// UI-thread clipboard owner while this wait is in progress; a non-pumping wait would deadlock. Pass
-// false for ordinary getters.
-void RunOnInkHostThreadSync(winrt::weak_ref<muxc::InkPresenter> const& presenter, std::function<void(inking::InkPresenter const&)> workItem, bool propagateException, bool pumpMessages);
+// Synchronous marshal onto the ink host thread. A work-item failure is rethrown on the calling thread,
+// so ink-thread errors reach the app rather than being reported as a default-constructed result.
+// pumpMessages uses a COM-pumping wait (COWAIT_DISPATCH_CALLS) instead of a plain blocking wait -
+// required for OLE-clipboard work that can call back into the UI-thread clipboard owner while this wait
+// is in progress; a non-pumping wait would deadlock. Pass false for ordinary getters.
+void RunOnInkHostThreadSync(winrt::weak_ref<muxc::InkPresenter> const& presenter, std::function<void(inking::InkPresenter const&)> workItem, bool pumpMessages);
 
 // Snapshot of the InkStroke objects handed to InkPresenter.StrokesCollected. InkStroke is
 // agile, so the strokes are copied on the ink thread and this args object is re-raised on
@@ -273,7 +273,7 @@ public:
     // Internal (not on the winmd surface). Injects the OS InkSynchronizer (from the presenter's OS
     // ActivateCustomDrying) into this UI-thread-created proxy. Called on the ink thread, where the OS
     // synchronizer is valid.
-    void AdoptOsSynchronizer(inking::InkSynchronizer const& osSynchronizer) noexcept { m_osSynchronizer = osSynchronizer; }
+    void Initialize(inking::InkSynchronizer const& osSynchronizer) noexcept { m_osSynchronizer = osSynchronizer; }
 
 private:
     winrt::weak_ref<muxc::InkPresenter> m_owner{ nullptr };
@@ -334,7 +334,7 @@ public:
     // SetRootVisual / SetSize).
     void QueueInkPresenterWorkItem(std::function<void(inking::InkPresenter const&)> workItem);
     // pumpMessages uses a COM-pumping wait (see the free RunOnInkHostThreadSync); pass false for ordinary getters.
-    void RunInkPresenterWorkItemSync(std::function<void(inking::InkPresenter const&)> workItem, bool propagateException, bool pumpMessages);
+    void RunInkPresenterWorkItemSync(std::function<void(inking::InkPresenter const&)> workItem, bool pumpMessages);
 
     // Internal (not on the winmd surface). Shows/hides the ruler / protractor stencils on the OS
     // presenter. InkPresenterRuler / InkPresenterProtractor are thread-affine, so they are created
@@ -412,9 +412,6 @@ private:
     // arg and to build the commit handler when a runtime ActivateCustomDrying rebuilds the OS presenter.
     // Ink-thread only; released at detach via ReleaseCompositionDevice.
     winrt::com_ptr<IDCompositionDevice> m_compositionDevice{ nullptr };
-
-    // Custom drying: true once the app has activated custom drying. Ink-thread only.
-    bool m_customDryActive{ false };
 
     // The ink root visual handed to SetRootVisual. Held so a runtime ActivateCustomDrying can detach it
     // (SetRootVisual(nullptr)) for the OS activation - which requires a pre-start presenter - and then
