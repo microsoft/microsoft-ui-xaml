@@ -35,9 +35,9 @@ void RadioMenuFlyoutItem::OnLoaded(winrt::IInspectable const&, winrt::RoutedEven
 void RadioMenuFlyoutItem::OnUnloaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
     // If this is the checked item, remove it from the lookup.
-    if (m_isChecked && s_selectionMap)
+    if (m_isChecked)
     {
-        SharedHelpers::EraseIfExists(*s_selectionMap, m_groupName);
+        UnregisterFromGroup();
     }
 }
 
@@ -58,7 +58,13 @@ void RadioMenuFlyoutItem::OnPropertyChanged(const winrt::DependencyPropertyChang
     }
     else if (property == s_GroupNameProperty)
     {
-        m_groupName = GroupName();
+        // Move an existing registration over to the new group. IsChecked is frequently applied before
+        // GroupName. Only do this while actually registered: an unloaded item keeps IsChecked,
+        // and it could take over the new group over from an item that is actually still in the tree.
+        if (m_isRegistered)
+        {
+            UpdateCheckedItemInGroup();
+        }
     }
 }
 
@@ -90,6 +96,11 @@ void RadioMenuFlyoutItem::UpdateCheckedItemInGroup()
     {
         const auto groupName = GroupName();
 
+        if (m_isRegistered && m_registeredGroupName != groupName)
+        {
+            UnregisterFromGroup();
+        }
+
         if (const auto previousCheckedItemWeak = (*s_selectionMap)[groupName])
         {
             if (auto previousCheckedItem = previousCheckedItemWeak.get())
@@ -99,15 +110,47 @@ void RadioMenuFlyoutItem::UpdateCheckedItemInGroup()
                     // Uncheck the previously checked item.
                     RadioMenuFlyoutItem* rawPreviousCheckedItem = winrt::get_self<RadioMenuFlyoutItem>(previousCheckedItem);
                     rawPreviousCheckedItem->IsChecked(false);
+
+                    // Unchecking runs app code, which can re-enter this method and move us to another
+                    // group or uncheck us. We need to validate that we are still checked and in the same
+                    // group before registering ourselves.
+                    if (!IsChecked() || GroupName() != groupName)
+                    {
+                        return;
+                    }
                 }
             }
         }
+
         // Previously we used get_weak() here, but we found the potential to hit a 
         // refcounting problem where in some scenarios the outer object gets
         // an extra Release() in this process.
         auto weakThis {winrt::make_weak(static_cast<winrt::RadioMenuFlyoutItem>(*this))};
         (*s_selectionMap)[groupName] = weakThis;
+        m_registeredGroupName = groupName;
+        m_isRegistered = true;
     }
+}
+
+void RadioMenuFlyoutItem::UnregisterFromGroup()
+{
+    if (!m_isRegistered || !s_selectionMap)
+    {
+        return;
+    }
+
+    if (const auto it = s_selectionMap->find(m_registeredGroupName); it != s_selectionMap->end())
+    {
+        // Only drop the entry while it still refers to this item. Another item may have taken the group
+        // over in the meantime, and erasing by group name alone would discard that item's registration.
+        const auto registeredItem = it->second.get();
+        if (!registeredItem || registeredItem == static_cast<winrt::RadioMenuFlyoutItem>(*this))
+        {
+            s_selectionMap->erase(it);
+        }
+    }
+
+    m_isRegistered = false;
 }
 
 void RadioMenuFlyoutItem::OnAreCheckStatesEnabledPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args)

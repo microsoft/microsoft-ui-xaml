@@ -60,10 +60,16 @@ private:
     void OnInternalIsCheckedChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
     void UpdateCheckedItemInGroup();
+    void UnregisterFromGroup();
 
-    // Copies of IsChecked & GroupName to avoid using those dependency properties in the ~RadioMenuFlyoutItem() destructor which would lead to crashes.
+    // Copy of IsChecked to avoid using that dependency property in the ~RadioMenuFlyoutItem() destructor which would lead to crashes.
     bool m_isChecked{ false };
-    winrt::hstring m_groupName{ L"" };
+
+    // The group this item is currently registered under in s_selectionMap. GroupName() can change after
+    // the registration was made (it is commonly set after IsChecked, e.g. by XAML attribute order), so
+    // cleaning up must go through the name actually used at registration time rather than the current value.
+    winrt::hstring m_registeredGroupName{ L"" };
+    bool m_isRegistered{ false };
 
     bool m_isSafeUncheck{ false };
 
