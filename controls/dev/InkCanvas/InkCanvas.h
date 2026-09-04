@@ -98,4 +98,9 @@ private:
     // this. AttachToVisualLink clears it for the rapid Loaded/Unloaded re-attach case.
     std::atomic<bool> m_isDetached{ false };
 
+    // The OS activates ink input on the first non-zero SetSize, and ActivateCustomDrying is only
+    // legal before that. Hold the presenter at 0x0 until app configuration has had a chance to run.
+    bool m_initialSizeDeferred{ false };
+    bool m_initialSizePushed{ false };
+
 };

@@ -247,14 +247,38 @@ void InkCanvas::UpdateInkPresenterSize()
 
     // Push the new physical-pixel size onto the OS presenter (on the ink thread) through the proxy.
     // The proxy's queue no-ops if the OS presenter has not been created yet.
-    if (m_inkPresenterProxy)
+    if (!m_inkPresenterProxy)
     {
-        winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->QueueInkPresenterWorkItem(
-            [width = ActualWidth() * rootScale, height = ActualHeight() * rootScale](inking::InkPresenter const& presenter)
-            {
-                presenter.as<IInkPresenterDesktop>()->SetSize(static_cast<float>(width), static_cast<float>(height));
-            });
+        return;
     }
+
+    // The OS activates ink input on the first non-zero SetSize, and InkPresenter.ActivateCustomDrying
+    // is only legal before input is activated. Defer that first push to a low-priority callback so an
+    // app configuring the presenter (in its constructor or Loaded handler) runs first.
+    if (!m_initialSizePushed)
+    {
+        if (m_initialSizeDeferred)
+        {
+            return;
+        }
+        m_initialSizeDeferred = true;
+
+        auto strongThis = get_strong();
+        DispatcherQueue().TryEnqueue(
+            winrt::Microsoft::UI::Dispatching::DispatcherQueuePriority::Low,
+            [strongThis]()
+            {
+                strongThis->m_initialSizePushed = true;
+                strongThis->UpdateInkPresenterSize();
+            });
+        return;
+    }
+
+    winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->QueueInkPresenterWorkItem(
+        [width = ActualWidth() * rootScale, height = ActualHeight() * rootScale](inking::InkPresenter const& presenter)
+        {
+            presenter.as<IInkPresenterDesktop>()->SetSize(static_cast<float>(width), static_cast<float>(height));
+        });
 }
 
 void InkCanvas::AttachToVisualLink()
@@ -348,7 +372,9 @@ void InkCanvas::AttachInkVisualToPresenter()
     presenterSelf->QueueInkPresenterWorkItem([presenterSelf, rootVisual = m_inkRootVisual, compositionDevice = m_threadData->m_compositionDevice](inking::InkPresenter const& presenter)
         {
             auto desktopPresenter = presenter.as<IInkPresenterDesktop>();
-            winrt::check_hresult(desktopPresenter->SetRootVisual(rootVisual.get(), nullptr));
+            // Pass the composition device (not nullptr): custom drying needs it for the wet->dry
+            // handoff. The OS only uses the resulting commit provider in custom-dry mode.
+            winrt::check_hresult(desktopPresenter->SetRootVisual(rootVisual.get(), compositionDevice.get()));
             auto commitHandler = winrt::make_self<InkCommitRequestHandler>(compositionDevice);
             winrt::check_hresult(desktopPresenter->SetCommitRequestHandler(commitHandler.as<IInkCommitRequestHandler>().get()));
             winrt::check_hresult(compositionDevice->Commit());

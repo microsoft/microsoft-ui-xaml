@@ -63,6 +63,25 @@ namespace ScratchPadApp
             // Enable ALL input devices once. The InkPresenter is a stable instance that caches this, so it
             // does not need re-applying as the toolbar / canvas load.
             ApplyInputDeviceTypes();
+
+            // Deferred-start validation. The OS rejects _InitializeCustomDry with E_ILLEGAL_METHOD_CALL
+            // once input has been activated, and on desktop (DComp) input activates on the first
+            // non-zero SetSize. Calling here -- during construction, before the first layout pass --
+            // is the supported ordering. Set INK_CUSTOMDRY_AT_STARTUP=1 to exercise it.
+            if (Environment.GetEnvironmentVariable("INK_CUSTOMDRY_AT_STARTUP") == "1")
+            {
+                try
+                {
+                    _inkSynchronizer = InkSurface.InkPresenter.ActivateCustomDrying();
+                    _customDryActive = _inkSynchronizer != null;
+                    App.Log("STARTUP ActivateCustomDrying -> " + (_customDryActive ? "OK (non-null)" : "returned null"));
+                }
+                catch (Exception ex)
+                {
+                    App.Log("STARTUP ActivateCustomDrying THREW: " + ex.GetType().Name + ": " + ex.Message);
+                }
+            }
+
             Toolbar.Loaded += (s, e) =>
             {
                 App.Log("Toolbar.Loaded ActiveTool=" + (Toolbar.ActiveTool?.GetType().Name ?? "null"));

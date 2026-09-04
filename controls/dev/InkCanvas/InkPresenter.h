@@ -385,12 +385,6 @@ private:
     // via m_uiDispatcher -> raise our events).
     void InitializeOsPresenter(inking::InkPresenter const& osPresenter);
 
-    // Runs on the ink thread. The OS forbids ActivateCustomDrying after the presenter has started (our
-    // InkCanvas starts it on load), so we build a fresh presenter, activate it while unstarted, restore
-    // the app's configuration, and swap it in. Sets m_customDrySynchronizer / m_customDrySync.
-    void RebuildOsPresenterForCustomDrying(inking::InkPresenter const& startedPresenter,
-        muxc::InkInputProcessingMode mode, muxc::InkInputRightDragAction rightDrag, bool barrelButton, bool eraserInput);
-
     // The shared ink host (owns the ink thread), handed in by InkCanvas at construction. Used to
     // queue work items; the OS presenter is created and serviced on that thread.
     winrt::com_ptr<IInkDesktopHost> m_inkHost{ nullptr };
