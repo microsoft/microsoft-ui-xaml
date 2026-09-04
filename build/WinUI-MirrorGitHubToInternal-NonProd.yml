@@ -1,16 +1,27 @@
 # THROWAWAY / NON-PROD test pipeline for the consolidated GitHub->ADO mirror + integrate flow.
 # NOT for production. Delete after e2e validation is complete.
 #
-# trigger: none  -> must be queued MANUALLY on the source test branch
-# (user/gpaskaleva/mirror-e2e) so Build.SourceVersion binds to the mirror source tip
-# and the ExpectedSourceCommit containment guard is satisfied.
+# trigger: batched CI on the source test branch (user/gpaskaleva/mirror-e2e).
+# A merge into that branch auto-queues a run; batch:true collapses rapid pushes,
+# matching production inbound behavior. Build.SourceVersion binds to the branch
+# tip so the ExpectedSourceCommit containment guard stays satisfied.
 #
 # Mirror stage:    user/gpaskaleva/mirror-e2e (GitHub)
 #               -> user/gpaskaleva/github-internal-main-test (ADO)
 # Integrate stage: user/gpaskaleva/github-internal-main-test
 #               -> user/gpaskaleva/mirror-integration-target-bootstrap (bootstrap-based => clean merge)
 
-trigger: none
+parameters:
+- name: prePushDelaySeconds
+  displayName: 'TEST ONLY: pause N seconds before integrate publish (force a concurrency race)'
+  type: number
+  default: 0
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - user/gpaskaleva/mirror-e2e
 pr: none
 
 variables:
@@ -54,3 +65,4 @@ extends:
         targetBranchName: user/gpaskaleva/mirror-integration-target-bootstrap
         dependsOnStage: Source
         checkoutRepository: targetRepository
+        prePushDelaySeconds: ${{ parameters.prePushDelaySeconds }}
