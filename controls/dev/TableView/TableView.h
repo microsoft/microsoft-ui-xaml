@@ -148,7 +148,6 @@ public:
 
     // TableViewColumn calls this when header templates change so realized headers refresh.
     void RebuildHeaders();
-
     // Toggling it adds or removes every gripper, so the header band is rebuilt.
     void OnCanUserResizeColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
@@ -188,6 +187,9 @@ public:
     // TableViewColumn calls this when Header / HeaderTemplate / HeaderTemplateSelector changes so
     // headers re-render and Auto columns recompute their content width.
     void OnColumnHeaderChanged(const winrt::TableViewColumn& column);
+
+    // Re-applied in place: a rebuild would drop header focus and re-stamp the sort affordance.
+    void OnColumnHeaderToolTipChanged(const winrt::TableViewColumn& column);
 
     // TableViewColumn calls this when FrozenEdge changes so headers re-render and the leading-frozen
     // band re-pins.
@@ -352,6 +354,8 @@ public:
 private:
     // Drives the SelectionModel; its SelectionChanged is the single funnel that publishes.
     void ApplySelection(int32_t index);
+
+    void ReleaseHeaderToolTips(const winrt::Panel& host);
 
     // Created lazily so a TableView that never selects pays nothing.
     void EnsureSelectionModel();

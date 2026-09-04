@@ -1573,7 +1573,7 @@ _Check_return_ HRESULT CCoreServices::ClearDefaultLanguageString()
 //
 //------------------------------------------------------------------------
 
-_Check_return_ HRESULT CCoreServices::ResetState()
+_Check_return_ HRESULT CCoreServices::ResetState(bool resetInputServices)
 {
     HRESULT recordHr = S_OK;
 
@@ -1596,7 +1596,10 @@ _Check_return_ HRESULT CCoreServices::ResetState()
     }
 
     m_pMainVisualTree = nullptr;
-    m_inputServices = nullptr;
+    if (resetInputServices)
+    {
+        m_inputServices = nullptr;
+    }
 
     // Release some stuff
 
@@ -10254,10 +10257,12 @@ HRESULT CCoreServices::ShutdownToIdle()
     m_spXamlSchemaContext.reset();
     m_spXamlNodeStreamCacheManager.reset();
 
-    IFC_RETURN(ResetState());
+    IFC_RETURN(ResetState(false /* resetInputServices */));
 
+    ASSERT(m_inputServices != nullptr);
     delete m_pTextCore;
     m_pTextCore = NULL;
+    m_inputServices = nullptr;
 
     // Proactively release our D3D device lost listener to guarantee we synchronize with any pending callback that might be in-flight.
     ReleaseDeviceLostListener();

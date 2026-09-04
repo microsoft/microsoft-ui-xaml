@@ -4,15 +4,12 @@ using System.Linq;
 using System.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Media;
-// Disambiguate the real split-binary types from the stale mock projection
-// (Microsoft.UI.Xaml.Controls.TableView*) that the mock Microsoft.WinUI.dll still carries.
-using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
-using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
-using TableViewTemplateColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTemplateColumn;
 
 namespace TableViewSampleApp;
 
@@ -46,6 +43,14 @@ public sealed class BioCardConverter : IValueConverter
         throw new NotSupportedException();
 }
 
+// Exposes the protected peer/provider bridge so the sample can read what a UIA client would see.
+internal sealed class PeerBridge : FrameworkElementAutomationPeer
+{
+    public PeerBridge(FrameworkElement owner) : base(owner) { }
+
+    public AutomationPeer From(IRawElementProviderSimple provider) => PeerFromProvider(provider);
+}
+
 // Exercises per-cell tooltips: a plain string binding, a converter producing non-string content, a
 // column that opts out, a cell whose own template owns a tooltip, and late attach / detach.
 public sealed partial class ToolTipsPage : Page
@@ -54,6 +59,8 @@ public sealed partial class ToolTipsPage : Page
     private readonly TableViewColumn _bioColumn;
     private readonly TableViewColumn _cityColumn;
     private readonly TableViewColumn _scoreColumn;
+    private readonly TableViewColumn _unsortedTipColumn;
+    private readonly TableViewColumn _unsortedBareColumn;
 
     private bool _attached;
     private int _mutations;
@@ -66,11 +73,15 @@ public sealed partial class ToolTipsPage : Page
         _bioColumn = SampleColumns.Text("Bio", nameof(Item.Bio), SampleColumns.Pixels(180));
         _cityColumn = SampleColumns.Text("City", nameof(Item.City), SampleColumns.Pixels(120));
         _scoreColumn = SampleColumns.Text("Score", nameof(Item.Score), SampleColumns.Pixels(70));
+        _unsortedTipColumn = SampleColumns.Text("NoSortTip", nameof(Item.City), SampleColumns.Pixels(110));
+        _unsortedBareColumn = SampleColumns.Text("NoSortBare", nameof(Item.City), SampleColumns.Pixels(110));
 
         Table.Columns.Add(_nameColumn);
         Table.Columns.Add(_bioColumn);
         Table.Columns.Add(_cityColumn);
         Table.Columns.Add(_scoreColumn);
+        Table.Columns.Add(_unsortedTipColumn);
+        Table.Columns.Add(_unsortedBareColumn);
         Table.Columns.Add(new TableViewTemplateColumn
         {
             Header = "Notes (app tooltip)",
@@ -81,9 +92,30 @@ public sealed partial class ToolTipsPage : Page
         Table.ItemsSource = Data.Make();
 
         AttachToolTipBindings();
+        AttachHeaderToolTips();
 
         // Score deliberately never gets a binding: no tooltip should ever appear over that column.
         UpdateStatus();
+    }
+
+    private void AttachHeaderToolTips()
+    {
+        _nameColumn.HeaderToolTip = "Full name, as entered";
+        _cityColumn.HeaderToolTip = "City the person works from";
+
+        // Repeats the header's own text: the peer drops it so it is not announced twice.
+        _scoreColumn.HeaderToolTip = "Score";
+
+        // Non-string header content: mouse only, and never reported as help text.
+        var card = new StackPanel { Spacing = 4 };
+        card.Children.Add(new TextBlock { Text = "Bio", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold });
+        card.Children.Add(new TextBlock { Text = "Free-form summary", Opacity = 0.75 });
+        _bioColumn.HeaderToolTip = card;
+
+        // Isolates the two help-text paths: an unsortable column reports only its tooltip.
+        _unsortedTipColumn.CanSort = false;
+        _unsortedTipColumn.HeaderToolTip = "Unsortable, tooltip only";
+        _unsortedBareColumn.CanSort = false;
     }
 
     private void AttachToolTipBindings()
@@ -318,5 +350,111 @@ public sealed partial class ToolTipsPage : Page
         }
 
         Status.Text = sb2.ToString();
+    }
+
+    // Header peers are virtual: reach them through the table provider, not the peer's children.
+    private void OnCheckHeaderUia(object sender, RoutedEventArgs e)
+    {
+        var tablePeer = FrameworkElementAutomationPeer.CreatePeerForElement(Table);
+        if (tablePeer is not ITableProvider table)
+        {
+            Status.Text = "UIA: no TableView table provider";
+            return;
+        }
+
+        var providers = table.GetColumnHeaders();
+        if (providers is null || providers.Length == 0)
+        {
+            Status.Text = "UIA: no header providers";
+            return;
+        }
+
+        var sb = new StringBuilder($"headers={providers.Length}  ");
+        var bridge = new PeerBridge(Table);
+        foreach (var provider in providers)
+        {
+            var peer = bridge.From(provider);
+            if (peer is null)
+            {
+                sb.Append("[unconnected]   ");
+                continue;
+            }
+
+            sb.Append($"[{peer.GetName()}] help=\"{peer.GetHelpText()}\"   ");
+        }
+
+        Status.Text = sb.ToString();
+    }
+
+    // Reports whether each header carries a ToolTip, verifiable without hovering.
+    private void OnCheckHeaderTips(object sender, RoutedEventArgs e)
+    {
+        var sb = new StringBuilder();
+        int tagged = 0;
+
+        foreach (var element in Descendants(Table).OfType<FrameworkElement>())
+        {
+            if (element.Tag is not TableViewColumn column || element is Border)
+            {
+                continue;
+            }
+
+            var tip = ToolTipService.GetToolTip(element);
+            if (tip is null && column.HeaderToolTip is null)
+            {
+                continue;
+            }
+
+            tagged++;
+            var kind = tip switch
+            {
+                null => "none",
+                ToolTip t => t.Content is string s ? $"text:\"{s}\"" : $"content:{t.Content?.GetType().Name}",
+                _ => tip.GetType().Name,
+            };
+            sb.Append($"[{column.Header}] {kind}   ");
+        }
+
+        Status.Text = tagged > 0 ? sb.ToString() : "no header cells found";
+    }
+
+    // Hit-test near the trailing edge, away from the glyphs: a miss there means no tooltip.
+    private void OnCheckHeaderHitTest(object sender, RoutedEventArgs e)
+    {
+        var sb = new StringBuilder();
+
+        foreach (var element in Descendants(Table).OfType<FrameworkElement>())
+        {
+            if (element.Tag is not TableViewColumn column || element is Border)
+            {
+                continue;
+            }
+
+            var origin = element.TransformToVisual(null).TransformPoint(new Windows.Foundation.Point(0, 0));
+            var probe = new Windows.Foundation.Point(
+                origin.X + element.ActualWidth - 14,
+                origin.Y + (element.ActualHeight / 2));
+
+            var hits = VisualTreeHelper.FindElementsInHostCoordinates(probe, Table);
+            bool reachesCell = hits.Any(h => ReferenceEquals(h, element));
+            sb.Append($"[{column.Header}] {(reachesCell ? "HIT" : "MISS")}   ");
+        }
+
+        Status.Text = sb.Length > 0 ? sb.ToString() : "no header cells found";
+    }
+
+    // Exercises the in-place update path (OnColumnHeaderToolTipChanged): change one, retract one.
+    private void OnMutateHeaderTips(object sender, RoutedEventArgs e)
+    {
+        _nameColumn.HeaderToolTip = "CHANGED in place";
+        _cityColumn.HeaderToolTip = null;
+        Status.Text = "header tooltips mutated: Name changed, City retracted";
+    }
+
+    // Sorting re-renders the header band, exercising the teardown before Children().Clear().
+    private void OnSortHeaders(object sender, RoutedEventArgs e)
+    {
+        Table.SortByColumn(_nameColumn, Microsoft.UI.Xaml.Controls.Tabular.SortDirection.Ascending);
+        Status.Text = "sorted by Name (header band rebuilt)";
     }
 }

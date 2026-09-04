@@ -63,7 +63,11 @@
                                                   VerticalScrollMode="Disabled"
                                                   HorizontalScrollBarVisibility="Hidden"
                                                   VerticalScrollBarVisibility="Disabled">
-                                        <controls:TableViewCellsPanel x:Name="PART_HeaderHost" />
+                                        <!-- Left, not the default Stretch: the panel reports the summed column
+                                             width, and a wider presenter would centre it. PART_CellsHost
+                                             must match. -->
+                                        <controls:TableViewCellsPanel x:Name="PART_HeaderHost"
+                                                                      HorizontalAlignment="Left" />
                                     </ScrollViewer>
                                 </Grid>
                             </Border>
@@ -237,7 +241,9 @@
                                               Foreground="{TemplateBinding Foreground}"
                                               HorizontalContentAlignment="Stretch"
                                               VerticalContentAlignment="Stretch">
-                                <controls:TableViewCellsPanel x:Name="PART_CellsHost" />
+                                <!-- Left, matching PART_HeaderHost. -->
+                                <controls:TableViewCellsPanel x:Name="PART_CellsHost"
+                                                              HorizontalAlignment="Left" />
                             </ContentPresenter>
 
                             <!-- Fluent selection indicator: overlays the leading edge, Opacity 0 by
