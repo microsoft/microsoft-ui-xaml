@@ -752,6 +752,352 @@ namespace Framework { namespace DataBinding {
         });
     }
 
+    void BindingIntegrationTests::CanSetDataContextForCompiledBinding()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto dataContextFirstPanel = ref new StackPanel;
+            auto dataContextFirstSource = CreateInpcDataSource();
+            dataContextFirstPanel->DataContext = dataContextFirstSource;
+
+            dataContextFirstPanel->SetCompiledBinding(
+                Panel::TagProperty,
+                ref new CompiledBindingGetter([](Object^ source) -> Object^
+                {
+                    return safe_cast<InpcDataSource^>(source)->StringProperty;
+                }));
+
+            VERIFY_ARE_EQUAL(
+                dataContextFirstSource->StringProperty,
+                safe_cast<String^>(dataContextFirstPanel->Tag),
+                L"Compiled binding should propagate when DataContext is set first");
+
+            auto bindingFirstPanel = ref new StackPanel;
+            auto bindingFirstSource = CreateInpcDataSource();
+
+            bindingFirstPanel->SetCompiledBinding(
+                Panel::TagProperty,
+                ref new CompiledBindingGetter([](Object^ source) -> Object^
+                {
+                    return safe_cast<InpcDataSource^>(source)->StringProperty;
+                }));
+
+            VERIFY_IS_NULL(bindingFirstPanel->Tag, L"Compiled binding without DataContext should preserve the default value");
+
+            bindingFirstPanel->DataContext = bindingFirstSource;
+
+            VERIFY_ARE_EQUAL(
+                bindingFirstSource->StringProperty,
+                safe_cast<String^>(bindingFirstPanel->Tag),
+                L"Compiled binding should propagate when the binding is set first");
+
+            dataContextFirstSource->StringProperty = L"Updated after binding";
+            VERIFY_ARE_EQUAL(
+                dataContextFirstSource->StringProperty,
+                safe_cast<String^>(dataContextFirstPanel->Tag),
+                L"Compiled binding should update when its source raises PropertyChanged");
+
+            bindingFirstSource->StringProperty = L"Also updated after binding";
+            VERIFY_ARE_EQUAL(
+                bindingFirstSource->StringProperty,
+                safe_cast<String^>(bindingFirstPanel->Tag),
+                L"Compiled binding should update when its source raises PropertyChanged");
+
+            dataContextFirstPanel->ClearValue(Panel::DataContextProperty);
+            bindingFirstPanel->ClearValue(Panel::DataContextProperty);
+
+            VERIFY_IS_NULL(dataContextFirstPanel->Tag, L"Clearing DataContext should restore the target property's default");
+            VERIFY_IS_NULL(bindingFirstPanel->Tag, L"Clearing DataContext should restore the target property's default");
+        });
+    }
+
+    void BindingIntegrationTests::CanChangeDataContextForCompiledBinding()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto target = ref new StackPanel;
+            auto firstSource = CreateInpcDataSource();
+            firstSource->StringProperty = L"First source value";
+            target->DataContext = firstSource;
+
+            target->SetCompiledBinding(
+                Panel::TagProperty,
+                ref new CompiledBindingGetter([](Object^ source) -> Object^
+                {
+                    return safe_cast<InpcDataSource^>(source)->StringProperty;
+                }));
+
+            VERIFY_ARE_EQUAL(firstSource->StringProperty, safe_cast<String^>(target->Tag));
+
+            auto secondSource = CreateInpcDataSource();
+            secondSource->StringProperty = L"Second source value";
+            target->DataContext = secondSource;
+
+            VERIFY_ARE_EQUAL(
+                secondSource->StringProperty,
+                safe_cast<String^>(target->Tag),
+                L"Compiled binding should follow the new DataContext");
+
+            firstSource->StringProperty = L"First source update";
+            VERIFY_ARE_EQUAL(
+                secondSource->StringProperty,
+                safe_cast<String^>(target->Tag),
+                L"Changes from the old DataContext should not update the target");
+
+            secondSource->StringProperty = L"Second source update";
+            VERIFY_ARE_EQUAL(
+                secondSource->StringProperty,
+                safe_cast<String^>(target->Tag),
+                L"Changes from the new DataContext should update the target");
+
+            target->ClearValue(Panel::DataContextProperty);
+        });
+    }
+
+    void BindingIntegrationTests::CannotChangeDataContextDuringCompiledBindingEvaluation()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto target = ref new StackPanel;
+            auto initialSource = CreateInpcDataSource();
+            auto replacementSource = CreateInpcDataSource();
+            target->DataContext = initialSource;
+
+            VERIFY_THROWS_SPECIFIC_CX(
+                target->SetCompiledBinding(
+                    Panel::TagProperty,
+                    ref new CompiledBindingGetter([target, replacementSource](Object^ source) -> Object^
+                    {
+                        target->DataContext = replacementSource;
+                        return safe_cast<InpcDataSource^>(source)->StringProperty;
+                    })),
+                Platform::Exception,
+                [](Platform::Exception^ exception)
+                {
+                    return exception->HResult == HRESULT_FROM_WIN32(ERROR_INVALID_OPERATION);
+                });
+        });
+    }
+
+    void BindingIntegrationTests::CanSetDataContextViaSetValueForCompiledBinding()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto dataContextFirstPanel = ref new StackPanel;
+            auto dataContextFirstSource = CreateInpcDataSource();
+            dataContextFirstPanel->SetValue(Panel::DataContextProperty, dataContextFirstSource);
+
+            dataContextFirstPanel->SetCompiledBinding(
+                Panel::TagProperty,
+                ref new CompiledBindingGetter([](Object^ source) -> Object^
+                {
+                    return safe_cast<InpcDataSource^>(source)->StringProperty;
+                }));
+
+            VERIFY_ARE_EQUAL(
+                dataContextFirstSource->StringProperty,
+                safe_cast<String^>(dataContextFirstPanel->Tag),
+                L"Compiled binding should propagate when DataContext is set first");
+
+            auto bindingFirstPanel = ref new StackPanel;
+            auto bindingFirstSource = CreateInpcDataSource();
+
+            bindingFirstPanel->SetCompiledBinding(
+                Panel::TagProperty,
+                ref new CompiledBindingGetter([](Object^ source) -> Object^
+                {
+                    return safe_cast<InpcDataSource^>(source)->StringProperty;
+                }));
+
+            VERIFY_IS_NULL(bindingFirstPanel->Tag, L"Compiled binding without DataContext should preserve the default value");
+
+            bindingFirstPanel->SetValue(Panel::DataContextProperty, bindingFirstSource);
+
+            VERIFY_ARE_EQUAL(
+                bindingFirstSource->StringProperty,
+                safe_cast<String^>(bindingFirstPanel->Tag),
+                L"Compiled binding should propagate when the binding is set first");
+
+            dataContextFirstPanel->ClearValue(Panel::DataContextProperty);
+            bindingFirstPanel->ClearValue(Panel::DataContextProperty);
+        });
+    }
+
+    void BindingIntegrationTests::CanSetCompiledBindingDataContextAtMultipleLevels()
+    {
+        TestCleanupWrapper cleanup;
+        auto rootPanel = safe_cast<Panel^>(LoadXamlFileOnUIThread(GetFilePath() + L"MultipleLevels.xaml"));
+        RunOnUIThread([&]()
+        {
+            auto textBlock1 = safe_cast<TextBlock^>(rootPanel->FindName(L"textBlock1"));
+            auto panel2 = safe_cast<Panel^>(rootPanel->FindName(L"panel2"));
+            auto textBlock2_1 = safe_cast<TextBlock^>(rootPanel->FindName(L"textBlock2_1"));
+            auto canvas2_2 = safe_cast<Canvas^>(rootPanel->FindName(L"canvas2_2"));
+            auto panel3 = safe_cast<Panel^>(rootPanel->FindName(L"panel3"));
+            auto panel3_1 = safe_cast<Panel^>(rootPanel->FindName(L"panel3_1"));
+
+            VERIFY_IS_NOT_NULL(textBlock1);
+            VERIFY_IS_NOT_NULL(panel2);
+            VERIFY_IS_NOT_NULL(textBlock2_1);
+            VERIFY_IS_NOT_NULL(canvas2_2);
+            VERIFY_IS_NOT_NULL(panel3);
+            VERIFY_IS_NOT_NULL(panel3_1);
+
+            auto stringGetter = ref new CompiledBindingGetter([](Object^ source) -> Object^
+            {
+                return safe_cast<InpcDataSource^>(source)->StringProperty;
+            });
+            auto intGetter = ref new CompiledBindingGetter([](Object^ source) -> Object^
+            {
+                return safe_cast<InpcDataSource^>(source)->Int32Property.ToString();
+            });
+            auto nestedStringGetter = ref new CompiledBindingGetter([](Object^ source) -> Object^
+            {
+                return safe_cast<InpcDataSource^>(source)->InpcDataSourceProperty->StringProperty;
+            });
+
+            rootPanel->SetCompiledBinding(Panel::TagProperty, nestedStringGetter);
+            textBlock1->SetCompiledBinding(TextBlock::TextProperty, stringGetter);
+            panel2->SetCompiledBinding(Panel::TagProperty, stringGetter);
+            textBlock2_1->SetCompiledBinding(TextBlock::TextProperty, intGetter);
+            canvas2_2->SetCompiledBinding(Canvas::TagProperty, stringGetter);
+            panel3->SetCompiledBinding(Panel::TagProperty, stringGetter);
+            panel3_1->SetCompiledBinding(Panel::TagProperty, nestedStringGetter);
+
+            VERIFY_IS_NULL(rootPanel->Tag, L"Compiled binding without DataContext should preserve the default value");
+            VERIFY_IS_TRUE(textBlock1->Text->IsEmpty(), L"Compiled binding without DataContext should preserve the default value");
+            VERIFY_IS_NULL(panel2->Tag, L"Compiled binding without DataContext should preserve the default value");
+            VERIFY_IS_TRUE(textBlock2_1->Text->IsEmpty(), L"Compiled binding without DataContext should preserve the default value");
+            VERIFY_IS_NULL(canvas2_2->Tag, L"Compiled binding without DataContext should preserve the default value");
+            VERIFY_IS_NULL(panel3->Tag, L"Compiled binding without DataContext should preserve the default value");
+            VERIFY_IS_NULL(panel3_1->Tag, L"Compiled binding without DataContext should preserve the default value");
+
+            auto dataSource1 = CreateInpcDataSource();
+            auto dataSource2 = CreateInpcDataSource();
+            dataSource2->StringProperty = L"Test string 2";
+            dataSource2->InpcDataSourceProperty->StringProperty = L"Nested test string 2";
+
+            panel2->DataContext = dataSource1;
+            canvas2_2->DataContext = dataSource2;
+            panel3_1->DataContext = dataSource2;
+
+            VERIFY_IS_NULL(rootPanel->Tag, L"Unrelated compiled binding should remain unchanged");
+            VERIFY_IS_TRUE(textBlock1->Text->IsEmpty(), L"Unrelated compiled binding should remain unchanged");
+            VERIFY_ARE_EQUAL(dataSource1->StringProperty, safe_cast<String^>(panel2->Tag), L"Local DataContext should update compiled binding");
+            VERIFY_ARE_EQUAL(dataSource1->Int32Property.ToString(), textBlock2_1->Text, L"Inherited DataContext should update compiled binding");
+            VERIFY_ARE_EQUAL(dataSource2->StringProperty, safe_cast<String^>(canvas2_2->Tag), L"Local DataContext should take precedence over inherited DataContext");
+            VERIFY_IS_NULL(panel3->Tag, L"Unrelated compiled binding should remain unchanged");
+            VERIFY_ARE_EQUAL(dataSource2->InpcDataSourceProperty->StringProperty, safe_cast<String^>(panel3_1->Tag), L"Local DataContext should update compiled binding");
+
+            panel2->ClearValue(Panel::DataContextProperty);
+            panel3_1->ClearValue(Panel::DataContextProperty);
+
+            VERIFY_IS_NULL(rootPanel->Tag, L"Clearing DataContext should restore the default value");
+            VERIFY_IS_TRUE(textBlock1->Text->IsEmpty(), L"Clearing DataContext should restore the default value");
+            VERIFY_IS_NULL(panel2->Tag, L"Clearing DataContext should restore the default value");
+            VERIFY_IS_TRUE(textBlock2_1->Text->IsEmpty(), L"Clearing inherited DataContext should restore the default value");
+            VERIFY_ARE_EQUAL(dataSource2->StringProperty, safe_cast<String^>(canvas2_2->Tag), L"Clearing inherited DataContext should not affect a local DataContext");
+            VERIFY_IS_NULL(panel3->Tag, L"Clearing DataContext should restore the default value");
+            VERIFY_IS_NULL(panel3_1->Tag, L"Clearing DataContext should restore the default value");
+
+            canvas2_2->ClearValue(Canvas::DataContextProperty);
+            VERIFY_IS_NULL(canvas2_2->Tag, L"Clearing local DataContext should restore the default value");
+        });
+    }
+
+    void BindingIntegrationTests::CanLocalValueOverrideCompiledBinding()
+    {
+        TestCleanupWrapper cleanup;
+        auto rootPanel = safe_cast<Panel^>(LoadXamlFileOnUIThread(GetFilePath() + L"MultipleLevels.xaml"));
+        RunOnUIThread([&]()
+        {
+            auto textBlock1 = safe_cast<TextBlock^>(rootPanel->FindName(L"textBlock1"));
+            VERIFY_IS_NOT_NULL(textBlock1);
+
+            auto dataSource1 = CreateInpcDataSource();
+            rootPanel->DataContext = dataSource1;
+
+            textBlock1->SetCompiledBinding(
+                TextBlock::TextProperty,
+                ref new CompiledBindingGetter([](Object^ source) -> Object^
+                {
+                    return safe_cast<InpcDataSource^>(source)->StringProperty;
+                }));
+
+            auto explicitValue = ref new String(L"Local test value");
+            textBlock1->Text = explicitValue;
+
+            auto dataSource2 = CreateInpcDataSource();
+            dataSource2->StringProperty = L"Test string 2";
+            rootPanel->DataContext = dataSource2;
+            VERIFY_ARE_EQUAL(explicitValue, textBlock1->Text, L"Local value should remain after changing DataContext");
+
+            dataSource2->StringProperty = L"Test update string";
+            VERIFY_ARE_EQUAL(explicitValue, textBlock1->Text, L"Local value should remain after changing the source");
+
+            rootPanel->ClearValue(Panel::DataContextProperty);
+        });
+    }
+
+    void BindingIntegrationTests::CanOverwriteClassicAndCompiledBindings()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto target = ref new StackPanel;
+            auto dataSource = CreateInpcDataSource();
+            dataSource->ObjectProperty = ref new String(L"Classic binding value 1");
+            dataSource->StringProperty = L"Compiled binding value";
+            dataSource->InpcDataSourceProperty->StringProperty = L"Classic binding value 2";
+            target->DataContext = dataSource;
+
+            auto firstClassicBinding = ref new Binding;
+            firstClassicBinding->Path = ref new PropertyPath(L"ObjectProperty");
+            target->SetBinding(Panel::TagProperty, firstClassicBinding);
+
+            VERIFY_ARE_EQUAL(dataSource->ObjectProperty, target->Tag, L"First classic binding should propagate");
+
+            target->SetCompiledBinding(
+                Panel::TagProperty,
+                ref new CompiledBindingGetter([](Object^ source) -> Object^
+                {
+                    return safe_cast<InpcDataSource^>(source)->StringProperty;
+                }));
+
+            VERIFY_ARE_EQUAL(dataSource->StringProperty, safe_cast<String^>(target->Tag), L"Compiled binding should replace the classic binding");
+
+            dataSource->ObjectProperty = ref new String(L"Superseded classic binding update");
+            VERIFY_ARE_EQUAL(dataSource->StringProperty, safe_cast<String^>(target->Tag), L"Superseded classic binding should not update the target");
+
+            auto secondClassicBinding = ref new Binding;
+            secondClassicBinding->Path = ref new PropertyPath(L"InpcDataSourceProperty.StringProperty");
+            target->SetBinding(Panel::TagProperty, secondClassicBinding);
+
+            VERIFY_ARE_EQUAL(
+                dataSource->InpcDataSourceProperty->StringProperty,
+                safe_cast<String^>(target->Tag),
+                L"Second classic binding should replace the compiled binding");
+
+            dataSource->StringProperty = L"Superseded compiled binding update";
+            VERIFY_ARE_EQUAL(
+                dataSource->InpcDataSourceProperty->StringProperty,
+                safe_cast<String^>(target->Tag),
+                L"Superseded compiled binding should not update the target");
+
+            dataSource->InpcDataSourceProperty->StringProperty = L"Classic binding update";
+            VERIFY_ARE_EQUAL(
+                dataSource->InpcDataSourceProperty->StringProperty,
+                safe_cast<String^>(target->Tag),
+                L"Current classic binding should continue to update the target");
+
+            target->ClearValue(Panel::DataContextProperty);
+        });
+    }
+
     void BindingIntegrationTests::CanContentPresenterUpdateContentBinding()
     {
         TestCleanupWrapper cleanup;
@@ -1466,6 +1812,32 @@ namespace Framework { namespace DataBinding {
                     }
                 }
             }
+        });
+    }
+
+    void BindingIntegrationTests::CanGetBindingExpressionForCompiledBinding()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto target = ref new CustomControl;
+            auto dataSource = ref new InpcDataSource;
+            dataSource->ObjectProperty = ref new String(L"Initial source value");
+            target->DataContext = dataSource;
+
+            VERIFY_IS_NULL(target->GetBindingExpression(CustomControl::WorkingTagProperty));
+
+            target->SetCompiledBinding(
+                CustomControl::WorkingTagProperty,
+                ref new CompiledBindingGetter([](Object^ source) -> Object^
+                {
+                    return safe_cast<InpcDataSource^>(source)->ObjectProperty;
+                }));
+
+            VERIFY_ARE_EQUAL(dataSource->ObjectProperty, target->WorkingTag, L"Compiled binding should propagate");
+            VERIFY_IS_NULL(
+                target->GetBindingExpression(CustomControl::WorkingTagProperty),
+                L"GetBindingExpression should not expose a compiled binding");
         });
     }
 
