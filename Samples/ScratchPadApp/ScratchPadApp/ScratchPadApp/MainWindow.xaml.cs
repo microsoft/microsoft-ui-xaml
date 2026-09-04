@@ -75,6 +75,10 @@ namespace ScratchPadApp
                     _inkSynchronizer = InkSurface.InkPresenter.ActivateCustomDrying();
                     _customDryActive = _inkSynchronizer != null;
                     App.Log("STARTUP ActivateCustomDrying -> " + (_customDryActive ? "OK (non-null)" : "returned null"));
+                    CustomDryToggle.IsOn = _customDryActive;
+                    CustomDryText.Text = _customDryActive
+                        ? "activated at startup - draw a stroke; BeginDry/EndDry run on each collection"
+                        : "ActivateCustomDrying returned null";
                 }
                 catch (Exception ex)
                 {
