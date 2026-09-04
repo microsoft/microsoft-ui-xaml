@@ -577,7 +577,7 @@ winrt::InkDrawingAttributes InkPresenter::CopyDefaultDrawingAttributes()
 {
     // Parity with UWP: return an independent copy from the OS presenter (InkDrawingAttributes is agile,
     // so it crosses back to the UI thread) so the caller can mutate it without touching the stored
-    // default. Falls back to a fresh default if the ink thread has not created the OS presenter yet.
+    // default.
     winrt::InkDrawingAttributes result{ nullptr };
     RunInkPresenterWorkItemSync(
         [&result](inking::InkPresenter const& presenter)
@@ -588,7 +588,20 @@ winrt::InkDrawingAttributes InkPresenter::CopyDefaultDrawingAttributes()
 
     if (!result)
     {
+        // Before the ink thread has created the OS presenter, honor an UpdateDefaultDrawingAttributes
+        // the app already made rather than handing back unrelated OS defaults. InkDrawingAttributes has
+        // no Clone(), so copy the settable fields onto a fresh instance to keep the result independent.
         result = winrt::InkDrawingAttributes();
+        if (auto const& cached = m_defaultDrawingAttributes)
+        {
+            result.Color(cached.Color());
+            result.Size(cached.Size());
+            result.PenTip(cached.PenTip());
+            result.IgnorePressure(cached.IgnorePressure());
+            result.FitToCurve(cached.FitToCurve());
+            result.PenTipTransform(cached.PenTipTransform());
+            result.DrawAsHighlighter(cached.DrawAsHighlighter());
+        }
     }
     return result;
 }
@@ -767,11 +780,10 @@ void InkPresenter::InitializeOsPresenter(inking::InkPresenter const& osPresenter
 {
     m_osPresenter = osPresenter;
 
-    // Initial input devices. A local constant (not a cross-thread read of the UI-thread cache) so
-    // there is no race; any app override queued via InputDeviceTypes() runs after this on the ink
-    // thread and wins.
-    osPresenter.InputDeviceTypes(
-        winrt::CoreInputDeviceTypes::Mouse | winrt::CoreInputDeviceTypes::Pen | winrt::CoreInputDeviceTypes::Touch);
+    // Initial input devices: pen only, matching the UWP InkCanvas default. A local constant (not a
+    // cross-thread read of the UI-thread cache) so there is no race; any app override queued via
+    // InputDeviceTypes() runs after this on the ink thread and wins.
+    osPresenter.InputDeviceTypes(winrt::CoreInputDeviceTypes::Pen);
 
     // Weak ref to this proxy (as the projected type) for the UI-thread re-raise. A strong ref would
     // form a cycle (OS presenter -> handler -> proxy -> OS presenter). Typed as muxc::InkPresenter so

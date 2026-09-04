@@ -34,7 +34,7 @@ void InkToolbarFlyoutItemProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarFlyoutItem>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnIsCheckedPropertyChanged));
     }
     if (!s_KindProperty)
     {
@@ -45,7 +45,7 @@ void InkToolbarFlyoutItemProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarFlyoutItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::InkToolbarFlyoutItemKind>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnKindPropertyChanged));
     }
 }
 
@@ -53,6 +53,22 @@ void InkToolbarFlyoutItemProperties::ClearProperties()
 {
     s_IsCheckedProperty = nullptr;
     s_KindProperty = nullptr;
+}
+
+void InkToolbarFlyoutItemProperties::OnIsCheckedPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbarFlyoutItem>();
+    winrt::get_self<InkToolbarFlyoutItem>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarFlyoutItemProperties::OnKindPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbarFlyoutItem>();
+    winrt::get_self<InkToolbarFlyoutItem>(owner)->OnPropertyChanged(args);
 }
 
 void InkToolbarFlyoutItemProperties::IsChecked(bool value)

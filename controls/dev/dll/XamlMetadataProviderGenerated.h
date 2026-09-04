@@ -1792,14 +1792,6 @@ Entry c_typeEntries[] =
                     }
 
                     xamlType.AddMember(
-                        L"ToggleKind", /* propertyName */
-                        L"Microsoft.UI.Xaml.Controls.InkToolbarToggle", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::InkToolbarToolButton>().ToggleKind()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
                         L"ToolKind", /* propertyName */
                         L"Microsoft.UI.Xaml.Controls.InkToolbarTool", /* propertyType */
                         [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::InkToolbarToolButton>().ToolKind()); },
@@ -2026,58 +2018,12 @@ Entry c_typeEntries[] =
                 {
                     winrt::IInkToolbarEraserButtonStatics statics = GetFactory<winrt::IInkToolbarEraserButtonStatics>(L"Microsoft.UI.Xaml.Controls.InkToolbarEraserButton");
                     {
-                        xamlType.AddDPMember(L"ArePrecisionErasersVisible", L"Boolean", statics.ArePrecisionErasersVisibleProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"IsClearAllVisible", L"Boolean", statics.IsClearAllVisibleProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"IsStrokeEraserVisible", L"Boolean", statics.IsStrokeEraserVisibleProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"SelectedEraser", L"Microsoft.UI.Xaml.Controls.InkToolbarEraserKind", statics.SelectedEraserProperty(), false /* isContent */);
                     }
 
                 });
 
             return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.InkToolbarEraserFlyoutItemKind",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make<EnumXamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkToolbarEraserFlyoutItemKind",
-                /* Arg 2 - CreateFromString func */ 
-                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
-                {
-                    if (fromString == L"StrokeEraser") return box_value(winrt::InkToolbarEraserFlyoutItemKind::StrokeEraser);
-                    if (fromString == L"PrecisionSmallEraser") return box_value(winrt::InkToolbarEraserFlyoutItemKind::PrecisionSmallEraser);
-                    if (fromString == L"PrecisionLargeEraser") return box_value(winrt::InkToolbarEraserFlyoutItemKind::PrecisionLargeEraser);
-                    if (fromString == L"ClearAll") return box_value(winrt::InkToolbarEraserFlyoutItemKind::ClearAll);
-                    throw winrt::hresult_invalid_argument();
-                });
-
-            return xamlType;
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.InkToolbarEraserKind",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make<EnumXamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkToolbarEraserKind",
-                /* Arg 2 - CreateFromString func */ 
-                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
-                {
-                    if (fromString == L"Stroke") return box_value(winrt::InkToolbarEraserKind::Stroke);
-                    if (fromString == L"PrecisionSmall") return box_value(winrt::InkToolbarEraserKind::PrecisionSmall);
-                    if (fromString == L"PrecisionLarge") return box_value(winrt::InkToolbarEraserKind::PrecisionLarge);
-                    throw winrt::hresult_invalid_argument();
-                });
-
-            return xamlType;
         }
     },
     {

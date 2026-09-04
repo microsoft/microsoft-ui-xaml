@@ -375,8 +375,7 @@ private:
 
     // UI-thread cache of the last configured values. Initialized to the same defaults
     // InitializeOsPresenter applies on the ink thread.
-    winrt::CoreInputDeviceTypes m_inputDeviceTypes{
-        winrt::CoreInputDeviceTypes::Mouse | winrt::CoreInputDeviceTypes::Pen | winrt::CoreInputDeviceTypes::Touch };
+    winrt::CoreInputDeviceTypes m_inputDeviceTypes{ winrt::CoreInputDeviceTypes::Pen };
     bool m_isInputEnabled{ true };
     winrt::InkDrawingAttributes m_defaultDrawingAttributes{ nullptr };
 

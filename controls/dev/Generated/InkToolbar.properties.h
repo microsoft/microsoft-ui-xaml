@@ -65,8 +65,6 @@ public:
     void ActiveToolChanged(winrt::event_token const& token);
     winrt::event_token EraseAllClicked(winrt::TypedEventHandler<winrt::InkToolbar, winrt::IInspectable> const& value);
     void EraseAllClicked(winrt::event_token const& token);
-    winrt::event_token EraserFlyoutItemClicked(winrt::TypedEventHandler<winrt::InkToolbarEraserFlyoutItemClickedEventArgs, winrt::IInspectable> const& value);
-    void EraserFlyoutItemClicked(winrt::event_token const& token);
     winrt::event_token InkDrawingAttributesChanged(winrt::TypedEventHandler<winrt::InkToolbar, winrt::IInspectable> const& value);
     void InkDrawingAttributesChanged(winrt::event_token const& token);
     winrt::event_token IsStencilButtonCheckedChanged(winrt::TypedEventHandler<winrt::InkToolbar, winrt::InkToolbarIsStencilButtonCheckedChangedEventArgs> const& value);
@@ -74,10 +72,49 @@ public:
 
     event_source<winrt::TypedEventHandler<winrt::InkToolbar, winrt::IInspectable>> m_activeToolChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::InkToolbar, winrt::IInspectable>> m_eraseAllClickedEventSource;
-    event_source<winrt::TypedEventHandler<winrt::InkToolbarEraserFlyoutItemClickedEventArgs, winrt::IInspectable>> m_eraserFlyoutItemClickedEventSource;
     event_source<winrt::TypedEventHandler<winrt::InkToolbar, winrt::IInspectable>> m_inkDrawingAttributesChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::InkToolbar, winrt::InkToolbarIsStencilButtonCheckedChangedEventArgs>> m_isStencilButtonCheckedChangedEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnActiveToolPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnButtonFlyoutPlacementPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnChildrenPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnInitialControlsPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnInkDrawingAttributesPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIsRulerButtonCheckedPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIsStencilButtonCheckedPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnOrientationPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnTargetInkCanvasPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnTargetInkPresenterPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 };

@@ -27,7 +27,6 @@ GlobalDependencyProperty InkToolbarProperties::s_TargetInkPresenterProperty{ nul
 InkToolbarProperties::InkToolbarProperties()
     : m_activeToolChangedEventSource{static_cast<InkToolbar*>(this)}
     , m_eraseAllClickedEventSource{static_cast<InkToolbar*>(this)}
-    , m_eraserFlyoutItemClickedEventSource{static_cast<InkToolbar*>(this)}
     , m_inkDrawingAttributesChangedEventSource{static_cast<InkToolbar*>(this)}
     , m_isStencilButtonCheckedChangedEventSource{static_cast<InkToolbar*>(this)}
 {
@@ -45,7 +44,7 @@ void InkToolbarProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbar>(),
                 false /* isAttached */,
                 ValueHelper<winrt::InkToolbarToolButton>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnActiveToolPropertyChanged));
     }
     if (!s_ButtonFlyoutPlacementProperty)
     {
@@ -56,7 +55,7 @@ void InkToolbarProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbar>(),
                 false /* isAttached */,
                 ValueHelper<winrt::InkToolbarButtonFlyoutPlacement>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnButtonFlyoutPlacementPropertyChanged));
     }
     if (!s_ChildrenProperty)
     {
@@ -67,7 +66,7 @@ void InkToolbarProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbar>(),
                 false /* isAttached */,
                 ValueHelper<winrt::DependencyObjectCollection>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnChildrenPropertyChanged));
     }
     if (!s_InitialControlsProperty)
     {
@@ -78,7 +77,7 @@ void InkToolbarProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbar>(),
                 false /* isAttached */,
                 ValueHelper<winrt::InkToolbarInitialControls>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnInitialControlsPropertyChanged));
     }
     if (!s_InkDrawingAttributesProperty)
     {
@@ -89,7 +88,7 @@ void InkToolbarProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbar>(),
                 false /* isAttached */,
                 ValueHelper<winrt::InkDrawingAttributes>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnInkDrawingAttributesPropertyChanged));
     }
     if (!s_IsRulerButtonCheckedProperty)
     {
@@ -100,7 +99,7 @@ void InkToolbarProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbar>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnIsRulerButtonCheckedPropertyChanged));
     }
     if (!s_IsStencilButtonCheckedProperty)
     {
@@ -111,7 +110,7 @@ void InkToolbarProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbar>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnIsStencilButtonCheckedPropertyChanged));
     }
     if (!s_OrientationProperty)
     {
@@ -122,7 +121,7 @@ void InkToolbarProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbar>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Orientation>::BoxValueIfNecessary(winrt::Orientation::Horizontal),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnOrientationPropertyChanged));
     }
     if (!s_TargetInkCanvasProperty)
     {
@@ -133,7 +132,7 @@ void InkToolbarProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbar>(),
                 false /* isAttached */,
                 ValueHelper<winrt::InkCanvas>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnTargetInkCanvasPropertyChanged));
     }
     if (!s_TargetInkPresenterProperty)
     {
@@ -144,7 +143,7 @@ void InkToolbarProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbar>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnTargetInkPresenterPropertyChanged));
     }
 }
 
@@ -160,6 +159,86 @@ void InkToolbarProperties::ClearProperties()
     s_OrientationProperty = nullptr;
     s_TargetInkCanvasProperty = nullptr;
     s_TargetInkPresenterProperty = nullptr;
+}
+
+void InkToolbarProperties::OnActiveToolPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbar>();
+    winrt::get_self<InkToolbar>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarProperties::OnButtonFlyoutPlacementPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbar>();
+    winrt::get_self<InkToolbar>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarProperties::OnChildrenPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbar>();
+    winrt::get_self<InkToolbar>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarProperties::OnInitialControlsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbar>();
+    winrt::get_self<InkToolbar>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarProperties::OnInkDrawingAttributesPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbar>();
+    winrt::get_self<InkToolbar>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarProperties::OnIsRulerButtonCheckedPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbar>();
+    winrt::get_self<InkToolbar>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarProperties::OnIsStencilButtonCheckedPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbar>();
+    winrt::get_self<InkToolbar>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarProperties::OnOrientationPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbar>();
+    winrt::get_self<InkToolbar>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarProperties::OnTargetInkCanvasPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbar>();
+    winrt::get_self<InkToolbar>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarProperties::OnTargetInkPresenterPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbar>();
+    winrt::get_self<InkToolbar>(owner)->OnPropertyChanged(args);
 }
 
 void InkToolbarProperties::ActiveTool(winrt::InkToolbarToolButton const& value)
@@ -310,16 +389,6 @@ winrt::event_token InkToolbarProperties::EraseAllClicked(winrt::TypedEventHandle
 void InkToolbarProperties::EraseAllClicked(winrt::event_token const& token)
 {
     m_eraseAllClickedEventSource.remove(token);
-}
-
-winrt::event_token InkToolbarProperties::EraserFlyoutItemClicked(winrt::TypedEventHandler<winrt::InkToolbarEraserFlyoutItemClickedEventArgs, winrt::IInspectable> const& value)
-{
-    return m_eraserFlyoutItemClickedEventSource.add(value);
-}
-
-void InkToolbarProperties::EraserFlyoutItemClicked(winrt::event_token const& token)
-{
-    m_eraserFlyoutItemClickedEventSource.remove(token);
 }
 
 winrt::event_token InkToolbarProperties::InkDrawingAttributesChanged(winrt::TypedEventHandler<winrt::InkToolbar, winrt::IInspectable> const& value)

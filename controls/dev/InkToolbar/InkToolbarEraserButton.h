@@ -34,10 +34,35 @@ public:
     using InkToolbarEraserButtonProperties::EnsureProperties;
     using InkToolbarEraserButtonProperties::ClearProperties;
 
-    // NOTE: SelectedEraser / IsClearAllVisible / IsStrokeEraserVisible / ArePrecisionErasersVisible are
-    // generated DEPENDENCY PROPERTIES (inherited from InkToolbarEraserButtonProperties). UWP hid these on
-    // a separate InkToolbarEraserButtonInternal object; the lift flattened them onto the button itself, so
-    // the port uses the inherited DP accessors directly (the manual shadowing members were removed).
+    // UWP keeps the eraser-flyout selection and item visibilities off the public API (they lived on
+    // the internal InkToolbarEraserButtonInternal object). Only IsClearAllVisible is a public DP here;
+    // the rest is impl-owned state with the same accessor shape the flyout logic already uses.
+    enum class EraserKind { Stroke, PrecisionSmall, PrecisionLarge };
+
+    EraserKind SelectedEraser() const noexcept { return m_selectedEraser; }
+    void SelectedEraser(EraserKind value)
+    {
+        if (m_selectedEraser == value) { return; }
+        auto oldValue = m_selectedEraser;
+        m_selectedEraser = value;
+        OnSelectedEraserChanged(oldValue, value);
+    }
+
+    bool IsStrokeEraserVisible() const noexcept { return m_isStrokeEraserVisible; }
+    void IsStrokeEraserVisible(bool value)
+    {
+        if (m_isStrokeEraserVisible == value) { return; }
+        m_isStrokeEraserVisible = value;
+        OnL3ItemsVisibilitiesChanged();
+    }
+
+    bool ArePrecisionErasersVisible() const noexcept { return m_arePrecisionErasersVisible; }
+    void ArePrecisionErasersVisible(bool value)
+    {
+        if (m_arePrecisionErasersVisible == value) { return; }
+        m_arePrecisionErasersVisible = value;
+        OnL3ItemsVisibilitiesChanged();
+    }
 
     // Runs from the base InkToolbarToolButton::OnApplyTemplate via the OnApplyTemplateCore hook.
     void OnApplyTemplateCore() override;
@@ -47,10 +72,10 @@ public:
     // "InkToolbarEraserButtonFlyoutContentTemplate" (named items StrokeEraser/SmallEraser/LargeEraser/
     // ClearAll). Until that template is ported into the lift theme resources, FindChild returns null and
     // these methods no-op (documented gap).
-    void OnSelectedEraserChanged(winrt::InkToolbarEraserKind oldValue, winrt::InkToolbarEraserKind newValue);
+    void OnSelectedEraserChanged(EraserKind oldValue, EraserKind newValue);
     void OnL3ItemsVisibilitiesChanged();
     void HookUpToEraserEvents(winrt::RoutedEventHandler const& handler, bool& eventHookedUp, winrt::event_token& token);
-    void SetL3EraserItemCheck(winrt::InkToolbarEraserKind kind, bool check);
+    void SetL3EraserItemCheck(EraserKind kind, bool check);
     bool ShouldShowL3();
     void UpdateFlyoutItemVisuals();
     void SetFocusToSelectedEraser(winrt::FocusState focusState);
@@ -68,9 +93,13 @@ private:
         winrt::DependencyObject const& flyoutContent,
         EraserFlyoutItemKind kind);
     bool GetIsItemVisible(EraserFlyoutItemKind kind);
-    static wchar_t const* EraserKindToEraserItemName(winrt::InkToolbarEraserKind kind);
-    static winrt::InkToolbarEraserKind EraserItemNameToEraserKind(std::wstring_view name);
+    static wchar_t const* EraserKindToEraserItemName(EraserKind kind);
+    static EraserKind EraserItemNameToEraserKind(std::wstring_view name);
     void OnAccessKeyInvoked(winrt::IInspectable const& sender, winrt::AccessKeyInvokedEventArgs const& args);
+
+    EraserKind m_selectedEraser{ EraserKind::Stroke };
+    bool m_isStrokeEraserVisible{ false };
+    bool m_arePrecisionErasersVisible{ false };
 
     winrt::event_token m_eraserItemCheckedRegistrationToken{};
     winrt::event_token m_accessKeyInvokedToken{};

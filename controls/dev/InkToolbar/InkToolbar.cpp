@@ -33,7 +33,6 @@
 #include "InkCanvas.h"
 #include "InkPresenter.h"
 #include "InkToolbarIsStencilButtonCheckedChangedEventArgs.h"
-#include "InkToolbarEraserFlyoutItemClickedEventArgs.h"
 
 namespace mux = winrt::Microsoft::UI::Xaml;
 namespace muxc = winrt::Microsoft::UI::Xaml::Controls;
@@ -384,7 +383,7 @@ void InkToolbar::ExecuteToolAction(winrt::InkToolbarToolButton const& toolButton
                 m_eraserEventToken);
 
             // When the eraser L3 opens, one eraser item should be checked.
-            eraserImpl->SetL3EraserItemCheck(eraserButton.SelectedEraser(), true);
+            eraserImpl->SetL3EraserItemCheck(eraserImpl->SelectedEraser(), true);
             toolButton.IsExtensionGlyphShown(false);
             break;
         }
@@ -863,36 +862,34 @@ void InkToolbar::OnInkDrawingAttributesChanged(winrt::DependencyPropertyChangedE
 // ---- InkPresenter integration (faithful port; lift routes canvas config through the InkCanvas's
 //      marshaling InkPresenter proxy, whose OS presenter lives on the ink thread) ---------------
 
-winrt::Windows::UI::Input::Inking::InkPresenter InkToolbar::GetInkPresenter()
+muxc::InkPresenter InkToolbar::GetInkPresenter()
 {
-    // Only an explicitly-provided presenter can be handed back as the OS type; a target InkCanvas exposes
-    // a marshaling proxy instead (its OS presenter is on the ink thread), used in ApplyToolStateToInkCanvas.
+    // TargetInkPresenter wins over TargetInkCanvas (see OnTargetInkCanvasChanged). It is typed Object
+    // because the DP code generator emits an ambiguous "winrt::InkPresenter" for the strongly-typed
+    // form; see the InkToolbar.idl comment.
     if (auto targetInkPresenter = TargetInkPresenter())
     {
-        return targetInkPresenter.try_as<winrt::Windows::UI::Input::Inking::InkPresenter>();
+        return targetInkPresenter.try_as<muxc::InkPresenter>();
+    }
+    if (auto canvas = TargetInkCanvas())
+    {
+        return canvas.InkPresenter();
     }
     return nullptr;
 }
 
-winrt::Windows::UI::Input::Inking::InkPresenter InkToolbar::GetInkPresenter(winrt::InkToolbar const& inkToolbar)
+muxc::InkPresenter InkToolbar::GetInkPresenter(winrt::InkToolbar const& inkToolbar)
 {
     return winrt::get_self<InkToolbar>(inkToolbar)->GetInkPresenter();
 }
 
 // Current InkPresenter.HighContrastAdjustment as an int (0 UseSystemColorsWhenNecessary, 1 UseSystemColors,
-// 2 UseOriginalColors), read from an explicit OS presenter or the target canvas's proxy.
+// 2 UseOriginalColors), read from the resolved presenter.
 int32_t InkToolbar::GetHighContrastAdjustmentValue()
 {
-    if (auto osPresenter = GetInkPresenter())
+    if (auto presenter = GetInkPresenter())
     {
-        return static_cast<int32_t>(osPresenter.HighContrastAdjustment());
-    }
-    if (auto canvas = TargetInkCanvas())
-    {
-        if (auto proxy = canvas.InkPresenter())
-        {
-            return static_cast<int32_t>(proxy.GetHighContrastAdjustment());
-        }
+        return static_cast<int32_t>(presenter.GetHighContrastAdjustment());
     }
     return 0; // UseSystemColorsWhenNecessary
 }
@@ -1278,7 +1275,7 @@ void InkToolbar::SetStencilVisibility(bool isVisible, winrt::InkToolbarStencilKi
     winrt::Microsoft::UI::Xaml::Controls::InkPresenter proxy{ nullptr };
     if (auto target = TargetInkPresenter())
     {
-        proxy = target.try_as<winrt::Microsoft::UI::Xaml::Controls::InkPresenter>();
+        proxy = target.try_as<muxc::InkPresenter>();
     }
     else if (auto targetInkCanvas = TargetInkCanvas())
     {
@@ -1286,8 +1283,7 @@ void InkToolbar::SetStencilVisibility(bool isVisible, winrt::InkToolbarStencilKi
     }
     if (!proxy)
     {
-        // No lift InkPresenter to drive: either no target is set, or TargetInkPresenter is a raw OS
-        // InkPresenter the toolbar cannot marshal stencils to. UWP no-ops the same way - GetInkPresenter
+        // No InkPresenter to drive: neither target is set. UWP no-ops the same way - GetInkPresenter
         // returns null when neither target is set and SetStencilVisibility guards with if (inkPresenter).
         return;
     }
@@ -1454,11 +1450,11 @@ void InkToolbar::OnTargetInkCanvasChanged(winrt::DependencyPropertyChangedEventA
         m_protractorVisible = false;
     }
 
-    auto getPresenter = [](winrt::IInspectable const& val) -> winrt::Windows::UI::Input::Inking::InkPresenter
+    auto getPresenter = [](winrt::IInspectable const& val) -> muxc::InkPresenter
     {
         if (auto canvas = val.try_as<winrt::InkCanvas>())
         {
-            return canvas.InkPresenter().try_as<winrt::Windows::UI::Input::Inking::InkPresenter>();
+            return canvas.InkPresenter();
         }
         return nullptr;
     };
@@ -1468,16 +1464,15 @@ void InkToolbar::OnTargetInkCanvasChanged(winrt::DependencyPropertyChangedEventA
 
 void InkToolbar::OnTargetInkPresenterChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
-    auto resolve = [this](winrt::IInspectable const& val) -> winrt::Windows::UI::Input::Inking::InkPresenter
+    auto resolve = [this](winrt::IInspectable const& val) -> muxc::InkPresenter
     {
-        if (val)
+        if (auto presenter = val.try_as<muxc::InkPresenter>())
         {
-            return val.try_as<winrt::Windows::UI::Input::Inking::InkPresenter>();
-        }
-        // Cleared: fall back to the target InkCanvas's presenter, if any (both can be set; presenter wins).
+            return presenter;
+        }        // Cleared: fall back to the target InkCanvas's presenter, if any (both can be set; presenter wins).
         if (auto canvas = TargetInkCanvas())
         {
-            return canvas.InkPresenter().try_as<winrt::Windows::UI::Input::Inking::InkPresenter>();
+            return canvas.InkPresenter();
         }
         return nullptr;
     };
@@ -1486,8 +1481,8 @@ void InkToolbar::OnTargetInkPresenterChanged(winrt::DependencyPropertyChangedEve
 }
 
 void InkToolbar::OnTargetInkPresenterChanged(
-    winrt::Windows::UI::Input::Inking::InkPresenter const& oldInkPresenter,
-    winrt::Windows::UI::Input::Inking::InkPresenter const& newInkPresenter)
+    muxc::InkPresenter const& oldInkPresenter,
+    muxc::InkPresenter const& newInkPresenter)
 {
     UNREFERENCED_PARAMETER(oldInkPresenter);
     UNREFERENCED_PARAMETER(newInkPresenter);
@@ -1518,43 +1513,37 @@ void InkToolbar::OnEraserL3ItemsClicked(winrt::IInspectable const& sender, winrt
     }
 
     auto name = sender.as<winrt::FrameworkElement>().Name();
-    auto kind = winrt::InkToolbarEraserFlyoutItemKind::StrokeEraser;
+    auto eraserImpl = winrt::get_self<InkToolbarEraserButton>(eraserButton);
+    bool isClearAll = false;
 
     if (name == L"StrokeEraser")
     {
-        kind = winrt::InkToolbarEraserFlyoutItemKind::StrokeEraser;
-        eraserButton.SelectedEraser(winrt::InkToolbarEraserKind::Stroke);
+        eraserImpl->SelectedEraser(InkToolbarEraserButton::EraserKind::Stroke);
     }
     else if (name == L"SmallEraser")
     {
-        kind = winrt::InkToolbarEraserFlyoutItemKind::PrecisionSmallEraser;
-        eraserButton.SelectedEraser(winrt::InkToolbarEraserKind::PrecisionSmall);
+        eraserImpl->SelectedEraser(InkToolbarEraserButton::EraserKind::PrecisionSmall);
     }
     else if (name == L"LargeEraser")
     {
-        kind = winrt::InkToolbarEraserFlyoutItemKind::PrecisionLargeEraser;
-        eraserButton.SelectedEraser(winrt::InkToolbarEraserKind::PrecisionLarge);
+        eraserImpl->SelectedEraser(InkToolbarEraserButton::EraserKind::PrecisionLarge);
     }
     else if (name == L"ClearAll")
     {
-        kind = winrt::InkToolbarEraserFlyoutItemKind::ClearAll;
+        isClearAll = true;
         // The app is expected to clear strokes, but the active tool must still be restored by the toolbar.
         SelectMostRecentNonEraserTool();
     }
 
     // Fire EraseAllClicked before clearing so undo can capture the strokes.
-    if (kind == winrt::InkToolbarEraserFlyoutItemKind::ClearAll)
+    if (isClearAll)
     {
         m_eraseAllClickedEventSource(*this, nullptr);
-    }
 
-    // Fire the EraserFlyoutItemClicked event (UWP routed via IInkToolbarInternal; raised directly here).
-    auto eventArgs = winrt::make<InkToolbarEraserFlyoutItemClickedEventArgs>(kind);
-    m_eraserFlyoutItemClickedEventSource(*this, eventArgs);
-
-    if (kind == winrt::InkToolbarEraserFlyoutItemKind::ClearAll && !IsCustomDry())
-    {
-        ClearAllStrokes();
+        if (!IsCustomDry())
+        {
+            ClearAllStrokes();
+        }
     }
 }
 
