@@ -160,7 +160,8 @@
 
         // Switches the presenter into custom-drying mode and returns the InkSynchronizer used to
         // bracket the app's own rendering of committed strokes (parity with UWP
-        // InkPresenter.ActivateCustomDrying). Call before the first stroke is collected.
+        // InkPresenter.ActivateCustomDrying). Must be called before the canvas begins receiving
+        // input, i.e. during page construction or Loaded, before the first layout pass sizes it.
         InkSynchronizer ActivateCustomDrying();
 
         event Windows.Foundation.TypedEventHandler<InkPresenter, InkStrokesCollectedEventArgs> StrokesCollected;
