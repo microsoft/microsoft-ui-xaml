@@ -95,7 +95,7 @@ namespace Microsoft.UI.Xaml.Controls
     {
     };
 
-    unsealed runtimeclass TeachingTip : Microsoft.UI.Xaml.Controls.Control
+    unsealed runtimeclass TeachingTip : Microsoft.UI.Xaml.Controls.ContentControl
     {
         event Windows.Foundation.TypedEventHandler<
             TeachingTip,
