@@ -15,6 +15,7 @@
 
 #include "pch.h"
 #include "common.h"
+#include "GroupedEntry.h"
 #include "TableView.h"
 #include "TableViewColumn.h"
 #include "TableViewSource.h"
@@ -23,6 +24,7 @@
 #include "ResourceAccessor.h"
 #include "Utils.h"
 #include "ShapingHelpers.h"
+#include "SortMemberPathResolver.h"
 
 #include <algorithm>
 #include <numeric>
@@ -62,86 +64,9 @@ namespace
         return winrt::hstring{ fallback };
     }
 
-    // Evaluates a property path against a row item. A one-time {Binding} on a throwaway
-    // ContentControl is used rather than reflection because it is the same evaluator the cells use,
-    // so a path that displays also sorts - including indexers and dotted paths.
-    struct SortMemberPathResolver
-    {
-        explicit SortMemberPathResolver(const winrt::hstring& sortMemberPath) :
-            SortMemberPath(sortMemberPath)
-        {
-        }
-
-        winrt::IInspectable Resolve(const winrt::IInspectable& item)
-        {
-            if (!item || SortMemberPath.empty())
-            {
-                return nullptr;
-            }
-
-            try
-            {
-                EnsureBinding();
-                Probe.DataContext(item);
-                auto clearDataContext = wil::scope_exit([this]() noexcept
-                {
-                    ClearDataContext();
-                });
-
-                return Probe.Content();
-            }
-            catch (...)
-            {
-                ClearDataContext();
-                return nullptr;
-            }
-        }
-
-    private:
-        void EnsureBinding()
-        {
-            if (!Probe)
-            {
-                Probe = winrt::ContentControl{};
-            }
-
-            if (BoundPath == SortMemberPath)
-            {
-                return;
-            }
-
-            ClearDataContext();
-            Probe.ClearValue(winrt::ContentControl::ContentProperty());
-
-            winrt::Binding binding;
-            binding.Path(winrt::PropertyPath{ SortMemberPath });
-            binding.Mode(winrt::BindingMode::OneTime);
-            winrt::BindingOperations::SetBinding(
-                Probe,
-                winrt::ContentControl::ContentProperty(),
-                binding);
-            BoundPath = SortMemberPath;
-        }
-
-        // Never hold the last row item alive through the probe once the key has been read.
-        void ClearDataContext() noexcept
-        {
-            try
-            {
-                if (Probe)
-                {
-                    Probe.DataContext(nullptr);
-                }
-            }
-            catch (...)
-            {
-            }
-        }
-
-        winrt::hstring SortMemberPath;
-        winrt::hstring BoundPath;
-        winrt::ContentControl Probe{ nullptr };
-    };
+    // Evaluates a property path against a row item; see SortMemberPathResolver.h. The same
+    // evaluator backs TableViewSource's path-based Sort verb, so a column and a fluent sort on
+    // the same path produce the same keys.
 
     bool HasResolvedSortMemberPath(const winrt::TableViewColumn& column)
     {
@@ -472,7 +397,7 @@ winrt::TableViewKeySelector TableView::GetTableViewSourceSortKeySelector(
     const bool sortMemberPathChanged = m_tableViewSourceSort.MemberPath != sortMemberPath;
     if (!m_tableViewSourceSort.CustomSortState)
     {
-        m_tableViewSourceSort.CustomSortState = std::make_shared<TabularShapingHelpers::CustomSortRankAdapter>();
+        m_tableViewSourceSort.CustomSortState = std::make_shared<ShapingHelpers::CustomSortRankAdapter>();
     }
     m_tableViewSourceSort.MemberPath = sortMemberPath;
     m_tableViewSourceSort.ResetCustomSort();
@@ -511,6 +436,10 @@ bool TableView::SyncTableViewSourceSort(
 
     winrt::TableViewKeySelector keySelector{ nullptr };
     winrt::hstring sortAxisToken;
+    // What this axis sorts on, purely descriptive. Stays empty for a CustomSortComparer: the
+    // ordering is the comparer's, not the path's, so nothing else may claim the axis sorts by a
+    // property.
+    winrt::hstring axisSortMemberPath;
     if (trigger)
     {
         if (const auto customComparer = trigger.CustomSortComparer())
@@ -536,7 +465,11 @@ bool TableView::SyncTableViewSourceSort(
                     rows.reserve(count > 0 ? static_cast<size_t>(count) : 0);
                     for (int32_t i = 0; i < count; ++i)
                     {
-                        if (auto const row = rowsView.GetAt(i))
+                        auto const row = rowsView.GetAt(i);
+                        // In a grouped projection the headers are the only synthesized rows; data
+                        // rows are the app's own items. Rank the data items only - a header is not
+                        // something the app's comparer has ever seen.
+                        if (row && !TryGetGroupedEntry(row))
                         {
                             rows.push_back(row);
                         }
@@ -545,7 +478,7 @@ bool TableView::SyncTableViewSourceSort(
 
                 if (auto const& rankAdapter = m_tableViewSourceSort.CustomSortState)
                 {
-                    TabularShapingHelpers::TabularPairwiseComparer comparer =
+                    ShapingHelpers::PairwiseComparer comparer =
                         [customComparer](winrt::IInspectable const& a, winrt::IInspectable const& b)
                         {
                             return static_cast<int>(customComparer.Compare(a, b));
@@ -564,6 +497,7 @@ bool TableView::SyncTableViewSourceSort(
             }
             keySelector = GetTableViewSourceSortKeySelector(sortMemberPath);
             sortAxisToken = GetTableViewSourceSortAxisToken(trigger, sortMemberPath);
+            axisSortMemberPath = sortMemberPath;
         }
     }
     else
@@ -586,15 +520,23 @@ bool TableView::SyncTableViewSourceSort(
     // INotifyPropertyChanged-only mutations of the active sort key do not live re-sort until the
     // next collection change.
     auto tableViewSourceImpl = winrt::get_self<::TableViewSource>(tableViewSource);
-    if (direction == winrt::SortDirection::None && !sortAxisToken.empty())
+    // The control is the last writer here, so its axis becomes the only one. Without this an
+    // app-declared fluent Sort axis would survive alongside it and, being declared earlier, would
+    // outrank it as the primary sort while the chevron advertised this column.
+    auto const reconcileGuard = BeginControlInitiatedSortScope();
+    if (direction == winrt::SortDirection::None)
     {
-        tableViewSourceImpl->ClearSort(sortAxisToken);
+        // A control-initiated clear means "nothing is sorted", so it clears EVERY axis, not just
+        // the one this control installed. Clearing only its own token would leave an app-declared
+        // fluent axis ordering the rows while every chevron said the sort was off.
+        tableViewSourceImpl->ClearSort();
     }
     else
     {
         // Replacing rather than adding: re-sorting a column must swap its axis, not stack a
         // second one on top of the first.
-        tableViewSourceImpl->SortReplacing(m_tableViewSourceSort.AxisToken, sortAxisToken, keySelector, direction);
+        tableViewSourceImpl->SortReplacing(m_tableViewSourceSort.AxisToken, sortAxisToken, keySelector, axisSortMemberPath, direction);
+        tableViewSourceImpl->ClearSortsExcept(sortAxisToken);
     }
 
     if (direction == winrt::SortDirection::None)
@@ -757,8 +699,158 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     // RefreshSortIndicators as each column's DP was written.
 }
 
-void TableView::QueueClearSortAfterColumnRemoval()
+void TableView::QueueReconcileSortStateWithSource()
 {
+    // Deferred, never inline: the notification that brings us here is raised from inside the
+    // engine's own reshape, and reconciling clears an axis, which reshapes again.
+    if (m_sortReconcileQueued)
+    {
+        return;
+    }
+    m_sortReconcileQueued = true;
+
+    auto weakThis = get_weak();
+    if (auto const queue = winrt::DispatcherQueue::GetForCurrentThread())
+    {
+        queue.TryEnqueue([weakThis]()
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->m_sortReconcileQueued = false;
+                strongThis->ReconcileSortStateWithSource();
+            }
+        });
+    }
+    else
+    {
+        m_sortReconcileQueued = false;
+    }
+}
+
+void TableView::ReconcileSortStateWithSource()
+{
+    auto tableViewSource = ShapingSourceInternal();
+    if (!tableViewSource)
+    {
+        return;
+    }
+
+    auto const& ownToken = m_tableViewSourceSort.AxisToken;
+    auto tableViewSourceImpl = winrt::get_self<::TableViewSource>(tableViewSource);
+    auto const axes = tableViewSourceImpl->ActiveSortAxisInfos();
+
+    bool ownAxisPresent = false;
+    // Infos arrive in precedence order, so the first foreign axis is the one that outranks ours
+    // and is therefore the only one a single-column chevron could honestly describe.
+    ::TableViewSource::ActiveSortAxisInfo const* primaryForeignAxis = nullptr;
+    for (auto const& axis : axes)
+    {
+        if (!ownToken.empty() && axis.AxisToken == ownToken)
+        {
+            ownAxisPresent = true;
+        }
+        else if (primaryForeignAxis == nullptr)
+        {
+            primaryForeignAxis = &axis;
+        }
+    }
+
+    if (ownAxisPresent && primaryForeignAxis == nullptr)
+    {
+        // The control's axis is still the only sort: chevrons already describe it.
+        return;
+    }
+
+    if (primaryForeignAxis == nullptr && ownToken.empty() && m_sortedColumns.empty())
+    {
+        // Nothing sorted anywhere and no chevron lit. Reached on every shaping notification -
+        // a filter or group change also lands here - so it must not raise a spurious Sorted.
+        return;
+    }
+
+    if (primaryForeignAxis != nullptr && ownAxisPresent)
+    {
+        // The app declared a sort while ours was installed. Last writer wins, so ours goes: left
+        // alone it would keep whichever axis was declared FIRST as the primary sort, which is the
+        // hidden-precedence case this reconciliation exists to prevent.
+        auto const reconcileGuard = BeginControlInitiatedSortScope();
+        tableViewSourceImpl->ClearSort(ownToken);
+    }
+
+    // A path-declared axis names the property it sorts on, so the chevron can follow the app's own
+    // sort instead of going dark. A key-selector axis names nothing, and guessing which column it
+    // meant would be worse than showing no chevron at all.
+    winrt::TableViewColumn matchedColumn{ nullptr };
+    if (primaryForeignAxis != nullptr && !primaryForeignAxis->SortMemberPath.empty())
+    {
+        if (auto const columns = Columns())
+        {
+            for (auto const& column : columns)
+            {
+                if (column && column.GetSortMemberPathCore() == primaryForeignAxis->SortMemberPath)
+                {
+                    matchedColumn = column;
+                    break;
+                }
+            }
+        }
+    }
+
+    // Already reconciled to exactly this state. Reached whenever an unrelated shaping change - a
+    // filter or a group - renotifies while an app-owned sort is standing; re-raising Sorted for it
+    // would report a sort change that did not happen.
+    if (ownToken.empty() && matchedColumn && m_sortedColumns.size() == 1)
+    {
+        if (auto const lit = m_sortedColumns[0].get();
+            lit == matchedColumn && lit.SortDirection() == primaryForeignAxis->Direction)
+        {
+            return;
+        }
+    }
+
+    // Silent, like ResetSortStateForNewItemsSource: the app already owns the ordering by the time
+    // we get here, so there is nothing to cancel and no reshape of our own to perform. Sorted is
+    // still raised so an app tracking sort state sees the chevrons move.
+    for (auto const& weakColumn : m_sortedColumns)
+    {
+        if (auto column = weakColumn.get(); column && column != matchedColumn)
+        {
+            winrt::get_self<TableViewColumn>(column)->SetSortStateInternal(winrt::SortDirection::None);
+        }
+    }
+    m_sortedColumns.clear();
+
+    // m_tableViewSourceSort stays cleared even when a column is lit: the axis belongs to the app,
+    // and recording it as ours would make the next control-initiated sort try to replace an axis
+    // it never installed.
+    m_tableViewSourceSort.Clear();
+
+    if (matchedColumn)
+    {
+        winrt::get_self<TableViewColumn>(matchedColumn)->SetSortStateInternal(primaryForeignAxis->Direction);
+        m_sortedColumns.push_back(tracker_ref<winrt::TableViewColumn>{ this, matchedColumn });
+    }
+
+    // Raised directly rather than through RecomputeSortDPsAndRaiseInternal: that path would reshape
+    // through SyncTableViewSourceSort and re-declare the axis as the control's own, undoing the
+    // app's ownership - and its stale-clear guard would swallow the event outright now that
+    // m_sortedColumns can be non-empty here.
+    if (m_sortedEventSource)
+    {
+        auto args = winrt::make_self<TableViewSortedEventArgs>(
+            matchedColumn,
+            matchedColumn ? primaryForeignAxis->Direction : winrt::SortDirection::None);
+        try
+        {
+            m_sortedEventSource(*this, *args);
+        }
+        catch (...)
+        {
+        }
+    }
+}
+
+void TableView::QueueClearSortAfterColumnRemoval(){
     if (m_clearSortAfterColumnRemovalQueued)
     {
         return;

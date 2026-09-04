@@ -9,6 +9,8 @@
 #include "TableViewCellsPanel.h"
 #include "TableViewAutomationPeer.h"
 #include "TableViewSource.h"
+#include "TableViewRowTemplateSelector.h"
+#include "TableViewGroupHeader.h"
 #include "SortIndicator.h"
 #include "RuntimeProfiler.h"
 #include "TVDiag.h"
@@ -247,6 +249,16 @@ winrt::Brush TableView::GetGridLineBrush()
     return brush;
 }
 
+TableView::~TableView()
+{
+    // Must run while this control still holds the selector: once anything has been recycled the
+    // pools hang off the cached templates and close a cycle the reference tracker cannot walk.
+    if (auto const selector = m_rowTemplateSelector.get())
+    {
+        winrt::get_self<::TableViewRowTemplateSelector>(selector)->Detach();
+    }
+}
+
 TableView::TableView()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TableView);
@@ -409,6 +421,11 @@ void TableView::OnApplyTemplate()
         LayoutUpdated(m_pendingFocusLayoutToken);
         m_pendingFocusLayoutToken = {};
     }
+    if (m_pendingGroupFocusLayoutToken.value)
+    {
+        LayoutUpdated(m_pendingGroupFocusLayoutToken);
+        m_pendingGroupFocusLayoutToken = {};
+    }
     if (auto oldRepeater = m_rowsRepeater.get())
     {
         // Drop per-template Loaded handlers so old elements cannot keep this alive.
@@ -496,6 +513,13 @@ void TableView::OnApplyTemplate()
 
     if (auto repeater = m_rowsRepeater.get())
     {
+        // Assigned here rather than in the template: the selector needs an owning TableView to map
+        // an item to its row kind, and XAML has no way to hand it one.
+        auto selector = winrt::make<::TableViewRowTemplateSelector>();
+        winrt::get_self<::TableViewRowTemplateSelector>(selector)->SetOwningTableViewInternal(*this);
+        m_rowTemplateSelector.set(selector);
+        repeater.ItemTemplate(selector);
+
         m_rowElementPreparedToken = repeater.ElementPrepared(
             [weakThis](winrt::ItemsRepeater const& sender, winrt::ItemsRepeaterElementPreparedEventArgs const& args)
             {
@@ -886,7 +910,13 @@ void TableView::AdoptItemsSource()
         // stack stays below the control. Weak, because the control owns the source through
         // m_activeSource and a strong capture would be a cycle.
         auto weakThis = get_weak();
-
+        sourceImpl->SetProjectionChangedHandler([weakThis]()
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->OnTableViewSourceProjectionChanged();
+            }
+        });
         sourceImpl->SetShapingChangedHandler([weakThis](bool reorderOnly)
         {
             if (auto strongThis = weakThis.get())
@@ -904,10 +934,18 @@ void TableView::RefreshRowsPipeline()
     // on a source change.
     winrt::IInspectable rowsSource{ nullptr };
 
+    // The provider that produced any previously handed-out row identity is being replaced. Bump the
+    // generation first so a request captured against the old provider can tell it is stale, then
+    // clear it - the branch below re-reads it from the active source when there is one.
+    m_tableViewSourceRowMetadata = nullptr;
+    ++m_rowMetadataGeneration;
+
     if (auto const activeSource = m_activeSource.get())
     {
+        auto* const sourceImpl = winrt::get_self<::TableViewSource>(activeSource);
         // Straight through: for a TableViewSource the row view IS the projection's view.
-        m_rowsItemsSourceView = winrt::get_self<::TableViewSource>(activeSource)->GetItemsSourceView();
+        m_rowsItemsSourceView = sourceImpl->GetItemsSourceView();
+        m_tableViewSourceRowMetadata = sourceImpl->GetRowMetadata();
         rowsSource = m_rowsItemsSourceView ? m_rowsItemsSourceView.as<winrt::IInspectable>() : nullptr;
     }
     else
@@ -936,8 +974,30 @@ void TableView::RefreshRowsPipeline()
     // else: OnApplyTemplate hasn't run yet; the repeater will be sourced from there.
 }
 
+void TableView::OnTableViewSourceProjectionChanged()
+{
+    // A shaping verb swapped the projected shape after we bound, so the cached view and row
+    // metadata describe the previous projection. Re-read them and re-drive the rows.
+    if (IsEditing())
+    {
+        // The edited item may not exist in the new projection. Forced, for the same reason as an
+        // ItemsSource swap: the shape is already gone by the time a handler could veto it.
+        TerminateEditWithoutVisualRestore();
+    }
+
+    RefreshRowsPipeline();
+}
+
 void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)
 {
+    // The app may have declared or cleared a sort straight on the source, which the control has no
+    // other way to learn about. Reconcile before anything else so the chevrons never outlive the
+    // axis they describe.
+    if (!m_isApplyingControlInitiatedSort)
+    {
+        QueueReconcileSortStateWithSource();
+    }
+
     // A programmatic shaping verb rewrites the projection with no input event behind it, so
     // nothing else tells a UIA client that the rows it cached are stale. A pure re-order keeps the
     // same children in a new order; anything else can add or remove them.
@@ -1295,7 +1355,11 @@ void TableView::OnRowElementPrepared(
         RefreshRowSelectionState(row);
         InvalidateMeasure();
     }
-
+    else if (auto header = args.Element().try_as<winrt::TableViewGroupHeader>())
+    {
+        PrepareGroupHeaderElement(header, args.Index());
+        InvalidateMeasure();
+    }
 }
 
 void TableView::OnRowElementClearing(
@@ -1336,7 +1400,11 @@ void TableView::OnRowElementClearing(
         rowImpl->SetOwningTableViewInternal(nullptr);
         InvalidateMeasure();
     }
-
+    else if (auto header = args.Element().try_as<winrt::TableViewGroupHeader>())
+    {
+        ClearGroupHeaderElement(header);
+        InvalidateMeasure();
+    }
 }
 
 void TableView::OnRowElementIndexChanged(
@@ -1346,6 +1414,12 @@ void TableView::OnRowElementIndexChanged(
     auto const row = args.Element().try_as<winrt::TableViewRow>();
     if (!row)
     {
+        // A realized header keeps its element but moves to a new index, and its expansion state is
+        // read from that index's metadata, so it has to be re-prepared.
+        if (auto const header = args.Element().try_as<winrt::TableViewGroupHeader>())
+        {
+            PrepareGroupHeaderElement(header, args.NewIndex());
+        }
         return;
     }
 
@@ -1487,6 +1561,14 @@ void TableView::RebuildHeaders()
             // opted-out column carries no chevron and no click handler at all.
             if (canUserSortColumns && column.CanSort())
             {
+                // The header cell is a Grid, and a Grid with a null Background is not hit-test
+                // visible in its empty regions. The header content presenter and the chevron host
+                // below are both effectively non-hit-testable in their padding, so without an
+                // explicit brush a tap that misses the header glyphs never reaches the Tapped
+                // handler and the column never sorts. A transparent fill makes the WHOLE cell the
+                // click target, matching the group-header band and WPF DataGrid column headers.
+                headerCell.Background(winrt::SolidColorBrush{ winrt::Colors::Transparent() });
+
                 // Hosted in its own panel so the chevron sits on the logical trailing edge without
                 // competing with the header content's Stretch alignment.
                 winrt::StackPanel indicatorHost;
@@ -1566,6 +1648,33 @@ winrt::SortIndicatorDirection TableView::ToSortIndicatorDirection(winrt::SortDir
     }
 }
 
+winrt::SortIndicator TableView::FindSortIndicator(const winrt::Panel& root)
+{
+    if (!root)
+    {
+        return nullptr;
+    }
+
+    // The chevron lives one level down inside its own host StackPanel today, but recurse so a
+    // future template tweak that nests it deeper does not silently break the refresh.
+    for (auto const& child : root.Children())
+    {
+        if (auto const indicator = child.try_as<winrt::SortIndicator>())
+        {
+            return indicator;
+        }
+        if (auto const childPanel = child.try_as<winrt::Panel>())
+        {
+            if (auto const found = FindSortIndicator(childPanel))
+            {
+                return found;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
 void TableView::RefreshSortIndicators()
 {
     auto host = m_headerHost.get();
@@ -1576,7 +1685,7 @@ void TableView::RefreshSortIndicators()
 
     for (auto const& child : host.Children())
     {
-        auto const headerCell = child.try_as<winrt::FrameworkElement>();
+        auto const headerCell = child.try_as<winrt::Panel>();
         if (!headerCell)
         {
             continue;
@@ -1588,9 +1697,10 @@ void TableView::RefreshSortIndicators()
             continue;
         }
 
-        // FindName rather than a cached element list: header cells are rebuilt wholesale, so a
-        // cache would have to be invalidated in lockstep with every rebuild.
-        if (auto const indicator = headerCell.FindName(winrt::hstring{ s_SortIndicatorName }).try_as<winrt::SortIndicator>())
+        // A child walk by type rather than FindName: the indicator is code-created into a nested
+        // host panel, so its Name was never registered in a namescope and FindName returns null --
+        // which left a programmatic sort (no header rebuild) with a stale chevron.
+        if (auto const indicator = FindSortIndicator(headerCell))
         {
             indicator.Direction(ToSortIndicatorDirection(column.SortDirection()));
         }
@@ -1692,6 +1802,14 @@ void TableView::OnTableViewUnloaded()
         m_pendingFocusLayoutToken = {};
     }
 
+    if (m_pendingGroupFocusLayoutToken.value)
+    {
+        LayoutUpdated(m_pendingGroupFocusLayoutToken);
+        m_pendingGroupFocusLayoutToken = {};
+    }
+    m_pendingGroupFocusIdentity.clear();
+    m_pendingGroupFocusState = winrt::FocusState::Unfocused;
+
     // Null ItemsSource on unload to release repeater cache work before it ticks on a detached subtree.
     // OnRowsRepeaterLoaded re-sources cached pages when they return.
     if (auto repeater = m_rowsRepeater.get())
@@ -1722,8 +1840,18 @@ void TableView::OnTableViewUnloaded()
     // Drop the ThemeSettings subscription and instance so a subsequent Loaded re-creates it against
     // the (possibly different) window's WindowId. IsHighContrast falls back to AccessibilitySettings
     // while detached.
-    m_themeSettingsChangedRevoker.revoke();
+    //
+    // Order matters. The auto_revoke revoker holds only a weak_ref to ThemeSettings and its revoke()
+    // is noexcept: if remove_Changed throws (which it does at app shutdown, where this Unloaded runs
+    // from DispatcherQueueController::ShutdownQueue and ThemeSettings' underlying window feature is
+    // already detaching, surfacing RPC_E_WRONG_THREAD), the exception escapes the noexcept boundary
+    // and terminates the process -- a try/catch here can never intercept it. So we release our strong
+    // reference FIRST. If it was the last one the object dies, the revoker's weak_ref goes stale and
+    // revoke() becomes a no-op (no ABI call, no throw); if the framework still holds the object it is
+    // alive and remove_Changed succeeds normally. Either way remove_Changed is never called against a
+    // half-torn-down feature.
     m_themeSettings = nullptr;
+    m_themeSettingsChangedRevoker.revoke();
 }
 
 void TableView::OnHeaderBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs& args)

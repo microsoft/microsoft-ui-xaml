@@ -11,6 +11,8 @@
         
     <SolidColorBrush x:Key="TabularSurfaceRowBackgroundBrush" Color="Transparent" />
     <SolidColorBrush x:Key="TabularSurfaceRowForegroundBrush" Color="{ThemeResource TextFillColorPrimary}" />
+    <SolidColorBrush x:Key="TabularSurfaceRowForegroundPointerOverBrush" Color="{ThemeResource TextFillColorPrimary}" />
+    <SolidColorBrush x:Key="TabularSurfaceRowForegroundPressedBrush" Color="{ThemeResource TextFillColorPrimary}" />
     <SolidColorBrush x:Key="TabularSurfaceRowForegroundDisabledBrush" Color="{ThemeResource TextFillColorDisabled}" />
     <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPointerOverBrush" Color="{ThemeResource SubtleFillColorSecondary}" />
     <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPressedBrush" Color="{ThemeResource SubtleFillColorTertiary}" />
@@ -82,23 +84,12 @@
                                         <ItemsRepeater.Layout>
                                             <StackLayout Orientation="Vertical" />
                                         </ItemsRepeater.Layout>
-                                        <!-- On the feature branch this ItemTemplate is removed and assigned in
-                                             code instead, to a TableViewRowTemplateSelector that maps the row's
-                                             TableViewRowKind to a TableViewGroupHeader or TableViewRow container
-                                             template. ItemsRepeater accepts a DataTemplateSelector and gives each
-                                             selected template its own recycle pool.
-
-                                             CARVE-OUT: kept here because the selector is not compiled on this
-                                             branch (it calls TableView::GetRowKindForItem, which lives in
-                                             TableView_Grouping.cpp). Removing it without the selector would leave
-                                             the repeater with no way to build a container, and no row would
-                                             render. The selector source and its commented runtimeclass in
-                                             TableView.idl show the shape that replaces this. -->
-                                        <ItemsRepeater.ItemTemplate>
-                                            <DataTemplate>
-                                                <controls:TableViewRow />
-                                            </DataTemplate>
-                                        </ItemsRepeater.ItemTemplate>
+                                        <!-- No ItemTemplate here: it is assigned in code to a
+                                             TableViewRowTemplateSelector that maps the row's
+                                             TableViewRowKind to a TableViewGroupHeader or TableViewRow
+                                             container template. ItemsRepeater accepts a
+                                             DataTemplateSelector and gives each selected template its
+                                             own recycle pool. -->
                                     </ItemsRepeater>
                                     <!-- Empty-state overlay. The control (C++ UpdateEmptyState) shows
                                          this ONLY when EmptyTemplate is set AND the effective row source
@@ -294,7 +285,10 @@
         <Setter Property="Padding" Value="{ThemeResource TableViewGroupHeaderPadding}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="IsTabStop" Value="False" />
+        <!-- Focusable so keyboard users can expand/collapse: TableViewGroupHeader::OnKeyDown
+             handles Enter/Space (toggle) and Right/Left (expand/collapse), matching TreeViewItem. -->
+        <Setter Property="IsTabStop" Value="True" />
+        <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="ContentTemplate" Value="{StaticResource TableViewDefaultGroupHeaderContentTemplate}" />
         <Setter Property="Template">
             <Setter.Value>

@@ -547,12 +547,22 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
 
     event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs> SelectionChanged;
 
+    // ----- Grouping commands -----
+    // Expands or collapses every group in one batch. Individual groups are expanded and collapsed
+    // through the group header's ExpandCollapse pattern or by clicking the header itself; these
+    // are the programmatic bulk counterparts. Both are no-ops when the source is not grouped.
+    void ExpandAllGroups();
+    void CollapseAllGroups();
+
     // ----- Sorting -----
     // Single-column sort. The control reshapes the rows itself: an ItemsSource that is not already
     // a TableViewSource is projected through one internally, so sorting works over any collection
     // the control can display. Sorting is raised first; cancel it to own the ordering instead.
     // The active sort state lives on the column, as TableViewColumn.SortDirection; Sorted hands
     // the app the column that changed, and a null column there means the sort was cleared.
+    //
+    // This and TableViewSource.Sort reconcile rather than stack: exactly one sort axis is ever in
+    // force, and the last writer wins. See the dev spec for the full ownership rules.
 
     // Control-wide gate for the click-to-sort UX. When false no sort affordance is built and
     // header clicks do not sort; programmatic sorting still works. The per-column cycle policy is
@@ -617,22 +627,18 @@ unsealed runtimeclass TableViewRowAutomationPeer
     TableViewRowAutomationPeer(MU_XC_NAMESPACE.TableViewRow owner);
 }
 
-// CARVE-OUT: declared but commented out. TableViewRowTemplateSelector.cpp is not compiled on
-// this branch because SelectTemplateCore calls TableView::GetRowKindForItem, which lives in
-// TableView_Grouping.cpp on the feature branch. The shape below is what ships; uncomment this
-// block and the ClCompile entry when the grouping stack lands.
-// // Picks the row container template from TableViewRowKind. Set as PART_RowsRepeater.ItemTemplate,
-// // so ItemsRepeater supplies the per-template recycle pools. Projected only because
-// // ItemTemplateWrapper lives in another DLL; not app-facing, since selection needs an owning
-// // TableView that only TableView can set. unsealed + ctor is what MIDL requires for a member-less
-// // runtimeclass.
-// [MUX_INTERNAL]
-// [webhosthidden]
-// unsealed runtimeclass TableViewRowTemplateSelector
-//     : Microsoft.UI.Xaml.Controls.DataTemplateSelector
-// {
-//     TableViewRowTemplateSelector();
-// }
+// Picks the row container template from TableViewRowKind. Set as PART_RowsRepeater.ItemTemplate,
+// so ItemsRepeater supplies the per-template recycle pools. Projected only because
+// ItemTemplateWrapper lives in another DLL; not app-facing, since selection needs an owning
+// TableView that only TableView can set. unsealed + ctor is what MIDL requires for a member-less
+// runtimeclass.
+[MUX_INTERNAL]
+[webhosthidden]
+unsealed runtimeclass TableViewRowTemplateSelector
+    : Microsoft.UI.Xaml.Controls.DataTemplateSelector
+{
+    TableViewRowTemplateSelector();
+}
 
 // Automation peer for the group-header band. Separate from TableViewRowAutomationPeer because
 // the header is now its own container rather than a row in "group mode": there is no adaptive

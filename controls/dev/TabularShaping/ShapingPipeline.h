@@ -25,7 +25,7 @@
 // It holds no collection, no dispatcher, no notification state and no tabular vocabulary. The
 // owner keeps the projection; this keeps the recipe. That split is what lets the projection layer
 // above be about incremental change and marshaling rather than about shaping.
-namespace TabularShapingHelpers
+namespace ShapingHelpers
 {
     // One active sort axis. Storage order is declaration order; PRECEDENCE is by Order, earliest
     // declared first -- see ActiveSortAxes.
@@ -34,13 +34,18 @@ namespace TabularShapingHelpers
         // Identifies the axis for replace/clear (e.g. a column token). Empty is legal and means
         // the axis is identified only by its evaluator.
         winrt::hstring AxisToken;
-        TabularKeySelector Key{ nullptr };
+        KeySelector Key{ nullptr };
         // Stable identity of the evaluator, used to match axes when AxisToken is empty.
         // std::function is not equality-comparable, so a caller that wants un-tokenized replace
         // semantics supplies the underlying delegate here as an IUnknown. Comparing the
         // interface (rather than a raw address) keeps the original delegate-equality semantics,
         // which match two different interface pointers on the same COM object.
         winrt::Windows::Foundation::IUnknown KeyIdentity{ nullptr };
+        // The property path this axis sorts on, when the caller named one. Empty means the key is
+        // a delegate that no path expresses (computed, multi-field, identity, or a ranked custom
+        // comparer). Purely descriptive - the pipeline never evaluates it - but it is what lets a
+        // consumer read an axis back and say which column it is about.
+        winrt::hstring SortMemberPath;
         winrt::SortDirection Direction{ winrt::SortDirection::None };
         // Position in the single verb sequence shared with the group verb. Sorts declared before
         // GroupBy order the groups; sorts declared after it order rows within a group.
@@ -64,7 +69,7 @@ namespace TabularShapingHelpers
         // single-filter shorthand's axis, so a caller that never names its filters keeps exactly
         // the old one-predicate behaviour.
         winrt::hstring AxisToken;
-        TabularPredicate Predicate{ nullptr };
+        Predicate Predicate{ nullptr };
         // Stable diff identity of this axis, re-minted on every declaration. A predicate's
         // parameters (operator, threshold, selected values) live inside the delegate and are
         // invisible to a diff, so without this the commonest mutation -- same column, different
@@ -82,9 +87,9 @@ namespace TabularShapingHelpers
         //
         // The untokenized overload is the single-filter shorthand: it declares the empty-token
         // axis, so calling it repeatedly replaces one predicate exactly as it always did.
-        void SetFilter(TabularPredicate const& predicate);
+        void SetFilter(Predicate const& predicate);
         // A null predicate removes the axis rather than declaring an always-false one.
-        void SetFilter(winrt::hstring const& axisToken, TabularPredicate const& predicate);
+        void SetFilter(winrt::hstring const& axisToken, Predicate const& predicate);
         void ClearFilter() noexcept;
         void ClearFilter(winrt::hstring const& axisToken);
         bool HasFilter() const noexcept { return !m_filters.empty(); }
@@ -96,15 +101,21 @@ namespace TabularShapingHelpers
         // -- sort -----------------------------------------------------------------------------
         // Declares or replaces a sort axis. When previousAxisToken is non-empty and differs from
         // axisToken, axes carrying it are dropped first (a column re-keying itself). A direction
-        // of None removes the axis instead of adding it.
+        // of None removes the axis instead of adding it. sortMemberPath is descriptive only and
+        // may be empty; see SortAxis::SortMemberPath.
         void SetSort(
             winrt::hstring const& previousAxisToken,
             winrt::hstring const& axisToken,
-            TabularKeySelector const& key,
+            KeySelector const& key,
             winrt::Windows::Foundation::IUnknown const& keyIdentity,
+            winrt::hstring const& sortMemberPath,
             winrt::SortDirection direction);
         void ClearSorts() noexcept { m_sorts.clear(); }
         void ClearSort(winrt::hstring const& axisToken);
+        // Drops every axis EXCEPT the one carrying axisToken. An untokenized axis (empty
+        // AxisToken) can only be cleared this way: ClearSort("") means clear-all, so a caller
+        // holding one token cannot address the axes it does not own by token alone.
+        void ClearSortsExcept(winrt::hstring const& axisToken) noexcept;
         bool HasActiveSort() const noexcept;
 
         // Axes with a live key and direction whose Order falls strictly between the bounds. A
@@ -139,7 +150,7 @@ namespace TabularShapingHelpers
         // Places the group verb at the end of the current verb sequence and returns its order.
         // The key is optional and is carried only so the spec can describe the grouping axis;
         // this class never evaluates it.
-        int32_t MarkGroupVerb(TabularKeySelector const& key = nullptr);
+        int32_t MarkGroupVerb(KeySelector const& key = nullptr);
         void ClearGroupVerb() noexcept;
         int32_t GroupOrder() const noexcept { return m_groupOrder; }
 
@@ -182,7 +193,7 @@ namespace TabularShapingHelpers
         int32_t m_groupOrder{ -1 };
         // Diff identity and evaluator of the group verb, held only so BuildSpec can describe it.
         winrt::hstring m_groupDescriptionId;
-        TabularKeySelector m_groupKey{ nullptr };
+        KeySelector m_groupKey{ nullptr };
         ShapingSpec m_committedSpec;
         // False until the first CommitSpec. Distinguishes "committed an empty spec" (a source
         // with no verbs, where a later verb is a real change) from "never committed" (where the

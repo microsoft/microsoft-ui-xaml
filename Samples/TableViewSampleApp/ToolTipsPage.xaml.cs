@@ -8,11 +8,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Media;
-// Disambiguate the real split-binary types from the stale mock projection
-// (Microsoft.UI.Xaml.Controls.TableView*) that the mock Microsoft.WinUI.dll still carries.
-using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
-using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
-using TableViewTemplateColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTemplateColumn;
+using Microsoft.UI.Xaml.Controls.Tabular;
 
 namespace TableViewSampleApp;
 

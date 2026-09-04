@@ -12,6 +12,7 @@
 
 #include "TableView.g.h"
 #include "TableView.properties.h"
+#include "TableViewRowInfo.h"
 
 // ThemeSettings (Microsoft.UI.System) is used below for UI-thread High Contrast change notifications.
 // Included here (not the shared CppWinRTIncludes.h) to keep the rebuild scope local to TableView.
@@ -86,7 +87,7 @@ struct TableViewResourceCache
     double lastFrozenColumnsHorizontalOffset{ 0.0 };
 };
 
-namespace TabularShapingHelpers { class CustomSortRankAdapter; }
+namespace ShapingHelpers { class CustomSortRankAdapter; }
 
 // The control's half of the TableViewSource sort axis. The projection is addressed by an opaque
 // axis token, so re-sorting the same column replaces its axis rather than stacking a second one.
@@ -98,7 +99,7 @@ struct TableViewSourceSortBinding
     // The rank adapter for a CustomSortComparer column. Owned by the control but implemented in the
     // shaping engine: the control feeds it the column's comparer, the engine turns that into the
     // integer sort keys the projection consumes.
-    std::shared_ptr<TabularShapingHelpers::CustomSortRankAdapter> CustomSortState;
+    std::shared_ptr<ShapingHelpers::CustomSortRankAdapter> CustomSortState;
 
     // Drops any comparer and its ranks without discarding the selector: the selector closes over
     // the state by shared_ptr, so replacing it would orphan the live closure.
@@ -112,6 +113,11 @@ class TableView :
 {
 public:
     TableView();
+    // Drops the recycle pools the row-template selector caches. Those pools close a
+    // repeater -> template-wrapper -> selector -> template -> pool -> repeater cycle through plain
+    // C++ references the reference tracker cannot walk, so nothing here is collected unless the
+    // one edge we own is cut. See TableViewRowTemplateSelector::Detach.
+    ~TableView();
 
     // IFrameworkElement overrides
     void OnApplyTemplate();
@@ -325,6 +331,27 @@ public:
     // For the automation peers, which cannot reach the private members. Both read the model.
     int32_t SelectedIndexInternal() const;
     winrt::IInspectable SelectedItemInternal() const;
+    // --- Grouped projections (TableView_Grouping.cpp) ---
+    //
+    // Which container type a row-source item realizes as. Item-based rather than index-based
+    // because the element factory is only ever handed the item.
+    TableViewRowKind GetRowKindForItem(winrt::IInspectable const& item) const;
+    bool TryGetTableViewSourceRowInfo(int32_t rowIndex, TableViewRowInfo& rowInfo) const;
+    bool IsTableViewSourceGrouped() const;
+    // True when the flat row at `index` is a group header rather than a data row. Group headers
+    // share the flat projection (and its index space) with data rows, but are not selectable and
+    // must be recognized by keyboard navigation as valid focus anchors.
+    bool IsGroupHeaderRow(int32_t index) const;
+
+    // Band gesture (directionless) and the ExpandCollapse pattern (directional). Both resolve the
+    // target group's identity immediately and apply the mutation on a later turn.
+    void ToggleGroupExpansion(winrt::UIElement const& container);
+    void SetGroupExpansion(winrt::UIElement const& container, bool expand);
+
+    // Public grouping commands (from TableView IDL).
+    void ExpandAllGroups();
+    void CollapseAllGroups();
+
     // The peer resolves the row index of its header through the repeater rather than a tree walk.
     winrt::ItemsRepeater GetRowsRepeaterForPeer() const { return m_rowsRepeater.get(); }
 
@@ -386,6 +413,14 @@ private:
     void UpdateSelectionCollectionChangedSubscription();
     void OnSelectionItemsSourceCollectionChanged(const winrt::IInspectable& sender, const winrt::IInspectable& args);
 
+    // Subscribed AHEAD of the SelectionModel so it runs first on a projection Reset (filter/sort/
+    // regroup re-materializing the rows in place). SelectionModel clears on a Reset because the
+    // indices it holds are gone; this detector captures the still-selected item by object identity
+    // BEFORE that clear and arms an identity-based restore, so a selected row that survives the
+    // reshape keeps its selection instead of being dropped.
+    void UpdateSelectionResetDetectorSubscription();
+    void OnSelectionSourceReset(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
+
     // Re-points the model at a new ItemsSource and re-selects anything held across a reload.
     void ResolveSelectionAfterSourceChange();
     // Unload drains the repeater's source; re-sourcing on load clears the model. Hold the selected
@@ -412,6 +447,19 @@ private:
     // not drop it. Nothing else defers.
     tracker_ref<winrt::IInspectable> m_pendingSelectedItem{ this };
 
+    // The last INTENTIONALLY selected item (user gesture, programmatic set, or a restore), captured
+    // by object identity in ApplySelection - the single selection writer. Unlike SelectedItem, it
+    // is NOT cleared by a projection Reset that drops the model's indices, so it is the anchor an
+    // identity-based restore re-selects against after a filter/sort/regroup reshape. A genuine
+    // deselect flows through ApplySelection(-1) and nulls it, so an intentional clear is never
+    // "restored".
+    tracker_ref<winrt::IInspectable> m_stickySelectedItem{ this };
+
+    // Armed by OnSelectionSourceReset when a Reset drops the selection with a surviving sticky item,
+    // consumed by OnSelectionItemsSourceCollectionChanged to run the identity restore once the
+    // model has reconciled.
+    bool m_resetSelectionRestorePending{ false };
+
     // Bumped on every publish so a re-entrant one can tell that a newer selection overtook it and
     // it must not finish its own (now stale) notification.
     uint32_t m_selectionVersion{ 0 };
@@ -421,6 +469,9 @@ private:
     bool m_isRestoringSelection{ false };
 
     winrt::ItemsSourceView::CollectionChanged_revoker m_selectionCollectionChangedRevoker{};
+
+    // Fires ahead of the SelectionModel on a projection Reset; see OnSelectionSourceReset.
+    winrt::ItemsSourceView::CollectionChanged_revoker m_selectionResetDetectorRevoker{};
 
 private:
     // Explicit edit lifecycle, replacing four independent booleans whose 16 nominal combinations
@@ -566,20 +617,42 @@ private:
     bool ShouldShowColumnHeaders();
     int32_t GetItemsSourceCount() const;
 
+    void PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& header, int32_t index);
+    void ClearGroupHeaderElement(winrt::TableViewGroupHeader const& header);
+    void UpdateGroupHeaderWidth(winrt::TableViewGroupHeader const& header);
+
     // Split responsibilities driven off the ItemsSource DP:
     //   AdoptItemsSource   - source lifetime. Runs only when ItemsSource actually changes: normalize
     //                        a plain collection into a control-owned TableViewSource, detach the
     //                        previous source, adopt the new one, and wire its owner + handlers.
-    //   RefreshRowsPipeline- pushes the active source's view into the repeater (identity-guarded)
-    //                        and re-resolves empty-state + selection. Runs on every re-entry
-    //                        (template applied, repeater reloaded, shaping verb) with no lifetime work.
+    //   RefreshRowsPipeline- pushes the active source's view into the repeater (identity-guarded),
+    //                        re-reads its row-metadata provider, and re-resolves empty-state +
+    //                        selection. Runs on every re-entry (template applied, repeater
+    //                        reloaded, shaping verb) with no lifetime work.
     void AdoptItemsSource();
     void RefreshRowsPipeline();
+    // Raised by the bound TableViewSource when a shaping verb swapped its projection
+    // (grouped <-> flat), so the cached view / row metadata are re-read.
+    void OnTableViewSourceProjectionChanged();
     // Raised by the bound TableViewSource after a shaping verb rewrote the projection. A
     // programmatic reshape has no input event behind it, so this is the only thing that tells a
     // UIA client its cached rows are stale. reorderOnly separates a pure re-sort (same children,
     // new order) from a membership change.
     void OnTableViewSourceShapingChanged(bool reorderOnly);
+    // Last writer wins between the two sort front-ends. The control owns ONE axis and publishes
+    // the chevron from it; TableViewSource.Sort declares an untokenized axis the control cannot
+    // address. When the app declares or clears a sort directly on the source, the control stands
+    // down: it drops its own axis and every column's SortDirection, so the rows are ordered by
+    // exactly one sort and no chevron claims an axis that is not primary (or no longer exists).
+    void ReconcileSortStateWithSource();
+    void QueueReconcileSortStateWithSource();
+    // Suppresses ReconcileSortStateWithSource for the duration of a control-initiated verb, whose
+    // own source mutations would otherwise read as the app taking over.
+    [[nodiscard]] auto BeginControlInitiatedSortScope()
+    {
+        m_isApplyingControlInitiatedSort = true;
+        return gsl::finally([this]() { m_isApplyingControlInitiatedSort = false; });
+    }
     // EmptyTemplate shows only for null or empty row sources.
     void UpdateEmptyState();
     void UpdateEmptyStateCollectionChangedSubscription();
@@ -605,6 +678,40 @@ private:
     // back-pointer to the owner, so this is not a hard cycle. Reassigned exclusively by
     // AdoptItemsSource, so every other path reads it as a stable answer rather than re-deriving it.
     tracker_ref<winrt::TableViewSource> m_activeSource{ this };
+
+    // Row semantics for the current projection (row kind, identity, group expansion). Null when no
+    // TableViewSource is bound, or when the projection is degraded and carries no shaped identity.
+    TableViewRowMetadataProvider m_tableViewSourceRowMetadata{};
+    // Bumped on every metadata swap so a request captured against the previous provider can tell
+    // that the provider which produced its identity is gone. Identities are value-based strings,
+    // so without this a queued group toggle could resolve against a same-named group in a
+    // brand-new source.
+    uint64_t m_rowMetadataGeneration{ 0 };
+
+    void RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired);    void QueueGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired);
+    void ApplyGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired, uint64_t generation);
+    void RaiseGroupStructureChanged();
+    void SetAllGroupsExpansion(bool expand);
+
+    // Keyboard-driven group toggle loses focus without this: the Enter/Space toggle defers a
+    // structural reshape that recycles the focused header container, dropping focus (and its
+    // visual) to nothing. Capture the header's identity + FocusState at gesture time, then restore
+    // focus to the same group's header once the reshape's relayout has settled. Only keyboard /
+    // programmatic focus is restored -- a pointer toggle carries no focus visual.
+    void CaptureGroupHeaderFocusForRestore(winrt::UIElement const& container, winrt::hstring const& identity);
+    void RestoreGroupHeaderFocusIfPending(winrt::hstring const& identity);
+    void FocusGroupHeaderByIdentity(winrt::hstring const& identity, winrt::FocusState focusState);
+
+    winrt::hstring StringifyGroupKey(winrt::IInspectable const& key);
+    // Cached because resolving the culture formatter is measurably expensive and group-key text is
+    // produced during measure, once per realized header.
+    winrt::DecimalFormatter GetGroupKeyDecimalFormatter();
+    winrt::DecimalFormatter m_groupKeyDecimalFormatter{ nullptr };
+    int32_t m_groupKeyDefaultFractionDigits{ 0 };
+
+    // Chooses between the row and group-header container templates. Held so ~TableView can drop
+    // the recycle pools it caches; see TableViewRowTemplateSelector::Detach.
+    tracker_ref<winrt::TableViewRowTemplateSelector> m_rowTemplateSelector{ this };
 
     // --- Sorting ---
     //
@@ -638,6 +745,9 @@ private:
     void QueueClearSortAfterColumnRemoval();
     bool m_clearSortAfterColumnRemovalQueued{ false };
     void AppendSortIndicatorVisual(const winrt::Panel& host, const winrt::TableViewColumn& column);
+    // The chevron is code-created into a nested host panel, so its programmatic Name is not in any
+    // XAML namescope and FindName cannot resolve it. Locate it by type via a child walk instead.
+    static winrt::SortIndicator FindSortIndicator(const winrt::Panel& root);
     static winrt::SortIndicatorDirection ToSortIndicatorDirection(winrt::SortDirection direction);
 
     // v1 is single-column sort, so this holds at most one entry. It stays a vector because the
@@ -664,8 +774,18 @@ private:
     winrt::event_token m_headerHostLoadedToken{};
     // Set while a drag is in flight, so Escape can reach the gripper that owns it.
     std::shared_ptr<ColumnResizeDragState> m_activeColumnResizeDrag{};
+    // True while a control-initiated sort verb is mutating the source. Its own mutations must not
+    // be mistaken for the app declaring a sort behind the control's back.
+    bool m_isApplyingControlInitiatedSort{ false };
+    bool m_sortReconcileQueued{ false };
     winrt::event_token m_rowsRepeaterLoadedToken{};
     winrt::event_token m_pendingFocusLayoutToken{};
+    // Deferred restore of keyboard focus to a group header after a toggle reshape recycles it.
+    // Separate from m_pendingFocusLayoutToken (row focus) so a row-focus request and a group-focus
+    // restore in flight at once cannot clobber each other's one-shot LayoutUpdated token.
+    winrt::event_token m_pendingGroupFocusLayoutToken{};
+    winrt::hstring m_pendingGroupFocusIdentity{};
+    winrt::FocusState m_pendingGroupFocusState{ winrt::FocusState::Unfocused };
     winrt::ItemsSourceView::CollectionChanged_revoker m_emptyStateCollectionChangedRevoker{};
     // ActualThemeChanged refreshes imperatively-resolved brushes that ItemsRepeater rows do not re-pump.
     winrt::event_token m_actualThemeChangedToken{};

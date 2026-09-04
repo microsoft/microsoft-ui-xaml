@@ -33,6 +33,7 @@ public sealed partial class MainWindow : Window
             "interactive" => typeof(InteractiveCellsPage),
             "selection" => typeof(SelectionPage),
             "tooltips" => typeof(ToolTipsPage),
+            "shaping" => typeof(ShapingPage),
             _ => typeof(PlaygroundPage),
         };
 

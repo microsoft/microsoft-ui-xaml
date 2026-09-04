@@ -3,7 +3,7 @@
 
 #pragma once
 
-namespace TabularShapingHelpers
+namespace ShapingHelpers
 {
     // Revoke an event subscription without letting the revoke escape as an exception.
     //

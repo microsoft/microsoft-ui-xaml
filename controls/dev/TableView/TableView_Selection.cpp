@@ -214,6 +214,7 @@ void TableView::ApplySelection(int32_t index)
     {
         // Nothing selected and no model yet - nothing to clear, but publish so the projections
         // start out agreeing with the model.
+        m_stickySelectedItem.set(nullptr);
         PushSelectionProperties();
         return;
     }
@@ -228,6 +229,12 @@ void TableView::ApplySelection(int32_t index)
     {
         m_selectionModel.Select(index);
     }
+
+    // Capture the intentional selection by object identity. This is the single selection writer, so
+    // every user gesture / programmatic set / restore passes through here and nowhere else moves the
+    // sticky anchor - which is exactly why a Reset-driven model clear (which does NOT call this)
+    // leaves it intact for the identity restore.
+    m_stickySelectedItem.set(index >= 0 ? SelectedItemForIndex(index) : nullptr);
 
     // The model raises SelectionChanged only when the selection actually moved; publish here too so
     // a rejected write still leaves the DPs agreeing with the model.
@@ -453,10 +460,77 @@ void TableView::UpdateSelectionCollectionChangedSubscription()
     }
 }
 
+void TableView::UpdateSelectionResetDetectorSubscription()
+{
+    // auto_revoke drops the prior source's subscription.
+    m_selectionResetDetectorRevoker = {};
+
+    if (auto const repeater = m_rowsRepeater.get())
+    {
+        if (auto const view = repeater.ItemsSourceView())
+        {
+            m_selectionResetDetectorRevoker = view.CollectionChanged(
+                winrt::auto_revoke, { this, &TableView::OnSelectionSourceReset });
+        }
+    }
+}
+
+void TableView::OnSelectionSourceReset(
+    const winrt::IInspectable& /*sender*/,
+    const winrt::NotifyCollectionChangedEventArgs& args)
+{
+    // Only a Reset drops the model's indices wholesale (an Add/Remove shifts the selected index and
+    // SelectionModel reconciles it in place, so selection survives without help). This runs FIRST,
+    // before the model reconciles the same Reset, so it is the last moment the pre-reshape selection
+    // is knowable - captured here by the identity-stable sticky anchor, not by an index that the
+    // reshape just invalidated.
+    if (args.Action() != winrt::NotifyCollectionChangedAction::Reset)
+    {
+        return;
+    }
+
+    // A reload restore already owns the stash/suppress protocol; don't stack a second one.
+    if (m_isRestoringSelection || m_resetSelectionRestorePending)
+    {
+        return;
+    }
+
+    auto const sticky = m_stickySelectedItem.get();
+    if (!sticky)
+    {
+        return;
+    }
+
+    // Stash by identity and arm the restore. Setting m_isRestoringSelection now suppresses the
+    // transient clear the model is about to publish, so the restore reads as one atomic event (or
+    // as silence when the same row is re-selected) rather than a clear-then-reselect pair.
+    m_pendingSelectedItem.set(sticky);
+    m_isRestoringSelection = true;
+    m_resetSelectionRestorePending = true;
+}
+
 void TableView::OnSelectionItemsSourceCollectionChanged(
     const winrt::IInspectable& /*sender*/,
     const winrt::IInspectable& /*args*/)
 {
+    if (m_resetSelectionRestorePending)
+    {
+        // The model has now reconciled the Reset (this handler is subscribed after it), so the view
+        // is settled and the identity lookup is valid. Restore the stashed item: DrainPendingSelection
+        // re-selects it when it survived the reshape, or clears when the filter removed it. Mirrors
+        // ResolveSelectionAfterSourceChange - drain under the restoring flag so the internal write is
+        // suppressed, then publish exactly once.
+        m_resetSelectionRestorePending = false;
+        DrainPendingSelection();
+        m_isRestoringSelection = false;
+
+        m_lastPublishedIndex = SelectedIndexInternal();
+        RestampAllRealizedRowSelection(m_lastPublishedIndex);
+        PushSelectionProperties();
+        RaiseSelectionChanged(SelectedItemInternal());
+        return;
+    }
+
     // SelectionModel has already reconciled the index - and deliberately does not raise when an
     // insert merely shifts it. All that is left is the chrome: ItemsRepeater re-indexes its
     // realized containers around now, so re-derive every one of them rather than trusting the
@@ -502,6 +576,18 @@ void TableView::ResolveSelectionAfterSourceChange()
     // for the same reason.
     EnsureSelectionModel();
 
+    // A source/shape swap (grouped<->flat, an ItemsSource replacement) reassigns the model's Source,
+    // which clears it. If nothing was explicitly stashed, seed the restore from the sticky anchor so
+    // a selection that survives the swap by identity is preserved here too - the same guarantee the
+    // in-place Reset path gives. A stale item (new dataset) simply resolves to -1 and clears.
+    if (!m_pendingSelectedItem.get())
+    {
+        if (auto const sticky = m_stickySelectedItem.get())
+        {
+            m_pendingSelectedItem.set(sticky);
+        }
+    }
+
     const bool hasStashedSelection = m_pendingSelectedItem.get() != nullptr;
 
     {
@@ -510,8 +596,13 @@ void TableView::ResolveSelectionAfterSourceChange()
         // actually change, so the whole restore is published once, at the end.
         ScopedFlag const restoring{ m_isRestoringSelection, hasStashedSelection };
 
-        // Model first: it must be subscribed to the shared view ahead of this control, so that by
-        // the time OnSelectionItemsSourceCollectionChanged restamps rows the index is reconciled.
+        // Detector first, then model, then the restamp handler: the detector must observe a later
+        // in-place Reset ahead of the model so it can capture the selection before the model drops
+        // it, and the restamp handler must observe after the model so it restores against a
+        // reconciled view.
+        UpdateSelectionResetDetectorSubscription();
+        // Model second: it must be subscribed to the shared view ahead of the restamp handler, so
+        // that by the time OnSelectionItemsSourceCollectionChanged runs the index is reconciled.
         UpdateSelectionModelSource();
         UpdateSelectionCollectionChangedSubscription();
 
@@ -593,6 +684,15 @@ void TableView::SelectRowIndexFromInteraction(int32_t index, bool toggle)
     if (!CanSelectRows())
     {
         // A user gesture while selection is off is a no-op.
+        return;
+    }
+
+    // Group headers share the flat projection's index space with data rows but are not selectable.
+    // Keyboard navigation legitimately lands focus on a header (to expand/collapse it); when it
+    // does, leave the existing data selection untouched rather than moving it to - or clearing it
+    // against - a header index. Selection-follows-focus resumes on the next data row.
+    if (index >= 0 && IsGroupHeaderRow(index))
+    {
         return;
     }
 
