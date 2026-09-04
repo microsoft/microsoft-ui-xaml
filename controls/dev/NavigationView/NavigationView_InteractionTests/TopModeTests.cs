@@ -782,6 +782,70 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
             }
         }
 
+        // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/5356
+        [TestMethod]
+        public void TopNavigationFooterItemShowsChildrenInFlyoutTest()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView FooterMenuItems Test" }))
+            {
+                UIObject footerItem1 = FindElement.ByName("Footer Item 1");
+                Verify.IsNotNull(footerItem1, "Footer Item 1 should be visible.");
+                Verify.IsNull(FindElement.ByName("Footer Item 4"), "Footer Item 4 should not be visible.");
+
+                ClickOnNavigationViewItemChevron(footerItem1);
+
+                UIObject footerItem4 = FindElement.ByName("Footer Item 4");
+                Verify.IsNotNull(footerItem4, "Footer Item 4 should be visible after expanding Footer Item 1.");
+
+                Log.Comment("Verify that the children are hosted in the flyout and not inline in the top nav bar.");
+                new Button(FindElement.ByName("GetFooterItem2ParentButton")).Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual("Flyout", new TextBlock(FindElement.ByName("FooterItem2ParentLabel")).DocumentText);
+
+                Verify.IsTrue(
+                    footerItem4.BoundingRectangle.Top >= footerItem1.BoundingRectangle.Bottom,
+                    "Children should be laid out below the footer item, not on top of it. Footer Item 1: "
+                        + footerItem1.BoundingRectangle + ", Footer Item 4: " + footerItem4.BoundingRectangle);
+
+                ClickOnNavigationViewItemChevron(footerItem1);
+                ElementCache.Refresh();
+                Verify.IsNull(FindElement.ByName("Footer Item 4"), "Footer Item 4 should not be visible after collapsing Footer Item 1.");
+            }
+        }
+
+        // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/5356
+        [TestMethod]
+        public void TopNavigationCanSelectChildOfFooterItemTest()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView FooterMenuItems Test" }))
+            {
+                TextBlock selectedItemLabel = new TextBlock(FindElement.ByName("SelectedItemLabel"));
+                Verify.AreEqual("uninitialized", selectedItemLabel.DocumentText);
+
+                UIObject footerItem1 = FindElement.ByName("Footer Item 1");
+                ClickOnNavigationViewItemChevron(footerItem1);
+
+                Log.Comment("Expand Footer Item 2 inside the flyout.");
+                UIObject footerItem2 = FindElement.ByName("Footer Item 2");
+                Verify.IsNotNull(footerItem2, "Footer Item 2 should be visible.");
+                InputHelper.LeftClick(footerItem2);
+                Wait.ForIdle();
+
+                Log.Comment("Select the grandchild, which should close the flyout.");
+                UIObject footerItem3 = FindElement.ByName("Footer Item 3");
+                Verify.IsNotNull(footerItem3, "Footer Item 3 should be visible after expanding Footer Item 2.");
+                InputHelper.LeftClick(footerItem3);
+                Wait.ForIdle();
+
+                new Button(FindElement.ByName("GetSelectedItemLabelButton")).Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual("Footer Item 3", selectedItemLabel.DocumentText);
+
+                ElementCache.Refresh();
+                Verify.IsNull(FindElement.ById("ChildrenFlyout"), "Flyout should be closed after selecting a leaf item.");
+            }
+        }
+
         private void ClickOnNavigationViewItemChevron(UIObject nvi)
         {
             Log.Comment("Click On NavigationViewItem Chevron");

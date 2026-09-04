@@ -1692,6 +1692,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
             }
         }
 
+        // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/5356
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void VerifyFooterItemChildrenUseFlyoutInLeftMode()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView FooterMenuItems Test" }))
+            {
+                Log.Comment("Set PaneDisplayMode to Left.");
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                panelDisplayModeComboBox.SelectItemByName("Left");
+                Wait.ForIdle();
+
+                UIObject footerItem1 = FindElement.ByName("Footer Item 1");
+                UIObject footerItem5 = FindElement.ByName("Footer Item 5");
+                var footerItem5Height = footerItem5.BoundingRectangle.Height;
+                Verify.IsTrue(footerItem5Height > 20, "Footer Item 5 should start at a normal height. Height: " + footerItem5Height);
+
+                Log.Comment("Expand Footer Item 1 using its chevron.");
+                InputHelper.LeftClick(footerItem1, footerItem1.BoundingRectangle.Width - 20, footerItem1.BoundingRectangle.Height / 2);
+                Wait.ForIdle();
+
+                Verify.IsNotNull(FindElement.ByName("Footer Item 4"), "Footer Item 4 should be visible after expanding Footer Item 1.");
+
+                Log.Comment("Verify the children went into the flyout instead of expanding inline.");
+                new Button(FindElement.ByName("GetFooterItem2ParentButton")).Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual("Flyout", new TextBlock(FindElement.ByName("FooterItem2ParentLabel")).DocumentText);
+
+                Log.Comment("Verify the rest of the footer was not squashed to make room for the children.");
+                ElementCache.Refresh();
+                footerItem5 = FindElement.ByName("Footer Item 5");
+                Verify.AreEqual(footerItem5Height, footerItem5.BoundingRectangle.Height,
+                    "Footer Item 5 should keep its height when a sibling expands.");
+            }
+        }
+
         [TestMethod]
         [TestProperty("TestSuite", "D")]
         public void VerifyNoCrashWhenSwitchingPaneDisplayModeWithAutoWrappedElements()

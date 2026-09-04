@@ -1656,6 +1656,83 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsTrue(ItemHasSelectionIndicator(navView, "Menu Item 7"));
         }
 
+        // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/5356
+        [TestMethod]
+        public void VerifyTopModeFooterItemShowsChildrenInFlyout()
+        {
+            VerifyFooterItemShowsChildrenInFlyout(NavigationViewPaneDisplayMode.Top);
+        }
+
+        // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/5356
+        [TestMethod]
+        public void VerifyLeftModeFooterItemShowsChildrenInFlyout()
+        {
+            VerifyFooterItemShowsChildrenInFlyout(NavigationViewPaneDisplayMode.Left);
+        }
+
+        // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/5356
+        [TestMethod]
+        public void VerifyLeftCompactFooterItemShowsChildrenInFlyout()
+        {
+            VerifyFooterItemShowsChildrenInFlyout(NavigationViewPaneDisplayMode.LeftCompact);
+        }
+
+        private void VerifyFooterItemShowsChildrenInFlyout(NavigationViewPaneDisplayMode paneDisplayMode)
+        {
+            NavigationView navView = null;
+            NavigationViewItem footerItem = null;
+            NavigationViewItem footerChild = null;
+            var loadedEvent = new ManualResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                footerChild = new NavigationViewItem() { Content = "Footer Child" };
+                footerItem = new NavigationViewItem() { Content = "Footer Item", SelectsOnInvoked = false };
+                footerItem.MenuItems.Add(footerChild);
+
+                navView = new NavigationView() {
+                    PaneDisplayMode = paneDisplayMode,
+                    IsSettingsVisible = false
+                };
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Menu Item" });
+                navView.FooterMenuItems.Add(footerItem);
+
+                navView.Loaded += (sender, args) => loadedEvent.Set();
+                Content = navView;
+            });
+
+            loadedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                footerItem.IsExpanded = true;
+            });
+
+            // Showing the flyout is deferred to a composition rendering callback.
+            IdleSynchronizer.Wait();
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(GetVisualAncestorByName(footerChild, "FlyoutContentGrid"),
+                    "Children of a footer item should be hosted in the item's flyout, not inline inside the item.");
+            });
+        }
+
+        static FrameworkElement GetVisualAncestorByName(DependencyObject element, string name)
+        {
+            for (var current = VisualTreeHelper.GetParent(element); current != null; current = VisualTreeHelper.GetParent(current))
+            {
+                if (current is FrameworkElement frameworkElement && frameworkElement.Name == name)
+                {
+                    return frameworkElement;
+                }
+            }
+
+            return null;
+        }
+
         static ItemsRepeater GetRepeater(DependencyObject parent)
         {
             static ItemsRepeater GetNavigationViewRepeaterHelper(DependencyObject root)
