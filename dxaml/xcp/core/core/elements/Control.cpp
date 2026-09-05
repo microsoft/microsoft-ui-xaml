@@ -327,31 +327,7 @@ CControl::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams pa
     // Apply any built-in styles.
     if (params.fIsLive)
     {
-        if (SupportsBuiltInStyles() && !m_fIsBuiltInStyleApplied)
-        {
-            // When we apply the built-in style, we may resolve theme resources in doing so
-            // that haven't yet been resolved - for example, if a property value references
-            // a resource that then references another resource.
-            // We need to make sure we're operating under the correct theme during that resolution.
-            bool removeRequestedTheme = false;
-            const auto theme = GetTheme();
-            const auto oldRequestedThemeForSubTree = GetRequestedThemeForSubTreeFromCore();
-
-            if (theme != Theming::Theme::None && Theming::GetBaseValue(theme) != oldRequestedThemeForSubTree)
-            {
-                SetRequestedThemeForSubTreeOnCore(theme);
-                removeRequestedTheme = true;
-            }
-
-            auto themeGuard = wil::scope_exit([&] {
-                if (removeRequestedTheme)
-                {
-                    SetRequestedThemeForSubTreeOnCore(oldRequestedThemeForSubTree);
-                }
-            });
-
-            IFC_RETURN(ApplyBuiltInStyle());
-        }
+        IFC_RETURN(EnsureBuiltInStyleApplied());
 
         // Initialize StateTriggers at this time.  We need to wait for this to enter a visual tree
         // since we need for it to be part of the main visual tree to know which visual tree's
@@ -359,6 +335,74 @@ CControl::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams pa
         // may have changed since the last enter.
         IFC_RETURN(CVisualStateManager2::InitializeStateTriggers(this, true /* forceUpdate */));
     }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT
+CControl::EnsureBuiltInStyleApplied()
+{
+    if (SupportsBuiltInStyles() && !m_fIsBuiltInStyleApplied)
+    {
+        // When we apply the built-in style, we may resolve theme resources in doing so
+        // that haven't yet been resolved - for example, if a property value references
+        // a resource that then references another resource.
+        // We need to make sure we're operating under the correct theme during that resolution.
+        bool removeRequestedTheme = false;
+        const auto theme = GetTheme();
+        const auto oldRequestedThemeForSubTree = GetRequestedThemeForSubTreeFromCore();
+
+        if (theme != Theming::Theme::None && Theming::GetBaseValue(theme) != oldRequestedThemeForSubTree)
+        {
+            SetRequestedThemeForSubTreeOnCore(theme);
+            removeRequestedTheme = true;
+        }
+
+        auto themeGuard = wil::scope_exit([&] {
+            if (removeRequestedTheme)
+            {
+                SetRequestedThemeForSubTreeOnCore(oldRequestedThemeForSubTree);
+            }
+        });
+
+        IFC_RETURN(ApplyBuiltInStyle());
+    }
+
+    return S_OK;
+}
+
+//-------------------------------------------------------------------------
+//
+//  Function:   CControl::ApplyTemplate
+//
+//  Synopsis:   Ensures the built-in style (which provides the control's
+//              Template) has been applied before the base class expands the
+//              template.
+//
+//              Under OptimizeApplyStyles the built-in style is applied lazily
+//              when the control becomes active (see CControl::CreationComplete
+//              and CControl::EnterImpl). However ApplyTemplate can be invoked
+//              on a control that is not yet live - for example
+//              ContentDialog::ShowAsync() explicitly applies the template
+//              before hosting the dialog in a popup. In that case GetTemplate()
+//              would return null, the template wouldn't be expanded, and named
+//              template parts would only resolve later once the control goes
+//              live - producing an extra re-parent that cancels the dialog's
+//              entrance transition (GitHub #11257). Applying the built-in style
+//              here ensures the template and its named parts are available now,
+//              matching the non-optimized behavior. EnsureBuiltInStyleApplied
+//              is a no-op once the style has already been applied.
+//
+//-------------------------------------------------------------------------
+_Check_return_ HRESULT
+CControl::ApplyTemplate(_Out_ bool& fAddedVisuals)
+{
+    if (OptionalChangeState::IsOptimizeApplyStylesEnabled())
+    {
+        IFC_RETURN(EnsureBuiltInStyleApplied());
+    }
+
+    IFC_RETURN(CFrameworkElement::ApplyTemplate(fAddedVisuals));
 
     return S_OK;
 }

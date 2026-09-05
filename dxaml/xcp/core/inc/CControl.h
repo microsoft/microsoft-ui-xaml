@@ -97,6 +97,7 @@ public:
     _Check_return_ HRESULT GetBuiltInStyle(_Outptr_ CStyle **ppStyle);
 
     _Check_return_ HRESULT CreationComplete() override;
+    _Check_return_ HRESULT ApplyTemplate(_Out_ bool& fAddedVisuals) override;
     _Check_return_ HRESULT CoerceIsEnabled(_In_ bool bIsEnabled, _In_ bool bCoerceChildren) final;
 
     void SuppressIsEnabled(_In_ bool bSuppress);
@@ -215,6 +216,7 @@ protected:
     ~CControl() override;
 
 private:
+    _Check_return_ HRESULT EnsureBuiltInStyleApplied();
     _Check_return_ HRESULT ApplyBuiltInStyle();
 
     _Check_return_ HRESULT PropagateInheritedProperty(_In_ CUIElement *pUIElement, _In_ const CDependencyProperty *pdp);
