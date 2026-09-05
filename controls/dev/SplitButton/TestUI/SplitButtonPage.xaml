@@ -117,6 +117,41 @@
         <StackPanel Grid.Column="1"  Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Left"
                     Margin="8,0,0,0" Style="{ThemeResource StandardGroupingStackPanel}">
             <TextBlock Text="Demo interaction controls" Style="{ThemeResource StandardGroupHeader}"/>
+            <controls:SplitButton x:Name="DefaultPlacementSplitButton"
+                                  AutomationProperties.Name="DefaultPlacementSplitButton"
+                                  Content="Default placement"
+                                  HorizontalAlignment="Left"
+                                  Width="300">
+                <controls:SplitButton.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem AutomationProperties.AutomationId="DefaultPlacementFlyoutItem" Text="Item" Width="120"/>
+                    </MenuFlyout>
+                </controls:SplitButton.Flyout>
+            </controls:SplitButton>
+            <controls:SplitButton x:Name="AutoPlacementSplitButton"
+                                  AutomationProperties.Name="AutoPlacementSplitButton"
+                                  Content="Explicit Auto placement"
+                                  HorizontalAlignment="Left"
+                                  Margin="0,8,0,0"
+                                  Width="300">
+                <controls:SplitButton.Flyout>
+                    <MenuFlyout Placement="Auto">
+                        <MenuFlyoutItem AutomationProperties.AutomationId="AutoPlacementFlyoutItem" Text="Item" Width="120"/>
+                    </MenuFlyout>
+                </controls:SplitButton.Flyout>
+            </controls:SplitButton>
+            <controls:SplitButton x:Name="TopPlacementSplitButton"
+                                  AutomationProperties.Name="TopPlacementSplitButton"
+                                  Content="Explicit Top placement"
+                                  HorizontalAlignment="Left"
+                                  Margin="0,8,0,12"
+                                  Width="300">
+                <controls:SplitButton.Flyout>
+                    <MenuFlyout Placement="Top">
+                        <MenuFlyoutItem AutomationProperties.AutomationId="TopPlacementFlyoutItem" Text="Item" Width="120"/>
+                    </MenuFlyout>
+                </controls:SplitButton.Flyout>
+            </controls:SplitButton>
             <StackPanel Orientation="Horizontal">
                 <controls:ToggleSplitButton x:Name="ToggleSplitButton" AutomationProperties.Name="ToggleSplitButton" Content="Toggle" IsCheckedChanged="ToggleSplitButton_IsCheckedChanged" Click="ToggleSplitButton_Click">
                     <controls:SplitButton.Flyout>
