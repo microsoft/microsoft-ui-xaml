@@ -61,6 +61,9 @@ private:
     void AttachInkVisualToPresenter();
     // Sizes the lifted PlacementVisual to the control's physical-pixel bounds (lifted path only).
     void PositionInkVisual();
+    // Roots the ink visual under the given target and hands the composition device to the presenter.
+    // Shared by both compositor paths.
+    void SetInkRootVisual(IDCompositionTarget* target);
 
     std::shared_ptr<ThreadData> m_threadData;
  
