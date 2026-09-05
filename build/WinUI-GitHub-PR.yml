@@ -169,6 +169,13 @@ extends:
         parameters:
           pipelineKind: PR
 
+    # Composition switcher tests on a ge_current agent under /p:SwitcherMode=true. The stage template lives
+    # in THIS repo (self, not @WinUIInternal) because it is part of the switcher work. It unlocks the
+    # CompositionEngine LAF via the CompositionSwitcherLafToken variable (ADO Library group WinUI-InternalFeed,
+    # referenced by name only — the value never appears in this public yaml).
+    - ${{ if eq(parameters.runFullValidation, true) }}:
+      - template: AzurePipelinesTemplates\WinUI-RunSwitcherTests-Stage.yml
+
     - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml
         parameters:

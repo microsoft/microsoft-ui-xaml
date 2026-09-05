@@ -1,0 +1,179 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+#
+# Runs the composition switcher tests on a ge_current lab VM under /p:SwitcherMode=true.
+# Self-contained (modeled on WinUI-PGO-Train-Stage.yml, which uses the same ge_current pool) so
+# it does not touch the shared per-OS RunTests matrix.
+#
+# First run targets the two engagement certifiers ("*SwitcherTests*") to prove the switcher
+# engages end-to-end in the pipeline. To run the full master-backed suite, change testSelector
+# to:  "*" -TestsWithMasterFilesOnly   (keep /p:SwitcherMode=true so switcher masters are selected).
+parameters:
+  - name: testSelector
+    type: string
+    default: '*SwitcherTests*'
+
+stages:
+- stage: RunSwitcherTests
+  displayName: Run Switcher Tests (ge_current)
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: RunSwitcherTests_x86chk
+    pool:
+      type: windows
+      isCustom: true
+      name: WinDevPool-Test
+      demands: ImageOverride -equals ge_current-vhdx_enterprise
+    timeoutInMinutes: 180
+    variables:
+      # WinUI-InternalFeed (group 6276) carries the CompositionSwitcherLafToken variable that unlocks the
+      # CompositionEngine LAF for the switcher. It is referenced by name only; the value lives in ADO
+      # Library and never appears in this (public) yaml. This group is already loaded/authorized for the
+      # WinUI-GitHub-PR pipeline (def 195405).
+      - group: WinUI-InternalFeed
+      - name: buildPlatform
+        value: 'x86'
+      - name: normalizedConfiguration
+        value: 'chk'
+      - name: buildFolderName
+        value: x86chk
+      - name: incomingArtifactsPath
+        value: $(Build.ArtifactStagingDirectory)\incoming
+      - name: testPayloadDir
+        value: $(Build.SourcesDirectory)\TestPayload
+      - name: testPayloadDirInner
+        value: $(testPayloadDir)\x86chk
+      - name: ob_outputDirectory
+        value: c:\uploadroot
+      - name: ob_artifactBaseName
+        value: 'switcher_x86chk'
+      - name: ob_sdl_binskim_enabled
+        value: false
+
+    steps:
+    - script: |
+        reg query "HKLM\Software\Microsoft\Windows NT\CurrentVersion"
+      displayName: Display OS version info
+
+    - task: NuGetAuthenticate@1
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet restore Lifted XAML dependencies'
+      inputs:
+        command: 'custom'
+        arguments: 'restore packages.config -ConfigFile nuget.config -PackagesDirectory $(Build.SourcesDirectory)\packages'
+        includeNuGetOrg: false
+
+    - template: WinUI-DownloadPipelineArtifacts-Steps.yml
+      parameters:
+        enableUseOutputFromPreviousBuild: true
+        itemPattern: '**/?(x86chk|GenXBF|Taef)/**'
+        targetPath: $(incomingArtifactsPath)
+
+    # The build publishes each flavor as a 'drop_*' artifact whose contents are rooted under a
+    # 'drop\' folder (e.g. drop\x86chk\TAEF, drop\GenXBF\x86). Merge the downloaded drop_* folders
+    # up into $(incomingArtifactsPath) so the payload lives at $(incomingArtifactsPath)\drop, matching
+    # what CreateTestPayload.ps1 -BinSourceRoot expects (mirrors WinUI-CreateTestPayload-Job.yml).
+    - task: PowerShell@2
+      displayName: Merge downloaded drops to parent
+      inputs:
+        targetType: 'inline'
+        script: |
+          Copy-Item -Path "$(incomingArtifactsPath)\drop_*\*" -Destination "$(incomingArtifactsPath)" -Recurse -Force
+
+    - task: powershell@2
+      displayName: Prepare test payload
+      inputs:
+        targetType: filePath
+        filePath: test\CreateTestPayload.ps1
+        arguments: -BinSourceRoot $(incomingArtifactsPath)\drop -Platform x86 -Configuration chk -Mode DevTestSuite -ShowPayload -SkipSymbols
+
+    # The switcher is engaged via the public CompositionEngine Limited Access Feature API
+    # (CompositionEngine::TrySetProcessEngine(System), called from the test's ModuleSetup under
+    # /p:SwitcherMode=true). On a ge_current image the feature is enabled by default and the LAF
+    # is available, so no additional machine configuration is needed here. If the image is not
+    # provisioned with the feature, the test reports "did not engage" and skips - which is the
+    # signal that the test pool needs the switcher feature enabled.
+
+    - task: powershell@2
+      displayName: Run Switcher Tests (UAP)
+      timeoutInMinutes: 120
+      inputs:
+        targetType: inline
+        workingDirectory: $(testPayloadDirInner)
+        script: |
+          # SwitcherTests are declared RunAs=UAP (packaged host) with no @Hosting:Mode property. Run them
+          # under UAP hosting to match - the regular DevTestSuite loads and runs this same test DLL under
+          # UAP, whereas forcing WPF failed to load Microsoft.UI.Xaml.Tests.External.Foundation.dll
+          # (0x8007007E). -forceHostingMode is required: without it runtests.ps1 adds
+          # "and (@Hosting:Mode='UAP')" to the selection query, which excludes the SwitcherTests (they
+          # have no @Hosting:Mode); -forceHostingMode keeps the name-based selection and still passes
+          # /p:HostingMode=UAP so te loads the DLL in the UAP app container. The LAF token in
+          # CompositionSwitcherLafToken must therefore be the UAP packaged-host token
+          # (family XamlTAEFTests_8wekyb3d8bbwe), not the WPF/centennial one.
+          #
+          # Capture te's console output so we can enforce a real result. te.exe returns exit code 0
+          # when tests are Blocked (e.g. the test DLL or a dependency fails to load), which would
+          # otherwise let this stage pass green without actually running the switcher tests. Parse the
+          # TAEF summary and fail on Blocked>0 or Passed==0 so a "didn't actually run" is never a pass.
+          $consoleLog = Join-Path "$(ob_outputDirectory)" 'switcher-te-console.log'
+          New-Item -ItemType Directory -Path "$(ob_outputDirectory)" -Force | Out-Null
+          .\runtests.cmd "${{ parameters.testSelector }}" -HostingMode:UAP -forceHostingMode /p:SwitcherMode=true /p:SwitcherLafToken=$(CompositionSwitcherLafToken) /reportLoadingIssue 2>&1 | Tee-Object -FilePath $consoleLog
+          $teExit = $LASTEXITCODE
+
+          $summaryLine = Select-String -Path $consoleLog -Pattern 'Summary:\s*Total=(\d+).*?Passed=(\d+).*?Failed=(\d+).*?Blocked=(\d+)' | Select-Object -Last 1
+          if (-not $summaryLine) {
+            Write-Host "##vso[task.logissue type=error]Switcher tests produced no TAEF summary - te.exe did not run to completion."
+            exit 1
+          }
+          $m = $summaryLine.Matches[0].Groups
+          $total = [int]$m[1].Value; $passed = [int]$m[2].Value; $failed = [int]$m[3].Value; $blocked = [int]$m[4].Value
+          Write-Host "Switcher TAEF summary: Total=$total Passed=$passed Failed=$failed Blocked=$blocked (te exit=$teExit)"
+          if ($blocked -gt 0) {
+            Write-Host "##vso[task.logissue type=error]$blocked switcher test(s) were Blocked - the test DLL or a dependency failed to load (the switcher tests did not actually run). Failing the stage instead of passing green."
+            exit 1
+          }
+          if ($total -eq 0 -or $passed -eq 0) {
+            Write-Host "##vso[task.logissue type=error]No switcher tests passed (Total=$total Passed=$passed) - failing the stage."
+            exit 1
+          }
+          exit $teExit
+
+    - task: PublishTestResults@2
+      condition: always()
+      inputs:
+        testResultsFormat: xUnit
+        testResultsFiles: 'te.wtl;testResults-*.xml'
+        searchFolder: $(testPayloadDirInner)
+        mergeTestResults: true
+        failTaskOnFailedTests: true
+        testRunTitle: 'SwitcherTests x86chk'
+
+    # Publish the generated .save.xml trees + diffs/screenshots so switcher baselines can be
+    # captured from this run (they are intentionally NOT committed; see PR description).
+    # Resilient: ensure the output dir exists and only copy when the test actually produced output,
+    # so a missing XamlTAEFOutput folder (e.g. no trees generated) doesn't error the stage.
+    - task: PowerShell@2
+      condition: always()
+      displayName: Collect generated trees for baselining
+      inputs:
+        targetType: 'inline'
+        script: |
+          $dest = "$(ob_outputDirectory)\SwitcherBaselining"
+          New-Item -ItemType Directory -Path $dest -Force | Out-Null
+          $src = Join-Path $env:USERPROFILE 'Pictures\XamlTAEFOutput'
+          if (Test-Path $src) {
+            robocopy $src $dest *.save.xml *.out.xml *.png *.jpg /S /NFL /NDL /NJH /NJS | Out-Null
+            if ($LASTEXITCODE -lt 8) { $global:LASTEXITCODE = 0 }
+            Write-Host "Collected switcher baseline output from $src"
+          } else {
+            Write-Host "No XamlTAEFOutput folder at $src - nothing to collect (test produced no trees)."
+          }
+
+    - task: PublishPipelineArtifact@1
+      condition: always()
+      displayName: Publish switcher output for baselining
+      inputs:
+        targetPath: $(ob_outputDirectory)
+        artifact: 'switcher_x86chk'

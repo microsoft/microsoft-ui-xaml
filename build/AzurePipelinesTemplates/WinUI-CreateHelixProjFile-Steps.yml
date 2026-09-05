@@ -9,6 +9,7 @@ parameters:
   testSuite: 'DevTestSuite'
   taefQuery: ''
   hostingMode: ''
+  switcherMode: 'false'
   targetOsVersion: ''
   taefExePath: ''
   
@@ -19,4 +20,4 @@ steps:
     inputs:
       targetType: filePath
       filePath: Helix\GenerateHelixWorkItems.ps1
-      arguments: -TaefExePath "${{ parameters.taefExePath }}" -TestFilePattern "${{ parameters.testFilePathPattern }}" -TestBinaryPath "${{ parameters.testBinaryPath }}" -OutputProjFile "${{ parameters.outputProjDir }}\${{ parameters.outputProjFileName }}" -JobTestSuiteName "${{ parameters.testSuite }}" -CustomTaefQuery "${{ parameters.taefQuery }}" -HostingMode "${{ parameters.hostingMode }}" -TargetOSVersion ${{ parameters.targetOsVersion}} -TestExecutionMultiplier $(_testExecutionMultiplier) -RunIgnoredTests $(_runIgnoredTests) -IsValidateWindowsAppSDKRun $(isValidateWindowsAppSDKRun)
+      arguments: -TaefExePath "${{ parameters.taefExePath }}" -TestFilePattern "${{ parameters.testFilePathPattern }}" -TestBinaryPath "${{ parameters.testBinaryPath }}" -OutputProjFile "${{ parameters.outputProjDir }}\${{ parameters.outputProjFileName }}" -JobTestSuiteName "${{ parameters.testSuite }}" -CustomTaefQuery "${{ parameters.taefQuery }}" -HostingMode "${{ parameters.hostingMode }}" -SwitcherMode ${{ parameters.switcherMode }} -TargetOSVersion ${{ parameters.targetOsVersion}} -TestExecutionMultiplier $(_testExecutionMultiplier) -RunIgnoredTests $(_runIgnoredTests) -IsValidateWindowsAppSDKRun $(isValidateWindowsAppSDKRun)

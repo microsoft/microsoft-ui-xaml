@@ -1469,6 +1469,17 @@ namespace Private { namespace Infrastructure {
 
     }
 
+    // Returns true when the test run was launched with /p:SwitcherMode=true, i.e. the lifted
+    // system-composition switcher is engaged process-wide (see ModuleSetup in ModuleCleanup.cpp).
+    // Under switcher the composition tree can differ from the baseline WUC path, so a
+    // switcher-specific baseline (.master.switcher.<ext>) is preferred when present.
+    static bool IsSwitcherMode()
+    {
+        WEX::Common::String switcherModeParam;
+        return SUCCEEDED(WEX::TestExecution::RuntimeParameters::TryGetValue(L"SwitcherMode", switcherModeParam))
+            && (switcherModeParam.CompareNoCase(L"true") == 0 || switcherModeParam == L"1");
+    }
+
     bool Utilities::DoVerification(
         _In_ PCWSTR fileExtension,
         _In_opt_ HSTRING variation,
@@ -1501,7 +1512,32 @@ namespace Private { namespace Infrastructure {
         wrl::ComPtr<wst::IStorageFile> spMasterFile;
 
         spOutputFile = GetStorageFile(strOutputFilenameWithPath.Get());
-        spMasterFile = GetStorageFile(strMasterFilenameWithPath.Get());
+
+        // Under switcher mode, prefer a switcher-specific baseline (.master.switcher.<ext>) if one
+        // exists. This lets the switcher path own a different visual tree without overwriting the
+        // baseline WUC masters, so non-switcher runs keep comparing against .master.<ext> unchanged.
+        if (IsSwitcherMode())
+        {
+            wrl::Wrappers::HString switcherSuffix;
+            LogThrow_IfFailed(switcherSuffix.Set((std::wstring(L".master.switcher.") + fileExtension).c_str()));
+            auto switcherHelper = GenerateFileNameHelper(variation, switcherSuffix.Get());
+            wrl::Wrappers::HString switcherFilenameWithPath = GetFileName(PrependPath(GetMastersFolderPath(), switcherHelper));
+            wrl::ComPtr<wst::IStorageFile> spSwitcherMaster = GetStorageFile(switcherFilenameWithPath.Get());
+            if (spSwitcherMaster)
+            {
+                spMasterFile = spSwitcherMaster;
+                LogThrow_IfFailed(masterFileNameSuffix.Set((std::wstring(L".master.switcher.") + fileExtension).c_str()));
+                masterFileNameHelper = switcherHelper;
+                const wrl::Wrappers::HString switcherFilename = GetFileName(switcherHelper);
+                LogThrow_IfFailed(strMasterFilename.Set(switcherFilename.GetRawBuffer(nullptr)));
+                LogThrow_IfFailed(strMasterFilenameWithPath.Set(switcherFilenameWithPath.GetRawBuffer(nullptr)));
+            }
+        }
+
+        if (!spMasterFile)
+        {
+            spMasterFile = GetStorageFile(strMasterFilenameWithPath.Get());
+        }
 
         // If neither file exists, then this file was apparently not needed (such as due to this
         // index being for a surface which is no longer referenced).  Everything is good in this
