@@ -28,6 +28,7 @@ namespace OptionalChangeState
     constexpr int BitIndex_OptimizeApplyStyles = 1;
     constexpr int BitIndex_DefaultStyleOptimizations = 2;
     constexpr int BitIndex_DeferContextFlyoutInit = 3;
+    constexpr int BitIndex_SkipWindowRedirectionSurface = 4;
 
     inline bool IsOptionalChangeEnabled(int bitIndex)
     {
@@ -53,5 +54,13 @@ namespace OptionalChangeState
     inline bool IsDeferContextFlyoutInitEnabled()
     {
         return IsOptionalChangeEnabled(BitIndex_DeferContextFlyoutInit) || IsPerfOptInEnabled();
+    }
+
+    // Note: deliberately not folded into IsPerfOptInEnabled(). Skipping the redirection surface is a
+    // behavior change as much as an optimization - the window stops being able to paint with GDI - so it
+    // stays an explicit opt-in.
+    inline bool IsSkipWindowRedirectionSurfaceEnabled()
+    {
+        return IsOptionalChangeEnabled(BitIndex_SkipWindowRedirectionSurface);
     }
 }
