@@ -349,17 +349,6 @@ public:
     void RaiseStrokesCollected(winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> const& strokes);
     void RaiseStrokesErased(winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> const& strokes);
 
-    // Internal. Stores the shared composition device (on the ink thread) so the custom-drying path can
-    // present the wet container Clear. Called by InkCanvas at attach; released via ReleaseCompositionDevice.
-    void SetCompositionDevice(winrt::com_ptr<IDCompositionDevice> const& device);
-
-    // Internal. Drops the composition device reference on the ink thread. Called by InkCanvas at detach.
-    void ReleaseCompositionDevice();
-
-    // Internal. Remembers the ink root visual so a runtime ActivateCustomDrying can detach/reattach it
-    // around the OS activation. Called on the ink thread by InkCanvas at attach.
-    void SetInkRootVisualForCustomDry(winrt::com_ptr<IDCompositionVisual> const& visual) noexcept { m_rootVisual = visual; }
-
 private:
     // Runs on the ink thread (from Start's work item) once the OS presenter has been created. Takes
     // ownership of it, applies initial configuration, and wires its StrokesCollected/StrokesErased
@@ -406,17 +395,6 @@ private:
     // calls return the same instance, UWP parity). It fronts the OS InkSynchronizer; this proxy keeps
     // only this projected wrapper, never the raw OS one.
     muxc::InkSynchronizer m_customDrySynchronizer{ nullptr };
-
-    // The shared DComp device, BORROWED from the InkCanvas/ThreadData that owns it (a per-UI-thread
-    // singleton shared by every InkCanvas on the thread). Held only to pass as the SetRootVisual device
-    // arg and to build the commit handler when a runtime ActivateCustomDrying rebuilds the OS presenter.
-    // Ink-thread only; released at detach via ReleaseCompositionDevice.
-    winrt::com_ptr<IDCompositionDevice> m_compositionDevice{ nullptr };
-
-    // The ink root visual handed to SetRootVisual. Held so a runtime ActivateCustomDrying can detach it
-    // (SetRootVisual(nullptr)) for the OS activation - which requires a pre-start presenter - and then
-    // reattach it. Ink-thread only; set by InkCanvas at attach.
-    winrt::com_ptr<IDCompositionVisual> m_rootVisual{ nullptr };
 
     // Ruler / protractor stencils bound to the OS presenter. Thread-affine to the ink
     // thread, so they are only ever constructed and touched inside serialized ink-thread

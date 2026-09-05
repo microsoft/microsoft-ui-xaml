@@ -695,18 +695,6 @@ muxc::InkSynchronizer InkPresenter::ActivateCustomDrying()
     return m_customDrySynchronizer;
 }
 
-void InkPresenter::SetCompositionDevice(winrt::com_ptr<IDCompositionDevice> const& device)
-{
-    // Store the shared composition device on the ink thread; the custom-drying path commits it after
-    // clearing the wet container so the removed strokes leave the screen.
-    QueueInkPresenterWorkItem([this, device](inking::InkPresenter const&) { m_compositionDevice = device; });
-}
-
-void InkPresenter::ReleaseCompositionDevice()
-{
-    QueueInkPresenterWorkItem([this](inking::InkPresenter const&) { m_compositionDevice = nullptr; });
-}
-
 // -- InkSynchronizer mirror -----------------------------------------------------------------------
 // Owns the OS InkSynchronizer (adopted on the ink thread from the presenter's OS ActivateCustomDrying)
 // and marshals its BeginDry/EndDry onto the ink thread through the owning InkPresenter proxy's work
