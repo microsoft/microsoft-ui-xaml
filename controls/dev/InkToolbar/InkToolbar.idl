@@ -95,7 +95,7 @@ namespace MU_XC_NAMESPACE
         Microsoft.UI.Xaml.Controls.InkToolbarButtonFlyoutPlacement ButtonFlyoutPlacement;
         [MUX_DEFAULT_VALUE("winrt::Orientation::Horizontal")]
         Microsoft.UI.Xaml.Controls.Orientation Orientation;
-        Object TargetInkPresenter;
+        Microsoft.UI.Xaml.Controls.InkPresenter TargetInkPresenter;
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.InkToolbar,Object> ActiveToolChanged;
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.InkToolbar,Object> InkDrawingAttributesChanged;
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.InkToolbar,Object> EraseAllClicked;

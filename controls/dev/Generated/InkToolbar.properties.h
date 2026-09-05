@@ -36,8 +36,8 @@ public:
     void TargetInkCanvas(winrt::InkCanvas const& value);
     winrt::InkCanvas TargetInkCanvas();
 
-    void TargetInkPresenter(winrt::IInspectable const& value);
-    winrt::IInspectable TargetInkPresenter();
+    void TargetInkPresenter(winrt::InkPresenter const& value);
+    winrt::InkPresenter TargetInkPresenter();
 
     static winrt::DependencyProperty ActiveToolProperty() { return s_ActiveToolProperty; }
     static winrt::DependencyProperty ButtonFlyoutPlacementProperty() { return s_ButtonFlyoutPlacementProperty; }

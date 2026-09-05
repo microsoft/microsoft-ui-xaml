@@ -864,12 +864,10 @@ void InkToolbar::OnInkDrawingAttributesChanged(winrt::DependencyPropertyChangedE
 
 muxc::InkPresenter InkToolbar::GetInkPresenter()
 {
-    // TargetInkPresenter wins over TargetInkCanvas (see OnTargetInkCanvasChanged). It is typed Object
-    // because the DP code generator emits an ambiguous "winrt::InkPresenter" for the strongly-typed
-    // form; see the InkToolbar.idl comment.
+    // TargetInkPresenter wins over TargetInkCanvas (see OnTargetInkCanvasChanged).
     if (auto targetInkPresenter = TargetInkPresenter())
     {
-        return targetInkPresenter.try_as<muxc::InkPresenter>();
+        return targetInkPresenter;
     }
     if (auto canvas = TargetInkCanvas())
     {
@@ -938,15 +936,15 @@ void InkToolbar::ApplyToolStateToInkCanvas()
         return;
     }
 
-    auto targetInkCanvas = TargetInkCanvas();
-    if (!targetInkCanvas)
+    // Resolved presenter, so the TargetInkPresenter path is driven too, not just TargetInkCanvas.
+    // Driving it through the proxy keeps the presenter's UI-thread cache (Mode, default drawing
+    // attributes) in sync while it internally marshals each call to the ink thread.
+    auto proxy = GetInkPresenter();
+    if (!proxy)
     {
         return;
     }
 
-    // Drive the canvas through its InkPresenter proxy so the presenter's UI-thread cache (Mode, default
-    // drawing attributes) stays in sync while it internally marshals each call to the ink thread.
-    auto proxy = targetInkCanvas.InkPresenter();
     auto toolKind = activeTool.ToolKind();
     auto penButton = activeTool.try_as<winrt::InkToolbarPenButton>();
 
@@ -1557,9 +1555,9 @@ bool InkToolbar::IsCustomDry()
 
 void InkToolbar::ClearAllStrokes()
 {
-    if (auto canvas = TargetInkCanvas())
+    if (auto presenter = GetInkPresenter())
     {
-        if (auto container = canvas.InkPresenter().StrokeContainer())
+        if (auto container = presenter.StrokeContainer())
         {
             container.Clear();
         }

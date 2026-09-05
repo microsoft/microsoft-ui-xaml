@@ -1762,7 +1762,7 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"IsStencilButtonChecked", L"Boolean", statics.IsStencilButtonCheckedProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Orientation", L"Microsoft.UI.Xaml.Controls.Orientation", statics.OrientationProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"TargetInkCanvas", L"Microsoft.UI.Xaml.Controls.InkCanvas", statics.TargetInkCanvasProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"TargetInkPresenter", L"Object", statics.TargetInkPresenterProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"TargetInkPresenter", L"Microsoft.UI.Xaml.Controls.InkPresenter", statics.TargetInkPresenterProperty(), false /* isContent */);
                     }
 
                 });

@@ -139,10 +139,10 @@ void InkToolbarProperties::EnsureProperties()
         s_TargetInkPresenterProperty =
             InitializeDependencyProperty(
                 L"TargetInkPresenter",
-                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::InkPresenter>(),
                 winrt::name_of<winrt::InkToolbar>(),
                 false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                ValueHelper<winrt::InkPresenter>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnTargetInkPresenterPropertyChanged));
     }
 }
@@ -358,17 +358,17 @@ winrt::InkCanvas InkToolbarProperties::TargetInkCanvas()
     return ValueHelper<winrt::InkCanvas>::CastOrUnbox(static_cast<InkToolbar*>(this)->GetValue(s_TargetInkCanvasProperty));
 }
 
-void InkToolbarProperties::TargetInkPresenter(winrt::IInspectable const& value)
+void InkToolbarProperties::TargetInkPresenter(winrt::InkPresenter const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<InkToolbar*>(this)->SetValue(s_TargetInkPresenterProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    static_cast<InkToolbar*>(this)->SetValue(s_TargetInkPresenterProperty, ValueHelper<winrt::InkPresenter>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::IInspectable InkToolbarProperties::TargetInkPresenter()
+winrt::InkPresenter InkToolbarProperties::TargetInkPresenter()
 {
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<InkToolbar*>(this)->GetValue(s_TargetInkPresenterProperty));
+    return ValueHelper<winrt::InkPresenter>::CastOrUnbox(static_cast<InkToolbar*>(this)->GetValue(s_TargetInkPresenterProperty));
 }
 
 winrt::event_token InkToolbarProperties::ActiveToolChanged(winrt::TypedEventHandler<winrt::InkToolbar, winrt::IInspectable> const& value)
