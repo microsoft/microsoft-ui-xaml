@@ -77,28 +77,9 @@ struct ThreadData
     wil::unique_hmodule m_hmodDComp;
 };
 
-//
-// IInkCommitRequestHandler implementation.
-// InkPresenter calls OnCommitRequested() when ink transitions from wet to dry
-// and needs the app to commit the DComposition device.
-//
-struct InkCommitRequestHandler : winrt::implements<InkCommitRequestHandler, IInkCommitRequestHandler>
-{
-    InkCommitRequestHandler(winrt::com_ptr<IDCompositionDevice> device)
-        : m_device(device) {}
-
-    IFACEMETHODIMP OnCommitRequested() override
-    {
-        if (m_device)
-        {
-            return m_device->Commit();
-        }
-        return S_OK;
-    }
-
-private:
-    winrt::com_ptr<IDCompositionDevice> m_device;
-};
+// InkCommitRequestHandler (the IInkCommitRequestHandler the presenter calls on every wet->dry
+// transition to commit the shared DComposition device) now lives in InkPresenter.h, so the InkPresenter
+// proxy can re-create it when it re-creates the OS presenter to activate custom drying at runtime.
 
 //
 //  InkCanvas
@@ -256,24 +237,48 @@ void InkCanvas::UpdateInkPresenterSize()
         return;
     }
 
-    // Transform the width/height based on Xaml scaling
+    // Transform the layout size into root coordinates so a RenderTransform (e.g. ScaleTransform) on
+    // the canvas is reflected in the ink area. The OS presenter sizes in DIPs, so no rasterization
+    // scale is applied here.
     auto transformer = TransformToVisual(nullptr);
     winrt::Rect rect{ 0, 0, static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight())};
     rect = transformer.TransformBounds(rect);
 
-    // Get the system scale
-    auto rootScale = xamlRoot.RasterizationScale();
-
-    // Push the new physical-pixel size onto the OS presenter (on the ink thread) through the proxy.
+    // Push the new size onto the OS presenter (on the ink thread) through the proxy.
     // The proxy's queue no-ops if the OS presenter has not been created yet.
-    if (m_inkPresenterProxy)
+    if (!m_inkPresenterProxy)
     {
-        winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->QueueInkPresenterWorkItem(
-            [width = ActualWidth() * rootScale, height = ActualHeight() * rootScale](inking::InkPresenter const& presenter)
-            {
-                presenter.as<IInkPresenterDesktop>()->SetSize(static_cast<float>(width), static_cast<float>(height));
-            });
+        return;
     }
+
+    // The OS activates ink input on the first non-zero SetSize, and InkPresenter.ActivateCustomDrying
+    // is only legal before input is activated. Defer that first push one dispatcher turn so an app
+    // configuring the presenter from its Loaded handler runs first. Normal priority, not Low: Low is
+    // starved during startup and cost ~272ms before ink input went live, versus ~22ms here.
+    if (!m_initialSizePushed)
+    {
+        if (m_initialSizeDeferred)
+        {
+            return;
+        }
+        m_initialSizeDeferred = true;
+
+        auto strongThis = get_strong();
+        DispatcherQueue().TryEnqueue(
+            winrt::Microsoft::UI::Dispatching::DispatcherQueuePriority::Normal,
+            [strongThis]()
+            {
+                strongThis->m_initialSizePushed = true;
+                strongThis->UpdateInkPresenterSize();
+            });
+        return;
+    }
+
+    winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->QueueInkPresenterWorkItem(
+        [width = rect.Width, height = rect.Height](inking::InkPresenter const& presenter)
+        {
+            presenter.as<IInkPresenterDesktop>()->SetSize(width, height);
+        });
 }
 
 void InkCanvas::AttachToVisualLink()
@@ -359,15 +364,27 @@ void InkCanvas::AttachInkVisualToPresenter()
     // Clear the detach flag BEFORE queuing so the ink thread doesn't drop the SetRootVisual work.
     m_isDetached.store(false, std::memory_order_release);
 
-    // Bind the visual to the presenter on the ink thread. SetRootVisual drives both rendering and
-    // input routing. XAML positions/clips the ink visual for both compositor paths, so commit here.
-    // No commit-request handler (conflicts with InkSynchronizer).
-    winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->QueueInkPresenterWorkItem([rootVisual = m_inkRootVisual, compositionDevice = m_threadData->m_compositionDevice](inking::InkPresenter const& presenter)
+    // Bind the visual to the presenter on the ink thread. SetRootVisual(rootVisual, device) roots the
+    // ink; SetCommitRequestHandler wires the DComp commit the presenter requests on every wet->dry
+    // transition (normal drying, and custom-dry EndDry) so the removal + new content land in one frame.
+    // The presenter holds a ref on the handler; it is replaced on re-attach and released at teardown.
+    auto* presenterSelf = winrt::get_self<::InkPresenter>(m_inkPresenterProxy);
+    presenterSelf->QueueInkPresenterWorkItem([rootVisual = m_inkRootVisual, compositionDevice = m_threadData->m_compositionDevice](inking::InkPresenter const& presenter)
         {
             auto desktopPresenter = presenter.as<IInkPresenterDesktop>();
-            winrt::check_hresult(desktopPresenter->SetRootVisual(rootVisual.get(), nullptr));
+            // Pass the composition device (not nullptr): custom drying needs it for the wet->dry
+            // handoff. The OS only uses the resulting commit provider in custom-dry mode.
+            winrt::check_hresult(desktopPresenter->SetRootVisual(rootVisual.get(), compositionDevice.get()));
+            auto commitHandler = winrt::make_self<InkCommitRequestHandler>(compositionDevice);
+            winrt::check_hresult(desktopPresenter->SetCommitRequestHandler(commitHandler.as<IInkCommitRequestHandler>().get()));
             winrt::check_hresult(compositionDevice->Commit());
         });
+}
+
+// Roots the ink visual under the given target. Shared by both compositor paths.
+void InkCanvas::SetInkRootVisual(IDCompositionTarget* target)
+{
+    winrt::check_hresult(target->SetRoot(m_inkRootVisual.get()));
 }
 
 // System compositor path: splices the ink visual directly under a lifted MUC visual via
@@ -404,7 +421,8 @@ void InkCanvas::AttachToSystemCompositor()
 #endif
         desktopDevice.get(),
         m_systemDCompTarget.put()));
-    winrt::check_hresult(m_systemDCompTarget->SetRoot(m_inkRootVisual.get()));
+    SetInkRootVisual(m_systemDCompTarget.get());
+    winrt::check_hresult(m_threadData->m_compositionDevice->Commit());
 
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, mucRootVisual);
 }
@@ -436,7 +454,7 @@ void InkCanvas::AttachToLiftedCompositor()
     m_systemVisualLink.IsAboveContent(true);
 
     winrt::com_ptr<IDCompositionTarget> target = m_systemVisualLink.DCompTarget();
-    winrt::check_hresult(target->SetRoot(m_inkRootVisual.get()));
+    SetInkRootVisual(target.get());
 
     winrt::check_hresult(m_threadData->m_compositionDevice->Commit());
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, m_systemVisualLink.PlacementVisual());

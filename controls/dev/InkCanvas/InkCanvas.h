@@ -61,6 +61,9 @@ private:
     void AttachInkVisualToPresenter();
     // Sizes the lifted PlacementVisual to the control's physical-pixel bounds (lifted path only).
     void PositionInkVisual();
+    // Roots the ink visual under the given target and hands the composition device to the presenter.
+    // Shared by both compositor paths.
+    void SetInkRootVisual(IDCompositionTarget* target);
 
     std::shared_ptr<ThreadData> m_threadData;
  
@@ -94,5 +97,10 @@ private:
     // touching torn-down visual resources. Data ops (see QueueInkPresenterWorkItem) do NOT gate on
     // this. AttachToVisualLink clears it for the rapid Loaded/Unloaded re-attach case.
     std::atomic<bool> m_isDetached{ false };
+
+    // The OS activates ink input on the first non-zero SetSize, and ActivateCustomDrying is only
+    // legal before that. Hold the presenter at 0x0 until app configuration has had a chance to run.
+    bool m_initialSizeDeferred{ false };
+    bool m_initialSizePushed{ false };
 
 };

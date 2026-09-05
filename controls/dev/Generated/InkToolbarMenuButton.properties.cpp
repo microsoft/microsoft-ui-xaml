@@ -31,13 +31,21 @@ void InkToolbarMenuButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarMenuButton>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnIsExtensionGlyphShownPropertyChanged));
     }
 }
 
 void InkToolbarMenuButtonProperties::ClearProperties()
 {
     s_IsExtensionGlyphShownProperty = nullptr;
+}
+
+void InkToolbarMenuButtonProperties::OnIsExtensionGlyphShownPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbarMenuButton>();
+    winrt::get_self<InkToolbarMenuButton>(owner)->OnPropertyChanged(args);
 }
 
 void InkToolbarMenuButtonProperties::IsExtensionGlyphShown(bool value)

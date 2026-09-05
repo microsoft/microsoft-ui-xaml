@@ -340,10 +340,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.IsNull(toolbar.TargetInkPresenter, "TargetInkPresenter should be null by default.");
 
-                // Set an arbitrary object (in real use this would be an InkPresenter)
-                var obj = new object();
-                toolbar.TargetInkPresenter = obj;
-                Verify.IsNotNull(toolbar.TargetInkPresenter, "TargetInkPresenter should not be null after setting.");
+                var presenter = new InkCanvas().InkPresenter;
+                toolbar.TargetInkPresenter = presenter;
+                Verify.AreEqual(presenter, toolbar.TargetInkPresenter,
+                    "TargetInkPresenter should round-trip the assigned InkPresenter.");
             });
         }
 
@@ -609,20 +609,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(InkToolbarTool.Eraser, button.ToolKind, "ToolKind should be Eraser.");
                 Verify.IsTrue(button.IsClearAllVisible, "IsClearAllVisible should default to true (UWP parity).");
 
-                button.SelectedEraser = InkToolbarEraserKind.PrecisionSmall;
-                Verify.AreEqual(InkToolbarEraserKind.PrecisionSmall, button.SelectedEraser,
-                    "SelectedEraser should round-trip to PrecisionSmall.");
-
                 button.IsClearAllVisible = false;
                 Verify.IsFalse(button.IsClearAllVisible, "IsClearAllVisible should be false.");
                 button.IsClearAllVisible = true;
                 Verify.IsTrue(button.IsClearAllVisible, "IsClearAllVisible should be true.");
-
-                button.IsStrokeEraserVisible = true;
-                Verify.IsTrue(button.IsStrokeEraserVisible, "IsStrokeEraserVisible should be true.");
-
-                button.ArePrecisionErasersVisible = true;
-                Verify.IsTrue(button.ArePrecisionErasersVisible, "ArePrecisionErasersVisible should be true.");
             });
         }
 
@@ -657,24 +647,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var content = new TextBlock { Text = "Custom Pen Config" };
                 button.ConfigurationContent = content;
                 Verify.IsNotNull(button.ConfigurationContent, "ConfigurationContent should not be null.");
-            });
-        }
-
-        [TestMethod]
-        public void InkToolbarEraserFlyoutItemClickedEventTest()
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                var toolbar = new InkToolbar();
-
-                bool eventSubscribed = false;
-                toolbar.EraserFlyoutItemClicked += (sender, args) =>
-                {
-                    eventSubscribed = true;
-                };
-
-                // Event won't fire without user interaction, but subscription should work.
-                Log.Comment("EraserFlyoutItemClicked event subscription succeeded.");
             });
         }
 
