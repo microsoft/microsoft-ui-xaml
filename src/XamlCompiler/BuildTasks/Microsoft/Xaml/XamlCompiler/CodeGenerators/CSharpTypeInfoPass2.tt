@@ -707,12 +707,12 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+             InternalTypeEntry entry = SchemaInfo.TypeTable[i];      #>
 <#+             if (entry.IsDeprecated)                                 #>
 <#+             {                                                       #>
-#pragma warning disable 0618  //   Warning on Deprecated usage
+#pragma warning disable 0612, 0618  //   Warning on Deprecated usage
 <#+             }                                                       #>
             _typeTable[<#=entry.TypeIndex#>] = typeof(<#=entry.FullName#>);
 <#+             if (entry.IsDeprecated)                                 #>
 <#+             {                                                       #>
-#pragma warning restore 0618
+#pragma warning restore 0612, 0618
 <#+             }                                                       #>
 <#+         }                                                           #>
         }
@@ -819,7 +819,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                             // ([Obsolete(message, true)]) emits CS0619 (an error), which pragma 0618 does not suppress.#>
 <#+                             if (uentry.IsDeprecated)#>
 <#+                             {#>
-#pragma warning disable 0618  //   Warning on Deprecated usage
+#pragma warning disable 0612, 0618  //   Warning on Deprecated usage
 <#+                             }#>
 <#+                             if (uentry.TypeEntry.UnderlyingType.IsValueType)#>
 <#+                             {#>
@@ -831,7 +831,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                             }#>
 <#+                             if (uentry.IsDeprecated)#>
 <#+                             {#>
-#pragma warning restore 0618
+#pragma warning restore 0612, 0618
 <#+                             }#>
 <#+                         }#>
 <#+                         foreach(InternalXamlUserMemberInfo mem in uentry.Members)   #>
@@ -842,7 +842,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                         {                               #>
 <#+                             if (uentry.IsDeprecated)    #>
 <#+                             {                           #>
-#pragma warning disable 0618  //   Warning on Deprecated usage
+#pragma warning disable 0612, 0618  //   Warning on Deprecated usage
 <#+                             }                                            #>
 <#+                             foreach(string eValue in uentry.EnumValues)  #>
 <#+                             {                                            #>
@@ -850,7 +850,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                             }                           #>
 <#+                             if (uentry.IsDeprecated)    #>
 <#+                             {                           #>
-#pragma warning restore 0618
+#pragma warning restore 0612, 0618
 <#+                             }                           #>
 <#+                         }                               #>
 <#+                         if(uentry.IsBindable)           #>
@@ -888,12 +888,12 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                 {                                                               #>
 <#+                     if (entry.IsDeprecated)                                     #>
 <#+                     {                                                           #>
-#pragma warning disable 0618  //   Warning on Deprecated usage
+#pragma warning disable 0612, 0618  //   Warning on Deprecated usage
 <#+                     }                                                           #>
         private object <#=Model.ActivatorName(entry)#>() { return new <#=entry.FullName#>(); }
 <#+                     if (entry.IsDeprecated)                                     #>
 <#+                     {                                                           #>
-#pragma warning restore 0618
+#pragma warning restore 0612, 0618
 <#+                     }                                                           #>
 
 <#+                 }           #>
@@ -908,12 +908,12 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                 {                                                               #>
 <#+                     if (entry.IsDeprecated)                                     #>
 <#+                     {                                                           #>
-#pragma warning disable 0618  //   Warning on Deprecated usage
+#pragma warning disable 0612, 0618  //   Warning on Deprecated usage
 <#+                     }                                                           #>
         private void <#=Model.StaticInitializerName(entry)#>() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(<#=entry.FullName#>).TypeHandle);
 <#+                     if (entry.IsDeprecated)                                     #>
 <#+                     {                                                           #>
-#pragma warning restore 0618
+#pragma warning restore 0612, 0618
 <#+                     }                                                           #>
 <#+                 }           #>
 <#+             }               #>
@@ -927,7 +927,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                 {                                                               #>
 <#+                     if (entry.IsDeprecated)                                     #>
 <#+                     {                                                           #>
-#pragma warning disable 0618  //   Warning on Deprecated usage
+#pragma warning disable 0612, 0618  //   Warning on Deprecated usage
 <#+                     }                                                           #>
         private void <#=Model.VectorAddName(entry)#>(object instance, object item)
         {
@@ -937,7 +937,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
         }
 <#+                     if (entry.IsDeprecated)                                     #>
 <#+                     {                                                           #>
-#pragma warning restore 0618
+#pragma warning restore 0612, 0618
 <#+                     }                                                           #>
 
 <#+                 }                       #>
@@ -945,7 +945,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                 {                       #>
 <#+                     if (entry.IsDeprecated)                                     #>
 <#+                     {                                                           #>
-#pragma warning disable 0618  //   Warning on Deprecated usage
+#pragma warning disable 0612, 0618  //   Warning on Deprecated usage
 <#+                     }                                                           #>
         private void <#=Model.MapAddName(entry)#>(object instance, object key, object item)
         {
@@ -956,7 +956,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
         }
 <#+                     if (entry.IsDeprecated)                                     #>
 <#+                     {                                                           #>
-#pragma warning restore 0618
+#pragma warning restore 0612, 0618
 <#+                     }                                                           #>
 
 <#+                 }           #>
@@ -1028,7 +1028,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 
 <#+                 if (entry.IsDeprecated)             #>
 <#+                 {                                   #>
-#pragma warning disable 0618  //   Warning on Deprecated usage
+#pragma warning disable 0612, 0618  //   Warning on Deprecated usage
 <#+                 }                                   #>
 <#+                 if (entry.HasPublicGetter)          #>
 <#+                 {                                   #>
@@ -1080,7 +1080,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                }    #>
 <#+                     if (entry.IsDeprecated) #>
 <#+                     {                       #>
-#pragma warning restore 0618
+#pragma warning restore 0612, 0618
 <#+                     }                       #>
 <#+            }        #>
 <#+        }            #>
