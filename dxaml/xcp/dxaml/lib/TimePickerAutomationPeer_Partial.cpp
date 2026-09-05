@@ -59,6 +59,27 @@ IFACEMETHODIMP TimePickerAutomationPeer::GetAutomationControlTypeCore(_Out_ xaml
     RRETURN(S_OK);
 }
 
+// The TimePicker's own peer is a Group that wraps a single focusable/invokable child
+// (the FlyoutButton). The FlyoutButton already carries the full automation name
+// (parent name + selected value + localized control type), which is what focus-based
+// screen readers announce and what voice-command experiences target. Exposing the same
+// name on this containing group as well caused Narrator to announce it twice (GitHub
+// issue #8296). Removing the group from the Control and Content views leaves it as a
+// structural element only: its GetNameCore is still honored (so AutomationElement.Name
+// keeps returning the label), but it is no longer announced as a separate node, so the
+// name is read exactly once.
+IFACEMETHODIMP TimePickerAutomationPeer::IsControlElementCore(_Out_ BOOLEAN* returnValue)
+{
+    *returnValue = FALSE;
+    RRETURN(S_OK);
+}
+
+IFACEMETHODIMP TimePickerAutomationPeer::IsContentElementCore(_Out_ BOOLEAN* returnValue)
+{
+    *returnValue = FALSE;
+    RRETURN(S_OK);
+}
+
 IFACEMETHODIMP TimePickerAutomationPeer::GetNameCore(_Out_ HSTRING* returnValue)
 {
     XUINT32 pLength = 0;

@@ -703,6 +703,43 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
+    void TimePickerIntegrationTests::ValidateFlyoutButtonCarriesParentNameForVoiceAccess()
+    {
+        TestCleanupWrapper cleanup;
+
+        // SetupTimePickerTest sets Header = "TimePickerTest". The inner FlyoutButton is the only
+        // focusable/invokable element, so it must keep the parent label in its automation name for
+        // voice-command experiences (e.g. Voice Access "click <name>") to target it. The double
+        // Narrator announcement (GitHub issue #8296) is avoided by removing the containing group
+        // peer from the Control/Content views rather than by stripping the button's name.
+        auto timePicker = SetupTimePickerTest();
+
+        RunOnUIThread([&]()
+        {
+            timePicker->SelectedTime = nullptr;
+
+            // The TimePicker's own peer must still expose the label (AutomationElement.Name contract).
+            auto timePickerPeer = Microsoft::UI::Xaml::Automation::Peers::FrameworkElementAutomationPeer::CreatePeerForElement(timePicker);
+            VERIFY_IS_TRUE(Platform::String::CompareOrdinal("TimePickerTest", timePickerPeer->GetName()) == 0);
+
+            // ...but the group peer must be removed from the Control and Content views so it is not
+            // announced as a second node (which is what caused the duplicate announcement).
+            VERIFY_IS_FALSE(timePickerPeer->IsControlElement());
+            VERIFY_IS_FALSE(timePickerPeer->IsContentElement());
+
+            // The inner FlyoutButton's automation name must contain the parent label so it remains
+            // targetable by name.
+            auto flyoutButton = GetFlyoutButtonFromTimePicker(timePicker);
+            VERIFY_IS_NOT_NULL(flyoutButton);
+
+            auto flyoutButtonPeer = Microsoft::UI::Xaml::Automation::Peers::FrameworkElementAutomationPeer::CreatePeerForElement(flyoutButton);
+            Platform::String^ flyoutButtonName = flyoutButtonPeer->GetName();
+            LOG_OUTPUT(L"FlyoutButton automation name: \"%s\"", flyoutButtonName != nullptr ? flyoutButtonName->Data() : L"");
+            VERIFY_IS_NOT_NULL(flyoutButtonName);
+            VERIFY_IS_TRUE(wcsstr(flyoutButtonName->Data(), L"TimePickerTest") != nullptr);
+        });
+    }
+
     void TimePickerIntegrationTests::SetTime(xaml_controls::TimePicker^ timePicker, wf::TimeSpan time)
     {
 #if WI_IS_FEATURE_PRESENT(Feature_DateTimePickerNullVisualization)
