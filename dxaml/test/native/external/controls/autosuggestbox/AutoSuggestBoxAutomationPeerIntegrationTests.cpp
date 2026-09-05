@@ -56,7 +56,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         uiaInfo.m_ItemStatus = L"TestAutoSuggestBox";
         uiaInfo.m_cType = UIA_GroupControlTypeId;
 
-        auto autoSuggestBox = SetupTest(ref new Platform::String(uiaInfo.m_Name), nullptr /* AutomationName */, nullptr /* AutomationId */);
+        auto autoSuggestBox = SetupTest(
+            ref new Platform::String(uiaInfo.m_Name),
+            nullptr /* AutomationName */,
+            nullptr /* AutomationId */,
+            nullptr /* AccessKey */);
 
         RunOnUIThread([&]()
         {
@@ -98,8 +102,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         uiaInfo.m_AutomationID = L"TestAutoSuggestBox";
         uiaInfo.m_ItemStatus = L"TestAutoSuggestBox";
         uiaInfo.m_cType = UIA_GroupControlTypeId;
+        const WCHAR* accessKeyMessage = L"Alt, A";
 
-        auto autoSuggestBox = SetupTest(ref new Platform::String(uiaInfo.m_Name), ref new Platform::String(uiaInfo.m_Name), ref new Platform::String(uiaInfo.m_AutomationID));
+        auto autoSuggestBox = SetupTest(
+            ref new Platform::String(uiaInfo.m_Name),
+            ref new Platform::String(uiaInfo.m_Name),
+            ref new Platform::String(uiaInfo.m_AutomationID),
+            L"A");
+
+        RunOnUIThread([&]()
+        {
+            auto textBox = TreeHelper::GetVisualChildByType<xaml_controls::TextBox>(autoSuggestBox);
+            VERIFY_IS_NOT_NULL(textBox);
+
+            VERIFY_ARE_EQUAL(
+                ref new Platform::String(accessKeyMessage),
+                xaml_automation::AutomationProperties::GetAccessKey(textBox));
+            VERIFY_ARE_EQUAL(
+                ref new Platform::String(L""),
+                xaml_automation::AutomationProperties::GetAutomationId(textBox));
+        });
 
         // Verify the automation properties are set for the auto suggest box
         UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
@@ -142,9 +164,94 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             LOG_OUTPUT(L"Verifying UIA Name property from text box for AutoSuggestBox.");
             spUITextBoxAutomationElement->GetCurrentPropertyValue(UIA_NamePropertyId, autoVar.ReleaseAndGetAddressOf());
             VERIFY_IS_TRUE(!wcscmp(uiaInfo.m_Name, (autoVar.Storage())->bstrVal));
+
+            LOG_OUTPUT(L"Verifying UIA AccessKey property from text box for AutoSuggestBox.");
+            spUITextBoxAutomationElement->GetCurrentPropertyValue(UIA_AccessKeyPropertyId, autoVar.ReleaseAndGetAddressOf());
+            VERIFY_IS_TRUE(!wcscmp(accessKeyMessage, (autoVar.Storage())->bstrVal));
         });
 
         TestServices::WindowHelper->WaitForIdle();
+    }
+
+    void AutoSuggestBoxAutomationPeerIntegrationTests::VerifyTextBoxAccessKeyPrecedence()
+    {
+        TestCleanupWrapper cleanup;
+
+        auto autoSuggestBox = SetupTest(
+            L"TestAutoSuggestBox",
+            nullptr /* AutomationName */,
+            nullptr /* AutomationId */,
+            L"A");
+
+        RunOnUIThread([&]()
+        {
+            auto altA = ref new Platform::String(L"Alt, A");
+            auto altB = ref new Platform::String(L"Alt, B");
+            auto altX = ref new Platform::String(L"Alt, X");
+            auto altF = ref new Platform::String(L"Alt, F");
+            auto childShortcut = ref new Platform::String(L"Child shortcut");
+            auto emptyAccessKey = ref new Platform::String(L"");
+
+            auto textBox = TreeHelper::GetVisualChildByType<xaml_controls::TextBox>(autoSuggestBox);
+            VERIFY_IS_NOT_NULL(textBox);
+
+            auto textBoxPeer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(textBox);
+            VERIFY_IS_NOT_NULL(textBoxPeer);
+
+            VERIFY_ARE_EQUAL(altA, textBoxPeer->GetAccessKey());
+            VERIFY_ARE_EQUAL(altA, xaml_automation::AutomationProperties::GetAccessKey(textBox));
+
+            autoSuggestBox->AccessKey = L"B";
+            VERIFY_ARE_EQUAL(altB, xaml_automation::AutomationProperties::GetAccessKey(textBox));
+            VERIFY_ARE_EQUAL(altB, textBoxPeer->GetAccessKey());
+
+            textBox->AccessKey = L"X";
+            VERIFY_ARE_EQUAL(emptyAccessKey, xaml_automation::AutomationProperties::GetAccessKey(textBox));
+            VERIFY_ARE_EQUAL(altX, textBoxPeer->GetAccessKey());
+
+            textBox->AccessKey = L"";
+            VERIFY_ARE_EQUAL(emptyAccessKey, xaml_automation::AutomationProperties::GetAccessKey(textBox));
+            VERIFY_ARE_EQUAL(emptyAccessKey, textBoxPeer->GetAccessKey());
+
+            textBox->ClearValue(xaml::UIElement::AccessKeyProperty);
+            VERIFY_ARE_EQUAL(altB, xaml_automation::AutomationProperties::GetAccessKey(textBox));
+            VERIFY_ARE_EQUAL(altB, textBoxPeer->GetAccessKey());
+
+            autoSuggestBox->AccessKey = L"";
+            VERIFY_ARE_EQUAL(emptyAccessKey, xaml_automation::AutomationProperties::GetAccessKey(textBox));
+            VERIFY_ARE_EQUAL(emptyAccessKey, textBoxPeer->GetAccessKey());
+
+            xaml_automation::AutomationProperties::SetAccessKey(textBox, childShortcut);
+            autoSuggestBox->AccessKey = L"C";
+            VERIFY_ARE_EQUAL(childShortcut, xaml_automation::AutomationProperties::GetAccessKey(textBox));
+            VERIFY_ARE_EQUAL(childShortcut, textBoxPeer->GetAccessKey());
+
+            textBox->ClearValue(xaml_automation::AutomationProperties::AccessKeyProperty);
+            textBox->AccessKey = L"X";
+            autoSuggestBox->AccessKey = L"D";
+            VERIFY_ARE_EQUAL(emptyAccessKey, xaml_automation::AutomationProperties::GetAccessKey(textBox));
+            VERIFY_ARE_EQUAL(altX, textBoxPeer->GetAccessKey());
+
+            textBox->AccessKey = L"";
+            autoSuggestBox->AccessKey = L"E";
+            VERIFY_ARE_EQUAL(emptyAccessKey, xaml_automation::AutomationProperties::GetAccessKey(textBox));
+            VERIFY_ARE_EQUAL(emptyAccessKey, textBoxPeer->GetAccessKey());
+
+            textBox->ClearValue(xaml::UIElement::AccessKeyProperty);
+            autoSuggestBox->AccessKey = L"F";
+            VERIFY_ARE_EQUAL(altF, xaml_automation::AutomationProperties::GetAccessKey(textBox));
+            VERIFY_ARE_EQUAL(altF, textBoxPeer->GetAccessKey());
+
+            auto standaloneTextBox = ref new xaml_controls::TextBox();
+            standaloneTextBox->AccessKey = L"Q";
+            auto standaloneTextBoxPeer =
+                xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(standaloneTextBox);
+            VERIFY_IS_NOT_NULL(standaloneTextBoxPeer);
+            VERIFY_ARE_EQUAL(
+                emptyAccessKey,
+                xaml_automation::AutomationProperties::GetAccessKey(standaloneTextBox));
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"Alt, Q"), standaloneTextBoxPeer->GetAccessKey());
+        });
     }
 
 
@@ -156,7 +263,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         uiaInfo.m_Name = L"TestAutoSuggestBox";
         uiaInfo.m_cType = UIA_GroupControlTypeId;
 
-        auto autoSuggestBox = SetupTest(ref new Platform::String(uiaInfo.m_Name), nullptr /* AutomationName */, nullptr /* AutomationId */);
+        auto autoSuggestBox = SetupTest(
+            ref new Platform::String(uiaInfo.m_Name),
+            nullptr /* AutomationName */,
+            nullptr /* AutomationId */,
+            nullptr /* AccessKey */);
 
         // Verify the automation properties are set for the auto suggest box
         UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
@@ -210,7 +321,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         uiaInfo.m_Name = L"TestAutoSuggestBox";
         uiaInfo.m_cType = UIA_GroupControlTypeId;
 
-        auto autoSuggestBox = SetupTest(ref new Platform::String(uiaInfo.m_Name), nullptr /* AutomationName */, nullptr /* AutomationId */);
+        auto autoSuggestBox = SetupTest(
+            ref new Platform::String(uiaInfo.m_Name),
+            nullptr /* AutomationName */,
+            nullptr /* AutomationId */,
+            nullptr /* AccessKey */);
 
         Event querySubmittedEvent;
         auto querySubmittedRegistration = CreateSafeEventRegistration(xaml_controls::AutoSuggestBox, QuerySubmitted);
@@ -233,7 +348,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         querySubmittedEvent.WaitForDefault();
     }
 
-    xaml_controls::AutoSuggestBox^ AutoSuggestBoxAutomationPeerIntegrationTests::SetupTest(Platform::String^ headerText, Platform::String^ automationName, Platform::String^ automationId)
+    xaml_controls::AutoSuggestBox^ AutoSuggestBoxAutomationPeerIntegrationTests::SetupTest(
+        Platform::String^ headerText,
+        Platform::String^ automationName,
+        Platform::String^ automationId,
+        Platform::String^ accessKey)
     {
         xaml_controls::AutoSuggestBox^ autoSuggestBox = nullptr;
 
@@ -257,6 +376,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             if (automationId)
             {
                 xaml_automation::AutomationProperties::SetAutomationId(autoSuggestBox, automationId);
+            }
+
+            if (accessKey)
+            {
+                autoSuggestBox->AccessKey = accessKey;
             }
 
             TestServices::WindowHelper->WindowContent = autoSuggestBox;

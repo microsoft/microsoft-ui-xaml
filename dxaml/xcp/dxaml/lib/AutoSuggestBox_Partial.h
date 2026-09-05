@@ -121,6 +121,14 @@ namespace DirectUI
 
         _Check_return_ HRESULT ClearTextBoxQueryButtonIcon();
 
+        _Check_return_ HRESULT UpdateTextBoxAccessKey();
+
+        _Check_return_ HRESULT ClearTextBoxAccessKeyIfOwned();
+
+        _Check_return_ HRESULT OnTextBoxAccessKeyChanged(
+            _In_ xaml::IDependencyObject* sender,
+            _In_ xaml::IDependencyProperty* property);
+
         _Check_return_ HRESULT SubmitQuery(_In_opt_ IInspectable* pChosenSuggestion);
 
         _Check_return_ HRESULT UpdateText(_In_ HSTRING value);
@@ -381,6 +389,12 @@ namespace DirectUI
         bool m_ignoreTextChanges{ false };
 
         wrl_wrappers::HString m_userTypedText;
+
+        wrl_wrappers::HString m_propagatedTextBoxAccessKey;
+
+        bool m_ownsTextBoxAccessKey{ false };
+
+        INT64 m_textBoxAccessKeyChangedToken{ 0 };
 
         DOUBLE m_availableSuggestionHeight{ 0. };
 

@@ -33,6 +33,7 @@
 #include "VisualTreeHelper.h"
 #include "Callback.h"
 #include "AutomationProperties.h"
+#include "AccessKeyStringBuilder.h"
 #include <XamlOneCoreTransforms.h>
 #include "localizedResource.h"
 #include "RectUtil.h"
@@ -202,6 +203,16 @@ AutoSuggestBox::OnApplyTemplate()
 
     if (m_tpTextBoxPart)
     {
+        IFC_RETURN(ClearTextBoxAccessKeyIfOwned());
+
+        if (m_textBoxAccessKeyChangedToken != 0)
+        {
+            IFC_RETURN(m_tpTextBoxPart.Cast<TextBox>()->UnregisterPropertyChangedCallback(
+                MetadataAPI::GetDependencyPropertyByIndex(KnownPropertyIndex::UIElement_AccessKey),
+                m_textBoxAccessKeyChangedToken));
+            m_textBoxAccessKeyChangedToken = 0;
+        }
+
         IFC_RETURN(m_epTextBoxTextChangedEventHandler.DetachEventHandler(iinspectable_cast(m_tpTextBoxPart.Cast<TextBox>())));
         IFC_RETURN(m_epTextBoxLoadedEventHandler.DetachEventHandler(iinspectable_cast(m_tpTextBoxPart.Cast<TextBox>())));
         IFC_RETURN(m_epTextBoxCandidateWindowBoundsChangedEventHandler.DetachEventHandler(m_tpTextBoxPart.Get()));
@@ -252,6 +263,14 @@ AutoSuggestBox::OnApplyTemplate()
     {
         wrl_wrappers::HString originalText;
 
+        auto accessKeyChangedHandler = wrl::Callback<xaml::IDependencyPropertyChangedCallback>(
+            this,
+            &AutoSuggestBox::OnTextBoxAccessKeyChanged);
+        IFC_RETURN(m_tpTextBoxPart.Cast<TextBox>()->RegisterPropertyChangedCallback(
+            MetadataAPI::GetDependencyPropertyByIndex(KnownPropertyIndex::UIElement_AccessKey),
+            accessKeyChangedHandler.Get(),
+            &m_textBoxAccessKeyChangedToken));
+
         IFC_RETURN(m_epTextBoxTextChangedEventHandler.AttachEventHandler(
             m_tpTextBoxPart.Cast<TextBox>(),
             std::bind(&AutoSuggestBox::OnTextBoxTextChanged, this, _1, _2)));
@@ -281,6 +300,8 @@ AutoSuggestBox::OnApplyTemplate()
         {
             IFC_RETURN(AutomationProperties::SetNameStatic(m_tpTextBoxPart.Cast<TextBox>(), automationName));
         }
+
+        IFC_RETURN(UpdateTextBoxAccessKey());
 
         // Pass our validation context and command onto the editable textbox
         ctl::ComPtr<xaml_controls::IInputValidationContext> context;
@@ -377,6 +398,13 @@ _Check_return_ HRESULT AutoSuggestBox::OnPropertyChanged2(_In_ const PropertyCha
             break;
         }
 
+        case KnownPropertyIndex::UIElement_AccessKey:
+        case KnownPropertyIndex::UIElement_AccessKeyScopeOwner:
+        {
+            IFC_RETURN(UpdateTextBoxAccessKey());
+            break;
+        }
+
         case KnownPropertyIndex::AutoSuggestBox_IsSuggestionListOpen:
         {
             BOOLEAN isOpen;
@@ -431,6 +459,106 @@ _Check_return_ HRESULT AutoSuggestBox::OnPropertyChanged2(_In_ const PropertyCha
             break;
         }
     }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT AutoSuggestBox::UpdateTextBoxAccessKey()
+{
+    if (!m_tpTextBoxPart)
+    {
+        return S_OK;
+    }
+
+    auto textBox = m_tpTextBoxPart.Cast<TextBox>();
+    const auto automationAccessKeyProperty =
+        MetadataAPI::GetDependencyPropertyByIndex(KnownPropertyIndex::AutomationProperties_AccessKey);
+    const auto accessKeyProperty =
+        MetadataAPI::GetDependencyPropertyByIndex(KnownPropertyIndex::UIElement_AccessKey);
+
+    if (m_ownsTextBoxAccessKey)
+    {
+        wrl_wrappers::HString currentAccessKey;
+        INT32 comparisonResult = 0;
+        IFC_RETURN(AutomationProperties::GetAccessKeyStatic(textBox, currentAccessKey.ReleaseAndGetAddressOf()));
+        IFC_RETURN(WindowsCompareStringOrdinal(
+            currentAccessKey.Get(),
+            m_propagatedTextBoxAccessKey.Get(),
+            &comparisonResult));
+
+        if (comparisonResult != 0)
+        {
+            m_ownsTextBoxAccessKey = false;
+            return S_OK;
+        }
+
+        if (!textBox->GetHandle()->IsPropertyDefault(accessKeyProperty))
+        {
+            IFC_RETURN(textBox->ClearValue(automationAccessKeyProperty));
+            m_ownsTextBoxAccessKey = false;
+            return S_OK;
+        }
+    }
+    else
+    {
+        if (!textBox->GetHandle()->IsPropertyDefault(automationAccessKeyProperty) ||
+            !textBox->GetHandle()->IsPropertyDefault(accessKeyProperty))
+        {
+            return S_OK;
+        }
+    }
+
+    ctl::ComPtr<DependencyObject> owner = this;
+    wrl_wrappers::HString accessKeyMessage;
+    IFC_RETURN(AccessKeyStringBuilder::GetAccessKeyMessageFromElement(
+        owner,
+        accessKeyMessage.ReleaseAndGetAddressOf()));
+
+    if (WindowsGetStringLen(accessKeyMessage.Get()) == 0)
+    {
+        if (m_ownsTextBoxAccessKey)
+        {
+            IFC_RETURN(textBox->ClearValue(automationAccessKeyProperty));
+            m_ownsTextBoxAccessKey = false;
+        }
+
+        return S_OK;
+    }
+
+    IFC_RETURN(m_propagatedTextBoxAccessKey.Duplicate(accessKeyMessage));
+    IFC_RETURN(AutomationProperties::SetAccessKeyStatic(textBox, accessKeyMessage.Get()));
+    m_ownsTextBoxAccessKey = true;
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT AutoSuggestBox::OnTextBoxAccessKeyChanged(
+    _In_ xaml::IDependencyObject* /*sender*/,
+    _In_ xaml::IDependencyProperty* /*property*/)
+{
+    return UpdateTextBoxAccessKey();
+}
+
+_Check_return_ HRESULT AutoSuggestBox::ClearTextBoxAccessKeyIfOwned()
+{
+    if (m_ownsTextBoxAccessKey && m_tpTextBoxPart)
+    {
+        auto textBox = m_tpTextBoxPart.Cast<TextBox>();
+        wrl_wrappers::HString currentAccessKey;
+        INT32 comparisonResult = 0;
+        IFC_RETURN(AutomationProperties::GetAccessKeyStatic(textBox, currentAccessKey.ReleaseAndGetAddressOf()));
+        IFC_RETURN(WindowsCompareStringOrdinal(
+            currentAccessKey.Get(),
+            m_propagatedTextBoxAccessKey.Get(),
+            &comparisonResult));
+
+        if (comparisonResult == 0)
+        {
+            IFC_RETURN(textBox->ClearValue(
+                MetadataAPI::GetDependencyPropertyByIndex(KnownPropertyIndex::AutomationProperties_AccessKey)));
+        }
+    }
+    m_ownsTextBoxAccessKey = false;
 
     return S_OK;
 }
@@ -3173,4 +3301,3 @@ _Check_return_ HRESULT AutoSuggestBox::OnInkingFunctionButtonClicked(
 
     return S_OK;
 }
-
