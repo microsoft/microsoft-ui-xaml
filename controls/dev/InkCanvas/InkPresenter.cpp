@@ -673,8 +673,8 @@ muxc::InkSynchronizer InkPresenter::ActivateCustomDrying()
     // crashes when called cross-apartment.
     auto customDrySynchronizer = winrt::make<InkSynchronizer>(winrt::weak_ref<muxc::InkPresenter>{ *this });
 
-    // The OS only permits this before input is activated, which is why InkCanvas holds the presenter
-    // at 0x0 until app configuration has run (see InkCanvas::UpdateInkPresenterSize).
+    // UWP parity: the OS rejects this with E_ILLEGAL_METHOD_CALL once ink input has activated (first
+    // non-zero SetSize), and the app owns that ordering - activate before the first layout pass.
     bool activated = false;
     RunInkPresenterWorkItemSync(
         [&](inking::InkPresenter const& osPresenter)

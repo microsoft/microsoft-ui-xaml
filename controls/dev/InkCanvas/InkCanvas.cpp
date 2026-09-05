@@ -251,29 +251,6 @@ void InkCanvas::UpdateInkPresenterSize()
         return;
     }
 
-    // The OS activates ink input on the first non-zero SetSize, and InkPresenter.ActivateCustomDrying
-    // is only legal before input is activated. Defer that first push one dispatcher turn so an app
-    // configuring the presenter from its Loaded handler runs first. Normal priority, not Low: Low is
-    // starved during startup and cost ~272ms before ink input went live, versus ~22ms here.
-    if (!m_initialSizePushed)
-    {
-        if (m_initialSizeDeferred)
-        {
-            return;
-        }
-        m_initialSizeDeferred = true;
-
-        auto strongThis = get_strong();
-        DispatcherQueue().TryEnqueue(
-            winrt::Microsoft::UI::Dispatching::DispatcherQueuePriority::Normal,
-            [strongThis]()
-            {
-                strongThis->m_initialSizePushed = true;
-                strongThis->UpdateInkPresenterSize();
-            });
-        return;
-    }
-
     winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->QueueInkPresenterWorkItem(
         [width = rect.Width, height = rect.Height](inking::InkPresenter const& presenter)
         {
