@@ -180,6 +180,13 @@ void AcrylicBrush::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
             __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_Acrylic, RuntimeProfiler::ProfMemberId_Acrylic_TintLuminosityOpacity_Changed);
         }
     }
+    else if (property == s_IsNoiseEnabledProperty)
+    {
+        if (m_brush && (m_isUsingAcrylicBrush || m_isWaitingForFallbackAnimationComplete))
+        {
+            m_brush.Properties().InsertScalar(NoiseOpacityOpacity, IsNoiseEnabled() ? sc_noiseOpacity : 0.0f);
+        }
+    }
     else if (property == s_AlwaysUseFallbackProperty)
     {
         UpdateAcrylicBrush();
@@ -539,6 +546,7 @@ winrt::CompositionEffectFactory AcrylicBrush::CreateAcrylicBrushCompositionEffec
     auto noiseOpacityEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::OpacityEffect>();
     noiseOpacityEffect->Name(L"NoiseOpacity");
     noiseOpacityEffect->Opacity(sc_noiseOpacity);
+    animatedProperties.push_back(winrt::hstring{ NoiseOpacityOpacity });
     noiseOpacityEffect->Source(*noiseBorderEffect);
 
     // Blend noise on top of tint
@@ -633,6 +641,7 @@ void AcrylicBrush::CreateAcrylicBrush(bool useCrossFadeEffect, bool forceCreateA
         MUX_ASSERT(m_noiseBrush);
         acrylicBrush.SetSourceParameter(L"Noise", m_noiseBrush);
         acrylicBrush.Properties().InsertColor(TintColorColor, tintColor);
+        acrylicBrush.Properties().InsertScalar(NoiseOpacityOpacity, IsNoiseEnabled() ? sc_noiseOpacity : 0.0f);
 
         if (!m_isUsingOpaqueBrush)
         {
