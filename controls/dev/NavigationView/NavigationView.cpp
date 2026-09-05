@@ -1663,6 +1663,11 @@ void NavigationView::OnPaneToggleButtonClick(const winrt::IInspectable& /*sender
         m_wasForceClosed = false;
         OpenPane();
     }
+
+    // The pane toggle button only swaps its AutomationProperties.Name between its open and closed
+    // states, which a screen reader announces on focus but not when the user activates the button.
+    // Raise a UIA notification so the new pane state is announced when the user toggles it.
+    AnnouncePaneOpenStateChange();
 }
 
 void NavigationView::OnPaneSearchButtonClick(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
@@ -1716,6 +1721,12 @@ bool NavigationView::AttemptClosePaneLightly()
     {
         m_blockNextClosingEvent = true;
         ClosePane();
+
+        // This path handles closing the pane via the light-dismiss keyboard gestures
+        // (Alt+Left, GoBack, XButton1). Like the pane toggle button, these are explicit
+        // user actions, so announce the new state for screen readers. Resize/adaptive
+        // layout never routes through here, so no resize noise is introduced.
+        AnnouncePaneOpenStateChange();
         return true;
     }
 
@@ -1915,6 +1926,25 @@ void NavigationView::SetPaneToggleButtonAutomationName()
         auto toolTip = winrt::ToolTip();
         toolTip.Content(box_value(navigationName));
         winrt::ToolTipService::SetToolTip(paneToggleButton, toolTip);
+    }
+}
+
+void NavigationView::AnnouncePaneOpenStateChange()
+{
+    auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this);
+    if (!peer)
+    {
+        peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(*this);
+    }
+
+    if (peer)
+    {
+        const auto isPaneOpen = IsPaneOpen();
+        peer.RaiseNotificationEvent(
+            winrt::AutomationNotificationKind::ActionCompleted,
+            winrt::AutomationNotificationProcessing::ImportantMostRecent,
+            ResourceAccessor::GetLocalizedStringResource(isPaneOpen ? SR_NavigationViewPaneOpenedNotification : SR_NavigationViewPaneClosedNotification),
+            L"NavigationViewPaneOpenStateChangedActivityId");
     }
 }
 
@@ -4364,6 +4394,18 @@ void NavigationView::OnIsPaneOpenChanged()
             // If, however, splitView.IsPaneOpen=false, then nav.IsPaneOpen is just following the SplitView here and the pane
             // was closed, for example, due to app window resizing. We don't set the force flag in this situation.
             m_wasForceClosed = splitView.IsPaneOpen();
+
+            // A close that originates from the SplitView itself (splitView.IsPaneOpen() is already false when
+            // NavigationView's IsPaneOpen follows) is a light-dismiss gesture - the user pressed Esc or clicked
+            // outside the open pane. Announce it for screen readers so it matches the pane toggle button path.
+            // Resize/adaptive-layout closes go through ClosePane(), which sets m_isOpenPaneForInteraction and so
+            // never reach this branch, and requiring the pane to have been open on the previous state change guards
+            // against announcing a non-open initial state, so this does not reintroduce resize noise or spurious
+            // startup announcements.
+            if (!m_wasForceClosed && m_previousIsPaneOpen)
+            {
+                AnnouncePaneOpenStateChange();
+            }
         }
         else
         {
@@ -4391,6 +4433,10 @@ void NavigationView::OnIsPaneOpenChanged()
             UnsetDropShadow();
         }
     }
+
+    // Track the pane state so the light-dismiss (Esc/outside-click) announcement above only fires on a
+    // genuine open -> closed transition, never on a non-open initial state.
+    m_previousIsPaneOpen = isPaneOpen;
 }
 
 void NavigationView::UpdatePaneToggleButtonVisibility()
