@@ -170,6 +170,10 @@ namespace MUXControlsTestApp.Utilities
                         {
                             changeId = XamlChangeId.DeferContextFlyoutInit;
                         }
+                        else if (string.Equals(name, "SkipWindowRedirectionSurface", StringComparison.OrdinalIgnoreCase))
+                        {
+                            changeId = XamlChangeId.SkipWindowRedirectionSurface;
+                        }
 
                         Verify.AreNotEqual(changeId, XamlChangeId._Reserved, "Unknown XamlChangeId: " + name);
 

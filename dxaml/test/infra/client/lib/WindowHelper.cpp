@@ -2108,6 +2108,10 @@ std::vector<std::pair<xaml_settings::XamlChangeId, bool>> GetXamlOptionalChanges
             {
                 changeId = xaml_settings::XamlChangeId_DeferContextFlyoutInit;
             }
+            else if (_wcsicmp(name.c_str(), L"SkipWindowRedirectionSurface") == 0)
+            {
+                changeId = xaml_settings::XamlChangeId_SkipWindowRedirectionSurface;
+            }
 
             if (changeId == xaml_settings::XamlChangeId__Reserved)
             {
@@ -3645,6 +3649,22 @@ HRESULT WindowHelper::GetWindows(_Outptr_ wfc::IVectorView<xaml::Window*>** wind
 
             LogThrow_IfFailed(applicationPrivate->get_Windows(windows));
         });
+    }
+    COM_END
+}
+
+HRESULT WindowHelper::HasWindowPlaceholder(_In_ xaml::IWindow* window, _Out_ BOOLEAN* hasPlaceholder)
+{
+    COM_START_GROUP(L"WindowHelper::HasWindowPlaceholder")
+    {
+        *hasPlaceholder = FALSE;
+
+        BOOLEAN result = FALSE;
+        RunOnUIThread([&]() {
+            LogThrow_IfFailed(GetTestHooks()->HasWindowPlaceholder(window, &result));
+        });
+
+        *hasPlaceholder = result;
     }
     COM_END
 }

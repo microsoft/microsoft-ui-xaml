@@ -123,6 +123,12 @@ namespace DirectUI
         void SetHasSizeOverrides(bool hasSizeOverrides) override;
         void SetShrinkApplicationViewVisibleBounds(bool enabled) override;
 
+        // Reports whether this window's top-level island currently holds the window
+        // placeholder visual installed before the first rendered frame. Fails if the
+        // island or its render data cannot be resolved, so callers cannot mistake
+        // missing state for "no placeholder".
+        _Check_return_ HRESULT HasActiveWindowPlaceholder(_Out_ bool* hasPlaceholder);
+
     public:
         LRESULT OnMessage(
             UINT const message,
@@ -194,6 +200,7 @@ namespace DirectUI
         void Shutdown();
         static _Check_return_ Window* GetMUXWindowFromHwnd(_In_ DXamlCore *dxamlCore, _In_ const HWND& hwnd);
         _Check_return_ HRESULT CheckIsWindowClosed();
+        UINT32 GetEffectiveWindowBackgroundColor();
         _Check_return_ HRESULT OnDesktopWindowXamlSourceTakeFocusRequested(_In_ xaml::Hosting::IDesktopWindowXamlSource* desktopWindowXamlSource, _In_ xaml::Hosting::IDesktopWindowXamlSourceTakeFocusRequestedEventArgs* args);
         _Check_return_ HRESULT RestoreFocus(_Outptr_ xaml_hosting::IXamlSourceFocusNavigationResult** ppEventSource);
         void SetFocusToContentIsland();
