@@ -127,6 +127,13 @@
                 </controls:ToggleSplitButton>
 
                 <ToggleButton Content="For Comparison" Margin="6,0,0,0"/>
+                <CheckBox x:Name="ToggleSplitButtonEnableCheckBox"
+                          AutomationProperties.Name="ToggleSplitButtonEnableCheckBox"
+                          Content="Enable"
+                          IsChecked="True"
+                          Checked="ToggleSplitButtonEnableCheckBox_Checked"
+                          Unchecked="ToggleSplitButtonEnableCheckBox_Unchecked"
+                          Margin="12,0,0,0"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Toggle State:"/>
