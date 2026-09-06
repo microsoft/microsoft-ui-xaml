@@ -142,6 +142,79 @@ function Test-GitAncestor {
     throw "Unable to determine whether '$PossibleAncestor' is an ancestor of '$Commit'."
 }
 
+# GitHub-only paths that were intentionally excluded from ADO at bootstrap and
+# must stay absent. They still exist (and change) on GitHub, so when GitHub edits
+# one the merge raises a modify/delete conflict (deleted by us, modified by them)
+# that git cannot resolve on its own. Keeping ADO's deletion for exactly these
+# paths stops the integrate from failing every run without touching any other
+# divergence. Add a path here only if it is deliberately excluded from ADO.
+$script:KeepDeletedPaths = @(
+    ".github/workflows/",       # OSS GitHub Actions workflows (never run in ADO)
+    ".github/policies/",        # OSS GitHub policy-service configuration
+    "src/.github/",             # GitHub-only Copilot instructions under src
+    "build/WinUI-GitHub-PR.yml" # GitHub PR pipeline definition (never run in ADO)
+)
+
+function Test-PathIsKeepDeleted {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    foreach ($pattern in $script:KeepDeletedPaths) {
+        if ($pattern.EndsWith("/")) {
+            if ($Path.StartsWith($pattern, [StringComparison]::Ordinal)) {
+                return $true
+            }
+        } elseif ($Path -eq $pattern) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Resolve-KeepDeletedConflicts {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Repository
+    )
+
+    $conflictCodes = @("DD", "AU", "UD", "UA", "DU", "AA", "UU")
+    $statusLines = (Get-GitCommandOutput -Repository $Repository -Arguments @("status", "--porcelain")) -split "`n"
+
+    $resolved = @()
+    $unresolved = @()
+    foreach ($line in $statusLines) {
+        if ([string]::IsNullOrWhiteSpace($line)) {
+            continue
+        }
+
+        $code = $line.Substring(0, 2)
+        if ($conflictCodes -notcontains $code) {
+            continue
+        }
+
+        $path = $line.Substring(3).Trim().Trim('"')
+
+        # "DU" = deleted by us (ADO), modified by them (GitHub): a modify/delete on
+        # a bootstrap-excluded path. Keep ADO's deletion. Every other conflict code
+        # (content divergence, or a deletion outside the excluded set) stays
+        # unresolved so it fails the run for manual resolution.
+        if ($code -eq "DU" -and (Test-PathIsKeepDeleted -Path $path)) {
+            Invoke-GitCommand -Repository $Repository -Arguments @("rm", "--force", "--", $path)
+            $resolved += $path
+        } else {
+            $unresolved += $path
+        }
+    }
+
+    return @{
+        Resolved = $resolved
+        Unresolved = $unresolved
+    }
+}
+
 $repositoryFullPath = [IO.Path]::GetFullPath([IO.Path]::Combine($pwd, $RepositoryDirectory))
 if (-not (Test-Path -LiteralPath $repositoryFullPath -PathType Container)) {
     throw "RepositoryDirectory '$RepositoryDirectory' does not identify an existing directory."
@@ -257,9 +330,18 @@ for ($publishAttempt = 1; $publishAttempt -le $maximumPublishAttempts; $publishA
         $sourceTrackingRef
     )
     if ($mergeResult.ExitCode) {
-        $conflicts = Get-GitCommandOutput -Repository $repositoryFullPath -Arguments @("status", "--short")
-        & git -C $repositoryFullPath merge --abort 2>$null
-        throw "Unable to integrate '$SourceBranchName' because the merge has conflicts.`n$conflicts"
+        # The merge stopped with conflicts. Auto-resolve only modify/delete conflicts
+        # on the bootstrap-excluded GitHub-only paths by keeping ADO's deletion, then
+        # complete the merge. Any other conflict still fails the run untouched.
+        $resolution = Resolve-KeepDeletedConflicts -Repository $repositoryFullPath
+        if ($resolution.Unresolved.Count -gt 0 -or $resolution.Resolved.Count -eq 0) {
+            $conflicts = Get-GitCommandOutput -Repository $repositoryFullPath -Arguments @("status", "--short")
+            & git -C $repositoryFullPath merge --abort 2>$null
+            throw "Unable to integrate '$SourceBranchName' because the merge has conflicts.`n$conflicts"
+        }
+
+        Write-Host "Kept ADO's deletion for excluded GitHub-only path(s): $($resolution.Resolved -join ', ')"
+        Invoke-GitCommand -Repository $repositoryFullPath -Arguments @("commit", "--no-edit", "-m", "Merge GitHub main into $TargetBranchName")
     }
 
     $mergeCommit = Get-GitCommandOutput -Repository $repositoryFullPath -Arguments @("rev-parse", "HEAD")
