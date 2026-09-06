@@ -39,10 +39,6 @@ public:
     // get_ToolKind (plain read-only property, impl-owned; not a DP).
     winrt::InkToolbarTool ToolKind() { return m_toolKind; }
 
-    // Echo the tool's toggle association. Custom is the safe default for non-toggle tools.
-    winrt::InkToolbarToggle ToggleKind() { return m_toggleKind; }
-    void ToggleKind(winrt::InkToolbarToggle value) { m_toggleKind = value; }
-
     // UWP IToolButtonDerived::GetLocalizedToolName: leaf buttons supply their localized tool name;
     // InkToolbarToolButton::OnApplyTemplate applies it as the tooltip + AutomationProperties.Name.
     virtual winrt::hstring GetLocalizedToolName() { return {}; }
@@ -66,6 +62,5 @@ private:
     winrt::InkToolbarButtonFlyoutPlacement m_direction{ winrt::InkToolbarButtonFlyoutPlacement::Bottom };
 
     winrt::InkToolbarTool m_toolKind{ winrt::InkToolbarTool::BallpointPen };
-    winrt::InkToolbarToggle m_toggleKind{ winrt::InkToolbarToggle::Custom };
 };
 

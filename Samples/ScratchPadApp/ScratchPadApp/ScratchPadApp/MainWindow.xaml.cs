@@ -60,8 +60,8 @@ namespace ScratchPadApp
             // re-attaches it at runtime so we can compare without reinstalling.
             // (Toolbar.TargetInkCanvas is left null here; the toggle sets it.)
 
-            // Enable ALL input devices once. The InkPresenter is a stable instance that caches this, so it
-            // does not need re-applying as the toolbar / canvas load.
+            // Apply the initial input device selection once, now that the check boxes have loaded.
+            _inputDeviceTypesReady = true;
             ApplyInputDeviceTypes();
 
             // Deferred-start validation. The OS rejects _InitializeCustomDry with E_ILLEGAL_METHOD_CALL
@@ -127,13 +127,29 @@ namespace ScratchPadApp
         // InkPoint.Timestamp is microseconds; convert deltas to milliseconds.
         private static double UsToMs(double micros) => micros / 1000.0;
 
+        private void OnInputDeviceChanged(object sender, RoutedEventArgs e) => ApplyInputDeviceTypes();
+
+        private bool _inputDeviceTypesReady;
+
         private void ApplyInputDeviceTypes()
         {
+            // The CheckBox Checked handlers run while XAML is still loading; let the single call from the
+            // constructor apply the initial value instead of pushing a partial set three times.
+            if (!_inputDeviceTypesReady) { return; }
+
             try
             {
-                InkSurface.InkPresenter.InputDeviceTypes =
-                    CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Mouse | CoreInputDeviceTypes.Touch;
+                var types = CoreInputDeviceTypes.None;
+                if (PenDeviceCheck?.IsChecked == true) { types |= CoreInputDeviceTypes.Pen; }
+                if (MouseDeviceCheck?.IsChecked == true) { types |= CoreInputDeviceTypes.Mouse; }
+                if (TouchDeviceCheck?.IsChecked == true) { types |= CoreInputDeviceTypes.Touch; }
+
+                InkSurface.InkPresenter.InputDeviceTypes = types;
                 App.Log("InputDeviceTypes set = " + InkSurface.InkPresenter.InputDeviceTypes);
+                if (InputDeviceText != null)
+                {
+                    InputDeviceText.Text = "InputDeviceTypes = " + InkSurface.InkPresenter.InputDeviceTypes;
+                }
             }
             catch (Exception ex) { App.Log("ApplyInputDeviceTypes failed: " + ex.Message); }
         }
