@@ -603,12 +603,12 @@ void InkPresenter::SetPredefinedConfiguration(inking::InkPresenterPredefinedConf
         });
 }
 
-muxc::InkHighContrastAdjustment InkPresenter::GetHighContrastAdjustment() const noexcept
+muxc::InkHighContrastAdjustment InkPresenter::HighContrastAdjustment() const noexcept
 {
     return m_highContrastAdjustment;
 }
 
-void InkPresenter::SetHighContrastAdjustment(muxc::InkHighContrastAdjustment const& value)
+void InkPresenter::HighContrastAdjustment(muxc::InkHighContrastAdjustment const& value)
 {
     m_highContrastAdjustment = value;
 

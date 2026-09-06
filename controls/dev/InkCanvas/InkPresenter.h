@@ -194,8 +194,7 @@ public:
 
     // Back-pointer to the owning presenter mirror (UWP parity). Weak, so it never keeps the owner
     // alive; returns null once the owner is gone. Set by InkPresenter::Start (post-construction).
-    // Method (not property) to avoid a recursive XAML metadata thunk cycle - see the IDL comment.
-    muxc::InkPresenter GetInkPresenter() { return m_owner.get(); }
+    muxc::InkPresenter InkPresenter() { return m_owner.get(); }
     void SetOwner(winrt::weak_ref<muxc::InkPresenter> const& owner) { m_owner = owner; }
 
 private:
@@ -239,8 +238,7 @@ public:
 
     // Back-pointer to the owning presenter mirror (UWP parity). Weak, so it never keeps the owner
     // alive; returns null once the owner is gone. Set by InkPresenter::Start (post-construction).
-    // Method (not property) to avoid a recursive XAML metadata thunk cycle - see the IDL comment.
-    muxc::InkPresenter GetInkPresenter() { return m_owner.get(); }
+    muxc::InkPresenter InkPresenter() { return m_owner.get(); }
     void SetOwner(winrt::weak_ref<muxc::InkPresenter> const& owner) { m_owner = owner; }
 
 private:
@@ -306,8 +304,8 @@ public:
 
     void SetPredefinedConfiguration(inking::InkPresenterPredefinedConfiguration const& configuration);
 
-    muxc::InkHighContrastAdjustment GetHighContrastAdjustment() const noexcept;
-    void SetHighContrastAdjustment(muxc::InkHighContrastAdjustment const& value);
+    muxc::InkHighContrastAdjustment HighContrastAdjustment() const noexcept;
+    void HighContrastAdjustment(muxc::InkHighContrastAdjustment const& value);
 
     muxc::InkStrokeContainer StrokeContainer();
     muxc::InkInputProcessingConfiguration InputProcessingConfiguration();

@@ -1622,6 +1622,14 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                     xamlType.AddMember(
+                        L"HighContrastAdjustment", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.InkHighContrastAdjustment", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::InkPresenter>().HighContrastAdjustment()); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::InkPresenter>().HighContrastAdjustment(unbox_value<winrt::InkHighContrastAdjustment>(value)); },
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
                         L"InputConfiguration", /* propertyName */
                         L"Microsoft.UI.Xaml.Controls.InkInputConfiguration", /* propertyType */
                         [](winrt::IInspectable instance) { return instance.as<winrt::InkPresenter>().InputConfiguration(); },
@@ -1709,8 +1717,17 @@ Entry c_typeEntries[] =
                 /* Arg 3 - Activator func */ 
                 nullptr,
                 /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    xamlType.AddMember(
+                        L"InkPresenter", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.InkPresenter", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::InkStrokeInput>().InkPresenter(); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                });
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }
@@ -2398,8 +2415,17 @@ Entry c_typeEntries[] =
                 /* Arg 3 - Activator func */ 
                 nullptr,
                 /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    xamlType.AddMember(
+                        L"InkPresenter", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.InkPresenter", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::InkUnprocessedInput>().InkPresenter(); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                });
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }
