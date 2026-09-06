@@ -891,7 +891,7 @@ int32_t InkToolbar::GetHighContrastAdjustmentValue()
     {
         if (auto proxy = canvas.InkPresenter())
         {
-            return static_cast<int32_t>(proxy.GetHighContrastAdjustment());
+            return static_cast<int32_t>(proxy.HighContrastAdjustment());
         }
     }
     return 0; // UseSystemColorsWhenNecessary

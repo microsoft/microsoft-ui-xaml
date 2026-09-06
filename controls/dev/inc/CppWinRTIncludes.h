@@ -270,7 +270,8 @@ namespace winrt
 
     // using namespace ::winrt::Windows::UI::Input::Inking;
     using InkDrawingAttributes = ::winrt::Windows::UI::Input::Inking::InkDrawingAttributes;
-    using InkPresenter = ::winrt::Windows::UI::Input::Inking::InkPresenter;
+    // No InkPresenter alias: winrt::InkPresenter must resolve to the WinUI mirror
+    // (Microsoft.UI.Xaml.Controls.InkPresenter). Use the inking namespace alias for the OS type.
     using InkPresenterProtractor = ::winrt::Windows::UI::Input::Inking::InkPresenterProtractor;
     using InkPresenterRuler = ::winrt::Windows::UI::Input::Inking::InkPresenterRuler;
 
