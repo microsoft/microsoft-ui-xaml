@@ -477,6 +477,14 @@ private:
     // Fires ahead of the SelectionModel on a projection Reset; see OnSelectionSourceReset.
     winrt::ItemsSourceView::CollectionChanged_revoker m_selectionResetDetectorRevoker{};
 
+    // The views the two subscriptions above are attached to. Both re-register only when the view
+    // actually changes, because SelectionModel::Source cannot be re-assigned for an unchanged view
+    // (it clears the selection unconditionally) and so always keeps its original registration.
+    // Re-registering these two against the same view would move them behind the model's and invert
+    // the detector -> model -> restamp order ResolveSelectionAfterSourceChange documents.
+    winrt::ItemsSourceView m_selectionCollectionChangedView{ nullptr };
+    winrt::ItemsSourceView m_selectionResetDetectorView{ nullptr };
+
 private:
     // Explicit edit lifecycle, replacing four independent booleans whose 16 nominal combinations
     // encoded the real invariants only in the ordering of guards spread across five methods.
@@ -703,8 +711,11 @@ private:
     // focus to the same group's header once the reshape's relayout has settled. Only keyboard /
     // programmatic focus is restored -- a pointer toggle carries no focus visual.
     void CaptureGroupHeaderFocusForRestore(winrt::UIElement const& container, winrt::hstring const& identity);
+    winrt::hstring CaptureFocusedGroupHeaderForRestore();
     void RestoreGroupHeaderFocusIfPending(winrt::hstring const& identity);
     void FocusGroupHeaderByIdentity(winrt::hstring const& identity, winrt::FocusState focusState);
+    // Row identity for a realized container. Identity is index-independent once captured.
+    winrt::hstring TryGetContainerIdentity(winrt::UIElement const& container);
 
     winrt::hstring StringifyGroupKey(winrt::IInspectable const& key);
     // Cached because resolving the culture formatter is measurably expensive and group-key text is

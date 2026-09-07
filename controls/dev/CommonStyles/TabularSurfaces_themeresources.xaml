@@ -73,6 +73,9 @@
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="#4C3A3A3A" />                  <!-- LayerFillColorDefault -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="#FFFFFF" />                    <!-- TextFillColorPrimary -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderCountForegroundBrush" Color="#C5FFFFFF" />             <!-- TextFillColorSecondary -->
+            <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">0.7</x:Double>
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="Transparent" />
+            <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0</Thickness>
 
             <!-- Grid lines. DividerStrokeColorDefault (~16% white on Dark) — visible above row
                  banding without dominating the surface. Earlier ControlStrokeColorDefault (~7%
@@ -188,6 +191,9 @@
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="#14000000" />                  <!-- subtle group-header band, a touch darker than the rows (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="#E4000000" />                  <!-- TextFillColorPrimary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderCountForegroundBrush" Color="#9E000000" />             <!-- TextFillColorSecondary (Light) -->
+            <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">0.7</x:Double>
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="Transparent" />
+            <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0</Thickness>
 
             <!-- Back-compat aliases (see Default theme dict for rationale). -->
             <StaticResource x:Key="MUX_TabularSurfaceRowBackgroundBrush" ResourceKey="TabularSurfaceRowBackgroundBrush" />
@@ -255,6 +261,9 @@
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderCountForegroundBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
+            <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">1.0</x:Double>
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0,1,0,1</Thickness>
 
             <!-- Grid lines -->
             <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="{ThemeResource SystemColorWindowTextColor}" />

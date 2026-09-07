@@ -38,6 +38,20 @@ namespace ShapingHelpers
         return group;
     }
 
+    // The collection holding the group's items.
+    inline winrt::IInspectable GetGroupItemsObject(winrt::IInspectable const& group)
+    {
+        if (auto const collectionViewGroup = group.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>())
+        {
+            if (auto const items = collectionViewGroup.GroupItems())
+            {
+                return items;
+            }
+        }
+
+        return group;
+    }
+
     // A stable string form of the group's key, or empty when the key has no value representation.
     //
     // Empty is meaningful: it says "this key cannot be compared by value, so compare the group

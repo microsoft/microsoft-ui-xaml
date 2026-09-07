@@ -26,7 +26,6 @@ TableViewSource::TableViewSource(winrt::IInspectable const& items) :
     // Handlers are installed before Start() so the very first projection is observed like any
     // later one -- the control never has to special-case its own construction.
     m_engine->SetProjectionRebuiltHandler([this]() { OnProjectionRebuilt(); });
-    m_engine->SetShapeSwappedHandler([this]() { NotifyOwnerProjectionChanged(); });
     m_engine->SetShapingChangedHandler([this](bool reorderOnly) { NotifyOwnerShapingChanged(reorderOnly); });
     m_engine->Start();
 }
@@ -234,6 +233,11 @@ void TableViewSource::OnProjectionRebuilt()
         m_rowMetadata = nullptr;
         break;
     }
+
+    // Every rebuild mints a fresh row-metadata provider and can swap the view, so anything the
+    // owner cached from the previous projection is stale from here - whether or not grouped-ness
+    // changed.
+    NotifyOwnerProjectionChanged();
 }
 
 TableViewRowItemKeySelector TableViewSource::MakeIdentitySelector() const

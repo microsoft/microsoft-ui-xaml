@@ -938,11 +938,10 @@ void TableView::RefreshRowsPipeline()
     // on a source change.
     winrt::IInspectable rowsSource{ nullptr };
 
-    // The provider that produced any previously handed-out row identity is being replaced. Bump the
-    // generation first so a request captured against the old provider can tell it is stale, then
-    // clear it - the branch below re-reads it from the active source when there is one.
+    // Held so the generation bump below can tell a genuine provider swap from a re-entry that
+    // merely re-reads the same one.
+    auto const previousRowMetadata = m_tableViewSourceRowMetadata;
     m_tableViewSourceRowMetadata = nullptr;
-    ++m_rowMetadataGeneration;
 
     if (auto const activeSource = m_activeSource.get())
     {
@@ -956,6 +955,18 @@ void TableView::RefreshRowsPipeline()
     {
         // Null ItemsSource: nothing to project, so the repeater empties out below.
         m_rowsItemsSourceView = nullptr;
+    }
+
+    // Bump only when the provider that produced previously handed-out row identities has actually
+    // been replaced, so a request captured against the old one can tell it is stale. Identities are
+    // value-based strings, so without the bump the same string could name an unrelated group in a
+    // new projection. Bumping unconditionally is equally wrong in the other direction: this method
+    // also runs on re-entries that keep the very same projection (OnApplyTemplate, a Loaded repump
+    // after an unload drain, an applied sort), and a bump there silently discards a queued group
+    // toggle that is still perfectly valid.
+    if (m_tableViewSourceRowMetadata != previousRowMetadata)
+    {
+        ++m_rowMetadataGeneration;
     }
 
     if (auto repeater = m_rowsRepeater.get())

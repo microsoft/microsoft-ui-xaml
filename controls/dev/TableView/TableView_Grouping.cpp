@@ -128,28 +128,43 @@ void TableView::RequestGroupExpansion(winrt::UIElement const& container, std::op
     // deferred, and the index is not stable across that gap: a scroll can recycle this container
     // onto a different group, or out of view entirely (GetElementIndex returns -1, silently
     // dropping the request). Identity is index-independent once captured.
-    winrt::hstring identity;
-    if (auto repeater = m_rowsRepeater.get())
-    {
-        const auto rowIndex = repeater.GetElementIndex(container);
-        if (rowIndex >= 0)
-        {
-            try
-            {
-                identity = m_tableViewSourceRowMetadata->GetIdentity(rowIndex);
-            }
-            catch (...)
-            {
-                // Best-effort: the grouping source or its state can change during cleanup.
-            }
-        }
-    }
+    winrt::hstring const identity = TryGetContainerIdentity(container);
 
     // Capture keyboard focus on this header (if any) so it can be restored after the deferred
     // reshape recycles the container. Done here, while the container still owns focus.
     CaptureGroupHeaderFocusForRestore(container, identity);
 
     QueueGroupExpansionByIdentity(identity, desired);
+}
+
+winrt::hstring TableView::TryGetContainerIdentity(winrt::UIElement const& container)
+{
+    if (!m_tableViewSourceRowMetadata || !container)
+    {
+        return {};
+    }
+
+    auto repeater = m_rowsRepeater.get();
+    if (!repeater)
+    {
+        return {};
+    }
+
+    const auto rowIndex = repeater.GetElementIndex(container);
+    if (rowIndex < 0)
+    {
+        return {};
+    }
+
+    try
+    {
+        return m_tableViewSourceRowMetadata->GetIdentity(rowIndex);
+    }
+    catch (...)
+    {
+        // Best-effort: the grouping source or its state can change during cleanup.
+        return {};
+    }
 }
 
 void TableView::CaptureGroupHeaderFocusForRestore(winrt::UIElement const& container, winrt::hstring const& identity)
@@ -198,6 +213,35 @@ void TableView::CaptureGroupHeaderFocusForRestore(winrt::UIElement const& contai
             m_pendingGroupFocusState = state;
         }
     }
+}
+
+winrt::hstring TableView::CaptureFocusedGroupHeaderForRestore()
+{
+    // A bulk expand/collapse supersedes any earlier capture whose restore has not run, exactly as
+    // a fresh single-group toggle does.
+    m_pendingGroupFocusIdentity.clear();
+    m_pendingGroupFocusState = winrt::FocusState::Unfocused;
+
+    auto const root = XamlRoot();
+    if (!root)
+    {
+        return {};
+    }
+
+    // Walk out from the focused element to its header container, if it is inside one. Focus on a
+    // data row is deliberately not captured.
+    auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
+    for (winrt::DependencyObject node = focused; node; node = winrt::VisualTreeHelper::GetParent(node))
+    {
+        if (auto const header = node.try_as<winrt::TableViewGroupHeader>())
+        {
+            auto const identity = TryGetContainerIdentity(header);
+            CaptureGroupHeaderFocusForRestore(header, identity);
+            return identity;
+        }
+    }
+
+    return {};
 }
 
 // Directional request from a UIA provider or the band gesture. Identity is resolved here, while
@@ -402,10 +446,9 @@ void TableView::CollapseAllGroups()
     SetAllGroupsExpansion(false);
 }
 
-// Bulk counterpart of ApplyGroupExpansionByIdentity. There is no identity to capture and no UIA
-// callout to unwind here - the caller is the app - so this runs inline, but it still has to
-// coalesce behind an in-flight edit for the same reason: the edit sits over a row that the
-// reshape is about to move.
+// Bulk counterpart of ApplyGroupExpansionByIdentity. No UIA callout to unwind here - the caller is
+// the app - so this runs inline, but it still has to coalesce behind an in-flight edit for the same
+// reason: the edit sits over a row that the reshape is about to move.
 void TableView::SetAllGroupsExpansion(bool expand)
 {
     if (!m_tableViewSourceRowMetadata)
@@ -424,6 +467,8 @@ void TableView::SetAllGroupsExpansion(bool expand)
         }
         return;
     }
+
+    auto const focusedGroupIdentity = CaptureFocusedGroupHeaderForRestore();
 
     bool changed = false;
     try
@@ -449,9 +494,12 @@ void TableView::SetAllGroupsExpansion(bool expand)
     {
         RaiseGroupStructureChanged();
     }
+
+    RestoreGroupHeaderFocusIfPending(focusedGroupIdentity);
 }
 
-void TableView::RaiseGroupStructureChanged(){
+void TableView::RaiseGroupStructureChanged()
+{
     if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::TableViewAutomationPeer>())
     {
         winrt::get_self<TableViewAutomationPeer>(peer)->RaiseStructureChangedForGroupExpansion();

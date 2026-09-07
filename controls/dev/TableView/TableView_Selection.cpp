@@ -447,31 +447,51 @@ void TableView::OnSelectionModePropertyChanged(const winrt::DependencyPropertyCh
 
 void TableView::UpdateSelectionCollectionChangedSubscription()
 {
-    // auto_revoke drops the prior source's subscription.
-    m_selectionCollectionChangedRevoker = {};
-
+    winrt::ItemsSourceView view{ nullptr };
     if (auto const repeater = m_rowsRepeater.get())
     {
-        if (auto const view = repeater.ItemsSourceView())
-        {
-            m_selectionCollectionChangedRevoker = view.CollectionChanged(
-                winrt::auto_revoke, { this, &TableView::OnSelectionItemsSourceCollectionChanged });
-        }
+        view = repeater.ItemsSourceView();
+    }
+
+    if (m_selectionCollectionChangedRevoker && SameInspectableIdentity(view, m_selectionCollectionChangedView))
+    {
+        return;
+    }
+
+    // auto_revoke drops the prior source's subscription.
+    m_selectionCollectionChangedRevoker = {};
+    m_selectionCollectionChangedView = nullptr;
+
+    if (view)
+    {
+        m_selectionCollectionChangedRevoker = view.CollectionChanged(
+            winrt::auto_revoke, { this, &TableView::OnSelectionItemsSourceCollectionChanged });
+        m_selectionCollectionChangedView = view;
     }
 }
 
 void TableView::UpdateSelectionResetDetectorSubscription()
 {
-    // auto_revoke drops the prior source's subscription.
-    m_selectionResetDetectorRevoker = {};
-
+    winrt::ItemsSourceView view{ nullptr };
     if (auto const repeater = m_rowsRepeater.get())
     {
-        if (auto const view = repeater.ItemsSourceView())
-        {
-            m_selectionResetDetectorRevoker = view.CollectionChanged(
-                winrt::auto_revoke, { this, &TableView::OnSelectionSourceReset });
-        }
+        view = repeater.ItemsSourceView();
+    }
+
+    if (m_selectionResetDetectorRevoker && SameInspectableIdentity(view, m_selectionResetDetectorView))
+    {
+        return;
+    }
+
+    // auto_revoke drops the prior source's subscription.
+    m_selectionResetDetectorRevoker = {};
+    m_selectionResetDetectorView = nullptr;
+
+    if (view)
+    {
+        m_selectionResetDetectorRevoker = view.CollectionChanged(
+            winrt::auto_revoke, { this, &TableView::OnSelectionSourceReset });
+        m_selectionResetDetectorView = view;
     }
 }
 
@@ -480,10 +500,9 @@ void TableView::OnSelectionSourceReset(
     const winrt::NotifyCollectionChangedEventArgs& args)
 {
     // Only a Reset drops the model's indices wholesale (an Add/Remove shifts the selected index and
-    // SelectionModel reconciles it in place, so selection survives without help). This runs FIRST,
-    // before the model reconciles the same Reset, so it is the last moment the pre-reshape selection
-    // is knowable - captured here by the identity-stable sticky anchor, not by an index that the
-    // reshape just invalidated.
+    // SelectionModel reconciles it in place, so selection survives without help). This must run
+    // FIRST, before the model reconciles the same Reset - else the app sees a spurious
+    // SelectionChanged clearing the selection, immediately followed by another restoring it.
     if (args.Action() != winrt::NotifyCollectionChangedAction::Reset)
     {
         return;
@@ -723,6 +742,13 @@ void TableView::Select(int32_t index)
     // right for a coercion path but wrong here: Select(999) must not wipe an existing selection.
     // ItemsView::Select is a straight pass-through to SelectionModel and never clears either.
     if (!CanSelectRows() || index >= GetItemsSourceCount())
+    {
+        return;
+    }
+
+    // A group header shares the flat projection's index space with data rows but is not selectable,
+    // so it is rejected here. Without this the internal GroupedEntry would reach the app.
+    if (IsGroupHeaderRow(index))
     {
         return;
     }

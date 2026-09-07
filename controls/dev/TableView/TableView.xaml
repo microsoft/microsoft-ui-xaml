@@ -1,4 +1,4 @@
-﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -280,7 +280,7 @@
             <!-- Inherits Foreground so it follows the PointerOver / Pressed / Disabled states
                  exactly like the key text; a local brush would win over the state setters. -->
             <TextBlock Text="{Binding ItemCountText, Mode=OneWay}"
-                       Opacity="0.7"
+                       Opacity="{ThemeResource TabularSurfaceGroupHeaderCountOpacity}"
                        VerticalAlignment="Center" />
         </StackPanel>
     </DataTemplate>
@@ -288,6 +288,8 @@
     <Style TargetType="controls:TableViewGroupHeader">
         <Setter Property="Background" Value="{ThemeResource TabularSurfaceGroupHeaderBackgroundBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource TabularSurfaceGroupHeaderForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceGroupHeaderBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource TabularSurfaceGroupHeaderBorderThickness}" />
         <Setter Property="Padding" Value="{ThemeResource TableViewGroupHeaderPadding}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />

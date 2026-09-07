@@ -103,7 +103,7 @@ private:
 
     struct InnerGroupSubscription
     {
-        winrt::IInspectable GroupForRevocation{ nullptr };
+        winrt::IInspectable ItemsForRevocation{ nullptr };
         winrt::event_token CollectionToken{};
         winrt::event_token Token{};
         winrt::event_token BindableToken{};

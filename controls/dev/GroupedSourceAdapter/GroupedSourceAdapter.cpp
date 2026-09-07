@@ -81,6 +81,7 @@ void GroupedSourceAdapter::Rebuild()
     }
 
     bool runPending = false;
+    do
     {
         m_rebuildInFlight = true;
         m_pendingRebuild = false;
@@ -149,7 +150,7 @@ void GroupedSourceAdapter::Rebuild()
                 // An empty group is NOT dropped: group existence is source-owned (a bucket exists
                 // only if the app authored it — a Kanban column, an "Uncategorized" bucket, an empty
                 // drag target), so it must stay targetable.
-                auto items = ShapingHelpers::EnumerateInspectableItems(group);
+                auto items = ShapingHelpers::EnumerateInspectableItems(ShapingHelpers::GetGroupItemsObject(group));
                 const int32_t groupItemCount = static_cast<int32_t>(items.size());
                 const bool isExpanded = m_expansion.IsExpanded(intentKey);
 
@@ -179,14 +180,10 @@ void GroupedSourceAdapter::Rebuild()
 
         // One Reset for the whole projection.
         m_entries.ReplaceAll(built);
-    }
 
-    // A re-entrant request that arrived while the guard was held runs exactly once here, after the
-    // outer rebuild has fully unwound.
-    if (runPending)
-    {
-        Rebuild();
-    }
+        // resetGuard runs here, at the end of the loop body, publishing into runPending whether a
+        // re-entrant request arrived while the guard was held.
+    } while (runPending);
 }
 
 bool GroupedSourceAdapter::OnUiThread() const
@@ -319,7 +316,7 @@ bool GroupedSourceAdapter::TryApplyExpansionSplice(winrt::hstring const& intentK
             // Materialize this group's data rows and insert them immediately after the header. The
             // stored count must agree with the live enumeration; a mismatch means the group content
             // changed without a notification we processed, so defer to Rebuild for coherence.
-            auto items = ShapingHelpers::EnumerateInspectableItems(group);
+            auto items = ShapingHelpers::EnumerateInspectableItems(ShapingHelpers::GetGroupItemsObject(group));
             if (static_cast<int32_t>(items.size()) != groupItemCount)
             {
                 return false;
@@ -465,11 +462,15 @@ void GroupedSourceAdapter::SubscribeToGroup(winrt::IInspectable const& group)
     }
 
     InnerGroupSubscription sub;
-    sub.GroupForRevocation = group;
+
+    // Observe the collection that actually holds the items, not the group object. For a group that
+    // implements ICollectionViewGroup without being a collection itself.
+    const auto items = ShapingHelpers::GetGroupItemsObject(group);
+    sub.ItemsForRevocation = items;
 
     // Any change inside a group is a full Rebuild — no fast path, so no weak_ref to the group is
     // needed inside the callback (it captures only weak_from_this, never a strong back-ref).
-    if (auto incc = group.try_as<winrt::Microsoft::UI::Xaml::Interop::INotifyCollectionChanged>())
+    if (auto incc = items.try_as<winrt::Microsoft::UI::Xaml::Interop::INotifyCollectionChanged>())
     {
         sub.CollectionToken = incc.CollectionChanged(
             [weakThis = weak_from_this()](auto&&, auto&&)
@@ -477,7 +478,7 @@ void GroupedSourceAdapter::SubscribeToGroup(winrt::IInspectable const& group)
                 if (auto strongThis = weakThis.lock()) { strongThis->Rebuild(); }
             });
     }
-    else if (auto obs = group.try_as<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>>())
+    else if (auto obs = items.try_as<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>>())
     {
         sub.Token = obs.VectorChanged(
             [weakThis = weak_from_this()](auto&&, auto&&)
@@ -485,7 +486,7 @@ void GroupedSourceAdapter::SubscribeToGroup(winrt::IInspectable const& group)
                 if (auto strongThis = weakThis.lock()) { strongThis->Rebuild(); }
             });
     }
-    else if (auto bobs = group.try_as<winrt::Microsoft::UI::Xaml::Interop::IBindableObservableVector>())
+    else if (auto bobs = items.try_as<winrt::Microsoft::UI::Xaml::Interop::IBindableObservableVector>())
     {
         sub.BindableToken = bobs.VectorChanged(
             [weakThis = weak_from_this()](auto&&, auto&&)
@@ -507,7 +508,7 @@ void GroupedSourceAdapter::UnsubscribeFromAllGroups()
     // for re-entrancy / GC-safety.
     for (auto& sub : m_innerSubscriptions)
     {
-        auto strong = sub.GroupForRevocation;
+        auto strong = sub.ItemsForRevocation;
         if (!strong)
         {
             continue;
