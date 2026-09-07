@@ -5,6 +5,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular">
 
+    <Page.KeyboardAccelerators>
+        <KeyboardAccelerator Key="C" Modifiers="Control,Shift" Invoked="CollapseAccel_Invoked"/>
+        <KeyboardAccelerator Key="E" Modifiers="Control,Shift" Invoked="ExpandAccel_Invoked"/>
+    </Page.KeyboardAccelerators>
+
     <Page.Resources>
         <!-- GroupHeaderTemplate binds the TableViewGroupInfo projection the control hands the
              header: Key / ItemCount for raw values, KeyText / ItemCountText for the
@@ -101,7 +106,19 @@
                        TextWrapping="Wrap"/>
         </StackPanel>
 
-        <Border Grid.Row="5" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
+        <!-- Diagnostic: detaches and re-attaches the TableView so it goes Unloaded -> Loaded with
+             the same ItemsSource. That is the "repump" path - the rows pipeline re-runs against an
+             unchanged ItemsSourceView, which is when subscription order is at risk of inverting. -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                    HorizontalAlignment="Right">
+            <Button x:Name="RepumpButton" Content="Repump (unload/reload)" Click="Repump_Click"/>
+            <Button x:Name="AddItemButton" Content="Add item" Click="AddItem_Click"/>
+            <Button x:Name="ClearSelLogButton" Content="Clear sel log" Click="ClearSelLog_Click"/>
+            <CheckBox x:Name="BandingToggle" Content="Banding" Checked="Banding_Changed" Unchecked="Banding_Changed"/>
+            <Button x:Name="DumpBandingButton" Content="Dump banding" Click="DumpBanding_Click"/>
+        </StackPanel>
+
+        <Border x:Name="TableHost" Grid.Row="5" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
             <tv:TableView x:Name="Table" SelectionMode="Single"/>
         </Border>
 

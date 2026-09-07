@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 
 namespace TableViewSampleApp;
 
@@ -12,9 +15,21 @@ namespace TableViewSampleApp;
 // keeps row identity (selection re-anchors to the same item instead of the same index).
 public sealed partial class ShapingPage : Page
 {
-    private readonly List<Item> _items = Data.Make();
+    // Observable so the page can mutate the collection after binding. That is what makes a Reset
+    // reach the TableView on an ItemsSourceView it already holds - the shaping verbs each swap in a
+    // new view instead, so they never exercise that path.
+    private readonly ObservableCollection<Item> _items = new(Data.Make());
     private TableViewSource _source = null!;
     private bool _ready;   // guards combo SelectionChanged that fires during XAML load
+
+    // Every SelectionChanged the control raises, in order. A Reset that the control absorbs cleanly
+    // shows as one entry; a Reset it reacts to late shows the transient clear as a separate entry
+    // before the restore, which is the only externally visible difference between the two.
+    private readonly List<string> _selLog = new();
+
+    // Free-form diagnostic line appended to the status text, so a UIA driver can read whatever the
+    // last diagnostic action measured.
+    private string _diag = "";
 
     // The cycle each column was built with. Kept so "As authored" can put back the per-column
     // choices - Score deliberately opens Descending - after the combo has overridden them all.
@@ -32,7 +47,7 @@ public sealed partial class ShapingPage : Page
         Table.GroupHeaderTemplate = (DataTemplate)Resources["GroupHeader"];
 
         Table.Sorted += Table_Sorted;
-        Table.SelectionChanged += (s, e) => UpdateStatus();
+        Table.SelectionChanged += Table_SelectionChanged;
 
         Table.CanUserSortColumns = HeaderSortToggle.IsChecked == true;
         UpdateCycleHint();
@@ -230,9 +245,89 @@ public sealed partial class ShapingPage : Page
 
     private void Sort_Changed(object sender, SelectionChangedEventArgs e) => ApplySort();
 
-    private void ExpandAll_Click(object sender, RoutedEventArgs e) => Table.ExpandAllGroups();
+    private void ExpandAll_Click(object sender, RoutedEventArgs e)
+    {
+        _diag = "focusAtClick=" + FocusedName();
+        Table.ExpandAllGroups();
+        UpdateStatus();
+    }
 
-    private void CollapseAll_Click(object sender, RoutedEventArgs e) => Table.CollapseAllGroups();
+    private void CollapseAll_Click(object sender, RoutedEventArgs e)
+    {
+        _diag = "focusAtClick=" + FocusedName();
+        Table.CollapseAllGroups();
+        UpdateStatus();
+    }
+
+    // A button steals focus before its Click handler runs, which destroys the very state the bulk
+    // expand/collapse focus restore exists to preserve. An accelerator leaves focus where it is,
+    // so this is the path that exercises the real scenario.
+    private void CollapseAccel_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        _diag = "focusAtAccel=" + FocusedName();
+        Table.CollapseAllGroups();
+        UpdateStatus();
+        args.Handled = true;
+    }
+
+    private void ExpandAccel_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        _diag = "focusAtAccel=" + FocusedName();
+        Table.ExpandAllGroups();
+        UpdateStatus();
+        args.Handled = true;
+    }
+
+    private string FocusedName()
+    {
+        // Read through the same API the control uses, so this reports exactly what the control's
+        // focus capture would have seen at the moment the bulk command ran. The XamlRoot overload
+        // is the one that works in WinUI 3; the parameterless one returns null.
+        return FocusManager.GetFocusedElement(XamlRoot) is FrameworkElement fe
+            ? $"{fe.GetType().Name}/{(fe as Control)?.FocusState.ToString() ?? "n-a"}"
+            : "null";
+    }
+
+    // Reads banding straight off the realized containers instead of sampling pixels: no DPI, z-order
+    // or screenshot timing to get wrong. Emits one character per container in visual order.
+    private void DumpBanding_Click(object sender, RoutedEventArgs e)
+    {
+        var found = new List<(double Y, char C)>();
+        Collect(Table, found);
+        var ordered = found.OrderBy(t => t.Y).Select(t => t.C).ToArray();
+        _diag = "band " + new string(ordered);
+        UpdateStatus();
+    }
+
+    private void Collect(DependencyObject node, List<(double Y, char C)> found)
+    {
+        var count = VisualTreeHelper.GetChildrenCount(node);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(node, i);
+            var name = child.GetType().Name;
+            if (name == "TableViewRow" || name == "TableViewGroupHeader")
+            {
+                var fe = (FrameworkElement)child;
+                double y;
+                try { y = fe.TransformToVisual(Table).TransformPoint(new Windows.Foundation.Point(0, 0)).Y; }
+                catch { continue; }
+
+                var c = '|';
+                if (name == "TableViewRow")
+                {
+                    var fill = (child as Control)?.Background as SolidColorBrush;
+                    c = fill is null ? '-'
+                        : fill.Color.R > 200 && fill.Color.G < 100 ? 'R'
+                        : fill.Color.R > 200 && fill.Color.G > 200 ? 'W'
+                        : '?';
+                }
+                found.Add((y, c));
+            }
+
+            Collect(child, found);
+        }
+    }
 
     private void GroupHeaderTemplate_Toggled(object sender, RoutedEventArgs e)
     {
@@ -338,6 +433,66 @@ public sealed partial class ShapingPage : Page
         UpdateStatus();
     }
 
+    private void Repump_Click(object sender, RoutedEventArgs e)
+    {
+        // Detach the TableView, then re-attach it on the next tick. Doing both in one tick would let
+        // XAML coalesce the tree change and raise neither Unloaded nor Loaded, so the detach has to
+        // settle first. The ItemsSource is untouched, so the reload re-runs the rows pipeline against
+        // the very same ItemsSourceView - the case where the selection subscriptions must not
+        // re-register, or they fall behind SelectionModel and stop seeing a Reset before it does.
+        if (TableHost.Child is null)
+        {
+            return;
+        }
+
+        TableHost.Child = null;
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            TableHost.Child = Table;
+            UpdateStatus();
+        });
+    }
+
+    private void Table_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        _selLog.Add($"#{_selLog.Count + 1} idx={Table.SelectedIndex} +{e.AddedItems.Count}-{e.RemovedItems.Count}");
+        UpdateStatus();
+    }
+
+    private void ClearSelLog_Click(object sender, RoutedEventArgs e)
+    {
+        _selLog.Clear();
+        UpdateStatus();
+    }
+
+    // Alternating banding is index-derived, so grouping is what exposes whether the parity counts
+    // synthesized header rows. Opaque, saturated fills so a screenshot can be sampled per row.
+    private void Banding_Changed(object sender, RoutedEventArgs e)
+    {
+        if (BandingToggle.IsChecked == true)
+        {
+            Table.RowBackground = new SolidColorBrush(Microsoft.UI.Colors.White);
+            Table.AlternatingRowBackground = new SolidColorBrush(Microsoft.UI.Colors.Red);
+        }
+        else
+        {
+            Table.RowBackground = null;
+            Table.AlternatingRowBackground = null;
+        }
+    }
+
+    private void AddItem_Click(object sender, RoutedEventArgs e)
+    {
+        // Mutates the bound collection, so the projection re-publishes over the ItemsSourceView the
+        // TableView already holds rather than handing it a new one. With grouping on there is no
+        // incremental path, so this arrives as a Reset - the case the selection reset detector
+        // exists for, and the only one that exposes a subscription order inversion.
+        var n = _items.Count + 1;
+        _items.Add(new Item($"Added {n}", "Engineer", "Seattle", 42, "", DateTimeOffset.Now, "", null));
+
+        UpdateStatus();
+    }
+
     private void UpdateStatus()
     {
         var text = FilterBox.Text?.Trim() ?? string.Empty;
@@ -366,6 +521,8 @@ public sealed partial class ShapingPage : Page
         StatusText.Text =
             $"rows {visible.Count}/{_items.Count}   filter '{text}'{(highOnly ? " + score>=50" : "")}   " +
             $"group {groupPart}   sort {sortPart}   cycle {((ComboBoxItem)CycleCombo.SelectedItem).Content}   " +
-            $"selected {(selected is null ? "none" : $"'{selected.Name}' @ {Table.SelectedIndex}")}";
+            $"selected {(selected is null ? "none" : $"'{selected.Name}' @ {Table.SelectedIndex}")}" +
+            $"\nselLog[{_selLog.Count}] {string.Join(" | ", _selLog)}" +
+            $"\ndiag {_diag}";
     }
 }
