@@ -116,7 +116,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_NOT_NULL(textBox);
 
             VERIFY_ARE_EQUAL(
-                ref new Platform::String(accessKeyMessage),
+                ref new Platform::String(L""),
                 xaml_automation::AutomationProperties::GetAccessKey(textBox));
             VERIFY_ARE_EQUAL(
                 ref new Platform::String(L""),
@@ -188,7 +188,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             auto altA = ref new Platform::String(L"Alt, A");
             auto altB = ref new Platform::String(L"Alt, B");
             auto altX = ref new Platform::String(L"Alt, X");
-            auto altF = ref new Platform::String(L"Alt, F");
+            auto scopedAltMA = ref new Platform::String(L"Alt, M, A");
+            auto scopedAltSA = ref new Platform::String(L"Alt, S, A");
+            auto parentShortcut = ref new Platform::String(L"Ctrl+K");
             auto childShortcut = ref new Platform::String(L"Child shortcut");
             auto emptyAccessKey = ref new Platform::String(L"");
 
@@ -199,48 +201,52 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_NOT_NULL(textBoxPeer);
 
             VERIFY_ARE_EQUAL(altA, textBoxPeer->GetAccessKey());
-            VERIFY_ARE_EQUAL(altA, xaml_automation::AutomationProperties::GetAccessKey(textBox));
+            VERIFY_ARE_EQUAL(emptyAccessKey, xaml_automation::AutomationProperties::GetAccessKey(textBox));
 
             autoSuggestBox->AccessKey = L"B";
-            VERIFY_ARE_EQUAL(altB, xaml_automation::AutomationProperties::GetAccessKey(textBox));
             VERIFY_ARE_EQUAL(altB, textBoxPeer->GetAccessKey());
 
+            xaml_automation::AutomationProperties::SetAccessKey(autoSuggestBox, parentShortcut);
+            VERIFY_ARE_EQUAL(parentShortcut, textBoxPeer->GetAccessKey());
+
+            xaml_automation::AutomationProperties::SetAccessKey(autoSuggestBox, emptyAccessKey);
+            VERIFY_ARE_EQUAL(emptyAccessKey, textBoxPeer->GetAccessKey());
+
+            autoSuggestBox->ClearValue(xaml_automation::AutomationProperties::AccessKeyProperty);
+            autoSuggestBox->AccessKey = L"A";
+            VERIFY_ARE_EQUAL(altA, textBoxPeer->GetAccessKey());
+
+            auto scopeOwner = ref new xaml_controls::Button();
+            scopeOwner->IsAccessKeyScope = true;
+            scopeOwner->AccessKey = L"M";
+            autoSuggestBox->AccessKeyScopeOwner = scopeOwner;
+            VERIFY_ARE_EQUAL(scopedAltMA, textBoxPeer->GetAccessKey());
+
+            scopeOwner->AccessKey = L"S";
+            VERIFY_ARE_EQUAL(scopedAltSA, textBoxPeer->GetAccessKey());
+
+            autoSuggestBox->AccessKeyScopeOwner = nullptr;
+            VERIFY_ARE_EQUAL(altA, textBoxPeer->GetAccessKey());
+
             textBox->AccessKey = L"X";
-            VERIFY_ARE_EQUAL(emptyAccessKey, xaml_automation::AutomationProperties::GetAccessKey(textBox));
             VERIFY_ARE_EQUAL(altX, textBoxPeer->GetAccessKey());
 
             textBox->AccessKey = L"";
-            VERIFY_ARE_EQUAL(emptyAccessKey, xaml_automation::AutomationProperties::GetAccessKey(textBox));
             VERIFY_ARE_EQUAL(emptyAccessKey, textBoxPeer->GetAccessKey());
 
             textBox->ClearValue(xaml::UIElement::AccessKeyProperty);
-            VERIFY_ARE_EQUAL(altB, xaml_automation::AutomationProperties::GetAccessKey(textBox));
-            VERIFY_ARE_EQUAL(altB, textBoxPeer->GetAccessKey());
-
-            autoSuggestBox->AccessKey = L"";
-            VERIFY_ARE_EQUAL(emptyAccessKey, xaml_automation::AutomationProperties::GetAccessKey(textBox));
-            VERIFY_ARE_EQUAL(emptyAccessKey, textBoxPeer->GetAccessKey());
+            VERIFY_ARE_EQUAL(altA, textBoxPeer->GetAccessKey());
 
             xaml_automation::AutomationProperties::SetAccessKey(textBox, childShortcut);
-            autoSuggestBox->AccessKey = L"C";
             VERIFY_ARE_EQUAL(childShortcut, xaml_automation::AutomationProperties::GetAccessKey(textBox));
             VERIFY_ARE_EQUAL(childShortcut, textBoxPeer->GetAccessKey());
 
-            textBox->ClearValue(xaml_automation::AutomationProperties::AccessKeyProperty);
-            textBox->AccessKey = L"X";
-            autoSuggestBox->AccessKey = L"D";
-            VERIFY_ARE_EQUAL(emptyAccessKey, xaml_automation::AutomationProperties::GetAccessKey(textBox));
-            VERIFY_ARE_EQUAL(altX, textBoxPeer->GetAccessKey());
-
-            textBox->AccessKey = L"";
-            autoSuggestBox->AccessKey = L"E";
+            xaml_automation::AutomationProperties::SetAccessKey(textBox, emptyAccessKey);
             VERIFY_ARE_EQUAL(emptyAccessKey, xaml_automation::AutomationProperties::GetAccessKey(textBox));
             VERIFY_ARE_EQUAL(emptyAccessKey, textBoxPeer->GetAccessKey());
 
-            textBox->ClearValue(xaml::UIElement::AccessKeyProperty);
-            autoSuggestBox->AccessKey = L"F";
-            VERIFY_ARE_EQUAL(altF, xaml_automation::AutomationProperties::GetAccessKey(textBox));
-            VERIFY_ARE_EQUAL(altF, textBoxPeer->GetAccessKey());
+            textBox->ClearValue(xaml_automation::AutomationProperties::AccessKeyProperty);
+            VERIFY_ARE_EQUAL(altA, textBoxPeer->GetAccessKey());
 
             auto standaloneTextBox = ref new xaml_controls::TextBox();
             standaloneTextBox->AccessKey = L"Q";
