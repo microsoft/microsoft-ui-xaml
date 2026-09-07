@@ -70,6 +70,19 @@
                 <ToggleSwitch x:Name="FrameCaptureToggle" Header="Capture frame cadence (FPS)"
                               OnContent="On" OffContent="Off" Toggled="OnFrameCaptureToggled" />
 
+                <!-- InkPresenter.InputDeviceTypes. The product default is Pen only (UWP InkCanvas parity);
+                     tick Mouse or Touch to ink with those instead. -->
+                <TextBlock Text="Input device types" FontWeight="SemiBold" />
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <CheckBox x:Name="PenDeviceCheck" Content="Pen" IsChecked="True"
+                              Checked="OnInputDeviceChanged" Unchecked="OnInputDeviceChanged" />
+                    <CheckBox x:Name="MouseDeviceCheck" Content="Mouse" IsChecked="True"
+                              Checked="OnInputDeviceChanged" Unchecked="OnInputDeviceChanged" />
+                    <CheckBox x:Name="TouchDeviceCheck" Content="Touch" IsChecked="True"
+                              Checked="OnInputDeviceChanged" Unchecked="OnInputDeviceChanged" />
+                </StackPanel>
+                <TextBlock x:Name="InputDeviceText" TextWrapping="Wrap" FontFamily="Consolas" FontSize="12" />
+
                 <TextBlock Text="Startup" FontWeight="SemiBold" />
                 <TextBlock x:Name="StartupText" TextWrapping="Wrap" FontFamily="Consolas" FontSize="12" />
 
