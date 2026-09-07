@@ -155,6 +155,7 @@ public:
     _Check_return_ HRESULT IsHdrOutput(_In_ HMONITOR monitor, _Out_ bool* isHDR);
     bool ShouldAttemptToUseA8Textures() const { return !m_fIsWarpDevice || !m_fIsHardwareOutput; }
     bool UseIntermediateUploadSurface() const { return m_fUseIntermediateUploadSurface; }
+    bool IsWarpDevice() { return m_fIsWarpDevice; }
 
     void TrimMemory(const UINT64 currentTime);
 
@@ -186,7 +187,6 @@ private:
         return pointerWithLock;
     }
 
-    bool IsWarpDevice() { return m_fIsWarpDevice; }
     D3D_FEATURE_LEVEL GetFeatureLevel() { return m_featureLevel; }
     bool IsOnSameAdapter(_In_ const LUID *pOtherLuid);
 

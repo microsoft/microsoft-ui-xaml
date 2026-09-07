@@ -12,6 +12,7 @@
 #include <WicService.h>
 #include <corep.h>
 #include "GraphicsUtility.h"
+#include <RuntimeEnabledFeatures.h>
 
 namespace ImageDecoderFactory
 {
@@ -55,7 +56,9 @@ _Check_return_ HRESULT CreateDecoder(
             // The decoder should take a reference on the factory.
             ctl::ComPtr<ID2D1Factory1> d2dFactory(deviceNoRef->GetD2DFactory()->GetFactory());
 
-            decoder = std::make_unique<SvgImageDecoder>(std::move(d2dFactory));
+            const bool useDevice = RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector()->IsFeatureEnabled(
+                RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableSvgDeviceRendering);
+            decoder = std::make_unique<SvgImageDecoder>(std::move(d2dFactory), useDevice ? deviceNoRef : nullptr);
         }
     }
     else
