@@ -74,3 +74,39 @@ file. XAML usage raises `WMC1501` once per page; those are deliberately left vis
 `Program.cs` provides `Main` and the project defines `DISABLE_XAML_GENERATED_MAIN`, following the
 [DisableXamlGeneratedMain](../DisableXamlGeneratedMain) sample. This is a normal WinUI pattern, not a
 workaround.
+
+`Main` forwards command-line arguments to `App`, and `App` forwards them to `MainWindow`. Supported
+shell arguments are:
+
+- `--page=<tag>` — open one of the page-map/navigation tags directly. This is intentionally supported
+  for UIA automation and local verification.
+- `--show-dev-info` — show the developer status bar that reports the loaded Tabular controls assembly.
+- `--verify-groups` / `--verify-selection` — local automation log flags, compiled only when
+  `TableViewSampleEnableVerificationLogs=true` defines `TABLEVIEW_SAMPLE_VERIFY`. Public sample
+  builds must not write diagnostic log files next to the executable by default.
+
+## Shell invariants
+
+`App.xaml` owns the sample-specific row-brush resources used by grid-line/row-background demos.
+Keep these resource key names stable because pages resolve them with `{ThemeResource}`:
+
+- `SampleCustomRowBackgroundBrush`
+- `SampleCustomAlternatingRowBackgroundBrush`
+
+Theme dictionaries must use only the recognized keys `Light`, `Dark`, and `HighContrast`. The
+high-contrast entries must use `SystemColor*` resources rather than accent colors.
+
+`SamplePresenter` is a normal UserControl in this assembly. Bind `Header`, `Description`, `Example`,
+and `Options` with `x:Bind`; do not reintroduce split-binary/CsWinRT manual content sync
+workarounds. Its `SourceSnippet` and `AdditionalSnippet` values must correspond to files under
+`Snippets\*.txt`. `Generate-BuildInfo.ps1` validates those declarations at compile time before
+emitting `BuildInfo.g.cs`.
+
+`BuildInfo` is generated to `$(IntermediateOutputPath)\BuildInfo.g.cs` and included from there.
+Do not check in generated `BuildInfo.cs`, and do not change the existing `BuildInfo` field names
+without updating `Pages\AboutPage.xaml.cs`.
+
+The pages deliberately source-free today are `AboutPage.xaml`, `CellEditingPage.xaml`,
+`FileExplorerPage.xaml`, `FilePropertiesPage.xaml`, `FilterPage.xaml`, `HomePage.xaml`,
+`PerformancePage.xaml`, `SettingsPage.xaml`, and `TaskManagerPage.xaml`. All other
+`SamplePresenter` pages that declare snippet attributes are covered by the snippet-existence check.

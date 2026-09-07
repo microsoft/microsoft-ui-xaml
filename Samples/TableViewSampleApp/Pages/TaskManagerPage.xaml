@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.TaskManagerPage"
+    NavigationCacheMode="Disabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:models="using:TableViewSampleApp.Models"
+    xmlns:local="using:TableViewSampleApp.Pages"
+    xmlns:controls="using:TableViewSampleApp.Controls"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <local:RowAutomationNameConverter x:Key="RowAutomationNameConverter"/>
+
+        <DataTemplate x:Key="NameCellTemplate" x:DataType="models:ProcessItem">
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="12,0,8,0">
+                <Image Source="{x:Bind IconPath, Mode=OneWay}" Width="16" Height="16" Visibility="{x:Bind HasIcon, Mode=OneWay}"/>
+                <FontIcon Glyph="{x:Bind IconGlyph, Mode=OneWay}" FontSize="14" Visibility="{x:Bind HasGlyph, Mode=OneWay}" AutomationProperties.AccessibilityView="Raw"/>
+                <TextBlock Text="{x:Bind Name, Mode=OneWay}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="StatusCellTemplate" x:DataType="models:ProcessItem">
+            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="8,0">
+                <TextBlock Text="{x:Bind StatusText, Mode=OneWay}" TextTrimming="CharacterEllipsis" Visibility="{x:Bind HasStatusText, Mode=OneWay}"/>
+                <FontIcon Glyph="&#xE945;" FontSize="12" Foreground="{ThemeResource SystemFillColorSuccessBrush}" Visibility="{x:Bind IsEfficiencyMode, Mode=OneWay}" AutomationProperties.Name="{Binding Name, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Efficiency mode for {0}'}"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="CpuCellTemplate" x:DataType="models:ProcessItem">
+            <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <Border Background="{x:Bind CpuBackground, Mode=OneWay}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" Padding="8,4" CornerRadius="0">
+                    <TextBlock Text="{x:Bind CpuDisplay, Mode=OneWay}" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                </Border>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="MemoryCellTemplate" x:DataType="models:ProcessItem">
+            <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <Border Background="{x:Bind MemoryBackground, Mode=OneWay}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" Padding="8,4" CornerRadius="0">
+                    <TextBlock Text="{x:Bind MemoryDisplay, Mode=OneWay}" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                </Border>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DiskCellTemplate" x:DataType="models:ProcessItem">
+            <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <Border Background="{x:Bind DiskBackground, Mode=OneWay}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" Padding="8,4" CornerRadius="0">
+                    <TextBlock Text="{x:Bind DiskDisplay, Mode=OneWay}" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                </Border>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="NetworkCellTemplate" x:DataType="models:ProcessItem">
+            <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <Border Background="{x:Bind NetworkBackground, Mode=OneWay}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" Padding="8,4" CornerRadius="0">
+                    <TextBlock Text="{x:Bind NetworkDisplay, Mode=OneWay}" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                </Border>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <controls:SamplePresenter
+        Header="Task Manager"
+        Description="A Task Manager-style process dashboard with template columns, sortable telemetry, live heat-map cells, search filtering, and light/dark theme support."
+        SourceCaption="TaskManagerPage.xaml (excerpt)"
+        SourceSnippet="TaskManager.xaml.txt"
+        AdditionalSnippetCaption="TaskManagerPage.xaml.cs (excerpt)"
+        AdditionalSnippet="TaskManager.cs.txt"
+        StretchExample="True">
+        <controls:SamplePresenter.Example>
+    <Grid Padding="24" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource ControlCornerRadius}"
+                Padding="16,10">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                    <TextBlock Text="Processes" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="ViewModeCombo" SelectedIndex="0" VerticalAlignment="Center"
+                              MinWidth="170" SelectionChanged="OnViewModeChanged"
+                              AutomationProperties.Name="Process list view mode"
+                              ToolTipService.ToolTip="Switch how the process list is shaped (TableViewSource GroupBy or flat list).">
+                        <ComboBoxItem Content="Grouped by category"/>
+                        <ComboBoxItem Content="Flat list"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <AutoSuggestBox x:Name="SearchBox"
+                                Grid.Column="1"
+                                PlaceholderText="Type a name, publisher, or PID to search"
+                                QueryIcon="Find"
+                                TextChanged="OnSearchBoxTextChanged"
+                                MinWidth="140"
+                                MaxWidth="380"
+                                AutomationProperties.Name="Process search"
+                                Margin="12,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center"/>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                    <ToggleSwitch x:Name="ThemeToggle"
+                                  Header="Dark"
+                                  OnContent=""
+                                  OffContent=""
+                                  Toggled="OnThemeToggled"
+                                  VerticalAlignment="Center"
+                                  MinWidth="0"/>
+                    <Button Content="Run new task"/>
+                    <Button Content="End task" Click="OnEndTaskClick"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+            <adv:TableView
+                x:Name="ProcessTable"
+                AutomationProperties.AutomationId="TaskManagerProcessTable"
+                Sorted="OnProcessTableSorted"
+                SelectionChanged="OnSelectionChanged"
+                SelectionMode="Single"
+                VerticalAlignment="Stretch"
+                MinHeight="420">
+                <adv:TableViewTemplateColumn Header="Name" CellTemplate="{StaticResource NameCellTemplate}" MinWidth="320" Width="400" CanSort="True" SortMemberPath="Name"/>
+                <adv:TableViewTemplateColumn Header="Status" CellTemplate="{StaticResource StatusCellTemplate}" MinWidth="100" Width="130" CanSort="True" SortMemberPath="StatusText"/>
+                <adv:TableViewTemplateColumn CellTemplate="{StaticResource CpuCellTemplate}" MinWidth="70" Width="90" CanSort="True" SortMemberPath="CpuPercent">
+                    <adv:TableViewTemplateColumn.Header>
+                        <StackPanel Spacing="0">
+                            <TextBlock Text="CPU"/>
+                            <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="CpuSummary" Text="0%" FontSize="12" FontWeight="Normal" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                    </adv:TableViewTemplateColumn.Header>
+                </adv:TableViewTemplateColumn>
+                <adv:TableViewTemplateColumn CellTemplate="{StaticResource MemoryCellTemplate}" MinWidth="90" Width="120" CanSort="True" SortMemberPath="MemoryMB">
+                    <adv:TableViewTemplateColumn.Header>
+                        <StackPanel Spacing="0">
+                            <TextBlock Text="Memory"/>
+                            <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="MemorySummary" Text="0%" FontSize="12" FontWeight="Normal" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                    </adv:TableViewTemplateColumn.Header>
+                </adv:TableViewTemplateColumn>
+                <adv:TableViewTemplateColumn CellTemplate="{StaticResource DiskCellTemplate}" MinWidth="80" Width="100" CanSort="True" SortMemberPath="DiskMBps">
+                    <adv:TableViewTemplateColumn.Header>
+                        <StackPanel Spacing="0">
+                            <TextBlock Text="Disk"/>
+                            <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="DiskSummary" Text="0%" FontSize="12" FontWeight="Normal" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                    </adv:TableViewTemplateColumn.Header>
+                </adv:TableViewTemplateColumn>
+                <adv:TableViewTemplateColumn CellTemplate="{StaticResource NetworkCellTemplate}" MinWidth="80" Width="100" CanSort="True" SortMemberPath="NetworkMbps">
+                    <adv:TableViewTemplateColumn.Header>
+                        <StackPanel Spacing="0">
+                            <TextBlock Text="Network"/>
+                            <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="NetworkSummary" Text="0%" FontSize="12" FontWeight="Normal" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                    </adv:TableViewTemplateColumn.Header>
+                </adv:TableViewTemplateColumn>
+            </adv:TableView>
+        </Border>
+
+        <Border Grid.Row="2"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource ControlCornerRadius}"
+                Padding="16,6">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="StatusBar" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="Selected:" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="SelectedProcessText" Text="(none)" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+        </controls:SamplePresenter.Example>
+    </controls:SamplePresenter>
+</Page>

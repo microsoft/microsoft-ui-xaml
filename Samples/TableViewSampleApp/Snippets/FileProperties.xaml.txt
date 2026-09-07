@@ -1,0 +1,30 @@
+<Grid ColumnSpacing="12">
+    <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="260"/>
+        <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+
+    <ListView x:Name="FileList"
+              DisplayMemberPath="Name"
+              SelectionChanged="OnFileSelectionChanged"
+              SelectionMode="Single"/>
+
+    <Grid Grid.Column="1" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="SelectedFileText" Text="Select a file to see its details"/>
+
+        <adv:TableView x:Name="PropTable"
+                       Grid.Row="1"
+                       SelectionMode="Single">
+            <adv:TableViewTextColumn Header="Property" Width="200" MinWidth="140" Binding="{Binding Property}"/>
+            <adv:TableViewTextColumn Header="Value" Width="*" Binding="{Binding Value}"/>
+        </adv:TableView>
+
+        <TextBlock x:Name="StatusText" Grid.Row="2" AutomationProperties.LiveSetting="Polite"/>
+    </Grid>
+</Grid>

@@ -1,0 +1,80 @@
+private readonly FileSystemBrowser _browser = new();
+private readonly Stack<string> _history = new();
+private string _currentDir = string.Empty;
+
+public ObservableCollection<FileSystemEntry> Entries { get; } = new();
+
+private void Navigate(string directoryPath, bool addToHistory)
+{
+    string fullPath;
+    try
+    {
+        fullPath = Path.GetFullPath(Environment.ExpandEnvironmentVariables(directoryPath));
+    }
+    catch
+    {
+        return;
+    }
+
+    if (!Directory.Exists(fullPath))
+    {
+        return;
+    }
+
+    if (addToHistory && !string.IsNullOrEmpty(_currentDir) && !PathsEqual(_currentDir, fullPath))
+    {
+        _history.Push(_currentDir);
+    }
+
+    _currentDir = fullPath;
+    RefreshEntries();
+}
+
+private void RefreshEntries()
+{
+    var entries = ApplyActiveSort(_browser.GetEntries(_currentDir)).ToList();
+    Entries.Clear();
+    foreach (var entry in entries)
+    {
+        Entries.Add(entry);
+    }
+
+    FileTable.ItemsSource = Entries;
+    FileTable.DeselectAll();
+    AddressBar.Text = _currentDir;
+    RefreshSelectionText();
+}
+
+private IEnumerable<FileSystemEntry> ApplyActiveSort(IEnumerable<FileSystemEntry> source)
+{
+    IOrderedEnumerable<FileSystemEntry> ordered = source.OrderByDescending(entry => entry.IsFolder);
+    var column = SampleShape.ActiveSortColumn(FileTable);
+    if (column is null ||
+        SampleShape.ActiveSortDirection(FileTable) == SortDirection.None ||
+        string.IsNullOrEmpty(column.SortMemberPath) ||
+        !s_keySelectors.TryGetValue(column.SortMemberPath, out var keySelector))
+    {
+        return ordered;
+    }
+
+    return SampleShape.ActiveSortDirection(FileTable) == SortDirection.Descending
+        ? ordered.ThenByDescending(keySelector)
+        : ordered.ThenBy(keySelector);
+}
+
+private void OnRowDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+{
+    if (FileTable.SelectedItem is FileSystemEntry { IsFolder: true } entry)
+    {
+        Navigate(entry.FullPath, addToHistory: true);
+    }
+}
+
+private void RefreshSelectionText()
+{
+    var selectedItems = FileTable.SelectedItem is FileSystemEntry selected
+        ? new List<FileSystemEntry> { selected }
+        : new List<FileSystemEntry>();
+    var totalSize = selectedItems.Where(entry => !entry.IsFolder).Sum(entry => entry.Size);
+    SelectionText.Text = $"{selectedItems.Count} selected ({FileSystemEntry.FormatSize(totalSize)})";
+}

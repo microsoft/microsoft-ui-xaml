@@ -1,0 +1,57 @@
+private void ApplyCurrentSource()
+{
+    PeopleTable.ItemsSource = ApplyActiveSort(TableViewSource.From(_people));
+}
+
+private TableViewSource ApplyActiveSort(TableViewSource source)
+{
+    var sortColumn = SampleShape.ActiveSortColumn(PeopleTable);
+    if (sortColumn is null ||
+        SampleShape.ActiveSortDirection(PeopleTable) == SortDirection.None ||
+        string.IsNullOrEmpty(sortColumn.SortMemberPath))
+    {
+        return source;
+    }
+
+    return source.Sort(
+        item => SortKey(item, sortColumn.SortMemberPath),
+        SampleShape.ActiveSortDirection(PeopleTable));
+}
+
+// ----- Selection -----
+// Row-scoped and single-item: SelectedItem and SelectedIndex are read-only
+// projections that stay coherent with each other. Drive selection through
+// Select / Deselect / DeselectAll.
+private void OnSelectionChanged(TableView sender, SelectionChangedEventArgs args)
+{
+    SelectionCountText.Text = PeopleTable.SelectedItem is null
+        ? "No rows selected"
+        : "1 row selected";
+}
+
+PeopleTable.Select(0);
+PeopleTable.DeselectAll();
+
+// ----- Sorting -----
+// Sorted fires after the sort has been applied and the header chevron published.
+// The state lives on the COLUMN, not on the table, and sorting is single-column,
+// so at most one column is ever anything but None.
+private void OnPeopleTableSorted(TableView sender, TableViewSortedEventArgs args)
+{
+    // args.Column is null when the sort was cleared.
+    var active = PeopleTable.Columns
+        .FirstOrDefault(c => c.SortDirection != SortDirection.None);
+
+    SortReadoutText.Text = active is null
+        ? "(none)"
+        : $"{active.Header} {active.SortDirection}";
+}
+
+// ----- Columns -----
+// HeadersVisibility toggles the column-header strip. Email / Role are removed
+// from the Columns vector and the same instances are inserted back in canonical
+// order, so their Width and sort state stay with the column object.
+PeopleTable.HeadersVisibility = TableViewHeadersVisibility.None;
+PeopleTable.Columns.Remove(EmailColumn);
+PeopleTable.Columns.Insert(5, EmailColumn);
+PeopleTable.SelectionMode = TableViewSelectionMode.None;

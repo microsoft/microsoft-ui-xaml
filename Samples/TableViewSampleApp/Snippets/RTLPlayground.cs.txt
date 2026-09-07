@@ -1,0 +1,5 @@
+PlaygroundTable.FlowDirection = FlowDirection.RightToLeft;
+
+var column = PlaygroundTable.Columns[fromIndex];
+PlaygroundTable.Columns.RemoveAt(fromIndex);
+PlaygroundTable.Columns.Insert(toIndex, column);

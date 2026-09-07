@@ -1,0 +1,34 @@
+// ColumnReorderPage.xaml.cs — programmatic reorder + autosize
+
+// Move the selected column by moving the entry in the Columns vector.
+private void MoveSelected(int direction)
+{
+    var column = SelectedColumn();
+    if (column is null)
+    {
+        return;
+    }
+
+    int from = PeopleTable.Columns.IndexOf(column);
+    int to = from + direction;
+    if (from < 0 || to < 0 || to >= PeopleTable.Columns.Count)
+    {
+        return;
+    }
+
+    PeopleTable.Columns.RemoveAt(from);
+    PeopleTable.Columns.Insert(to, column);
+}
+
+// Fit one column to its content by setting its Width to Auto.
+var selected = SelectedColumn();
+if (selected is not null)
+{
+    selected.Width = new GridLength(1, GridUnitType.Auto);
+}
+
+// Fit all columns.
+foreach (var column in PeopleTable.Columns)
+{
+    column.Width = new GridLength(1, GridUnitType.Auto);
+}
