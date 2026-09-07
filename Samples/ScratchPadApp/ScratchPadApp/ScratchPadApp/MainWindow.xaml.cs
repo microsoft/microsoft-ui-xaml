@@ -60,17 +60,38 @@ namespace ScratchPadApp
             // re-attaches it at runtime so we can compare without reinstalling.
             // (Toolbar.TargetInkCanvas is left null here; the toggle sets it.)
 
-            // Enable ALL input devices AFTER the toolbar wires up, and again once each is loaded, so a
-            // mouse/touch-only device (e.g. a VM with no pen) can ink.
+            // Enable ALL input devices once. The InkPresenter is a stable instance that caches this, so it
+            // does not need re-applying as the toolbar / canvas load.
             ApplyInputDeviceTypes();
+
+            // Deferred-start validation. The OS rejects _InitializeCustomDry with E_ILLEGAL_METHOD_CALL
+            // once input has been activated, and on desktop (DComp) input activates on the first
+            // non-zero SetSize. Calling here -- during construction, before the first layout pass --
+            // is the supported ordering. Set INK_CUSTOMDRY_AT_STARTUP=1 to exercise it.
+            if (Environment.GetEnvironmentVariable("INK_CUSTOMDRY_AT_STARTUP") == "1")
+            {
+                try
+                {
+                    _inkSynchronizer = InkSurface.InkPresenter.ActivateCustomDrying();
+                    _customDryActive = _inkSynchronizer != null;
+                    App.Log("STARTUP ActivateCustomDrying -> " + (_customDryActive ? "OK (non-null)" : "returned null"));
+                    CustomDryToggle.IsOn = _customDryActive;
+                    CustomDryText.Text = _customDryActive
+                        ? "activated at startup - draw a stroke; BeginDry/EndDry run on each collection"
+                        : "ActivateCustomDrying returned null";
+                }
+                catch (Exception ex)
+                {
+                    App.Log("STARTUP ActivateCustomDrying THREW: " + ex.GetType().Name + ": " + ex.Message);
+                }
+            }
+
             Toolbar.Loaded += (s, e) =>
             {
-                ApplyInputDeviceTypes();
                 App.Log("Toolbar.Loaded ActiveTool=" + (Toolbar.ActiveTool?.GetType().Name ?? "null"));
             };
             InkSurface.Loaded += (s, e) =>
             {
-                ApplyInputDeviceTypes();
                 App.Log($"InkSurface.Loaded size = {InkSurface.ActualWidth} x {InkSurface.ActualHeight}");
             };
             // Diagnostic: log raw pointer input reaching the canvas (handledEventsToo=true so we see it
@@ -120,6 +141,16 @@ namespace ScratchPadApp
         private void InkPresenter_StrokesCollected(Microsoft.UI.Xaml.Controls.InkPresenter sender, Microsoft.UI.Xaml.Controls.InkStrokesCollectedEventArgs args)
         {
             App.Log("StrokesCollected fired: " + (args?.Strokes?.Count ?? 0) + " strokes");
+
+            // Custom drying: bracket the app's own rendering of the just-committed strokes. BeginDry hands
+            // back the strokes the presenter committed (a real app renders them itself here); EndDry
+            // releases the wet-ink layer. A returned count of 0 means the OS BeginDry capture (only valid
+            // inside this notification) did not land - the known gap this PR is about.
+            if (_customDryActive && _inkSynchronizer != null)
+            {
+                CustomDryStep();
+            }
+
             if (args?.Strokes == null) return;
 
             StrokeSample last = null;
@@ -141,6 +172,15 @@ namespace ScratchPadApp
         private int _pointerPressedCount, _pointerMovedCount, _pointerReleasedCount, _pointerHoveredCount,
                     _pointerEnteredCount, _pointerExitedCount, _pointerLostCount;
         private readonly List<string> _eventLog = new List<string>();
+
+        // Custom drying (WIP): the synchronizer handed back by ActivateCustomDrying + running counters.
+        private Microsoft.UI.Xaml.Controls.InkSynchronizer _inkSynchronizer;
+        private bool _customDryActive;
+        private int _customDryCollections;
+        private int _customDryStrokesTotal;
+
+        // Constant tint the app paints dried strokes with; created once, not per collection.
+        private readonly SolidColorBrush _customDryTint = new SolidColorBrush(Windows.UI.Color.FromArgb(0xFF, 0xC0, 0x30, 0x30));
 
         // Subscribes to every event this PR adds. The high-frequency events (StrokeContinued,
         // PointerMoved, PointerHovered) are counted only; the rest are also written to a short log.
@@ -199,6 +239,91 @@ namespace ScratchPadApp
                     ? Microsoft.UI.Xaml.Controls.InkInputProcessingMode.None
                     : Microsoft.UI.Xaml.Controls.InkInputProcessingMode.Inking;
             App.Log("InputProcessingMode = " + InkSurface.InkPresenter.InputProcessingConfiguration.Mode);
+        }
+
+        // Activate custom drying: the app takes over rendering of committed ("dry") ink. Once active,
+        // each StrokesCollected brackets the app's rendering with InkSynchronizer.BeginDry()/EndDry().
+        private void OnCustomDryToggled(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (CustomDryToggle.IsOn)
+                {
+                    _inkSynchronizer = InkSurface.InkPresenter.ActivateCustomDrying();
+                    _customDryActive = _inkSynchronizer != null;
+                    _customDryCollections = 0;
+                    _customDryStrokesTotal = 0;
+                    CustomDryText.Text = _customDryActive
+                        ? "activated - draw a stroke; BeginDry/EndDry run on each collection"
+                        : "ActivateCustomDrying returned null";
+                    App.Log("Custom drying activated: " + _customDryActive);
+                }
+                else
+                {
+                    _customDryActive = false;
+                    _inkSynchronizer = null;
+                    CustomDryText.Text = "off";
+                    App.Log("Custom drying deactivated");
+                }
+            }
+            catch (Exception ex)
+            {
+                _customDryActive = false;
+                CustomDryText.Text = "ActivateCustomDrying failed: " + ex.Message;
+                App.Log("Custom drying activate failed: " + ex.Message);
+            }
+        }
+
+        // Clip the dry-ink overlay to its own bounds so app-rendered strokes that leave the canvas (a
+        // stroke keeps drawing once the pointer is captured) do not paint across the neighboring panel.
+        private void OnDryOverlaySizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            DryOverlay.Clip = new RectangleGeometry
+            {
+                Rect = new Windows.Foundation.Rect(0, 0, e.NewSize.Width, e.NewSize.Height)
+            };
+        }
+
+        // Runs from StrokesCollected while custom drying is active: BeginDry returns the strokes the
+        // presenter just committed (a real app renders them itself), then EndDry releases the wet layer.
+        private void CustomDryStep()
+        {
+            try
+            {
+                var dryStrokes = _inkSynchronizer.BeginDry();
+                int n = dryStrokes?.Count ?? 0;
+                _customDryCollections++;
+                _customDryStrokesTotal += n;
+
+                // The app renders the dried strokes itself - the whole point of custom drying. Draw each as
+                // a red polyline on our own overlay Canvas, so it is visibly the app (not InkCanvas) drawing
+                // the committed ink.
+                if (n > 0)
+                {
+                    foreach (var stroke in dryStrokes)
+                    {
+                        var pts = stroke.GetInkPoints();
+                        if (pts == null || pts.Count < 2) { continue; }
+                        var poly = new Microsoft.UI.Xaml.Shapes.Polyline { Stroke = _customDryTint, StrokeThickness = System.Math.Max(1.5, stroke.DrawingAttributes.Size.Width) };
+                        var pc = new PointCollection();
+                        foreach (var ip in pts) { pc.Add(ip.Position); }
+                        poly.Points = pc;
+                        DryOverlay.Children.Add(poly);
+                    }
+                }
+
+                _inkSynchronizer.EndDry();
+                CustomDryText.Text =
+                    $"collection #{_customDryCollections}: app rendered {n} stroke(s) (tinted)" +
+                    (n == 0 ? "  <- EMPTY" : "") +
+                    $"\ntotal dried = {_customDryStrokesTotal}";
+                App.Log($"CustomDry BeginDry={n}, app-rendered, EndDry ok");
+            }
+            catch (Exception ex)
+            {
+                CustomDryText.Text = "BeginDry/EndDry threw: " + ex.Message;
+                App.Log("CustomDry step failed: " + ex.Message);
+            }
         }
 
         private StrokeSample ProcessStroke(InkStroke stroke)
