@@ -16,6 +16,16 @@ parameters:
   # WinUIGallery, which restores from the public MUX-Dependencies feed) override this.
   restoreConfigFile: $(Build.SourcesDirectory)\nuget.config
 
+# NOTE: The self-built Microsoft.WindowsAppSDK.WinUI component version is pinned to
+# $(Build.BuildNumber) (set once at run start from `name: $(versionFinal)`), NOT to
+# $(versionFinal). $(versionFinal) is derived from runtime expressions
+# (versionDate = format(pipeline.startTime), versionPrerelease = counter(versionDate))
+# that re-evaluate per stage; a run that crosses local midnight therefore computes a
+# different date in this (late) sample-app stage than the earlier stage that packed the
+# component into PackageStore. That mismatch makes the C++ (packages.config) sample
+# restore fail with "missing ...Microsoft.WindowsAppSDK.WinUI.<version>\build\native\
+# Microsoft.WindowsAppSDK.WinUI.props". Build.BuildNumber is immutable for the whole run,
+# so producer and consumer versions always agree.
 steps:
 - task: NuGetAuthenticate@1
   
@@ -29,7 +39,7 @@ steps:
         /t:restore
         /p:RestoreConfigFile=${{ parameters.restoreConfigFile }}
         /p:Platform=$(buildPlatform)
-        /p:WinUIVersion=$(versionFinal)
+        /p:WinUIVersion=$(Build.BuildNumber)
       configuration: '$(buildConfiguration)'
     env:
       # Provide the internal dependencies feed so NuGet can expand the
@@ -49,7 +59,7 @@ steps:
       configuration: '$(buildConfiguration)'
       enableDefaultLogger: false
       restoreNuGetPackages: false
-      msbuildArguments: ${{ parameters.msBuildArgs }} /p:WinUIVersion=$(versionFinal) /p:ArtifactsRoot=${{ parameters.artifactsRoot }} /binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.displayName }}.$(buildPlatform).$(buildConfiguration).binlog /restore /p:MUXFinalRelease=${{ parameters.MUXFinalRelease }}
+      msbuildArguments: ${{ parameters.msBuildArgs }} /p:WinUIVersion=$(Build.BuildNumber) /p:ArtifactsRoot=${{ parameters.artifactsRoot }} /binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.displayName }}.$(buildPlatform).$(buildConfiguration).binlog /restore /p:MUXFinalRelease=${{ parameters.MUXFinalRelease }}
     env:
       LkgVcToolsName: $(compilerOverridePackageName)
       LkgVcToolsVersion: $(compilerOverrideNupkgVersion)
@@ -93,4 +103,4 @@ steps:
       feedsToUse: config
       restoreArguments: >
         --configfile ${{ parameters.restoreConfigFile }}
-      arguments: ${{ parameters.msBuildArgs }} /p:WinUIVersion=$(versionFinal) -p:ArtifactsRoot=${{ parameters.artifactsRoot }} -binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.displayName }}.$(buildPlatform).$(buildConfiguration).dotnet.binlog -p:MUXFinalRelease=${{ parameters.MUXFinalRelease }}
+      arguments: ${{ parameters.msBuildArgs }} /p:WinUIVersion=$(Build.BuildNumber) -p:ArtifactsRoot=${{ parameters.artifactsRoot }} -binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.displayName }}.$(buildPlatform).$(buildConfiguration).dotnet.binlog -p:MUXFinalRelease=${{ parameters.MUXFinalRelease }}
