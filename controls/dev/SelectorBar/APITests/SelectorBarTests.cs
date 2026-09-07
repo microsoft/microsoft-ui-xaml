@@ -186,10 +186,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.IsNotNull(selectedItem.Background, "SelectorBarItem.Background must not be null, or the item's padding stops hit-testing.");
 
-                // A point in the item's left padding (SelectorBarItemPadding is 12,10,12,7), so it is
-                // never covered by the icon or text and only hit-tests through the container background.
+                // A point inside the item's left padding, so it is never covered by the icon or text
+                // and only hit-tests through the container background. Derived from Padding rather
+                // than hard-coded so re-theming SelectorBarItemPadding cannot invalidate the test.
+                double paddingLeft = selectedItem.Padding.Left;
+                Verify.IsTrue(paddingLeft > 0.0, "Test requires a non-zero left padding to probe, actual: " + paddingLeft);
+
                 Point paddingPoint = selectedItem.TransformToVisual(null).TransformPoint(
-                    new Point(4.0, selectedItem.ActualHeight / 2.0));
+                    new Point(paddingLeft / 2.0, selectedItem.ActualHeight / 2.0));
+
+                Log.Comment("Probing padding point " + paddingPoint.X + "," + paddingPoint.Y);
 
                 foreach (string stateName in new[]
                     {
