@@ -16,16 +16,19 @@ parameters:
   # WinUIGallery, which restores from the public MUX-Dependencies feed) override this.
   restoreConfigFile: $(Build.SourcesDirectory)\nuget.config
 
-# NOTE: The self-built Microsoft.WindowsAppSDK.WinUI component version is pinned to
-# $(Build.BuildNumber) (set once at run start from `name: $(versionFinal)`), NOT to
-# $(versionFinal). $(versionFinal) is derived from runtime expressions
-# (versionDate = format(pipeline.startTime), versionPrerelease = counter(versionDate))
-# that re-evaluate per stage; a run that crosses local midnight therefore computes a
-# different date in this (late) sample-app stage than the earlier stage that packed the
-# component into PackageStore. That mismatch makes the C++ (packages.config) sample
-# restore fail with "missing ...Microsoft.WindowsAppSDK.WinUI.<version>\build\native\
-# Microsoft.WindowsAppSDK.WinUI.props". Build.BuildNumber is immutable for the whole run,
-# so producer and consumer versions always agree.
+# NOTE: The self-built Microsoft.WindowsAppSDK.WinUI component is consumed via
+# $(winUIPackageVersion) - the version parsed from the actual produced .nupkg and
+# installed into $(Build.SourcesDirectory)\packages (see the ExtractWinUIVersion step in
+# WinUI-InstallWindowsAppSDK-Steps.yml, and the same var set alongside the pack in
+# WinUI-BuildMUXProject-Steps.yml). It intentionally does NOT use $(versionFinal):
+# versionFinal is derived from runtime expressions (versionDate = format(pipeline.startTime),
+# versionPrerelease = counter(versionDate)) that re-evaluate per stage, so a run that crosses
+# local midnight computes a different date here than the earlier stage that packed the
+# component -> the native (packages.config) sample import points at a version that was never
+# produced and fails with "missing ...Microsoft.WindowsAppSDK.WinUI.<version>\build\native\
+# Microsoft.WindowsAppSDK.WinUI.props". $(winUIPackageVersion) always matches the produced
+# package, and (unlike $(Build.BuildNumber)) is a real version in every pipeline, including
+# WinUI-GitHub-PR whose run name is not a version string.
 steps:
 - task: NuGetAuthenticate@1
   
@@ -39,7 +42,7 @@ steps:
         /t:restore
         /p:RestoreConfigFile=${{ parameters.restoreConfigFile }}
         /p:Platform=$(buildPlatform)
-        /p:WinUIVersion=$(Build.BuildNumber)
+        /p:WinUIVersion=$(winUIPackageVersion)
       configuration: '$(buildConfiguration)'
     env:
       # Provide the internal dependencies feed so NuGet can expand the
@@ -59,7 +62,7 @@ steps:
       configuration: '$(buildConfiguration)'
       enableDefaultLogger: false
       restoreNuGetPackages: false
-      msbuildArguments: ${{ parameters.msBuildArgs }} /p:WinUIVersion=$(Build.BuildNumber) /p:ArtifactsRoot=${{ parameters.artifactsRoot }} /binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.displayName }}.$(buildPlatform).$(buildConfiguration).binlog /restore /p:MUXFinalRelease=${{ parameters.MUXFinalRelease }}
+      msbuildArguments: ${{ parameters.msBuildArgs }} /p:WinUIVersion=$(winUIPackageVersion) /p:ArtifactsRoot=${{ parameters.artifactsRoot }} /binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.displayName }}.$(buildPlatform).$(buildConfiguration).binlog /restore /p:MUXFinalRelease=${{ parameters.MUXFinalRelease }}
     env:
       LkgVcToolsName: $(compilerOverridePackageName)
       LkgVcToolsVersion: $(compilerOverrideNupkgVersion)
@@ -103,4 +106,4 @@ steps:
       feedsToUse: config
       restoreArguments: >
         --configfile ${{ parameters.restoreConfigFile }}
-      arguments: ${{ parameters.msBuildArgs }} /p:WinUIVersion=$(Build.BuildNumber) -p:ArtifactsRoot=${{ parameters.artifactsRoot }} -binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.displayName }}.$(buildPlatform).$(buildConfiguration).dotnet.binlog -p:MUXFinalRelease=${{ parameters.MUXFinalRelease }}
+      arguments: ${{ parameters.msBuildArgs }} /p:WinUIVersion=$(winUIPackageVersion) -p:ArtifactsRoot=${{ parameters.artifactsRoot }} -binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.displayName }}.$(buildPlatform).$(buildConfiguration).dotnet.binlog -p:MUXFinalRelease=${{ parameters.MUXFinalRelease }}
