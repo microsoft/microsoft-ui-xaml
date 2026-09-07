@@ -75,25 +75,31 @@ jobs:
   # Validation-only provisioning until Evergreen is included in the Win10-2019-LTSC image.
   - ${{ if eq( parameters.testOS, 'Win10-RS5' ) }}:
     - task: PowerShell@2
-      displayName: 'Install Evergreen WebView2 Runtime on RS5'
+      displayName: 'Install x64 Evergreen WebView2 Standalone Runtime on RS5'
       inputs:
         targetType: 'inline'
         script: |
           $ErrorActionPreference = 'Stop'
           [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-          $installerPath = Join-Path $env:Agent_TempDirectory 'MicrosoftEdgeWebview2Setup.exe'
+          $installerPath = Join-Path $env:Agent_TempDirectory 'MicrosoftEdgeWebView2RuntimeInstallerX64.exe'
           try {
-            Invoke-WebRequest -UseBasicParsing -Uri 'https://go.microsoft.com/fwlink/p/?LinkId=2124703' -OutFile $installerPath
+            $downloadTimer = [System.Diagnostics.Stopwatch]::StartNew()
+            Invoke-WebRequest -UseBasicParsing -Uri 'https://go.microsoft.com/fwlink/?linkid=2124701' -OutFile $installerPath
+            $downloadTimer.Stop()
+            Write-Host "Evergreen WebView2 Standalone Installer download duration: $($downloadTimer.Elapsed)"
 
             $signature = Get-AuthenticodeSignature -FilePath $installerPath
             if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'O=Microsoft Corporation') {
-              throw "Evergreen WebView2 bootstrapper signature validation failed. Status: $($signature.Status); signer: $($signature.SignerCertificate.Subject)"
+              throw "Evergreen WebView2 Standalone Installer signature validation failed. Status: $($signature.Status); signer: $($signature.SignerCertificate.Subject)"
             }
 
+            $installTimer = [System.Diagnostics.Stopwatch]::StartNew()
             $installer = Start-Process -FilePath $installerPath -ArgumentList '/silent', '/install' -Wait -PassThru
+            $installTimer.Stop()
+            Write-Host "Evergreen WebView2 Standalone Installer installation duration: $($installTimer.Elapsed)"
             if ($installer.ExitCode -ne 0) {
-              throw "Evergreen WebView2 bootstrapper exited with code $($installer.ExitCode)."
+              throw "Evergreen WebView2 Standalone Installer exited with code $($installer.ExitCode)."
             }
           }
           finally {
