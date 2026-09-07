@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.ColumnResizePage"
+    NavigationCacheMode="Enabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <controls:SamplePresenter
+        Header="Column resize"
+        Description="Drag a column's right edge to resize it interactively, or move the sliders below to drive Width, MinWidth, and MaxWidth from code. CanResize on the Role column shows how to lock individual columns out of the gesture."
+        SourceCaption="ColumnResizePage.xaml (excerpt)"
+        SourceSnippet="ColumnResize.xaml.txt"
+        AdditionalSnippetCaption="ColumnResizePage.xaml.cs (excerpt)"
+        AdditionalSnippet="ColumnResize.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <muxc:InfoBar Grid.Row="0" IsOpen="True" IsClosable="False" Severity="Informational" Title="Try it" Message="Drag the right edge of any header to resize (Role is locked). Or use the sliders to set Width / Min / Max programmatically and watch ActualWidth clamp." MinHeight="104"/>
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" Padding="0" VerticalAlignment="Stretch">
+                    <adv:TableView x:Name="PeopleTable" SelectionMode="Single" VerticalAlignment="Stretch" MinHeight="320">
+                        <adv:TableViewTextColumn x:Name="FirstNameColumn"  Header="First name" Width="{StaticResource ColWidthShortName}" Binding="{Binding FirstName}" CanSort="False"/>
+                        <adv:TableViewTextColumn x:Name="LastNameColumn"   Header="Last name"  Width="{StaticResource ColWidthShortName}" Binding="{Binding LastName}" CanSort="False"/>
+                        <adv:TableViewTextColumn x:Name="EmailColumn"      Header="Email"      Width="{StaticResource ColWidthEmail}" Binding="{Binding Email}" CanSort="False"/>
+                        <adv:TableViewTextColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}" CanSort="False"/>
+                        <!-- The Role column opts out of user-driven resize. Programmatic Width still works. -->
+                        <adv:TableViewTextColumn x:Name="RoleColumn"       Header="Role (locked)" Width="{StaticResource ColWidthLongName}" CanResize="False" Binding="{Binding Role}" CanSort="False"/>
+                    </adv:TableView>
+                </Border>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <TextBlock Text="Column sizing" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock Text="Select a column and drive MinWidth, Width, and MaxWidth from code." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <ComboBox x:Name="ColumnCombo" SelectedIndex="0" SelectionChanged="OnColumnComboChanged" AutomationProperties.Name="Column to adjust" HorizontalAlignment="Stretch"/>
+                <TextBlock Text="MinWidth" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                <Slider x:Name="MinWidthSlider" Minimum="0" Maximum="400" StepFrequency="10" Value="20" ValueChanged="OnMinWidthSliderChanged" AutomationProperties.AutomationId="MinWidthSlider" AutomationProperties.Name="Minimum column width" HorizontalAlignment="Stretch"/>
+                <TextBlock x:Name="MinWidthValue" Text="20" Style="{StaticResource StatusReadoutValueStyle}" TextAlignment="Right"/>
+                <TextBlock Text="Width" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                <Slider x:Name="WidthSlider" Minimum="0" Maximum="500" StepFrequency="10" Value="160" ValueChanged="OnWidthSliderChanged" AutomationProperties.AutomationId="WidthSlider" AutomationProperties.Name="Column width" HorizontalAlignment="Stretch"/>
+                <TextBlock x:Name="WidthValue" Text="160" Style="{StaticResource StatusReadoutValueStyle}" TextAlignment="Right"/>
+                <TextBlock Text="MaxWidth" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                <Slider x:Name="MaxWidthSlider" Minimum="50" Maximum="500" StepFrequency="10" Value="500" ValueChanged="OnMaxWidthSliderChanged" AutomationProperties.AutomationId="MaxWidthSlider" AutomationProperties.Name="Maximum column width" HorizontalAlignment="Stretch"/>
+                <TextBlock x:Name="MaxWidthValue" Text="500" Style="{StaticResource StatusReadoutValueStyle}" TextAlignment="Right"/>
+                <TextBlock Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <Grid ColumnSpacing="12" RowSpacing="4">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Selected column" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="SelectedColumnText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedColumnText"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Width / ActualWidth" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="WidthReadoutText" Text="?" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="WidthReadoutText"/>
+                </Grid>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+
+    </controls:SamplePresenter>
+</Page>

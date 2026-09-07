@@ -1,0 +1,58 @@
+<Page.Resources>
+    <local:PersonAvatarBrushConverter x:Key="PersonAvatarBrushConverter"/>
+    <local:PersonAvatarColorNameConverter x:Key="PersonAvatarColorNameConverter"/>
+
+    <DataTemplate x:Key="AvatarCell" x:DataType="models:Person">
+        <Border Width="28" Height="28" CornerRadius="14"
+                Background="{Binding Department, Converter={StaticResource PersonAvatarBrushConverter}}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsHitTestVisible="False"
+                AutomationProperties.Name="{Binding FullName}"
+                AutomationProperties.HelpText="{Binding Department, Converter={StaticResource PersonAvatarColorNameConverter}}">
+            <TextBlock Text="{Binding Initial}" Foreground="White" FontWeight="SemiBold"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+    </DataTemplate>
+
+    <DataTemplate x:Key="DatePickerCell" x:DataType="models:Person">
+        <DatePicker Date="{Binding JoinDate, Mode=TwoWay}" IsTabStop="True"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="DepartmentComboCell" x:DataType="models:Person">
+        <ComboBox SelectedItem="{Binding Department, Mode=TwoWay}" Loaded="OnDepartmentComboBoxLoaded" IsTabStop="True"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="DetailsButtonCell" x:DataType="models:Person">
+        <Button Content="Details" IsTabStop="True" Click="OnDetailsButtonClick">
+            <FlyoutBase.AttachedFlyout>
+                <Flyout>
+                    <StackPanel>
+                        <TextBlock Text="Details flyout from a table cell"/>
+                        <TextBlock Text="Opened after setting XamlRoot and calling ShowAt." TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Flyout>
+            </FlyoutBase.AttachedFlyout>
+        </Button>
+    </DataTemplate>
+
+    <DataTemplate x:Key="ShiftMenuCell" x:DataType="models:Person">
+        <muxc:DropDownButton Content="{Binding ShiftStart}" IsTabStop="True">
+            <muxc:DropDownButton.Flyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Text="7:00 AM"/>
+                    <MenuFlyoutItem Text="8:00 AM"/>
+                </MenuFlyout>
+            </muxc:DropDownButton.Flyout>
+        </muxc:DropDownButton>
+    </DataTemplate>
+</Page.Resources>
+
+<adv:TableView x:Name="PeopleTable" SelectionMode="Single" IsReadOnly="False">
+    <adv:TableViewTextColumn Header="Name" Binding="{Binding FullName}" CanSort="False"/>
+    <adv:TableViewTemplateColumn Header="Join date" SortMemberPath="JoinDate" CellTemplate="{StaticResource DatePickerCell}" CanSort="False"/>
+    <adv:TableViewTemplateColumn Header="Department" SortMemberPath="Department" CellTemplate="{StaticResource DepartmentComboCell}" CanSort="False"/>
+    <adv:TableViewTemplateColumn Header="Details flyout" SortMemberPath="FullName" CellTemplate="{StaticResource DetailsButtonCell}" CanSort="False"/>
+    <adv:TableViewTemplateColumn Header="Shift menu" SortMemberPath="ShiftStart" CellTemplate="{StaticResource ShiftMenuCell}" CanSort="False"/>
+    <adv:TableViewTemplateColumn Header="Image" Width="{StaticResource ColWidthAvatar}" SortMemberPath="Initial" CellTemplate="{StaticResource AvatarCell}" CanSort="False"/>
+</adv:TableView>

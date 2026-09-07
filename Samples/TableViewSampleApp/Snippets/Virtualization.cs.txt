@@ -1,0 +1,7 @@
+// In-memory mode: materialise tens of thousands of rows up front.
+PeopleTable.ItemsSource = People;            // ObservableCollection<NumberedPerson>
+
+// The v1 control surfaces data-side counts (no realized-row / scroll-offset API):
+TotalRowsText.Text    = People.Count.ToString("N0");
+SelectedRowsText.Text = PeopleTable.SelectedItems.Count.ToString("N0");
+ColumnCountText.Text  = PeopleTable.Columns.Count.ToString();

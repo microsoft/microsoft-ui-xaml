@@ -1,0 +1,20 @@
+// ColumnReorderPage.xaml.cs — programmatic reorder + autosize
+
+// Move "Email" to the leading edge.
+int from = PeopleTable.Columns.IndexOf(emailColumn);
+bool moved = PeopleTable.MoveColumn(from, 0);
+//   -> true when valid + gate not blocking; same-index no-op also returns true
+//   -> false when CanUserReorderColumns=false, column.CanUserReorder=false,
+//             or from/to indices are invalid or out of range
+
+// Fit one column to its content (header + every realized cell):
+PeopleTable.AutoSizeColumn(emailColumn);
+
+// Fit all columns:
+PeopleTable.AutoSizeAllColumns();
+
+// Disable all reordering with one property write:
+PeopleTable.CanUserReorderColumns = false;
+
+// Or per-column:
+emailColumn.CanUserReorder = false;

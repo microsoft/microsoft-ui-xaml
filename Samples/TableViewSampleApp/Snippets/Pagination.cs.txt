@@ -1,0 +1,23 @@
+// The 1,000-row source is never bound to the TableView. PageRows is bound
+// once to ItemsSource; each navigation just refills that small window.
+private readonly IReadOnlyList<Person> _source = PersonData.All;
+private int _pageSize = 50;
+private int _currentPage = 1;
+
+private void RefreshPage()
+{
+    if (_currentPage < 1) _currentPage = 1;
+    if (_currentPage > TotalPages) _currentPage = TotalPages;
+
+    int start = (_currentPage - 1) * _pageSize;
+    int end = Math.Min(start + _pageSize, _source.Count);
+
+    PageRows.Clear();
+    for (int i = start; i < end; i++)
+        PageRows.Add(_source[i]);
+
+    RangeStatusText.Text = $"Showing rows {start + 1:N0}-{end:N0} of {_source.Count:N0}. Page size {_pageSize}.";
+    PageOfText.Text = $"of {TotalPages:N0}";
+}
+
+private int TotalPages => Math.Max(1, (_source.Count + _pageSize - 1) / _pageSize);

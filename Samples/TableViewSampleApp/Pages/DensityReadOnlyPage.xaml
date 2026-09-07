@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.DensityReadOnlyPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls"
+    xmlns:local="using:TableViewSampleApp.Pages">
+
+    <Page.Resources>
+        <!-- Shared read-only flag. The aligned control has framework editing APIs;
+             this density page still hosts template TextBox cells so IsReadOnly has
+             an obvious visual effect outside the dedicated Cell Editing page. -->
+        <local:ReadOnlyState x:Key="ReadOnlyState"/>
+
+        <DataTemplate x:Key="FirstNameCell">
+            <TextBox
+                Text="{Binding FirstName, Mode=TwoWay}"
+                IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
+                BorderThickness="0"
+                Background="Transparent"
+                Margin="4,1"
+                MinHeight="0"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Stretch"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="LastNameCell">
+            <TextBox
+                Text="{Binding LastName, Mode=TwoWay}"
+                IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
+                BorderThickness="0"
+                Background="Transparent"
+                Margin="4,1"
+                MinHeight="0"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Stretch"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="RoleCell">
+            <TextBox
+                Text="{Binding Role, Mode=TwoWay}"
+                IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
+                BorderThickness="0"
+                Background="Transparent"
+                Margin="4,1"
+                MinHeight="0"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Stretch"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="EmailCell">
+            <TextBox
+                Text="{Binding Email, Mode=TwoWay}"
+                IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
+                BorderThickness="0"
+                Background="Transparent"
+                Margin="4,1"
+                MinHeight="0"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Stretch"/>
+        </DataTemplate>
+    </Page.Resources>
+
+    <controls:SamplePresenter
+        Header="Density &amp; read-only"
+        Description="Two table-level knobs in one demo. TableView.Density (Compact / Standard / Comfortable) resizes row height and built-in cell padding live, while TableView.IsReadOnly gates editing — here it flips template TextBox cells between editable and read-only."
+        SourceCaption="DensityReadOnlyPage.xaml (excerpt)"
+        SourceSnippet="DensityReadOnly.xaml.txt"
+        AdditionalSnippetCaption="DensityReadOnlyPage.xaml.cs (excerpt)"
+        AdditionalSnippet="DensityReadOnly.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <muxc:InfoBar
+                    Grid.Row="0"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Try it"
+                    Message="Pick a density to change the row height, then flip Read-only on and off — the editable name / role / email cells lock and unlock."
+                    MinHeight="104"/>
+                <Border
+                    Grid.Row="1"
+                    Style="{StaticResource TableHostBorderStyle}"
+                    Padding="0"
+                    VerticalAlignment="Stretch">
+                    <adv:TableView
+                        x:Name="DemoTable"
+                        SelectionMode="Single"
+                        VerticalAlignment="Stretch"
+                        MinHeight="320">
+                        <adv:TableViewTextColumn Header="Name" Width="{StaticResource ColWidthLongName}" Binding="{Binding FullName}" CanSort="False"/>
+                        <adv:TableViewTemplateColumn Header="First name" Width="{StaticResource ColWidthShortName}" SortMemberPath="FirstName" CellTemplate="{StaticResource FirstNameCell}" CanSort="False"/>
+                        <adv:TableViewTemplateColumn Header="Last name" Width="{StaticResource ColWidthShortName}" SortMemberPath="LastName" CellTemplate="{StaticResource LastNameCell}" CanSort="False"/>
+                        <adv:TableViewTemplateColumn Header="Role" Width="{StaticResource ColWidthLongName}" SortMemberPath="Role" CellTemplate="{StaticResource RoleCell}" CanSort="False"/>
+                        <adv:TableViewTemplateColumn Header="Email" Width="*" MinWidth="200" SortMemberPath="Email" CellTemplate="{StaticResource EmailCell}" CanSort="False"/>
+                    </adv:TableView>
+                </Border>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <StackPanel Spacing="4" AutomationProperties.Name="Density options">
+                    <TextBlock Text="Density" Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock
+                        Text="Row height + built-in cell padding preset."
+                        Style="{StaticResource SectionDescriptionTextStyle}"
+                        TextWrapping="Wrap"/>
+                    <RadioButton Content="Compact" Tag="Compact" GroupName="Density" Checked="OnDensityChecked" AutomationProperties.AutomationId="DensityCompactRadio"/>
+                    <RadioButton Content="Standard (default)" Tag="Standard" GroupName="Density" IsChecked="True" Checked="OnDensityChecked" AutomationProperties.AutomationId="DensityStandardRadio"/>
+                    <RadioButton Content="Comfortable" Tag="Comfortable" GroupName="Density" Checked="OnDensityChecked" AutomationProperties.AutomationId="DensityComfortableRadio"/>
+                </StackPanel>
+
+                <StackPanel Spacing="4" AutomationProperties.Name="Read-only options">
+                    <TextBlock Text="Read-only" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock
+                        Text="Toggle table-level IsReadOnly to lock the editable cells."
+                        Style="{StaticResource SectionDescriptionTextStyle}"
+                        TextWrapping="Wrap"/>
+                    <ToggleSwitch
+                        x:Name="ReadOnlyToggle"
+                        Header="IsReadOnly"
+                        OnContent="On (cells locked)"
+                        OffContent="Off (cells editable)"
+                        Toggled="OnReadOnlyToggled"
+                        AutomationProperties.AutomationId="ReadOnlyToggle"/>
+                </StackPanel>
+
+                <muxc:InfoBar
+                    AutomationProperties.AutomationId="DensityReadOnlyStatusInfoBar"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Status"
+                    Message="{x:Bind StatusText, Mode=OneWay}"
+                    MinHeight="64"/>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+
+    </controls:SamplePresenter>
+</Page>

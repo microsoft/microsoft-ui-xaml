@@ -3,24 +3,142 @@
     x:Class="TableViewSampleApp.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Microsoft.UI.Xaml.Controls">
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
 
-    <controls:NavigationView x:Name="Nav"
-                             PaneDisplayMode="Left"
-                             IsSettingsVisible="False"
-                             IsBackButtonVisible="Collapsed"
-                             SelectionChanged="Nav_SelectionChanged">
-        <controls:NavigationView.MenuItems>
-            <controls:NavigationViewItem Content="Playground" Tag="playground"/>
-            <controls:NavigationViewItem Content="All Auto columns" Tag="auto"/>
-            <controls:NavigationViewItem Content="All Star columns" Tag="star"/>
-            <controls:NavigationViewItem Content="All Pixel columns" Tag="pixel"/>
-            <controls:NavigationViewItem Content="Mixed columns" Tag="mixed"/>
-            <controls:NavigationViewItem Content="Interactive cells" Tag="interactive"/>
-            <controls:NavigationViewItem Content="Selection" Tag="selection"/>
-            <controls:NavigationViewItem Content="Cell tooltips" Tag="tooltips"/>
-        </controls:NavigationView.MenuItems>
+    <Window.SystemBackdrop>
+        <MicaBackdrop/>
+    </Window.SystemBackdrop>
 
-        <Frame x:Name="ContentFrame"/>
-    </controls:NavigationView>
+    <Grid x:Name="RootGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid x:Name="AppTitleBar" Grid.Row="0" Height="40" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftPaddingColumn" Width="16"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" Margin="4,0,0,0">
+                <Border Width="20" Height="20" CornerRadius="3"
+                        Background="{ThemeResource AccentFillColorDefaultBrush}"
+                        VerticalAlignment="Center">
+                    <muxc:FontIcon Glyph="&#xE80A;" FontSize="12"
+                                   Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock x:Name="AppTitleTextBlock"
+                           Text="WinUI TableView Samples"
+                           Style="{ThemeResource CaptionTextBlockStyle}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <Button x:Name="ThemeToggleButton"
+                    Grid.Column="3"
+                    Style="{ThemeResource SubtleButtonStyle}"
+                    Width="36" Height="32"
+                    Margin="0,0,8,0"
+                    Padding="0"
+                    VerticalAlignment="Center"
+                    ToolTipService.ToolTip="Toggle theme (Default → Light → Dark)"
+                    AutomationProperties.Name="Toggle theme"
+                    Click="OnThemeToggleClick">
+                <muxc:FontIcon x:Name="ThemeToggleIcon" Glyph="&#xE793;" FontSize="14"/>
+            </Button>
+        </Grid>
+
+        <muxc:NavigationView
+            Grid.Row="1"
+            x:Name="NavView"
+            PaneDisplayMode="Auto"
+            IsBackButtonVisible="Collapsed"
+            IsBackEnabled="False"
+            IsSettingsVisible="False"
+            IsTitleBarAutoPaddingEnabled="False"
+            BackRequested="NavView_BackRequested"
+            SelectionChanged="NavView_SelectionChanged"
+            ItemInvoked="NavView_ItemInvoked">
+
+            <muxc:NavigationView.Resources>
+                <Thickness x:Key="NavigationViewContentMargin">0,0,0,0</Thickness>
+                <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
+            </muxc:NavigationView.Resources>
+
+            <muxc:NavigationView.MenuItems>
+                <muxc:NavigationViewItem Tag="Home" Content="Home"><muxc:NavigationViewItem.Icon><muxc:SymbolIcon Symbol="Home"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItemSeparator/>
+                <muxc:NavigationViewItemHeader Content="Quick start"/>
+                <muxc:NavigationViewItem Tag="Showcase" Content="Showcase"><muxc:NavigationViewItem.Icon><muxc:SymbolIcon Symbol="ViewAll"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItemSeparator/>
+                <muxc:NavigationViewItemHeader Content="Scenarios"/>
+                <muxc:NavigationViewItem Tag="TaskManager" Content="Task Manager"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE9D9;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="FileExplorer" Content="File Explorer"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xEC50;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="FileProperties" Content="File properties"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE946;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItemSeparator/>
+                <muxc:NavigationViewItemHeader Content="Basics"/>
+                <muxc:NavigationViewItem Tag="Selection" Content="Selection"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE73A;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="Sort" Content="Sorting"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8CB;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="Filter" Content="Filtering"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE71C;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="KeyboardNav" Content="Keyboard navigation + accessibility"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE765;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItemSeparator/>
+                <muxc:NavigationViewItemHeader Content="Columns"/>
+                <muxc:NavigationViewItem Tag="Layout" Content="Layout"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE799;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="ColumnResize" Content="Column resize"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE740;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="ColumnReorder" Content="Column reorder + autosize"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8AB;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="DynamicColumns" Content="Dynamic columns"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8B7;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="HeadersVisibility" Content="Headers visibility"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8A7;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItemSeparator/>
+                <muxc:NavigationViewItemHeader Content="Rows &amp; cells"/>
+                <!-- Grouped rows is deliberately absent from the pane. Pages\GroupsPage.xaml is in
+                     the project and builds, but the control cannot group a source in this release:
+                     TableViewSource has no KeyBy/GroupBy, and TableViewRowTemplateSelector - which
+                     realizes the group-header container - is commented out of TableView.idl until
+                     the grouping stack lands. An entry here would advertise a scenario the control
+                     cannot run. Restore this line together with the "Groups" arm in the page map.
+                <muxc:NavigationViewItem Tag="Groups" Content="Grouped rows"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8FD;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                -->
+                <muxc:NavigationViewItem Tag="ToolTips" Content="Tooltips"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE897;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="GridLinesVisibility" Content="Grid lines visibility"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE80A;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="MixedControls" Content="Template cells"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE950;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="TextWrap" Content="Text wrap + row height"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8C1;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="CellFlyouts" Content="Interactive cell flyouts"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8A7;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="CellEditing" Content="Cell editing"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE70F;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="EmptyState" Content="Empty state"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE7C3;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="DensityReadOnly" Content="Density &amp; read-only"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE799;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItemSeparator/>
+                <muxc:NavigationViewItemHeader Content="Power user"/>
+                <muxc:NavigationViewItem Tag="RTLPlayground" Content="Right-to-left layout"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE7AF;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="Virtualization" Content="Virtualization"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8C6;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+            </muxc:NavigationView.MenuItems>
+
+            <muxc:NavigationView.FooterMenuItems>
+                <muxc:NavigationViewItem Tag="Performance" Content="Performance"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE916;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="Settings" Content="Theme &amp; settings" AutomationProperties.AutomationId="NavSettings"><muxc:NavigationViewItem.Icon><muxc:SymbolIcon Symbol="Setting"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="About" Content="About"><muxc:NavigationViewItem.Icon><muxc:SymbolIcon Symbol="Help"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+            </muxc:NavigationView.FooterMenuItems>
+
+            <muxc:Frame x:Name="ContentFrame" Padding="0"/>
+        </muxc:NavigationView>
+
+        <Border x:Name="DevStatusBar" Grid.Row="2"
+                Style="{StaticResource AppStatusBarBorderStyle}"
+                Visibility="Collapsed">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" x:Name="StatusBarDllPathText" Style="{StaticResource AppStatusBarTextStyle}" Text="Controls DLL: (resolving…)" AutomationProperties.AutomationId="StatusBarDllPathText"/>
+                <TextBlock Grid.Column="1" x:Name="StatusBarDllSizeText" Style="{StaticResource AppStatusBarTextStyle}" AutomationProperties.AutomationId="StatusBarDllSizeText"/>
+                <TextBlock Grid.Column="2" x:Name="StatusBarDllTimestampText" Style="{StaticResource AppStatusBarTextStyle}" AutomationProperties.AutomationId="StatusBarDllTimestampText"/>
+            </Grid>
+        </Border>
+    </Grid>
 </Window>

@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.HomePage"
+    NavigationCacheMode="Enabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <ScrollViewer
+        Padding="{StaticResource PageContentMargin}"
+        VerticalScrollBarVisibility="Visible"
+        HorizontalScrollMode="Disabled">
+        <StackPanel
+            Spacing="{StaticResource SectionSpacing}"
+            HorizontalAlignment="Stretch"
+            MaxWidth="{StaticResource PageMaxContentWidth}">
+
+            <controls:SamplePageHeader
+                Title="TableView"
+                Description="Microsoft.UI.Xaml.Controls.Tabular.TableView is a native WinUI 3 tabular control for data-heavy desktop experiences — model-first data shaping with TableViewSource, lightweight text and template columns, sorting, selection, grouped rows, headers, grid lines, density, column resize and reorder, virtualization, keyboard navigation, accessibility, and right-to-left support."/>
+
+            <muxc:InfoBar
+                IsOpen="True"
+                IsClosable="False"
+                Severity="Informational"
+                Title="About this gallery"
+                Message="C# WinUI 3 desktop app (.NET 8, Windows App SDK preview). 21 pages cover the TableView control — TableViewSource.From(items).KeyBy(...).Filter(...).GroupBy(..., identity).Sort(...), text and template columns, header-click sort, selection, column-header visibility, grid lines, density and layout, column resize and reorder, dynamic columns, template cells, grouped rows, virtualization, keyboard navigation, RTL, performance, and a Task Manager-style dashboard. Use the theme toggle in the title bar — or the Settings page — to flip Default / Light / Dark and the choice persists across launches."/>
+
+            <StackPanel Spacing="{StaticResource SectionInnerSpacing}">
+                <TextBlock Text="What's supported today" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <ItemsControl>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnSpacing="8" Margin="0,2,0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="·" VerticalAlignment="Top" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Grid.Column="1" Text="{Binding}" TextWrapping="Wrap" Style="{ThemeResource BodyTextBlockStyle}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <x:String>Control type — Microsoft.UI.Xaml.Controls.Tabular.TableView</x:String>
+                    <x:String>Model-first source — TableViewSource.From(items).KeyBy(...).Filter(...).GroupBy(..., identity).Sort(...); assign the source to ItemsSource in code-behind</x:String>
+                    <x:String>Use grouped rows to organize related data with collapsible group headers</x:String>
+                    <x:String>Columns — TableViewTextColumn for lightweight bound text and TableViewTemplateColumn for DataTemplate cells</x:String>
+                    <x:String>Header-click sort via SortMemberPath with a direction indicator</x:String>
+                    <x:String>None / Single / Multiple / Extended selection with leading multi-select gutter</x:String>
+                    <x:String>Column resize — drag the gripper or set Min / Width / Max programmatically</x:String>
+                    <x:String>Column reorder — programmatic MoveColumn() + in-control drag gesture</x:String>
+                    <x:String>Grouped rows with collapsible group headers</x:String>
+                    <x:String>HeadersVisibility — None / Column</x:String>
+                    <x:String>Density — Compact / Standard / Comfortable</x:String>
+                    <x:String>Dynamic columns at runtime (bind to ObservableCollection)</x:String>
+                    <x:String>Row virtualization — realizes only the visible rows, so large datasets scroll smoothly</x:String>
+                    <x:String>GridLinesVisibility — None / Horizontal / Vertical / All</x:String>
+                    <x:String>RTL flow — mirrored layout, resize gripper, and reorder drop indicators</x:String>
+                    <x:String>Template cells — custom DataTemplate content via TableViewTemplateColumn</x:String>
+                    <x:String>Filtering — TableViewSource.Filter(predicate) with live query + active-only toggle</x:String>
+                    <x:String>Task Manager showcase — grouped categories by default, live telemetry heat-map cells, search filter, and dark/light support</x:String>
+                </ItemsControl>
+            </StackPanel>
+
+            <StackPanel Spacing="{StaticResource SectionInnerSpacing}">
+                <TextBlock Text="Explore the current samples" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Text="These shortcuts match the current NavigationView pages and avoid removed preview features."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Showcase" Tag="Showcase" Click="OnNavigateButtonClick"/>
+                    <Button Content="Task Manager" Tag="TaskManager" Click="OnNavigateButtonClick"/>
+                    <Button Content="File Explorer" Tag="FileExplorer" Click="OnNavigateButtonClick"/>
+                    <Button Content="File properties" Tag="FileProperties" Click="OnNavigateButtonClick"/>
+                    <Button Content="Grouped rows" Tag="Groups" Click="OnNavigateButtonClick"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Sorting" Tag="Sort" Click="OnNavigateButtonClick"/>
+                    <Button Content="Filtering" Tag="Filter" Click="OnNavigateButtonClick"/>
+                    <Button Content="Selection" Tag="Selection" Click="OnNavigateButtonClick"/>
+                    <Button Content="Headers visibility" Tag="HeadersVisibility" Click="OnNavigateButtonClick"/>
+                    <Button Content="Grid lines visibility" Tag="GridLinesVisibility" Click="OnNavigateButtonClick"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Column resize" Tag="ColumnResize" Click="OnNavigateButtonClick"/>
+                    <Button Content="Column reorder + autosize" Tag="ColumnReorder" Click="OnNavigateButtonClick"/>
+                    <Button Content="Dynamic columns" Tag="DynamicColumns" Click="OnNavigateButtonClick"/>
+                    <Button Content="Template cells" Tag="MixedControls" Click="OnNavigateButtonClick"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Virtualization" Tag="Virtualization" Click="OnNavigateButtonClick"/>
+                    <Button Content="Performance" Tag="Performance" Click="OnNavigateButtonClick"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Keyboard navigation + accessibility" Tag="KeyboardNav" Click="OnNavigateButtonClick"/>
+                    <Button Content="Right-to-left layout" Tag="RTLPlayground" Click="OnNavigateButtonClick"/>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Spacing="{StaticResource SectionInnerSpacing}">
+                <TextBlock Text="Customers" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Text="First-party Windows surfaces and third-party app developers that need a native WinUI 3 tabular control. Today these experiences render tables on a mix of legacy stacks (DirectUI, ComCtl) or a partial WinUI 3 migration."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <Border Style="{StaticResource TableHostBorderStyle}" HorizontalAlignment="Left" MaxWidth="640" Margin="0,4,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="220"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Header row -->
+                        <Border Grid.Row="0" Grid.ColumnSpan="2" Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Customer" Padding="12,8"
+                                   Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="Current UI framework" Padding="12,8"
+                                   Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="File Explorer" Padding="12,8" Style="{ThemeResource BodyTextBlockStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="WinUI 3, DirectUI and ComCtl" Padding="12,8" Style="{ThemeResource BodyTextBlockStyle}"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Task Manager" Padding="12,8" Style="{ThemeResource BodyTextBlockStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="WinUI 3, DirectUI" Padding="12,8" Style="{ThemeResource BodyTextBlockStyle}"/>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="File Properties dialog" Padding="12,8" Style="{ThemeResource BodyTextBlockStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="ComCtl" Padding="12,8" Style="{ThemeResource BodyTextBlockStyle}"/>
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Third-party app developers" Padding="12,8" Style="{ThemeResource BodyTextBlockStyle}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="N/A" Padding="12,8" Style="{ThemeResource BodyTextBlockStyle}"/>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <StackPanel Spacing="{StaticResource SectionInnerSpacing}">
+                <TextBlock Text="Problem statement" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Text="Windows' own data-table surfaces are split across DirectUI, ComCtl, and partial WinUI 3 — each app hand-builds and maintains its own table, and third-party developers have no first-party WinUI 3 option at all. TableView is the single native, accessible, virtualized tabular control these customers can share instead of reinventing one each."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <StackPanel Spacing="{StaticResource SectionInnerSpacing}">
+                <TextBlock Text="Accessibility &amp; input" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Text="Full keyboard navigation (arrows, Tab, Enter, Esc, Home / End, Page Up / Down), narrator support via TableView and TableViewRow automation peers, and None / Single / Multiple row selection out of the box."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <StackPanel Spacing="{StaticResource SectionInnerSpacing}">
+                <TextBlock Text="Scales to large data" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Text="Row virtualization realizes only the rows currently in view, so tens of thousands of rows scroll smoothly without holding every off-screen row's cell controls in memory. See the Virtualization page for a live 10,000-row demo."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <StackPanel Spacing="{StaticResource SectionInnerSpacing}">
+                <TextBlock Text="Report an issue" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Text="Found a bug or have feedback on TableView? Log it on the shared Loop page so the team can triage it. Include the sample page name, repro steps, and the build (the About page shows the exact commit)."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <Button x:Name="ReportLoopButton"
+                    Content="🔗 Report an issue (Loop)"
+                    HorizontalAlignment="Left"
+                    ToolTipService.ToolTip="Opens the shared Loop page to log a TableView samples issue."/>
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

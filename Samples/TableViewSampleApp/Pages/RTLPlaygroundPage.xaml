@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.RTLPlaygroundPage"
+    NavigationCacheMode="Enabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <controls:SamplePresenter
+        Header="Right-to-left layout"
+        Description="Set FlowDirection on the TableView and the whole layout mirrors: columns flow right-to-left, the resize gripper moves to the visual-left edge of each header, column-reorder drop indicators land on the correct edge."
+        SourceCaption="RTLPlaygroundPage.xaml (excerpt)"
+        SourceSnippet="RTLPlayground.xaml.txt"
+        AdditionalSnippetCaption="RTLPlaygroundPage.xaml.cs (excerpt)"
+        AdditionalSnippet="RTLPlayground.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <muxc:InfoBar
+                    Grid.Row="0"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Try it"
+                    Message="Toggle FlowDirection to flip the page right-to-left. Columns, resize grippers, and reorder indicators all mirror."
+                    MinHeight="104"/>
+
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" Padding="0" VerticalAlignment="Stretch">
+                    <adv:TableView
+                        x:Name="PlaygroundTable"
+                        AutomationProperties.AutomationId="PlaygroundTable"
+                        SelectionMode="Single"
+                        FlowDirection="RightToLeft"
+                        VerticalAlignment="Stretch"
+                        MinHeight="320">
+                        <!-- RTL mirrors column flow, resize grippers, and reorder indicators. -->
+                        <adv:TableViewTextColumn Header="Index"        Width="{StaticResource ColWidthId}"  Binding="{Binding Index}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Name"         Width="{StaticResource ColWidthLongName}"  Binding="{Binding Name}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Department"   Width="{StaticResource ColWidthDepartment}" CanResize="True"  Binding="{Binding Department}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Role"         Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Region"       Width="{StaticResource ColWidthLocation}" Binding="{Binding Region}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="JoinDate"     Width="{StaticResource ColWidthDate}" Binding="{Binding JoinDate}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Notes"        Width="{StaticResource ColWidthNotes}" Binding="{Binding Notes}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Salary"       Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Status"       Width="{StaticResource ColWidthDepartment}" Binding="{Binding Status}" CanSort="False"/>
+                    </adv:TableView>
+                </Border>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <TextBlock Text="Flow direction" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Text="Toggle FlowDirection on the TableView below to flip between left-to-right and right-to-left. The data and gestures stay the same — only the visual layout mirrors."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <ToggleSwitch
+                    x:Name="RtlToggle"
+                    AutomationProperties.AutomationId="RtlToggle"
+                    Header="FlowDirection"
+                    IsOn="True"
+                    OnContent="RightToLeft"
+                    OffContent="LeftToRight"
+                    Toggled="OnRtlToggled"/>
+                <Button
+                    x:Name="ResetButton"
+                    AutomationProperties.AutomationId="ResetButton"
+                    Content="Reset column order"
+                    Click="OnResetClick"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"/>
+
+                <TextBlock Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <Grid ColumnSpacing="12" RowSpacing="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="FlowDirection" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="FlowDirectionText" Text="RightToLeft" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="FlowDirectionText"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Rows loaded" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RowsLoadedText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="RowsLoadedText"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Selected count" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="SelectedCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedCountText"/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Last reorder" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="LastReorderText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="LastReorderText" TextWrapping="Wrap"/>
+                </Grid>
+
+                <muxc:InfoBar
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="What to look for"
+                    Message="With RTL on, the whole grid mirrors: column flow reverses, the Department resize gripper moves to the left of its header, and drag-selection and column-reorder drop indicators follow the right-to-left layout."/>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+
+    </controls:SamplePresenter>
+</Page>

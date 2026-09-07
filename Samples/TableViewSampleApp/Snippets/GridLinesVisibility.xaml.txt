@@ -1,0 +1,23 @@
+<!-- TableStyle.GridLinesVisibility controls TableView grid lines. The four values map
+     directly to the WPF DataGrid enum: All (default), Horizontal, Vertical,
+     None. Per-row bottom borders + per-cell right borders draw from the
+     TabularSurfaceGridLineBrush theme token so the lines stay on-theme
+     in Light, Dark, and High Contrast. -->
+
+<StackPanel Orientation="Horizontal" Spacing="12">
+    <RadioButton Content="None"           Tag="None"        GroupName="GridLinesVisibility" Checked="OnGridLinesVisibilityChecked"/>
+    <RadioButton Content="Horizontal"     Tag="Horizontal"  GroupName="GridLinesVisibility" Checked="OnGridLinesVisibilityChecked"/>
+    <RadioButton Content="Vertical"       Tag="Vertical"    GroupName="GridLinesVisibility" Checked="OnGridLinesVisibilityChecked"/>
+    <RadioButton Content="All (default)"  Tag="All"         GroupName="GridLinesVisibility" IsChecked="True"
+                 Checked="OnGridLinesVisibilityChecked"/>
+</StackPanel>
+
+<adv:TableView x:Name="DemoTable"
+               SelectionMode="Single"
+>
+    <adv:TableViewTextColumn Header="First"      Binding="{Binding FirstName}"/>
+    <adv:TableViewTextColumn Header="Last"       Binding="{Binding LastName}"/>
+    <adv:TableViewTextColumn Header="Department" Binding="{Binding Department}"/>
+    <adv:TableViewTextColumn Header="Role"       Binding="{Binding Role}"/>
+    <adv:TableViewTextColumn Header="Email"      Binding="{Binding Email}"/>
+</adv:TableView>

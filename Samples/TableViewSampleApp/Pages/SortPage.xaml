@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.SortPage"
+    NavigationCacheMode="Enabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <controls:SamplePresenter
+        Header="Sorting"
+        Description="The aligned TableView owns scalar sort STATE — SortColumn, SortDirection, the header chevron, the SortByColumn / ToggleSortDirection / ClearSort API, and the Sorted event — while the app owns the DATA shape. Click a header to sort the standings, click again to flip the direction, or drive the sort from code with the buttons. Over a plain ItemsSource each of these raises SortRequested; the app re-orders its bound collection in that handler and marks it Handled, then the control commits its sort state + chevron and raises Sorted. Sport standings — order by points descending, with goal difference as the tiebreaker — is the textbook single-key sort scenario."
+        SourceCaption="SortPage.xaml (excerpt)"
+        SourceSnippet="Sort.xaml.txt"
+        AdditionalSnippetCaption="SortPage.xaml.cs (excerpt)"
+        AdditionalSnippet="Sort.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <muxc:InfoBar
+                    Grid.Row="0"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Try it"
+                    Message="Click a column header to sort by it; click again to flip the direction. Use the buttons to call SortByColumn, ToggleSortDirection, and ClearSort from code."
+                    MinHeight="104"/>
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                    <adv:TableView
+                        x:Name="TeamsTable"
+                        SelectionMode="Single"
+                        Sorted="OnTableSorted"
+                        VerticalAlignment="Stretch"
+                        MinHeight="320">
+                        <adv:TableViewTextColumn x:Name="GroupColumn"          Header="Group" Width="{StaticResource ColWidthNumber}"     SortMemberPath="Group"          Binding="{Binding Group}"/>
+                        <adv:TableViewTextColumn x:Name="TeamColumn"           Header="Team"  Width="*" MinWidth="140" SortMemberPath="Team"           Binding="{Binding Team}"/>
+                        <adv:TableViewTextColumn x:Name="PlayedColumn"         Header="P"     Width="{StaticResource ColWidthNumber}"     CanSort="False"             Binding="{Binding Played}"/>
+                        <adv:TableViewTextColumn x:Name="WinsColumn"           Header="W"     Width="{StaticResource ColWidthNumber}"     SortMemberPath="Wins"           Binding="{Binding Wins}"/>
+                        <adv:TableViewTextColumn x:Name="DrawsColumn"          Header="D"     Width="{StaticResource ColWidthNumber}"     SortMemberPath="Draws"          Binding="{Binding Draws}"/>
+                        <adv:TableViewTextColumn x:Name="LossesColumn"         Header="L"     Width="{StaticResource ColWidthNumber}"     SortMemberPath="Losses"         Binding="{Binding Losses}"/>
+                        <adv:TableViewTextColumn x:Name="GoalsForColumn"       Header="GF"    Width="{StaticResource ColWidthNumber}"     SortMemberPath="GoalsFor"       Binding="{Binding GoalsFor}"/>
+                        <adv:TableViewTextColumn x:Name="GoalsAgainstColumn"   Header="GA"    Width="{StaticResource ColWidthNumber}"     SortMemberPath="GoalsAgainst"   Binding="{Binding GoalsAgainst}"/>
+                        <adv:TableViewTextColumn x:Name="GoalDifferenceColumn" Header="GD"    Width="{StaticResource ColWidthNumber}"     SortMemberPath="GoalDifference" Binding="{Binding GoalDifference}"/>
+                        <adv:TableViewTextColumn x:Name="PointsColumn"         Header="Pts"   Width="{StaticResource ColWidthNumber}"     SortMemberPath="Points"         Binding="{Binding Points}"/>
+                    </adv:TableView>
+                </Border>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <TextBlock Text="Programmatic sort" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Text="Drive the sort from code. Each button calls a single-column sort API and the table — with its header chevron — updates to match. A new sort replaces the previous one (single-column)."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <StackPanel Spacing="8">
+                    <Button Content="Sort by Pts (desc)" Click="OnSortPointsDescClick" AutomationProperties.AutomationId="SortPointsDescButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button Content="Sort by Group (asc)" Click="OnSortGroupAscClick" AutomationProperties.AutomationId="SortGroupAscButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button Content="Sort by GD (desc)" Click="OnSortGoalDifferenceDescClick" AutomationProperties.AutomationId="SortGoalDifferenceDescButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button Content="Toggle Pts" Click="OnTogglePointsClick" AutomationProperties.AutomationId="TogglePointsButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button Content="Clear sort" Click="OnClearSortClick" AutomationProperties.AutomationId="ClearSortButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                </StackPanel>
+
+                <TextBlock Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <Grid ColumnSpacing="12" RowSpacing="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Sorted fires" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="SortedFiredCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SortedFiredCountText"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Trigger column" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="TriggerColumnText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="TriggerColumnText" TextWrapping="Wrap"/>
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Active sort" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ActiveSortText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ActiveSortText" TextWrapping="Wrap"/>
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="VisibleRowsText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="VisibleRowsText"/>
+
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Top 5 after sort" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock Grid.Row="4" Grid.Column="1" x:Name="TopRowsPreviewText" Text="(load…)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="TopRowsPreviewText" TextWrapping="Wrap"/>
+                </Grid>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+
+    </controls:SamplePresenter>
+</Page>

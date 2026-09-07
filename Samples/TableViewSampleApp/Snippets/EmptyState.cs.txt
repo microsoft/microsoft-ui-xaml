@@ -1,0 +1,9 @@
+private void OnDataSourceChecked(object sender, RoutedEventArgs e)
+{
+    if (sender is FrameworkElement { Tag: string tag })
+    {
+        // Null ItemsSource resolves to zero rows, so the control swaps in
+        // EmptyTemplate; restoring the collection brings the rows back.
+        DemoTable.ItemsSource = tag == "Populated" ? Rows : null;
+    }
+}

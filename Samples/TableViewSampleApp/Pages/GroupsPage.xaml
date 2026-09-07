@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.GroupsPage"
+    NavigationCacheMode="Enabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <controls:SamplePresenter
+        Header="Grouped rows"
+        Description="Grouped data shape, group-header rows, and a group-by selector driven by the canonical TableViewSource.GroupBy surface."
+        SourceCaption="GroupsPage.xaml (excerpt)"
+        SourceSnippet="Groups.xaml.txt"
+        AdditionalSnippetCaption="GroupsPage.xaml.cs (excerpt)"
+        AdditionalSnippet="Groups.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <muxc:InfoBar
+                    Grid.Row="0"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Try it"
+                    Message="Toggle grouping and pick a field to group by. The control renders group-header rows and its own expand/collapse chrome."
+                    MinHeight="104"/>
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                    <adv:TableView
+                        x:Name="PeopleTableControl"
+                        AutomationProperties.AutomationId="PeopleTable"
+                        VerticalAlignment="Stretch"
+                        MinHeight="320">
+                        <!-- Columns are declared in XAML; the grouped field is surfaced
+                             as the group-header label, so no extra column is needed. -->
+                        <adv:TableView.Columns>
+                            <adv:TableViewTextColumn Header="First name" Width="{StaticResource ColWidthShortName}" Binding="{Binding FirstName}"   SortMemberPath="FirstName"/>
+                            <adv:TableViewTextColumn Header="Last name"  Width="{StaticResource ColWidthShortName}" Binding="{Binding LastName}"    SortMemberPath="LastName"/>
+                            <adv:TableViewTextColumn Header="Role"       Width="*" MinWidth="180"  Binding="{Binding Role}"        SortMemberPath="Role"/>
+                            <adv:TableViewTextColumn Header="Salary"     Width="{StaticResource ColWidthNumber}"    Binding="{Binding Salary}"      SortMemberPath="Salary"/>
+                            <adv:TableViewTextColumn Header="Join date"  Width="{StaticResource ColWidthDate}"      Binding="{Binding JoinDateText}" SortMemberPath="JoinDate"/>
+                        </adv:TableView.Columns>
+                    </adv:TableView>
+                </Border>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <TextBlock Text="Grouping controls" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Text="Switch the source between a flat TableViewSource and a KeyBy(...).GroupBy(..., identity) shaped source over the same people collection."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <ToggleSwitch
+                    x:Name="GroupingToggleControl"
+                    Header="Grouping"
+                    IsOn="True"
+                    OffContent="Flat"
+                    OnContent="Grouped"
+                    Toggled="OnGroupingToggled"
+                    HorizontalAlignment="Stretch"/>
+                <ComboBox
+                    x:Name="GroupBySelector"
+                    AutomationProperties.AutomationId="GroupBySelector"
+                    Header="Group by"
+                    SelectedIndex="0"
+                    SelectionChanged="OnGroupByChanged"
+                    HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="Department" Tag="Department"/>
+                    <ComboBoxItem Content="Role" Tag="Role"/>
+                    <ComboBoxItem Content="Active status" Tag="Active"/>
+                </ComboBox>
+                <StackPanel Spacing="8">
+                    <Button x:Name="ShuffleButton" AutomationProperties.AutomationId="ShuffleButton" Click="OnShuffleClick" Content="Shuffle ~25% across departments" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                </StackPanel>
+
+                <TextBlock Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <Grid ColumnSpacing="12" RowSpacing="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Source" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock x:Name="SourceModeTextBlock" Grid.Row="0" Grid.Column="1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SourceModeText"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Display state" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock x:Name="DisplayStateTextBlock" Grid.Row="1" Grid.Column="1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="DisplayStateText"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Group count" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock x:Name="GroupCountTextBlock" Grid.Row="2" Grid.Column="1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="GroupCountText"/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Total people" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock x:Name="TotalPeopleTextBlock" Grid.Row="3" Grid.Column="1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="TotalPeopleText"/>
+                    <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Top" Text="Source shape" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock x:Name="SourceShapeTextBlock" Grid.Row="4" Grid.Column="1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SourceShapeText" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Top" Text="Per-group counts" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock x:Name="PerGroupCountsTextBlock" Grid.Row="5" Grid.Column="1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="PerGroupCountsText" TextWrapping="Wrap"/>
+                </Grid>
+
+                <TextBlock
+                    Text="Tip: TableViewSource.From(_people).KeyBy(...).GroupBy(..., identity) is assigned to ItemsSource in code-behind so grouped rows have stable row and group keys."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+
+    </controls:SamplePresenter>
+</Page>

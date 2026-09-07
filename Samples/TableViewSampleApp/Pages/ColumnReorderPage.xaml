@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.ColumnReorderPage"
+    NavigationCacheMode="Enabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <controls:SamplePresenter
+        Header="Column reorder + autosize"
+        Description="Drive column order and width from code or the built-in drag gesture: pick a column, then move it left or right, or auto-size it to fit its longest cell. CanUserReorderColumns gates reordering control-wide (a per-column CanReorder opts a single column out), and the ColumnReordered event reports each move. Each column keeps its own width as it moves, so reordering never disturbs your sizing."
+        SourceCaption="ColumnReorderPage.xaml.cs (excerpt)"
+        SourceSnippet="ColumnReorder.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <muxc:InfoBar Grid.Row="0" IsOpen="True" IsClosable="False" Severity="Informational" Title="Try it" Message="Pick a column, then click Move left / right or Autosize. The order list updates as you go." MinHeight="104"/>
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" Padding="0" VerticalAlignment="Stretch">
+                    <adv:TableView x:Name="PeopleTable" AutomationProperties.AutomationId="PeopleTable" SelectionMode="Single" VerticalAlignment="Stretch" MinHeight="320">
+                        <adv:TableViewTextColumn Header="First name" Width="{StaticResource ColWidthShortName}" Binding="{Binding FirstName}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Last name"  Width="{StaticResource ColWidthShortName}" Binding="{Binding LastName}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Email"      Width="{StaticResource ColWidthEmail}" Binding="{Binding Email}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
+                    </adv:TableView>
+                </Border>
+                <muxc:InfoBar Grid.Row="2" IsOpen="True" IsClosable="False" Severity="Informational" Title="What to look for" Message="When you move a column, its width moves with it — the order changes, but each column keeps what belongs to it. Autosize measures the header and the visible cells, then widens the column to fit the longest value."/>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <TextBlock Text="Column actions" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock Text="Pick a column, then move it left or right or autosize it. Use Reset to restore the original order." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <ComboBox x:Name="ColumnPicker" AutomationProperties.AutomationId="ColumnPicker" Header="Column" SelectedIndex="0" HorizontalAlignment="Stretch"/>
+                <StackPanel Spacing="8">
+                    <Button x:Name="MoveLeftButton" AutomationProperties.AutomationId="MoveLeftButton" Content="Move left" Click="OnMoveLeftClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="MoveRightButton" AutomationProperties.AutomationId="MoveRightButton" Content="Move right" Click="OnMoveRightClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="AutoSizeButton" AutomationProperties.AutomationId="AutoSizeButton" Content="Autosize selected" Click="OnAutoSizeClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="AutoSizeAllButton" AutomationProperties.AutomationId="AutoSizeAllButton" Content="Autosize all" Click="OnAutoSizeAllClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="ResetButton" AutomationProperties.AutomationId="ResetButton" Content="Reset" Click="OnResetClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                </StackPanel>
+                <ToggleSwitch x:Name="GlobalGateToggle" AutomationProperties.AutomationId="GlobalGateToggle" Header="CanUserReorderColumns (control-wide gate)" IsOn="True" OnContent="Allowed" OffContent="Blocked" Toggled="OnGlobalGateToggled" HorizontalAlignment="Stretch"/>
+                <TextBlock Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <Grid ColumnSpacing="12" RowSpacing="4">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Column order" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ColumnOrderText" Text="" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ColumnOrderText" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Last action" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="LastActionText" Text="(idle)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="LastActionText" TextWrapping="Wrap"/>
+                </Grid>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+
+    </controls:SamplePresenter>
+</Page>

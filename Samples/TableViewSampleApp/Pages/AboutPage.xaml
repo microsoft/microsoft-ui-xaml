@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.AboutPage"
+    NavigationCacheMode="Enabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+<ScrollViewer Padding="{StaticResource PageContentMargin}">
+        <Grid RowSpacing="16" HorizontalAlignment="Stretch" MaxWidth="{StaticResource PageMaxContentWidth}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <controls:SamplePageHeader
+                Grid.Row="0"
+                Title="About this gallery"
+                Description="A focused samples app that ships alongside the in-development Microsoft.UI.Xaml.Controls.Tabular.TableView control — a partner-share preview of the aligned, model-first TableView surface."/>
+
+            <Grid Grid.Row="1" RowSpacing="12" ColumnSpacing="32">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Audience" VerticalAlignment="Top"
+                           Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+                <TextBlock Grid.Row="0" Grid.Column="1"
+                           Text="Partner teams (File Explorer, Task Manager, and other Windows surfaces) evaluating the aligned TableView and TableViewSource API surface."
+                           Style="{ThemeResource BodyTextBlockStyle}"
+                           TextWrapping="Wrap"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="App stack" VerticalAlignment="Top"
+                           Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+                <StackPanel Grid.Row="1" Grid.Column="1" Spacing="2">
+                    <TextBlock Text="C# 12 + .NET 8 desktop app" Style="{ThemeResource BodyTextBlockStyle}"/>
+                    <TextBlock Text="Windows App SDK (preview)"
+                               Style="{ThemeResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Text="WinUI 3"
+                               Style="{ThemeResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Sample source" VerticalAlignment="Top"
+                           Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+                <StackPanel Grid.Row="2" Grid.Column="1" Spacing="2">
+                    <TextBlock Text="Samples\TableViewSampleApp\" Style="{ThemeResource BodyTextBlockStyle}"/>
+                    <TextBlock Text="19 pages: Home + Settings + About + 16 feature demos"
+                               Style="{ThemeResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="Control source" VerticalAlignment="Top"
+                           Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+                <StackPanel Grid.Row="3" Grid.Column="1" Spacing="2">
+                    <TextBlock Text="controls\dev\TableView\ (C++/WinRT)" Style="{ThemeResource BodyTextBlockStyle}"/>
+                    <TextBlock Text="Namespace: Microsoft.UI.Xaml.Controls.Tabular"
+                               Style="{ThemeResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Text="Binary: Microsoft.UI.Xaml.Controls.Tabular.dll (parallel to Microsoft.UI.Xaml.Controls.dll)"
+                               Style="{ThemeResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="API snapshot" VerticalAlignment="Top"
+                           Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+                <StackPanel Grid.Row="4" Grid.Column="1" Spacing="2">
+                    <TextBlock Text="ItemsSource is set in code-behind from TableViewSource.From(items).KeyBy(...).Filter(...).GroupBy(..., identity).Sort(...)."
+                               Style="{ThemeResource BodyTextBlockStyle}"
+                               TextWrapping="Wrap"/>
+                    <TextBlock Text="Columns: TableViewTextColumn (lightweight bound text, sortable via SortMemberPath) and TableViewTemplateColumn (DataTemplate cells)."
+                               Style="{ThemeResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               TextWrapping="Wrap"/>
+                    <TextBlock Text="Enums: TableViewSelectionMode { None, Single, Multiple, Extended }; TableViewHeadersVisibility { None, Column }; TableViewDensity { Compact, Standard, Comfortable }; TableViewGridLinesVisibility { None, Horizontal, Vertical, All }."
+                               Style="{ThemeResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <TextBlock Grid.Row="5" Grid.Column="0" Text="Build" VerticalAlignment="Top"
+                           Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+                <StackPanel Grid.Row="5" Grid.Column="1" Spacing="2">
+                    <TextBlock x:Name="BuildLineText" Style="{ThemeResource BodyTextBlockStyle}" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="BuildCommitText" Style="{ThemeResource BodyTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="BuildCommitSubjectText" Style="{ThemeResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <TextBlock Grid.Row="6" Grid.Column="0" Text="Reporting bugs" VerticalAlignment="Top"
+                           Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+                <StackPanel Grid.Row="6" Grid.Column="1" Spacing="6">
+                    <TextBlock TextWrapping="Wrap" Style="{ThemeResource BodyTextBlockStyle}">
+                        <Run Text="Report a bug — pick whichever fits your workflow:"/>
+                    </TextBlock>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="ReportLoopButton" Content="🔗 Report an issue (Loop)"
+                                ToolTipService.ToolTip="Opens the shared Loop page to log a TableView samples issue — the preferred channel for triage."/>
+                        <Button x:Name="ReportEmailButton" Content="✉ Report via email"
+                                ToolTipService.ToolTip="Opens your mail client pre-filled with the current commit SHA, theme, and reporter info."/>
+                        <Button x:Name="CopyAutoFillButton" Content="📋 Copy auto-fill"
+                                ToolTipService.ToolTip="Copies a Markdown block ready to paste into Teams, email, or the Loop page."/>
+                    </StackPanel>
+                    <TextBlock Text="Auto-fill includes: commit SHA, branch, build timestamp, reporter (you), current theme, and OS / .NET version — everything a triager needs to reproduce."
+                               Style="{ThemeResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               TextWrapping="Wrap"/>
+                    <TextBlock TextWrapping="Wrap" Style="{ThemeResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                        <Run Text="Email goes to "/>
+                        <Hyperlink NavigateUri="mailto:hik@microsoft.com">
+                            <Run Text="hik@microsoft.com"/>
+                        </Hyperlink>
+                        <Run Text=". Include the page name, repro steps, and the exception type + message if a crash."/>
+                    </TextBlock>
+                </StackPanel>
+
+                <TextBlock Grid.Row="7" Grid.Column="0" Text="Theme" VerticalAlignment="Top"
+                           Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+                <TextBlock Grid.Row="7" Grid.Column="1"
+                           Text="Switch Default / Light / Dark from the theme button in the title bar (top-right), or choose a theme on the 'Theme &amp; settings' page. Changes apply live across every page."
+                           Style="{ThemeResource BodyTextBlockStyle}"
+                           TextWrapping="Wrap"/>
+            </Grid>
+
+            <muxc:InfoBar
+                Grid.Row="2"
+                IsOpen="True"
+                IsClosable="False"
+                Severity="Informational"
+                Title="Gallery coverage"
+                Message="The Home page lists the shipped TableView capabilities that have working samples in this app, including Showcase, Task Manager, grouped rows, sorting, selection, headers, grid lines, density/layout, columns, virtualization, performance, keyboard navigation, RTL, settings, and About."/>
+        </Grid>
+    </ScrollViewer>
+</Page>

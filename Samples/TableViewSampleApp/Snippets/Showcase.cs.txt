@@ -1,0 +1,46 @@
+// A plain collection is enough. The control projects whatever it can display
+// through its own reshaping view, so header sort works over an ObservableCollection
+// with no ICollectionView from the app.
+PeopleTable.ItemsSource = _people;
+
+// ----- Selection -----
+// Row-scoped and single-item: SelectedItem and SelectedIndex are read-only
+// projections that stay coherent with each other. Drive selection through
+// Select / Deselect / DeselectAll.
+private void OnSelectionChanged(TableView sender, SelectionChangedEventArgs args)
+{
+    var person = PeopleTable.SelectedItem as Person;
+    DetailPane.Content = person;
+}
+
+PeopleTable.Select(0);
+PeopleTable.DeselectAll();
+
+// ----- Sorting -----
+// Sorted fires after the sort has been applied and the header chevron published.
+// The state lives on the COLUMN, not on the table, and sorting is single-column,
+// so at most one column is ever anything but None.
+private void OnPeopleTableSorted(TableView sender, TableViewSortedEventArgs args)
+{
+    // args.Column is null when the sort was cleared.
+    var active = PeopleTable.Columns
+        .FirstOrDefault(c => c.SortDirection != SortDirection.None);
+
+    SortText.Text = active is null
+        ? "(none)"
+        : $"{active.Header} {active.SortDirection}";
+}
+
+// Drive the same sort from code. A new sort replaces the previous one.
+PeopleTable.SortByColumn(LastNameColumn, SortDirection.Ascending);
+PeopleTable.ToggleSortDirection(SalaryColumn);   // walks that column's SortCycle
+PeopleTable.ClearSort();
+
+// ----- Gates -----
+// Control-wide switches; each column can still opt out on its own with
+// CanSort / CanResize. Turning a gate off leaves the programmatic API working -
+// only the header affordance goes away.
+PeopleTable.CanUserSortColumns = false;
+PeopleTable.CanUserResizeColumns = false;
+PeopleTable.HeadersVisibility = TableViewHeadersVisibility.None;
+PeopleTable.SelectionMode = TableViewSelectionMode.None;
