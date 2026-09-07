@@ -9,6 +9,7 @@ using Microsoft.UI.Private.Controls;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using MUXControlsTestApp.Utilities;
+using Windows.Foundation;
 
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -150,6 +151,75 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 IdleSynchronizer.Wait();
                 Log.Comment("Done");
             }
+        }
+
+        // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/9672.
+        // The item's padding must stay hit-testable in every CombinedStates state. When it is
+        // hit-testable in SelectedNormal but not in SelectedPointerOver, a pointer resting in the
+        // padding enters the item, loses the background that let it hit-test, exits, and repeats -
+        // which shows up as the selected item's text flickering.
+        [TestMethod]
+        public void VerifySelectorBarItemIsHitTestableInAllCombinedStates()
+        {
+            SelectorBar selectorBar = null;
+            SelectorBarItem selectedItem = null;
+            AutoResetEvent selectorBarLoadedEvent = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                selectorBar = new SelectorBar();
+
+                selectorBar.Items.Add(new SelectorBarItem() { Text = "Recent" });
+
+                selectedItem = new SelectorBarItem() { Text = "Shared", IsSelected = true };
+                selectorBar.Items.Add(selectedItem);
+
+                selectorBar.Items.Add(new SelectorBarItem() { Text = "Favorites" });
+
+                SetupDefaultUI(selectorBar, selectorBarLoadedEvent);
+            });
+
+            WaitForEvent("Waiting for Loaded event", selectorBarLoadedEvent);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(selectedItem.Background, "SelectorBarItem.Background must not be null, or the item's padding stops hit-testing.");
+
+                // A point in the item's left padding (SelectorBarItemPadding is 12,10,12,7), so it is
+                // never covered by the icon or text and only hit-tests through the container background.
+                Point paddingPoint = selectedItem.TransformToVisual(null).TransformPoint(
+                    new Point(4.0, selectedItem.ActualHeight / 2.0));
+
+                foreach (string stateName in new[]
+                    {
+                        "UnselectedNormal", "UnselectedPointerOver", "UnselectedPressed",
+                        "SelectedNormal", "SelectedPointerOver", "SelectedPressed"
+                    })
+                {
+                    Verify.IsTrue(VisualStateManager.GoToState(selectedItem, stateName, false), "Going to state " + stateName);
+
+                    var elements = Microsoft.UI.Xaml.Media.VisualTreeHelper.FindElementsInHostCoordinates(paddingPoint, selectedItem);
+                    bool isHitTestable = false;
+
+                    foreach (var element in elements)
+                    {
+                        isHitTestable = true;
+                        break;
+                    }
+
+                    Log.Comment(" - " + stateName + ": isHitTestable=" + isHitTestable);
+                    Verify.IsTrue(isHitTestable, "SelectorBarItem padding must be hit-testable in state " + stateName);
+                }
+
+                Log.Comment("Resetting window content and SelectorBar");
+                Content = null;
+                selectorBar = null;
+                selectedItem = null;
+            });
+
+            IdleSynchronizer.Wait();
+            Log.Comment("Done");
         }
 
         private void SetupDefaultUI(
