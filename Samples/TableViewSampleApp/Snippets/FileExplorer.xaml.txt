@@ -1,0 +1,51 @@
+<Page.Resources>
+    <DataTemplate x:Key="NameCellTemplate" x:DataType="models:FileSystemEntry">
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="12,0,8,0">
+            <FontIcon Glyph="{x:Bind IconGlyph, Mode=OneWay}" FontSize="14"/>
+            <TextBlock Text="{x:Bind Name, Mode=OneWay}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+        </StackPanel>
+    </DataTemplate>
+</Page.Resources>
+
+<Grid RowSpacing="12">
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <Grid Grid.Row="0" ColumnSpacing="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <Button x:Name="BackButton" Click="OnBackClick" AutomationProperties.Name="Back"/>
+        <Button x:Name="UpButton" Grid.Column="1" Click="OnUpClick" AutomationProperties.Name="Up"/>
+        <TextBox x:Name="AddressBar" Grid.Column="2" PlaceholderText="Enter a folder path" KeyDown="OnAddressBarKeyDown"/>
+        <Button Grid.Column="3" Click="OnRefreshClick" AutomationProperties.Name="Refresh"/>
+    </Grid>
+
+    <adv:TableView x:Name="FileTable"
+                   Grid.Row="1"
+                   SelectionMode="Single"
+                   Sorted="OnTableSorted"
+                   SelectionChanged="OnSelectionChanged"
+                   DoubleTapped="OnRowDoubleTapped">
+        <adv:TableViewTemplateColumn Header="Name" CellTemplate="{StaticResource NameCellTemplate}" MinWidth="260" Width="*" CanSort="True" SortMemberPath="Name"/>
+        <adv:TableViewTextColumn Header="Type" Width="180" SortMemberPath="TypeDisplay" Binding="{Binding TypeDisplay}"/>
+        <adv:TableViewTextColumn Header="Date modified" Width="170" SortMemberPath="DateModified" Binding="{Binding DateModifiedDisplay}"/>
+        <adv:TableViewTextColumn Header="Size" Width="110" SortMemberPath="Size" Binding="{Binding SizeDisplay}"/>
+    </adv:TableView>
+
+    <Grid Grid.Row="2" ColumnSpacing="16">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock x:Name="StatusText" AutomationProperties.LiveSetting="Polite"/>
+        <TextBlock x:Name="SelectionText" Grid.Column="1" Text="0 selected (0 bytes)" AutomationProperties.LiveSetting="Polite"/>
+    </Grid>
+</Grid>

@@ -1,0 +1,72 @@
+public ObservableCollection<ProcessItem> Processes { get; } = new();
+
+private void ApplyProcessSource()
+{
+    var searchText = _searchText;
+    var source = TableViewSource.From(Processes);
+
+    if (!string.IsNullOrEmpty(searchText))
+    {
+        source = source.Filter(item => MatchesSearch((ProcessItem)item, searchText));
+    }
+
+    // Grouping a source is not in this release; the picker leaves the source flat.
+    ProcessTable.ItemsSource = ApplyActiveSort(source);
+    UpdateStatusBar();
+}
+
+private TableViewSource ApplyActiveSort(TableViewSource source)
+{
+    var sortColumn = SampleShape.ActiveSortColumn(ProcessTable);
+    if (sortColumn is null ||
+        SampleShape.ActiveSortDirection(ProcessTable) == SortDirection.None ||
+        string.IsNullOrEmpty(sortColumn.SortMemberPath))
+    {
+        return source;
+    }
+
+    return source.Sort(
+        item => SortKey(item, sortColumn.SortMemberPath),
+        SampleShape.ActiveSortDirection(ProcessTable));
+}
+
+private static object? SortKey(object item, string path)
+{
+    if (item is not ProcessItem process)
+    {
+        return null;
+    }
+
+    return path switch
+    {
+        nameof(ProcessItem.Name) => process.Name,
+        nameof(ProcessItem.StatusText) => process.StatusText,
+        nameof(ProcessItem.CpuPercent) => process.CpuPercent,
+        nameof(ProcessItem.MemoryMB) => process.MemoryMB,
+        nameof(ProcessItem.DiskMBps) => process.DiskMBps,
+        nameof(ProcessItem.NetworkMbps) => process.NetworkMbps,
+        _ => null,
+    };
+}
+
+private void OnProcessTableSorted(TableView sender, TableViewSortedEventArgs args)
+{
+    ApplyProcessSource();
+}
+
+private void OnTimerTick(object? sender, object e)
+{
+    foreach (var process in Processes)
+    {
+        RandomizeValues(process);
+    }
+
+    UpdateSummary();
+}
+
+private void OnSelectionChanged(TableView sender, SelectionChangedEventArgs args)
+{
+    SelectedProcessText.Text = ProcessTable.SelectedItem is ProcessItem process
+        ? process.Name
+        : "(none)";
+}

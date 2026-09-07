@@ -1,0 +1,80 @@
+<Page.Resources>
+    <DataTemplate x:Key="NameCellTemplate" x:DataType="models:ProcessItem">
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="12,0,8,0">
+            <Image Source="{x:Bind IconPath, Mode=OneWay}" Width="16" Height="16" Visibility="{x:Bind HasIcon, Mode=OneWay}"/>
+            <FontIcon Glyph="{x:Bind IconGlyph, Mode=OneWay}" FontSize="14" Visibility="{x:Bind HasGlyph, Mode=OneWay}"/>
+            <TextBlock Text="{x:Bind Name, Mode=OneWay}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="CpuCellTemplate" x:DataType="models:ProcessItem">
+        <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Border Background="{x:Bind CpuBackground, Mode=OneWay}" Padding="8,4">
+                <TextBlock Text="{x:Bind CpuDisplay, Mode=OneWay}" HorizontalAlignment="Right"/>
+            </Border>
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:Key="StatusCellTemplate" x:DataType="models:ProcessItem">
+        <StackPanel Orientation="Horizontal" Spacing="6" Margin="8,0">
+            <TextBlock Text="{x:Bind StatusText, Mode=OneWay}" TextTrimming="CharacterEllipsis" Visibility="{x:Bind HasStatusText, Mode=OneWay}"/>
+            <FontIcon Glyph="&#xE945;" Foreground="{ThemeResource SystemFillColorSuccessBrush}" Visibility="{x:Bind IsEfficiencyMode, Mode=OneWay}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="MemoryCellTemplate" x:DataType="models:ProcessItem">
+        <Border Background="{x:Bind MemoryBackground, Mode=OneWay}" Padding="8,4">
+            <TextBlock Text="{x:Bind MemoryDisplay, Mode=OneWay}" HorizontalAlignment="Right"/>
+        </Border>
+    </DataTemplate>
+
+    <DataTemplate x:Key="DiskCellTemplate" x:DataType="models:ProcessItem">
+        <Border Background="{x:Bind DiskBackground, Mode=OneWay}" Padding="8,4">
+            <TextBlock Text="{x:Bind DiskDisplay, Mode=OneWay}" HorizontalAlignment="Right"/>
+        </Border>
+    </DataTemplate>
+
+    <DataTemplate x:Key="NetworkCellTemplate" x:DataType="models:ProcessItem">
+        <Border Background="{x:Bind NetworkBackground, Mode=OneWay}" Padding="8,4">
+            <TextBlock Text="{x:Bind NetworkDisplay, Mode=OneWay}" HorizontalAlignment="Right"/>
+        </Border>
+    </DataTemplate>
+</Page.Resources>
+
+<Grid RowSpacing="12">
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <Grid Grid.Row="0" ColumnSpacing="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <ComboBox x:Name="ViewModeCombo" SelectedIndex="0" SelectionChanged="OnViewModeChanged">
+            <ComboBoxItem Content="Grouped by category"/>
+            <ComboBoxItem Content="Flat list"/>
+        </ComboBox>
+        <AutoSuggestBox x:Name="SearchBox"
+                        Grid.Column="1"
+                        PlaceholderText="Type a name, publisher, or PID to search"
+                        TextChanged="OnSearchBoxTextChanged"/>
+    </Grid>
+
+    <adv:TableView x:Name="ProcessTable"
+                   Grid.Row="1"
+                   Sorted="OnProcessTableSorted"
+                   SelectionChanged="OnSelectionChanged"
+                   SelectionMode="Single">
+        <adv:TableViewTemplateColumn Header="Name" CellTemplate="{StaticResource NameCellTemplate}" MinWidth="320" Width="400" CanSort="True" SortMemberPath="Name"/>
+        <adv:TableViewTemplateColumn Header="Status" CellTemplate="{StaticResource StatusCellTemplate}" MinWidth="100" Width="130" CanSort="True" SortMemberPath="StatusText"/>
+        <adv:TableViewTemplateColumn Header="CPU" CellTemplate="{StaticResource CpuCellTemplate}" MinWidth="70" Width="90" CanSort="True" SortMemberPath="CpuPercent"/>
+        <adv:TableViewTemplateColumn Header="Memory" CellTemplate="{StaticResource MemoryCellTemplate}" MinWidth="90" Width="120" CanSort="True" SortMemberPath="MemoryMB"/>
+        <adv:TableViewTemplateColumn Header="Disk" CellTemplate="{StaticResource DiskCellTemplate}" MinWidth="80" Width="100" CanSort="True" SortMemberPath="DiskMBps"/>
+        <adv:TableViewTemplateColumn Header="Network" CellTemplate="{StaticResource NetworkCellTemplate}" MinWidth="80" Width="100" CanSort="True" SortMemberPath="NetworkMbps"/>
+    </adv:TableView>
+
+    <TextBlock x:Name="StatusBar" Grid.Row="2" AutomationProperties.LiveSetting="Polite"/>
+</Grid>

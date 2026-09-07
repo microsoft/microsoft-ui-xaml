@@ -1,0 +1,112 @@
+private readonly ObservableCollection<Person> _people = new(PersonData.Take(60));
+private bool _groupingEnabled;
+private string _keyName = "Department";
+private GroupExpansionState _expansionState = GroupExpansionState.AllExpanded;
+
+private void ApplyGroupingMode(bool grouped)
+{
+    _groupingEnabled = grouped;
+
+    if (grouped)
+    {
+        if (_expansionState == GroupExpansionState.Flat)
+        {
+            _expansionState = GroupExpansionState.AllExpanded;
+        }
+
+        PeopleTableControl.ItemsSource = TableViewSource
+            .From(_people)
+            .GroupBy(GetGroupKeySelector(_keyName), GroupIdentity);
+        ApplyExpansionState();
+    }
+    else
+    {
+        _expansionState = GroupExpansionState.Flat;
+        PeopleTableControl.ItemsSource = TableViewSource.From(_people).ClearGroupBy();
+    }
+
+    UpdateReadout();
+}
+
+private void ApplyGroupHeaderTemplate()
+{
+    PeopleTableControl.GroupHeaderTemplate = UseCustomHeaderTemplateToggle.IsOn
+        ? (DataTemplate)Resources["CustomGroupHeaderTemplate"]
+        : null;
+}
+
+private void OnExpandAllGroupsClick(object sender, RoutedEventArgs e)
+{
+    if (!_groupingEnabled)
+    {
+        UpdateReadout();
+        return;
+    }
+
+    PeopleTableControl.ExpandAllGroups();
+    _expansionState = GroupExpansionState.AllExpanded;
+    UpdateReadout();
+}
+
+private void OnCollapseAllGroupsClick(object sender, RoutedEventArgs e)
+{
+    if (!_groupingEnabled)
+    {
+        UpdateReadout();
+        return;
+    }
+
+    PeopleTableControl.CollapseAllGroups();
+    _expansionState = GroupExpansionState.AllCollapsed;
+    UpdateReadout();
+}
+
+private void ApplyExpansionState()
+{
+    DispatcherQueue.TryEnqueue(() =>
+    {
+        if (PeopleTableControl is null || !_groupingEnabled)
+        {
+            return;
+        }
+
+        if (_expansionState == GroupExpansionState.AllCollapsed)
+        {
+            PeopleTableControl.CollapseAllGroups();
+        }
+        else
+        {
+            PeopleTableControl.ExpandAllGroups();
+        }
+
+        UpdateReadout();
+    });
+}
+
+private IEnumerable<(string Key, int Count)> GetGroupCounts()
+{
+    var keySelector = GetPersonGroupKeySelector(_keyName);
+
+    return _people
+        .GroupBy(keySelector)
+        .OrderBy(g => g.Key, StringComparer.Ordinal)
+        .Select(g => (g.Key, g.Count()));
+}
+
+private static Func<Person, string> GetPersonGroupKeySelector(string keyName) => keyName switch
+{
+    "Role" => person => CoalesceGroupKey(person.Role),
+    "Active" => person => person.IsActive ? "Active" : "Inactive",
+    _ => person => CoalesceGroupKey(person.Department),
+};
+
+private static TableViewKeySelector GetGroupKeySelector(string keyName) => item =>
+{
+    var person = (Person)item;
+    return GetPersonGroupKeySelector(keyName)(person);
+};
+
+private static string GroupIdentity(object key) => CoalesceGroupKey(key?.ToString());
+
+private static string CoalesceGroupKey(string? key) =>
+    string.IsNullOrWhiteSpace(key) ? "(none)" : key;

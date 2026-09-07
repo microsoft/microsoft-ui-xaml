@@ -1,0 +1,27 @@
+<Grid RowSpacing="12">
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+
+    <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+        <TextBox x:Name="SearchBox"
+                 Width="280"
+                 PlaceholderText="Filter by name, department, role, email…"
+                 TextChanged="OnSearchChanged"
+                 AutomationProperties.Name="Filter query"/>
+        <ToggleSwitch x:Name="ActiveOnlyToggle"
+                      Header="Active only"
+                      OffContent="Off"
+                      OnContent="On"
+                      Toggled="OnActiveToggled"/>
+    </StackPanel>
+
+    <TextBlock x:Name="ReadoutText" Grid.Row="1" AutomationProperties.LiveSetting="Polite"/>
+
+    <tv:TableView x:Name="FilterTable"
+                  Grid.Row="2"
+                  SelectionMode="Single"
+                  AutomationProperties.AutomationId="FilterTable"/>
+</Grid>

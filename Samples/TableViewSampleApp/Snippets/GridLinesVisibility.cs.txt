@@ -1,0 +1,19 @@
+private void OnGridLinesVisibilityChecked(object sender, RoutedEventArgs e)
+{
+    if (sender is RadioButton rb && rb.Tag is string tag &&
+        Enum.TryParse<TableViewGridLinesVisibility>(tag, out var v))
+    {
+        DemoTable.GridLinesVisibility = v;
+    }
+}
+
+private void OnBandingRadioChecked(object sender, RoutedEventArgs e)
+{
+    if (CustomBandingRadio.IsChecked == true)
+    {
+        DemoTable.Style = (Style)Resources["CustomBandingTableViewStyle"];
+        return;
+    }
+
+    DemoTable.Style = null;
+}

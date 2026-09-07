@@ -1,0 +1,72 @@
+private void ApplySelectedMode()
+{
+    WidthsTable.Columns.Clear();
+    PlaygroundPanel.Visibility =
+        ModeSelector.SelectedItem as string == "Playground"
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+
+    switch (ModeSelector.SelectedItem as string)
+    {
+        case "Playground":
+            BuildPlaygroundColumns();
+            PopulateColumnCombo();
+            SetActiveColumn(WidthsTable.Columns[0] as TableViewTextColumn);
+            ModeDescription.Text = "Playground — pick a column and tweak MinWidth, Width, and MaxWidth live while watching ActualWidth clamp.";
+            break;
+
+        case "Pixel":
+            WidthsTable.Columns.Add(Text("First name", nameof(Person.FirstName), Px(180)));
+            WidthsTable.Columns.Add(Text("Last name", nameof(Person.LastName), Px(180)));
+            WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Px(320)));
+            WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Px(220)));
+            WidthsTable.Columns.Add(Text("Role", nameof(Person.Role), Px(260)));
+            WidthsTable.Columns.Add(Text("Join date", nameof(Person.JoinDateText), Px(180)));
+            WidthsTable.Columns.Add(Text("Bio", nameof(Person.Bio), Px(520)));
+            ModeDescription.Text = "All Pixel columns — every column has a fixed GridUnitType.Pixel width, independent of content. Their combined width exceeds a narrow window, so the body scrolls horizontally and the sticky header stays in sync.";
+            break;
+
+        case "Auto":
+            WidthsTable.Columns.Add(Text("First name", nameof(Person.FirstName), Auto()));
+            WidthsTable.Columns.Add(Text("Last name", nameof(Person.LastName), Auto()));
+            WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Auto()));
+            WidthsTable.Columns.Add(Text("Role", nameof(Person.Role), Auto()));
+            WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Auto()));
+            ModeDescription.Text = "All Auto columns — every column sizes to the widest realized header or cell content.";
+            break;
+
+        case "Star":
+            WidthsTable.Columns.Add(Text("First name", nameof(Person.FirstName), Star(1)));
+            WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Star(1)));
+            WidthsTable.Columns.Add(Text("Role", nameof(Person.Role), Star(2)));
+            WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Star(3)));
+            ModeDescription.Text = "All Star columns — every column shares remaining width by factor.";
+            break;
+
+        case "Mixed":
+            WidthsTable.Columns.Add(Text("First name", nameof(Person.FirstName), Auto()));
+            WidthsTable.Columns.Add(Text("Role", nameof(Person.Role), Px(160)));
+            WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Star(1)));
+            WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Star(2)));
+            WidthsTable.Columns.Add(Text("Bio", nameof(Person.Bio), Star(3)));
+            ModeDescription.Text = "Mixed columns — Auto and fixed Pixel columns are sized first, then Star columns split the remaining width.";
+            break;
+    }
+
+    UpdateLabelsAndReadout();
+}
+
+private static GridLength Auto() => new(1, GridUnitType.Auto);
+private static GridLength Star(double factor = 1) => new(factor, GridUnitType.Star);
+private static GridLength Px(double px) => new(px, GridUnitType.Pixel);
+
+private void OnWidthSliderChanged(object sender, RangeBaseValueChangedEventArgs e)
+{
+    if (_suppressSliderHandlers || _activeColumn is null)
+    {
+        return;
+    }
+
+    _activeColumn.Width = new GridLength(e.NewValue);
+    UpdateLabelsAndReadout();
+}

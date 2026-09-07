@@ -1,0 +1,21 @@
+// The control owns sort state and reshapes the bound rows. Sorted fires after
+// the column's SortDirection and header chevron have been updated.
+private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
+{
+    var trigger = args.Column;
+    var active = TeamsTable.Columns
+        .FirstOrDefault(c => c.SortDirection != SortDirection.None);
+
+    ActiveSortText.Text = active is null
+        ? "(none)"
+        : $"{active.Header} {active.SortDirection}";
+
+    TriggerColumnText.Text = trigger is null
+        ? "(cleared)"
+        : trigger.Header?.ToString();
+}
+
+// Programmatic single-column sort APIs:
+TeamsTable.SortByColumn(PointsColumn, SortDirection.Descending);
+TeamsTable.ToggleSortDirection(PointsColumn);
+TeamsTable.ClearSort();

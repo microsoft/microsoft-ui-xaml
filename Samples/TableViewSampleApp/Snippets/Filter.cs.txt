@@ -1,0 +1,54 @@
+private readonly ObservableCollection<Person> _people = new(PersonData.Take(60));
+
+private void BuildColumns()
+{
+    FilterTable.Columns.Add(Col("First name", nameof(Person.FirstName), new GridLength(1, GridUnitType.Auto)));
+    FilterTable.Columns.Add(Col("Last name", nameof(Person.LastName), new GridLength(1, GridUnitType.Auto)));
+    FilterTable.Columns.Add(Col("Department", nameof(Person.Department), new GridLength(1, GridUnitType.Auto)));
+    FilterTable.Columns.Add(Col("Role", nameof(Person.Role), new GridLength(1, GridUnitType.Star)));
+    FilterTable.Columns.Add(Col("Email", nameof(Person.Email), new GridLength(2, GridUnitType.Star)));
+}
+
+private static TableViewTextColumn Col(string header, string path, GridLength width) =>
+    new()
+    {
+        Header = header,
+        Binding = new Binding { Path = new PropertyPath(path) },
+        Width = width,
+    };
+
+private void ApplyFilter()
+{
+    string query = SearchBox?.Text?.Trim() ?? string.Empty;
+    bool activeOnly = ActiveOnlyToggle?.IsOn == true;
+
+    var source = TableViewSource.From(_people);
+    bool filtered = query.Length > 0 || activeOnly;
+
+    FilterTable.ItemsSource = filtered
+        ? source.Filter(item => Match((Person)item, query, activeOnly))
+        : source;
+
+    int matched = _people.Count(p => Match(p, query, activeOnly));
+    ReadoutText.Text = filtered
+        ? string.Format(CultureInfo.InvariantCulture, "Showing {0} of {1} rows (filtered)", matched, _people.Count)
+        : string.Format(CultureInfo.InvariantCulture, "Showing all {0} rows", _people.Count);
+}
+
+private static bool Match(Person person, string query, bool activeOnly)
+{
+    if (activeOnly && !person.IsActive)
+    {
+        return false;
+    }
+
+    return query.Length == 0
+        || Contains(person.FirstName, query)
+        || Contains(person.LastName, query)
+        || Contains(person.Department, query)
+        || Contains(person.Role, query)
+        || Contains(person.Email, query);
+}
+
+private static bool Contains(string? value, string query) =>
+    value is not null && value.Contains(query, StringComparison.OrdinalIgnoreCase);
