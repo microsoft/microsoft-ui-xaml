@@ -796,13 +796,20 @@ void TableView::ReconcileSortStateWithSource()
         }
     }
 
+    // matchedColumn can only be set from a non-null primaryForeignAxis, but that coupling is not
+    // something static analysis can prove at each use. Reading the direction once here keeps the
+    // dereference next to the null check it depends on.
+    auto const foreignDirection = primaryForeignAxis != nullptr
+        ? primaryForeignAxis->Direction
+        : winrt::SortDirection::None;
+
     // Already reconciled to exactly this state. Reached whenever an unrelated shaping change - a
     // filter or a group - renotifies while an app-owned sort is standing; re-raising Sorted for it
     // would report a sort change that did not happen.
     if (ownToken.empty() && matchedColumn && m_sortedColumns.size() == 1)
     {
         if (auto const lit = m_sortedColumns[0].get();
-            lit == matchedColumn && lit.SortDirection() == primaryForeignAxis->Direction)
+            lit == matchedColumn && lit.SortDirection() == foreignDirection)
         {
             return;
         }
@@ -827,7 +834,7 @@ void TableView::ReconcileSortStateWithSource()
 
     if (matchedColumn)
     {
-        winrt::get_self<TableViewColumn>(matchedColumn)->SetSortStateInternal(primaryForeignAxis->Direction);
+        winrt::get_self<TableViewColumn>(matchedColumn)->SetSortStateInternal(foreignDirection);
         m_sortedColumns.push_back(tracker_ref<winrt::TableViewColumn>{ this, matchedColumn });
     }
 
@@ -839,7 +846,7 @@ void TableView::ReconcileSortStateWithSource()
     {
         auto args = winrt::make_self<TableViewSortedEventArgs>(
             matchedColumn,
-            matchedColumn ? primaryForeignAxis->Direction : winrt::SortDirection::None);
+            matchedColumn ? foreignDirection : winrt::SortDirection::None);
         try
         {
             m_sortedEventSource(*this, *args);
