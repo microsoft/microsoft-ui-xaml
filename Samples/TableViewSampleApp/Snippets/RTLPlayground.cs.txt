@@ -1,0 +1,2 @@
+PlaygroundTable.FlowDirection = FlowDirection.RightToLeft;
+PlaygroundTable.MoveColumn(fromIndex, toIndex);

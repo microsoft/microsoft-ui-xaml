@@ -1,0 +1,41 @@
+<Page xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular">
+
+  <adv:TableView
+      x:Name="TeamsTable"
+      SelectionMode="Single"
+      Sorted="OnTableSorted">
+
+    <!-- SortMemberPath identifies the property to sort by. When omitted,
+         TableViewTextColumn falls back to its Binding.Path. -->
+    <adv:TableViewTextColumn Header="Group"
+                              SortMemberPath="Group"
+                              Binding="{Binding Group}"/>
+    <adv:TableViewTextColumn Header="Team"
+                              SortMemberPath="Team"
+                              Binding="{Binding Team}"/>
+
+    <!-- CanUserSort=False hides the SortIndicator and makes the header
+         non-interactive. Programmatic SortByColumn can still target it. -->
+    <adv:TableViewTextColumn Header="P"
+                              CanUserSort="False"
+                              Binding="{Binding Played}"/>
+
+    <adv:TableViewTextColumn Header="GD"
+                              SortMemberPath="GoalDifference"
+                              Binding="{Binding GoalDifference}"/>
+    <adv:TableViewTextColumn Header="Pts"
+                              SortMemberPath="Points"
+                              Binding="{Binding Points}"/>
+  </adv:TableView>
+
+</Page>
+
+<!--
+  Header click   → ToggleSortDirection(col). Cycles
+                   None -> Ascending -> Descending -> None and replaces any
+                   prior sort (single-column).
+  SortByColumn   → Sets the sort to one column + direction in a single call.
+  ClearSort      → Clears the sort; Sorted fires with no sorted columns, so the
+                   consumer restores the original row order.
+-->

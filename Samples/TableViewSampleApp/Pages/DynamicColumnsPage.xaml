@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.DynamicColumnsPage"
+    NavigationCacheMode="Enabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <controls:SamplePresenter
+        Header="Dynamic columns"
+        Description="Add, remove, show, and hide columns at runtime by mutating the Columns collection. Hiding a column removes its TableViewColumn from the vector and re-inserting the same instance restores it at its original slot — the column keeps its width because the object is reused, not rebuilt."
+        SourceCaption="DynamicColumnsPage.xaml.cs (excerpt)"
+        SourceSnippet="DynamicColumns.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <muxc:InfoBar Grid.Row="0" IsOpen="True" IsClosable="False" Severity="Informational" Title="Try it" Message="Toggle the checkboxes to show or hide each column, add or remove the Tenure column, and flip CanUserReorderColumns to gate drag-reorder." MinHeight="104"/>
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" Padding="0" VerticalAlignment="Stretch">
+                    <adv:TableView x:Name="DynamicTable" AutomationProperties.AutomationId="DynamicTable" VerticalAlignment="Stretch" MinHeight="320">
+                        <adv:TableView.Columns>
+                            <adv:TableViewTextColumn x:Name="ColFirstName"  Header="First name" Width="160" Binding="{Binding FirstName}"  SortMemberPath="FirstName"/>
+                            <adv:TableViewTextColumn x:Name="ColLastName"   Header="Last name"  Width="160" Binding="{Binding LastName}"   SortMemberPath="LastName"/>
+                            <adv:TableViewTextColumn x:Name="ColDepartment" Header="Department" Width="140" Binding="{Binding Department}" SortMemberPath="Department"/>
+                            <adv:TableViewTextColumn x:Name="ColRole"       Header="Role"       Width="200" Binding="{Binding Role}"       SortMemberPath="Role"/>
+                            <adv:TableViewTextColumn x:Name="ColSalary"     Header="Salary"     Width="100" Binding="{Binding Salary}"     SortMemberPath="Salary"/>
+                        </adv:TableView.Columns>
+                    </adv:TableView>
+                </Border>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <TextBlock Text="Column visibility" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock Text="Show / hide each column by removing or re-inserting its TableViewColumn. The canonical order is preserved when a column comes back." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <CheckBox Content="First name"  Tag="0" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle" AutomationProperties.AutomationId="VisFirstNameCheckBox" HorizontalAlignment="Stretch"/>
+                <CheckBox Content="Last name"   Tag="1" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle" AutomationProperties.AutomationId="VisLastNameCheckBox" HorizontalAlignment="Stretch"/>
+                <CheckBox Content="Department"  Tag="2" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle" AutomationProperties.AutomationId="VisDepartmentCheckBox" HorizontalAlignment="Stretch"/>
+                <CheckBox Content="Role"        Tag="3" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle" AutomationProperties.AutomationId="VisRoleCheckBox" HorizontalAlignment="Stretch"/>
+                <CheckBox Content="Salary"      Tag="4" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle" AutomationProperties.AutomationId="VisSalaryCheckBox" HorizontalAlignment="Stretch"/>
+
+                <TextBlock Text="Column collection" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <StackPanel Spacing="8">
+                    <Button x:Name="AddTenureButton" AutomationProperties.AutomationId="AddTenureButton" Content="Add Tenure column" Click="OnAddTenureClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="RemoveTenureButton" AutomationProperties.AutomationId="RemoveTenureButton" Content="Remove Tenure column" Click="OnRemoveTenureClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="AutosizeButton" AutomationProperties.AutomationId="AutosizeButton" Content="Autosize all columns" Click="OnAutosizeClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                </StackPanel>
+                <ToggleSwitch x:Name="ReorderGateToggle" AutomationProperties.AutomationId="ReorderGateToggle" Header="CanUserReorderColumns" IsOn="True" OnContent="On" OffContent="Off" Toggled="OnReorderGateToggled" HorizontalAlignment="Stretch"/>
+
+                <TextBlock Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock x:Name="StatusText" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="StatusText" TextWrapping="Wrap"/>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+
+    </controls:SamplePresenter>
+</Page>

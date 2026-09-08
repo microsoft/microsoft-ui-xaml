@@ -1,0 +1,29 @@
+<adv:TableView x:Name="PeopleTable" SelectionMode="Single">
+
+    <!-- Width preserves user intent verbatim. -->
+    <adv:TableViewTextColumn
+        x:Name="FirstNameColumn"
+        Header="First name"
+        Width="140"
+        Binding="{Binding FirstName}"/>
+
+    <!-- MinWidth / MaxWidth define clamp bounds. ActualWidth (read-only) is
+         the rendered, clamped value: clamp(Width, MinWidth, MaxWidth). -->
+    <adv:TableViewTextColumn
+        x:Name="EmailColumn"
+        Header="Email"
+        Width="260"
+        MinWidth="140"
+        MaxWidth="400"
+        Binding="{Binding Email}"/>
+
+    <!-- CanUserResize=False hides the per-header resize gripper. Programmatic
+         Width changes still work — only the drag interaction is disabled. -->
+    <adv:TableViewTextColumn
+        x:Name="RoleColumn"
+        Header="Role (locked)"
+        Width="180"
+        CanUserResize="False"
+        Binding="{Binding Role}"/>
+
+</adv:TableView>

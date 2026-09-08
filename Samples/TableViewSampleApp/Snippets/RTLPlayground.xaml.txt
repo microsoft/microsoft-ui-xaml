@@ -1,0 +1,5 @@
+<adv:TableView x:Name="PlaygroundTable" FlowDirection="RightToLeft" SelectionMode="Multiple" CanUserReorderColumns="True">
+    <adv:TableViewTextColumn Header="Index"      Binding="{Binding Index}"      CanUserSort="False"/>
+    <adv:TableViewTextColumn Header="Name"       Binding="{Binding Name}"       CanUserSort="False"/>
+    <adv:TableViewTextColumn Header="Department" Binding="{Binding Department}" CanUserSort="False"/>
+</adv:TableView>

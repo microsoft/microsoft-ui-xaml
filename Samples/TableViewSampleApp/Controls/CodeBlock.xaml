@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="TableViewSampleApp.Controls.CodeBlock"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Border
+        Background="{ThemeResource ControlAltFillColorQuarternaryBrush}"
+        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+        BorderThickness="1"
+        CornerRadius="6"
+        Padding="0">
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Padding="12,8" Background="{ThemeResource SubtleFillColorSecondaryBrush}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    x:Name="CaptionText"
+                    Grid.Column="0"
+                    FontWeight="SemiBold"
+                    VerticalAlignment="Center"/>
+                <Button
+                    Grid.Column="1"
+                    Click="OnCopyClick"
+                    AutomationProperties.Name="Copy code"
+                    Style="{ThemeResource SubtleButtonStyle}"
+                    Padding="8,4">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon Glyph="&#xE8C8;" FontSize="14"/>
+                        <TextBlock Text="Copy" FontSize="12"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <ScrollViewer
+                Grid.Row="1"
+                HorizontalScrollMode="Auto"
+                HorizontalScrollBarVisibility="Auto"
+                VerticalScrollMode="Disabled"
+                VerticalScrollBarVisibility="Disabled">
+                <TextBlock
+                    x:Name="CodeText"
+                    Padding="14,12"
+                    FontFamily="Consolas, Cascadia Mono, Menlo, Monaco, monospace"
+                    FontSize="12"
+                    IsTextSelectionEnabled="True"
+                    TextWrapping="NoWrap"/>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</UserControl>

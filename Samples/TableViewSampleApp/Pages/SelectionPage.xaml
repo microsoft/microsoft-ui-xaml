@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.SelectionPage"
+    NavigationCacheMode="Enabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <controls:SamplePresenter
+        Header="Selection"
+        Description="Switch SelectionMode between None, Single, Multiple, and Extended, then watch the SelectedItem, SelectedItems, and selection-count readouts update as you select rows."
+        SourceCaption="SelectionPage.xaml (excerpt)"
+        SourceSnippet="Selection.xaml.txt"
+        AdditionalSnippetCaption="SelectionPage.xaml.cs (excerpt)"
+        AdditionalSnippet="Selection.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <muxc:InfoBar
+                    Grid.Row="0"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Try it"
+                    Message="Pick a selection mode, then click rows or use the buttons. The readouts show SelectedItem and SelectedItems."
+                    MinHeight="104"/>
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                    <adv:TableView
+                        x:Name="PeopleTable"
+                        SelectionMode="Single"
+                        SelectionChanged="OnTableSelectionChanged"
+                        VerticalAlignment="Stretch"
+                        MinHeight="320">
+                        <adv:TableViewTextColumn Header="First name" Width="{StaticResource ColWidthShortName}" Binding="{Binding FirstName}" SortMemberPath="FirstName" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Last name"  Width="{StaticResource ColWidthShortName}" Binding="{Binding LastName}"  SortMemberPath="LastName" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Email"      Width="{StaticResource ColWidthEmail}" Binding="{Binding Email}"      SortMemberPath="Email" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}" SortMemberPath="Department" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}"       SortMemberPath="Role" CanSort="False"/>
+                    </adv:TableView>
+                </Border>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <TextBlock Text="Mode and quick actions" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Text="Pick a selection mode, then use the buttons to change the selection from code. The hint below updates for each mode."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <ComboBox
+                    x:Name="ModeCombo"
+                    Header="Mode"
+                    SelectedIndex="2"
+                    SelectionChanged="OnModeChanged"
+                    AutomationProperties.Name="Selection mode"
+                    HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="None"/>
+                    <ComboBoxItem Content="Single"/>
+                    <ComboBoxItem Content="Multiple"/>
+                    <ComboBoxItem Content="Extended"/>
+                </ComboBox>
+                <StackPanel Spacing="8">
+                    <Button Content="Select first" Click="OnSelectFirstClick" AutomationProperties.AutomationId="SelectFirstButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button Content="Select last" Click="OnSelectLastClick" AutomationProperties.AutomationId="SelectLastButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                <!-- Select all is not available: selection is single-item this release (None or Single). -->
+                    <Button Content="Invert" Click="OnInvertClick" AutomationProperties.AutomationId="InvertButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button Content="Clear" Click="OnClearClick" AutomationProperties.AutomationId="ClearButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                </StackPanel>
+                <TextBlock
+                    x:Name="ModeDescriptionText"
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+
+                <TextBlock Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <Grid ColumnSpacing="12" RowSpacing="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Selected count" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="SelectedCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedCountText"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="SelectedIndex" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="SelectedIndexText" Text="-1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedIndexText"/>
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="SelectionChanged fires" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ChangeCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ChangeCountText"/>
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Selected indices" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="SelectedIndicesText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedIndicesText" TextWrapping="Wrap"/>
+
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Selected items" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock Grid.Row="4" Grid.Column="1" x:Name="SelectedItemsText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedItemsText" TextWrapping="Wrap"/>
+                </Grid>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+
+    </controls:SamplePresenter>
+</Page>

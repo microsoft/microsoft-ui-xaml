@@ -1,0 +1,21 @@
+foreach (var person in PersonData.Take(24))
+{
+    People.Add(person);
+}
+
+DemoTable.ItemsSource = People;
+BioColumn.Width = new GridLength(_columnWidth);
+GetTextWrapState().TextWrapping = TextWrapping.Wrap;
+
+private void OnWrapToggled(object sender, RoutedEventArgs e)
+{
+    var state = GetTextWrapState();
+    state.TextWrapping = WrapToggle.IsOn ? TextWrapping.Wrap : TextWrapping.NoWrap;
+    state.TextTrimming = WrapToggle.IsOn ? TextTrimming.None : TextTrimming.CharacterEllipsis;
+}
+
+private void OnColumnWidthChanged(object sender, RangeBaseValueChangedEventArgs e)
+{
+    _columnWidth = e.NewValue;
+    BioColumn.Width = new GridLength(_columnWidth);
+}

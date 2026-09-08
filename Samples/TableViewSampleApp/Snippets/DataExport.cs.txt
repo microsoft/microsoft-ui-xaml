@@ -1,0 +1,33 @@
+// App-side export — no control formatter needed. Walk the live columns
+// (honoring user reorder) and reflect each column's Binding.Path off the row.
+private List<(string Header, string Path)> CollectColumns()
+{
+    var cols = new List<(string, string)>();
+    foreach (var col in PeopleTable.Columns)
+    {
+        if (col is TableViewTextColumn tc && tc.Binding is Binding b
+            && b.Path is { } p && !string.IsNullOrEmpty(p.Path))
+        {
+            cols.Add((tc.Header?.ToString() ?? p.Path, p.Path));
+        }
+    }
+    return cols;
+}
+
+private static string GetCellText(Person person, string propertyName)
+{
+    var raw = typeof(Person).GetProperty(propertyName)?.GetValue(person);
+    return raw switch
+    {
+        null              => string.Empty,
+        DateTimeOffset dt => dt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+        IFormattable f    => f.ToString(null, CultureInfo.InvariantCulture),
+        _                 => raw.ToString() ?? string.Empty,
+    };
+}
+
+// "Selected rows only" exports TableView.SelectedItems; otherwise the bound
+// ItemsSource. CSV uses RFC-4180 quoting; TSV is tab-separated; JSON is hand-rolled.
+private List<Person> GetRows(bool selectedOnly) =>
+    selectedOnly ? PeopleTable.SelectedItems.Cast<Person>().ToList()
+                 : People.ToList();

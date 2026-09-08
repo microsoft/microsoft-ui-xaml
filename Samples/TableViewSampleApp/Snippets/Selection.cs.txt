@@ -1,0 +1,21 @@
+private void OnModeChanged(object sender, SelectionChangedEventArgs e)
+{
+    if (ModeCombo.SelectedItem is not ComboBoxItem item)
+    {
+        return;
+    }
+
+    PeopleTable.SelectionMode = (item.Content as string) switch
+    {
+        "None"     => TableViewSelectionMode.None,
+        "Single"   => TableViewSelectionMode.Single,
+        "Multiple" => TableViewSelectionMode.Multiple,
+        _          => TableViewSelectionMode.Multiple,
+    };
+}
+
+private void OnTableSelectionChanged(TableView sender, TableViewSelectionChangedEventArgs args)
+{
+    SelectedCountText.Text = sender.SelectedItems.Count.ToString();
+    SelectedIndexText.Text = sender.SelectedIndex.ToString();
+}

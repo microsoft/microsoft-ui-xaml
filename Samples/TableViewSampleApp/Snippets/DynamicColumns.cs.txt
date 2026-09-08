@@ -1,0 +1,34 @@
+// This demo shows / hides columns through the Columns vector: removing a
+// TableViewColumn hides it; re-inserting the SAME instance at its canonical slot
+// brings it back with its Width intact — this is the same remove-then-insert that
+// MoveColumn uses internally, so no column is rebuilt and the object's identity
+// is preserved. TableViewColumn.Visibility also exists when you want to hide a
+// column without removing it.
+
+private void SetColumnVisible(int canonicalIndex, bool visible)
+{
+    var column = _canonical[canonicalIndex];
+    var columns = DynamicTable.Columns;
+
+    if (visible)
+    {
+        if (!columns.Contains(column))
+        {
+            columns.Insert(InsertIndexFor(canonicalIndex), column);
+        }
+    }
+    else
+    {
+        columns.Remove(column);
+    }
+}
+
+// Add / remove an extra column, and gate drag-reorder control-wide.
+DynamicTable.Columns.Add(new TableViewTextColumn
+{
+    Header = "Tenure",
+    Width = new GridLength(120),
+    Binding = new Binding { Path = new PropertyPath("JoinDateText") },
+    SortMemberPath = "JoinDate",
+});
+DynamicTable.CanUserReorderColumns = false;

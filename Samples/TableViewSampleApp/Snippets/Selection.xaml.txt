@@ -1,0 +1,21 @@
+<Page xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular">
+
+  <ComboBox x:Name="ModeCombo"
+            SelectedIndex="2"
+            SelectionChanged="OnModeChanged">
+    <ComboBoxItem Content="None"/>
+    <ComboBoxItem Content="Single"/>
+    <ComboBoxItem Content="Multiple"/>
+  </ComboBox>
+
+  <TextBlock Text="Setting SelectionMode to Multiple automatically shows a leading checkbox gutter — click a checkbox or row to toggle a row."/>
+
+  <adv:TableView x:Name="PeopleTable"
+                 SelectionMode="Multiple"
+                 SelectionChanged="OnTableSelectionChanged">
+    <adv:TableViewTextColumn Header="First name" Binding="{Binding FirstName}"/>
+    <adv:TableViewTextColumn Header="Last name"  Binding="{Binding LastName}"/>
+    <adv:TableViewTextColumn Header="Email"      Binding="{Binding Email}"/>
+  </adv:TableView>
+</Page>

@@ -1,0 +1,2 @@
+RowCountText.Text = People.Count.ToString();
+ColumnCountText.Text = PeopleTable.Columns.Count.ToString();

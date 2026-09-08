@@ -1,0 +1,39 @@
+<muxc:RadioButtons x:Name="ModeSelector"
+                   SelectionChanged="OnModeChanged"
+                   AutomationProperties.Name="Column width strategy">
+    <x:String>Playground</x:String>
+    <x:String>Auto</x:String>
+    <x:String>Star</x:String>
+    <x:String>Pixel</x:String>
+    <x:String>Mixed</x:String>
+</muxc:RadioButtons>
+
+<TextBlock x:Name="ModeDescription"
+           AutomationProperties.AutomationId="ModeDescription"/>
+
+<muxc:InfoBar IsOpen="True"
+              IsClosable="False"
+              Severity="Informational"
+              Title="Horizontal scroll sync">
+    <TextBlock x:Name="HorizontalSyncText"
+               AutomationProperties.AutomationId="HorizontalSyncText"/>
+</muxc:InfoBar>
+
+<adv:TableView x:Name="WidthsTable"
+               SelectionMode="Single"
+               AutomationProperties.AutomationId="WidthsTable"/>
+
+<StackPanel x:Name="PlaygroundPanel">
+    <ComboBox x:Name="ColumnCombo"
+              SelectionChanged="OnColumnComboChanged"
+              AutomationProperties.Name="Column to adjust"/>
+    <Slider x:Name="MinWidthSlider"
+            ValueChanged="OnMinWidthSliderChanged"
+            AutomationProperties.AutomationId="MinWidthSlider"/>
+    <Slider x:Name="WidthSlider"
+            ValueChanged="OnWidthSliderChanged"
+            AutomationProperties.AutomationId="WidthSlider"/>
+    <Slider x:Name="MaxWidthSlider"
+            ValueChanged="OnMaxWidthSliderChanged"
+            AutomationProperties.AutomationId="MaxWidthSlider"/>
+</StackPanel>

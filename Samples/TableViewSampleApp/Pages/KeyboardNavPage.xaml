@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.KeyboardNavPage"
+    NavigationCacheMode="Enabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <controls:SamplePresenter
+        Header="Keyboard navigation + accessibility"
+        Description="Arrow keys, Tab, Home / End, and Page Up / Page Down move the focus across cells. The grid also exposes its structure to UI Automation, so Narrator and other assistive tools can announce rows and report the table's dimensions."
+        SourceCaption="KeyboardNavPage.xaml (excerpt)"
+        SourceSnippet="KeyboardNav.xaml.txt"
+        AdditionalSnippetCaption="KeyboardNavPage.xaml.cs (excerpt)"
+        AdditionalSnippet="KeyboardNav.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <muxc:InfoBar Grid.Row="0" IsOpen="True" IsClosable="False" Severity="Informational" Title="Try it" Message="Click any cell to focus it, then use arrow keys / Tab / Home / End / PgUp / PgDn to move around the read-only grid." MinHeight="104"/>
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch" Padding="0">
+                    <adv:TableView x:Name="PeopleTable" AutomationProperties.AutomationId="PeopleTable" AutomationProperties.Name="People grid" SelectionMode="Single" SelectionChanged="OnSelectionChanged" VerticalAlignment="Stretch" MinHeight="320">
+                        <adv:TableViewTextColumn Header="#"          Width="{StaticResource ColWidthId}"  Binding="{Binding Number}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="First name" Width="{StaticResource ColWidthShortName}" Binding="{Binding FirstName}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Last name"  Width="{StaticResource ColWidthShortName}" Binding="{Binding LastName}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Email"      Width="{StaticResource ColWidthEmail}" Binding="{Binding Email}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
+                    </adv:TableView>
+                </Border>
+                <muxc:InfoBar Grid.Row="2" IsOpen="True" IsClosable="False" Severity="Informational" Title="Accessibility" Message="TableView ships UI Automation support out of the box: assistive tools such as Narrator can announce each row's position in the grid, and the grid reports its dimensions and orientation to automation clients. The status readout on the right mirrors those same values."/>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <TextBlock Text="Keyboard shortcuts" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock Text="Click any row to take focus, then use the keyboard. The readout below shows the selected row plus bound row and column counts." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <Grid ColumnSpacing="12" RowSpacing="4">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Up" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="prev row" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Down" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="next row" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Home" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="first row" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="End" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="last row" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="PageUp / PageDown" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="4" Grid.Column="1" Text="-1 / +1 viewport" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                </Grid>
+                <TextBlock Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <Grid ColumnSpacing="12" RowSpacing="4">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Selected row index" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="SelectedIndexText" Text="-1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedIndexText"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RowCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="RowCountText"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Columns" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ColumnCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ColumnCountText"/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="UIA RowOrColumnMajor" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="MajorText" Text="RowMajor" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="MajorText"/>
+                </Grid>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+
+    </controls:SamplePresenter>
+</Page>

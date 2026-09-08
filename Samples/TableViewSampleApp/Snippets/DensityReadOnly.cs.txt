@@ -1,0 +1,20 @@
+private void OnDensityChecked(object sender, RoutedEventArgs e)
+{
+    if (sender is FrameworkElement { Tag: string tag } &&
+        Enum.TryParse<TableViewDensity>(tag, out var density))
+    {
+        // Density is applied through the bundled TableStyle.
+        EnsureTableStyle().Density = density;
+    }
+}
+
+private void OnReadOnlyToggled(object sender, RoutedEventArgs e)
+{
+    var isReadOnly = ReadOnlyToggle.IsOn;
+    DemoTable.IsReadOnly = isReadOnly;                       // real table-level DP
+    GetReadOnlyState().IsReadOnly = isReadOnly;             // mirror into editable cells
+}
+
+private ReadOnlyState GetReadOnlyState() => (ReadOnlyState)Resources["ReadOnlyState"];
+
+private TableStyle EnsureTableStyle() => DemoTable.TableStyle ??= new TableStyle();

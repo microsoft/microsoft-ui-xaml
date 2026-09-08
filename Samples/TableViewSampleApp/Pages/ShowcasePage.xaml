@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.ShowcasePage"
+    NavigationCacheMode="Enabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:local="using:TableViewSampleApp.Pages"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <!-- Data-bound conditional cell tints: each tinted cell binds its Border
+                 background (or text) to the row value through a value converter, so a
+                 live mutation recolors just that one cell with no per-column rebuild.
+                 The shared ShowcasePage.Vibrant flag gates whether the tints are drawn. -->
+            <local:ShowcaseDepartmentTintConverter x:Key="ShowcaseDepartmentTintConverter"/>
+            <local:ShowcaseDepartmentDotConverter x:Key="ShowcaseDepartmentDotConverter"/>
+            <local:ShowcaseActiveChipConverter x:Key="ShowcaseActiveChipConverter"/>
+            <local:ShowcaseActiveTextConverter x:Key="ShowcaseActiveTextConverter"/>
+            <local:ShowcaseSalaryTintConverter x:Key="ShowcaseSalaryTintConverter"/>
+            <local:ShowcaseSalaryTextConverter x:Key="ShowcaseSalaryTextConverter"/>
+
+            <DataTemplate x:Key="ShowcaseNameTemplate">
+                <TextBlock Text="{Binding FirstName}"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           Margin="12,0,8,0"/>
+            </DataTemplate>
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <controls:SamplePresenter
+        Header="Showcase"
+        Description="A rich people-directory dashboard composing the aligned TableView feature set in one control: vibrant data-bound Department pills and stoplight Salary tints that animate as live updates run by default, status chips, a command toolbar, single-column header sort, column resize with per-column opt-outs, dynamic show/hide columns, selection modes, and column-header visibility."
+        SourceCaption="ShowcasePage.xaml (excerpt)"
+        SourceSnippet="Showcase.xaml.txt"
+        AdditionalSnippetCaption="ShowcasePage.xaml.cs (excerpt)"
+        AdditionalSnippet="Showcase.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Command toolbar: flyout-driven actions sit above the table so the
+                     page demonstrates realistic data-grid chrome without crowding the
+                     Options pane. The selection count tracks SelectedItems live. -->
+                <Border Grid.Row="0"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Padding="8,6">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+                            <muxc:DropDownButton x:Name="SelectButton" AutomationProperties.AutomationId="ShowcaseSelectButton">
+                                <muxc:DropDownButton.Content>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <FontIcon Glyph="&#xE762;" FontSize="16"/>
+                                        <TextBlock Text="Select"/>
+                                    </StackPanel>
+                                </muxc:DropDownButton.Content>
+                                <muxc:DropDownButton.Flyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Text="Select all" Click="OnSelectAllClick">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE8B3;"/>
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                        <MenuFlyoutItem Text="Clear selection" Click="OnClearSelectionClick">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE8E6;"/>
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                    </MenuFlyout>
+                                </muxc:DropDownButton.Flyout>
+                            </muxc:DropDownButton>
+
+                            <Button x:Name="AutosizeButton" Click="OnAutosizeAllClick" AutomationProperties.AutomationId="ShowcaseAutosizeButton">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE9A6;" FontSize="16"/>
+                                    <TextBlock Text="Autosize"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+
+                        <TextBlock Grid.Column="1"
+                                   x:Name="SelectionCountText"
+                                   Text="No rows selected"
+                                   VerticalAlignment="Center"
+                                   Margin="8,0,4,0"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   Style="{StaticResource CaptionTextBlockStyle}"/>
+                    </Grid>
+                </Border>
+
+                <muxc:InfoBar
+                    Grid.Row="1"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Try it"
+                    Message="Live updates are running — watch the Salary and Status cells animate. Click a header to sort, and drag a header edge to resize - Role opts out of both. Use the Options to change selection mode and headers visibility, show or hide columns, or pause live updates."
+                    MinHeight="104"/>
+
+                <Border Grid.Row="2" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                    <adv:TableView
+                        x:Name="PeopleTable"
+                        AutomationProperties.AutomationId="ShowcasePeopleTable"
+                        Sorted="OnPeopleTableSorted"
+                        SelectionChanged="OnSelectionChanged"
+                        SelectionMode="Single"
+                        VerticalAlignment="Stretch"
+                        MinHeight="320">
+                        <adv:TableViewTemplateColumn x:Name="FirstNameColumn" Header="First name" Width="{StaticResource ColWidthShortName}" SortMemberPath="FirstName" CellTemplate="{StaticResource ShowcaseNameTemplate}"/>
+                        <!-- Rich columns are front-loaded so the colorful, data-bound cells
+                             are visible without horizontal scrolling. Department + Status +
+                             Salary are template columns whose Border background comes from a
+                             value converter, so live updates recolor in place with no
+                             rebuild; SortMemberPath keeps header sort working. -->
+                        <adv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthDepartment}" SortMemberPath="Department">
+                            <adv:TableViewTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding Department, Converter={StaticResource ShowcaseDepartmentTintConverter}}" CornerRadius="10" Padding="10,3" Margin="2,2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal" Spacing="7">
+                                            <Ellipse Width="8" Height="8" Fill="{Binding Department, Converter={StaticResource ShowcaseDepartmentDotConverter}}" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Department}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </adv:TableViewTemplateColumn.CellTemplate>
+                        </adv:TableViewTemplateColumn>
+                        <adv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Status" Width="{StaticResource ColWidthStatus}" SortMemberPath="IsActive">
+                            <adv:TableViewTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding IsActive, Converter={StaticResource ShowcaseActiveChipConverter}}" CornerRadius="10" Padding="10,3" Margin="2,2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding IsActive, Converter={StaticResource ShowcaseActiveTextConverter}}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                    </Border>
+                                </DataTemplate>
+                            </adv:TableViewTemplateColumn.CellTemplate>
+                        </adv:TableViewTemplateColumn>
+                        <adv:TableViewTemplateColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}" SortMemberPath="Salary">
+                            <adv:TableViewTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding Salary, Converter={StaticResource ShowcaseSalaryTintConverter}}" CornerRadius="4" Padding="8,2" Margin="2,2" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Salary, Converter={StaticResource ShowcaseSalaryTextConverter}}" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                    </Border>
+                                </DataTemplate>
+                            </adv:TableViewTemplateColumn.CellTemplate>
+                        </adv:TableViewTemplateColumn>
+                        <adv:TableViewTextColumn x:Name="LastNameColumn" Header="Last name" Width="{StaticResource ColWidthShortName}" SortMemberPath="LastName" Binding="{Binding LastName}"/>
+                        <adv:TableViewTextColumn x:Name="EmailColumn" Header="Email" Width="*" MinWidth="200" SortMemberPath="Email" Binding="{Binding Email}"/>
+                        <adv:TableViewTextColumn x:Name="RoleColumn" Header="Role" Width="{StaticResource ColWidthLongName}" SortMemberPath="Role" Binding="{Binding Role}"/>
+                        <adv:TableViewTextColumn x:Name="JoinDateColumn" Header="Join date" Width="{StaticResource ColWidthDate}" SortMemberPath="JoinDate" Binding="{Binding JoinDateText}"/>
+                    </adv:TableView>
+                </Border>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <TextBlock Text="Mode" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Text="Switch the source between a flat list and Department-grouped rows."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <StackPanel Spacing="4">
+                    <RadioButton
+                        x:Name="FlatModeRadio"
+                        AutomationProperties.AutomationId="ShowcaseModeFlatRadio"
+                        GroupName="ShowcaseMode"
+                        Content="Flat"
+                        Tag="Flat"
+                        IsChecked="True"
+                        Checked="OnModeRadioChecked"/>
+                    <RadioButton
+                        x:Name="GroupedModeRadio"
+                        AutomationProperties.AutomationId="ShowcaseModeGroupedRadio"
+                        GroupName="ShowcaseMode"
+                        Content="Grouped"
+                        Tag="Grouped"
+                        Checked="OnModeRadioChecked"/>
+                </StackPanel>
+
+
+                <TextBlock Text="Row count" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock
+                    Text="Flat mode only — grouped mode reuses the same rows grouped by Department."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <ComboBox
+                    x:Name="RowCountCombo"
+                    AutomationProperties.AutomationId="ShowcaseRowCountCombo"
+                    Header="Flat row count"
+                    SelectedIndex="0"
+                    HorizontalAlignment="Stretch"
+                    SelectionChanged="OnRowCountChanged"
+                    AutomationProperties.Name="Flat row count">
+                    <ComboBoxItem Content="10"   Tag="10"/>
+                    <ComboBoxItem Content="100"  Tag="100"/>
+                    <ComboBoxItem Content="500"  Tag="500"/>
+                    <ComboBoxItem Content="1000" Tag="1000"/>
+                </ComboBox>
+
+                <TextBlock Text="Selection" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock
+                    Text="Switch SelectionMode. None disables selection; Single picks one row. Multiple and Extended need an anchor and a range model, so they are not in this release."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <ComboBox
+                    x:Name="SelectionModeCombo"
+                    AutomationProperties.AutomationId="ShowcaseSelectionModeCombo"
+                    Header="Selection mode"
+                    SelectedIndex="1"
+                    HorizontalAlignment="Stretch"
+                    SelectionChanged="OnSelectionModeChanged"
+                    AutomationProperties.Name="Selection mode">
+                    <ComboBoxItem Content="None"/>
+                    <ComboBoxItem Content="Single"/>
+                    <ComboBoxItem Content="Multiple"/>
+                    <ComboBoxItem Content="Extended"/>
+                </ComboBox>
+                <ToggleSwitch
+                    x:Name="GutterToggle"
+                    AutomationProperties.AutomationId="ShowcaseGutterToggle"
+                    Header="Selection gutter (row checkboxes)"
+                    OnContent="Shown"
+                    OffContent="Hidden"
+                    Toggled="OnGutterToggled"
+                    AutomationProperties.Name="Selection gutter"/>
+
+                <TextBlock Text="Columns" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock
+                    Text="Show or hide the column headers, and add or remove the Email / Role columns."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <ComboBox
+                    x:Name="HeadersVisibilityCombo"
+                    AutomationProperties.AutomationId="ShowcaseHeadersVisibilityCombo"
+                    Header="Headers visibility"
+                    SelectedIndex="1"
+                    HorizontalAlignment="Stretch"
+                    SelectionChanged="OnHeadersVisibilityChanged"
+                    AutomationProperties.Name="Headers visibility">
+                    <ComboBoxItem Content="Column" Tag="Column"/>
+                    <ComboBoxItem Content="None"   Tag="None"/>
+                </ComboBox>
+                <ToggleSwitch
+                    x:Name="EmailColumnToggle"
+                    AutomationProperties.AutomationId="ShowcaseEmailColumnToggle"
+                    Header="Show Email column"
+                    IsOn="True"
+                    OnContent="Shown"
+                    OffContent="Hidden"
+                    Toggled="OnEmailColumnToggled"/>
+                <ToggleSwitch
+                    x:Name="RoleColumnToggle"
+                    AutomationProperties.AutomationId="ShowcaseRoleColumnToggle"
+                    Header="Show Role column"
+                    IsOn="True"
+                    OnContent="Shown"
+                    OffContent="Hidden"
+                    Toggled="OnRoleColumnToggled"/>
+
+                <TextBlock Text="Live updates" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock
+                    Text="Vibrant cells tint Department, Status, and Salary. Live updates refresh a few rows' Salary and Status on a timer; the bound tints re-run per cell."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <ToggleSwitch
+                    x:Name="VibrantToggle"
+                    AutomationProperties.AutomationId="ShowcaseVibrantToggle"
+                    Header="Vibrant cells"
+                    IsOn="True"
+                    OnContent="On"
+                    OffContent="Off"
+                    Toggled="OnVibrantToggled"/>
+                <ToggleSwitch
+                    x:Name="LiveToggle"
+                    AutomationProperties.AutomationId="ShowcaseLiveToggle"
+                    Header="Live updates"
+                    IsOn="True"
+                    OnContent="On"
+                    OffContent="Off"
+                    Toggled="OnLiveToggled"/>
+                <Slider
+                    x:Name="UpdateIntervalSlider"
+                    AutomationProperties.AutomationId="ShowcaseUpdateIntervalSlider"
+                    Header="Update interval (ms)"
+                    Minimum="100"
+                    Maximum="2000"
+                    StepFrequency="50"
+                    Value="700"/>
+
+                <TextBlock Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <Grid ColumnSpacing="12" RowSpacing="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Mode" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ModeReadoutText" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseModeReadoutText" TextWrapping="Wrap"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RowsReadoutText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseRowsReadoutText" TextWrapping="Wrap"/>
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Selection" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="SelectionReadoutText" Text="0 (Multiple)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseSelectionReadoutText" TextWrapping="Wrap"/>
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Sort" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="SortReadoutText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseSortReadoutText" TextWrapping="Wrap"/>
+
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Columns" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock Grid.Row="4" Grid.Column="1" x:Name="ColumnsReadoutText" Text="" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseColumnsReadoutText" TextWrapping="Wrap"/>
+                </Grid>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+
+    </controls:SamplePresenter>
+</Page>
