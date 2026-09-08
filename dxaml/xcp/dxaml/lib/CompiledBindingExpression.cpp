@@ -42,11 +42,43 @@ private:
     ctl::WeakRefPtr m_spWeakRef;
 };
 
+class DirectUI::CompiledBindingExpressionDPChangedHandler final :
+    public ctl::implements<IDPChangedEventHandler>
+{
+public:
+    explicit CompiledBindingExpressionDPChangedHandler(_In_ CompiledBindingExpression* pExpression)
+    {
+        VERIFYHR(ctl::AsWeak(pExpression, &m_spWeakRef));
+    }
+
+    _Check_return_ HRESULT Invoke(
+        _In_ xaml::IDependencyObject*,
+        _In_ const CDependencyProperty* pDP) override
+    {
+        ctl::ComPtr<xaml_data::IBindingExpressionBase> spExpressionInterface;
+        IFC_RETURN(m_spWeakRef.As(&spExpressionInterface));
+
+        auto pExpression = spExpressionInterface.Cast<CompiledBindingExpression>();
+        auto pegClass = ctl::try_make_autopeg(pExpression);
+        if (pegClass && pDP->GetIndex() == pExpression->m_pTargetProperty->GetIndex())
+        {
+            IFC_RETURN(pExpression->OnTargetChanged());
+        }
+
+        return S_OK;
+    }
+
+private:
+    ctl::WeakRefPtr m_spWeakRef;
+};
+
 CompiledBindingExpression::~CompiledBindingExpression()
 {
     m_spSourceRef.Reset();
     m_spGetter.Reset();
+    m_spSetter.Reset();
     m_spDataContextChangedHandler.Reset();
+    m_spTargetChangedHandler.Reset();
     m_pTarget = nullptr;
 }
 
@@ -54,6 +86,7 @@ CompiledBindingExpression::~CompiledBindingExpression()
 _Check_return_ HRESULT CompiledBindingExpression::Create(
     _In_opt_ IInspectable* pSource,
     _In_ xaml_data::ICompiledBindingGetter* pGetter,
+    _In_opt_ xaml_data::ICompiledBindingSetter* pSetter,
     _Out_ CompiledBindingExpression** ppExpression)
 {
     IFCPTR_RETURN(pGetter);
@@ -67,6 +100,7 @@ _Check_return_ HRESULT CompiledBindingExpression::Create(
     // Strong reference to the getter delegate: this is what keeps the app's lambda (and its
     // captured state) alive for the lifetime of the binding.
     spExpression->m_spGetter = pGetter;
+    spExpression->m_spSetter = pSetter;
 
     *ppExpression = spExpression.Detach();
     return S_OK;
@@ -74,9 +108,7 @@ _Check_return_ HRESULT CompiledBindingExpression::Create(
 
 _Check_return_ HRESULT CompiledBindingExpression::GetCanSetValue(_Out_ bool *pValue)
 {
-    // OneWay only: setting a local value replaces (removes) the expression, and there is no
-    // write-back path to the source.
-    *pValue = false;
+    *pValue = !!m_spSetter;
     return S_OK;
 }
 
@@ -136,8 +168,18 @@ _Check_return_ HRESULT CompiledBindingExpression::OnDetach()
     {
         // Already detached
         ASSERT(!m_bRegisteredForSourceChanges);
+        ASSERT(!m_bRegisteredForTargetChanges);
         return S_OK;
     }
+
+    if (m_bRegisteredForTargetChanges)
+    {
+        ctl::ComPtr<IDPChangedEventSource> spEventSource;
+        IFC_RETURN(m_pTarget->GetDPChangedEventSource(&spEventSource));
+        IFC_RETURN(spEventSource->RemoveHandler(m_spTargetChangedHandler.Get()));
+        m_bRegisteredForTargetChanges = false;
+    }
+    m_spTargetChangedHandler.Reset();
 
     if (m_bRegisteredForDataContextChanges)
     {
@@ -214,13 +256,92 @@ _Check_return_ HRESULT CompiledBindingExpression::GetValue(
 
 _Check_return_ HRESULT CompiledBindingExpression::OnSourceChanged()
 {
+    if (m_updatingSource)
+    {
+        m_sourceChangedDuringUpdate = true;
+        return S_OK;
+    }
+
     if (!m_ignoreSourceChanges)
     {
-        IFCEXPECT_RETURN(m_pTarget);
-        IFCEXPECT_RETURN(m_pTargetProperty);
+        IFC_RETURN(RefreshTarget());
+    }
 
-        // Re-pull the value; RefreshExpression calls back into GetValue, which re-invokes the getter.
-        IFC_RETURN(m_pTarget->RefreshExpression(m_pTargetProperty));
+    return S_OK;
+}
+
+_Check_return_ HRESULT CompiledBindingExpression::RefreshTarget()
+{
+    IFCEXPECT_RETURN(m_pTarget);
+    IFCEXPECT_RETURN(m_pTargetProperty);
+
+    m_ignoreTargetChanges = true;
+    auto ignoreTargetChangesGuard = wil::scope_exit([this]
+    {
+        m_ignoreTargetChanges = false;
+    });
+
+    // Re-pull the value; RefreshExpression calls back into GetValue, which re-invokes the getter.
+    return m_pTarget->RefreshExpression(m_pTargetProperty);
+}
+
+_Check_return_ HRESULT CompiledBindingExpression::ConnectToTargetChanges()
+{
+    IFCEXPECT_RETURN(m_spSetter);
+    IFCEXPECT_RETURN(m_pTarget);
+    IFCEXPECT_RETURN(!m_bRegisteredForTargetChanges);
+
+    ctl::ComPtr<IDPChangedEventSource> spEventSource;
+    ctl::ComPtr<CompiledBindingExpressionDPChangedHandler> spHandler;
+    spHandler.Attach(new CompiledBindingExpressionDPChangedHandler(this));
+
+    IFC_RETURN(m_pTarget->GetDPChangedEventSource(&spEventSource));
+    IFC_RETURN(spEventSource->AddHandler(spHandler.Get()));
+
+    m_spTargetChangedHandler = spHandler;
+    m_bRegisteredForTargetChanges = true;
+    return S_OK;
+}
+
+_Check_return_ HRESULT CompiledBindingExpression::OnTargetChanged()
+{
+    if (m_ignoreTargetChanges || m_updatingSource)
+    {
+        return S_OK;
+    }
+
+    IFCEXPECT_RETURN(m_spSetter);
+
+    ctl::ComPtr<IInspectable> spSource;
+    IFC_RETURN(GetSource(&spSource));
+    if (!spSource)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<IInspectable> spValue;
+    IFC_RETURN(m_pTarget->GetValue(m_pTargetProperty, &spValue));
+
+    m_updatingSource = true;
+    m_sourceChangedDuringUpdate = false;
+    auto updatingSourceGuard = wil::scope_exit([this]
+    {
+        m_updatingSource = false;
+    });
+
+    // SYNC_CALL_TO_APP DIRECT - This next line may directly call out to app code.
+    IFC_RETURN(m_spSetter->Invoke(spSource.Get(), spValue.Get()));
+
+    m_updatingSource = false;
+    updatingSourceGuard.release();
+
+    if (m_sourceChangedDuringUpdate)
+    {
+        m_sourceChangedDuringUpdate = false;
+        if (m_pTarget)
+        {
+            IFC_RETURN(RefreshTarget());
+        }
     }
 
     return S_OK;

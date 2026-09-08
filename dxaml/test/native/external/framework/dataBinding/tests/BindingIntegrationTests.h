@@ -113,6 +113,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                     L"Set a compiled binding before and after setting DataContext and verify the value propagates")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CanUpdateTwoWayCompiledBinding)
+                TEST_METHOD_PROPERTY(L"Description",
+                    L"Verify a compiled binding setter writes target changes to the current DataContext without recursive updates")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CanReplaceTwoWayCompiledBindingWithOneWay)
+                TEST_METHOD_PROPERTY(L"Description",
+                    L"Verify a getter-only compiled binding replaces and detaches an existing TwoWay compiled binding")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(CanChangeDataContextForCompiledBinding)
                 TEST_METHOD_PROPERTY(L"Description",
                     L"Change a compiled binding's DataContext object and verify it follows the new source")

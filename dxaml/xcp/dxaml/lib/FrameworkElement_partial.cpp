@@ -101,6 +101,27 @@ FrameworkElement::SetCompiledBindingImpl(
     return DXamlCore::SetCompiledBinding(
         spDataContext.Get(),
         getter,
+        nullptr,
+        this,
+        spDP->GetDP()->GetIndex());
+}
+
+_Check_return_ HRESULT
+FrameworkElement::SetCompiledBindingWithSetterImpl(
+    _In_ IDependencyProperty* pDP,
+    _In_ xaml_data::ICompiledBindingGetter* getter,
+    _In_ xaml_data::ICompiledBindingSetter* setter)
+{
+    ctl::ComPtr<DependencyPropertyHandle> spDP;
+    ctl::ComPtr<IInspectable> spDataContext;
+
+    IFC_RETURN(ctl::do_query_interface(spDP, pDP));
+    IFC_RETURN(get_DataContext(&spDataContext));
+
+    return DXamlCore::SetCompiledBinding(
+        spDataContext.Get(),
+        getter,
+        setter,
         this,
         spDP->GetDP()->GetIndex());
 }

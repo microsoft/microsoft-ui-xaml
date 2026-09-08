@@ -294,6 +294,11 @@ namespace Framework { namespace DataBinding {
 
             bindingTarget->Text = L"8.0";
             VERIFY_ARE_EQUAL(16.0, bindingSource->Width, L"Invalid value of source property after changing target");
+
+            bindingSource->Width = 10.0;
+            VERIFY_IS_TRUE(
+                L"5" == bindingTarget->Text,
+                L"Two-way binding should remain installed and update the target after changing the source");
         });
     }
 
@@ -735,6 +740,10 @@ namespace Framework { namespace DataBinding {
             rootPanel->DataContext = dataSource1;
 
             SetBinding(textBlock1, TextBlock::TextProperty, L"StringProperty");
+            VERIFY_ARE_EQUAL(
+                dataSource1->StringProperty,
+                textBlock1->Text,
+                L"Binding should update the target before being replaced by a local value");
 
             auto explicitValue = ref new String(L"Explicit value");
             textBlock1->Text = explicitValue;
@@ -809,6 +818,129 @@ namespace Framework { namespace DataBinding {
 
             VERIFY_IS_NULL(dataContextFirstPanel->Tag, L"Clearing DataContext should restore the target property's default");
             VERIFY_IS_NULL(bindingFirstPanel->Tag, L"Clearing DataContext should restore the target property's default");
+        });
+    }
+
+    void BindingIntegrationTests::CanUpdateTwoWayCompiledBinding()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto target = ref new StackPanel;
+            auto firstSource = CreateInpcDataSource();
+            firstSource->StringProperty = L"Initial value";
+            target->DataContext = firstSource;
+
+            int getterInvocationCount = 0;
+            int setterInvocationCount = 0;
+            target->SetCompiledBinding(
+                Panel::TagProperty,
+                ref new CompiledBindingGetter([&getterInvocationCount](Object^ source) -> Object^
+                {
+                    ++getterInvocationCount;
+                    return safe_cast<InpcDataSource^>(source)->StringProperty;
+                }),
+                ref new CompiledBindingSetter([&setterInvocationCount](Object^ source, Object^ value)
+                {
+                    ++setterInvocationCount;
+                    safe_cast<InpcDataSource^>(source)->StringProperty =
+                        Platform::String::Concat(L"Coerced ", safe_cast<String^>(value));
+                }));
+
+            VERIFY_ARE_EQUAL(firstSource->StringProperty, safe_cast<String^>(target->Tag));
+            VERIFY_ARE_EQUAL(1, getterInvocationCount, L"Installing the binding should invoke the getter once");
+            VERIFY_ARE_EQUAL(0, setterInvocationCount, L"Installing the binding should not invoke the setter");
+
+            target->Tag = L"target value";
+
+            VERIFY_ARE_EQUAL(2, getterInvocationCount, L"Source notification from the setter should invoke the getter once");
+            VERIFY_ARE_EQUAL(1, setterInvocationCount, L"A target change should invoke the setter once");
+            VERIFY_ARE_EQUAL(ref new String(L"Coerced target value"), firstSource->StringProperty);
+            VERIFY_ARE_EQUAL(
+                firstSource->StringProperty,
+                safe_cast<String^>(target->Tag),
+                L"PropertyChanged raised by the setter should refresh a coerced source value without invoking the setter again");
+
+            auto secondSource = CreateInpcDataSource();
+            secondSource->StringProperty = L"Second source";
+            target->DataContext = secondSource;
+            VERIFY_ARE_EQUAL(3, getterInvocationCount, L"Changing DataContext should invoke the getter once");
+
+            target->Tag = L"new target value";
+
+            VERIFY_ARE_EQUAL(4, getterInvocationCount, L"Source notification from the second setter call should invoke the getter once");
+            VERIFY_ARE_EQUAL(2, setterInvocationCount);
+            VERIFY_ARE_EQUAL(ref new String(L"Coerced new target value"), secondSource->StringProperty);
+            VERIFY_ARE_EQUAL(
+                ref new String(L"Coerced target value"),
+                firstSource->StringProperty,
+                L"Write-back should use the current DataContext");
+
+            target->ClearValue(Panel::DataContextProperty);
+            target->Tag = L"value without a source";
+            VERIFY_ARE_EQUAL(4, getterInvocationCount, L"A null DataContext should suppress getter invocation");
+            VERIFY_ARE_EQUAL(2, setterInvocationCount, L"A null DataContext should suppress setter invocation");
+
+            target->ClearValue(Panel::TagProperty);
+            target->DataContext = secondSource;
+            target->Tag = L"value after clearing the binding";
+            VERIFY_ARE_EQUAL(4, getterInvocationCount, L"Clearing the binding should prevent further getter invocation");
+            VERIFY_ARE_EQUAL(2, setterInvocationCount, L"Clearing the binding should detach its target listener");
+        });
+    }
+
+    void BindingIntegrationTests::CanReplaceTwoWayCompiledBindingWithOneWay()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto target = ref new StackPanel;
+            auto source = CreateInpcDataSource();
+            source->StringProperty = L"Initial value";
+            target->DataContext = source;
+
+            int setterInvocationCount = 0;
+            target->SetCompiledBinding(
+                Panel::TagProperty,
+                ref new CompiledBindingGetter([](Object^ source) -> Object^
+                {
+                    return safe_cast<InpcDataSource^>(source)->StringProperty;
+                }),
+                ref new CompiledBindingSetter([&setterInvocationCount](Object^ source, Object^ value)
+                {
+                    ++setterInvocationCount;
+                    safe_cast<InpcDataSource^>(source)->StringProperty = safe_cast<String^>(value);
+                }));
+
+            target->Tag = L"TwoWay target value";
+            VERIFY_ARE_EQUAL(1, setterInvocationCount);
+            VERIFY_ARE_EQUAL(ref new String(L"TwoWay target value"), source->StringProperty);
+
+            target->SetCompiledBinding(
+                Panel::TagProperty,
+                ref new CompiledBindingGetter([](Object^ source) -> Object^
+                {
+                    return safe_cast<InpcDataSource^>(source)->StringProperty;
+                }));
+            source->StringProperty = L"OneWay source value";
+
+            VERIFY_ARE_EQUAL(source->StringProperty, safe_cast<String^>(target->Tag));
+
+            target->Tag = L"Local value";
+            VERIFY_ARE_EQUAL(
+                1,
+                setterInvocationCount,
+                L"Replacing a TwoWay compiled binding should detach its setter");
+            VERIFY_ARE_EQUAL(
+                ref new String(L"OneWay source value"),
+                source->StringProperty,
+                L"Changing the target of the replacement OneWay binding should not update the source");
+
+            source->StringProperty = L"Source update after local value";
+            VERIFY_ARE_EQUAL(
+                ref new String(L"Local value"),
+                safe_cast<String^>(target->Tag),
+                L"Changing the target should replace the getter-only compiled binding");
         });
     }
 
@@ -1060,6 +1192,9 @@ namespace Framework { namespace DataBinding {
             target->SetBinding(Panel::TagProperty, firstClassicBinding);
 
             VERIFY_ARE_EQUAL(dataSource->ObjectProperty, target->Tag, L"First classic binding should propagate");
+            VERIFY_IS_NOT_NULL(
+                target->GetBindingExpression(Panel::TagProperty),
+                L"GetBindingExpression should return the classic binding expression");
 
             target->SetCompiledBinding(
                 Panel::TagProperty,
@@ -1069,6 +1204,9 @@ namespace Framework { namespace DataBinding {
                 }));
 
             VERIFY_ARE_EQUAL(dataSource->StringProperty, safe_cast<String^>(target->Tag), L"Compiled binding should replace the classic binding");
+            VERIFY_IS_NULL(
+                target->GetBindingExpression(Panel::TagProperty),
+                L"GetBindingExpression should not expose the compiled binding expression");
 
             dataSource->ObjectProperty = ref new String(L"Superseded classic binding update");
             VERIFY_ARE_EQUAL(dataSource->StringProperty, safe_cast<String^>(target->Tag), L"Superseded classic binding should not update the target");
@@ -1081,6 +1219,9 @@ namespace Framework { namespace DataBinding {
                 dataSource->InpcDataSourceProperty->StringProperty,
                 safe_cast<String^>(target->Tag),
                 L"Second classic binding should replace the compiled binding");
+            VERIFY_IS_NOT_NULL(
+                target->GetBindingExpression(Panel::TagProperty),
+                L"GetBindingExpression should return the replacement classic binding expression");
 
             dataSource->StringProperty = L"Superseded compiled binding update";
             VERIFY_ARE_EQUAL(
