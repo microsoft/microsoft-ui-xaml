@@ -70,6 +70,12 @@ cache from the machine (e.g. `C:\Users\alias\.nuget\packages`). This is importan
 being cached globally since that can cause issues. It does mean that ALL the nuget packages that this project depends on 
 will get cached here, which is a little redundant, but it is a worthwhile trade-off.
 
+> [!NOTE]
+> `NUGET_PACKAGES` overrides `globalPackagesFolder`. If it is set, packages are cached machine-globally instead of in
+> the local `packages` folder - silently - so you keep building against stale cached bits (the fixed `3.0.0-dev` version
+> is immutable). In cmd.exe, check with `set NUGET_PACKAGES` (prints the variable if set, nothing if not); if set, clear
+> it and restart Visual Studio.
+
 ### Update the Project Target Platform (e.g. to x64)
 Open the .sln in Visual Studio again. 
 
