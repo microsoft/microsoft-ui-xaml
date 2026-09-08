@@ -10,7 +10,11 @@ namespace
     bool HasSubdirectories(std::filesystem::path const& path) noexcept
     {
         std::error_code error;
-        std::filesystem::directory_iterator current{ path, error };
+        std::filesystem::directory_iterator current{
+            path,
+            std::filesystem::directory_options::skip_permission_denied,
+            error
+        };
         std::filesystem::directory_iterator const end;
 
         while (!error && current != end)
@@ -102,6 +106,7 @@ namespace winrt::FolderTreeAppCpp::implementation
         std::error_code error;
         std::filesystem::directory_iterator current{
             std::filesystem::path{ m_fullPath.c_str() },
+            std::filesystem::directory_options::skip_permission_denied,
             error
         };
         std::filesystem::directory_iterator const end;
