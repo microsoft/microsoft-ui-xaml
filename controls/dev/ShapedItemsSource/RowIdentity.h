@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -22,17 +22,21 @@
 // are only correct as a pair, and every mutation path has to shift both the same way.
 namespace RowIdentity
 {
+    // A caller-supplied projection from an item to its stable string identity. Distinct from
+    // KeySelector, which returns an arbitrary key object.
+    using IdentitySelector = std::function<winrt::hstring(winrt::IInspectable const& item)>;
+
     // The row-identity selector, derived from each item's COM identity (its canonical IUnknown
     // pointer). That is unique among live objects and stable for as long as the object lives, which
     // is exactly the window a projection needs. It is NOT stable across a re-created item -- an app
     // that rebuilds its item objects gets fresh identities and therefore a full rebuild rather than
     // a surgical update. There is no app-supplied alternative: this is the only source of row
     // identity.
-    TabularShapingHelpers::TabularKeySelector MakeObjectIdentitySelector();
+    ShapingHelpers::KeySelector MakeObjectIdentitySelector();
 
     bool TryGetRequiredRowIdentity(
         winrt::IInspectable const& item,
-        TabularShapingHelpers::TabularKeySelector const& keySelector,
+        ShapingHelpers::KeySelector const& keySelector,
         winrt::hstring& identity,
         wchar_t const*& reason);
 
@@ -40,7 +44,7 @@ namespace RowIdentity
     // item's object address, the only way that can fail is one object occupying more than one row.
     bool ValidateRowIdentities(
         std::vector<winrt::IInspectable> const& rows,
-        TabularShapingHelpers::TabularKeySelector const& keySelector,
+        ShapingHelpers::KeySelector const& keySelector,
         wchar_t const*& reason);
 
     void ClearFlatRowIdentityTracking(
@@ -50,13 +54,13 @@ namespace RowIdentity
     void RebuildFlatRowIdentityTracking(
         std::vector<winrt::IInspectable> const& rows,
         bool identityRequired,
-        TabularShapingHelpers::TabularKeySelector const& keySelector,
+        ShapingHelpers::KeySelector const& keySelector,
         std::unordered_set<winrt::hstring>& identities,
         std::unordered_map<winrt::hstring, uint32_t>& identityToIndex);
     bool TryGetTrackedFlatRowIndex(
         winrt::hstring const& identity,
         winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& rows,
-        TabularShapingHelpers::TabularKeySelector const& keySelector,
+        ShapingHelpers::KeySelector const& keySelector,
         std::unordered_map<winrt::hstring, uint32_t> const& identityToIndex,
         uint32_t& index);
     // Cost contract: both shifts are O(n) in the number of tracked identities, because a hash map
@@ -83,5 +87,11 @@ namespace RowIdentity
         std::unordered_map<winrt::hstring, uint32_t>& identityToIndex,
         uint32_t removedIndex);
 
+    bool TryGetGroupIdentity(
+        winrt::IInspectable const& key,
+        IdentitySelector const& groupIdentitySelector,
+        winrt::hstring& identity,
+        wchar_t const*& reason);
+    bool GroupKeysEqual(winrt::IInspectable const& a, winrt::IInspectable const& b);
     winrt::hstring StringifyKey(winrt::IInspectable const& key);
 }

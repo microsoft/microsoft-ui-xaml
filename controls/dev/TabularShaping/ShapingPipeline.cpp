@@ -9,7 +9,7 @@
 #include <string>
 #include <utility>
 
-namespace TabularShapingHelpers
+namespace ShapingHelpers
 {
     using SortDirection = winrt::SortDirection;
 
@@ -18,12 +18,12 @@ namespace TabularShapingHelpers
         return winrt::hstring{ std::wstring{ prefix } + std::to_wstring(m_nextDescriptionId++) };
     }
 
-    void ShapingPipeline::SetFilter(TabularPredicate const& predicate)
+    void ShapingPipeline::SetFilter(Predicate const& predicate)
     {
         SetFilter(winrt::hstring{}, predicate);
     }
 
-    void ShapingPipeline::SetFilter(winrt::hstring const& axisToken, TabularPredicate const& predicate)
+    void ShapingPipeline::SetFilter(winrt::hstring const& axisToken, Predicate const& predicate)
     {
         if (!predicate)
         {
@@ -65,7 +65,7 @@ namespace TabularShapingHelpers
             m_filters.end());
     }
 
-    int32_t ShapingPipeline::MarkGroupVerb(TabularKeySelector const& key)
+    int32_t ShapingPipeline::MarkGroupVerb(KeySelector const& key)
     {
         m_groupKey = key;
         m_groupDescriptionId = MintDescriptionId(L'g');
@@ -189,8 +189,9 @@ namespace TabularShapingHelpers
     void ShapingPipeline::SetSort(
         winrt::hstring const& previousAxisToken,
         winrt::hstring const& axisToken,
-        TabularKeySelector const& key,
+        KeySelector const& key,
         winrt::Windows::Foundation::IUnknown const& keyIdentity,
+        winrt::hstring const& sortMemberPath,
         SortDirection direction)
     {
         if (!previousAxisToken.empty() && previousAxisToken != axisToken)
@@ -216,6 +217,7 @@ namespace TabularShapingHelpers
             {
                 it->Key = key;
                 it->KeyIdentity = keyIdentity;
+                it->SortMemberPath = sortMemberPath;
                 it->Direction = direction;
                 // Match WPF DataGrid.DefaultSort: re-sorting an already-sorted axis replaces it
                 // in place and keeps its existing precedence slot (Order is left untouched), rather
@@ -233,7 +235,7 @@ namespace TabularShapingHelpers
             // A brand-new axis takes the next (largest) Order, which under earliest-first
             // precedence appends it as the least significant tie-break -- the analog of WPF's
             // SortDescriptions.Add.
-            m_sorts.push_back({ axisToken, key, keyIdentity, direction, NextVerbOrder(), MintDescriptionId(L's') });
+            m_sorts.push_back({ axisToken, key, keyIdentity, sortMemberPath, direction, NextVerbOrder(), MintDescriptionId(L's') });
         }
     }
 
@@ -250,6 +252,23 @@ namespace TabularShapingHelpers
                 m_sorts.begin(),
                 m_sorts.end(),
                 [&axisToken](SortAxis const& axis) { return axis.AxisToken == axisToken; }),
+            m_sorts.end());
+    }
+
+    void ShapingPipeline::ClearSortsExcept(winrt::hstring const& axisToken) noexcept
+    {
+        if (axisToken.empty())
+        {
+            // No axis to preserve: an empty token identifies no single axis.
+            ClearSorts();
+            return;
+        }
+
+        m_sorts.erase(
+            std::remove_if(
+                m_sorts.begin(),
+                m_sorts.end(),
+                [&axisToken](SortAxis const& axis) { return axis.AxisToken != axisToken; }),
             m_sorts.end());
     }
 
@@ -333,7 +352,7 @@ namespace TabularShapingHelpers
             auto const& axis = axes[i];
             winrt::IInspectable rowKey{ nullptr };
             try { rowKey = axis.Key(row); } catch (...) { rowKey = nullptr; }
-            const int cmp = TabularValueComparer::Compare(itemKeys[i], rowKey);
+            const int cmp = ValueComparer::Compare(itemKeys[i], rowKey);
             if (cmp != 0)
             {
                 return axis.Direction == SortDirection::Ascending ? cmp : -cmp;

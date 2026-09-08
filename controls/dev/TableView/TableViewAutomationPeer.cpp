@@ -5,6 +5,7 @@
 #include "common.h"
 #include "TableView.h"
 #include "TableViewRow.h"
+#include "TableViewGroupHeader.h"
 #include "TableViewAutomationPeer.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
@@ -115,6 +116,11 @@ void TableViewAutomationPeer::RaiseStructureChangedForVirtualizationReset()
     RaiseStructureChanged(winrt::AutomationStructureChangeType::ChildrenInvalidated);
 }
 
+void TableViewAutomationPeer::RaiseStructureChangedForGroupExpansion()
+{
+    RaiseStructureChanged(winrt::AutomationStructureChangeType::ChildrenInvalidated);
+}
+
 void TableViewAutomationPeer::RaiseStructureChanged(winrt::AutomationStructureChangeType const& structureChangeType)
 {
     RaiseStructureChangedEvent(structureChangeType, nullptr);
@@ -177,17 +183,17 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::GetItem(int32_t row, i
         return nullptr;
     }
 
-    winrt::TableViewRow rowElement{ nullptr };
+    winrt::UIElement element{ nullptr };
     try
     {
-        rowElement = repeater.TryGetElement(row).try_as<winrt::TableViewRow>();
+        element = repeater.TryGetElement(row);
     }
     catch (...)
     {
         return nullptr;
     }
 
-    if (!rowElement)
+    if (!element)
     {
         // Bounded realization — realize ONLY the single requested row (not a scan)
         // so IGridProvider.GetItem honors the UIA grid contract (Narrator cell addressing)
@@ -195,16 +201,32 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::GetItem(int32_t row, i
         // Full sweep-virtualization would require exposing VirtualizedItemPattern.
         try
         {
-            rowElement = repeater.GetOrCreateElement(row).try_as<winrt::TableViewRow>();
+            element = repeater.GetOrCreateElement(row);
         }
         catch (...)
         {
             return nullptr;
         }
-        if (!rowElement)
+    }
+
+    if (!element)
+    {
+        return nullptr;
+    }
+
+    if (auto const header = element.try_as<winrt::TableViewGroupHeader>())
+    {
+        if (auto const headerPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(header))
         {
-            return nullptr;
+            return ProviderFromPeer(headerPeer);
         }
+        return nullptr;
+    }
+
+    auto const rowElement = element.try_as<winrt::TableViewRow>();
+    if (!rowElement)
+    {
+        return nullptr;
     }
 
     auto const rowImpl = winrt::get_self<TableViewRow>(rowElement);

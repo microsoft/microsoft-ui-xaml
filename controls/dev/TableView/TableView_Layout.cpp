@@ -6,6 +6,7 @@
 #include "TableView.h"
 #include "TableViewColumn.h"
 #include "TableViewRow.h"
+#include "TableViewGroupHeader.h"
 
 #include <algorithm>
 #include <cmath>
@@ -327,6 +328,13 @@ void TableView::InvalidateCellPanels()
             {
                 // Ask the row to invalidate its own cell panel instead of reaching into it.
                 winrt::get_self<TableViewRow>(row)->InvalidateCells();
+            }
+            else if (auto header = winrt::VisualTreeHelper::GetChild(repeater, i).try_as<winrt::TableViewGroupHeader>())
+            {
+                // The group-header band spans the same columns and sizes itself during measure, but
+                // it is a direct repeater child rather than a cells panel, so the row walk above
+                // never reaches it. Handled in this one walk so the two cannot drift apart.
+                UpdateGroupHeaderWidth(header);
             }
         }
     }
