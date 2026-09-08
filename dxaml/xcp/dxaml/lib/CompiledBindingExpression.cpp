@@ -51,7 +51,7 @@ public:
         VERIFYHR(ctl::AsWeak(pExpression, &m_spWeakRef));
     }
 
-    _Check_return_ HRESULT Invoke(
+    IFACEMETHODIMP Invoke(
         _In_ xaml::IDependencyObject*,
         _In_ const CDependencyProperty* pDP) override
     {
@@ -296,9 +296,9 @@ _Check_return_ HRESULT CompiledBindingExpression::ConnectToTargetChanges()
     spHandler.Attach(new CompiledBindingExpressionDPChangedHandler(this));
 
     IFC_RETURN(m_pTarget->GetDPChangedEventSource(&spEventSource));
-    IFC_RETURN(spEventSource->AddHandler(spHandler.Get()));
+    IFC_RETURN(spHandler.As(&m_spTargetChangedHandler));
+    IFC_RETURN(spEventSource->AddHandler(m_spTargetChangedHandler.Get()));
 
-    m_spTargetChangedHandler = spHandler;
     m_bRegisteredForTargetChanges = true;
     return S_OK;
 }
