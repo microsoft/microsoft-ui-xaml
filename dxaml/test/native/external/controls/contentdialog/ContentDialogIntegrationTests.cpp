@@ -189,15 +189,42 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void ContentDialogIntegrationTests::ShowingAnimationPlaysWithoutOptimizeApplyStyles()
     {
-        ShowingAnimationPlaysWorker(false /* expectOptimizeApplyStylesEnabled */);
+        ShowingAnimationPlaysWorker(
+            false /* expectOptimizeApplyStylesEnabled */,
+            ContentDialogStyleSource::ExplicitInMarkup);
     }
 
     void ContentDialogIntegrationTests::ShowingAnimationPlaysWithOptimizeApplyStyles()
     {
-        ShowingAnimationPlaysWorker(true /* expectOptimizeApplyStylesEnabled */);
+        ShowingAnimationPlaysWorker(
+            true /* expectOptimizeApplyStylesEnabled */,
+            ContentDialogStyleSource::ExplicitInMarkup);
     }
 
-    void ContentDialogIntegrationTests::ShowingAnimationPlaysWorker(bool expectOptimizeApplyStylesEnabled)
+    void ContentDialogIntegrationTests::ShowingAnimationPlaysWithCodeExplicitStyleAndOptimizeApplyStyles()
+    {
+        ShowingAnimationPlaysWorker(
+            true /* expectOptimizeApplyStylesEnabled */,
+            ContentDialogStyleSource::ExplicitInCode);
+    }
+
+    void ContentDialogIntegrationTests::ShowingAnimationPlaysWithImplicitStyleAndOptimizeApplyStyles()
+    {
+        ShowingAnimationPlaysWorker(
+            true /* expectOptimizeApplyStylesEnabled */,
+            ContentDialogStyleSource::Implicit);
+    }
+
+    void ContentDialogIntegrationTests::ShowingAnimationPlaysWithImplicitStyleWithoutOptimizeApplyStyles()
+    {
+        ShowingAnimationPlaysWorker(
+            false /* expectOptimizeApplyStylesEnabled */,
+            ContentDialogStyleSource::Implicit);
+    }
+
+    void ContentDialogIntegrationTests::ShowingAnimationPlaysWorker(
+        bool expectOptimizeApplyStylesEnabled,
+        ContentDialogStyleSource styleSource)
     {
         TestCleanupWrapper cleanup;
 
@@ -223,16 +250,28 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         // observe that Storyboard begin. This is the regression covered by GitHub #11257: with OptimizeApplyStyles
         // enabled the entrance animation stopped playing.
 
-        // Create the ContentDialog from markup with an explicit Style. Creating the dialog this way (rather than
-        // "ref new ContentDialog()") matches the repro for GitHub #11257.
         xaml_controls::ContentDialog^ contentDialog = nullptr;
+        auto contentDialogStyle = safe_cast<xaml::Style^>(
+            LoadXamlFileOnUIThread(GetResourcesPath() + L"ContentDialogWithSmokeBackgroundPart.xaml"));
         auto windowLoadedEvent = std::make_shared<Event>();
         auto loadedRegistration = CreateSafeEventRegistration(xaml_controls::Grid, Loaded);
+        Platform::String^ styleMarker = L"ShowingAnimationCustomStyle";
 
         RunOnUIThread([&]()
         {
             auto windowContent = ref new xaml_controls::Grid();
             windowContent->Background = ref new SolidColorBrush(Microsoft::UI::Colors::White);
+
+            contentDialogStyle->Setters->Append(
+                ref new xaml::Setter(xaml_controls::ContentDialog::TagProperty, styleMarker));
+
+            if (styleSource == ContentDialogStyleSource::Implicit)
+            {
+                // Keep this style out of Application resources so ApplyBuiltInStyle cannot find it.
+                // It should be discovered as an implicit style only when the dialog enters this XamlRoot.
+                windowContent->Resources->Insert(xaml_controls::ContentDialog::typeid, contentDialogStyle);
+            }
+
             loadedRegistration.Attach(windowContent, ref new xaml::RoutedEventHandler(
                 [windowLoadedEvent](Platform::Object^, xaml::RoutedEventArgs^) { windowLoadedEvent->Set(); }));
             TestServices::WindowHelper->WindowContent = windowContent;
@@ -258,12 +297,37 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         RunOnUIThread([&]()
         {
-            contentDialog = safe_cast<xaml_controls::ContentDialog^>(xaml_markup::XamlReader::Load(
-                L"<ContentDialog xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
-                L"xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
-                L"Title='ContentDialog Title' Content='ContentDialog Content' "
-                L"PrimaryButtonText='OK' CloseButtonText='Custom close' "
-                L"Style='{StaticResource DefaultContentDialogStyle}' />"));
+            if (styleSource == ContentDialogStyleSource::ExplicitInMarkup)
+            {
+                Platform::String^ styleResourceKey = L"ShowingAnimationContentDialogStyle";
+                auto applicationResources = xaml::Application::Current->Resources;
+                applicationResources->Insert(styleResourceKey, contentDialogStyle);
+                auto removeStyleResource = wil::scope_exit([&]()
+                {
+                    applicationResources->Remove(styleResourceKey);
+                });
+
+                contentDialog = safe_cast<xaml_controls::ContentDialog^>(xaml_markup::XamlReader::Load(
+                    L"<ContentDialog xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                    L"xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
+                    L"Title='ContentDialog Title' Content='ContentDialog Content' "
+                    L"PrimaryButtonText='OK' CloseButtonText='Custom close' "
+                    L"Style='{StaticResource ShowingAnimationContentDialogStyle}' />"));
+            }
+            else
+            {
+                contentDialog = safe_cast<xaml_controls::ContentDialog^>(xaml_markup::XamlReader::Load(
+                    L"<ContentDialog xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                    L"xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
+                    L"Title='ContentDialog Title' Content='ContentDialog Content' "
+                    L"PrimaryButtonText='OK' CloseButtonText='Custom close' />"));
+
+                if (styleSource == ContentDialogStyleSource::ExplicitInCode)
+                {
+                    contentDialog->Style = contentDialogStyle;
+                }
+            }
+
             VERIFY_IS_NOT_NULL(contentDialog);
 
             contentDialog->XamlRoot = TestServices::WindowHelper->WindowContent->XamlRoot;
@@ -275,10 +339,19 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         storyboardMonitor->DetachStartedHandler();
 
         LOG_OUTPUT(
-            L"OptimizeApplyStyles enabled: %d, total storyboards started: %d, ContentDialog show entrance animation started: %d",
+            L"OptimizeApplyStyles enabled: %d, style source: %d, total storyboards started: %d, ContentDialog show entrance animation started: %d",
             expectOptimizeApplyStylesEnabled ? 1 : 0,
+            static_cast<int>(styleSource),
             totalStoryboardsStarted,
             showEntranceAnimationStarted ? 1 : 0);
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(
+                styleMarker,
+                safe_cast<Platform::String^>(contentDialog->Tag),
+                L"The custom ContentDialog style should be applied.");
+        });
 
         VERIFY_IS_TRUE(
             showEntranceAnimationStarted,

@@ -55,11 +55,32 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ShowingAnimationPlaysWithOptimizeApplyStyles)
-        TEST_METHOD_PROPERTY(L"Description", L"Validates that the ContentDialog entrance animation plays when OptimizeApplyStyles is enabled. Regression coverage for GitHub #11257.")
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the ContentDialog entrance animation plays with an explicit style set in markup when OptimizeApplyStyles is enabled. Regression coverage for GitHub #11257.")
         TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         // Isolate OptimizeApplyStyles as the only variable versus the compat test: PerfOptIn off, optimization on.
         TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
         TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ShowingAnimationPlaysWithCodeExplicitStyleAndOptimizeApplyStyles)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the ContentDialog entrance animation plays with an explicit style set in code before entering the tree when OptimizeApplyStyles is enabled.")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+        TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ShowingAnimationPlaysWithImplicitStyleAndOptimizeApplyStyles)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the ContentDialog entrance animation plays with an implicit style when OptimizeApplyStyles is enabled.")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+        TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ShowingAnimationPlaysWithImplicitStyleWithoutOptimizeApplyStyles)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the ContentDialog entrance animation plays with an implicit style when OptimizeApplyStyles is disabled.")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+        TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:false}")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateUnconstrainedPopupPlacementBehavior)
@@ -459,6 +480,13 @@ private:
         FullSize
     };
 
+    enum class ContentDialogStyleSource
+    {
+        ExplicitInMarkup,
+        ExplicitInCode,
+        Implicit
+    };
+
     struct ValidateFootprintExpectedValues
     {
         double ContentDialogWidth;
@@ -487,7 +515,9 @@ private:
     static xaml_controls::Button^ GetButton(xaml_controls::ContentDialog^, xaml_controls::ContentDialogButton button);
 
     static void CanOpenAndCloseWorker(xaml_controls::ContentDialogPlacement placement = xaml_controls::ContentDialogPlacement::Popup, bool validateDCompTree = false);
-    static void ShowingAnimationPlaysWorker(bool expectOptimizeApplyStylesEnabled);
+    static void ShowingAnimationPlaysWorker(
+        bool expectOptimizeApplyStylesEnabled,
+        ContentDialogStyleSource styleSource = ContentDialogStyleSource::ExplicitInMarkup);
     static void CanClickButtonsWorker(xaml_controls::ContentDialogPlacement placement = xaml_controls::ContentDialogPlacement::Popup);
 
     static void CanDeferButtonClickHelper(xaml_controls::ContentDialogButton buttonType);
