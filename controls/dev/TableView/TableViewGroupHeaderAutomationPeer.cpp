@@ -78,6 +78,32 @@ winrt::hstring TableViewGroupHeaderAutomationPeer::GetNameCore()
     return __super::GetNameCore();
 }
 
+int32_t TableViewGroupHeaderAutomationPeer::GetLevelCore()
+{
+    // An app-set AutomationProperties.Level wins, matching how the dxaml peers that compute this
+    // property defer to the container value first.
+    if (const auto provided = __super::GetLevelCore(); provided > 0)
+    {
+        return provided;
+    }
+
+    // 1-based, matching UIA's Level convention; 0 means "unknown", which is the honest answer for a
+    // band whose projection info is gone.
+    if (auto const header = GetHeader())
+    {
+        if (auto const info = header.Content().try_as<winrt::TableViewGroupInfo>())
+        {
+            const auto level = info.Level();
+            if (level >= 0)
+            {
+                return level + 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
 void TableViewGroupHeaderAutomationPeer::RaiseExpandCollapseAutomationEvent(
     winrt::ExpandCollapseState oldState,
     winrt::ExpandCollapseState newState)
