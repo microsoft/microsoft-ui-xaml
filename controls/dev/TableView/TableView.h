@@ -863,6 +863,9 @@ private:
     // Left/Right resize for the column whose header has focus; the gripper is a pointer
     // affordance here, not a tab stop.
     bool TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& args);
+    // Enter / Space on a focused, sortable column header. Paired with the header cell's tab stop,
+    // this is the keyboard path to sorting.
+    bool TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args);
     // Redirects a header's bring-into-view onto the body scroller, so the header cannot scroll
     // independently of the columns it labels.
     void OnHeaderBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs& args);

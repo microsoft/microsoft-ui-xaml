@@ -6,10 +6,12 @@
 #include "TableView.h"
 #include "TableViewTextColumn.h"
 #include "TableViewRow.h"
+#include "TableViewAutomationPeer.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
 #include "TableViewToolTipHelpers.h"
+#include "ResourceAccessor.h"
 #include "TableViewCellAutomationPeer.properties.cpp"
 
 #include <string>
@@ -66,6 +68,18 @@ winrt::AutomationControlType TableViewCellAutomationPeer::GetAutomationControlTy
     return winrt::AutomationControlType::DataItem;
 }
 
+hstring TableViewCellAutomationPeer::GetLocalizedControlTypeCore()
+{
+    // Shared helper: the host app may not merge the control's PRI, so a missing resource degrades
+    // to the framework default ("data item") rather than throwing into UIA.
+    if (auto const localized = TryGetLocalizedString(SR_TableViewCellLocalizedControlType); !localized.empty())
+    {
+        return localized;
+    }
+
+    return __super::GetLocalizedControlTypeCore();
+}
+
 hstring TableViewCellAutomationPeer::GetNameCore()
 {
     // Compose "{column header}, {cell value}", falling back to either part alone.
@@ -98,36 +112,8 @@ winrt::hstring TableViewCellAutomationPeer::GetColumnHeaderText()
 
 winrt::hstring TableViewCellAutomationPeer::GetCellValueText()
 {
-    auto const cell = Owner().try_as<winrt::FrameworkElement>();
-    if (!cell)
-    {
-        return {};
-    }
-
-    // The cell wrapper's child is the column-generated content.
-    winrt::FrameworkElement content{ nullptr };
-    if (auto const border = cell.try_as<winrt::Border>())
-    {
-        content = border.Child().try_as<winrt::FrameworkElement>();
-    }
-    if (!content)
-    {
-        content = cell;
-    }
-
-    // Common text-column case: read the generated TextBlock.
-    if (auto const textBlock = content.try_as<winrt::TextBlock>())
-    {
-        return textBlock.Text();
-    }
-
-    // Template content uses the standard UIA name computation.
-    if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(content))
-    {
-        return peer.GetName();
-    }
-
-    return {};
+    // Shared with the row peer's composed name, so the two never disagree.
+    return GetCellDisplayText(Owner().try_as<winrt::FrameworkElement>());
 }
 
 hstring TableViewCellAutomationPeer::GetHelpTextCore()
@@ -179,7 +165,40 @@ int32_t TableViewCellAutomationPeer::Row()
 
 int32_t TableViewCellAutomationPeer::Column()
 {
-    // Matches TableViewAutomationPeer::GetItem's cell-host child index.
+    // Computed live, mirroring Row(): a cached index goes stale the moment a column is hidden or
+    // shown underneath a client that is holding this provider, and UIA clients do hold them.
+    // Falls back to the index the row supplied at construction when the row is unresolvable.
+    if (auto const row = m_row.get())
+    {
+        if (auto const rowImpl = winrt::get_self<TableViewRow>(row))
+        {
+            if (auto const cellsHost = rowImpl->GetCellsHostPanelInternal())
+            {
+                auto const cell = Owner().try_as<winrt::UIElement>();
+                auto const cellChildren = cellsHost.Children();
+                const auto count = cellChildren.Size();
+                int32_t visibleColumnIndex = 0;
+
+                // Same walk, same predicate, as TableViewAutomationPeer::VisibleColumnToChildIndex
+                // and the row peer's GetChildrenCore, so all three agree on the coordinate.
+                for (uint32_t i = 0; i < count; ++i)
+                {
+                    auto const child = cellChildren.GetAt(i).try_as<winrt::UIElement>();
+                    if (!child || !IsVisibleColumn(rowImpl->GetCellOwningColumn(child)))
+                    {
+                        continue;
+                    }
+
+                    if (child == cell)
+                    {
+                        return visibleColumnIndex;
+                    }
+                    ++visibleColumnIndex;
+                }
+            }
+        }
+    }
+
     return m_columnIndex;
 }
 
@@ -228,7 +247,22 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewCellAutomationPeer::
         {
             if (auto const owner = winrt::get_self<TableViewRow>(row)->GetOwningTableView())
             {
-                auto const headerPeer = winrt::make<TableViewColumnHeaderAutomationPeer>(owner, column);
+                // Routed through the TableView's peer so this cell's header reference resolves to
+                // the SAME provider the table's ITableProvider::GetColumnHeaders enumeration hands
+                // out. Minting a peer here instead made the two disagree about the header's
+                // identity, which is how a client correlates a cell with its column.
+                winrt::AutomationPeer headerPeer{ nullptr };
+                if (auto const ownerPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(owner)
+                        .try_as<winrt::TableViewAutomationPeer>())
+                {
+                    headerPeer = winrt::get_self<TableViewAutomationPeer>(ownerPeer)
+                        ->GetOrCreateColumnHeaderPeer(owner, column);
+                }
+
+                if (!headerPeer)
+                {
+                    headerPeer = winrt::make<TableViewColumnHeaderAutomationPeer>(owner, column);
+                }
 
                 // A provider array must not contain nulls - UIA marshals every element. An empty
                 // array correctly reports "this cell has no reachable column header".

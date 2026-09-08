@@ -34,19 +34,6 @@ namespace
             static_cast<int32_t>((identity >> 32) & 0xffffffffull)
         };
     }
-
-    // Help text is supplementary: degrade instead of letting a resource failure escape into UIA.
-    winrt::hstring TryGetLocalizedString(const std::wstring_view& resourceName)
-    {
-        try
-        {
-            return ResourceAccessor::GetLocalizedStringResource(resourceName);
-        }
-        catch (...)
-        {
-            return {};
-        }
-    }
 }
 
 TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(

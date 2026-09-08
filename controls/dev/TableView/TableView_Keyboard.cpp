@@ -191,6 +191,71 @@ bool TableView::TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& 
     return true;
 }
 
+// Enter / Space sorts the column whose header has focus. The header band is not part of row
+// navigation, and Left/Right are already taken by resize, so activation lands on the standard
+// activation keys - the same contract ListView headers and WPF's DataGrid column headers use.
+bool TableView::TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args)
+{
+    if (args.Handled())
+    {
+        return false;
+    }
+
+    const auto key = args.Key();
+    if (key != winrt::Windows::System::VirtualKey::Enter &&
+        key != winrt::Windows::System::VirtualKey::Space)
+    {
+        return false;
+    }
+
+    // Auto-repeat must not drive one full re-sort per tick: holding the key would re-sort the whole
+    // collection at the repeat rate and leave the direction depending on when the user let go.
+    if (args.KeyStatus().WasKeyDown)
+    {
+        return false;
+    }
+
+    // Modified chords belong to the app (and Alt alone opens the window menu).
+    if (IsKeyDown(winrt::VirtualKey::Menu) ||
+        IsKeyDown(winrt::VirtualKey::Control) ||
+        IsKeyDown(winrt::VirtualKey::Shift))
+    {
+        return false;
+    }
+
+    if (!CanUserSortColumns())
+    {
+        return false;
+    }
+
+    // Resolves only for focus inside the header band, so a Space pressed in a body cell's
+    // interactive content still belongs to that control.
+    winrt::FrameworkElement headerCell{ nullptr };
+    auto const column = ResolveFocusedHeaderColumn(args.OriginalSource(), m_headerHost.get(), headerCell);
+    if (!column || !column.CanSort())
+    {
+        return false;
+    }
+
+    // The walk above matches any DESCENDANT of a header cell, so require the key to have been
+    // raised on the header chrome itself. A header template can host interactive content, and a
+    // TextBox with AcceptsReturn=false deliberately leaves Enter unhandled - without this, typing a
+    // filter into a header TextBox and pressing Enter would also toggle the column sort.
+    if (args.OriginalSource().try_as<winrt::DependencyObject>() != headerCell)
+    {
+        return false;
+    }
+
+    if (!ToggleSortDirection(column))
+    {
+        return false;
+    }
+
+    // The sort itself announces through TableView_Sort's notification event.
+    args.Handled(true);
+    return true;
+}
+
 void TableView::OnPreviewKeyDownForNavigation(
     const winrt::IInspectable& /*sender*/,
     const winrt::KeyRoutedEventArgs& args)
@@ -243,6 +308,12 @@ void TableView::OnKeyDownForNavigation(
     // Column resize from a focused header: after the editing guard, so an open editor keeps its
     // arrow keys, and before row navigation, since the header band is not part of it.
     if (TryHandleHeaderColumnResizeKey(args))
+    {
+        return;
+    }
+
+    // Activation from a focused header: same placement rationale as resize above.
+    if (TryHandleHeaderSortKey(args))
     {
         return;
     }

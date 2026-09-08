@@ -164,12 +164,15 @@ Cell generation is column-specific:
 
 Keyboard handling is row-oriented. `TableView` listens to bubbling `KeyDown` so template-column descendants handle input first; unhandled `Up`, `Down`, `Home`, `End`, `PageUp`, and `PageDown` move focus between rows. The internal `GridCoordinateHelper` performs the row/column ↔ flat-index math, wrap behavior, and overflow guards.
 
-Accessibility exposes a read-only UIA grid/table model:
+Accessibility exposes a UIA grid/table model:
 
-- `TableViewAutomationPeer`: `IGridProvider`, `ITableProvider`, `IItemContainerProvider`
-- `TableViewRowAutomationPeer`: `DataItem` control type, no grid/table provider (exposes its cell peers as children)
-- `TableViewCellAutomationPeer`: `IGridItemProvider`, `ITableItemProvider`
-- `TableViewColumnHeaderAutomationPeer`: column-header name/bounds
+- `TableViewAutomationPeer`: `IGridProvider`, `ITableProvider`, `ISelectionProvider`, `IItemContainerProvider`
+- `TableViewRowAutomationPeer`: `DataItem` control type, `ISelectionItemProvider`, composed name and group-relative `PositionInSet`/`SizeOfSet`; no grid/table provider (exposes its cell peers as children)
+- `TableViewCellAutomationPeer`: `IGridItemProvider`, `ITableItemProvider`, `IValueProvider`, localized `cell` control type
+- `TableViewColumnHeaderAutomationPeer`: column-header name/bounds, `IInvokeProvider` (sort), `PositionInSet`/`SizeOfSet`
+- `TableViewGroupHeaderAutomationPeer`: `IExpandCollapseProvider`, `IGridItemProvider`, `Level`
+
+`ScrollItem` is not implemented explicitly on any of these — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer.
 
 Lifetime rules: columns and rows use weak owner back-pointers (`GetOwningTableView()` resolves a strong owner for synchronous work); runtime classes use `ReferenceTracker` where required; cross-object events use `auto_revoke`; recycled rows reset transient visual state before reuse.
 
@@ -260,7 +263,7 @@ they can be obsoleted while the API is still `[MUX_PREVIEW]`.
 
 **`TableViewRow`** — `Control` representing one realized item row. `GetOwningTableView()`.
 
-**Automation peers** — `TableViewAutomationPeer`, `TableViewRowAutomationPeer`, `TableViewCellAutomationPeer`, `TableViewColumnHeaderAutomationPeer` (providers: `IGridProvider`, `ITableProvider`, `IGridItemProvider`, `ITableItemProvider`, `IItemContainerProvider`).
+**Automation peers** — `TableViewAutomationPeer`, `TableViewRowAutomationPeer`, `TableViewCellAutomationPeer`, `TableViewColumnHeaderAutomationPeer`, `TableViewGroupHeaderAutomationPeer` (providers: `IGridProvider`, `ITableProvider`, `ISelectionProvider`, `IItemContainerProvider`, `IGridItemProvider`, `ITableItemProvider`, `ISelectionItemProvider`, `IValueProvider`, `IInvokeProvider`, `IExpandCollapseProvider`).
 
 **Enums** — `TableViewFrozenEdge` (`None`/`Leading`/`Trailing`), `TableViewHeadersVisibility` (`None`/`Column`), `TableViewGridLinesVisibility` (`All`/`Horizontal`/`None`/`Vertical`), `TableViewDensity` (`Compact`/`Standard`/`Comfortable`), `TableViewEditingUnit` (`Cell`/`Row`), `TableViewEditAction` (`Commit`/`Cancel`/`Discard`).
 

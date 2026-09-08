@@ -1551,10 +1551,17 @@ void TableView::RebuildHeaders()
             // The header cell, not the gripper, is the keyboard target: column commands live here,
             // and a bare focusable Grid is unnamed and Raw to a screen reader. Only a tab stop when
             // focusing it can actually do something -- otherwise every column costs a Tab press for
-            // nothing. Same condition that decides whether a gripper is created at all.
+            // nothing.
+            //
+            // "Actually do something" is resize OR sort. Gating on resize alone left the very common
+            // CanUserSortColumns=true / CanUserResizeColumns=false configuration with a header that
+            // is clickable-to-sort but unreachable by keyboard, so a keyboard-only user could never
+            // sort -- and TableViewColumnHeaderAutomationPeer::Invoke was never reachable by focus.
             const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
-            headerCell.IsTabStop(headerIsResizable);
-            headerCell.UseSystemFocusVisuals(headerIsResizable);
+            const bool headerIsSortable = canUserSortColumns && column.CanSort();
+            const bool headerIsActionable = headerIsResizable || headerIsSortable;
+            headerCell.IsTabStop(headerIsActionable);
+            headerCell.UseSystemFocusVisuals(headerIsActionable);
             const winrt::hstring headerText = GetColumnHeaderText(column);
             if (!headerText.empty())
             {
@@ -1609,7 +1616,7 @@ void TableView::RebuildHeaders()
 
             // Sort affordance. Gated on both the control-wide and the per-column opt-in, so an
             // opted-out column carries no chevron and no click handler at all.
-            if (canUserSortColumns && column.CanSort())
+            if (headerIsSortable)
             {
                 // The header cell is a Grid, and a Grid with a null Background is not hit-test
                 // visible in its empty regions. The header content presenter and the chevron host
