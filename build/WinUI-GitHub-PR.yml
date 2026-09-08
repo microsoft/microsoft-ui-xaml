@@ -179,3 +179,4 @@ extends:
         parameters:
           pipelineKind: GitHubPR
           dependsOn: Build
+# TEMP E2E validation: restored GitHub infrastructure file merges into ADO.
