@@ -262,10 +262,15 @@
         <Destination>$(TestDependenciesResourcesDestinationPath)</Destination>
       </BinplaceItem>
     </ItemGroup>
-    <!-- Copy mini_installer.exe if the Microsoft.UI.DCPP.Dependencies.Edge package has been restored (which only happens in the pipelines) -->
-    <ItemGroup Condition="('$(arch)'=='x86' or '$(arch)'=='amd64') and Exists('$(NugetPackageDirectory)\Microsoft.UI.DCPP.Dependencies.Edge.144.0.3719.82')">
-      <BinplaceItem Include="$(NugetPackageDirectory)\Microsoft.UI.DCPP.Dependencies.Edge.144.0.3719.82\edge\mini_installer\$(DependencyPlatform)\mini_installer.exe">
-        <Destination>$(TestDependenciesResourcesDestinationPath)</Destination>
+    <!-- This package is restored only in pipelines. Read its version from the restore config to keep one version reference. -->
+    <XmlPeek XmlInputPath="$(ProjectRoot)build\packages.webview2.config" Query="/packages/package[@id='Microsoft.UI.Dependencies.WebView2.EvergreenStandalone']/@version">
+      <Output TaskParameter="Result" PropertyName="WebView2EvergreenStandalonePackageVersion" />
+    </XmlPeek>
+    <ItemGroup Condition="'$(arch)'=='x86' or '$(arch)'=='amd64'">
+      <BinplaceItem
+          Include="$(NugetPackageDirectory)\Microsoft.UI.Dependencies.WebView2.EvergreenStandalone.$(WebView2EvergreenStandalonePackageVersion)\tools\x64\MicrosoftEdgeWebView2RuntimeInstallerX64.exe"
+          Condition="Exists('$(NugetPackageDirectory)\Microsoft.UI.Dependencies.WebView2.EvergreenStandalone.$(WebView2EvergreenStandalonePackageVersion)\tools\x64\MicrosoftEdgeWebView2RuntimeInstallerX64.exe')">
+        <Destination>$(TestDependenciesResourcesDestinationPath)\tools\x64</Destination>
       </BinplaceItem>
     </ItemGroup>
   </Target>

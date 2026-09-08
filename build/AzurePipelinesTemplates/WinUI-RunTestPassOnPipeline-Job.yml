@@ -88,6 +88,81 @@ jobs:
       script: |
         Copy-Item -Path "$(Build.ArtifactStagingDirectory)\${{ parameters.testPayloadArtifactName }}_*\*" -Destination "$(Build.SourcesDirectory)" -Recurse -Force
 
+  - ${{ if eq( parameters.testOS, 'Win10-RS5' ) }}:
+    - task: PowerShell@2
+      displayName: 'Install x64 Evergreen WebView2 Standalone Runtime on RS5'
+      inputs:
+        targetType: 'inline'
+        script: |
+          $ErrorActionPreference = 'Stop'
+
+          if (-not [Environment]::Is64BitOperatingSystem) {
+            throw 'The x64 Evergreen WebView2 Standalone Installer requires an x64 test OS.'
+          }
+
+          function Get-WebView2RuntimeVersion {
+            $clientId = '{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+            $clientKeys = @(
+              "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\$clientId",
+              "Registry::HKEY_CURRENT_USER\SOFTWARE\Microsoft\EdgeUpdate\Clients\$clientId"
+            )
+
+            $versions = foreach ($clientKey in $clientKeys) {
+              if (Test-Path -LiteralPath $clientKey) {
+                $productVersion = (Get-ItemProperty -LiteralPath $clientKey -Name 'pv').pv
+                $parsedVersion = $null
+                if ([Version]::TryParse($productVersion, [ref]$parsedVersion) -and $parsedVersion -gt [Version]'0.0.0.0') {
+                  $parsedVersion
+                }
+              }
+            }
+
+            $versions | Sort-Object -Descending | Select-Object -First 1
+          }
+
+          $installerPath = "$(testPayloadDir)\tools\x64\MicrosoftEdgeWebView2RuntimeInstallerX64.exe"
+          if (-not (Test-Path -LiteralPath $installerPath -PathType Leaf)) {
+            throw "The x64 Evergreen WebView2 Standalone Installer was not found in the test payload at '$installerPath'."
+          }
+
+          $signature = Get-AuthenticodeSignature -FilePath $installerPath
+          $signerSubject = if ($signature.SignerCertificate) { $signature.SignerCertificate.Subject } else { '<none>' }
+          if ($signature.Status -ne 'Valid' -or $signerSubject -notmatch '(^|,\s*)O=Microsoft Corporation(,|$)') {
+            throw "Evergreen WebView2 Standalone Installer signature validation failed. Status: $($signature.Status); signer: $signerSubject"
+          }
+
+          $packagesConfigPath = "$(Build.SourcesDirectory)\build\packages.webview2.config"
+          [xml]$packagesConfig = Get-Content -LiteralPath $packagesConfigPath -Raw
+          $runtimePackages = @($packagesConfig.packages.package | Where-Object { $_.id -eq 'Microsoft.UI.Dependencies.WebView2.EvergreenStandalone' })
+          if ($runtimePackages.Count -ne 1) {
+            throw "Expected exactly one Evergreen WebView2 Standalone package in '$packagesConfigPath', found $($runtimePackages.Count)."
+          }
+          $pinnedRuntimeVersion = $null
+          if (-not [Version]::TryParse([string]$runtimePackages[0].version, [ref]$pinnedRuntimeVersion)) {
+            throw "Evergreen WebView2 Standalone package version '$($runtimePackages[0].version)' is not a valid Runtime version."
+          }
+          Write-Host "Verified Microsoft-signed Evergreen WebView2 Standalone Installer for Runtime $pinnedRuntimeVersion."
+
+          $installedVersionBefore = Get-WebView2RuntimeVersion
+          if ($installedVersionBefore -and $installedVersionBefore -ge $pinnedRuntimeVersion) {
+            Write-Host "Keeping installed WebView2 Runtime $installedVersionBefore because it is the same as or newer than pinned Runtime $pinnedRuntimeVersion."
+          } else {
+            $installer = Start-Process -FilePath $installerPath -ArgumentList '/silent', '/install' -Wait -PassThru
+            Write-Host "Evergreen WebView2 Standalone Installer exit code: $($installer.ExitCode)"
+            if ($installer.ExitCode -ne 0) {
+              throw "Evergreen WebView2 Standalone Installer exited with code $($installer.ExitCode)."
+            }
+          }
+
+          $installedVersionAfter = Get-WebView2RuntimeVersion
+          if (-not $installedVersionAfter) {
+            throw 'The WebView2 Runtime was not detected after provisioning.'
+          }
+          if ($installedVersionAfter -lt $pinnedRuntimeVersion) {
+            throw "Installed WebView2 Runtime $installedVersionAfter is older than pinned Runtime $pinnedRuntimeVersion."
+          }
+          Write-Host "WebView2 Runtime version after provisioning: $installedVersionAfter"
+
   - task: powershell@2
     displayName: Run Tests
     timeoutInMinutes: 90

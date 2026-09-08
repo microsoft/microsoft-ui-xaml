@@ -138,10 +138,13 @@ jobs:
       Write-Host "buildFlavor = $buildFlavor"
       Write-Host "buildFlavorAlt = $buildFlavorAlt"
 
+      $webView2RuntimeInstallerArgument = if ($env:testOS -eq "Win10-RS5") { "-IncludeWebView2RuntimeInstaller" } else { "" }
+
       Write-Host "##vso[task.setvariable variable=targetOsVersion;]$targetOsVersion"
       Write-Host "##vso[task.setvariable variable=helixtargetqueues;]$helixQueue"
       Write-Host "##vso[task.setvariable variable=buildFlavor;]$buildFlavor"
       Write-Host "##vso[task.setvariable variable=buildFlavorAlt;]$buildFlavorAlt"
+      Write-Host "##vso[task.setvariable variable=webView2RuntimeInstallerArgument;]$webView2RuntimeInstallerArgument"
     displayName: Set computed variables
 
   - powershell: |
@@ -167,7 +170,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: test\CreateTestPayload.ps1
-      arguments: -BinSourceRoot $(artifactsDir)\drop -Platform $(buildPlatform) -Configuration $(normalizedConfiguration) -Mode ${{ parameters.testSuite }} -SkipSymbols $(scenarioPayloadAdditionalArguments)
+      arguments: -BinSourceRoot $(artifactsDir)\drop -Platform $(buildPlatform) -Configuration $(normalizedConfiguration) -Mode ${{ parameters.testSuite }} -SkipSymbols $(scenarioPayloadAdditionalArguments) $(webView2RuntimeInstallerArgument)
 
   - task: CopyFiles@2
     displayName: MoveToOutputDirectory
