@@ -9,10 +9,12 @@ parameters:
   default: github/internal/main
 
 stages:
-- stage: Source
+- stage: FastForwardPublicMirror
+  displayName: Fast-forward public mirror
   dependsOn: []
   jobs:
-  - job: MirrorGitHubToInternal
+  - job: UpdateInternalMirror
+    displayName: Update internal mirror from GitHub main
     pool:
       type: windows
     timeoutInMinutes: 60

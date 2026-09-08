@@ -303,6 +303,12 @@ if ($targetBranchExists) {
     $targetCommit = Get-GitCommandOutput $TargetRepositoryDirectoryFullPath @("rev-parse", "--verify", "$targetTrackingRef^{commit}")
     Write-Host "##[debug]Target $TargetRemoteName/$TargetBranchName commit: $targetCommit"
 
+    if ($targetCommit -eq $sourceCommitInTargetRepository) {
+        Write-Host "Target branch '$TargetBranchName' ($targetCommit) is already at source '$SourceBranchName' ($sourceCommitInTargetRepository). Nothing to mirror."
+        Write-Host "##[endgroup]"
+        exit 0
+    }
+
     Write-Host -ForegroundColor Blue "##[command]git -C '$TargetRepositoryDirectoryFullPath' merge-base --is-ancestor $targetCommit $sourceCommitInTargetRepository"
     & git -C $TargetRepositoryDirectoryFullPath merge-base --is-ancestor $targetCommit $sourceCommitInTargetRepository
     $exitCode = $global:LASTEXITCODE
