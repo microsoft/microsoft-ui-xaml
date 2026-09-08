@@ -2,9 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 //  Abstract:
-//      Expression used to evaluate a programmatic compiled binding: the value is
-//      produced by invoking an app-supplied getter delegate against a source object,
-//      rather than by walking a property path.
+//      Expression used to evaluate a programmatic compiled binding: a getter produces
+//      the target value and an optional setter writes target changes back to the source.
 //
 //      This is the runtime primitive behind a programmatic "compiled binding" - the
 //      code-behind analog of {x:Bind}. The app supplies a delegate that maps the
@@ -25,13 +24,8 @@
 //           binds a function against a receiver it cannot decompose.
 //        2. GetValue invokes the getter delegate instead of reading a source property.
 //
-//      Limited to OneWay:
-//        - OneTime would be a plain property set from app code, so it needs no
-//          expression at all.
-//        - TwoWay would require a second (setter) delegate plus an
-//          UpdateSourceTrigger / reentrancy-loop story, which is more than a single
-//          getter delegate can express. See BindingExpression for the full TwoWay
-//          engine.
+//      A getter-only expression is OneWay. Supplying a setter makes it TwoWay with
+//      immediate target-to-source updates.
 
 #pragma once
 
@@ -43,6 +37,7 @@
 namespace DirectUI
 {
     class CompiledBindingExpressionDataContextChangedHandler;
+    class CompiledBindingExpressionDPChangedHandler;
 
     // Lightweight binding expression for a programmatic compiled binding: an app-supplied
     // getter delegate produces the value from a source object, and the expression
@@ -79,17 +74,40 @@ namespace DirectUI
     private:
         ctl::ComPtr<IWeakReference> m_spSourceRef;                       // Weak reference to source object
         ctl::ComPtr<xaml_data::ICompiledBindingGetter> m_spGetter;      // Strong ref: app getter delegate (keeps the lambda alive)
+        ctl::ComPtr<xaml_data::ICompiledBindingSetter> m_spSetter;      // Strong ref: optional app setter delegate
         DependencyObject* m_pTarget = nullptr;                          // The target instance (no-ref, kept valid by attach/detach lifecycle)
         const CDependencyProperty* m_pTargetProperty = nullptr;         // The target property
         ctl::EventPtr<PropertyChangedEventCallback> m_epSourceChangedHandler; // INPC subscription on the source
         ctl::ComPtr<IDataContextChangedHandler> m_spDataContextChangedHandler;
+        ctl::ComPtr<IDPChangedEventHandler> m_spTargetChangedHandler;
         bool m_bRegisteredForSourceChanges = false;                    // Flag indicating registration with source's PropertyChanged event
         bool m_bRegisteredForDataContextChanges = false;
-        bool m_ignoreSourceChanges = false;                            // Flag to ignore source notifications while we are producing a value
+        bool m_bRegisteredForTargetChanges = false;
+
+        // Flags to ignore loops between getter delegates and setter delegates
+
+        // If calling the getter delegate causes another source.PropertyChanged event, ignore the second one(s) to avoid infinite loops
+        bool m_ignoreSourceChanges = false;
+
+        // When updating the target, ignore further target changes so we don't write back to the source for a TwoWay binding
+        bool m_ignoreTargetChanges = false;
+
+        // Set while writing back to the source during a target change for a TwoWay binding. Defer further source changes
+        // until the write is done. Ignore further (reentrant) target changes.
+        bool m_updatingSource = false;
+
+        // During a TwoWay write back to the source, if something would trigger another target update (the source raises PropertyChanged,
+        // a new source is set, or the effective DataContext changes), then update the target once after the write is complete.
+        // Ignore further target changes during that update to prevent writing back to the source again.
+        bool m_sourceChangedDuringUpdate = false;
+
+        // If the DataContext changes while we're calling the getter delegate, return an error.
         bool m_dataContextChangedDuringEvaluation = false;
 
         // Re-invoke the getter and push the value into the target when the source changes.
         _Check_return_ HRESULT OnSourceChanged();
+        _Check_return_ HRESULT OnTargetChanged();
+        _Check_return_ HRESULT RefreshTarget();
 
         // Resolves the (weakly-held) source object; may be null if it has been collected.
         _Check_return_ HRESULT GetSource(_Outptr_result_maybenull_ IInspectable** ppSource);
@@ -104,6 +122,7 @@ namespace DirectUI
             _In_ const DataContextChangedParams* pArgs);
 
         friend class CompiledBindingExpressionDataContextChangedHandler;
+        friend class CompiledBindingExpressionDPChangedHandler;
 
     public:
         // Creates a new instance of CompiledBindingExpression.
@@ -113,7 +132,12 @@ namespace DirectUI
         static _Check_return_ HRESULT Create(
             _In_opt_ IInspectable* pSource,
             _In_ xaml_data::ICompiledBindingGetter* pGetter,
+            _In_opt_ xaml_data::ICompiledBindingSetter* pSetter,
             _Out_ CompiledBindingExpression** ppExpression);
+
+        // Called after the expression is installed so initial getter evaluation cannot
+        // be observed as a target edit.
+        _Check_return_ HRESULT ConnectToTargetChanges();
 
     // BindingExpressionBase members
         _Check_return_ HRESULT GetCanSetValue(_Out_ bool *pValue) override;

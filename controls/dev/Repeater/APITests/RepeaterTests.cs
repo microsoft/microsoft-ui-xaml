@@ -971,10 +971,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 new DisplayNameViewModel("Item 2"),
                 new DisplayNameViewModel("Item 3"),
             };
+            var twoWayItems = new[]
+            {
+                new DisplayNameViewModel("TwoWay Item 1"),
+                new DisplayNameViewModel("TwoWay Item 2"),
+                new DisplayNameViewModel("TwoWay Item 3"),
+            };
 
             RunOnUIThread.Execute(() =>
             {
-                var template = new DataTemplate(() =>
+                var oneWayTemplate = new DataTemplate(() =>
                 {
                     var textBlock = new TextBlock();
                     textBlock.SetCompiledBinding(
@@ -986,15 +992,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 var repeater = new ItemsRepeater()
                 {
                     ItemsSource = items,
-                    ItemTemplate = template,
+                    ItemTemplate = oneWayTemplate,
                 };
 
-                Content = new ItemsRepeaterScrollHost()
+                var twoWayTemplate = new DataTemplate(() =>
                 {
-                    Width = 400,
-                    Height = 800,
-                    ScrollViewer = new ScrollViewer { Content = repeater }
+                    var textBlock = new TextBlock();
+                    textBlock.SetCompiledBinding(
+                        TextBlock.TextProperty,
+                        source => ((DisplayNameViewModel)source).DisplayName,
+                        (source, value) => ((DisplayNameViewModel)source).DisplayName = (string)value);
+                    return textBlock;
+                });
+
+                var twoWayRepeater = new ItemsRepeater()
+                {
+                    ItemsSource = twoWayItems,
+                    ItemTemplate = twoWayTemplate,
                 };
+
+                var root = new StackPanel();
+                root.Children.Add(repeater);
+                root.Children.Add(twoWayRepeater);
+                Content = root;
 
                 Content.UpdateLayout();
 
@@ -1004,6 +1024,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Verify.IsNotNull(element, $"Element {i} should be realized from the code-authored template.");
                     Verify.AreSame(items[i], element.DataContext);
                     Verify.AreEqual(items[i].DisplayName, element.Text);
+                }
+
+                for (int i = 0; i < twoWayItems.Length; i++)
+                {
+                    var element = twoWayRepeater.TryGetElement(i) as TextBlock;
+                    Verify.IsNotNull(element, $"TwoWay element {i} should be realized from the code-authored template.");
+                    Verify.AreSame(twoWayItems[i], element.DataContext);
+                    Verify.AreEqual(twoWayItems[i].DisplayName, element.Text);
+
+                    var updatedDisplayName = $"Updated item {i + 1}";
+                    element.Text = updatedDisplayName;
+                    Verify.AreEqual(
+                        updatedDisplayName,
+                        twoWayItems[i].DisplayName,
+                        $"Changing TwoWay element {i} should write back to its data source.");
                 }
             });
         }
@@ -1037,7 +1072,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 DisplayName = displayName;
             }
 
-            public string DisplayName { get; }
+            public string DisplayName { get; set; }
         }
 
     }

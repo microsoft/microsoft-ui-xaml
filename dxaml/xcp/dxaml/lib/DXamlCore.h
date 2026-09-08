@@ -652,6 +652,7 @@ namespace DirectUI
         static _Check_return_ HRESULT SetCompiledBinding(
             _In_ IInspectable* source,
             _In_ xaml_data::ICompiledBindingGetter* getter,
+            _In_opt_ xaml_data::ICompiledBindingSetter* setter,
             _In_ DependencyObject* target,
             KnownPropertyIndex targetPropertyIndex);
 

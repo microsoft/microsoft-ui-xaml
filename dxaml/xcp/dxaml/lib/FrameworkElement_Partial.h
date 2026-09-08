@@ -210,6 +210,10 @@ namespace DirectUI
         _Check_return_ HRESULT SetCompiledBindingImpl(
             _In_ xaml::IDependencyProperty* dp,
             _In_ xaml_data::ICompiledBindingGetter* getter);
+        _Check_return_ HRESULT SetCompiledBindingWithSetterImpl(
+            _In_ xaml::IDependencyProperty* dp,
+            _In_ xaml_data::ICompiledBindingGetter* getter,
+            _In_ xaml_data::ICompiledBindingSetter* setter);
         _Check_return_ HRESULT SetThemeResourceBindingImpl(_In_ xaml::IDependencyProperty* property, _In_ HSTRING resourceKey);
         _Check_return_ HRESULT GetBindingExpressionImpl(_In_ xaml::IDependencyProperty* dp, _Outptr_ xaml_data::IBindingExpression** returnValue);
 

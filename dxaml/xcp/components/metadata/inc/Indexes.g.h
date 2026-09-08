@@ -3115,6 +3115,7 @@ enum class KnownMethodIndex: UINT16
     FrameworkElement_SetBinding,
     FrameworkElement_SetThemeResourceBinding,
     FrameworkElement_SetCompiledBinding,
+    FrameworkElement_SetCompiledBindingWithSetter,
     FrameworkElement_GoToElementStateCore,
     FrameworkElement_GetBindingExpression,
     FrameworkElement_InvalidateViewport,

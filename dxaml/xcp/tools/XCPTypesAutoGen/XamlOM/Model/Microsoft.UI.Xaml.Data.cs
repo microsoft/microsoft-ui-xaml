@@ -613,6 +613,10 @@ namespace Microsoft.UI.Xaml.Data
     // language projections.
     public delegate Windows.Foundation.Object CompiledBindingGetter(Windows.Foundation.Object source);
 
+    // Setter for a programmatic compiled binding: maps a value from the bound target property
+    // back to the source object (typically the DataContext).
+    public delegate void CompiledBindingSetter(Windows.Foundation.Object source, Windows.Foundation.Object value);
+
     [CodeGen(partial: true)]
     [DXamlIdlGroup("coretypes2")]
     [TypeFlags(IsCreateableFromXAML = false)]
@@ -706,4 +710,3 @@ namespace Microsoft.UI.Xaml.Data
         event Windows.Foundation.EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
     }
 }
-
