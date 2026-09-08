@@ -7,3 +7,11 @@
 #if __has_include("MainWindow.g.cpp")
 #include "MainWindow.g.cpp"
 #endif
+
+namespace winrt::ScratchPadAppCpp::implementation
+{
+    MainWindow::MainWindow()
+    {
+        InitializeComponent();
+    }
+}

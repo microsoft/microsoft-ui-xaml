@@ -9,7 +9,7 @@ namespace winrt::ScratchPadAppCpp::implementation
 {
     struct MainWindow : MainWindowT<MainWindow>
     {
-        MainWindow() = default;
+        MainWindow();
     };
 }
 
