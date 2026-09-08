@@ -1,4 +1,5 @@
-FrameworkElement.SetCompiledBinding
+# FrameworkElement.SetCompiledBinding
+
 ===
 
 # Background
@@ -40,10 +41,11 @@ binding for code-authored UI without constructing a property path or invoking th
 It's also safe under IL trimming without any additional attributes (provided the lambda itself
 doesn't use reflection).
 
-This API is intentionally smaller than either `{Binding}` or `{x:Bind}`. It is a OneWay binding
-from the element's `DataContext`, represented by one getter delegate. It does not provide binding
-modes, converters, fallback values, source selection, or generated subscriptions to individual
-properties.
+This API is intentionally smaller than either `{Binding}` or `{x:Bind}`. Passing one getter
+delegate creates a OneWay binding from the element's `DataContext`. An overload that also accepts a
+setter delegate creates a TwoWay binding that that writes back when the target dependency property
+changes. The API does not provide converters, fallback values, source selection, configurable update
+triggers, or generated subscriptions to individual properties.
 
 > This API is **experimental** (gated behind `Feature_ExperimentalApi`) while the design is
 > finalized.
@@ -101,6 +103,30 @@ uses its default value until a non-null `DataContext` becomes available.
 The getter must only read from its source and return a value. It must not change the target
 element's `DataContext` during evaluation. Doing so causes the evaluation to fail with an invalid
 operation error.
+
+## Creating a TwoWay compiled binding
+
+Pass a `CompiledBindingSetter` after the getter to write target changes back to the effective
+`DataContext`:
+
+```csharp
+textBox.SetCompiledBinding(
+    TextBox.TextProperty,
+    source => ((ItemViewModel)source).DisplayName,
+    (source, value) => ((ItemViewModel)source).DisplayName = (string)value);
+```
+
+The setter runs immediately when the target dependency property changes. If the setter raises
+`PropertyChanged`, WinUI waits for the setter to finish and then reevaluates the getter once. This
+allows a source setter that coerces the value to update the target without recursively invoking the
+compiled binding setter.
+
+If the effective `DataContext` is `null`, WinUI does not invoke the setter.
+
+> Note: Unlike the getter-only overload, assigning a local value to the target dependency property
+> does not replace a TwoWay compiled binding. The binding remains installed and passes the target’s
+> new effective value to the setter. Setting another binding replaces it, and calling `ClearValue`
+> removes it.
 
 # Examples
 
@@ -161,11 +187,12 @@ var items = new[]
 
 var template = new DataTemplate(() =>
 {
-    var textBlock = new TextBlock();
-    textBlock.SetCompiledBinding(
-        TextBlock.TextProperty,
-        source => ((ItemViewModel)source).DisplayName);
-    return textBlock;
+    var textBox = new TextBox();
+    textBox.SetCompiledBinding(
+        TextBox.TextProperty,
+        source => ((ItemViewModel)source).DisplayName,
+        (source, value) => ((ItemViewModel)source).DisplayName = (string)value);
+    return textBox;
 });
 
 var repeater = new ItemsRepeater
@@ -176,7 +203,8 @@ var repeater = new ItemsRepeater
 ```
 
 When an element is recycled for a different item, its `DataContext` changes and the compiled
-binding follows the new item.
+binding follows the new item. Editing a realized `TextBox` writes its value back to that item's
+`DisplayName` property.
 
 ## Example: Replace or clear a compiled binding
 
@@ -187,7 +215,9 @@ textBlock.SetCompiledBinding(
     TextBlock.TextProperty,
     source => ((ItemViewModel)source).DisplayName);
 
-// Replace and remove the compiled binding.
+// Replace and remove the compiled binding. Note that this only works because the current
+// binding is OneWay. TwoWay bindings require an explicit call to ClearValue, or another
+// call to SetBinding/SetCompiledBinding to overwrite the existing binding.
 textBlock.Text = "Fixed value";
 ```
 
@@ -195,6 +225,7 @@ Call `ClearValue` to remove the binding and restore the next value determined by
 property precedence:
 
 ```csharp
+// This works regardless of whether the compiled binding is OneWay or TwoWay.
 textBlock.ClearValue(TextBlock.TextProperty);
 ```
 
@@ -255,6 +286,61 @@ binding expression rather than a classic `BindingExpression`,
 
 This API creates a OneWay binding. There is no write-back path to the source.
 
+## FrameworkElement.SetCompiledBinding(DependencyProperty, CompiledBindingGetter, CompiledBindingSetter) method
+
+Establishes a TwoWay binding that invokes app-supplied getter and setter delegates against the
+element's effective `DataContext`.
+
+```csharp
+public void SetCompiledBinding(
+    DependencyProperty dp,
+    CompiledBindingGetter getter,
+    CompiledBindingSetter setter);
+```
+
+### Parameters
+
+`dp` [DependencyProperty][dependency-property]
+
+The dependency property identifier of the target property.
+
+`getter` [CompiledBindingGetter](#compiledbindinggetter-delegate)
+
+The app-supplied function that receives the effective `DataContext` and returns the target value.
+
+`setter` [CompiledBindingSetter](#compiledbindingsetter-delegate)
+
+The app-supplied function that receives the effective `DataContext` and the current target value,
+and writes that value to the source.
+
+### Exceptions
+
+| Exception | Condition |
+|---|---|
+| [ArgumentNullException][argument-null] | `dp`, `getter`, or `setter` is `null`. |
+| [ArgumentException][argument] | The value returned by `getter` is not valid for `dp`. |
+| [InvalidOperationException][invalid-operation] | `getter` changes this element's `DataContext` while the getter is being evaluated. |
+
+Exceptions raised by app code in either delegate propagate to the caller that caused the delegate
+to run.
+
+### Remarks
+
+The getter and source-notification behavior are the same as for the getter-only overload. When the
+target dependency property changes, the setter is invoked immediately with the current non-null
+effective `DataContext` and target value.
+
+If the source raises `PropertyChanged` while the setter is running, WinUI reevaluates the getter
+once after the setter returns. A target update caused by that reevaluation does not invoke the
+setter again.
+
+When the effective `DataContext` is `null`, target changes do not invoke the setter. When a
+non-null `DataContext` later becomes effective, the getter reevaluates against that source.
+
+Because this overload creates a TwoWay binding, setting a local value on `dp` updates the source
+instead of replacing the binding. Setting another binding replaces the compiled binding, and
+calling `ClearValue(dp)` removes it. `FrameworkElement.GetBindingExpression(dp)` returns `null`.
+
 ## CompiledBindingGetter delegate
 
 Represents the method that reads a value from a programmatic compiled binding's source.
@@ -271,6 +357,20 @@ state, but it should not capture the target element because doing so can create 
 
 The getter must not change the target element's `DataContext` while it is running.
 
+## CompiledBindingSetter delegate
+
+Represents the method that writes a target value to a programmatic compiled binding's source.
+
+```csharp
+public delegate void CompiledBindingSetter(object source, object value);
+```
+
+The `source` parameter is the target element's non-null effective `DataContext`. The `value`
+parameter is the current value of the target dependency property.
+
+WinUI keeps the delegate alive for the lifetime of the binding. The delegate may capture app
+state, but it should not capture the target element because doing so can create a reference cycle.
+
 # API Details
 
 ```csharp (but really MIDL3)
@@ -282,6 +382,11 @@ namespace Microsoft.UI.Xaml.Data
     /// @param source The target element's effective DataContext.
     /// @return The value to assign to the target dependency property.
     delegate Object CompiledBindingGetter(Object source);
+
+    /// Represents the method that writes a target value to a programmatic compiled binding's source.
+    /// @param source The target element's effective DataContext.
+    /// @param value The current value of the target dependency property.
+    delegate void CompiledBindingSetter(Object source, Object value);
 }
 
 namespace Microsoft.UI.Xaml
@@ -302,6 +407,20 @@ namespace Microsoft.UI.Xaml
         void SetCompiledBinding(
             Microsoft.UI.Xaml.DependencyProperty dp,
             Microsoft.UI.Xaml.Data.CompiledBindingGetter getter);
+
+        /// Establishes a TwoWay binding that invokes app-supplied getter and setter delegates
+        /// against this element's effective DataContext.
+        /// @param dp The dependency property on which to establish the binding.
+        /// @param getter The function that reads the target value from the effective DataContext.
+        /// @param setter The function that writes the target value to the effective DataContext.
+        /// @throw If dp, getter, or setter is null, the getter returns a value that is invalid
+        ///        for dp, or the getter changes this element's DataContext during evaluation.
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        [feature(Feature_ExperimentalApi)]
+        void SetCompiledBinding(
+            Microsoft.UI.Xaml.DependencyProperty dp,
+            Microsoft.UI.Xaml.Data.CompiledBindingGetter getter,
+            Microsoft.UI.Xaml.Data.CompiledBindingSetter setter);
     }
 }
 ```
@@ -314,7 +433,7 @@ namespace Microsoft.UI.Xaml
 |---|---|---|---|
 | Source expression | Runtime `PropertyPath` | App-supplied delegate | XAML-compiler-generated code |
 | Default source | `DataContext` | Effective `DataContext` | Markup page or data-template item |
-| Mode | OneTime, OneWay, or TwoWay | OneWay | OneTime, OneWay, or TwoWay |
+| Mode | OneTime, OneWay, or TwoWay | OneWay or TwoWay | OneTime, OneWay, or TwoWay |
 | Change tracking | Selected path notifications | Every source INPC notification | Generated subscriptions |
 | Converter support | Yes | Express conversion in the getter | Functions or converters |
 | Available from code | Yes | Yes | No; authored in markup |
@@ -333,10 +452,11 @@ not invoke the XAML compiler.
 | Source replacement | Follows effective `DataContext` changes and stops listening to the old source. |
 | Source notification | Reevaluates for every `INotifyPropertyChanged.PropertyChanged` event. |
 | Source without INPC | Evaluates initially and on `DataContext` changes only. |
-| Binding mode | OneWay. |
+| Binding mode | Getter-only is OneWay; getter plus setter is TwoWay with immediate write-back. |
 | Precedence | Installed as a local expression. |
-| Clearing or overriding | A later local value or binding replaces it; `ClearValue` removes it. |
+| Clearing or overriding | A local value replaces a OneWay binding and updates the source of a TwoWay binding. A later binding replaces either; `ClearValue` removes it. |
 | Getter failure | The error propagates to the operation that caused evaluation. |
+| Setter notification | Source changes raised during the setter cause one getter reevaluation after the setter returns. |
 | Getter side effects | Changing the target's `DataContext` during evaluation is invalid. |
 | Threading | Must be called on the target element's UI thread. |
 
