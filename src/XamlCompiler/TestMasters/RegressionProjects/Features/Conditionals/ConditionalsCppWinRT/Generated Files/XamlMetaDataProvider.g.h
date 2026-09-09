@@ -1,67 +1,40 @@
-﻿// WARNING: Please don't edit this file...
+// WARNING: Please don't edit this file...
 
 #pragma once
-
-#include "winrt/ConditionalControls.h"
-#include "winrt/Windows.UI.Xaml.h"
-#include "winrt/Windows.UI.Xaml.Controls.h"
-#include "winrt/Windows.UI.Xaml.Data.h"
-#include "winrt/Windows.UI.Xaml.Interop.h"
-#include "winrt/Windows.UI.Xaml.Markup.h"
-#include "winrt/Windows.UI.Composition.h"
 #include "winrt/ConditionalsCppWinRT.h"
-
-namespace winrt::ConditionalsCppWinRT::implementation {
-
-template <typename D, typename... I>
-struct WINRT_EBO XamlMetaDataProvider_base : implements<D, ::Windows::UI::Xaml::Markup::IXamlMetadataProvider, I...>
+#include "winrt/Microsoft.UI.Xaml.Markup.h"
+namespace winrt::ConditionalsCppWinRT::implementation
 {
-    using base_type = XamlMetaDataProvider_base;
-    using class_type = ConditionalsCppWinRT::XamlMetaDataProvider;
-    using implements_type = typename XamlMetaDataProvider_base::implements_type;
-    using implements_type::implements_type;
-    
-#if _MSC_VER < 1914
-    operator class_type() const noexcept
+    template <typename D, typename... I>
+    struct WINRT_IMPL_EMPTY_BASES XamlMetaDataProvider_base : implements<D, ConditionalsCppWinRT::XamlMetaDataProvider, I...>
     {
-        static_assert(std::is_same_v<typename impl::implements_default_interface<D>::type, default_interface<class_type>>);
-        class_type result{ nullptr };
-        attach_abi(result, detach_abi(static_cast<default_interface<class_type>>(*this)));
-        return result;
-    }
-#else
-    operator impl::producer_ref<class_type> const() const noexcept
-    {
-        return { to_abi<default_interface<class_type>>(this) };
-    }
-#endif
-
-    hstring GetRuntimeClassName() const
-    {
-        return L"ConditionalsCppWinRT.XamlMetaDataProvider";
-    }
-};
-
+        using base_type = XamlMetaDataProvider_base;
+        using class_type = ConditionalsCppWinRT::XamlMetaDataProvider;
+        using implements_type = typename XamlMetaDataProvider_base::implements_type;
+        using implements_type::implements_type;
+        
+        hstring GetRuntimeClassName() const
+        {
+            return L"ConditionalsCppWinRT.XamlMetaDataProvider";
+        }
+    };
 }
-
-namespace winrt::ConditionalsCppWinRT::factory_implementation {
-
-template <typename D, typename T, typename... I>
-struct WINRT_EBO XamlMetaDataProviderT : implements<D, ::Windows::Foundation::IActivationFactory, I...>
+namespace winrt::ConditionalsCppWinRT::factory_implementation
 {
-    using instance_type = ConditionalsCppWinRT::XamlMetaDataProvider;
-
-    hstring GetRuntimeClassName() const
+    template <typename D, typename T, typename... I>
+    struct WINRT_IMPL_EMPTY_BASES XamlMetaDataProviderT : implements<D, winrt::Windows::Foundation::IActivationFactory, I...>
     {
-        return L"ConditionalsCppWinRT.XamlMetaDataProvider";
-    }
+        using instance_type = ConditionalsCppWinRT::XamlMetaDataProvider;
 
-    ::Windows::Foundation::IInspectable ActivateInstance() const
-    {
-        return make<T>();
-    }
-};
-
+        hstring GetRuntimeClassName() const
+        {
+            return L"ConditionalsCppWinRT.XamlMetaDataProvider";
+        }
+        auto ActivateInstance() const
+        {
+            return make<T>();
+        }
+    };
 }
 
 #if defined(WINRT_FORCE_INCLUDE_XAMLMETADATAPROVIDER_XAML_G_H) || __has_include("XamlMetaDataProvider.xaml.g.h")

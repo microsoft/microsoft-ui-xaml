@@ -8,24 +8,68 @@
 //------------------------------------------------------------------------------
 #include "pch.h"
 #include <memory>
+#include <unknwn.h>
+
+// Undefine GetCurrentTime macro to prevent
+// conflict with Storyboard::GetCurrentTime
+#undef GetCurrentTime
+
+#if __has_include(<winrt/ConditionalControls.h>)
+#include <winrt/ConditionalControls.h>
+#endif
+#if __has_include(<winrt/ConditionalControls.ConditionalsModel_XamlTypeInfo.h>)
+#include <winrt/ConditionalControls.ConditionalsModel_XamlTypeInfo.h>
+#endif
+#if __has_include(<winrt/ConditionalsCppWinRT.h>)
+#include <winrt/ConditionalsCppWinRT.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>)
+#include <winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.Collections.h>)
+#include <winrt/Windows.Foundation.Collections.h>
+#endif
 
 #include "XamlTypeInfo.xaml.g.h"
 
-#include "BindTests.h"
-#include "NameEventsLoad.h"
 #include "App.h"
+#include "BindTests.h"
 #include "MainPage.h"
+#include "NameEventsLoad.h"
 #include "XamlBindingInfo.xaml.g.hpp"
-#include "BindTests.xaml.g.hpp"
-#include "NameEventsLoad.xaml.g.hpp"
 #include "App.xaml.g.hpp"
+#include "BindTests.xaml.g.hpp"
 #include "MainPage.xaml.g.hpp"
+#include "NameEventsLoad.xaml.g.hpp"
 
 namespace winrt::ConditionalsCppWinRT::implementation
 {
-using IXamlMember = ::winrt::Windows::UI::Xaml::Markup::IXamlMember;
-using IXamlType = ::winrt::Windows::UI::Xaml::Markup::IXamlType;
+using IXamlMember = ::winrt::Microsoft::UI::Xaml::Markup::IXamlMember;
+using IXamlType = ::winrt::Microsoft::UI::Xaml::Markup::IXamlType;
 using TypeKind = ::winrt::Windows::UI::Xaml::Interop::TypeKind;
+
+    namespace XamlTypeInfo_staticasserts
+    {
+        template<typename, typename = void>
+        constexpr bool is_type_complete_v = false;
+
+        template<typename T>
+        constexpr bool is_type_complete_v<T, std::void_t<decltype(sizeof(T))>> = true;
+
+        static_assert( is_type_complete_v<::winrt::ConditionalControls::Button3>, "Please #include the implementation header for '::winrt::ConditionalControls::Button3' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::ConditionalsCppWinRT::MainPage>, "Please #include the implementation header for '::winrt::ConditionalsCppWinRT::MainPage' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::ConditionalControls::TextBlock1>, "Please #include the implementation header for '::winrt::ConditionalControls::TextBlock1' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::ConditionalsCppWinRT::BindTests>, "Please #include the implementation header for '::winrt::ConditionalsCppWinRT::BindTests' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::ConditionalControls::TextBlock2>, "Please #include the implementation header for '::winrt::ConditionalControls::TextBlock2' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::ConditionalControls::TextBlock3>, "Please #include the implementation header for '::winrt::ConditionalControls::TextBlock3' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::ConditionalsCppWinRT::NameEventsLoad>, "Please #include the implementation header for '::winrt::ConditionalsCppWinRT::NameEventsLoad' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>, "Please #include the implementation header for '::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::Windows::Foundation::Collections::IVector<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>>, "Please #include the implementation header for '::winrt::Windows::Foundation::Collections::IVector<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>' in your precompiled header 'pch.h'." );
+
+    }
 
 template <typename T>
 ::winrt::Windows::Foundation::IInspectable ActivateType()
@@ -76,38 +120,62 @@ template<typename TDeclaringType, typename TValue>
     return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().Dummy());
 }
 
+template<typename TDeclaringType, typename TValue>
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_IsExpanded(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().IsExpanded());
+}
+
+template<typename TDeclaringType, typename TValue>
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_HasUnrealizedChildren(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().HasUnrealizedChildren());
+}
+
+template<typename TDeclaringType, typename TValue>
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_Depth(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().Depth());
+}
+
+template<typename TDeclaringType, typename TValue>
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_HasChildren(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().HasChildren());
+}
+
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Caption(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_Caption(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().Caption()));
 }
 
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_V1Property(::winrt::Windows::Foundation::IInspectable const& instance)
-{
-   return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().V1Property()));
-}
-
-template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_V2Property(::winrt::Windows::Foundation::IInspectable const& instance)
-{
-   return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().V2Property()));
-}
-
-template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_V3Property(::winrt::Windows::Foundation::IInspectable const& instance)
-{
-   return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().V3Property()));
-}
-
-template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Text(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_Text(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().Text()));
 }
 
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_NullProperty(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_V1Property(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+   return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().V1Property()));
+}
+
+template <typename T>
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_V2Property(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+   return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().V2Property()));
+}
+
+template <typename T>
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_V3Property(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+   return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().V3Property()));
+}
+
+template <typename T>
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_NullProperty(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().NullProperty()));
 }
@@ -130,6 +198,24 @@ template <typename T>
     return ::winrt::box_value(instance.as<T>().Model());
 }
 
+template <typename T>
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Content(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value(instance.as<T>().Content());
+}
+
+template <typename T>
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Children(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value(instance.as<T>().Children());
+}
+
+template <typename T>
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Parent(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value(instance.as<T>().Parent());
+}
+
 template<typename TDeclaringType, typename TTargetType, typename TValue>
 void SetAttachableMember_AttachedBool(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
 {
@@ -145,7 +231,23 @@ void SetValueTypeMember_Dummy(
 }
 
 template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_Caption(
+void SetValueTypeMember_IsExpanded(
+    ::winrt::Windows::Foundation::IInspectable const& instance, 
+    ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<TDeclaringType>().IsExpanded(::winrt::unbox_value<TValue>(value));
+}
+
+template<typename TDeclaringType, typename TValue>
+void SetValueTypeMember_HasUnrealizedChildren(
+    ::winrt::Windows::Foundation::IInspectable const& instance, 
+    ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<TDeclaringType>().HasUnrealizedChildren(::winrt::unbox_value<TValue>(value));
+}
+
+template<typename TDeclaringType, typename TValue>
+void SetReferenceTypeStringMember_Caption(
     ::winrt::Windows::Foundation::IInspectable const& instance, 
     ::winrt::Windows::Foundation::IInspectable const& value)
 {
@@ -153,31 +255,7 @@ void SetReferenceTypeMember_Caption(
 }
 
 template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_V1Property(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    return instance.as<TDeclaringType>().V1Property(::winrt::unbox_value<::winrt::hstring>(value));
-}
-
-template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_V2Property(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    return instance.as<TDeclaringType>().V2Property(::winrt::unbox_value<::winrt::hstring>(value));
-}
-
-template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_V3Property(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    return instance.as<TDeclaringType>().V3Property(::winrt::unbox_value<::winrt::hstring>(value));
-}
-
-template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_Text(
+void SetReferenceTypeStringMember_Text(
     ::winrt::Windows::Foundation::IInspectable const& instance, 
     ::winrt::Windows::Foundation::IInspectable const& value)
 {
@@ -185,7 +263,31 @@ void SetReferenceTypeMember_Text(
 }
 
 template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_NullProperty(
+void SetReferenceTypeStringMember_V1Property(
+    ::winrt::Windows::Foundation::IInspectable const& instance, 
+    ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    return instance.as<TDeclaringType>().V1Property(::winrt::unbox_value<::winrt::hstring>(value));
+}
+
+template<typename TDeclaringType, typename TValue>
+void SetReferenceTypeStringMember_V2Property(
+    ::winrt::Windows::Foundation::IInspectable const& instance, 
+    ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    return instance.as<TDeclaringType>().V2Property(::winrt::unbox_value<::winrt::hstring>(value));
+}
+
+template<typename TDeclaringType, typename TValue>
+void SetReferenceTypeStringMember_V3Property(
+    ::winrt::Windows::Foundation::IInspectable const& instance, 
+    ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    return instance.as<TDeclaringType>().V3Property(::winrt::unbox_value<::winrt::hstring>(value));
+}
+
+template<typename TDeclaringType, typename TValue>
+void SetReferenceTypeStringMember_NullProperty(
     ::winrt::Windows::Foundation::IInspectable const& instance, 
     ::winrt::Windows::Foundation::IInspectable const& value)
 {
@@ -214,6 +316,14 @@ void SetReferenceTypeMember_Model(
     ::winrt::Windows::Foundation::IInspectable const& value)
 {
     instance.as<TDeclaringType>().Model(value.as<TValue>());
+}
+
+template<typename TDeclaringType, typename TValue>
+void SetReferenceTypeMember_Content(
+    ::winrt::Windows::Foundation::IInspectable const& instance, 
+    ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<TDeclaringType>().Content(value.as<TValue>());
 }
 
 enum TypeInfo_Flags
@@ -284,7 +394,7 @@ const TypeInfo TypeInfos[] =
     //   5
     L"ConditionalControls.Button3", L"",
     &ActivateType<::winrt::ConditionalControls::Button3>, nullptr, nullptr, nullptr,
-    16, // Windows.UI.Xaml.Controls.UserControl
+    16, // Microsoft.UI.Xaml.Controls.UserControl
     0, 0, -1, TypeKind::Metadata,
     TypeInfo_Flags_None,
     -1,
@@ -298,68 +408,68 @@ const TypeInfo TypeInfos[] =
     //   7
     L"ConditionalsCppWinRT.MainPage", L"",
     &ActivateLocalType<::winrt::ConditionalsCppWinRT::implementation::MainPage>, nullptr, nullptr, nullptr,
-    8, // Windows.UI.Xaml.Controls.Page
+    12, // Microsoft.UI.Xaml.Controls.Page
     5, 0, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
     //   8
-    L"Windows.UI.Xaml.Controls.Page", L"",
-    nullptr, nullptr, nullptr, nullptr,
-    -1,
-    6, 0, -1, TypeKind::Metadata,
-    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
-    -1,
-    //   9
     L"ConditionalControls.TextBlock1", L"",
     &ActivateType<::winrt::ConditionalControls::TextBlock1>, nullptr, nullptr, nullptr,
-    16, // Windows.UI.Xaml.Controls.UserControl
+    16, // Microsoft.UI.Xaml.Controls.UserControl
     6, 0, -1, TypeKind::Metadata,
     TypeInfo_Flags_None,
     -1,
-    //  10
+    //   9
     L"ConditionalsCppWinRT.BindTests", L"",
     &ActivateLocalType<::winrt::ConditionalsCppWinRT::implementation::BindTests>, nullptr, nullptr, nullptr,
-    16, // Windows.UI.Xaml.Controls.UserControl
+    16, // Microsoft.UI.Xaml.Controls.UserControl
     7, 0, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
-    //  11
+    //  10
     L"ConditionalControls.TextBlock2", L"",
     &ActivateType<::winrt::ConditionalControls::TextBlock2>, nullptr, nullptr, nullptr,
-    16, // Windows.UI.Xaml.Controls.UserControl
+    16, // Microsoft.UI.Xaml.Controls.UserControl
     13, 0, -1, TypeKind::Metadata,
     TypeInfo_Flags_None,
     -1,
-    //  12
+    //  11
     L"ConditionalControls.TextBlock3", L"",
     &ActivateType<::winrt::ConditionalControls::TextBlock3>, nullptr, nullptr, nullptr,
-    16, // Windows.UI.Xaml.Controls.UserControl
+    16, // Microsoft.UI.Xaml.Controls.UserControl
     14, 0, -1, TypeKind::Metadata,
     TypeInfo_Flags_None,
     -1,
+    //  12
+    L"Microsoft.UI.Xaml.Controls.Page", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    -1,
+    15, 0, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
+    -1,
     //  13
-    L"Windows.UI.Xaml.DependencyObject", L"",
+    L"Microsoft.UI.Xaml.DependencyObject", L"",
     nullptr, nullptr, nullptr, nullptr,
     -1,
     15, 0, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
     -1,
     //  14
-    L"Windows.UI.Xaml.Controls.TextBlock", L"",
+    L"ConditionalsCppWinRT.NameEventsLoad", L"",
+    &ActivateLocalType<::winrt::ConditionalsCppWinRT::implementation::NameEventsLoad>, nullptr, nullptr, nullptr,
+    16, // Microsoft.UI.Xaml.Controls.UserControl
+    15, 0, -1, TypeKind::Custom,
+    TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
+    -1,
+    //  15
+    L"Microsoft.UI.Xaml.Controls.TextBlock", L"",
     nullptr, nullptr, nullptr, nullptr,
     -1,
     15, 0, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
     -1,
-    //  15
-    L"ConditionalsCppWinRT.NameEventsLoad", L"",
-    &ActivateLocalType<::winrt::ConditionalsCppWinRT::implementation::NameEventsLoad>, nullptr, nullptr, nullptr,
-    16, // Windows.UI.Xaml.Controls.UserControl
-    15, 0, -1, TypeKind::Custom,
-    TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
-    -1,
     //  16
-    L"Windows.UI.Xaml.Controls.UserControl", L"",
+    L"Microsoft.UI.Xaml.Controls.UserControl", L"",
     nullptr, nullptr, nullptr, nullptr,
     -1,
     15, 0, -1, TypeKind::Metadata,
@@ -372,11 +482,25 @@ const TypeInfo TypeInfos[] =
     15, 0, -1, TypeKind::Metadata,
     TypeInfo_Flags_None,
     -1,
+    //  18
+    L"Microsoft.UI.Xaml.Controls.TreeViewNode", L"",
+    &ActivateType<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>, nullptr, nullptr, nullptr,
+    13, // Microsoft.UI.Xaml.DependencyObject
+    16, 0, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsBindable | TypeInfo_Flags_None,
+    -1,
+    //  19
+    L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.TreeViewNode>", L"",
+    nullptr, &CollectionAdd<::winrt::Windows::Foundation::Collections::IVector<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>, ::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>, nullptr, nullptr,
+    -1,
+    23, 0, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
+    -1,
     //  Last type here is for padding
     L"", L"",
     nullptr, nullptr, nullptr, nullptr,
     -1, 
-    16, 0, -1, TypeKind::Custom,
+    23, 0, -1, TypeKind::Custom,
     TypeInfo_Flags_None,
 };
 
@@ -411,16 +535,59 @@ constexpr uint32_t TypeInfoLookup[] = {
       5,   //  27
       6,   //  28
       6,   //  29
-      9,   //  30
-     13,   //  31
+      8,   //  30
+     12,   //  31
      13,   //  32
-     14,   //  33
-     14,   //  34
-     15,   //  35
-     16,   //  36
-     17,   //  37
-     17,   //  38
+     13,   //  33
+     13,   //  34
+     14,   //  35
+     15,   //  36
+     16,   //  37
+     16,   //  38
      18,   //  39
+     19,   //  40
+     19,   //  41
+     19,   //  42
+     19,   //  43
+     19,   //  44
+     19,   //  45
+     19,   //  46
+     19,   //  47
+     19,   //  48
+     19,   //  49
+     19,   //  50
+     19,   //  51
+     19,   //  52
+     19,   //  53
+     19,   //  54
+     19,   //  55
+     19,   //  56
+     19,   //  57
+     19,   //  58
+     19,   //  59
+     19,   //  60
+     19,   //  61
+     19,   //  62
+     19,   //  63
+     19,   //  64
+     19,   //  65
+     19,   //  66
+     19,   //  67
+     19,   //  68
+     19,   //  69
+     19,   //  70
+     19,   //  71
+     19,   //  72
+     19,   //  73
+     19,   //  74
+     19,   //  75
+     19,   //  76
+     19,   //  77
+     19,   //  78
+     19,   //  79
+     19,   //  80
+     19,   //  81
+     20,   //  82
 };
 
 struct MemberInfo 
@@ -439,36 +606,36 @@ const MemberInfo MemberInfos[] =
 {
     //   0 - ConditionalControls.Button3.Caption
     L"Caption",
-    &GetReferenceTypeMember_Caption<::winrt::ConditionalControls::Button3>,
-    &SetReferenceTypeMember_Caption<::winrt::ConditionalControls::Button3, ::winrt::hstring>,
+    &GetReferenceTypeStringMember_Caption<::winrt::ConditionalControls::Button3>,
+    &SetReferenceTypeStringMember_Caption<::winrt::ConditionalControls::Button3, ::winrt::hstring>,
     1, // String
     -1,
     false, false, false,
-    //   1 - ConditionalControls.Button3.V1Property
-    L"V1Property",
-    &GetReferenceTypeMember_V1Property<::winrt::ConditionalControls::Button3>,
-    &SetReferenceTypeMember_V1Property<::winrt::ConditionalControls::Button3, ::winrt::hstring>,
-    1, // String
-    -1,
-    false, false, false,
-    //   2 - ConditionalControls.Button3.V2Property
-    L"V2Property",
-    &GetReferenceTypeMember_V2Property<::winrt::ConditionalControls::Button3>,
-    &SetReferenceTypeMember_V2Property<::winrt::ConditionalControls::Button3, ::winrt::hstring>,
-    1, // String
-    -1,
-    false, false, false,
-    //   3 - ConditionalControls.Button3.V3Property
-    L"V3Property",
-    &GetReferenceTypeMember_V3Property<::winrt::ConditionalControls::Button3>,
-    &SetReferenceTypeMember_V3Property<::winrt::ConditionalControls::Button3, ::winrt::hstring>,
-    1, // String
-    -1,
-    false, false, false,
-    //   4 - ConditionalControls.Button3.Text
+    //   1 - ConditionalControls.Button3.Text
     L"Text",
-    &GetReferenceTypeMember_Text<::winrt::ConditionalControls::Button3>,
-    &SetReferenceTypeMember_Text<::winrt::ConditionalControls::Button3, ::winrt::hstring>,
+    &GetReferenceTypeStringMember_Text<::winrt::ConditionalControls::Button3>,
+    &SetReferenceTypeStringMember_Text<::winrt::ConditionalControls::Button3, ::winrt::hstring>,
+    1, // String
+    -1,
+    false, false, false,
+    //   2 - ConditionalControls.Button3.V1Property
+    L"V1Property",
+    &GetReferenceTypeStringMember_V1Property<::winrt::ConditionalControls::Button3>,
+    &SetReferenceTypeStringMember_V1Property<::winrt::ConditionalControls::Button3, ::winrt::hstring>,
+    1, // String
+    -1,
+    false, false, false,
+    //   3 - ConditionalControls.Button3.V2Property
+    L"V2Property",
+    &GetReferenceTypeStringMember_V2Property<::winrt::ConditionalControls::Button3>,
+    &SetReferenceTypeStringMember_V2Property<::winrt::ConditionalControls::Button3, ::winrt::hstring>,
+    1, // String
+    -1,
+    false, false, false,
+    //   4 - ConditionalControls.Button3.V3Property
+    L"V3Property",
+    &GetReferenceTypeStringMember_V3Property<::winrt::ConditionalControls::Button3>,
+    &SetReferenceTypeStringMember_V3Property<::winrt::ConditionalControls::Button3, ::winrt::hstring>,
     1, // String
     -1,
     false, false, false,
@@ -481,36 +648,36 @@ const MemberInfo MemberInfos[] =
     false, false, false,
     //   6 - ConditionalControls.TextBlock1.Text
     L"Text",
-    &GetReferenceTypeMember_Text<::winrt::ConditionalControls::TextBlock1>,
-    &SetReferenceTypeMember_Text<::winrt::ConditionalControls::TextBlock1, ::winrt::hstring>,
+    &GetReferenceTypeStringMember_Text<::winrt::ConditionalControls::TextBlock1>,
+    &SetReferenceTypeStringMember_Text<::winrt::ConditionalControls::TextBlock1, ::winrt::hstring>,
     1, // String
     -1,
     false, false, false,
     //   7 - ConditionalsCppWinRT.BindTests.v3TextBlock
     L"v3TextBlock",
     &GetReferenceTypeMember_v3TextBlock<::winrt::ConditionalsCppWinRT::BindTests>,
-    &SetReferenceTypeMember_v3TextBlock<::winrt::ConditionalsCppWinRT::BindTests, ::winrt::Windows::UI::Xaml::Controls::TextBlock>,
-    14, // Windows.UI.Xaml.Controls.TextBlock
+    &SetReferenceTypeMember_v3TextBlock<::winrt::ConditionalsCppWinRT::BindTests, ::winrt::Microsoft::UI::Xaml::Controls::TextBlock>,
+    15, // Microsoft.UI.Xaml.Controls.TextBlock
     -1,
     false, false, false,
     //   8 - ConditionalsCppWinRT.BindTests.V3Property
     L"V3Property",
-    &GetReferenceTypeMember_V3Property<::winrt::ConditionalsCppWinRT::BindTests>,
-    &SetReferenceTypeMember_V3Property<::winrt::ConditionalsCppWinRT::BindTests, ::winrt::hstring>,
+    &GetReferenceTypeStringMember_V3Property<::winrt::ConditionalsCppWinRT::BindTests>,
+    &SetReferenceTypeStringMember_V3Property<::winrt::ConditionalsCppWinRT::BindTests, ::winrt::hstring>,
     1, // String
     -1,
     false, false, false,
     //   9 - ConditionalsCppWinRT.BindTests.V2Property
     L"V2Property",
-    &GetReferenceTypeMember_V2Property<::winrt::ConditionalsCppWinRT::BindTests>,
-    &SetReferenceTypeMember_V2Property<::winrt::ConditionalsCppWinRT::BindTests, ::winrt::hstring>,
+    &GetReferenceTypeStringMember_V2Property<::winrt::ConditionalsCppWinRT::BindTests>,
+    &SetReferenceTypeStringMember_V2Property<::winrt::ConditionalsCppWinRT::BindTests, ::winrt::hstring>,
     1, // String
     -1,
     false, false, false,
     //  10 - ConditionalsCppWinRT.BindTests.NullProperty
     L"NullProperty",
-    &GetReferenceTypeMember_NullProperty<::winrt::ConditionalsCppWinRT::BindTests>,
-    &SetReferenceTypeMember_NullProperty<::winrt::ConditionalsCppWinRT::BindTests, ::winrt::hstring>,
+    &GetReferenceTypeStringMember_NullProperty<::winrt::ConditionalsCppWinRT::BindTests>,
+    &SetReferenceTypeStringMember_NullProperty<::winrt::ConditionalsCppWinRT::BindTests, ::winrt::hstring>,
     1, // String
     -1,
     false, false, false,
@@ -530,25 +697,74 @@ const MemberInfo MemberInfos[] =
     false, false, false,
     //  13 - ConditionalControls.TextBlock2.Text
     L"Text",
-    &GetReferenceTypeMember_Text<::winrt::ConditionalControls::TextBlock2>,
-    &SetReferenceTypeMember_Text<::winrt::ConditionalControls::TextBlock2, ::winrt::hstring>,
+    &GetReferenceTypeStringMember_Text<::winrt::ConditionalControls::TextBlock2>,
+    &SetReferenceTypeStringMember_Text<::winrt::ConditionalControls::TextBlock2, ::winrt::hstring>,
     1, // String
     -1,
     false, false, false,
     //  14 - ConditionalControls.TextBlock3.Text
     L"Text",
-    &GetReferenceTypeMember_Text<::winrt::ConditionalControls::TextBlock3>,
-    &SetReferenceTypeMember_Text<::winrt::ConditionalControls::TextBlock3, ::winrt::hstring>,
+    &GetReferenceTypeStringMember_Text<::winrt::ConditionalControls::TextBlock3>,
+    &SetReferenceTypeStringMember_Text<::winrt::ConditionalControls::TextBlock3, ::winrt::hstring>,
     1, // String
     -1,
     false, false, false,
     //  15 - ConditionalControls.AttachedProperties.AttachedBool
     L"AttachedBool",
-    &GetAttachableMember_AttachedBool<::winrt::ConditionalControls::AttachedProperties, ::winrt::Windows::UI::Xaml::DependencyObject>,
-    &SetAttachableMember_AttachedBool<::winrt::ConditionalControls::AttachedProperties, ::winrt::Windows::UI::Xaml::DependencyObject, bool>,
+    &GetAttachableMember_AttachedBool<::winrt::ConditionalControls::AttachedProperties, ::winrt::Microsoft::UI::Xaml::DependencyObject>,
+    &SetAttachableMember_AttachedBool<::winrt::ConditionalControls::AttachedProperties, ::winrt::Microsoft::UI::Xaml::DependencyObject, bool>,
     3, // Boolean
-    13, // Windows.UI.Xaml.DependencyObject
+    13, // Microsoft.UI.Xaml.DependencyObject
     false, false, true, 
+    //  16 - Microsoft.UI.Xaml.Controls.TreeViewNode.IsExpanded
+    L"IsExpanded",
+    &GetValueTypeMember_IsExpanded<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
+    &SetValueTypeMember_IsExpanded<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
+    3, // Boolean
+    -1,
+    false, true,  false,
+    //  17 - Microsoft.UI.Xaml.Controls.TreeViewNode.HasUnrealizedChildren
+    L"HasUnrealizedChildren",
+    &GetValueTypeMember_HasUnrealizedChildren<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
+    &SetValueTypeMember_HasUnrealizedChildren<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
+    3, // Boolean
+    -1,
+    false, false, false,
+    //  18 - Microsoft.UI.Xaml.Controls.TreeViewNode.Content
+    L"Content",
+    &GetReferenceTypeMember_Content<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>,
+    &SetReferenceTypeMember_Content<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, ::winrt::Windows::Foundation::IInspectable>,
+    2, // Object
+    -1,
+    false, true,  false,
+    //  19 - Microsoft.UI.Xaml.Controls.TreeViewNode.Children
+    L"Children",
+    &GetReferenceTypeMember_Children<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>,
+    nullptr,
+    19, // Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
+    -1,
+    true,  false, false,
+    //  20 - Microsoft.UI.Xaml.Controls.TreeViewNode.Depth
+    L"Depth",
+    &GetValueTypeMember_Depth<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, int32_t>,
+    nullptr,
+    0, // Int32
+    -1,
+    true,  true,  false,
+    //  21 - Microsoft.UI.Xaml.Controls.TreeViewNode.HasChildren
+    L"HasChildren",
+    &GetValueTypeMember_HasChildren<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
+    nullptr,
+    3, // Boolean
+    -1,
+    true,  true,  false,
+    //  22 - Microsoft.UI.Xaml.Controls.TreeViewNode.Parent
+    L"Parent",
+    &GetReferenceTypeMember_Parent<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>,
+    nullptr,
+    18, // Microsoft.UI.Xaml.Controls.TreeViewNode
+    -1,
+    true,  false, false,
 };
 
 const wchar_t* GetShortName(const wchar_t* longName)
@@ -603,10 +819,12 @@ const MemberInfo* GetMemberInfo(::winrt::hstring const& longMemberName)
     return nullptr;
 }
 
-std::vector<::winrt::Windows::UI::Xaml::Markup::IXamlMetadataProvider> const& XamlTypeInfoProvider::OtherProviders()
+std::vector<::winrt::Microsoft::UI::Xaml::Markup::IXamlMetadataProvider> const& XamlTypeInfoProvider::OtherProviders()
 {
+    std::lock_guard<std::recursive_mutex> lock(_xamlTypesCriticalSection);
     if (_otherProviders.empty())
     {
+        _otherProviders.push_back(::winrt::Microsoft::UI::Xaml::XamlTypeInfo::XamlControlsXamlMetaDataProvider());
         _otherProviders.push_back(::winrt::ConditionalControls::ConditionalsModel_XamlTypeInfo::XamlMetaDataProvider());
     }
     return _otherProviders;
@@ -668,3 +886,5 @@ IXamlMember XamlTypeInfoProvider::CreateXamlMember(::winrt::hstring const& longM
     return xamlMember.as<IXamlMember>();
 }
 } // namespace
+
+

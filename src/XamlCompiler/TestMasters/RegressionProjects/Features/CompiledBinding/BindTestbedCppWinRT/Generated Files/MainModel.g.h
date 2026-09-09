@@ -1,11 +1,11 @@
-﻿// WARNING: Please don't edit this file...
+// WARNING: Please don't edit this file...
 
 #pragma once
 #include "winrt/BindTestbed.h"
 namespace winrt::BindTestbed::implementation
 {
     template <typename D, typename... I>
-    struct __declspec(empty_bases) MainModel_base : implements<D, BindTestbed::MainModel, I...>
+    struct WINRT_IMPL_EMPTY_BASES MainModel_base : implements<D, BindTestbed::MainModel, I...>
     {
         using base_type = MainModel_base;
         using class_type = BindTestbed::MainModel;
@@ -21,7 +21,7 @@ namespace winrt::BindTestbed::implementation
 namespace winrt::BindTestbed::factory_implementation
 {
     template <typename D, typename T, typename... I>
-    struct __declspec(empty_bases) MainModelT : implements<D, ::Windows::Foundation::IActivationFactory, I...>
+    struct WINRT_IMPL_EMPTY_BASES MainModelT : implements<D, winrt::Windows::Foundation::IActivationFactory, I...>
     {
         using instance_type = BindTestbed::MainModel;
 
@@ -37,7 +37,9 @@ namespace winrt::BindTestbed::factory_implementation
 }
 
 #if defined(WINRT_FORCE_INCLUDE_MAINMODEL_XAML_G_H) || __has_include("MainModel.xaml.g.h")
+
 #include "MainModel.xaml.g.h"
+
 #else
 
 namespace winrt::BindTestbed::implementation

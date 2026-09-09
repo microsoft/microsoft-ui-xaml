@@ -17,8 +17,14 @@
 #if __has_include(<winrt/LinkedMDControlsCppWinRT.h>)
 #include <winrt/LinkedMDControlsCppWinRT.h>
 #endif
+#if __has_include(<winrt/LinkedMDSubControlsCppWinRT.h>)
+#include <winrt/LinkedMDSubControlsCppWinRT.h>
+#endif
 #if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>)
+#include <winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>
 #endif
 #if __has_include(<winrt/Windows.Foundation.Collections.h>)
 #include <winrt/Windows.Foundation.Collections.h>

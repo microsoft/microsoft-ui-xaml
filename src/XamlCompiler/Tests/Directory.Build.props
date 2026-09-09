@@ -17,13 +17,6 @@
              SkipXamlCompilerProjectReferences enables the EnsureCompilerExists check, which reports a
              clear "build the compiler first" error instead of a confusing task-not-found failure. -->
         <UseXamlCompiler Condition="'$(UseXamlCompiler)' == ''">true</UseXamlCompiler>
-        <!-- Except for packaging projects. The WinUI package deliberately skips the XAML compiler
-             props for .wapproj (see the '$(MSBuildProjectExtension)'!='.wapproj' condition on the
-             import in Microsoft.WinUI.props), because a packaging project has no XAML of its own.
-             eng\usexamlcompiler.targets has no such exclusion, so opting a .wapproj in gives it the
-             compiler targets without the compiler props, and the build then fails with
-             "MSB4057: The target XamlPreCompile does not exist in the project". -->
-        <UseXamlCompiler Condition="'$(MSBuildProjectExtension)' == '.wapproj'">false</UseXamlCompiler>
         <SkipXamlCompilerProjectReferences Condition="'$(SkipXamlCompilerProjectReferences)' == ''">true</SkipXamlCompilerProjectReferences>
     </PropertyGroup>
 

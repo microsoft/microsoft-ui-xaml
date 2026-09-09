@@ -32,10 +32,57 @@
       prefixes off for the product code for the same reason.
     -->
     <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
+
+    <!--
+      This app is packaged, using Single-project MSIX Packaging: the app project produces the
+      MSIX itself, rather than being harvested by a separate .wapproj. It replaces the
+      BindTestbedCppWinRT(Package).wapproj that used to sit in this directory.
+
+      A .wapproj is a second project over the same source directory, and it asks for the app
+      at a different $(Platform) than the solution does - x86 where the solution maps this
+      project to Win32. MSBuild keys project instances on their global properties, so the two
+      requests became two concurrent instances of this project writing the same pch.obj and
+      pch.pch, which failed the x86 builds with MSB6003. Single-project packaging removes the
+      second instance along with the second project.
+
+      AppPreamble.vcxproj turns packaging off for the compile-only regression projects; this
+      one is the exception, so it opts back in here.
+    -->
+    <AppxPackage>true</AppxPackage>
+    <EnableMsixTooling>true</EnableMsixTooling>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(CommonFilesPath)AppPreamble.vcxproj" />
+
+  <PropertyGroup Label="Packaging">
+    <!--
+      Build the package as part of a normal build, so that the solution build keeps proving
+      the app packages - the coverage the .wapproj used to provide. Signing stays off, as it
+      was on the .wapproj: nothing installs this package, it only has to be produced.
+    -->
+    <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+    <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+  </PropertyGroup>
+
+  <!--
+    Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
+    Tools extension to be activated for this project even if the Windows App SDK Nuget
+    package has not yet been restored.
+  -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+
+  <!--
+    Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
+    Explorer "Package and Publish" context menu entry to be enabled for this project even if
+    the Windows App SDK Nuget package has not yet been restored.
+  -->
+  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+  </PropertyGroup>
+
   <ItemGroup>
     <ClInclude Include="BasicTests.h">
       <DependentUpon>BasicTests.xaml</DependentUpon>

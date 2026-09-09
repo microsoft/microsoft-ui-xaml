@@ -8,6 +8,36 @@
 //------------------------------------------------------------------------------
 #include "pch.h"
 #include <memory>
+#include <unknwn.h>
+
+// Undefine GetCurrentTime macro to prevent
+// conflict with Storyboard::GetCurrentTime
+#undef GetCurrentTime
+
+#if __has_include(<winrt/BindTestbed.h>)
+#include <winrt/BindTestbed.h>
+#endif
+#if __has_include(<winrt/BindTestbed.NamedRootsPage.h>)
+#include <winrt/BindTestbed.NamedRootsPage.h>
+#endif
+#if __has_include(<winrt/BindTestbed.subfolder.h>)
+#include <winrt/BindTestbed.subfolder.h>
+#endif
+#if __has_include(<winrt/BindTestbedModel.h>)
+#include <winrt/BindTestbedModel.h>
+#endif
+#if __has_include(<winrt/BindTestbedModel.BindTestbedModel_XamlTypeInfo.h>)
+#include <winrt/BindTestbedModel.BindTestbedModel_XamlTypeInfo.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>)
+#include <winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.Collections.h>)
+#include <winrt/Windows.Foundation.Collections.h>
+#endif
 
 #include "XamlTypeInfo.xaml.g.h"
 
@@ -29,6 +59,9 @@
 #include "Templates.h"
 #include "TestsPage2.h"
 #include "TwoWayTests.h"
+#include "DisableXBindTests.h"
+#include "NamedRootsPage\NamedPageRootWithCompiledBindingUserChild.h"
+#include "xPropertiesTest.h"
 #include "XamlBindingInfo.xaml.g.hpp"
 #include "BasicTests.xaml.g.hpp"
 #include "CastingTests.xaml.g.hpp"
@@ -48,12 +81,59 @@
 #include "Templates.xaml.g.hpp"
 #include "TestsPage2.xaml.g.hpp"
 #include "TwoWayTests.xaml.g.hpp"
+#include "DisableXBindTests.xaml.g.hpp"
+#include "NamedRootsPage\NamedPageRootWithCompiledBindingUserChild.xaml.g.hpp"
+#include "xPropertiesTest.xaml.g.hpp"
 
 namespace winrt::BindTestbed::implementation
 {
-using IXamlMember = ::winrt::Windows::UI::Xaml::Markup::IXamlMember;
-using IXamlType = ::winrt::Windows::UI::Xaml::Markup::IXamlType;
+using IXamlMember = ::winrt::Microsoft::UI::Xaml::Markup::IXamlMember;
+using IXamlType = ::winrt::Microsoft::UI::Xaml::Markup::IXamlType;
 using TypeKind = ::winrt::Windows::UI::Xaml::Interop::TypeKind;
+
+    namespace XamlTypeInfo_staticasserts
+    {
+        template<typename, typename = void>
+        constexpr bool is_type_complete_v = false;
+
+        template<typename T>
+        constexpr bool is_type_complete_v<T, std::void_t<decltype(sizeof(T))>> = true;
+
+        static_assert( is_type_complete_v<::winrt::BindTestbed::MainPage>, "Please #include the implementation header for '::winrt::BindTestbed::MainPage' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::Templates>, "Please #include the implementation header for '::winrt::BindTestbed::Templates' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::BasicTests>, "Please #include the implementation header for '::winrt::BindTestbed::BasicTests' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::EventTests>, "Please #include the implementation header for '::winrt::BindTestbed::EventTests' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::TestsPage2>, "Please #include the implementation header for '::winrt::BindTestbed::TestsPage2' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::TwoWayTests>, "Please #include the implementation header for '::winrt::BindTestbed::TwoWayTests' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbedModel::Circle>, "Please #include the implementation header for '::winrt::BindTestbedModel::Circle' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::CastingModel>, "Please #include the implementation header for '::winrt::BindTestbed::CastingModel' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::CastingTests>, "Please #include the implementation header for '::winrt::BindTestbed::CastingTests' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::PhasingTests>, "Please #include the implementation header for '::winrt::BindTestbed::PhasingTests' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::FunctionTests>, "Please #include the implementation header for '::winrt::BindTestbed::FunctionTests' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::NullableTests>, "Please #include the implementation header for '::winrt::BindTestbed::NullableTests' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::MyUserControl1>, "Please #include the implementation header for '::winrt::BindTestbed::MyUserControl1' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbedModel::TShirtSize>, "Please #include the implementation header for '::winrt::BindTestbedModel::TShirtSize' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::DetectLeaksPage>, "Please #include the implementation header for '::winrt::BindTestbed::DetectLeaksPage' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::xPropertiesTest>, "Please #include the implementation header for '::winrt::BindTestbed::xPropertiesTest' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::DisableXBindTests>, "Please #include the implementation header for '::winrt::BindTestbed::DisableXBindTests' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::LonelyStaticBinding>, "Please #include the implementation header for '::winrt::BindTestbed::LonelyStaticBinding' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::ListAndTemplateTests>, "Please #include the implementation header for '::winrt::BindTestbed::ListAndTemplateTests' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbedModel::EmployeeTextBlock>, "Please #include the implementation header for '::winrt::BindTestbedModel::EmployeeTextBlock' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::subfolder::SubDictionary>, "Please #include the implementation header for '::winrt::BindTestbed::subfolder::SubDictionary' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbedModel::ObservableEmployees>, "Please #include the implementation header for '::winrt::BindTestbedModel::ObservableEmployees' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbedModel::DoubleToIntConverter>, "Please #include the implementation header for '::winrt::BindTestbedModel::DoubleToIntConverter' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::INotifyDataErrorInfoTests>, "Please #include the implementation header for '::winrt::BindTestbed::INotifyDataErrorInfoTests' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbedModel::ColorToStringConverter>, "Please #include the implementation header for '::winrt::BindTestbedModel::ColorToStringConverter' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>, "Please #include the implementation header for '::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::LoadAndCreateFromStringTests>, "Please #include the implementation header for '::winrt::BindTestbed::LoadAndCreateFromStringTests' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbedModel::NullablePropertiesButton>, "Please #include the implementation header for '::winrt::BindTestbedModel::NullablePropertiesButton' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbedModel::BoolToVisibilityConverter>, "Please #include the implementation header for '::winrt::BindTestbedModel::BoolToVisibilityConverter' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::Windows::Foundation::Collections::IObservableVector<::winrt::hstring>>, "Please #include the implementation header for '::winrt::Windows::Foundation::Collections::IObservableVector<::winrt::hstring>' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::BindTestbed::NamedRootsPage::NamedPageRootWithCompiledBindingUserChild>, "Please #include the implementation header for '::winrt::BindTestbed::NamedRootsPage::NamedPageRootWithCompiledBindingUserChild' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::Windows::Foundation::Collections::IObservableVector<::winrt::BindTestbedModel::IEmployee>>, "Please #include the implementation header for '::winrt::Windows::Foundation::Collections::IObservableVector<::winrt::BindTestbedModel::IEmployee>' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::Windows::Foundation::Collections::IVector<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>>, "Please #include the implementation header for '::winrt::Windows::Foundation::Collections::IVector<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>' in your precompiled header 'pch.h'." );
+
+    }
 
 template <typename T>
 ::winrt::Windows::Foundation::IInspectable ActivateType()
@@ -183,99 +263,117 @@ template<typename TDeclaringType, typename TValue>
 }
 
 template<typename TDeclaringType, typename TValue>
-::winrt::Windows::Foundation::IInspectable GetValueTypeMember_Coords(::winrt::Windows::Foundation::IInspectable const& instance)
-{
-    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().Coords());
-}
-
-template<typename TDeclaringType, typename TValue>
 ::winrt::Windows::Foundation::IInspectable GetValueTypeMember_Size(::winrt::Windows::Foundation::IInspectable const& instance)
 {
     return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().Size());
 }
 
+template<typename TDeclaringType, typename TValue>
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_IsExpanded(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().IsExpanded());
+}
+
+template<typename TDeclaringType, typename TValue>
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_HasUnrealizedChildren(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().HasUnrealizedChildren());
+}
+
+template<typename TDeclaringType, typename TValue>
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_Depth(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().Depth());
+}
+
+template<typename TDeclaringType, typename TValue>
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_HasChildren(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().HasChildren());
+}
+
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_DPOnPage(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_DPOnPage(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().DPOnPage()));
 }
 
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_NonDPOnPage(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_NonDPOnPage(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().NonDPOnPage()));
 }
 
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Username(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_Username(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().Username()));
 }
 
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Prefix(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_Prefix(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().Prefix()));
 }
 
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Dummy(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_Dummy(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().Dummy()));
 }
 
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_FirstName(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_FirstName(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().FirstName()));
 }
 
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_LastName(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_LastName(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().LastName()));
 }
 
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Title(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_Title(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().Title()));
 }
 
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Name(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_Name(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().Name()));
 }
 
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_NullStringProperty(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_NullStringProperty(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().NullStringProperty()));
 }
 
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_ImageUriString(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_ImageUriString(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().ImageUriString()));
 }
 
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Property1(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_Property1(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().Property1()));
 }
 
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_TestStringProperty(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_TestStringProperty(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().TestStringProperty()));
 }
 
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_TestString(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_TestStr(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-   return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().TestString()));
+   return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().TestStr()));
 }
 
 template <typename T>
@@ -312,12 +410,6 @@ template <typename T>
 ::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_SomeButtonContent(::winrt::Windows::Foundation::IInspectable const& instance)
 {
     return ::winrt::box_value(instance.as<T>().SomeButtonContent());
-}
-
-template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_ModelCX(::winrt::Windows::Foundation::IInspectable const& instance)
-{
-    return ::winrt::box_value(instance.as<T>().ModelCX());
 }
 
 template <typename T>
@@ -435,18 +527,6 @@ template <typename T>
 }
 
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_test6(::winrt::Windows::Foundation::IInspectable const& instance)
-{
-    return ::winrt::box_value(instance.as<T>().test6());
-}
-
-template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_test5(::winrt::Windows::Foundation::IInspectable const& instance)
-{
-    return ::winrt::box_value(instance.as<T>().test5());
-}
-
-template <typename T>
 ::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_test4(::winrt::Windows::Foundation::IInspectable const& instance)
 {
     return ::winrt::box_value(instance.as<T>().test4());
@@ -516,6 +596,30 @@ template <typename T>
 ::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Employee(::winrt::Windows::Foundation::IInspectable const& instance)
 {
     return ::winrt::box_value(instance.as<T>().Employee());
+}
+
+template <typename T>
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_TestCreateFromString(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value(instance.as<T>().TestCreateFromString());
+}
+
+template <typename T>
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Content(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value(instance.as<T>().Content());
+}
+
+template <typename T>
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Children(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value(instance.as<T>().Children());
+}
+
+template <typename T>
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Parent(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value(instance.as<T>().Parent());
 }
 
 template<typename TDeclaringType, typename TTargetType, typename TValue>
@@ -617,15 +721,23 @@ void SetValueTypeMember_MyInt(
 }
 
 template<typename TDeclaringType, typename TValue>
-void SetValueTypeMember_Coords(
+void SetValueTypeMember_IsExpanded(
     ::winrt::Windows::Foundation::IInspectable const& instance, 
     ::winrt::Windows::Foundation::IInspectable const& value)
 {
-    instance.as<TDeclaringType>().Coords(::winrt::unbox_value<TValue>(value));
+    instance.as<TDeclaringType>().IsExpanded(::winrt::unbox_value<TValue>(value));
 }
 
 template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_DPOnPage(
+void SetValueTypeMember_HasUnrealizedChildren(
+    ::winrt::Windows::Foundation::IInspectable const& instance, 
+    ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<TDeclaringType>().HasUnrealizedChildren(::winrt::unbox_value<TValue>(value));
+}
+
+template<typename TDeclaringType, typename TValue>
+void SetReferenceTypeStringMember_DPOnPage(
     ::winrt::Windows::Foundation::IInspectable const& instance, 
     ::winrt::Windows::Foundation::IInspectable const& value)
 {
@@ -633,7 +745,7 @@ void SetReferenceTypeMember_DPOnPage(
 }
 
 template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_Username(
+void SetReferenceTypeStringMember_Username(
     ::winrt::Windows::Foundation::IInspectable const& instance, 
     ::winrt::Windows::Foundation::IInspectable const& value)
 {
@@ -641,7 +753,7 @@ void SetReferenceTypeMember_Username(
 }
 
 template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_FirstName(
+void SetReferenceTypeStringMember_FirstName(
     ::winrt::Windows::Foundation::IInspectable const& instance, 
     ::winrt::Windows::Foundation::IInspectable const& value)
 {
@@ -649,7 +761,7 @@ void SetReferenceTypeMember_FirstName(
 }
 
 template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_LastName(
+void SetReferenceTypeStringMember_LastName(
     ::winrt::Windows::Foundation::IInspectable const& instance, 
     ::winrt::Windows::Foundation::IInspectable const& value)
 {
@@ -657,7 +769,7 @@ void SetReferenceTypeMember_LastName(
 }
 
 template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_NullStringProperty(
+void SetReferenceTypeStringMember_NullStringProperty(
     ::winrt::Windows::Foundation::IInspectable const& instance, 
     ::winrt::Windows::Foundation::IInspectable const& value)
 {
@@ -665,7 +777,7 @@ void SetReferenceTypeMember_NullStringProperty(
 }
 
 template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_ImageUriString(
+void SetReferenceTypeStringMember_ImageUriString(
     ::winrt::Windows::Foundation::IInspectable const& instance, 
     ::winrt::Windows::Foundation::IInspectable const& value)
 {
@@ -673,7 +785,7 @@ void SetReferenceTypeMember_ImageUriString(
 }
 
 template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_Property1(
+void SetReferenceTypeStringMember_Property1(
     ::winrt::Windows::Foundation::IInspectable const& instance, 
     ::winrt::Windows::Foundation::IInspectable const& value)
 {
@@ -681,7 +793,7 @@ void SetReferenceTypeMember_Property1(
 }
 
 template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_TestStringProperty(
+void SetReferenceTypeStringMember_TestStringProperty(
     ::winrt::Windows::Foundation::IInspectable const& instance, 
     ::winrt::Windows::Foundation::IInspectable const& value)
 {
@@ -689,11 +801,11 @@ void SetReferenceTypeMember_TestStringProperty(
 }
 
 template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_TestString(
+void SetReferenceTypeStringMember_TestStr(
     ::winrt::Windows::Foundation::IInspectable const& instance, 
     ::winrt::Windows::Foundation::IInspectable const& value)
 {
-    return instance.as<TDeclaringType>().TestString(::winrt::unbox_value<::winrt::hstring>(value));
+    return instance.as<TDeclaringType>().TestStr(::winrt::unbox_value<::winrt::hstring>(value));
 }
 
 template<typename TDeclaringType, typename TValue>
@@ -726,14 +838,6 @@ void SetReferenceTypeMember_SomeButtonContent(
     ::winrt::Windows::Foundation::IInspectable const& value)
 {
     instance.as<TDeclaringType>().SomeButtonContent(value.as<TValue>());
-}
-
-template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_ModelCX(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    instance.as<TDeclaringType>().ModelCX(value.as<TValue>());
 }
 
 template<typename TDeclaringType, typename TValue>
@@ -873,22 +977,6 @@ void SetReferenceTypeMember_G(
 }
 
 template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_test6(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    instance.as<TDeclaringType>().test6(value.as<TValue>());
-}
-
-template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_test5(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    instance.as<TDeclaringType>().test5(value.as<TValue>());
-}
-
-template<typename TDeclaringType, typename TValue>
 void SetReferenceTypeMember_test4(
     ::winrt::Windows::Foundation::IInspectable const& instance, 
     ::winrt::Windows::Foundation::IInspectable const& value)
@@ -976,6 +1064,22 @@ void SetReferenceTypeMember_Employee(
     instance.as<TDeclaringType>().Employee(value.as<TValue>());
 }
 
+template<typename TDeclaringType, typename TValue>
+void SetReferenceTypeMember_TestCreateFromString(
+    ::winrt::Windows::Foundation::IInspectable const& instance, 
+    ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<TDeclaringType>().TestCreateFromString(value.as<TValue>());
+}
+
+template<typename TDeclaringType, typename TValue>
+void SetReferenceTypeMember_Content(
+    ::winrt::Windows::Foundation::IInspectable const& instance, 
+    ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<TDeclaringType>().Content(value.as<TValue>());
+}
+
 enum TypeInfo_Flags
 {
     TypeInfo_Flags_None                 = 0x00,
@@ -1007,7 +1111,6 @@ struct TypeInfo
 XamlUserType::CreateFromStringFn CreateFromStringMethods[] =
 {
     [](::winrt::hstring const& value) -> ::winrt::Windows::Foundation::IInspectable { return ::winrt::box_value(::winrt::BindTestbedModel::Diameter::MakeNewDiameter(value)); },
-    [](::winrt::hstring const& value) -> ::winrt::Windows::Foundation::IInspectable { return ::winrt::box_value(::winrt::BindTestbedCXModel::ModelCX::MakeStarCx(value)); },
 };
 
 const TypeInfo TypeInfos[] = 
@@ -1078,14 +1181,14 @@ const TypeInfo TypeInfos[] =
     //   9
     L"BindTestbed.MainPage", L"",
     &ActivateLocalType<::winrt::BindTestbed::implementation::MainPage>, nullptr, nullptr, nullptr,
-    33, // Windows.UI.Xaml.Controls.Page
+    33, // Microsoft.UI.Xaml.Controls.Page
     0, 0, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
     //  10
     L"BindTestbed.Templates", L"",
     &ActivateLocalType<::winrt::BindTestbed::implementation::Templates>, nullptr, &DictionaryAdd<::winrt::BindTestbed::Templates, ::winrt::Windows::Foundation::IInspectable, ::winrt::Windows::Foundation::IInspectable>, nullptr,
-    49, // Windows.UI.Xaml.ResourceDictionary
+    51, // Microsoft.UI.Xaml.ResourceDictionary
     1, 0, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
@@ -1099,42 +1202,42 @@ const TypeInfo TypeInfos[] =
     //  12
     L"BindTestbed.BasicTests", L"",
     &ActivateLocalType<::winrt::BindTestbed::implementation::BasicTests>, nullptr, nullptr, nullptr,
-    54, // Windows.UI.Xaml.Controls.UserControl
+    56, // Microsoft.UI.Xaml.Controls.UserControl
     2, 0, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
     //  13
     L"BindTestbed.EventTests", L"",
     &ActivateLocalType<::winrt::BindTestbed::implementation::EventTests>, nullptr, nullptr, nullptr,
-    54, // Windows.UI.Xaml.Controls.UserControl
+    56, // Microsoft.UI.Xaml.Controls.UserControl
     7, 0, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
     //  14
     L"BindTestbed.TestsPage2", L"",
     &ActivateLocalType<::winrt::BindTestbed::implementation::TestsPage2>, nullptr, nullptr, nullptr,
-    54, // Windows.UI.Xaml.Controls.UserControl
+    56, // Microsoft.UI.Xaml.Controls.UserControl
     9, 0, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
     //  15
     L"BindTestbed.TwoWayTests", L"",
     &ActivateLocalType<::winrt::BindTestbed::implementation::TwoWayTests>, nullptr, nullptr, nullptr,
-    54, // Windows.UI.Xaml.Controls.UserControl
+    56, // Microsoft.UI.Xaml.Controls.UserControl
     26, 0, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
     //  16
     L"BindTestbedModel.Circle", L"",
     &ActivateType<::winrt::BindTestbedModel::Circle>, nullptr, nullptr, nullptr,
-    43, // Windows.UI.Xaml.FrameworkElement
+    44, // Microsoft.UI.Xaml.FrameworkElement
     32, 0, -1, TypeKind::Metadata,
     TypeInfo_Flags_None,
     -1,
     //  17
     L"BindTestbedModel.DOModel", L"",
     nullptr, nullptr, nullptr, nullptr,
-    40, // Windows.UI.Xaml.DependencyObject
+    41, // Microsoft.UI.Xaml.DependencyObject
     34, 0, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
     -1,
@@ -1148,21 +1251,21 @@ const TypeInfo TypeInfos[] =
     //  19
     L"BindTestbed.CastingTests", L"",
     &ActivateLocalType<::winrt::BindTestbed::implementation::CastingTests>, nullptr, nullptr, nullptr,
-    54, // Windows.UI.Xaml.Controls.UserControl
+    56, // Microsoft.UI.Xaml.Controls.UserControl
     43, 0, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
     //  20
     L"BindTestbed.PhasingTests", L"",
     &ActivateLocalType<::winrt::BindTestbed::implementation::PhasingTests>, nullptr, nullptr, nullptr,
-    54, // Windows.UI.Xaml.Controls.UserControl
+    56, // Microsoft.UI.Xaml.Controls.UserControl
     44, 0, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
     //  21
     L"BindTestbed.FunctionTests", L"",
     &ActivateLocalType<::winrt::BindTestbed::implementation::FunctionTests>, nullptr, nullptr, nullptr,
-    54, // Windows.UI.Xaml.Controls.UserControl
+    56, // Microsoft.UI.Xaml.Controls.UserControl
     45, 0, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
@@ -1174,332 +1277,346 @@ const TypeInfo TypeInfos[] =
     TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
     -1,
     //  23
-    L"BindTestbedCXModel.StarCx", L"",
-    &ActivateType<::winrt::BindTestbedCXModel::StarCx>, nullptr, nullptr, nullptr,
-    43, // Windows.UI.Xaml.FrameworkElement
-    47, 0, -1, TypeKind::Metadata,
-    TypeInfo_Flags_None,
-    -1,
-    //  24
     L"BindTestbed.NullableTests", L"",
     &ActivateLocalType<::winrt::BindTestbed::implementation::NullableTests>, nullptr, nullptr, nullptr,
-    54, // Windows.UI.Xaml.Controls.UserControl
-    49, 0, -1, TypeKind::Custom,
+    56, // Microsoft.UI.Xaml.Controls.UserControl
+    47, 0, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
-    //  25
+    //  24
     L"BindTestbedModel.Diameter", L"",
     nullptr, nullptr, nullptr, nullptr,
-    43, // Windows.UI.Xaml.FrameworkElement
-    51, 0, 0, TypeKind::Metadata,
+    44, // Microsoft.UI.Xaml.FrameworkElement
+    49, 0, 0, TypeKind::Metadata,
+    TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
+    -1,
+    //  25
+    L"BindTestbedModel.DataModel", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    41, // Microsoft.UI.Xaml.DependencyObject
+    49, 0, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
     -1,
     //  26
-    L"BindTestbedModel.DataModel", L"",
-    nullptr, nullptr, nullptr, nullptr,
-    40, // Windows.UI.Xaml.DependencyObject
-    51, 0, -1, TypeKind::Metadata,
-    TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
-    -1,
-    //  27
-    L"Windows.UI.Xaml.Visibility", L"",
-    nullptr, nullptr, nullptr, nullptr,
-    -1,
-    51, 0, -1, TypeKind::Metadata,
-    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
-    -1,
-    //  28
-    L"BindTestbedCXModel.ModelCX", L"",
-    nullptr, nullptr, nullptr, nullptr,
-    1, // Object
-    51, 0, -1, TypeKind::Metadata,
-    TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
-    -1,
-    //  29
     L"BindTestbedModel.IEmployee", L"",
     nullptr, nullptr, nullptr, nullptr,
     -1,
-    51, 0, -1, TypeKind::Metadata,
+    49, 0, -1, TypeKind::Metadata,
     TypeInfo_Flags_None,
     -1,
-    //  30
+    //  27
     L"BindTestbed.MyUserControl1", L"",
     &ActivateLocalType<::winrt::BindTestbed::implementation::MyUserControl1>, nullptr, nullptr, nullptr,
-    54, // Windows.UI.Xaml.Controls.UserControl
-    62, 0, -1, TypeKind::Custom,
+    56, // Microsoft.UI.Xaml.Controls.UserControl
+    60, 0, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
-    //  31
+    //  28
     L"BindTestbedModel.TShirtSize", L"",
     nullptr, nullptr, nullptr, &FromStringConverter<::winrt::BindTestbedModel::TShirtSize>,
     6, // System.Enum
-    63, 0, -1, TypeKind::Metadata,
+    61, 0, -1, TypeKind::Metadata,
     TypeInfo_Flags_None,
     -1,
-    //  32
+    //  29
     L"BindTestbed.DetectLeaksPage", L"",
     &ActivateLocalType<::winrt::BindTestbed::implementation::DetectLeaksPage>, nullptr, nullptr, nullptr,
-    33, // Windows.UI.Xaml.Controls.Page
+    33, // Microsoft.UI.Xaml.Controls.Page
+    61, 5, -1, TypeKind::Custom,
+    TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
+    -1,
+    //  30
+    L"BindTestbed.xPropertiesTest", L"",
+    &ActivateLocalType<::winrt::BindTestbed::implementation::xPropertiesTest>, nullptr, nullptr, nullptr,
+    56, // Microsoft.UI.Xaml.Controls.UserControl
+    61, 5, -1, TypeKind::Custom,
+    TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
+    -1,
+    //  31
+    L"Microsoft.UI.Xaml.Visibility", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    -1,
+    63, 5, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
+    -1,
+    //  32
+    L"BindTestbed.DisableXBindTests", L"",
+    &ActivateLocalType<::winrt::BindTestbed::implementation::DisableXBindTests>, nullptr, nullptr, nullptr,
+    56, // Microsoft.UI.Xaml.Controls.UserControl
     63, 5, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
     //  33
-    L"Windows.UI.Xaml.Controls.Page", L"",
+    L"Microsoft.UI.Xaml.Controls.Page", L"",
     nullptr, nullptr, nullptr, nullptr,
     -1,
-    63, 5, -1, TypeKind::Metadata,
+    65, 5, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
     -1,
     //  34
-    L"Windows.UI.Xaml.Controls.Grid", L"",
-    nullptr, nullptr, nullptr, nullptr,
-    -1,
-    63, 5, -1, TypeKind::Metadata,
-    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
-    -1,
-    //  35
-    L"BindTestbedCXModel.Coordinates", L"",
-    nullptr, nullptr, nullptr, nullptr,
-    7, // System.ValueType
-    63, 5, 1, TypeKind::Metadata,
-    TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
-    -1,
-    //  36
     L"BindTestbedModel.DataErrorModel", L"",
     nullptr, nullptr, nullptr, nullptr,
     1, // Object
-    63, 5, -1, TypeKind::Metadata,
+    65, 5, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
     -1,
-    //  37
+    //  35
     L"BindTestbed.LonelyStaticBinding", L"",
     &ActivateLocalType<::winrt::BindTestbed::implementation::LonelyStaticBinding>, nullptr, nullptr, nullptr,
-    54, // Windows.UI.Xaml.Controls.UserControl
-    63, 5, -1, TypeKind::Custom,
+    56, // Microsoft.UI.Xaml.Controls.UserControl
+    65, 5, -1, TypeKind::Custom,
+    TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
+    -1,
+    //  36
+    L"Microsoft.UI.Xaml.Controls.Grid", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    -1,
+    66, 5, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
+    -1,
+    //  37
+    L"BindTestbed.ListAndTemplateTests", L"",
+    &ActivateLocalType<::winrt::BindTestbed::implementation::ListAndTemplateTests>, nullptr, nullptr, nullptr,
+    56, // Microsoft.UI.Xaml.Controls.UserControl
+    66, 5, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
     //  38
-    L"Windows.UI.Xaml.Controls.Slider", L"",
-    nullptr, nullptr, nullptr, nullptr,
-    -1,
-    64, 5, -1, TypeKind::Metadata,
-    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
-    -1,
-    //  39
-    L"Windows.UI.Xaml.Controls.Button", L"",
-    nullptr, nullptr, nullptr, nullptr,
-    -1,
-    64, 5, -1, TypeKind::Metadata,
-    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
-    -1,
-    //  40
-    L"Windows.UI.Xaml.DependencyObject", L"",
-    nullptr, nullptr, nullptr, nullptr,
-    -1,
-    64, 5, -1, TypeKind::Metadata,
-    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
-    -1,
-    //  41
-    L"BindTestbed.ListAndTemplateTests", L"",
-    &ActivateLocalType<::winrt::BindTestbed::implementation::ListAndTemplateTests>, nullptr, nullptr, nullptr,
-    54, // Windows.UI.Xaml.Controls.UserControl
-    64, 5, -1, TypeKind::Custom,
-    TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
-    -1,
-    //  42
-    L"Windows.UI.Xaml.Controls.TextBox", L"",
-    nullptr, nullptr, nullptr, nullptr,
-    -1,
-    72, 5, -1, TypeKind::Metadata,
-    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
-    -1,
-    //  43
-    L"Windows.UI.Xaml.FrameworkElement", L"",
-    nullptr, nullptr, nullptr, nullptr,
-    -1,
-    72, 5, -1, TypeKind::Metadata,
-    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
-    -1,
-    //  44
     L"BindTestbedModel.DODataErrorModel", L"",
     nullptr, nullptr, nullptr, nullptr,
-    40, // Windows.UI.Xaml.DependencyObject
-    72, 5, -1, TypeKind::Metadata,
+    41, // Microsoft.UI.Xaml.DependencyObject
+    73, 5, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
     -1,
-    //  45
-    L"Windows.UI.Xaml.Controls.ListView", L"",
-    nullptr, nullptr, nullptr, nullptr,
-    -1,
-    72, 5, -1, TypeKind::Metadata,
-    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
-    -1,
-    //  46
-    L"Windows.UI.Xaml.Media.ImageSource", L"",
-    nullptr, nullptr, nullptr, nullptr,
-    -1,
-    72, 5, -1, TypeKind::Metadata,
-    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
-    -1,
-    //  47
-    L"Windows.UI.Xaml.Controls.GridView", L"",
-    nullptr, nullptr, nullptr, nullptr,
-    -1,
-    72, 5, -1, TypeKind::Metadata,
-    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
-    -1,
-    //  48
-    L"Windows.UI.Xaml.Controls.ComboBox", L"",
-    nullptr, nullptr, nullptr, nullptr,
-    -1,
-    72, 5, -1, TypeKind::Metadata,
-    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
-    -1,
-    //  49
-    L"Windows.UI.Xaml.ResourceDictionary", L"",
-    nullptr, nullptr, nullptr, nullptr,
-    -1,
-    72, 5, -1, TypeKind::Metadata,
-    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
-    -1,
-    //  50
-    L"BindTestbedModel.EmployeeTextBlock", L"",
-    &ActivateType<::winrt::BindTestbedModel::EmployeeTextBlock>, nullptr, nullptr, nullptr,
-    54, // Windows.UI.Xaml.Controls.UserControl
-    72, 5, -1, TypeKind::Metadata,
-    TypeInfo_Flags_None,
-    -1,
-    //  51
-    L"Windows.UI.Xaml.Controls.TextBlock", L"",
+    //  39
+    L"Microsoft.UI.Xaml.Controls.Slider", L"",
     nullptr, nullptr, nullptr, nullptr,
     -1,
     73, 5, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
     -1,
-    //  52
+    //  40
+    L"Microsoft.UI.Xaml.Controls.Button", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    -1,
+    73, 5, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
+    -1,
+    //  41
+    L"Microsoft.UI.Xaml.DependencyObject", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    -1,
+    73, 5, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
+    -1,
+    //  42
+    L"BindTestbedModel.EmployeeTextBlock", L"",
+    &ActivateType<::winrt::BindTestbedModel::EmployeeTextBlock>, nullptr, nullptr, nullptr,
+    56, // Microsoft.UI.Xaml.Controls.UserControl
+    73, 5, -1, TypeKind::Metadata,
+    TypeInfo_Flags_None,
+    -1,
+    //  43
+    L"Microsoft.UI.Xaml.Controls.TextBox", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    -1,
+    74, 5, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
+    -1,
+    //  44
+    L"Microsoft.UI.Xaml.FrameworkElement", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    -1,
+    74, 5, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
+    -1,
+    //  45
     L"BindTestbed.subfolder.SubDictionary", L"",
     &ActivateLocalType<::winrt::BindTestbed::subfolder::implementation::SubDictionary>, nullptr, &DictionaryAdd<::winrt::BindTestbed::subfolder::SubDictionary, ::winrt::Windows::Foundation::IInspectable, ::winrt::Windows::Foundation::IInspectable>, nullptr,
-    49, // Windows.UI.Xaml.ResourceDictionary
-    73, 5, -1, TypeKind::Custom,
+    51, // Microsoft.UI.Xaml.ResourceDictionary
+    74, 5, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
-    //  53
+    //  46
+    L"Microsoft.UI.Xaml.Controls.ListView", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    -1,
+    75, 5, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
+    -1,
+    //  47
+    L"Microsoft.UI.Xaml.Media.ImageSource", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    -1,
+    75, 5, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
+    -1,
+    //  48
+    L"Microsoft.UI.Xaml.Controls.GridView", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    -1,
+    75, 5, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
+    -1,
+    //  49
+    L"Microsoft.UI.Xaml.Controls.ComboBox", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    -1,
+    75, 5, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
+    -1,
+    //  50
     L"BindTestbedModel.AttachedProperties", L"",
     nullptr, nullptr, nullptr, nullptr,
     1, // Object
-    74, 5, -1, TypeKind::Metadata,
+    75, 5, -1, TypeKind::Metadata,
     TypeInfo_Flags_None,
     -1,
-    //  54
-    L"Windows.UI.Xaml.Controls.UserControl", L"",
+    //  51
+    L"Microsoft.UI.Xaml.ResourceDictionary", L"",
     nullptr, nullptr, nullptr, nullptr,
     -1,
-    77, 5, -1, TypeKind::Metadata,
+    78, 5, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
     -1,
-    //  55
+    //  52
+    L"Microsoft.UI.Xaml.Controls.TextBlock", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    -1,
+    78, 5, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
+    -1,
+    //  53
     L"BindTestbedModel.ObservableEmployees", L"",
     &ActivateType<::winrt::BindTestbedModel::ObservableEmployees>, &CollectionAdd<::winrt::BindTestbedModel::ObservableEmployees, ::winrt::BindTestbedModel::IEmployee>, nullptr, nullptr,
-    1, // Object
-    77, 5, -1, TypeKind::Metadata,
-    TypeInfo_Flags_None,
-    -1,
-    //  56
-    L"BindTestbedModel.DoubleToIntConverter", L"",
-    &ActivateType<::winrt::BindTestbedModel::DoubleToIntConverter>, nullptr, nullptr, nullptr,
     1, // Object
     78, 5, -1, TypeKind::Metadata,
     TypeInfo_Flags_None,
     -1,
-    //  57
+    //  54
+    L"BindTestbedModel.DoubleToIntConverter", L"",
+    &ActivateType<::winrt::BindTestbedModel::DoubleToIntConverter>, nullptr, nullptr, nullptr,
+    1, // Object
+    79, 5, -1, TypeKind::Metadata,
+    TypeInfo_Flags_None,
+    -1,
+    //  55
     L"BindTestbed.INotifyDataErrorInfoTests", L"",
     &ActivateLocalType<::winrt::BindTestbed::implementation::INotifyDataErrorInfoTests>, nullptr, nullptr, nullptr,
-    33, // Windows.UI.Xaml.Controls.Page
-    78, 5, -1, TypeKind::Custom,
+    33, // Microsoft.UI.Xaml.Controls.Page
+    79, 5, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
-    //  58
+    //  56
+    L"Microsoft.UI.Xaml.Controls.UserControl", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    -1,
+    81, 5, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
+    -1,
+    //  57
     L"BindTestbedModel.ColorToStringConverter", L"",
     &ActivateType<::winrt::BindTestbedModel::ColorToStringConverter>, nullptr, nullptr, nullptr,
     1, // Object
-    80, 5, -1, TypeKind::Metadata,
+    81, 5, -1, TypeKind::Metadata,
     TypeInfo_Flags_None,
     -1,
-    //  59
-    L"Windows.UI.Xaml.Controls.ContentControl", L"",
-    nullptr, nullptr, nullptr, nullptr,
-    -1,
-    80, 5, -1, TypeKind::Metadata,
-    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
-    -1,
-    //  60
+    //  58
     L"Windows.Foundation.IReference`1<Double>", L"",
     nullptr, nullptr, nullptr, nullptr,
     -1,
-    80, 5, -1, TypeKind::Metadata,
+    81, 5, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
     3, // Double
-    //  61
+    //  59
+    L"Microsoft.UI.Xaml.Controls.TreeViewNode", L"",
+    &ActivateType<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>, nullptr, nullptr, nullptr,
+    41, // Microsoft.UI.Xaml.DependencyObject
+    81, 5, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsBindable | TypeInfo_Flags_None,
+    -1,
+    //  60
     L"Windows.Foundation.IReference`1<Boolean>", L"",
     nullptr, nullptr, nullptr, nullptr,
     -1,
-    80, 5, -1, TypeKind::Metadata,
+    88, 5, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
     5, // Boolean
-    //  62
+    //  61
     L"BindTestbed.LoadAndCreateFromStringTests", L"",
     &ActivateLocalType<::winrt::BindTestbed::implementation::LoadAndCreateFromStringTests>, nullptr, nullptr, nullptr,
-    54, // Windows.UI.Xaml.Controls.UserControl
-    80, 5, -1, TypeKind::Custom,
+    56, // Microsoft.UI.Xaml.Controls.UserControl
+    88, 5, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
-    //  63
+    //  62
     L"BindTestbedModel.NullablePropertiesButton", L"",
     &ActivateType<::winrt::BindTestbedModel::NullablePropertiesButton>, nullptr, nullptr, nullptr,
-    39, // Windows.UI.Xaml.Controls.Button
-    89, 5, -1, TypeKind::Metadata,
+    40, // Microsoft.UI.Xaml.Controls.Button
+    95, 5, -1, TypeKind::Metadata,
     TypeInfo_Flags_None,
+    -1,
+    //  63
+    L"Microsoft.UI.Xaml.Controls.ContentControl", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    -1,
+    99, 5, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
     -1,
     //  64
     L"BindTestbedModel.BoolToVisibilityConverter", L"",
     &ActivateType<::winrt::BindTestbedModel::BoolToVisibilityConverter>, nullptr, nullptr, nullptr,
     1, // Object
-    93, 5, -1, TypeKind::Metadata,
+    99, 5, -1, TypeKind::Metadata,
     TypeInfo_Flags_None,
     -1,
     //  65
     L"Windows.Foundation.IReference`1<Windows.UI.Color>", L"",
     nullptr, nullptr, nullptr, nullptr,
     -1,
-    93, 5, -1, TypeKind::Metadata,
+    99, 5, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
     8, // Windows.UI.Color
     //  66
     L"Windows.Foundation.Collections.IObservableVector`1<String>", L"",
     nullptr, &CollectionAdd<::winrt::Windows::Foundation::Collections::IObservableVector<::winrt::hstring>, ::winrt::hstring>, nullptr, nullptr,
     -1,
-    93, 5, -1, TypeKind::Metadata,
+    99, 5, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
     -1,
     //  67
     L"Windows.Foundation.IReference`1<BindTestbedModel.TShirtSize>", L"",
     nullptr, nullptr, nullptr, nullptr,
     -1,
-    93, 5, -1, TypeKind::Metadata,
+    99, 5, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
-    31, // BindTestbedModel.TShirtSize
+    28, // BindTestbedModel.TShirtSize
     //  68
+    L"BindTestbed.NamedRootsPage.NamedPageRootWithCompiledBindingUserChild", L"",
+    &ActivateLocalType<::winrt::BindTestbed::NamedRootsPage::implementation::NamedPageRootWithCompiledBindingUserChild>, nullptr, nullptr, nullptr,
+    33, // Microsoft.UI.Xaml.Controls.Page
+    99, 5, -1, TypeKind::Custom,
+    TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
+    -1,
+    //  69
     L"Windows.Foundation.Collections.IObservableVector`1<BindTestbedModel.IEmployee>", L"",
     nullptr, &CollectionAdd<::winrt::Windows::Foundation::Collections::IObservableVector<::winrt::BindTestbedModel::IEmployee>, ::winrt::BindTestbedModel::IEmployee>, nullptr, nullptr,
     -1,
-    93, 5, -1, TypeKind::Metadata,
+    99, 5, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
+    -1,
+    //  70
+    L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.TreeViewNode>", L"",
+    nullptr, &CollectionAdd<::winrt::Windows::Foundation::Collections::IVector<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>, ::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>, nullptr, nullptr,
+    -1,
+    99, 5, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
     -1,
     //  Last type here is for padding
     L"", L"",
     nullptr, nullptr, nullptr, nullptr,
     -1, 
-    93, 5, -1, TypeKind::Custom,
+    99, 5, -1, TypeKind::Custom,
     TypeInfo_Flags_None,
 };
 
@@ -1530,22 +1647,22 @@ constexpr uint32_t TypeInfoLookup[] = {
      15,   //  23
      17,   //  24
      21,   //  25
-     26,   //  26
-     31,   //  27
-     33,   //  28
-     33,   //  29
-     35,   //  30
-     36,   //  31
-     40,   //  32
-     44,   //  33
-     49,   //  34
-     52,   //  35
-     54,   //  36
-     56,   //  37
-     58,   //  38
-     58,   //  39
-     61,   //  40
-     63,   //  41
+     25,   //  26
+     28,   //  27
+     31,   //  28
+     32,   //  29
+     33,   //  30
+     33,   //  31
+     37,   //  32
+     38,   //  33
+     41,   //  34
+     45,   //  35
+     51,   //  36
+     54,   //  37
+     56,   //  38
+     57,   //  39
+     60,   //  40
+     62,   //  41
      64,   //  42
      65,   //  43
      65,   //  44
@@ -1573,17 +1690,20 @@ constexpr uint32_t TypeInfoLookup[] = {
      68,   //  66
      68,   //  67
      68,   //  68
-     68,   //  69
-     68,   //  70
-     68,   //  71
-     68,   //  72
-     68,   //  73
-     68,   //  74
-     68,   //  75
-     68,   //  76
-     68,   //  77
-     68,   //  78
-     69,   //  79
+     69,   //  69
+     69,   //  70
+     69,   //  71
+     69,   //  72
+     69,   //  73
+     69,   //  74
+     69,   //  75
+     69,   //  76
+     69,   //  77
+     69,   //  78
+     70,   //  79
+     70,   //  80
+     70,   //  81
+     71,   //  82
 };
 
 struct EnumValueInfo
@@ -1624,7 +1744,7 @@ const MemberInfo MemberInfos[] =
     true,  false, false,
     //   1 - BindTestbed.Templates.Dummy
     L"Dummy",
-    &GetReferenceTypeMember_Dummy<::winrt::BindTestbed::Templates>,
+    &GetReferenceTypeStringMember_Dummy<::winrt::BindTestbed::Templates>,
     nullptr,
     2, // String
     -1,
@@ -1633,13 +1753,13 @@ const MemberInfo MemberInfos[] =
     L"Model",
     &GetReferenceTypeMember_Model<::winrt::BindTestbed::BasicTests>,
     &SetReferenceTypeMember_Model<::winrt::BindTestbed::BasicTests, ::winrt::BindTestbedModel::DataModel>,
-    26, // BindTestbedModel.DataModel
+    25, // BindTestbedModel.DataModel
     -1,
     false, false, false,
     //   3 - BindTestbed.BasicTests.DPOnPage
     L"DPOnPage",
-    &GetReferenceTypeMember_DPOnPage<::winrt::BindTestbed::BasicTests>,
-    &SetReferenceTypeMember_DPOnPage<::winrt::BindTestbed::BasicTests, ::winrt::hstring>,
+    &GetReferenceTypeStringMember_DPOnPage<::winrt::BindTestbed::BasicTests>,
+    &SetReferenceTypeStringMember_DPOnPage<::winrt::BindTestbed::BasicTests, ::winrt::hstring>,
     2, // String
     -1,
     false, true,  false,
@@ -1659,7 +1779,7 @@ const MemberInfo MemberInfos[] =
     true,  false, false,
     //   6 - BindTestbed.BasicTests.NonDPOnPage
     L"NonDPOnPage",
-    &GetReferenceTypeMember_NonDPOnPage<::winrt::BindTestbed::BasicTests>,
+    &GetReferenceTypeStringMember_NonDPOnPage<::winrt::BindTestbed::BasicTests>,
     nullptr,
     2, // String
     -1,
@@ -1668,7 +1788,7 @@ const MemberInfo MemberInfos[] =
     L"Model",
     &GetReferenceTypeMember_Model<::winrt::BindTestbed::EventTests>,
     &SetReferenceTypeMember_Model<::winrt::BindTestbed::EventTests, ::winrt::BindTestbedModel::DataModel>,
-    26, // BindTestbedModel.DataModel
+    25, // BindTestbedModel.DataModel
     -1,
     false, false, false,
     //   8 - BindTestbed.EventTests.DOModel
@@ -1682,7 +1802,7 @@ const MemberInfo MemberInfos[] =
     L"Model",
     &GetReferenceTypeMember_Model<::winrt::BindTestbed::TestsPage2>,
     &SetReferenceTypeMember_Model<::winrt::BindTestbed::TestsPage2, ::winrt::BindTestbedModel::DataModel>,
-    26, // BindTestbedModel.DataModel
+    25, // BindTestbedModel.DataModel
     -1,
     false, false, false,
     //  10 - BindTestbed.TestsPage2.DOModel
@@ -1695,35 +1815,35 @@ const MemberInfo MemberInfos[] =
     //  11 - BindTestbed.TestsPage2.tbWithAttachedEmployee
     L"tbWithAttachedEmployee",
     &GetReferenceTypeMember_tbWithAttachedEmployee<::winrt::BindTestbed::TestsPage2>,
-    &SetReferenceTypeMember_tbWithAttachedEmployee<::winrt::BindTestbed::TestsPage2, ::winrt::Windows::UI::Xaml::Controls::TextBlock>,
-    51, // Windows.UI.Xaml.Controls.TextBlock
+    &SetReferenceTypeMember_tbWithAttachedEmployee<::winrt::BindTestbed::TestsPage2, ::winrt::Microsoft::UI::Xaml::Controls::TextBlock>,
+    52, // Microsoft.UI.Xaml.Controls.TextBlock
     -1,
     false, false, false,
     //  12 - BindTestbed.TestsPage2.TimeZonePicker2
     L"TimeZonePicker2",
     &GetReferenceTypeMember_TimeZonePicker2<::winrt::BindTestbed::TestsPage2>,
-    &SetReferenceTypeMember_TimeZonePicker2<::winrt::BindTestbed::TestsPage2, ::winrt::Windows::UI::Xaml::Controls::ComboBox>,
-    48, // Windows.UI.Xaml.Controls.ComboBox
+    &SetReferenceTypeMember_TimeZonePicker2<::winrt::BindTestbed::TestsPage2, ::winrt::Microsoft::UI::Xaml::Controls::ComboBox>,
+    49, // Microsoft.UI.Xaml.Controls.ComboBox
     -1,
     false, false, false,
     //  13 - BindTestbed.TestsPage2.TextBlockWAttachedRow
     L"TextBlockWAttachedRow",
     &GetReferenceTypeMember_TextBlockWAttachedRow<::winrt::BindTestbed::TestsPage2>,
-    &SetReferenceTypeMember_TextBlockWAttachedRow<::winrt::BindTestbed::TestsPage2, ::winrt::Windows::UI::Xaml::Controls::TextBlock>,
-    51, // Windows.UI.Xaml.Controls.TextBlock
+    &SetReferenceTypeMember_TextBlockWAttachedRow<::winrt::BindTestbed::TestsPage2, ::winrt::Microsoft::UI::Xaml::Controls::TextBlock>,
+    52, // Microsoft.UI.Xaml.Controls.TextBlock
     -1,
     false, false, false,
     //  14 - BindTestbed.TestsPage2.OneTimeSlider3
     L"OneTimeSlider3",
     &GetReferenceTypeMember_OneTimeSlider3<::winrt::BindTestbed::TestsPage2>,
-    &SetReferenceTypeMember_OneTimeSlider3<::winrt::BindTestbed::TestsPage2, ::winrt::Windows::UI::Xaml::Controls::Slider>,
-    38, // Windows.UI.Xaml.Controls.Slider
+    &SetReferenceTypeMember_OneTimeSlider3<::winrt::BindTestbed::TestsPage2, ::winrt::Microsoft::UI::Xaml::Controls::Slider>,
+    39, // Microsoft.UI.Xaml.Controls.Slider
     -1,
     false, false, false,
     //  15 - BindTestbed.TestsPage2.NullStringProperty
     L"NullStringProperty",
-    &GetReferenceTypeMember_NullStringProperty<::winrt::BindTestbed::TestsPage2>,
-    &SetReferenceTypeMember_NullStringProperty<::winrt::BindTestbed::TestsPage2, ::winrt::hstring>,
+    &GetReferenceTypeStringMember_NullStringProperty<::winrt::BindTestbed::TestsPage2>,
+    &SetReferenceTypeStringMember_NullStringProperty<::winrt::BindTestbed::TestsPage2, ::winrt::hstring>,
     2, // String
     -1,
     false, false, false,
@@ -1731,14 +1851,14 @@ const MemberInfo MemberInfos[] =
     L"NullEmployee",
     &GetReferenceTypeMember_NullEmployee<::winrt::BindTestbed::TestsPage2>,
     &SetReferenceTypeMember_NullEmployee<::winrt::BindTestbed::TestsPage2, ::winrt::BindTestbedModel::IEmployee>,
-    29, // BindTestbedModel.IEmployee
+    26, // BindTestbedModel.IEmployee
     -1,
     false, false, false,
     //  17 - BindTestbed.TestsPage2.NiceEmployees
     L"NiceEmployees",
     &GetReferenceTypeMember_NiceEmployees<::winrt::BindTestbed::TestsPage2>,
     &SetReferenceTypeMember_NiceEmployees<::winrt::BindTestbed::TestsPage2, ::winrt::BindTestbedModel::ObservableEmployees>,
-    55, // BindTestbedModel.ObservableEmployees
+    53, // BindTestbedModel.ObservableEmployees
     -1,
     false, false, false,
     //  18 - BindTestbed.TestsPage2.MyInt
@@ -1751,8 +1871,8 @@ const MemberInfo MemberInfos[] =
     //  19 - BindTestbed.TestsPage2.LocalTextBox
     L"LocalTextBox",
     &GetReferenceTypeMember_LocalTextBox<::winrt::BindTestbed::TestsPage2>,
-    &SetReferenceTypeMember_LocalTextBox<::winrt::BindTestbed::TestsPage2, ::winrt::Windows::UI::Xaml::Controls::TextBox>,
-    42, // Windows.UI.Xaml.Controls.TextBox
+    &SetReferenceTypeMember_LocalTextBox<::winrt::BindTestbed::TestsPage2, ::winrt::Microsoft::UI::Xaml::Controls::TextBox>,
+    43, // Microsoft.UI.Xaml.Controls.TextBox
     -1,
     false, false, false,
     //  20 - BindTestbed.TestsPage2.IntPropNoINPC
@@ -1764,29 +1884,29 @@ const MemberInfo MemberInfos[] =
     false, false, false,
     //  21 - BindTestbed.TestsPage2.ImageUriString
     L"ImageUriString",
-    &GetReferenceTypeMember_ImageUriString<::winrt::BindTestbed::TestsPage2>,
-    &SetReferenceTypeMember_ImageUriString<::winrt::BindTestbed::TestsPage2, ::winrt::hstring>,
+    &GetReferenceTypeStringMember_ImageUriString<::winrt::BindTestbed::TestsPage2>,
+    &SetReferenceTypeStringMember_ImageUriString<::winrt::BindTestbed::TestsPage2, ::winrt::hstring>,
     2, // String
     -1,
     false, false, false,
     //  22 - BindTestbed.TestsPage2.Grid1
     L"Grid1",
     &GetReferenceTypeMember_Grid1<::winrt::BindTestbed::TestsPage2>,
-    &SetReferenceTypeMember_Grid1<::winrt::BindTestbed::TestsPage2, ::winrt::Windows::UI::Xaml::Controls::Grid>,
-    34, // Windows.UI.Xaml.Controls.Grid
+    &SetReferenceTypeMember_Grid1<::winrt::BindTestbed::TestsPage2, ::winrt::Microsoft::UI::Xaml::Controls::Grid>,
+    36, // Microsoft.UI.Xaml.Controls.Grid
     -1,
     false, false, false,
     //  23 - BindTestbed.TestsPage2.G
     L"G",
     &GetReferenceTypeMember_G<::winrt::BindTestbed::TestsPage2>,
-    &SetReferenceTypeMember_G<::winrt::BindTestbed::TestsPage2, ::winrt::Windows::UI::Xaml::Controls::Grid>,
-    34, // Windows.UI.Xaml.Controls.Grid
+    &SetReferenceTypeMember_G<::winrt::BindTestbed::TestsPage2, ::winrt::Microsoft::UI::Xaml::Controls::Grid>,
+    36, // Microsoft.UI.Xaml.Controls.Grid
     -1,
     false, false, false,
     //  24 - BindTestbed.TestsPage2.DPOnPage
     L"DPOnPage",
-    &GetReferenceTypeMember_DPOnPage<::winrt::BindTestbed::TestsPage2>,
-    &SetReferenceTypeMember_DPOnPage<::winrt::BindTestbed::TestsPage2, ::winrt::hstring>,
+    &GetReferenceTypeStringMember_DPOnPage<::winrt::BindTestbed::TestsPage2>,
+    &SetReferenceTypeStringMember_DPOnPage<::winrt::BindTestbed::TestsPage2, ::winrt::hstring>,
     2, // String
     -1,
     false, false, false,
@@ -1801,7 +1921,7 @@ const MemberInfo MemberInfos[] =
     L"Model",
     &GetReferenceTypeMember_Model<::winrt::BindTestbed::TwoWayTests>,
     &SetReferenceTypeMember_Model<::winrt::BindTestbed::TwoWayTests, ::winrt::BindTestbedModel::DataModel>,
-    26, // BindTestbedModel.DataModel
+    25, // BindTestbedModel.DataModel
     -1,
     false, false, false,
     //  27 - BindTestbed.TwoWayTests.DOModel
@@ -1815,14 +1935,14 @@ const MemberInfo MemberInfos[] =
     L"twowayToMapElem",
     &GetReferenceTypeMember_twowayToMapElem<::winrt::BindTestbed::TwoWayTests>,
     &SetReferenceTypeMember_twowayToMapElem<::winrt::BindTestbed::TwoWayTests, ::winrt::BindTestbedModel::EmployeeTextBlock>,
-    50, // BindTestbedModel.EmployeeTextBlock
+    42, // BindTestbedModel.EmployeeTextBlock
     -1,
     false, false, false,
     //  29 - BindTestbed.TwoWayTests.twowayToArrayElem
     L"twowayToArrayElem",
     &GetReferenceTypeMember_twowayToArrayElem<::winrt::BindTestbed::TwoWayTests>,
     &SetReferenceTypeMember_twowayToArrayElem<::winrt::BindTestbed::TwoWayTests, ::winrt::BindTestbedModel::EmployeeTextBlock>,
-    50, // BindTestbedModel.EmployeeTextBlock
+    42, // BindTestbedModel.EmployeeTextBlock
     -1,
     false, false, false,
     //  30 - BindTestbed.TwoWayTests.IntPropNoINPC
@@ -1834,8 +1954,8 @@ const MemberInfo MemberInfos[] =
     false, false, false,
     //  31 - BindTestbed.TwoWayTests.DPOnPage
     L"DPOnPage",
-    &GetReferenceTypeMember_DPOnPage<::winrt::BindTestbed::TwoWayTests>,
-    &SetReferenceTypeMember_DPOnPage<::winrt::BindTestbed::TwoWayTests, ::winrt::hstring>,
+    &GetReferenceTypeStringMember_DPOnPage<::winrt::BindTestbed::TwoWayTests>,
+    &SetReferenceTypeStringMember_DPOnPage<::winrt::BindTestbed::TwoWayTests, ::winrt::hstring>,
     2, // String
     -1,
     false, false, false,
@@ -1843,35 +1963,35 @@ const MemberInfo MemberInfos[] =
     L"Diameter",
     &GetReferenceTypeMember_Diameter<::winrt::BindTestbedModel::Circle>,
     &SetReferenceTypeMember_Diameter<::winrt::BindTestbedModel::Circle, ::winrt::BindTestbedModel::Diameter>,
-    25, // BindTestbedModel.Diameter
+    24, // BindTestbedModel.Diameter
     -1,
     false, false, false,
     //  33 - BindTestbedModel.Circle.TestStringProperty
     L"TestStringProperty",
-    &GetReferenceTypeMember_TestStringProperty<::winrt::BindTestbedModel::Circle>,
-    &SetReferenceTypeMember_TestStringProperty<::winrt::BindTestbedModel::Circle, ::winrt::hstring>,
+    &GetReferenceTypeStringMember_TestStringProperty<::winrt::BindTestbedModel::Circle>,
+    &SetReferenceTypeStringMember_TestStringProperty<::winrt::BindTestbedModel::Circle, ::winrt::hstring>,
     2, // String
     -1,
     false, false, false,
     //  34 - BindTestbed.CastingModel.Username
     L"Username",
-    &GetReferenceTypeMember_Username<::winrt::BindTestbed::CastingModel>,
-    &SetReferenceTypeMember_Username<::winrt::BindTestbed::CastingModel, ::winrt::hstring>,
+    &GetReferenceTypeStringMember_Username<::winrt::BindTestbed::CastingModel>,
+    &SetReferenceTypeStringMember_Username<::winrt::BindTestbed::CastingModel, ::winrt::hstring>,
     2, // String
     -1,
     false, false, false,
     //  35 - BindTestbed.CastingModel.VisibilityValue
     L"VisibilityValue",
-    &GetValueTypeMember_VisibilityValue<::winrt::BindTestbed::CastingModel, ::winrt::Windows::UI::Xaml::Visibility>,
-    &SetEnumMember_VisibilityValue<::winrt::BindTestbed::CastingModel, ::winrt::Windows::UI::Xaml::Visibility>,
-    27, // Windows.UI.Xaml.Visibility
+    &GetValueTypeMember_VisibilityValue<::winrt::BindTestbed::CastingModel, ::winrt::Microsoft::UI::Xaml::Visibility>,
+    &SetEnumMember_VisibilityValue<::winrt::BindTestbed::CastingModel, ::winrt::Microsoft::UI::Xaml::Visibility>,
+    31, // Microsoft.UI.Xaml.Visibility
     -1,
     false, false, false,
     //  36 - BindTestbed.CastingModel.IsVisibleNullable
     L"IsVisibleNullable",
     &GetReferenceTypeMember_IsVisibleNullable<::winrt::BindTestbed::CastingModel>,
     &SetReferenceTypeMember_IsVisibleNullable<::winrt::BindTestbed::CastingModel, ::winrt::Windows::Foundation::IReference<bool>>,
-    61, // Windows.Foundation.IReference`1<Boolean>
+    60, // Windows.Foundation.IReference`1<Boolean>
     -1,
     false, false, false,
     //  37 - BindTestbed.CastingModel.IsVisible
@@ -1911,14 +2031,14 @@ const MemberInfo MemberInfos[] =
     true,  false, false,
     //  42 - BindTestbed.CastingModel.Prefix
     L"Prefix",
-    &GetReferenceTypeMember_Prefix<::winrt::BindTestbed::CastingModel>,
+    &GetReferenceTypeStringMember_Prefix<::winrt::BindTestbed::CastingModel>,
     nullptr,
     2, // String
     -1,
     true,  false, false,
     //  43 - BindTestbed.CastingTests.Dummy
     L"Dummy",
-    &GetReferenceTypeMember_Dummy<::winrt::BindTestbed::CastingTests>,
+    &GetReferenceTypeStringMember_Dummy<::winrt::BindTestbed::CastingTests>,
     nullptr,
     2, // String
     -1,
@@ -1926,15 +2046,15 @@ const MemberInfo MemberInfos[] =
     //  44 - BindTestbed.PhasingTests.myGridView
     L"myGridView",
     &GetReferenceTypeMember_myGridView<::winrt::BindTestbed::PhasingTests>,
-    &SetReferenceTypeMember_myGridView<::winrt::BindTestbed::PhasingTests, ::winrt::Windows::UI::Xaml::Controls::GridView>,
-    47, // Windows.UI.Xaml.Controls.GridView
+    &SetReferenceTypeMember_myGridView<::winrt::BindTestbed::PhasingTests, ::winrt::Microsoft::UI::Xaml::Controls::GridView>,
+    48, // Microsoft.UI.Xaml.Controls.GridView
     -1,
     false, false, false,
     //  45 - BindTestbed.FunctionTests.Model
     L"Model",
     &GetReferenceTypeMember_Model<::winrt::BindTestbed::FunctionTests>,
     &SetReferenceTypeMember_Model<::winrt::BindTestbed::FunctionTests, ::winrt::BindTestbedModel::DataModel>,
-    26, // BindTestbedModel.DataModel
+    25, // BindTestbedModel.DataModel
     -1,
     false, false, false,
     //  46 - BindTestbed.FunctionTests.DOModel
@@ -1944,322 +2064,364 @@ const MemberInfo MemberInfos[] =
     17, // BindTestbedModel.DOModel
     -1,
     false, false, false,
-    //  47 - BindTestbedCXModel.StarCx.Coords
-    L"Coords",
-    &GetValueTypeMember_Coords<::winrt::BindTestbedCXModel::StarCx, ::winrt::BindTestbedCXModel::Coordinates>,
-    &SetValueTypeMember_Coords<::winrt::BindTestbedCXModel::StarCx, ::winrt::BindTestbedCXModel::Coordinates>,
-    35, // BindTestbedCXModel.Coordinates
-    -1,
-    false, true,  false,
-    //  48 - BindTestbedCXModel.StarCx.TestString
-    L"TestString",
-    &GetReferenceTypeMember_TestString<::winrt::BindTestbedCXModel::StarCx>,
-    &SetReferenceTypeMember_TestString<::winrt::BindTestbedCXModel::StarCx, ::winrt::hstring>,
-    2, // String
-    -1,
-    false, true,  false,
-    //  49 - BindTestbed.NullableTests.Model
+    //  47 - BindTestbed.NullableTests.Model
     L"Model",
     &GetReferenceTypeMember_Model<::winrt::BindTestbed::NullableTests>,
     &SetReferenceTypeMember_Model<::winrt::BindTestbed::NullableTests, ::winrt::BindTestbedModel::DataModel>,
-    26, // BindTestbedModel.DataModel
+    25, // BindTestbedModel.DataModel
     -1,
     false, false, false,
-    //  50 - BindTestbed.NullableTests.DOModel
+    //  48 - BindTestbed.NullableTests.DOModel
     L"DOModel",
     &GetReferenceTypeMember_DOModel<::winrt::BindTestbed::NullableTests>,
     &SetReferenceTypeMember_DOModel<::winrt::BindTestbed::NullableTests, ::winrt::BindTestbedModel::DOModel>,
     17, // BindTestbedModel.DOModel
     -1,
     false, false, false,
-    //  51 - BindTestbedModel.IEmployee.FirstName
+    //  49 - BindTestbedModel.IEmployee.FirstName
     L"FirstName",
-    &GetReferenceTypeMember_FirstName<::winrt::BindTestbedModel::IEmployee>,
-    &SetReferenceTypeMember_FirstName<::winrt::BindTestbedModel::IEmployee, ::winrt::hstring>,
+    &GetReferenceTypeStringMember_FirstName<::winrt::BindTestbedModel::IEmployee>,
+    &SetReferenceTypeStringMember_FirstName<::winrt::BindTestbedModel::IEmployee, ::winrt::hstring>,
     2, // String
     -1,
     false, false, false,
-    //  52 - BindTestbedModel.IEmployee.LastName
+    //  50 - BindTestbedModel.IEmployee.LastName
     L"LastName",
-    &GetReferenceTypeMember_LastName<::winrt::BindTestbedModel::IEmployee>,
-    &SetReferenceTypeMember_LastName<::winrt::BindTestbedModel::IEmployee, ::winrt::hstring>,
+    &GetReferenceTypeStringMember_LastName<::winrt::BindTestbedModel::IEmployee>,
+    &SetReferenceTypeStringMember_LastName<::winrt::BindTestbedModel::IEmployee, ::winrt::hstring>,
     2, // String
     -1,
     false, false, false,
-    //  53 - BindTestbedModel.IEmployee.DirectManager
+    //  51 - BindTestbedModel.IEmployee.DirectManager
     L"DirectManager",
     &GetReferenceTypeMember_DirectManager<::winrt::BindTestbedModel::IEmployee>,
     &SetReferenceTypeMember_DirectManager<::winrt::BindTestbedModel::IEmployee, ::winrt::BindTestbedModel::IManager>,
     22, // BindTestbedModel.IManager
     -1,
     false, false, false,
-    //  54 - BindTestbedModel.IEmployee.IsManager
+    //  52 - BindTestbedModel.IEmployee.IsManager
     L"IsManager",
     &GetValueTypeMember_IsManager<::winrt::BindTestbedModel::IEmployee, bool>,
     nullptr,
     5, // Boolean
     -1,
     true,  false, false,
-    //  55 - BindTestbedModel.IEmployee.Title
+    //  53 - BindTestbedModel.IEmployee.Title
     L"Title",
-    &GetReferenceTypeMember_Title<::winrt::BindTestbedModel::IEmployee>,
+    &GetReferenceTypeStringMember_Title<::winrt::BindTestbedModel::IEmployee>,
     nullptr,
     2, // String
     -1,
     true,  false, false,
-    //  56 - BindTestbedModel.IEmployee.Name
+    //  54 - BindTestbedModel.IEmployee.Name
     L"Name",
-    &GetReferenceTypeMember_Name<::winrt::BindTestbedModel::IEmployee>,
+    &GetReferenceTypeStringMember_Name<::winrt::BindTestbedModel::IEmployee>,
     nullptr,
     2, // String
     -1,
     true,  false, false,
-    //  57 - BindTestbedModel.IEmployee.Visibility
+    //  55 - BindTestbedModel.IEmployee.Visibility
     L"Visibility",
     &GetValueTypeMember_Visibility<::winrt::BindTestbedModel::IEmployee, bool>,
     &SetValueTypeMember_Visibility<::winrt::BindTestbedModel::IEmployee, bool>,
     5, // Boolean
     -1,
     false, false, false,
-    //  58 - BindTestbedModel.IEmployee.NullStringProperty
+    //  56 - BindTestbedModel.IEmployee.NullStringProperty
     L"NullStringProperty",
-    &GetReferenceTypeMember_NullStringProperty<::winrt::BindTestbedModel::IEmployee>,
+    &GetReferenceTypeStringMember_NullStringProperty<::winrt::BindTestbedModel::IEmployee>,
     nullptr,
     2, // String
     -1,
     true,  false, false,
-    //  59 - BindTestbedModel.IEmployee.NullImageSource
+    //  57 - BindTestbedModel.IEmployee.NullImageSource
     L"NullImageSource",
     &GetReferenceTypeMember_NullImageSource<::winrt::BindTestbedModel::IEmployee>,
     nullptr,
-    46, // Windows.UI.Xaml.Media.ImageSource
+    47, // Microsoft.UI.Xaml.Media.ImageSource
     -1,
     true,  false, false,
-    //  60 - BindTestbedModel.IEmployee.TShirt
+    //  58 - BindTestbedModel.IEmployee.TShirt
     L"TShirt",
     &GetValueTypeMember_TShirt<::winrt::BindTestbedModel::IEmployee, ::winrt::BindTestbedModel::TShirtSize>,
     &SetEnumMember_TShirt<::winrt::BindTestbedModel::IEmployee, ::winrt::BindTestbedModel::TShirtSize>,
-    31, // BindTestbedModel.TShirtSize
+    28, // BindTestbedModel.TShirtSize
     -1,
     false, false, false,
-    //  61 - BindTestbedModel.IEmployee.IsEmployeeOfTheMonth
+    //  59 - BindTestbedModel.IEmployee.IsEmployeeOfTheMonth
     L"IsEmployeeOfTheMonth",
     &GetValueTypeMember_IsEmployeeOfTheMonth<::winrt::BindTestbedModel::IEmployee, bool>,
     &SetValueTypeMember_IsEmployeeOfTheMonth<::winrt::BindTestbedModel::IEmployee, bool>,
     5, // Boolean
     -1,
     false, false, false,
-    //  62 - BindTestbed.MyUserControl1.Property1
+    //  60 - BindTestbed.MyUserControl1.Property1
     L"Property1",
-    &GetReferenceTypeMember_Property1<::winrt::BindTestbed::MyUserControl1>,
-    &SetReferenceTypeMember_Property1<::winrt::BindTestbed::MyUserControl1, ::winrt::hstring>,
+    &GetReferenceTypeStringMember_Property1<::winrt::BindTestbed::MyUserControl1>,
+    &SetReferenceTypeStringMember_Property1<::winrt::BindTestbed::MyUserControl1, ::winrt::hstring>,
     2, // String
     -1,
     false, false, false,
-    //  63 - BindTestbed.LonelyStaticBinding.Dummy
+    //  61 - BindTestbed.xPropertiesTest.TestStr
+    L"TestStr",
+    &GetReferenceTypeStringMember_TestStr<::winrt::BindTestbed::xPropertiesTest>,
+    &SetReferenceTypeStringMember_TestStr<::winrt::BindTestbed::xPropertiesTest, ::winrt::hstring>,
+    2, // String
+    -1,
+    false, false, false,
+    //  62 - BindTestbed.xPropertiesTest.TestCreateFromString
+    L"TestCreateFromString",
+    &GetReferenceTypeMember_TestCreateFromString<::winrt::BindTestbed::xPropertiesTest>,
+    &SetReferenceTypeMember_TestCreateFromString<::winrt::BindTestbed::xPropertiesTest, ::winrt::BindTestbedModel::Diameter>,
+    24, // BindTestbedModel.Diameter
+    -1,
+    false, false, false,
+    //  63 - BindTestbed.DisableXBindTests.Model
+    L"Model",
+    &GetReferenceTypeMember_Model<::winrt::BindTestbed::DisableXBindTests>,
+    &SetReferenceTypeMember_Model<::winrt::BindTestbed::DisableXBindTests, ::winrt::BindTestbedModel::DataModel>,
+    25, // BindTestbedModel.DataModel
+    -1,
+    false, false, false,
+    //  64 - BindTestbed.DisableXBindTests.DOModel
+    L"DOModel",
+    &GetReferenceTypeMember_DOModel<::winrt::BindTestbed::DisableXBindTests>,
+    &SetReferenceTypeMember_DOModel<::winrt::BindTestbed::DisableXBindTests, ::winrt::BindTestbedModel::DOModel>,
+    17, // BindTestbedModel.DOModel
+    -1,
+    false, false, false,
+    //  65 - BindTestbed.LonelyStaticBinding.Dummy
     L"Dummy",
-    &GetReferenceTypeMember_Dummy<::winrt::BindTestbed::LonelyStaticBinding>,
+    &GetReferenceTypeStringMember_Dummy<::winrt::BindTestbed::LonelyStaticBinding>,
     nullptr,
     2, // String
     -1,
     true,  false, false,
-    //  64 - BindTestbed.ListAndTemplateTests.SomeButtonContent
+    //  66 - BindTestbed.ListAndTemplateTests.SomeButtonContent
     L"SomeButtonContent",
     &GetReferenceTypeMember_SomeButtonContent<::winrt::BindTestbed::ListAndTemplateTests>,
     &SetReferenceTypeMember_SomeButtonContent<::winrt::BindTestbed::ListAndTemplateTests, ::winrt::Windows::Foundation::IInspectable>,
     1, // Object
     -1,
     false, false, false,
-    //  65 - BindTestbed.ListAndTemplateTests.ModelCX
-    L"ModelCX",
-    &GetReferenceTypeMember_ModelCX<::winrt::BindTestbed::ListAndTemplateTests>,
-    &SetReferenceTypeMember_ModelCX<::winrt::BindTestbed::ListAndTemplateTests, ::winrt::BindTestbedCXModel::ModelCX>,
-    28, // BindTestbedCXModel.ModelCX
-    -1,
-    false, false, false,
-    //  66 - BindTestbed.ListAndTemplateTests.Model
+    //  67 - BindTestbed.ListAndTemplateTests.Model
     L"Model",
     &GetReferenceTypeMember_Model<::winrt::BindTestbed::ListAndTemplateTests>,
     &SetReferenceTypeMember_Model<::winrt::BindTestbed::ListAndTemplateTests, ::winrt::BindTestbedModel::DataModel>,
-    26, // BindTestbedModel.DataModel
+    25, // BindTestbedModel.DataModel
     -1,
     false, false, false,
-    //  67 - BindTestbed.ListAndTemplateTests.FirstListView
+    //  68 - BindTestbed.ListAndTemplateTests.FirstListView
     L"FirstListView",
     &GetReferenceTypeMember_FirstListView<::winrt::BindTestbed::ListAndTemplateTests>,
-    &SetReferenceTypeMember_FirstListView<::winrt::BindTestbed::ListAndTemplateTests, ::winrt::Windows::UI::Xaml::Controls::ListView>,
-    45, // Windows.UI.Xaml.Controls.ListView
+    &SetReferenceTypeMember_FirstListView<::winrt::BindTestbed::ListAndTemplateTests, ::winrt::Microsoft::UI::Xaml::Controls::ListView>,
+    46, // Microsoft.UI.Xaml.Controls.ListView
     -1,
     false, false, false,
-    //  68 - BindTestbed.ListAndTemplateTests.Employees
+    //  69 - BindTestbed.ListAndTemplateTests.Employees
     L"Employees",
     &GetReferenceTypeMember_Employees<::winrt::BindTestbed::ListAndTemplateTests>,
     &SetReferenceTypeMember_Employees<::winrt::BindTestbed::ListAndTemplateTests, ::winrt::Windows::Foundation::Collections::IObservableVector<::winrt::BindTestbedModel::IEmployee>>,
-    68, // Windows.Foundation.Collections.IObservableVector`1<BindTestbedModel.IEmployee>
+    69, // Windows.Foundation.Collections.IObservableVector`1<BindTestbedModel.IEmployee>
     -1,
     false, false, false,
-    //  69 - BindTestbed.ListAndTemplateTests.DOModel
+    //  70 - BindTestbed.ListAndTemplateTests.DOModel
     L"DOModel",
     &GetReferenceTypeMember_DOModel<::winrt::BindTestbed::ListAndTemplateTests>,
     &SetReferenceTypeMember_DOModel<::winrt::BindTestbed::ListAndTemplateTests, ::winrt::BindTestbedModel::DOModel>,
     17, // BindTestbedModel.DOModel
     -1,
     false, false, false,
-    //  70 - BindTestbed.ListAndTemplateTests.AllLastNames
+    //  71 - BindTestbed.ListAndTemplateTests.AllLastNames
     L"AllLastNames",
     &GetReferenceTypeMember_AllLastNames<::winrt::BindTestbed::ListAndTemplateTests>,
     &SetReferenceTypeMember_AllLastNames<::winrt::BindTestbed::ListAndTemplateTests, ::winrt::Windows::Foundation::Collections::IObservableVector<::winrt::hstring>>,
     66, // Windows.Foundation.Collections.IObservableVector`1<String>
     -1,
     false, false, false,
-    //  71 - BindTestbed.ListAndTemplateTests.AllFirstNames
+    //  72 - BindTestbed.ListAndTemplateTests.AllFirstNames
     L"AllFirstNames",
     &GetReferenceTypeMember_AllFirstNames<::winrt::BindTestbed::ListAndTemplateTests>,
     &SetReferenceTypeMember_AllFirstNames<::winrt::BindTestbed::ListAndTemplateTests, ::winrt::Windows::Foundation::Collections::IObservableVector<::winrt::hstring>>,
     66, // Windows.Foundation.Collections.IObservableVector`1<String>
     -1,
     false, false, false,
-    //  72 - BindTestbedModel.EmployeeTextBlock.Employee
+    //  73 - BindTestbedModel.EmployeeTextBlock.Employee
     L"Employee",
     &GetReferenceTypeMember_Employee<::winrt::BindTestbedModel::EmployeeTextBlock>,
     &SetReferenceTypeMember_Employee<::winrt::BindTestbedModel::EmployeeTextBlock, ::winrt::BindTestbedModel::IEmployee>,
-    29, // BindTestbedModel.IEmployee
+    26, // BindTestbedModel.IEmployee
     -1,
     false, true,  false,
-    //  73 - BindTestbed.subfolder.SubDictionary.Dummy
+    //  74 - BindTestbed.subfolder.SubDictionary.Dummy
     L"Dummy",
-    &GetReferenceTypeMember_Dummy<::winrt::BindTestbed::subfolder::SubDictionary>,
+    &GetReferenceTypeStringMember_Dummy<::winrt::BindTestbed::subfolder::SubDictionary>,
     nullptr,
     2, // String
     -1,
     true,  false, false,
-    //  74 - BindTestbedModel.AttachedProperties.AttachedBool
+    //  75 - BindTestbedModel.AttachedProperties.AttachedBool
     L"AttachedBool",
-    &GetAttachableMember_AttachedBool<::winrt::BindTestbedModel::AttachedProperties, ::winrt::Windows::UI::Xaml::Controls::TextBlock>,
-    &SetAttachableMember_AttachedBool<::winrt::BindTestbedModel::AttachedProperties, ::winrt::Windows::UI::Xaml::Controls::TextBlock, bool>,
+    &GetAttachableMember_AttachedBool<::winrt::BindTestbedModel::AttachedProperties, ::winrt::Microsoft::UI::Xaml::Controls::TextBlock>,
+    &SetAttachableMember_AttachedBool<::winrt::BindTestbedModel::AttachedProperties, ::winrt::Microsoft::UI::Xaml::Controls::TextBlock, bool>,
     5, // Boolean
-    51, // Windows.UI.Xaml.Controls.TextBlock
+    52, // Microsoft.UI.Xaml.Controls.TextBlock
     false, false, true, 
-    //  75 - BindTestbedModel.AttachedProperties.AttachedEmployee
+    //  76 - BindTestbedModel.AttachedProperties.AttachedEmployee
     L"AttachedEmployee",
-    &GetAttachableMember_AttachedEmployee<::winrt::BindTestbedModel::AttachedProperties, ::winrt::Windows::UI::Xaml::Controls::TextBlock>,
-    &SetAttachableMember_AttachedEmployee<::winrt::BindTestbedModel::AttachedProperties, ::winrt::Windows::UI::Xaml::Controls::TextBlock, ::winrt::BindTestbedModel::IEmployee>,
-    29, // BindTestbedModel.IEmployee
-    51, // Windows.UI.Xaml.Controls.TextBlock
+    &GetAttachableMember_AttachedEmployee<::winrt::BindTestbedModel::AttachedProperties, ::winrt::Microsoft::UI::Xaml::Controls::TextBlock>,
+    &SetAttachableMember_AttachedEmployee<::winrt::BindTestbedModel::AttachedProperties, ::winrt::Microsoft::UI::Xaml::Controls::TextBlock, ::winrt::BindTestbedModel::IEmployee>,
+    26, // BindTestbedModel.IEmployee
+    52, // Microsoft.UI.Xaml.Controls.TextBlock
     false, false, true, 
-    //  76 - BindTestbedModel.AttachedProperties.AttachedString
+    //  77 - BindTestbedModel.AttachedProperties.AttachedString
     L"AttachedString",
-    &GetAttachableMember_AttachedString<::winrt::BindTestbedModel::AttachedProperties, ::winrt::Windows::UI::Xaml::DependencyObject>,
-    &SetAttachableMember_AttachedString<::winrt::BindTestbedModel::AttachedProperties, ::winrt::Windows::UI::Xaml::DependencyObject, ::winrt::hstring>,
+    &GetAttachableMember_AttachedString<::winrt::BindTestbedModel::AttachedProperties, ::winrt::Microsoft::UI::Xaml::DependencyObject>,
+    &SetAttachableMember_AttachedString<::winrt::BindTestbedModel::AttachedProperties, ::winrt::Microsoft::UI::Xaml::DependencyObject, ::winrt::hstring>,
     2, // String
-    40, // Windows.UI.Xaml.DependencyObject
+    41, // Microsoft.UI.Xaml.DependencyObject
     false, false, true, 
-    //  77 - BindTestbedModel.ObservableEmployees.Size
+    //  78 - BindTestbedModel.ObservableEmployees.Size
     L"Size",
     &GetValueTypeMember_Size<::winrt::BindTestbedModel::ObservableEmployees, uint32_t>,
     nullptr,
     4, // UInt32
     -1,
     true,  false, false,
-    //  78 - BindTestbed.INotifyDataErrorInfoTests.DOErrorModel
+    //  79 - BindTestbed.INotifyDataErrorInfoTests.DOErrorModel
     L"DOErrorModel",
     &GetReferenceTypeMember_DOErrorModel<::winrt::BindTestbed::INotifyDataErrorInfoTests>,
     nullptr,
-    44, // BindTestbedModel.DODataErrorModel
+    38, // BindTestbedModel.DODataErrorModel
     -1,
     true,  false, false,
-    //  79 - BindTestbed.INotifyDataErrorInfoTests.ErrorModel
+    //  80 - BindTestbed.INotifyDataErrorInfoTests.ErrorModel
     L"ErrorModel",
     &GetReferenceTypeMember_ErrorModel<::winrt::BindTestbed::INotifyDataErrorInfoTests>,
     nullptr,
-    36, // BindTestbedModel.DataErrorModel
+    34, // BindTestbedModel.DataErrorModel
     -1,
     true,  false, false,
-    //  80 - BindTestbed.LoadAndCreateFromStringTests.Model
+    //  81 - Microsoft.UI.Xaml.Controls.TreeViewNode.IsExpanded
+    L"IsExpanded",
+    &GetValueTypeMember_IsExpanded<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
+    &SetValueTypeMember_IsExpanded<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
+    5, // Boolean
+    -1,
+    false, true,  false,
+    //  82 - Microsoft.UI.Xaml.Controls.TreeViewNode.HasUnrealizedChildren
+    L"HasUnrealizedChildren",
+    &GetValueTypeMember_HasUnrealizedChildren<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
+    &SetValueTypeMember_HasUnrealizedChildren<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
+    5, // Boolean
+    -1,
+    false, false, false,
+    //  83 - Microsoft.UI.Xaml.Controls.TreeViewNode.Content
+    L"Content",
+    &GetReferenceTypeMember_Content<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>,
+    &SetReferenceTypeMember_Content<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, ::winrt::Windows::Foundation::IInspectable>,
+    1, // Object
+    -1,
+    false, true,  false,
+    //  84 - Microsoft.UI.Xaml.Controls.TreeViewNode.Children
+    L"Children",
+    &GetReferenceTypeMember_Children<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>,
+    nullptr,
+    70, // Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
+    -1,
+    true,  false, false,
+    //  85 - Microsoft.UI.Xaml.Controls.TreeViewNode.Depth
+    L"Depth",
+    &GetValueTypeMember_Depth<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, int32_t>,
+    nullptr,
+    0, // Int32
+    -1,
+    true,  true,  false,
+    //  86 - Microsoft.UI.Xaml.Controls.TreeViewNode.HasChildren
+    L"HasChildren",
+    &GetValueTypeMember_HasChildren<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
+    nullptr,
+    5, // Boolean
+    -1,
+    true,  true,  false,
+    //  87 - Microsoft.UI.Xaml.Controls.TreeViewNode.Parent
+    L"Parent",
+    &GetReferenceTypeMember_Parent<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>,
+    nullptr,
+    59, // Microsoft.UI.Xaml.Controls.TreeViewNode
+    -1,
+    true,  false, false,
+    //  88 - BindTestbed.LoadAndCreateFromStringTests.Model
     L"Model",
     &GetReferenceTypeMember_Model<::winrt::BindTestbed::LoadAndCreateFromStringTests>,
     &SetReferenceTypeMember_Model<::winrt::BindTestbed::LoadAndCreateFromStringTests, ::winrt::BindTestbedModel::DataModel>,
-    26, // BindTestbedModel.DataModel
+    25, // BindTestbedModel.DataModel
     -1,
     false, false, false,
-    //  81 - BindTestbed.LoadAndCreateFromStringTests.DOModel
+    //  89 - BindTestbed.LoadAndCreateFromStringTests.DOModel
     L"DOModel",
     &GetReferenceTypeMember_DOModel<::winrt::BindTestbed::LoadAndCreateFromStringTests>,
     &SetReferenceTypeMember_DOModel<::winrt::BindTestbed::LoadAndCreateFromStringTests, ::winrt::BindTestbedModel::DOModel>,
     17, // BindTestbedModel.DOModel
     -1,
     false, false, false,
-    //  82 - BindTestbed.LoadAndCreateFromStringTests.test6
-    L"test6",
-    &GetReferenceTypeMember_test6<::winrt::BindTestbed::LoadAndCreateFromStringTests>,
-    &SetReferenceTypeMember_test6<::winrt::BindTestbed::LoadAndCreateFromStringTests, ::winrt::BindTestbedCXModel::StarCx>,
-    23, // BindTestbedCXModel.StarCx
-    -1,
-    false, false, false,
-    //  83 - BindTestbed.LoadAndCreateFromStringTests.test5
-    L"test5",
-    &GetReferenceTypeMember_test5<::winrt::BindTestbed::LoadAndCreateFromStringTests>,
-    &SetReferenceTypeMember_test5<::winrt::BindTestbed::LoadAndCreateFromStringTests, ::winrt::BindTestbedCXModel::StarCx>,
-    23, // BindTestbedCXModel.StarCx
-    -1,
-    false, false, false,
-    //  84 - BindTestbed.LoadAndCreateFromStringTests.test4
+    //  90 - BindTestbed.LoadAndCreateFromStringTests.test4
     L"test4",
     &GetReferenceTypeMember_test4<::winrt::BindTestbed::LoadAndCreateFromStringTests>,
     &SetReferenceTypeMember_test4<::winrt::BindTestbed::LoadAndCreateFromStringTests, ::winrt::BindTestbedModel::Circle>,
     16, // BindTestbedModel.Circle
     -1,
     false, false, false,
-    //  85 - BindTestbed.LoadAndCreateFromStringTests.test3
+    //  91 - BindTestbed.LoadAndCreateFromStringTests.test3
     L"test3",
     &GetReferenceTypeMember_test3<::winrt::BindTestbed::LoadAndCreateFromStringTests>,
     &SetReferenceTypeMember_test3<::winrt::BindTestbed::LoadAndCreateFromStringTests, ::winrt::BindTestbedModel::Circle>,
     16, // BindTestbedModel.Circle
     -1,
     false, false, false,
-    //  86 - BindTestbed.LoadAndCreateFromStringTests.test2
+    //  92 - BindTestbed.LoadAndCreateFromStringTests.test2
     L"test2",
     &GetReferenceTypeMember_test2<::winrt::BindTestbed::LoadAndCreateFromStringTests>,
     &SetReferenceTypeMember_test2<::winrt::BindTestbed::LoadAndCreateFromStringTests, ::winrt::BindTestbedModel::Circle>,
     16, // BindTestbedModel.Circle
     -1,
     false, false, false,
-    //  87 - BindTestbed.LoadAndCreateFromStringTests.test1
+    //  93 - BindTestbed.LoadAndCreateFromStringTests.test1
     L"test1",
     &GetReferenceTypeMember_test1<::winrt::BindTestbed::LoadAndCreateFromStringTests>,
     &SetReferenceTypeMember_test1<::winrt::BindTestbed::LoadAndCreateFromStringTests, ::winrt::BindTestbedModel::Circle>,
     16, // BindTestbedModel.Circle
     -1,
     false, false, false,
-    //  88 - BindTestbed.LoadAndCreateFromStringTests.innerMostNestedPanelStaticText
+    //  94 - BindTestbed.LoadAndCreateFromStringTests.innerMostNestedPanelStaticText
     L"innerMostNestedPanelStaticText",
     &GetReferenceTypeMember_innerMostNestedPanelStaticText<::winrt::BindTestbed::LoadAndCreateFromStringTests>,
-    &SetReferenceTypeMember_innerMostNestedPanelStaticText<::winrt::BindTestbed::LoadAndCreateFromStringTests, ::winrt::Windows::UI::Xaml::Controls::TextBlock>,
-    51, // Windows.UI.Xaml.Controls.TextBlock
+    &SetReferenceTypeMember_innerMostNestedPanelStaticText<::winrt::BindTestbed::LoadAndCreateFromStringTests, ::winrt::Microsoft::UI::Xaml::Controls::TextBlock>,
+    52, // Microsoft.UI.Xaml.Controls.TextBlock
     -1,
     false, false, false,
-    //  89 - BindTestbedModel.NullablePropertiesButton.NullableDoubleDP
+    //  95 - BindTestbedModel.NullablePropertiesButton.NullableDoubleDP
     L"NullableDoubleDP",
     &GetReferenceTypeMember_NullableDoubleDP<::winrt::BindTestbedModel::NullablePropertiesButton>,
     &SetReferenceTypeMember_NullableDoubleDP<::winrt::BindTestbedModel::NullablePropertiesButton, ::winrt::Windows::Foundation::IReference<double>>,
-    60, // Windows.Foundation.IReference`1<Double>
+    58, // Windows.Foundation.IReference`1<Double>
     -1,
     false, true,  false,
-    //  90 - BindTestbedModel.NullablePropertiesButton.NullableBool
+    //  96 - BindTestbedModel.NullablePropertiesButton.NullableBool
     L"NullableBool",
     &GetReferenceTypeMember_NullableBool<::winrt::BindTestbedModel::NullablePropertiesButton>,
     &SetReferenceTypeMember_NullableBool<::winrt::BindTestbedModel::NullablePropertiesButton, ::winrt::Windows::Foundation::IReference<bool>>,
-    61, // Windows.Foundation.IReference`1<Boolean>
+    60, // Windows.Foundation.IReference`1<Boolean>
     -1,
     false, false, false,
-    //  91 - BindTestbedModel.NullablePropertiesButton.NullableColor
+    //  97 - BindTestbedModel.NullablePropertiesButton.NullableColor
     L"NullableColor",
     &GetReferenceTypeMember_NullableColor<::winrt::BindTestbedModel::NullablePropertiesButton>,
     &SetReferenceTypeMember_NullableColor<::winrt::BindTestbedModel::NullablePropertiesButton, ::winrt::Windows::Foundation::IReference<::winrt::Windows::UI::Color>>,
     65, // Windows.Foundation.IReference`1<Windows.UI.Color>
     -1,
     false, false, false,
-    //  92 - BindTestbedModel.NullablePropertiesButton.NullableEnum
+    //  98 - BindTestbedModel.NullablePropertiesButton.NullableEnum
     L"NullableEnum",
     &GetReferenceTypeMember_NullableEnum<::winrt::BindTestbedModel::NullablePropertiesButton>,
     &SetReferenceTypeMember_NullableEnum<::winrt::BindTestbedModel::NullablePropertiesButton, ::winrt::Windows::Foundation::IReference<::winrt::BindTestbedModel::TShirtSize>>,
@@ -2320,10 +2482,12 @@ const MemberInfo* GetMemberInfo(::winrt::hstring const& longMemberName)
     return nullptr;
 }
 
-std::vector<::winrt::Windows::UI::Xaml::Markup::IXamlMetadataProvider> const& XamlTypeInfoProvider::OtherProviders()
+std::vector<::winrt::Microsoft::UI::Xaml::Markup::IXamlMetadataProvider> const& XamlTypeInfoProvider::OtherProviders()
 {
+    std::lock_guard<std::recursive_mutex> lock(_xamlTypesCriticalSection);
     if (_otherProviders.empty())
     {
+        _otherProviders.push_back(::winrt::Microsoft::UI::Xaml::XamlTypeInfo::XamlControlsXamlMetaDataProvider());
         _otherProviders.push_back(::winrt::BindTestbedModel::BindTestbedModel_XamlTypeInfo::XamlMetaDataProvider());
     }
     return _otherProviders;
@@ -2393,3 +2557,5 @@ IXamlMember XamlTypeInfoProvider::CreateXamlMember(::winrt::hstring const& longM
     return xamlMember.as<IXamlMember>();
 }
 } // namespace
+
+

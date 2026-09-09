@@ -17,6 +17,9 @@
 #if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
 #endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>)
+#include <winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>
+#endif
 #if __has_include(<winrt/MultipleViewsTestbedCppWinRT.h>)
 #include <winrt/MultipleViewsTestbedCppWinRT.h>
 #endif
