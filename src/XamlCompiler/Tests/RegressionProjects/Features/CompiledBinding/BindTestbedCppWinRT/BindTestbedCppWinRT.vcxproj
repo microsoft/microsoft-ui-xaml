@@ -168,6 +168,15 @@
     </ClInclude>
     <ClInclude Include="CastingModel.h" />
     <ClInclude Include="MainModel.h" />
+    <ClInclude Include="DisableXBindTests.h">
+      <DependentUpon>DisableXBindTests.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="NamedRootsPage\NamedPageRootWithCompiledBindingUserChild.h">
+      <DependentUpon>NamedRootsPage\NamedPageRootWithCompiledBindingUserChild.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="xPropertiesTest.h">
+      <DependentUpon>xPropertiesTest.xaml</DependentUpon>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -206,6 +215,18 @@
     </Page>
     <Page Include="TestsPage2.xaml" />
     <Page Include="TwoWayTests.xaml" />
+    <Page Include="DisableXBindTests.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MainPage.Portrait.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="NamedRootsPage\NamedPageRootWithCompiledBindingUserChild.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="xPropertiesTest.xaml">
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -293,6 +314,15 @@
     </ClCompile>
     <ClCompile Include="TwoWayTests.cpp">
       <DependentUpon>TwoWayTests.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="DisableXBindTests.cpp">
+      <DependentUpon>DisableXBindTests.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="NamedRootsPage\NamedPageRootWithCompiledBindingUserChild.cpp">
+      <DependentUpon>NamedRootsPage\NamedPageRootWithCompiledBindingUserChild.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="xPropertiesTest.cpp">
+      <DependentUpon>xPropertiesTest.xaml</DependentUpon>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
