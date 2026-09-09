@@ -5,16 +5,18 @@ current WinUI build environment.
 
 ## Quick start
 
-Use the same command prompt for all three steps:
+Use the same command prompt for all four steps:
 
 ```cmd
 init.cmd <flavor>
 msbuild src\XamlCompiler\XamlCompiler.sln /restore
+msbuild src\XamlCompiler\XamlCompilerTests.sln /restore
 src\XamlCompiler\runtests.cmd
 ```
 
-`XamlCompiler.sln` builds the compiler, its native dependencies, the unit-test
-support projects, and the runnable test payload in one operation.
+`XamlCompiler.sln` builds the compiler and product dependencies.
+`XamlCompilerTests.sln` builds the regression projects, unit-test support
+projects, and runnable test payload.
 
 `runtests.cmd` assumes that `init.cmd` initialized the prompt and that the
 solution build completed for that flavor. It does not initialize tools, build
@@ -62,7 +64,7 @@ files.
 The build creates `XamlCompilerUnitTests.payload.complete` only after all required
 payload inputs have been validated and copied successfully. Before starting
 VSTest, the script checks that marker and `UnitTests.dll`. If either is missing,
-build `XamlCompiler.sln` in the initialized prompt and retry.
+complete the compiler/test-solution sequence above and retry.
 
 ## VSTest discovery
 

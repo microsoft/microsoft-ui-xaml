@@ -12,6 +12,9 @@ REM                                 no codegen, so a build failure cannot quietl
 REM   copynewmasters.cmd /partial   Refresh only the targets that have codegen, leaving the masters
 REM                                 of the rest untouched, and list what was skipped.
 REM
+REM Before running this script for a flavor, build XamlCompiler.sln and XamlCompilerTests.sln in
+REM the same initialized window. Run once for chk and once for fre.
+REM
 REM Which codegen directory maps to which master directory is recorded in
 REM Tests\UnitTests\CodegenTargets.txt, which CodegenTests.cs reads as well, so the copy and the
 REM diff cannot disagree about where codegen is. Build the regression projects first: this script
@@ -25,6 +28,9 @@ cd /d "%~dp0"
 
 set _targets=Tests\UnitTests\CodegenTargets.txt
 set _codegenRoot=%BuildOutputRoot%\%_BuildArch%%_BuildType%
+set "_mastersRoot="
+if /I "%_BuildType%"=="chk" set "_mastersRoot=TestMasters\RegressionProjects\chk"
+if /I "%_BuildType%"=="fre" set "_mastersRoot=TestMasters\RegressionProjects\fre"
 set _partial=0
 if /I "%~1"=="/partial" set _partial=1
 
@@ -35,6 +41,11 @@ if not exist "%_targets%" (
 
 if "%BuildOutputRoot%"=="" (
     echo ERROR: BuildOutputRoot is not set. Run this script from a build window ^(init.cmd^).
+    goto :failed
+)
+
+if not defined _mastersRoot (
+    echo ERROR: _BuildType must be chk or fre. Run this script from a build window ^(init.cmd^).
     goto :failed
 )
 
@@ -90,17 +101,17 @@ dir /s /b "%_codegenRoot%\%~2\*.g.*" >nul 2>&1
 if ERRORLEVEL 1 EXIT /B 0
 
 echo ## Updating %~1 from %~2
-if exist "TestMasters\%~1" (
-    rmdir /s /q "TestMasters\%~1"
-    if exist "TestMasters\%~1" (
-        echo ERROR: Could not remove "TestMasters\%~1".
+if exist "%_mastersRoot%\%~1" (
+    rmdir /s /q "%_mastersRoot%\%~1"
+    if exist "%_mastersRoot%\%~1" (
+        echo ERROR: Could not remove "%_mastersRoot%\%~1".
         EXIT /B 1
     )
 )
 
-robocopy "%_codegenRoot%\%~2" "TestMasters\%~1" *.g.* /XF *.g.obj /XF *.nuget.g.* /XF *.backup /s /r:0 /z /ndl
+robocopy "%_codegenRoot%\%~2" "%_mastersRoot%\%~1" *.g.* /XF *.g.obj /XF *.nuget.g.* /XF *.backup /s /r:0 /z /ndl
 if ERRORLEVEL 2 (
-    echo ERROR: Could not refresh "TestMasters\%~1".
+    echo ERROR: Could not refresh "%_mastersRoot%\%~1".
     EXIT /B 1
 )
 EXIT /B 0
