@@ -11,49 +11,49 @@
 namespace Simple
 {
     partial class MainPage : 
-        global::Windows.UI.Xaml.Controls.Page, 
-        global::Windows.UI.Xaml.Markup.IComponentConnector,
-        global::Windows.UI.Xaml.Markup.IComponentConnector2
+        global::Microsoft.UI.Xaml.Controls.Page, 
+        global::Microsoft.UI.Xaml.Markup.IComponentConnector
     {
+
         /// <summary>
         /// Connect()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public void Connect(int connectionId, object target)
         {
             switch(connectionId)
             {
-            case 2: // MainPage.xaml line 13
+            case 2: // MainPage.xaml line 15
                 {
-                    this.propertyBagObject = (global::Simple.PropertyBag)(target);
+                    this.propertyBagObject = global::WinRT.CastExtensions.As<global::Simple.PropertyBag>(target);
                 }
                 break;
-            case 3: // MainPage.xaml line 15
+            case 3: // MainPage.xaml line 17
                 {
-                    this.propertyBagObjectSecond = (global::Simple.PropertyBag)(target);
+                    this.propertyBagObjectSecond = global::WinRT.CastExtensions.As<global::Simple.PropertyBag>(target);
                 }
                 break;
-            case 4: // MainPage.xaml line 30
+            case 4: // MainPage.xaml line 32
                 {
-                    this.MainGrid = (global::Windows.UI.Xaml.Controls.Grid)(target);
+                    this.MainGrid = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Grid>(target);
                 }
                 break;
-            case 5: // MainPage.xaml line 32
+            case 5: // MainPage.xaml line 34
                 {
-                    this.Button1 = (global::Windows.UI.Xaml.Controls.Button)(target);
+                    this.Button1 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                 }
                 break;
-            case 6: // MainPage.xaml line 33
+            case 6: // MainPage.xaml line 35
                 {
-                    this.Button2 = (global::Windows.UI.Xaml.Controls.Button)(target);
+                    this.Button2 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                 }
                 break;
-            case 7: // MainPage.xaml line 36
+            case 7: // MainPage.xaml line 38
                 {
-                    global::Windows.UI.Xaml.Controls.Button element7 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element7).Click += this.ClickHandler;
-                    ((global::Windows.UI.Xaml.Controls.Button)element7).Tapped += this.TappedHandler;
+                    global::Microsoft.UI.Xaml.Controls.Button element7 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element7).Click += this.ClickHandler;
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element7).Tapped += this.TappedHandler;
                 }
                 break;
             default:
@@ -62,14 +62,15 @@ namespace Simple
             this._contentLoaded = true;
         }
 
+
         /// <summary>
         /// GetBindingConnector(int connectionId, object target)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
+        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
         {
-            global::Windows.UI.Xaml.Markup.IComponentConnector returnValue = null;
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector returnValue = null;
             return returnValue;
         }
     }

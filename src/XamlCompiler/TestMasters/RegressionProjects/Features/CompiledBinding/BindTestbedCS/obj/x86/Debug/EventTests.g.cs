@@ -11,31 +11,30 @@
 namespace BindTestbed
 {
     partial class EventTests : 
-        global::Windows.UI.Xaml.Controls.UserControl, 
-        global::Windows.UI.Xaml.Markup.IComponentConnector,
-        global::Windows.UI.Xaml.Markup.IComponentConnector2
+        global::Microsoft.UI.Xaml.Controls.UserControl, 
+        global::Microsoft.UI.Xaml.Markup.IComponentConnector
     {
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         private static class XamlBindingSetters
         {
-            public static void Set_Windows_UI_Xaml_Controls_ItemsControl_ItemsSource(global::Windows.UI.Xaml.Controls.ItemsControl obj, global::System.Object value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(global::Microsoft.UI.Xaml.Controls.ItemsControl obj, global::System.Object value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::System.Object) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
+                    value = (global::System.Object) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
                 }
                 obj.ItemsSource = value;
             }
-            public static void Set_Windows_UI_Xaml_Controls_ContentControl_Content(global::Windows.UI.Xaml.Controls.ContentControl obj, global::System.Object value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_ContentControl_Content(global::Microsoft.UI.Xaml.Controls.ContentControl obj, global::System.Object value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::System.Object) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
+                    value = (global::System.Object) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
                 }
                 obj.Content = value;
             }
-            public static void Set_Windows_UI_Xaml_Controls_TextBlock_Text(global::Windows.UI.Xaml.Controls.TextBlock obj, global::System.String value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(global::Microsoft.UI.Xaml.Controls.TextBlock obj, global::System.String value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
@@ -45,13 +44,13 @@ namespace BindTestbed
             }
         };
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class EventTests_obj3_Bindings :
-            global::Windows.UI.Xaml.IDataTemplateExtension,
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class EventTests_obj3_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IEventTests_Bindings
         {
             private global::BindTestbedModel.IEmployee dataRoot;
@@ -62,21 +61,24 @@ namespace BindTestbed
 
             // Fields for each control that has bindings.
             private global::System.WeakReference obj3;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj4;
-            private global::Windows.UI.Xaml.Controls.Button obj5;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj4;
+            private global::Microsoft.UI.Xaml.Controls.Button obj5;
 
             // Fields for each event bindings event handler.
-            private global::Windows.UI.Xaml.RoutedEventHandler obj5Click;
+            private global::Microsoft.UI.Xaml.RoutedEventHandler obj5Click;
 
-            private void obj5ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            private void obj5ClickHandler(global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1)
             {
+                if (this.dataRoot != null)
+                {
                 this.dataRoot.Click(p0, p1);
+                }
             }
 
-            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj5Click()
+            private global::Microsoft.UI.Xaml.RoutedEventHandler Create_obj5Click()
             {
                 var weakBindings = new global::System.WeakReference<EventTests_obj3_Bindings>(this);
-                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                return (global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1) =>
                 {
                     EventTests_obj3_Bindings bindings;
                     if (weakBindings.TryGetTarget(out bindings))
@@ -95,11 +97,11 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 19 && columnNumber == 28)
+                if (lineNumber == 21 && columnNumber == 28)
                 {
                     isobj4TextDisabled = true;
                 }
-                else if (lineNumber == 20 && columnNumber == 25)
+                else if (lineNumber == 22 && columnNumber == 25)
                 {
                     this.obj5.Click -= obj5Click;
                 }
@@ -111,23 +113,29 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 3: // EventTests.xaml line 14
-                        this.obj3 = new global::System.WeakReference((global::Windows.UI.Xaml.Controls.Grid)target);
+                    case 3: // EventTests.xaml line 16
+                        this.obj3 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Grid>(target));
                         break;
-                    case 4: // EventTests.xaml line 19
-                        this.obj4 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 4: // EventTests.xaml line 21
+                        this.obj4 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 5: // EventTests.xaml line 20
-                        this.obj5 = (global::Windows.UI.Xaml.Controls.Button)target;
+                    case 5: // EventTests.xaml line 22
+                        this.obj5 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                         this.obj5Click = this.Create_obj5Click();
-                        ((global::Windows.UI.Xaml.Controls.Button)target).Click += obj5Click;
+                        (global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target)).Click += obj5Click;
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
-            public void DataContextChangedHandler(global::Windows.UI.Xaml.FrameworkElement sender, global::Windows.UI.Xaml.DataContextChangedEventArgs args)
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
             {
                  if (this.SetDataRoot(args.NewValue))
                  {
@@ -142,7 +150,7 @@ namespace BindTestbed
                 throw new global::System.NotImplementedException();
             }
 
-            public int ProcessBindings(global::Windows.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
             {
                 int nextPhase = -1;
                 ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
@@ -167,12 +175,16 @@ namespace BindTestbed
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            (this.obj3.Target as global::Windows.UI.Xaml.Controls.Grid).DataContextChanged -= this.DataContextChangedHandler;
+                            var rootElement = (this.obj3.Target as global::Microsoft.UI.Xaml.Controls.Grid);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
                         }
                         this.initialized = true;
                         break;
                 }
-                this.Update_((global::BindTestbedModel.IEmployee) item, 1 << phase);
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbedModel.IEmployee>(item), 1 << phase);
             }
 
             public void Recycle()
@@ -208,7 +220,7 @@ namespace BindTestbed
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbedModel.IEmployee)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbedModel.IEmployee>(newDataRoot);
                     return true;
                 }
                 return false;
@@ -229,22 +241,22 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // EventTests.xaml line 19
+                    // EventTests.xaml line 21
                     if (!isobj4TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj4, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj4, obj, null);
                     }
                 }
             }
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class EventTests_obj9_Bindings :
-            global::Windows.UI.Xaml.IDataTemplateExtension,
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class EventTests_obj9_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IEventTests_Bindings
         {
             private global::BindTestbedModel.IEmployee dataRoot;
@@ -257,17 +269,20 @@ namespace BindTestbed
             private global::System.WeakReference obj9;
 
             // Fields for each event bindings event handler.
-            private global::Windows.UI.Xaml.RoutedEventHandler obj9Click;
+            private global::Microsoft.UI.Xaml.RoutedEventHandler obj9Click;
 
-            private void obj9ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            private void obj9ClickHandler(global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1)
             {
+                if (this.dataRoot != null)
+                {
                 this.dataRoot.Click(p0, p1);
+                }
             }
 
-            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj9Click()
+            private global::Microsoft.UI.Xaml.RoutedEventHandler Create_obj9Click()
             {
                 var weakBindings = new global::System.WeakReference<EventTests_obj9_Bindings>(this);
-                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                return (global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1) =>
                 {
                     EventTests_obj9_Bindings bindings;
                     if (weakBindings.TryGetTarget(out bindings))
@@ -285,11 +300,11 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 47 && columnNumber == 49)
+                if (lineNumber == 49 && columnNumber == 49)
                 {
                     if (this.obj9.IsAlive)
                     {
-                        ((global::Windows.UI.Xaml.Controls.Button)this.obj9.Target).Click -= obj9Click;
+                        ((global::Microsoft.UI.Xaml.Controls.Button)this.obj9.Target).Click -= obj9Click;
                     }
                 }
             }
@@ -300,17 +315,23 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 9: // EventTests.xaml line 47
-                        this.obj9 = new global::System.WeakReference((global::Windows.UI.Xaml.Controls.Button)target);
+                    case 9: // EventTests.xaml line 49
+                        this.obj9 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target));
                         this.obj9Click = this.Create_obj9Click();
-                        ((global::Windows.UI.Xaml.Controls.Button)target).Click += obj9Click;
+                        (global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target)).Click += obj9Click;
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
-            public void DataContextChangedHandler(global::Windows.UI.Xaml.FrameworkElement sender, global::Windows.UI.Xaml.DataContextChangedEventArgs args)
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
             {
                  if (this.SetDataRoot(args.NewValue))
                  {
@@ -325,7 +346,7 @@ namespace BindTestbed
                 throw new global::System.NotImplementedException();
             }
 
-            public int ProcessBindings(global::Windows.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
             {
                 int nextPhase = -1;
                 ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
@@ -350,12 +371,16 @@ namespace BindTestbed
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            (this.obj9.Target as global::Windows.UI.Xaml.Controls.Button).DataContextChanged -= this.DataContextChangedHandler;
+                            var rootElement = (this.obj9.Target as global::Microsoft.UI.Xaml.Controls.Button);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
                         }
                         this.initialized = true;
                         break;
                 }
-                this.Update_((global::BindTestbedModel.IEmployee) item, 1 << phase);
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbedModel.IEmployee>(item), 1 << phase);
             }
 
             public void Recycle()
@@ -391,7 +416,7 @@ namespace BindTestbed
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbedModel.IEmployee)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbedModel.IEmployee>(newDataRoot);
                     return true;
                 }
                 return false;
@@ -406,12 +431,12 @@ namespace BindTestbed
             }
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class EventTests_obj1_Bindings :
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class EventTests_obj1_Bindings :
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IEventTests_Bindings
         {
             private global::BindTestbed.EventTests dataRoot;
@@ -420,27 +445,30 @@ namespace BindTestbed
             private const int DATA_CHANGED = (1 << 30);
 
             // Fields for each control that has bindings.
-            private global::Windows.UI.Xaml.Controls.ListView obj6;
-            private global::Windows.UI.Xaml.Controls.ItemsControl obj7;
-            private global::Windows.UI.Xaml.Controls.Button obj10;
-            private global::Windows.UI.Xaml.Controls.Button obj11;
-            private global::Windows.UI.Xaml.Controls.Button obj12;
-            private global::Windows.UI.Xaml.Controls.Button obj13;
-            private global::Windows.UI.Xaml.Controls.Button obj14;
-            private global::Windows.UI.Xaml.Controls.GridView obj15;
+            private global::Microsoft.UI.Xaml.Controls.ListView obj6;
+            private global::Microsoft.UI.Xaml.Controls.ItemsControl obj7;
+            private global::Microsoft.UI.Xaml.Controls.Button obj10;
+            private global::Microsoft.UI.Xaml.Controls.Button obj11;
+            private global::Microsoft.UI.Xaml.Controls.Button obj12;
+            private global::Microsoft.UI.Xaml.Controls.Button obj13;
+            private global::Microsoft.UI.Xaml.Controls.Button obj14;
+            private global::Microsoft.UI.Xaml.Controls.GridView obj15;
 
             // Fields for each event bindings event handler.
-            private global::Windows.UI.Xaml.RoutedEventHandler obj10Click;
+            private global::Microsoft.UI.Xaml.RoutedEventHandler obj10Click;
 
-            private void obj10ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            private void obj10ClickHandler(global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1)
             {
+                if (this.dataRoot != null)
+                {
                 this.dataRoot.Click_RegularArgs(p0, p1);
+                }
             }
 
-            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj10Click()
+            private global::Microsoft.UI.Xaml.RoutedEventHandler Create_obj10Click()
             {
                 var weakBindings = new global::System.WeakReference<EventTests_obj1_Bindings>(this);
-                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                return (global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1) =>
                 {
                     EventTests_obj1_Bindings bindings;
                     if (weakBindings.TryGetTarget(out bindings))
@@ -449,17 +477,20 @@ namespace BindTestbed
                     }
                 };
             }
-            private global::Windows.UI.Xaml.RoutedEventHandler obj11Click;
+            private global::Microsoft.UI.Xaml.RoutedEventHandler obj11Click;
 
-            private void obj11ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            private void obj11ClickHandler(global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1)
             {
+                if (this.dataRoot != null)
+                {
                 this.dataRoot.Click_NoArgs();
+                }
             }
 
-            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj11Click()
+            private global::Microsoft.UI.Xaml.RoutedEventHandler Create_obj11Click()
             {
                 var weakBindings = new global::System.WeakReference<EventTests_obj1_Bindings>(this);
-                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                return (global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1) =>
                 {
                     EventTests_obj1_Bindings bindings;
                     if (weakBindings.TryGetTarget(out bindings))
@@ -468,17 +499,20 @@ namespace BindTestbed
                     }
                 };
             }
-            private global::Windows.UI.Xaml.RoutedEventHandler obj12Click;
+            private global::Microsoft.UI.Xaml.RoutedEventHandler obj12Click;
 
-            private void obj12ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            private void obj12ClickHandler(global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1)
             {
+                if (this.dataRoot != null)
+                {
                 this.dataRoot.Click_BaseArgs(p0, p1);
+                }
             }
 
-            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj12Click()
+            private global::Microsoft.UI.Xaml.RoutedEventHandler Create_obj12Click()
             {
                 var weakBindings = new global::System.WeakReference<EventTests_obj1_Bindings>(this);
-                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                return (global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1) =>
                 {
                     EventTests_obj1_Bindings bindings;
                     if (weakBindings.TryGetTarget(out bindings))
@@ -487,17 +521,32 @@ namespace BindTestbed
                     }
                 };
             }
-            private global::Windows.UI.Xaml.RoutedEventHandler obj13Click;
+            private global::Microsoft.UI.Xaml.RoutedEventHandler obj13Click;
 
-            private void obj13ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            private void obj13ClickHandler(global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1)
             {
+                if (this.dataRoot != null)
+                {
+                if (this.dataRoot.Model != null)
+                {
+                if (this.dataRoot.Model.ManagerProp != null)
+                {
+                if (this.dataRoot.Model.ManagerProp.ReportsOC != null)
+                {
+                if (this.dataRoot.Model.ManagerProp.ReportsOC[0] != null)
+                {
                 this.dataRoot.Model.ManagerProp.ReportsOC[0].Click(p0, p1);
+                }
+                }
+                }
+                }
+                }
             }
 
-            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj13Click()
+            private global::Microsoft.UI.Xaml.RoutedEventHandler Create_obj13Click()
             {
                 var weakBindings = new global::System.WeakReference<EventTests_obj1_Bindings>(this);
-                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                return (global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1) =>
                 {
                     EventTests_obj1_Bindings bindings;
                     if (weakBindings.TryGetTarget(out bindings))
@@ -506,17 +555,20 @@ namespace BindTestbed
                     }
                 };
             }
-            private global::Windows.UI.Xaml.RoutedEventHandler obj14Click;
+            private global::Microsoft.UI.Xaml.RoutedEventHandler obj14Click;
 
-            private void obj14ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            private void obj14ClickHandler(global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1)
             {
+                if (this.dataRoot != null)
+                {
                 this.dataRoot.Click_RegularArgs(p0, p1);
+                }
             }
 
-            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj14Click()
+            private global::Microsoft.UI.Xaml.RoutedEventHandler Create_obj14Click()
             {
                 var weakBindings = new global::System.WeakReference<EventTests_obj1_Bindings>(this);
-                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                return (global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1) =>
                 {
                     EventTests_obj1_Bindings bindings;
                     if (weakBindings.TryGetTarget(out bindings))
@@ -525,17 +577,20 @@ namespace BindTestbed
                     }
                 };
             }
-            private global::Windows.UI.Xaml.Controls.ItemClickEventHandler obj15ItemClick;
+            private global::Microsoft.UI.Xaml.Controls.ItemClickEventHandler obj15ItemClick;
 
-            private void obj15ItemClickHandler(global::System.Object p0, global::Windows.UI.Xaml.Controls.ItemClickEventArgs p1)
+            private void obj15ItemClickHandler(global::System.Object p0, global::Microsoft.UI.Xaml.Controls.ItemClickEventArgs p1)
             {
+                if (this.dataRoot != null)
+                {
                 this.dataRoot.Click_RegularArgs(p0, p1);
+                }
             }
 
-            private global::Windows.UI.Xaml.Controls.ItemClickEventHandler Create_obj15ItemClick()
+            private global::Microsoft.UI.Xaml.Controls.ItemClickEventHandler Create_obj15ItemClick()
             {
                 var weakBindings = new global::System.WeakReference<EventTests_obj1_Bindings>(this);
-                return (global::System.Object p0, global::Windows.UI.Xaml.Controls.ItemClickEventArgs p1) =>
+                return (global::System.Object p0, global::Microsoft.UI.Xaml.Controls.ItemClickEventArgs p1) =>
                 {
                     EventTests_obj1_Bindings bindings;
                     if (weakBindings.TryGetTarget(out bindings))
@@ -559,39 +614,39 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 41 && columnNumber == 55)
+                if (lineNumber == 43 && columnNumber == 55)
                 {
                     isobj6ItemsSourceDisabled = true;
                 }
-                else if (lineNumber == 44 && columnNumber == 31)
+                else if (lineNumber == 46 && columnNumber == 31)
                 {
                     isobj7ItemsSourceDisabled = true;
                 }
-                else if (lineNumber == 34 && columnNumber == 29)
+                else if (lineNumber == 36 && columnNumber == 29)
                 {
                     this.obj10.Click -= obj10Click;
                 }
-                else if (lineNumber == 35 && columnNumber == 29)
+                else if (lineNumber == 37 && columnNumber == 29)
                 {
                     this.obj11.Click -= obj11Click;
                 }
-                else if (lineNumber == 36 && columnNumber == 29)
+                else if (lineNumber == 38 && columnNumber == 29)
                 {
                     this.obj12.Click -= obj12Click;
                 }
-                else if (lineNumber == 37 && columnNumber == 83)
+                else if (lineNumber == 39 && columnNumber == 83)
                 {
                     isobj13ContentDisabled = true;
                 }
-                else if (lineNumber == 37 && columnNumber == 29)
+                else if (lineNumber == 39 && columnNumber == 29)
                 {
                     this.obj13.Click -= obj13Click;
                 }
-                else if (lineNumber == 38 && columnNumber == 29)
+                else if (lineNumber == 40 && columnNumber == 29)
                 {
                     this.obj14.Click -= obj14Click;
                 }
-                else if (lineNumber == 39 && columnNumber == 57)
+                else if (lineNumber == 41 && columnNumber == 57)
                 {
                     this.obj15.ItemClick -= obj15ItemClick;
                 }
@@ -603,46 +658,52 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 6: // EventTests.xaml line 41
-                        this.obj6 = (global::Windows.UI.Xaml.Controls.ListView)target;
+                    case 6: // EventTests.xaml line 43
+                        this.obj6 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
                         break;
-                    case 7: // EventTests.xaml line 44
-                        this.obj7 = (global::Windows.UI.Xaml.Controls.ItemsControl)target;
+                    case 7: // EventTests.xaml line 46
+                        this.obj7 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ItemsControl>(target);
                         break;
-                    case 10: // EventTests.xaml line 34
-                        this.obj10 = (global::Windows.UI.Xaml.Controls.Button)target;
+                    case 10: // EventTests.xaml line 36
+                        this.obj10 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                         this.obj10Click = this.Create_obj10Click();
-                        ((global::Windows.UI.Xaml.Controls.Button)target).Click += obj10Click;
+                        (global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target)).Click += obj10Click;
                         break;
-                    case 11: // EventTests.xaml line 35
-                        this.obj11 = (global::Windows.UI.Xaml.Controls.Button)target;
+                    case 11: // EventTests.xaml line 37
+                        this.obj11 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                         this.obj11Click = this.Create_obj11Click();
-                        ((global::Windows.UI.Xaml.Controls.Button)target).Click += obj11Click;
+                        (global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target)).Click += obj11Click;
                         break;
-                    case 12: // EventTests.xaml line 36
-                        this.obj12 = (global::Windows.UI.Xaml.Controls.Button)target;
+                    case 12: // EventTests.xaml line 38
+                        this.obj12 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                         this.obj12Click = this.Create_obj12Click();
-                        ((global::Windows.UI.Xaml.Controls.Button)target).Click += obj12Click;
+                        (global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target)).Click += obj12Click;
                         break;
-                    case 13: // EventTests.xaml line 37
-                        this.obj13 = (global::Windows.UI.Xaml.Controls.Button)target;
+                    case 13: // EventTests.xaml line 39
+                        this.obj13 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                         this.obj13Click = this.Create_obj13Click();
-                        ((global::Windows.UI.Xaml.Controls.Button)target).Click += obj13Click;
+                        (global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target)).Click += obj13Click;
                         break;
-                    case 14: // EventTests.xaml line 38
-                        this.obj14 = (global::Windows.UI.Xaml.Controls.Button)target;
+                    case 14: // EventTests.xaml line 40
+                        this.obj14 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                         this.obj14Click = this.Create_obj14Click();
-                        ((global::Windows.UI.Xaml.Controls.Button)target).Click += obj14Click;
+                        (global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target)).Click += obj14Click;
                         break;
-                    case 15: // EventTests.xaml line 39
-                        this.obj15 = (global::Windows.UI.Xaml.Controls.GridView)target;
+                    case 15: // EventTests.xaml line 41
+                        this.obj15 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.GridView>(target);
                         this.obj15ItemClick = this.Create_obj15ItemClick();
-                        ((global::Windows.UI.Xaml.Controls.GridView)target).ItemClick += obj15ItemClick;
+                        (global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.GridView>(target)).ItemClick += obj15ItemClick;
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
             // IDataTemplateComponent
 
@@ -688,13 +749,18 @@ namespace BindTestbed
                 this.bindingsTracking.ReleaseAllListeners();
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbed.EventTests)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbed.EventTests>(newDataRoot);
                     return true;
                 }
                 return false;
             }
 
-            public void Loading(global::Windows.UI.Xaml.FrameworkElement src, object data)
+            public void Activated(object obj, global::Microsoft.UI.Xaml.WindowActivatedEventArgs data)
+            {
+                this.Initialize();
+            }
+
+            public void Loading(global::Microsoft.UI.Xaml.FrameworkElement src, object data)
             {
                 this.Initialize();
             }
@@ -729,15 +795,15 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // EventTests.xaml line 41
+                    // EventTests.xaml line 43
                     if (!isobj6ItemsSourceDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj6, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj6, obj, null);
                     }
-                    // EventTests.xaml line 44
+                    // EventTests.xaml line 46
                     if (!isobj7ItemsSourceDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj7, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj7, obj, null);
                     }
                 }
             }
@@ -756,15 +822,15 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // EventTests.xaml line 37
+                    // EventTests.xaml line 39
                     if (!isobj13ContentDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_ContentControl_Content(this.obj13, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ContentControl_Content(this.obj13, obj, null);
                     }
                 }
             }
 
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             private class EventTests_obj1_BindingsTracking
             {
@@ -896,23 +962,24 @@ namespace BindTestbed
                 }
             }
         }
+
         /// <summary>
         /// Connect()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public void Connect(int connectionId, object target)
         {
             switch(connectionId)
             {
-            case 11: // EventTests.xaml line 35
+            case 11: // EventTests.xaml line 37
                 {
-                    this.bar = (global::Windows.UI.Xaml.Controls.Button)(target);
+                    this.bar = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                 }
                 break;
-            case 12: // EventTests.xaml line 36
+            case 12: // EventTests.xaml line 38
                 {
-                    this.baz = (global::Windows.UI.Xaml.Controls.Button)(target);
+                    this.baz = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                 }
                 break;
             default:
@@ -921,47 +988,48 @@ namespace BindTestbed
             this._contentLoaded = true;
         }
 
+
         /// <summary>
         /// GetBindingConnector(int connectionId, object target)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
+        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
         {
-            global::Windows.UI.Xaml.Markup.IComponentConnector returnValue = null;
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector returnValue = null;
             switch(connectionId)
             {
-            case 1: // EventTests.xaml line 1
+            case 1: // EventTests.xaml line 3
                 {                    
-                    global::Windows.UI.Xaml.Controls.UserControl element1 = (global::Windows.UI.Xaml.Controls.UserControl)target;
+                    global::Microsoft.UI.Xaml.Controls.UserControl element1 = (global::Microsoft.UI.Xaml.Controls.UserControl)target;
                     EventTests_obj1_Bindings bindings = new EventTests_obj1_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(this);
                     this.Bindings = bindings;
                     element1.Loading += bindings.Loading;
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
                 }
                 break;
-            case 3: // EventTests.xaml line 14
+            case 3: // EventTests.xaml line 16
                 {                    
-                    global::Windows.UI.Xaml.Controls.Grid element3 = (global::Windows.UI.Xaml.Controls.Grid)target;
+                    global::Microsoft.UI.Xaml.Controls.Grid element3 = (global::Microsoft.UI.Xaml.Controls.Grid)target;
                     EventTests_obj3_Bindings bindings = new EventTests_obj3_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(element3.DataContext);
                     element3.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Windows.UI.Xaml.DataTemplate.SetExtensionInstance(element3, bindings);
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element3, bindings);
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element3, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element3, bindings);
                 }
                 break;
-            case 9: // EventTests.xaml line 47
+            case 9: // EventTests.xaml line 49
                 {                    
-                    global::Windows.UI.Xaml.Controls.Button element9 = (global::Windows.UI.Xaml.Controls.Button)target;
+                    global::Microsoft.UI.Xaml.Controls.Button element9 = (global::Microsoft.UI.Xaml.Controls.Button)target;
                     EventTests_obj9_Bindings bindings = new EventTests_obj9_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(element9.DataContext);
                     element9.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Windows.UI.Xaml.DataTemplate.SetExtensionInstance(element9, bindings);
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element9, bindings);
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element9, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element9, bindings);
                 }
                 break;
             }

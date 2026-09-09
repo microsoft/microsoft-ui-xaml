@@ -11,39 +11,39 @@
 namespace Conditionals
 {
     partial class NameEventsLoad : 
-        global::Windows.UI.Xaml.Controls.UserControl, 
-        global::Windows.UI.Xaml.Markup.IComponentConnector,
-        global::Windows.UI.Xaml.Markup.IComponentConnector2
+        global::Microsoft.UI.Xaml.Controls.UserControl, 
+        global::Microsoft.UI.Xaml.Markup.IComponentConnector
     {
+
         /// <summary>
         /// Connect()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public void Connect(int connectionId, object target)
         {
             switch(connectionId)
             {
-            case 2: // NameEventsLoad.xaml line 56
+            case 2: // NameEventsLoad.xaml line 58
                 {
-                    global::Windows.UI.Xaml.Controls.Button element2 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element2).Click += this.Button_Click;
+                    global::Microsoft.UI.Xaml.Controls.Button element2 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element2).Click += this.Button_Click;
                 }
                 break;
-            case 3: // NameEventsLoad.xaml line 57
+            case 3: // NameEventsLoad.xaml line 59
                 {
-                    global::ConditionalControls.Button1 element3 = (global::ConditionalControls.Button1)(target);
+                    global::ConditionalControls.Button1 element3 = global::WinRT.CastExtensions.As<global::ConditionalControls.Button1>(target);
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V1Type)
                     {
                         ((global::ConditionalControls.Button1)element3).Click += this.Button_Click_V1;
                     }
                 }
                 break;
-            case 4: // NameEventsLoad.xaml line 58
+            case 4: // NameEventsLoad.xaml line 60
                 {
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V1Type)
                     {
-                        global::ConditionalControls.Button1 element4 = (global::ConditionalControls.Button1)(target);
+                        global::ConditionalControls.Button1 element4 = global::WinRT.CastExtensions.As<global::ConditionalControls.Button1>(target);
                         if (NameEventsLoad.IsTypePresent_ConditionalControls_V1Type)
                         {
                             ((global::ConditionalControls.Button1)element4).Click += this.Button_Click_V1;
@@ -51,20 +51,20 @@ namespace Conditionals
                     }
                 }
                 break;
-            case 5: // NameEventsLoad.xaml line 59
+            case 5: // NameEventsLoad.xaml line 61
                 {
-                    global::ConditionalControls.Button2 element5 = (global::ConditionalControls.Button2)(target);
+                    global::ConditionalControls.Button2 element5 = global::WinRT.CastExtensions.As<global::ConditionalControls.Button2>(target);
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V2Type)
                     {
                         ((global::ConditionalControls.Button2)element5).Click += this.Button_Click_V2;
                     }
                 }
                 break;
-            case 6: // NameEventsLoad.xaml line 60
+            case 6: // NameEventsLoad.xaml line 62
                 {
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V2Type)
                     {
-                        global::ConditionalControls.Button2 element6 = (global::ConditionalControls.Button2)(target);
+                        global::ConditionalControls.Button2 element6 = global::WinRT.CastExtensions.As<global::ConditionalControls.Button2>(target);
                         if (NameEventsLoad.IsTypePresent_ConditionalControls_V2Type)
                         {
                             ((global::ConditionalControls.Button2)element6).Click += this.Button_Click_V2;
@@ -72,9 +72,9 @@ namespace Conditionals
                     }
                 }
                 break;
-            case 7: // NameEventsLoad.xaml line 61
+            case 7: // NameEventsLoad.xaml line 63
                 {
-                    global::ConditionalControls.Button1 element7 = (global::ConditionalControls.Button1)(target);
+                    global::ConditionalControls.Button1 element7 = global::WinRT.CastExtensions.As<global::ConditionalControls.Button1>(target);
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V3Type)
                     {
                         ((global::ConditionalControls.Button1)element7).Click += this.Button_Click_V3;
@@ -85,11 +85,11 @@ namespace Conditionals
                     }
                 }
                 break;
-            case 8: // NameEventsLoad.xaml line 62
+            case 8: // NameEventsLoad.xaml line 64
                 {
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V3Type)
                     {
-                        global::ConditionalControls.Button3 element8 = (global::ConditionalControls.Button3)(target);
+                        global::ConditionalControls.Button3 element8 = global::WinRT.CastExtensions.As<global::ConditionalControls.Button3>(target);
                         if (NameEventsLoad.IsTypePresent_ConditionalControls_V3Type)
                         {
                             ((global::ConditionalControls.Button3)element8).Click += this.Button_Click_V3;
@@ -97,11 +97,11 @@ namespace Conditionals
                     }
                 }
                 break;
-            case 9: // NameEventsLoad.xaml line 63
+            case 9: // NameEventsLoad.xaml line 65
                 {
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V1Type)
                     {
-                        global::ConditionalControls.Button1 element9 = (global::ConditionalControls.Button1)(target);
+                        global::ConditionalControls.Button1 element9 = global::WinRT.CastExtensions.As<global::ConditionalControls.Button1>(target);
                         if (NameEventsLoad.IsTypePresent_ConditionalControls_V2Type)
                         {
                             ((global::ConditionalControls.Button1)element9).Click += this.Button_Click_V2;
@@ -109,80 +109,80 @@ namespace Conditionals
                     }
                 }
                 break;
-            case 10: // NameEventsLoad.xaml line 53
+            case 10: // NameEventsLoad.xaml line 55
                 {
-                    this.buttonResult = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.buttonResult = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 11: // NameEventsLoad.xaml line 44
+            case 11: // NameEventsLoad.xaml line 46
                 {
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V1Type)
                     {
-                        this.V1TypeWithAttachedProperty = (global::ConditionalControls.TextBlock1)(target);
+                        this.V1TypeWithAttachedProperty = global::WinRT.CastExtensions.As<global::ConditionalControls.TextBlock1>(target);
                     }
                 }
                 break;
-            case 12: // NameEventsLoad.xaml line 45
+            case 12: // NameEventsLoad.xaml line 47
                 {
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V2Type)
                     {
-                        this.V2TypeWithAttachedProperty = (global::ConditionalControls.TextBlock2)(target);
+                        this.V2TypeWithAttachedProperty = global::WinRT.CastExtensions.As<global::ConditionalControls.TextBlock2>(target);
                     }
                 }
                 break;
-            case 13: // NameEventsLoad.xaml line 46
+            case 13: // NameEventsLoad.xaml line 48
                 {
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V3Type)
                     {
-                        this.V3TypeWithAttachedProperty = (global::ConditionalControls.TextBlock3)(target);
+                        this.V3TypeWithAttachedProperty = global::WinRT.CastExtensions.As<global::ConditionalControls.TextBlock3>(target);
                     }
                 }
                 break;
-            case 14: // NameEventsLoad.xaml line 36
+            case 14: // NameEventsLoad.xaml line 38
                 {
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V1Type)
                     {
-                        this.V1TypeWithXLoad = (global::ConditionalControls.TextBlock1)(target);
+                        this.V1TypeWithXLoad = global::WinRT.CastExtensions.As<global::ConditionalControls.TextBlock1>(target);
                     }
                 }
                 break;
-            case 15: // NameEventsLoad.xaml line 37
+            case 15: // NameEventsLoad.xaml line 39
                 {
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V2Type)
                     {
-                        this.V2TypeWithXLoad = (global::ConditionalControls.TextBlock2)(target);
+                        this.V2TypeWithXLoad = global::WinRT.CastExtensions.As<global::ConditionalControls.TextBlock2>(target);
                     }
                 }
                 break;
-            case 16: // NameEventsLoad.xaml line 38
+            case 16: // NameEventsLoad.xaml line 40
                 {
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V3Type)
                     {
-                        this.V3TypeWithXLoad = (global::ConditionalControls.TextBlock3)(target);
+                        this.V3TypeWithXLoad = global::WinRT.CastExtensions.As<global::ConditionalControls.TextBlock3>(target);
                     }
                 }
                 break;
-            case 17: // NameEventsLoad.xaml line 28
+            case 17: // NameEventsLoad.xaml line 30
                 {
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V1Type)
                     {
-                        this.V1TypeWithXName = (global::ConditionalControls.TextBlock1)(target);
+                        this.V1TypeWithXName = global::WinRT.CastExtensions.As<global::ConditionalControls.TextBlock1>(target);
                     }
                 }
                 break;
-            case 18: // NameEventsLoad.xaml line 29
+            case 18: // NameEventsLoad.xaml line 31
                 {
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V2Type)
                     {
-                        this.V2TypeWithXName = (global::ConditionalControls.TextBlock2)(target);
+                        this.V2TypeWithXName = global::WinRT.CastExtensions.As<global::ConditionalControls.TextBlock2>(target);
                     }
                 }
                 break;
-            case 19: // NameEventsLoad.xaml line 30
+            case 19: // NameEventsLoad.xaml line 32
                 {
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V3Type)
                     {
-                        this.V3TypeWithXName = (global::ConditionalControls.TextBlock3)(target);
+                        this.V3TypeWithXName = global::WinRT.CastExtensions.As<global::ConditionalControls.TextBlock3>(target);
                     }
                 }
                 break;
@@ -195,13 +195,13 @@ namespace Conditionals
         /// <summary>
         /// UnloadObject(DependencyObject)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        partial void UnloadObject(global::Windows.UI.Xaml.DependencyObject unloadableObject)
+        partial void UnloadObject(global::Microsoft.UI.Xaml.DependencyObject unloadableObject)
         {
             if (unloadableObject != null)
             {
-                // NameEventsLoad.xaml line 36
+                // NameEventsLoad.xaml line 38
                 if (NameEventsLoad.IsTypePresent_ConditionalControls_V1Type)
                 {
                     if (unloadableObject == this.V1TypeWithXLoad)
@@ -209,7 +209,7 @@ namespace Conditionals
                         this.DisconnectUnloadedObject(14);
                     }
                 }
-                // NameEventsLoad.xaml line 37
+                // NameEventsLoad.xaml line 39
                 if (NameEventsLoad.IsTypePresent_ConditionalControls_V2Type)
                 {
                     if (unloadableObject == this.V2TypeWithXLoad)
@@ -217,7 +217,7 @@ namespace Conditionals
                         this.DisconnectUnloadedObject(15);
                     }
                 }
-                // NameEventsLoad.xaml line 38
+                // NameEventsLoad.xaml line 40
                 if (NameEventsLoad.IsTypePresent_ConditionalControls_V3Type)
                 {
                     if (unloadableObject == this.V3TypeWithXLoad)
@@ -225,20 +225,20 @@ namespace Conditionals
                         this.DisconnectUnloadedObject(16);
                     }
                 }
-                global::Windows.UI.Xaml.Markup.XamlMarkupHelper.UnloadObject(unloadableObject);
+                global::Microsoft.UI.Xaml.Markup.XamlMarkupHelper.UnloadObject(unloadableObject);
             }
         }
 
         /// <summary>
         /// DisconnectUnloadedObject(int connectionId)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         private void DisconnectUnloadedObject(int connectionId)
         {
             switch(connectionId)
             {
-                case 14: // NameEventsLoad.xaml line 36
+                case 14: // NameEventsLoad.xaml line 38
                 {
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V1Type)
                     {
@@ -246,7 +246,7 @@ namespace Conditionals
                     }
                     break;
                 }
-                case 15: // NameEventsLoad.xaml line 37
+                case 15: // NameEventsLoad.xaml line 39
                 {
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V2Type)
                     {
@@ -254,7 +254,7 @@ namespace Conditionals
                     }
                     break;
                 }
-                case 16: // NameEventsLoad.xaml line 38
+                case 16: // NameEventsLoad.xaml line 40
                 {
                     if (NameEventsLoad.IsTypePresent_ConditionalControls_V3Type)
                     {
@@ -269,14 +269,15 @@ namespace Conditionals
             }
         }
 
+
         /// <summary>
         /// GetBindingConnector(int connectionId, object target)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
+        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
         {
-            global::Windows.UI.Xaml.Markup.IComponentConnector returnValue = null;
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector returnValue = null;
             return returnValue;
         }
 

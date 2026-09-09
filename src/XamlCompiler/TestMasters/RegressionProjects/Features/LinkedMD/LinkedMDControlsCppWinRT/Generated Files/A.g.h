@@ -1,72 +1,49 @@
-﻿// WARNING: Please don't edit this file...
+// WARNING: Please don't edit this file...
 
 #pragma once
-
-#include "winrt/Windows.UI.Xaml.Interop.h"
-#include "winrt/Windows.UI.Xaml.Markup.h"
-#include "winrt/Windows.UI.Composition.h"
-#include "winrt/Windows.UI.Xaml.h"
-#include "winrt/Windows.UI.Xaml.Controls.h"
 #include "winrt/LinkedMDControlsCppWinRT.h"
-
-namespace winrt::LinkedMDControlsCppWinRT::implementation {
-
-template <typename D, typename... I>
-struct WINRT_EBO A_base : implements<D, LinkedMDControlsCppWinRT::IA, ::Windows::UI::Xaml::Controls::IControlOverrides, ::Windows::UI::Xaml::Controls::IControlOverrides6, ::Windows::UI::Xaml::Controls::IPageOverrides, ::Windows::UI::Xaml::IFrameworkElementOverrides, ::Windows::UI::Xaml::IFrameworkElementOverrides2, ::Windows::UI::Xaml::IUIElementOverrides, ::Windows::UI::Xaml::IUIElementOverrides7, ::Windows::UI::Xaml::IUIElementOverrides8, ::Windows::UI::Xaml::IUIElementOverrides9, composing, I...>,
-    impl::require<D, ::Windows::UI::Composition::IAnimationObject, ::Windows::UI::Composition::IVisualElement, ::Windows::UI::Xaml::Controls::IControl, ::Windows::UI::Xaml::Controls::IControl2, ::Windows::UI::Xaml::Controls::IControl3, ::Windows::UI::Xaml::Controls::IControl4, ::Windows::UI::Xaml::Controls::IControl5, ::Windows::UI::Xaml::Controls::IControl7, ::Windows::UI::Xaml::Controls::IControlProtected, ::Windows::UI::Xaml::Controls::IPage, ::Windows::UI::Xaml::Controls::IUserControl, ::Windows::UI::Xaml::IDependencyObject, ::Windows::UI::Xaml::IDependencyObject2, ::Windows::UI::Xaml::IFrameworkElement, ::Windows::UI::Xaml::IFrameworkElement2, ::Windows::UI::Xaml::IFrameworkElement3, ::Windows::UI::Xaml::IFrameworkElement4, ::Windows::UI::Xaml::IFrameworkElement6, ::Windows::UI::Xaml::IFrameworkElement7, ::Windows::UI::Xaml::IFrameworkElementProtected7, ::Windows::UI::Xaml::IUIElement, ::Windows::UI::Xaml::IUIElement10, ::Windows::UI::Xaml::IUIElement2, ::Windows::UI::Xaml::IUIElement3, ::Windows::UI::Xaml::IUIElement4, ::Windows::UI::Xaml::IUIElement5, ::Windows::UI::Xaml::IUIElement7, ::Windows::UI::Xaml::IUIElement8, ::Windows::UI::Xaml::IUIElement9>,
-    impl::base<D, ::Windows::UI::Xaml::Controls::Page, ::Windows::UI::Xaml::Controls::UserControl, ::Windows::UI::Xaml::Controls::Control, ::Windows::UI::Xaml::FrameworkElement, ::Windows::UI::Xaml::UIElement, ::Windows::UI::Xaml::DependencyObject>,
-    ::Windows::UI::Xaml::Controls::IControlOverridesT<D>, ::Windows::UI::Xaml::Controls::IControlOverrides6T<D>, ::Windows::UI::Xaml::Controls::IPageOverridesT<D>, ::Windows::UI::Xaml::IFrameworkElementOverridesT<D>, ::Windows::UI::Xaml::IFrameworkElementOverrides2T<D>, ::Windows::UI::Xaml::IUIElementOverridesT<D>, ::Windows::UI::Xaml::IUIElementOverrides7T<D>, ::Windows::UI::Xaml::IUIElementOverrides8T<D>, ::Windows::UI::Xaml::IUIElementOverrides9T<D>
+#include "winrt/Microsoft.UI.Composition.h"
+#include "winrt/Microsoft.UI.Xaml.h"
+#include "winrt/Microsoft.UI.Xaml.Controls.h"
+namespace winrt::LinkedMDControlsCppWinRT::implementation
 {
-    using base_type = A_base;
-    using class_type = LinkedMDControlsCppWinRT::A;
-    using implements_type = typename A_base::implements_type;
-    using implements_type::implements_type;
-    using composable_base = ::Windows::UI::Xaml::Controls::Page;
-#if _MSC_VER < 1914
-    operator class_type() const noexcept
+    template <typename D, typename... I>
+    struct WINRT_IMPL_EMPTY_BASES A_base : implements<D, LinkedMDControlsCppWinRT::A, composing, winrt::Microsoft::UI::Xaml::Controls::IPageOverrides, winrt::Microsoft::UI::Xaml::Controls::IControlOverrides, winrt::Microsoft::UI::Xaml::IFrameworkElementOverrides, winrt::Microsoft::UI::Xaml::IUIElementOverrides, I...>,
+        impl::require<D, winrt::Microsoft::UI::Xaml::Controls::IPage, winrt::Microsoft::UI::Xaml::Controls::IUserControl, winrt::Microsoft::UI::Xaml::Controls::IControl, winrt::Microsoft::UI::Xaml::Controls::IControlProtected, winrt::Microsoft::UI::Xaml::IFrameworkElement, winrt::Microsoft::UI::Xaml::IFrameworkElementFeature_ExperimentalApi, winrt::Microsoft::UI::Xaml::IFrameworkElementProtected, winrt::Microsoft::UI::Xaml::IUIElement, winrt::Microsoft::UI::Xaml::IUIElementProtected, winrt::Microsoft::UI::Composition::IAnimationObject, winrt::Microsoft::UI::Composition::IVisualElement, winrt::Microsoft::UI::Composition::IVisualElement2, winrt::Microsoft::UI::Xaml::IDependencyObject>,
+        impl::base<D, winrt::Microsoft::UI::Xaml::Controls::Page, winrt::Microsoft::UI::Xaml::Controls::UserControl, winrt::Microsoft::UI::Xaml::Controls::Control, winrt::Microsoft::UI::Xaml::FrameworkElement, winrt::Microsoft::UI::Xaml::UIElement, winrt::Microsoft::UI::Xaml::DependencyObject>,
+        winrt::Microsoft::UI::Xaml::Controls::IPageOverridesT<D>, winrt::Microsoft::UI::Xaml::Controls::IControlOverridesT<D>, winrt::Microsoft::UI::Xaml::IFrameworkElementOverridesT<D>, winrt::Microsoft::UI::Xaml::IUIElementOverridesT<D>
     {
-        static_assert(std::is_same_v<typename impl::implements_default_interface<D>::type, default_interface<class_type>>);
-        class_type result{ nullptr };
-        attach_abi(result, detach_abi(static_cast<default_interface<class_type>>(*this)));
-        return result;
-    }
-#else
-    operator impl::producer_ref<class_type> const() const noexcept
-    {
-        return { to_abi<default_interface<class_type>>(this) };
-    }
-#endif
-
-    hstring GetRuntimeClassName() const
-    {
-        return L"LinkedMDControlsCppWinRT.A";
-    }
-    A_base()
-    {
-        impl::call_factory<::Windows::UI::Xaml::Controls::Page, ::Windows::UI::Xaml::Controls::IPageFactory>([&](auto&& f) { f.CreateInstance(*this, this->m_inner); });
-    }
-};
-
+        using base_type = A_base;
+        using class_type = LinkedMDControlsCppWinRT::A;
+        using implements_type = typename A_base::implements_type;
+        using implements_type::implements_type;
+        using composable_base = winrt::Microsoft::UI::Xaml::Controls::Page;
+        hstring GetRuntimeClassName() const
+        {
+            return L"LinkedMDControlsCppWinRT.A";
+        }
+        A_base()
+        {
+            impl::call_factory<winrt::Microsoft::UI::Xaml::Controls::Page, winrt::Microsoft::UI::Xaml::Controls::IPageFactory>([&](winrt::Microsoft::UI::Xaml::Controls::IPageFactory const& f) { [[maybe_unused]] auto winrt_impl_discarded = f.CreateInstance(*this, this->m_inner); });
+        }
+    };
 }
-
-namespace winrt::LinkedMDControlsCppWinRT::factory_implementation {
-
-template <typename D, typename T, typename... I>
-struct WINRT_EBO AT : implements<D, ::Windows::Foundation::IActivationFactory, I...>
+namespace winrt::LinkedMDControlsCppWinRT::factory_implementation
 {
-    using instance_type = LinkedMDControlsCppWinRT::A;
-
-    hstring GetRuntimeClassName() const
+    template <typename D, typename T, typename... I>
+    struct WINRT_IMPL_EMPTY_BASES AT : implements<D, winrt::Windows::Foundation::IActivationFactory, I...>
     {
-        return L"LinkedMDControlsCppWinRT.A";
-    }
+        using instance_type = LinkedMDControlsCppWinRT::A;
 
-    ::Windows::Foundation::IInspectable ActivateInstance() const
-    {
-        return make<T>();
-    }
-};
-
+        hstring GetRuntimeClassName() const
+        {
+            return L"LinkedMDControlsCppWinRT.A";
+        }
+        auto ActivateInstance() const
+        {
+            return make<T>();
+        }
+    };
 }
 
 #if defined(WINRT_FORCE_INCLUDE_A_XAML_G_H) || __has_include("A.xaml.g.h")

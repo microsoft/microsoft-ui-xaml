@@ -1,0 +1,92 @@
+# XAML compiler codegen targets - the single source of truth for the codegen-to-masters path
+# contract. Both consumers read this file, so neither can drift from the other:
+#
+#   * copynewmasters.cmd   - copies codegen over the masters to accept a new baseline
+#   * CodegenTests.cs      - DiffCodegen diffs codegen against the masters
+#
+# One target per line:
+#
+#   <master directory>|<codegen directory>
+#
+# The master directory is relative to src\XamlCompiler\TestMasters.
+# The codegen directory is relative to the build flavor root, i.e.
+# %BuildOutputRoot%\%_BuildArch%%_BuildType% (BuildOutput\obj\amd64chk\ for an amd64chk window).
+#
+# Codegen directories are $(GeneratedFilesDir), which src\XamlCompiler\Tests\Directory.Build.props
+# defines for every test project, in every language. They are deliberately free of configuration,
+# target framework and runtime identifier, so this file does not need editing when those change.
+# The master directory names are historical and intentionally left alone; they are not required to
+# resemble the codegen directory names.
+#
+# Blank lines and lines starting with # are ignored.
+
+# Basic
+RegressionProjects\Basic\CSharp\Simple\obj\x86\Debug|CompilerTests\Basic\CSharp\Simple\generated
+RegressionProjects\Basic\CppWinRT\Simple\Generated Files|CompilerTests\Basic\CppWinRT\Simple\generated
+RegressionProjects\Basic\CppWinRT\EventHandling_968976\Generated Files|CompilerTests\Basic\CppWinRT\EventHandling_968976\generated
+
+# Basic - references
+RegressionProjects\Basic\References\CSharpExe\obj\x86\Debug|CompilerTests\Basic\References\CSharpExe\generated
+RegressionProjects\Basic\References\CSharpLib\obj\x86\Debug|CompilerTests\Basic\References\CSharpLib\generated
+RegressionProjects\Basic\References\CSharpWinrtComponent\obj\x86\Debug|CompilerTests\Basic\References\CSharpWinrtComponent\generated
+RegressionProjects\Basic\References\CppWinRTComponent\Generated Files|CompilerTests\Basic\References\CppWinRTComponent\generated
+RegressionProjects\Basic\References\CppWinRTExe\Generated Files|CompilerTests\Basic\References\CppWinRTExe\generated
+
+# NonStandard
+RegressionProjects\NonStandard\NonStandardCppWinRT\NonStandardCppWinRT\Generated Files|CompilerTests\NonStandard\NonStandardCppWinRT\NonStandardCppWinRT\generated
+
+# Bind phasing
+RegressionProjects\Features\BindPhasingTestBedCppWinRT\BindPhasingTestBedCppWinRT\Generated Files|CompilerTests\Features\BindPhasingTestBedCppWinRT\BindPhasingTestBedCppWinRT\generated
+
+# Compiled binding
+RegressionProjects\Features\CompiledBinding\BindTestbedCppWinRT\Generated Files|CompilerTests\BindTestbedCppWinRT\generated
+RegressionProjects\Features\CompiledBinding\BindTestbedCppWinRT\Incremental\Generated Files|CompilerTests\BindTestbedCppWinRT\BindTestbedCppWinRTIncremental\generated
+RegressionProjects\Features\CompiledBinding\BindTestbedModel\obj\x86\Debug|CompilerTests\BindTestbedModel\generated
+RegressionProjects\Features\CompiledBinding\BindTestbedCS\obj\x86\Debug|CompilerTests\BindTestbedCS\generated
+
+# Conditionals
+RegressionProjects\Features\Conditionals\ConditionalControls\obj\x86\Debug|CompilerTests\Features\Conditionals\ConditionalControls\generated
+RegressionProjects\Features\Conditionals\ConditionalsCppWinRT\Generated Files|CompilerTests\Features\Conditionals\ConditionalsCppWinRT\generated
+RegressionProjects\Features\Conditionals\ConditionalsCS\obj\x86\Debug|CompilerTests\Features\Conditionals\ConditionalsCS\generated
+RegressionProjects\Features\Conditionals\ConditionalsModel\obj\x86\Debug|CompilerTests\Features\Conditionals\ConditionalsModel\generated
+RegressionProjects\Features\Conditionals\Platform Conditionals\PlatformConditionalsCS\obj\x86\Debug|CompilerTests\Features\Conditionals\Platform Conditionals\PlatformConditionalsCS\generated
+RegressionProjects\Features\Conditionals\Platform Conditionals\PlatformConditionalsModel\obj\x86\Debug|CompilerTests\Features\Conditionals\Platform Conditionals\PlatformConditionalsModel\generated
+
+# Deferred loading
+RegressionProjects\Features\DeferLoadStrategy\CSharp\obj\x86\Debug|CompilerTests\Features\DeferLoadStrategy\CSharp\generated
+RegressionProjects\Features\DeferLoadStrategy\CppWinRT\Generated Files|CompilerTests\Features\DeferLoadStrategy\CppWinRT\generated
+
+# Linked metadata
+RegressionProjects\Features\LinkedMD\LinkedMDAppCppWinRT\Generated Files|CompilerTests\Features\LinkedMD\LinkedMDAppCppWinRT\generated
+RegressionProjects\Features\LinkedMD\LinkedMdAppCS\obj\x86\Debug|CompilerTests\Features\LinkedMD\LinkedMdAppCS\generated
+RegressionProjects\Features\LinkedMD\LinkedMDControlsCppWinRT\Generated Files|CompilerTests\Features\LinkedMD\LinkedMDControlsCppWinRT\generated
+RegressionProjects\Features\LinkedMD\LinkedMdControlsCS\obj\x86\Debug|CompilerTests\Features\LinkedMD\LinkedMdControlsCS\generated
+RegressionProjects\Features\LinkedMD\LinkedMDSubControlsCppWinRT\Generated Files|CompilerTests\Features\LinkedMD\LinkedMDSubControlsCppWinRT\generated
+RegressionProjects\Features\LinkedMD\LinkedMdSubControlsCS\obj\x86\Debug|CompilerTests\Features\LinkedMD\LinkedMdSubControlsCS\generated
+
+# Markup extensions
+RegressionProjects\Features\MarkupExtensions\MarkupExtensionsCppWinRT\Generated Files|CompilerTests\Features\MarkupExtensions\MarkupExtensionsCppWinRT\generated
+RegressionProjects\Features\MarkupExtensions\MarkupExtensionsCS\obj\x86\Debug|CompilerTests\Features\MarkupExtensions\MarkupExtensionsCS\generated
+
+# Metadata
+RegressionProjects\Features\Metadata\MetadataTestbedCS\obj\x86\Debug|CompilerTests\Features\Metadata\MetadataTestbedCS\generated
+RegressionProjects\Features\Metadata\MetadataTestbedCppWinRT\Generated Files|CompilerTests\Features\Metadata\MetadataTestbedCppWinRT\generated
+
+# Multiple XAML files
+RegressionProjects\Features\MultiXamlFiles\MultipleViewsTestbedCppWinRT\Generated Files|CompilerTests\Features\MultiXamlFiles\MultipleViewsTestbedCppWinRT\generated
+RegressionProjects\Features\MultiXamlFiles\MultipleViewsTestbed\obj\x86\Debug|CompilerTests\Features\MultiXamlFiles\MultipleViewsTestbed\generated
+
+# Reduced provider loading
+RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ConsumerCs\obj\x86\Debug|CompilerTests\Features\ReduceProviderLoading\ConsumerProvider\ConsumerCs\generated
+RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ProviderCs\obj\x86\Debug|CompilerTests\Features\ReduceProviderLoading\ConsumerProvider\ProviderCs\generated
+RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ConsumerCppWinRT\Generated Files|CompilerTests\Features\ReduceProviderLoading\ConsumerProvider\ConsumerCppWinRT\generated
+RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ProviderCppWinRT\Generated Files|CompilerTests\Features\ReduceProviderLoading\ConsumerProvider\ProviderCppWinRT\generated
+
+# Static libraries
+RegressionProjects\Features\StaticLibs\RuntimeComponentWithStaticLibInApp\Generated Files|CompilerTests\Features\StaticLibs\RuntimeComponentWithStaticLibInApp\generated
+RegressionProjects\Features\StaticLibs\StaticControlsLib\Generated Files|CompilerTests\Features\StaticLibs\StaticControlsLib\generated
+RegressionProjects\Features\StaticLibs\StaticLibInApp\Generated Files|CompilerTests\Features\StaticLibs\StaticLibInApp\generated
+RegressionProjects\Features\StaticLibs\StaticLibInRuntimeComponent\Generated Files|CompilerTests\Features\StaticLibs\StaticLibInRuntimeComponent\generated
+
+# Custom App.xaml
+RegressionProjects\Features\CustomAppXaml\CustomAppXaml\obj\x86\Debug|CompilerTests\Features\CustomAppXaml\CustomAppXaml\generated

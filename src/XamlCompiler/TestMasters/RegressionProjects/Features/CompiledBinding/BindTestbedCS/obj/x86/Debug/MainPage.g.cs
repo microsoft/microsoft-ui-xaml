@@ -12,19 +12,18 @@
 namespace BindTestbed
 {
     partial class MainPage : 
-        global::Windows.UI.Xaml.Controls.Page, 
-        global::Windows.UI.Xaml.Markup.IComponentConnector,
-        global::Windows.UI.Xaml.Markup.IComponentConnector2
+        global::Microsoft.UI.Xaml.Controls.Page, 
+        global::Microsoft.UI.Xaml.Markup.IComponentConnector
     {
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         private static class XamlBindingSetters
         {
-            public static void Set_Windows_UI_Xaml_Controls_ContentControl_Content(global::Windows.UI.Xaml.Controls.ContentControl obj, global::System.Object value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_ContentControl_Content(global::Microsoft.UI.Xaml.Controls.ContentControl obj, global::System.Object value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::System.Object) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
+                    value = (global::System.Object) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
                 }
                 obj.Content = value;
             }
@@ -32,7 +31,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.DataModel) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DataModel), targetNullValue);
+                    value = (global::BindTestbedModel.DataModel) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DataModel), targetNullValue);
                 }
                 obj.Model = value;
             }
@@ -40,7 +39,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.DOModel) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DOModel), targetNullValue);
+                    value = (global::BindTestbedModel.DOModel) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DOModel), targetNullValue);
                 }
                 obj.DOModel = value;
             }
@@ -48,7 +47,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbed.LanguageSpecific) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbed.LanguageSpecific), targetNullValue);
+                    value = (global::BindTestbed.LanguageSpecific) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbed.LanguageSpecific), targetNullValue);
                 }
                 obj.LanguageModel = value;
             }
@@ -56,7 +55,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.DataModel) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DataModel), targetNullValue);
+                    value = (global::BindTestbedModel.DataModel) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DataModel), targetNullValue);
                 }
                 obj.Model = value;
             }
@@ -64,7 +63,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.DOModel) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DOModel), targetNullValue);
+                    value = (global::BindTestbedModel.DOModel) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DOModel), targetNullValue);
                 }
                 obj.DOModel = value;
             }
@@ -72,7 +71,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbed.LanguageSpecific) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbed.LanguageSpecific), targetNullValue);
+                    value = (global::BindTestbed.LanguageSpecific) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbed.LanguageSpecific), targetNullValue);
                 }
                 obj.LanguageModel = value;
             }
@@ -80,7 +79,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.DataModel) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DataModel), targetNullValue);
+                    value = (global::BindTestbedModel.DataModel) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DataModel), targetNullValue);
                 }
                 obj.Model = value;
             }
@@ -88,7 +87,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.DOModel) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DOModel), targetNullValue);
+                    value = (global::BindTestbedModel.DOModel) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DOModel), targetNullValue);
                 }
                 obj.DOModel = value;
             }
@@ -96,23 +95,15 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbed.LanguageSpecific) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbed.LanguageSpecific), targetNullValue);
+                    value = (global::BindTestbed.LanguageSpecific) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbed.LanguageSpecific), targetNullValue);
                 }
                 obj.LanguageModel = value;
-            }
-            public static void Set_BindTestbed_ListAndTemplateTests_ModelCX(global::BindTestbed.ListAndTemplateTests obj, global::BindTestbedCXModel.ModelCX value, string targetNullValue)
-            {
-                if (value == null && targetNullValue != null)
-                {
-                    value = (global::BindTestbedCXModel.ModelCX) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedCXModel.ModelCX), targetNullValue);
-                }
-                obj.ModelCX = value;
             }
             public static void Set_BindTestbed_ListAndTemplateTests_SomeButtonContent(global::BindTestbed.ListAndTemplateTests obj, global::System.Object value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::System.Object) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
+                    value = (global::System.Object) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
                 }
                 obj.SomeButtonContent = value;
             }
@@ -120,7 +111,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.DataModel) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DataModel), targetNullValue);
+                    value = (global::BindTestbedModel.DataModel) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DataModel), targetNullValue);
                 }
                 obj.Model = value;
             }
@@ -128,7 +119,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.DOModel) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DOModel), targetNullValue);
+                    value = (global::BindTestbedModel.DOModel) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DOModel), targetNullValue);
                 }
                 obj.DOModel = value;
             }
@@ -136,7 +127,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbed.LanguageSpecific) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbed.LanguageSpecific), targetNullValue);
+                    value = (global::BindTestbed.LanguageSpecific) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbed.LanguageSpecific), targetNullValue);
                 }
                 obj.LanguageModel = value;
             }
@@ -144,7 +135,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.IEmployee) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.IEmployee), targetNullValue);
+                    value = (global::BindTestbedModel.IEmployee) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.IEmployee), targetNullValue);
                 }
                 obj.Person = value;
             }
@@ -152,7 +143,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.DataModel) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DataModel), targetNullValue);
+                    value = (global::BindTestbedModel.DataModel) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DataModel), targetNullValue);
                 }
                 obj.Model = value;
             }
@@ -160,7 +151,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.DOModel) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DOModel), targetNullValue);
+                    value = (global::BindTestbedModel.DOModel) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DOModel), targetNullValue);
                 }
                 obj.DOModel = value;
             }
@@ -168,7 +159,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbed.LanguageSpecific) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbed.LanguageSpecific), targetNullValue);
+                    value = (global::BindTestbed.LanguageSpecific) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbed.LanguageSpecific), targetNullValue);
                 }
                 obj.LanguageModel = value;
             }
@@ -176,7 +167,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.DataModel) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DataModel), targetNullValue);
+                    value = (global::BindTestbedModel.DataModel) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DataModel), targetNullValue);
                 }
                 obj.Model = value;
             }
@@ -184,7 +175,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.DOModel) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DOModel), targetNullValue);
+                    value = (global::BindTestbedModel.DOModel) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DOModel), targetNullValue);
                 }
                 obj.DOModel = value;
             }
@@ -192,7 +183,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbed.LanguageSpecific) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbed.LanguageSpecific), targetNullValue);
+                    value = (global::BindTestbed.LanguageSpecific) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbed.LanguageSpecific), targetNullValue);
                 }
                 obj.LanguageModel = value;
             }
@@ -200,7 +191,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.DataModel) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DataModel), targetNullValue);
+                    value = (global::BindTestbedModel.DataModel) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DataModel), targetNullValue);
                 }
                 obj.Model = value;
             }
@@ -208,7 +199,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.DOModel) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DOModel), targetNullValue);
+                    value = (global::BindTestbedModel.DOModel) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DOModel), targetNullValue);
                 }
                 obj.DOModel = value;
             }
@@ -216,7 +207,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbed.LanguageSpecific) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbed.LanguageSpecific), targetNullValue);
+                    value = (global::BindTestbed.LanguageSpecific) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbed.LanguageSpecific), targetNullValue);
                 }
                 obj.LanguageModel = value;
             }
@@ -224,7 +215,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.DataModel) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DataModel), targetNullValue);
+                    value = (global::BindTestbedModel.DataModel) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DataModel), targetNullValue);
                 }
                 obj.Model = value;
             }
@@ -232,18 +223,18 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.DOModel) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DOModel), targetNullValue);
+                    value = (global::BindTestbedModel.DOModel) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.DOModel), targetNullValue);
                 }
                 obj.DOModel = value;
             }
         };
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class MainPage_obj1_Bindings :
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class MainPage_obj1_Bindings :
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IMainPage_Bindings
         {
             private global::BindTestbed.MainPage dataRoot;
@@ -252,7 +243,7 @@ namespace BindTestbed
             private const int DATA_CHANGED = (1 << 30);
 
             // Fields for each control that has bindings.
-            private global::Windows.UI.Xaml.Controls.Button obj2;
+            private global::Microsoft.UI.Xaml.Controls.Button obj2;
 
             // Static fields for each binding's enabled/disabled state
             private static bool isobj2ContentDisabled = false;
@@ -263,7 +254,7 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 12 && columnNumber == 17)
+                if (lineNumber == 14 && columnNumber == 17)
                 {
                     isobj2ContentDisabled = true;
                 }
@@ -275,13 +266,19 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 2: // MainPage.Portrait.xaml line 12
-                        this.obj2 = (global::Windows.UI.Xaml.Controls.Button)target;
+                    case 2: // MainPage.Portrait.xaml line 14
+                        this.obj2 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
             // IDataTemplateComponent
 
@@ -324,13 +321,18 @@ namespace BindTestbed
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbed.MainPage)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbed.MainPage>(newDataRoot);
                     return true;
                 }
                 return false;
             }
 
-            public void Loading(global::Windows.UI.Xaml.FrameworkElement src, object data)
+            public void Activated(object obj, global::Microsoft.UI.Xaml.WindowActivatedEventArgs data)
+            {
+                this.Initialize();
+            }
+
+            public void Loading(global::Microsoft.UI.Xaml.FrameworkElement src, object data)
             {
                 this.Initialize();
             }
@@ -380,22 +382,22 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.Portrait.xaml line 12
+                    // MainPage.Portrait.xaml line 14
                     if (!isobj2ContentDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_ContentControl_Content(this.obj2, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ContentControl_Content(this.obj2, obj, null);
                     }
                 }
             }
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class MainPage_obj10_Bindings :
-            global::Windows.UI.Xaml.IDataTemplateExtension,
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class MainPage_obj10_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IMainPage_Bindings
         {
             private global::BindTestbed.MainPage dataRoot;
@@ -418,15 +420,15 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 74 && columnNumber == 40)
+                if (lineNumber == 76 && columnNumber == 40)
                 {
                     isobj10ModelDisabled = true;
                 }
-                else if (lineNumber == 74 && columnNumber == 63)
+                else if (lineNumber == 76 && columnNumber == 63)
                 {
                     isobj10DOModelDisabled = true;
                 }
-                else if (lineNumber == 74 && columnNumber == 90)
+                else if (lineNumber == 76 && columnNumber == 90)
                 {
                     isobj10LanguageModelDisabled = true;
                 }
@@ -438,15 +440,21 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 10: // MainPage.xaml line 74
-                        this.obj10 = new global::System.WeakReference((global::BindTestbed.TwoWayTests)target);
+                    case 10: // MainPage.xaml line 76
+                        this.obj10 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::BindTestbed.TwoWayTests>(target));
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
-            public void DataContextChangedHandler(global::Windows.UI.Xaml.FrameworkElement sender, global::Windows.UI.Xaml.DataContextChangedEventArgs args)
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
             {
                  if (this.SetDataRoot(args.NewValue))
                  {
@@ -461,7 +469,7 @@ namespace BindTestbed
                 throw new global::System.NotImplementedException();
             }
 
-            public int ProcessBindings(global::Windows.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
             {
                 int nextPhase = -1;
                 ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
@@ -486,12 +494,16 @@ namespace BindTestbed
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            (this.obj10.Target as global::BindTestbed.TwoWayTests).DataContextChanged -= this.DataContextChangedHandler;
+                            var rootElement = (this.obj10.Target as global::BindTestbed.TwoWayTests);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
                         }
                         this.initialized = true;
                         break;
                 }
-                this.Update_((global::BindTestbed.MainPage) item, 1 << phase);
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbed.MainPage>(item), 1 << phase);
             }
 
             public void Recycle()
@@ -527,7 +539,7 @@ namespace BindTestbed
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbed.MainPage)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbed.MainPage>(newDataRoot);
                     return true;
                 }
                 return false;
@@ -550,7 +562,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 74
+                    // MainPage.xaml line 76
                     if (!isobj10ModelDisabled)
                     {
                         if ((this.obj10.Target as global::BindTestbed.TwoWayTests) != null)
@@ -564,7 +576,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 74
+                    // MainPage.xaml line 76
                     if (!isobj10DOModelDisabled)
                     {
                         if ((this.obj10.Target as global::BindTestbed.TwoWayTests) != null)
@@ -578,7 +590,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 74
+                    // MainPage.xaml line 76
                     if (!isobj10LanguageModelDisabled)
                     {
                         if ((this.obj10.Target as global::BindTestbed.TwoWayTests) != null)
@@ -590,13 +602,13 @@ namespace BindTestbed
             }
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class MainPage_obj12_Bindings :
-            global::Windows.UI.Xaml.IDataTemplateExtension,
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class MainPage_obj12_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IMainPage_Bindings
         {
             private global::BindTestbed.MainPage dataRoot;
@@ -619,15 +631,15 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 68 && columnNumber == 39)
+                if (lineNumber == 70 && columnNumber == 39)
                 {
                     isobj12ModelDisabled = true;
                 }
-                else if (lineNumber == 68 && columnNumber == 62)
+                else if (lineNumber == 70 && columnNumber == 62)
                 {
                     isobj12DOModelDisabled = true;
                 }
-                else if (lineNumber == 68 && columnNumber == 89)
+                else if (lineNumber == 70 && columnNumber == 89)
                 {
                     isobj12LanguageModelDisabled = true;
                 }
@@ -639,15 +651,21 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 12: // MainPage.xaml line 68
-                        this.obj12 = new global::System.WeakReference((global::BindTestbed.EventTests)target);
+                    case 12: // MainPage.xaml line 70
+                        this.obj12 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::BindTestbed.EventTests>(target));
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
-            public void DataContextChangedHandler(global::Windows.UI.Xaml.FrameworkElement sender, global::Windows.UI.Xaml.DataContextChangedEventArgs args)
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
             {
                  if (this.SetDataRoot(args.NewValue))
                  {
@@ -662,7 +680,7 @@ namespace BindTestbed
                 throw new global::System.NotImplementedException();
             }
 
-            public int ProcessBindings(global::Windows.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
             {
                 int nextPhase = -1;
                 ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
@@ -687,12 +705,16 @@ namespace BindTestbed
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            (this.obj12.Target as global::BindTestbed.EventTests).DataContextChanged -= this.DataContextChangedHandler;
+                            var rootElement = (this.obj12.Target as global::BindTestbed.EventTests);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
                         }
                         this.initialized = true;
                         break;
                 }
-                this.Update_((global::BindTestbed.MainPage) item, 1 << phase);
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbed.MainPage>(item), 1 << phase);
             }
 
             public void Recycle()
@@ -728,7 +750,7 @@ namespace BindTestbed
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbed.MainPage)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbed.MainPage>(newDataRoot);
                     return true;
                 }
                 return false;
@@ -751,7 +773,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 68
+                    // MainPage.xaml line 70
                     if (!isobj12ModelDisabled)
                     {
                         if ((this.obj12.Target as global::BindTestbed.EventTests) != null)
@@ -765,7 +787,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 68
+                    // MainPage.xaml line 70
                     if (!isobj12DOModelDisabled)
                     {
                         if ((this.obj12.Target as global::BindTestbed.EventTests) != null)
@@ -779,7 +801,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 68
+                    // MainPage.xaml line 70
                     if (!isobj12LanguageModelDisabled)
                     {
                         if ((this.obj12.Target as global::BindTestbed.EventTests) != null)
@@ -791,13 +813,13 @@ namespace BindTestbed
             }
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class MainPage_obj17_Bindings :
-            global::Windows.UI.Xaml.IDataTemplateExtension,
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class MainPage_obj17_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IMainPage_Bindings
         {
             private global::BindTestbed.MainPage dataRoot;
@@ -813,7 +835,6 @@ namespace BindTestbed
             private static bool isobj17ModelDisabled = false;
             private static bool isobj17DOModelDisabled = false;
             private static bool isobj17LanguageModelDisabled = false;
-            private static bool isobj17ModelCXDisabled = false;
             private static bool isobj17SomeButtonContentDisabled = false;
 
             public MainPage_obj17_Bindings()
@@ -822,23 +843,19 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 50 && columnNumber == 49)
+                if (lineNumber == 52 && columnNumber == 49)
                 {
                     isobj17ModelDisabled = true;
                 }
-                else if (lineNumber == 50 && columnNumber == 72)
+                else if (lineNumber == 52 && columnNumber == 72)
                 {
                     isobj17DOModelDisabled = true;
                 }
-                else if (lineNumber == 50 && columnNumber == 99)
+                else if (lineNumber == 52 && columnNumber == 99)
                 {
                     isobj17LanguageModelDisabled = true;
                 }
-                else if (lineNumber == 50 && columnNumber == 138)
-                {
-                    isobj17ModelCXDisabled = true;
-                }
-                else if (lineNumber == 50 && columnNumber == 165)
+                else if (lineNumber == 52 && columnNumber == 138)
                 {
                     isobj17SomeButtonContentDisabled = true;
                 }
@@ -850,15 +867,21 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 17: // MainPage.xaml line 50
-                        this.obj17 = new global::System.WeakReference((global::BindTestbed.ListAndTemplateTests)target);
+                    case 17: // MainPage.xaml line 52
+                        this.obj17 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::BindTestbed.ListAndTemplateTests>(target));
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
-            public void DataContextChangedHandler(global::Windows.UI.Xaml.FrameworkElement sender, global::Windows.UI.Xaml.DataContextChangedEventArgs args)
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
             {
                  if (this.SetDataRoot(args.NewValue))
                  {
@@ -873,7 +896,7 @@ namespace BindTestbed
                 throw new global::System.NotImplementedException();
             }
 
-            public int ProcessBindings(global::Windows.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
             {
                 int nextPhase = -1;
                 ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
@@ -898,12 +921,16 @@ namespace BindTestbed
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            (this.obj17.Target as global::BindTestbed.ListAndTemplateTests).DataContextChanged -= this.DataContextChangedHandler;
+                            var rootElement = (this.obj17.Target as global::BindTestbed.ListAndTemplateTests);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
                         }
                         this.initialized = true;
                         break;
                 }
-                this.Update_((global::BindTestbed.MainPage) item, 1 << phase);
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbed.MainPage>(item), 1 << phase);
             }
 
             public void Recycle()
@@ -939,7 +966,7 @@ namespace BindTestbed
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbed.MainPage)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbed.MainPage>(newDataRoot);
                     return true;
                 }
                 return false;
@@ -955,7 +982,6 @@ namespace BindTestbed
                         this.Update_Model(obj.Model, phase);
                         this.Update_DOModel(obj.DOModel, phase);
                         this.Update_LanguageModel(obj.LanguageModel, phase);
-                        this.Update_ModelCX(obj.ModelCX, phase);
                     }
                 }
             }
@@ -970,7 +996,7 @@ namespace BindTestbed
                 }
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 50
+                    // MainPage.xaml line 52
                     if (!isobj17ModelDisabled)
                     {
                         if ((this.obj17.Target as global::BindTestbed.ListAndTemplateTests) != null)
@@ -984,7 +1010,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 50
+                    // MainPage.xaml line 52
                     if (!isobj17DOModelDisabled)
                     {
                         if ((this.obj17.Target as global::BindTestbed.ListAndTemplateTests) != null)
@@ -998,26 +1024,12 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 50
+                    // MainPage.xaml line 52
                     if (!isobj17LanguageModelDisabled)
                     {
                         if ((this.obj17.Target as global::BindTestbed.ListAndTemplateTests) != null)
                         {
                             XamlBindingSetters.Set_BindTestbed_ListAndTemplateTests_LanguageModel((this.obj17.Target as global::BindTestbed.ListAndTemplateTests), obj, null);
-                        }
-                    }
-                }
-            }
-            private void Update_ModelCX(global::BindTestbedCXModel.ModelCX obj, int phase)
-            {
-                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
-                {
-                    // MainPage.xaml line 50
-                    if (!isobj17ModelCXDisabled)
-                    {
-                        if ((this.obj17.Target as global::BindTestbed.ListAndTemplateTests) != null)
-                        {
-                            XamlBindingSetters.Set_BindTestbed_ListAndTemplateTests_ModelCX((this.obj17.Target as global::BindTestbed.ListAndTemplateTests), obj, null);
                         }
                     }
                 }
@@ -1036,7 +1048,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 50
+                    // MainPage.xaml line 52
                     if (!isobj17SomeButtonContentDisabled)
                     {
                         if ((this.obj17.Target as global::BindTestbed.ListAndTemplateTests) != null)
@@ -1048,13 +1060,13 @@ namespace BindTestbed
             }
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class MainPage_obj19_Bindings :
-            global::Windows.UI.Xaml.IDataTemplateExtension,
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class MainPage_obj19_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IMainPage_Bindings
         {
             private global::BindTestbed.MainPage dataRoot;
@@ -1078,19 +1090,19 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 44 && columnNumber == 39)
+                if (lineNumber == 46 && columnNumber == 39)
                 {
                     isobj19ModelDisabled = true;
                 }
-                else if (lineNumber == 44 && columnNumber == 62)
+                else if (lineNumber == 46 && columnNumber == 62)
                 {
                     isobj19DOModelDisabled = true;
                 }
-                else if (lineNumber == 44 && columnNumber == 89)
+                else if (lineNumber == 46 && columnNumber == 89)
                 {
                     isobj19LanguageModelDisabled = true;
                 }
-                else if (lineNumber == 44 && columnNumber == 128)
+                else if (lineNumber == 46 && columnNumber == 128)
                 {
                     isobj19PersonDisabled = true;
                 }
@@ -1102,15 +1114,21 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 19: // MainPage.xaml line 44
-                        this.obj19 = new global::System.WeakReference((global::BindTestbed.TestsPage2)target);
+                    case 19: // MainPage.xaml line 46
+                        this.obj19 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::BindTestbed.TestsPage2>(target));
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
-            public void DataContextChangedHandler(global::Windows.UI.Xaml.FrameworkElement sender, global::Windows.UI.Xaml.DataContextChangedEventArgs args)
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
             {
                  if (this.SetDataRoot(args.NewValue))
                  {
@@ -1125,7 +1143,7 @@ namespace BindTestbed
                 throw new global::System.NotImplementedException();
             }
 
-            public int ProcessBindings(global::Windows.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
             {
                 int nextPhase = -1;
                 ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
@@ -1150,12 +1168,16 @@ namespace BindTestbed
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            (this.obj19.Target as global::BindTestbed.TestsPage2).DataContextChanged -= this.DataContextChangedHandler;
+                            var rootElement = (this.obj19.Target as global::BindTestbed.TestsPage2);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
                         }
                         this.initialized = true;
                         break;
                 }
-                this.Update_((global::BindTestbed.MainPage) item, 1 << phase);
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbed.MainPage>(item), 1 << phase);
             }
 
             public void Recycle()
@@ -1191,7 +1213,7 @@ namespace BindTestbed
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbed.MainPage)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbed.MainPage>(newDataRoot);
                     return true;
                 }
                 return false;
@@ -1221,7 +1243,7 @@ namespace BindTestbed
                 }
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 44
+                    // MainPage.xaml line 46
                     if (!isobj19ModelDisabled)
                     {
                         if ((this.obj19.Target as global::BindTestbed.TestsPage2) != null)
@@ -1235,7 +1257,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 44
+                    // MainPage.xaml line 46
                     if (!isobj19DOModelDisabled)
                     {
                         if ((this.obj19.Target as global::BindTestbed.TestsPage2) != null)
@@ -1249,7 +1271,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 44
+                    // MainPage.xaml line 46
                     if (!isobj19LanguageModelDisabled)
                     {
                         if ((this.obj19.Target as global::BindTestbed.TestsPage2) != null)
@@ -1263,7 +1285,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 44
+                    // MainPage.xaml line 46
                     if (!isobj19PersonDisabled)
                     {
                         if ((this.obj19.Target as global::BindTestbed.TestsPage2) != null)
@@ -1275,13 +1297,13 @@ namespace BindTestbed
             }
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class MainPage_obj21_Bindings :
-            global::Windows.UI.Xaml.IDataTemplateExtension,
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class MainPage_obj21_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IMainPage_Bindings
         {
             private global::BindTestbed.MainPage dataRoot;
@@ -1304,15 +1326,15 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 38 && columnNumber == 39)
+                if (lineNumber == 40 && columnNumber == 39)
                 {
                     isobj21ModelDisabled = true;
                 }
-                else if (lineNumber == 38 && columnNumber == 62)
+                else if (lineNumber == 40 && columnNumber == 62)
                 {
                     isobj21DOModelDisabled = true;
                 }
-                else if (lineNumber == 38 && columnNumber == 89)
+                else if (lineNumber == 40 && columnNumber == 89)
                 {
                     isobj21LanguageModelDisabled = true;
                 }
@@ -1324,15 +1346,21 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 21: // MainPage.xaml line 38
-                        this.obj21 = new global::System.WeakReference((global::BindTestbed.BasicTests)target);
+                    case 21: // MainPage.xaml line 40
+                        this.obj21 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::BindTestbed.BasicTests>(target));
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
-            public void DataContextChangedHandler(global::Windows.UI.Xaml.FrameworkElement sender, global::Windows.UI.Xaml.DataContextChangedEventArgs args)
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
             {
                  if (this.SetDataRoot(args.NewValue))
                  {
@@ -1347,7 +1375,7 @@ namespace BindTestbed
                 throw new global::System.NotImplementedException();
             }
 
-            public int ProcessBindings(global::Windows.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
             {
                 int nextPhase = -1;
                 ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
@@ -1372,12 +1400,16 @@ namespace BindTestbed
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            (this.obj21.Target as global::BindTestbed.BasicTests).DataContextChanged -= this.DataContextChangedHandler;
+                            var rootElement = (this.obj21.Target as global::BindTestbed.BasicTests);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
                         }
                         this.initialized = true;
                         break;
                 }
-                this.Update_((global::BindTestbed.MainPage) item, 1 << phase);
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbed.MainPage>(item), 1 << phase);
             }
 
             public void Recycle()
@@ -1413,7 +1445,7 @@ namespace BindTestbed
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbed.MainPage)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbed.MainPage>(newDataRoot);
                     return true;
                 }
                 return false;
@@ -1436,7 +1468,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 38
+                    // MainPage.xaml line 40
                     if (!isobj21ModelDisabled)
                     {
                         if ((this.obj21.Target as global::BindTestbed.BasicTests) != null)
@@ -1450,7 +1482,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 38
+                    // MainPage.xaml line 40
                     if (!isobj21DOModelDisabled)
                     {
                         if ((this.obj21.Target as global::BindTestbed.BasicTests) != null)
@@ -1464,7 +1496,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 38
+                    // MainPage.xaml line 40
                     if (!isobj21LanguageModelDisabled)
                     {
                         if ((this.obj21.Target as global::BindTestbed.BasicTests) != null)
@@ -1476,13 +1508,13 @@ namespace BindTestbed
             }
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class MainPage_obj23_Bindings :
-            global::Windows.UI.Xaml.IDataTemplateExtension,
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class MainPage_obj23_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IMainPage_Bindings
         {
             private global::BindTestbed.MainPage dataRoot;
@@ -1505,15 +1537,15 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 32 && columnNumber == 42)
+                if (lineNumber == 34 && columnNumber == 42)
                 {
                     isobj23ModelDisabled = true;
                 }
-                else if (lineNumber == 32 && columnNumber == 65)
+                else if (lineNumber == 34 && columnNumber == 65)
                 {
                     isobj23DOModelDisabled = true;
                 }
-                else if (lineNumber == 32 && columnNumber == 92)
+                else if (lineNumber == 34 && columnNumber == 92)
                 {
                     isobj23LanguageModelDisabled = true;
                 }
@@ -1525,15 +1557,21 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 23: // MainPage.xaml line 32
-                        this.obj23 = new global::System.WeakReference((global::BindTestbed.FunctionTests)target);
+                    case 23: // MainPage.xaml line 34
+                        this.obj23 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::BindTestbed.FunctionTests>(target));
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
-            public void DataContextChangedHandler(global::Windows.UI.Xaml.FrameworkElement sender, global::Windows.UI.Xaml.DataContextChangedEventArgs args)
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
             {
                  if (this.SetDataRoot(args.NewValue))
                  {
@@ -1548,7 +1586,7 @@ namespace BindTestbed
                 throw new global::System.NotImplementedException();
             }
 
-            public int ProcessBindings(global::Windows.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
             {
                 int nextPhase = -1;
                 ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
@@ -1573,12 +1611,16 @@ namespace BindTestbed
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            (this.obj23.Target as global::BindTestbed.FunctionTests).DataContextChanged -= this.DataContextChangedHandler;
+                            var rootElement = (this.obj23.Target as global::BindTestbed.FunctionTests);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
                         }
                         this.initialized = true;
                         break;
                 }
-                this.Update_((global::BindTestbed.MainPage) item, 1 << phase);
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbed.MainPage>(item), 1 << phase);
             }
 
             public void Recycle()
@@ -1614,7 +1656,7 @@ namespace BindTestbed
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbed.MainPage)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbed.MainPage>(newDataRoot);
                     return true;
                 }
                 return false;
@@ -1637,7 +1679,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 32
+                    // MainPage.xaml line 34
                     if (!isobj23ModelDisabled)
                     {
                         if ((this.obj23.Target as global::BindTestbed.FunctionTests) != null)
@@ -1651,7 +1693,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 32
+                    // MainPage.xaml line 34
                     if (!isobj23DOModelDisabled)
                     {
                         if ((this.obj23.Target as global::BindTestbed.FunctionTests) != null)
@@ -1665,7 +1707,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 32
+                    // MainPage.xaml line 34
                     if (!isobj23LanguageModelDisabled)
                     {
                         if ((this.obj23.Target as global::BindTestbed.FunctionTests) != null)
@@ -1677,13 +1719,13 @@ namespace BindTestbed
             }
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class MainPage_obj25_Bindings :
-            global::Windows.UI.Xaml.IDataTemplateExtension,
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class MainPage_obj25_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IMainPage_Bindings
         {
             private global::BindTestbed.MainPage dataRoot;
@@ -1706,15 +1748,15 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 26 && columnNumber == 57)
+                if (lineNumber == 28 && columnNumber == 57)
                 {
                     isobj25ModelDisabled = true;
                 }
-                else if (lineNumber == 26 && columnNumber == 80)
+                else if (lineNumber == 28 && columnNumber == 80)
                 {
                     isobj25DOModelDisabled = true;
                 }
-                else if (lineNumber == 26 && columnNumber == 107)
+                else if (lineNumber == 28 && columnNumber == 107)
                 {
                     isobj25LanguageModelDisabled = true;
                 }
@@ -1726,15 +1768,21 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 25: // MainPage.xaml line 26
-                        this.obj25 = new global::System.WeakReference((global::BindTestbed.LoadAndCreateFromStringTests)target);
+                    case 25: // MainPage.xaml line 28
+                        this.obj25 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::BindTestbed.LoadAndCreateFromStringTests>(target));
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
-            public void DataContextChangedHandler(global::Windows.UI.Xaml.FrameworkElement sender, global::Windows.UI.Xaml.DataContextChangedEventArgs args)
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
             {
                  if (this.SetDataRoot(args.NewValue))
                  {
@@ -1749,7 +1797,7 @@ namespace BindTestbed
                 throw new global::System.NotImplementedException();
             }
 
-            public int ProcessBindings(global::Windows.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
             {
                 int nextPhase = -1;
                 ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
@@ -1774,12 +1822,16 @@ namespace BindTestbed
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            (this.obj25.Target as global::BindTestbed.LoadAndCreateFromStringTests).DataContextChanged -= this.DataContextChangedHandler;
+                            var rootElement = (this.obj25.Target as global::BindTestbed.LoadAndCreateFromStringTests);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
                         }
                         this.initialized = true;
                         break;
                 }
-                this.Update_((global::BindTestbed.MainPage) item, 1 << phase);
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbed.MainPage>(item), 1 << phase);
             }
 
             public void Recycle()
@@ -1815,7 +1867,7 @@ namespace BindTestbed
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbed.MainPage)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbed.MainPage>(newDataRoot);
                     return true;
                 }
                 return false;
@@ -1838,7 +1890,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 26
+                    // MainPage.xaml line 28
                     if (!isobj25ModelDisabled)
                     {
                         if ((this.obj25.Target as global::BindTestbed.LoadAndCreateFromStringTests) != null)
@@ -1852,7 +1904,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 26
+                    // MainPage.xaml line 28
                     if (!isobj25DOModelDisabled)
                     {
                         if ((this.obj25.Target as global::BindTestbed.LoadAndCreateFromStringTests) != null)
@@ -1866,7 +1918,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 26
+                    // MainPage.xaml line 28
                     if (!isobj25LanguageModelDisabled)
                     {
                         if ((this.obj25.Target as global::BindTestbed.LoadAndCreateFromStringTests) != null)
@@ -1878,13 +1930,13 @@ namespace BindTestbed
             }
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class MainPage_obj29_Bindings :
-            global::Windows.UI.Xaml.IDataTemplateExtension,
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class MainPage_obj29_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IMainPage_Bindings
         {
             private global::BindTestbed.MainPage dataRoot;
@@ -1906,11 +1958,11 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 14 && columnNumber == 42)
+                if (lineNumber == 16 && columnNumber == 42)
                 {
                     isobj29ModelDisabled = true;
                 }
-                else if (lineNumber == 14 && columnNumber == 65)
+                else if (lineNumber == 16 && columnNumber == 65)
                 {
                     isobj29DOModelDisabled = true;
                 }
@@ -1922,15 +1974,21 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 29: // MainPage.xaml line 14
-                        this.obj29 = new global::System.WeakReference((global::BindTestbed.NullableTests)target);
+                    case 29: // MainPage.xaml line 16
+                        this.obj29 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::BindTestbed.NullableTests>(target));
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
-            public void DataContextChangedHandler(global::Windows.UI.Xaml.FrameworkElement sender, global::Windows.UI.Xaml.DataContextChangedEventArgs args)
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
             {
                  if (this.SetDataRoot(args.NewValue))
                  {
@@ -1945,7 +2003,7 @@ namespace BindTestbed
                 throw new global::System.NotImplementedException();
             }
 
-            public int ProcessBindings(global::Windows.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
             {
                 int nextPhase = -1;
                 ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
@@ -1970,12 +2028,16 @@ namespace BindTestbed
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            (this.obj29.Target as global::BindTestbed.NullableTests).DataContextChanged -= this.DataContextChangedHandler;
+                            var rootElement = (this.obj29.Target as global::BindTestbed.NullableTests);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
                         }
                         this.initialized = true;
                         break;
                 }
-                this.Update_((global::BindTestbed.MainPage) item, 1 << phase);
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbed.MainPage>(item), 1 << phase);
             }
 
             public void Recycle()
@@ -2011,7 +2073,7 @@ namespace BindTestbed
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbed.MainPage)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbed.MainPage>(newDataRoot);
                     return true;
                 }
                 return false;
@@ -2033,7 +2095,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 14
+                    // MainPage.xaml line 16
                     if (!isobj29ModelDisabled)
                     {
                         if ((this.obj29.Target as global::BindTestbed.NullableTests) != null)
@@ -2047,7 +2109,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 14
+                    // MainPage.xaml line 16
                     if (!isobj29DOModelDisabled)
                     {
                         if ((this.obj29.Target as global::BindTestbed.NullableTests) != null)
@@ -2058,24 +2120,25 @@ namespace BindTestbed
                 }
             }
         }
+
         /// <summary>
         /// Connect()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public void Connect(int connectionId, object target)
         {
             switch(connectionId)
             {
-            case 4: // MainPage.xaml line 10
+            case 4: // MainPage.xaml line 12
                 {
-                    this.G = (global::Windows.UI.Xaml.Controls.Grid)(target);
+                    this.G = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Grid>(target);
                 }
                 break;
-            case 6: // MainPage.xaml line 92
+            case 6: // MainPage.xaml line 94
                 {
-                    global::Windows.UI.Xaml.Controls.Button element6 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element6).Click += this.DetectLeaks_Click;
+                    global::Microsoft.UI.Xaml.Controls.Button element6 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element6).Click += this.DetectLeaks_Click;
                 }
                 break;
             default:
@@ -2084,113 +2147,114 @@ namespace BindTestbed
             this._contentLoaded = true;
         }
 
+
         /// <summary>
         /// GetBindingConnector(int connectionId, object target)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
+        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
         {
-            global::Windows.UI.Xaml.Markup.IComponentConnector returnValue = null;
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector returnValue = null;
             switch(connectionId)
             {
-            case 1: // MainPage.Portrait.xaml line 1
+            case 1: // MainPage.Portrait.xaml line 3
                 {                    
-                    global::Windows.UI.Xaml.Controls.Page element1 = (global::Windows.UI.Xaml.Controls.Page)target;
+                    global::Microsoft.UI.Xaml.Controls.Page element1 = (global::Microsoft.UI.Xaml.Controls.Page)target;
                     MainPage_obj1_Bindings bindings = new MainPage_obj1_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(this);
                     this.Bindings = bindings;
                     element1.Loading += bindings.Loading;
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
                 }
                 break;
-            case 10: // MainPage.xaml line 74
+            case 10: // MainPage.xaml line 76
                 {                    
                     global::BindTestbed.TwoWayTests element10 = (global::BindTestbed.TwoWayTests)target;
                     MainPage_obj10_Bindings bindings = new MainPage_obj10_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(element10.DataContext);
                     element10.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Windows.UI.Xaml.DataTemplate.SetExtensionInstance(element10, bindings);
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element10, bindings);
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element10, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element10, bindings);
                 }
                 break;
-            case 12: // MainPage.xaml line 68
+            case 12: // MainPage.xaml line 70
                 {                    
                     global::BindTestbed.EventTests element12 = (global::BindTestbed.EventTests)target;
                     MainPage_obj12_Bindings bindings = new MainPage_obj12_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(element12.DataContext);
                     element12.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Windows.UI.Xaml.DataTemplate.SetExtensionInstance(element12, bindings);
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element12, bindings);
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element12, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element12, bindings);
                 }
                 break;
-            case 17: // MainPage.xaml line 50
+            case 17: // MainPage.xaml line 52
                 {                    
                     global::BindTestbed.ListAndTemplateTests element17 = (global::BindTestbed.ListAndTemplateTests)target;
                     MainPage_obj17_Bindings bindings = new MainPage_obj17_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(element17.DataContext);
                     element17.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Windows.UI.Xaml.DataTemplate.SetExtensionInstance(element17, bindings);
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element17, bindings);
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element17, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element17, bindings);
                 }
                 break;
-            case 19: // MainPage.xaml line 44
+            case 19: // MainPage.xaml line 46
                 {                    
                     global::BindTestbed.TestsPage2 element19 = (global::BindTestbed.TestsPage2)target;
                     MainPage_obj19_Bindings bindings = new MainPage_obj19_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(element19.DataContext);
                     element19.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Windows.UI.Xaml.DataTemplate.SetExtensionInstance(element19, bindings);
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element19, bindings);
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element19, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element19, bindings);
                 }
                 break;
-            case 21: // MainPage.xaml line 38
+            case 21: // MainPage.xaml line 40
                 {                    
                     global::BindTestbed.BasicTests element21 = (global::BindTestbed.BasicTests)target;
                     MainPage_obj21_Bindings bindings = new MainPage_obj21_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(element21.DataContext);
                     element21.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Windows.UI.Xaml.DataTemplate.SetExtensionInstance(element21, bindings);
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element21, bindings);
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element21, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element21, bindings);
                 }
                 break;
-            case 23: // MainPage.xaml line 32
+            case 23: // MainPage.xaml line 34
                 {                    
                     global::BindTestbed.FunctionTests element23 = (global::BindTestbed.FunctionTests)target;
                     MainPage_obj23_Bindings bindings = new MainPage_obj23_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(element23.DataContext);
                     element23.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Windows.UI.Xaml.DataTemplate.SetExtensionInstance(element23, bindings);
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element23, bindings);
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element23, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element23, bindings);
                 }
                 break;
-            case 25: // MainPage.xaml line 26
+            case 25: // MainPage.xaml line 28
                 {                    
                     global::BindTestbed.LoadAndCreateFromStringTests element25 = (global::BindTestbed.LoadAndCreateFromStringTests)target;
                     MainPage_obj25_Bindings bindings = new MainPage_obj25_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(element25.DataContext);
                     element25.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Windows.UI.Xaml.DataTemplate.SetExtensionInstance(element25, bindings);
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element25, bindings);
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element25, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element25, bindings);
                 }
                 break;
-            case 29: // MainPage.xaml line 14
+            case 29: // MainPage.xaml line 16
                 {                    
                     global::BindTestbed.NullableTests element29 = (global::BindTestbed.NullableTests)target;
                     MainPage_obj29_Bindings bindings = new MainPage_obj29_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(element29.DataContext);
                     element29.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Windows.UI.Xaml.DataTemplate.SetExtensionInstance(element29, bindings);
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element29, bindings);
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element29, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element29, bindings);
                 }
                 break;
             }
