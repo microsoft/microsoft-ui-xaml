@@ -74,8 +74,8 @@ exit /b 1
 :build_required
 echo.
 echo [ERROR] XamlCompiler test outputs for %Flavor% are incomplete.
-echo         Build "%RepoRoot%\src\XamlCompiler\XamlCompiler.sln" in this initialized
-echo         command prompt, then retry.
+echo         Build XamlCompiler.sln, then XamlCompilerTests.sln in this
+echo         initialized command prompt.
 exit /b 1
 
 :missing_runsettings

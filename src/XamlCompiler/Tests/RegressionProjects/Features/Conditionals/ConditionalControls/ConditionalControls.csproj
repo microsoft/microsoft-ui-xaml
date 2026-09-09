@@ -31,8 +31,9 @@
     Nothing has a ProjectReference to this project, so a reference search alone makes it look unused.
     It is not: it is a codegen baseline target. See Tests\UnitTests\CodegenTargets.txt and
     CodegenTests.Codegen_ConditionalControls, with masters under
-    TestMasters\RegressionProjects\Features\Conditionals\ConditionalControls. Its XamlTypeInfo.g.cs
-    baseline differs from ConditionalsModel's, so the two cover different generated output.
+    TestMasters\RegressionProjects\<chk|fre>\Features\Conditionals\ConditionalControls. Its
+    XamlTypeInfo.g.cs baseline differs from ConditionalsModel's, so the two cover different
+    generated output.
   -->
 
 </Project>
