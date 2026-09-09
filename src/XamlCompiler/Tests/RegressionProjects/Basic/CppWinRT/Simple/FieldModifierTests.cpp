@@ -6,6 +6,7 @@
 
 #include "pch.h"
 #include "FieldModifierTests.h"
+#include "FieldModifierTests.g.cpp"
 
 namespace winrt::Simple::implementation
 {

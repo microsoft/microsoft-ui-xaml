@@ -2,7 +2,6 @@
 <!-- Copyright (c) Microsoft Corporation.
  Licensed under the MIT License. -->
 <Project>
-  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>

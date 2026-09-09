@@ -3,6 +3,7 @@
 namespace NonStandardCppWinRT
 {
     [Windows.Foundation.Metadata.WebHostHidden]
+    [default_interface]
     runtimeclass BlankPage : Microsoft.UI.Xaml.Controls.Page
     {
         BlankPage();

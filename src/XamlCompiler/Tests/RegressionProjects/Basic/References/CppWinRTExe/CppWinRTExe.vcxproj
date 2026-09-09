@@ -67,7 +67,7 @@
   <ItemGroup>
     <!--
       A native app consuming WinRT components authored in both supported languages, which
-      is what the C++/CX VCExe project covered before it was removed. CSharpExe covers the
+      is what the removed C++/CX native-exe project covered. CSharpExe covers the
       same ground from the managed side.
     -->
     <ProjectReference Include="..\CppWinRTComponent\CppWinRTComponent.vcxproj">
