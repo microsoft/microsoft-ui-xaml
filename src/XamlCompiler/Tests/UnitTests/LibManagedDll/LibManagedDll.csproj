@@ -5,7 +5,6 @@
     <TargetFramework>$(DotNetCoreTargetFrameworkMoniker)</TargetFramework>
     <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
     <RootNamespace>LibManagedDll</RootNamespace>
-    <UseWinUI>true</UseWinUI>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\projection\Microsoft.WinUI.csproj">

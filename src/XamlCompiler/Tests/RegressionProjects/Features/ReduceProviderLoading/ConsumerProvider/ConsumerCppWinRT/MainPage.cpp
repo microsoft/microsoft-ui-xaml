@@ -10,6 +10,7 @@
 
 #include "pch.h"
 #include "MainPage.h"
+#include "MainPage.g.cpp"
 #include "App.h"
 
 using namespace winrt;
@@ -35,8 +36,11 @@ namespace winrt::ConsumerCppWinRT::implementation
         if (!m_otherProviderLoaded)
         {
             IXamlMetadataProvider provider = ProviderCppWinRT::XamlMetaDataProvider();
-            auto app = Application::Current().as<ConsumerCppWinRT::App>();
-            winrt::get_self<implementation::App>(app)->AddOtherProvider(provider);
+            // App is not a projected type - App.idl declares an empty namespace, as it does in
+            // every C++/WinRT app project here. The generated AppT<D> base does implement
+            // IXamlMetadataProvider directly, though, so the provider interface already handed
+            // back by Application::Current() is a valid entry point to the implementation.
+            winrt::get_self<implementation::App>(applicationProvider)->AddOtherProvider(provider);
             m_otherProviderLoaded = true;
         }
 

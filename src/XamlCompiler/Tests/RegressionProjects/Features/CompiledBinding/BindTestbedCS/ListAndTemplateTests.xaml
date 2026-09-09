@@ -99,8 +99,6 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                    <!-- TODO: Convert BindTestbedModelCX to C++/WinRT-->
-                    <!--<TextBlock Text="{x:Bind ModelCX.ObservableVectorOfStrings[0], Mode=OneWay}"/> -->
                 </StackPanel>
 
 

@@ -9,4 +9,7 @@
 
 #include "hstring.h"
 #include "windows.h"
+// windows.h defines GetCurrentTime as a macro, which collides with the
+// Microsoft.UI.Xaml.Media.Animation.Timeline.GetCurrentTime projection.
+#undef GetCurrentTime
 #include "winrt/Windows.Foundation.h"

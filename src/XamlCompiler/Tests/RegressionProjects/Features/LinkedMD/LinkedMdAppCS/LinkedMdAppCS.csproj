@@ -2,6 +2,7 @@
 <!-- Copyright (c) Microsoft Corporation.
  Licensed under the MIT License. -->
 <Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
   <Import Project="$(CommonFilesPath)AppPreamble.csproj" />
 
   <PropertyGroup>
@@ -20,10 +21,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LinkedMDControlsCppWinRT\LinkedMDControlsCppWinRT.vcxproj">
-      <Project>{ecab1852-f97a-4f5b-9d20-077155b8ad06}</Project>
-      <Name>LinkedMDControlsCppWinRT</Name>
-    </ProjectReference>
+    <!-- The managed half of the linked-metadata scenario. LinkedMdSubControlsCS (SubControlsCS)
+         flows in transitively, mirroring the native half below: MainPage.xaml.cs asserts that
+         ControlsCS.A/.B and SubControlsCS.S/.T all resolve through the app's metadata provider. -->
+    <ProjectReference Include="..\LinkedMdControlsCS\LinkedMdControlsCS.csproj" />
+    <!-- The C++/WinRT controls are consumed through their C#/WinRT projection assembly. A .NET 5+
+         project cannot reference a .winmd directly (NETSDK1130); the projection project owns that
+         reference and keeps the native component building and copy-local. The sub-controls
+         projection flows in transitively, which is what this test requires - MainPage.xaml.cs
+         asserts that LinkedMDSubControlsCppWinRT.S and .T resolve through the app's metadata. -->
+    <ProjectReference Include="..\LinkedMDControlsCppWinRT.Projection\LinkedMDControlsCppWinRT.Projection.csproj" />
   </ItemGroup>
 
 </Project>

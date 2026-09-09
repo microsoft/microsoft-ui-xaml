@@ -36,6 +36,9 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="XbfGeneratorTests.cs" />
     <Compile Include="CodegenTests.cs" />
     <Compile Include="ConditionalsTests.cs" />
@@ -55,17 +58,35 @@
     <Compile Include="ValidatorTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <!-- These three are never compiled against; the tests feed them to the XAML compiler under test
+         as on-disk metadata (TestHelper.GetUserAssemblyPath resolves them by file name next to the
+         test assembly). They are therefore consumed as build outputs, exactly as MergedWinMD and
+         GenXbf are below. SkipGetTargetFrameworkProperties is required because they are SDK-style
+         net8.0 projects while this test project is net472 - a compile-time reference would be
+         invalid, but a file dependency is not. -->
     <ProjectReference Include="LibManagedDll\LibManagedDll.csproj">
       <Project>{5D3B1E5D-9995-4FBE-88E9-2A36B2970307}</Project>
       <Name>LibManagedDll</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <OutputItemType>Content</OutputItemType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </ProjectReference>
     <ProjectReference Include="LibManagedDllSatellite\LibManagedDllSatellite.csproj">
       <Project>{0CA38FA1-0403-4576-9EDF-7B1E81F60857}</Project>
       <Name>LibManagedDllSatellite</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <OutputItemType>Content</OutputItemType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </ProjectReference>
     <ProjectReference Include="LibManagedWinmd\LibManagedWinmd.csproj">
       <Project>{9E20EC9E-B908-4245-87EA-C642ECDF843C}</Project>
       <Name>LibManagedWinmd</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <OutputItemType>Content</OutputItemType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </ProjectReference>
     <!-- TODO: mult-targeting mismatch causing build error:
     MSB4057: The target "GetTargetPathWithTargetPlatformMoniker" does not exist in the project.
@@ -76,6 +97,10 @@
     <ProjectReference Include="XamlCompilerProxies\XamlCompilerProxies.csproj">
       <Project>{f292fa71-2b98-4ccf-9f2e-5f21936d3715}</Project>
       <Name>XamlCompilerProxies</Name>
+      <!-- Tests/Directory.Build.props defaults ProjectReference Private=false for non-exe projects.
+           This test library loads Win8Xaml.CompilerProxies at runtime, so it must be copied
+           alongside UnitTests.dll or every test fails in TestHelper's constructor. -->
+      <Private>true</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\..\..\MergedWinMD\MergedWinMD.vcxproj">
       <Project>{52b2ed64-1cfc-401b-8c5b-6d1e1deadf98}</Project>
@@ -132,6 +157,14 @@
     </PropertyGroup>
     <Copy SourceFiles="$(GenXbfSourceDir)GenXbf.dll" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(GenXbfSourceDir)GenXbf.dll')" />
     <Copy SourceFiles="$(CompilerSourceDir)Microsoft.UI.Xaml.Markup.Compiler.dll" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(CompilerSourceDir)Microsoft.UI.Xaml.Markup.Compiler.dll')" />
+    <!-- The compiler DLL alone is not loadable: it needs its net472 dependency closure
+         (System.Collections.Immutable, System.Reflection.Metadata, Microsoft.Build.*, ...).
+         $(ToolsPackageLocation) is the product build's packaging folder, defined in eng/packaging.props,
+         and is the only place that closure is staged. -->
+    <ItemGroup>
+      <_XamlCompilerToolDependencies Include="$(ToolsPackageLocation)\net472\*.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_XamlCompilerToolDependencies)" DestinationFolder="$(OutDir)" ContinueOnError="true" SkipUnchangedFiles="true" />
     <Copy SourceFiles="$(ProductDir)Microsoft.UI.Xaml.winmd" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(ProductDir)Microsoft.UI.Xaml.winmd')" />
     <Copy SourceFiles="$(ProductDir)Microsoft.UI.winmd" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(ProductDir)Microsoft.UI.winmd')" />
     <Copy SourceFiles="$(ProductDir)Microsoft.UI.dll" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(ProductDir)Microsoft.UI.dll')" />

@@ -1,9 +1,10 @@
 ﻿#include "pch.h"
 #include "MainPage.h"
+#include "MainPage.g.cpp"
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
-using namespace ::Windows::Foundation;
+using namespace ::winrt::Windows::Foundation;
 
 namespace winrt::MultipleViewsTestbedCppWinRT::implementation
 {
