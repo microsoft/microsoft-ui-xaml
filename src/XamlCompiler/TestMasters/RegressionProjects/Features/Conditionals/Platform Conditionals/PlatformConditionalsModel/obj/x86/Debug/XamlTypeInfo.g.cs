@@ -234,10 +234,6 @@ namespace PlatformConditionalsModel.PlatformConditionalsModel_XamlTypeInfo
         private object Activate_0_TextBoxCustom() { return new global::PlatformConditionalsModel.TextBoxCustom(); }
         private object Activate_2_ConditionalControl() { return new global::PlatformConditionalsModel.ConditionalControl(); }
         private object Activate_4_TreeViewNode() { return new global::Microsoft.UI.Xaml.Controls.TreeViewNode(); }
-        private void StaticInitializer_0_TextBoxCustom() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::PlatformConditionalsModel.TextBoxCustom).TypeHandle);
-        private void StaticInitializer_2_ConditionalControl() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::PlatformConditionalsModel.ConditionalControl).TypeHandle);
-        private void StaticInitializer_4_TreeViewNode() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode).TypeHandle);
-        private void StaticInitializer_6_IList() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>).TypeHandle);
         private void VectorAdd_6_IList(object instance, object item)
         {
             var collection = (global::System.Collections.Generic.ICollection<global::Microsoft.UI.Xaml.Controls.TreeViewNode>)instance;
@@ -258,7 +254,6 @@ namespace PlatformConditionalsModel.PlatformConditionalsModel_XamlTypeInfo
             case 0:   //  PlatformConditionalsModel.TextBoxCustom
                 userType = new global::PlatformConditionalsModel.PlatformConditionalsModel_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TextBox"));
                 userType.Activator = Activate_0_TextBoxCustom;
-                userType.StaticInitializer = StaticInitializer_0_TextBoxCustom;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
@@ -270,7 +265,6 @@ namespace PlatformConditionalsModel.PlatformConditionalsModel_XamlTypeInfo
             case 2:   //  PlatformConditionalsModel.ConditionalControl
                 userType = new global::PlatformConditionalsModel.PlatformConditionalsModel_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_2_ConditionalControl;
-                userType.StaticInitializer = StaticInitializer_2_ConditionalControl;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
@@ -282,7 +276,6 @@ namespace PlatformConditionalsModel.PlatformConditionalsModel_XamlTypeInfo
             case 4:   //  Microsoft.UI.Xaml.Controls.TreeViewNode
                 userType = new global::PlatformConditionalsModel.PlatformConditionalsModel_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
                 userType.Activator = Activate_4_TreeViewNode;
-                userType.StaticInitializer = StaticInitializer_4_TreeViewNode;
                 userType.AddMemberName("Children");
                 userType.AddMemberName("Content");
                 userType.AddMemberName("Depth");
@@ -300,7 +293,6 @@ namespace PlatformConditionalsModel.PlatformConditionalsModel_XamlTypeInfo
 
             case 6:   //  System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
                 userType = new global::PlatformConditionalsModel.PlatformConditionalsModel_XamlTypeInfo.XamlUserType(this, typeName, type, null);
-                userType.StaticInitializer = StaticInitializer_6_IList;
                 userType.CollectionAdd = VectorAdd_6_IList;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
@@ -331,6 +323,8 @@ namespace PlatformConditionalsModel.PlatformConditionalsModel_XamlTypeInfo
                     var otherProviders = new global::System.Collections.Generic.List<global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider>();
                     global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider provider;
                     provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
+                    otherProviders.Add(provider); 
+                    provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsChartsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
                     _otherProviders = otherProviders;
                 }
@@ -624,7 +618,7 @@ namespace PlatformConditionalsModel.PlatformConditionalsModel_XamlTypeInfo
 
         override public void RunInitializer() 
         {
-            StaticInitializer();
+            StaticInitializer?.Invoke();
         }
 
         override public object CreateFromString(string input)

@@ -291,11 +291,6 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
         private object Activate_6_B() { return new global::LinkedMDControlsCppWinRT.B(); }
         private object Activate_7_MainPage() { return new global::AppCS.MainPage(); }
         private object Activate_8_TreeViewNode() { return new global::Microsoft.UI.Xaml.Controls.TreeViewNode(); }
-        private void StaticInitializer_3_B() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ControlsCS.B).TypeHandle);
-        private void StaticInitializer_6_B() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::LinkedMDControlsCppWinRT.B).TypeHandle);
-        private void StaticInitializer_7_MainPage() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::AppCS.MainPage).TypeHandle);
-        private void StaticInitializer_8_TreeViewNode() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode).TypeHandle);
-        private void StaticInitializer_10_IList() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>).TypeHandle);
         private void VectorAdd_10_IList(object instance, object item)
         {
             var collection = (global::System.Collections.Generic.ICollection<global::Microsoft.UI.Xaml.Controls.TreeViewNode>)instance;
@@ -323,7 +318,6 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
 
             case 3:   //  ControlsCS.B
                 userType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
-                userType.StaticInitializer = StaticInitializer_3_B;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
@@ -334,7 +328,6 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
 
             case 6:   //  LinkedMDControlsCppWinRT.B
                 userType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
-                userType.StaticInitializer = StaticInitializer_6_B;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
@@ -342,7 +335,6 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
             case 7:   //  AppCS.MainPage
                 userType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
                 userType.Activator = Activate_7_MainPage;
-                userType.StaticInitializer = StaticInitializer_7_MainPage;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
@@ -350,7 +342,6 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
             case 8:   //  Microsoft.UI.Xaml.Controls.TreeViewNode
                 userType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
                 userType.Activator = Activate_8_TreeViewNode;
-                userType.StaticInitializer = StaticInitializer_8_TreeViewNode;
                 userType.AddMemberName("Children");
                 userType.AddMemberName("Content");
                 userType.AddMemberName("Depth");
@@ -368,7 +359,6 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
 
             case 10:   //  System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
                 userType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType(this, typeName, type, null);
-                userType.StaticInitializer = StaticInitializer_10_IList;
                 userType.CollectionAdd = VectorAdd_10_IList;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
@@ -405,6 +395,8 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
                     provider = new global::LinkedMDControlsCppWinRT.XamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
                     provider = new global::LinkedMDSubControlsCppWinRT.XamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
+                    otherProviders.Add(provider); 
+                    provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsChartsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
                     provider = new global::SubControlsCS.LinkedMdSubControlsCS_XamlTypeInfo.XamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
@@ -744,7 +736,7 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
 
         override public void RunInitializer() 
         {
-            StaticInitializer();
+            StaticInitializer?.Invoke();
         }
 
         override public object CreateFromString(string input)

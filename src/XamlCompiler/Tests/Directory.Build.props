@@ -27,6 +27,10 @@
         <AdHocApp>true</AdHocApp>
         <GenerateProjectSpecificOutputFolder>true</GenerateProjectSpecificOutputFolder>
         <UseLocalSDK>true</UseLocalSDK>
+        <!-- The product stays on the C++/WinRT version used to build WinUIDetails' native static
+             libraries. The regression projects need the newer package's corrected XAML reference
+             handling and intentionally carry matching generated-code baselines. -->
+        <CppWinRTVersion>2.0.250303.1</CppWinRTVersion>
         <!-- Suppress WinMDExp warnings WME0010 since the Microsoft.UI.Xaml.Markup.IXamlMetadataProvider GetXamlType method is automatically renamed -->
         <WinMdExpNoWarn>0010;$(WinMdExpNoWarn)</WinMdExpNoWarn>
     </PropertyGroup>

@@ -176,10 +176,14 @@ if "%_targetMux%" == "1" (
    if not "%_nomock%"=="1" call :buildMockPackage
    if ERRORLEVEL 1 goto:showDurationAndExit
    call :buildSolution %reporoot%\controls\MUXControls.sln /restore
+   if ERRORLEVEL 1 goto:showDurationAndExit
+   call :buildXamlCompilerTests
 ) else if "%_targetTest%" == "1" (
    if not "%_nomock%"=="1" call :buildMockPackage
    if ERRORLEVEL 1 goto:showDurationAndExit
    call :buildSolution %reporoot%\controls\MUXControls.sln /restore
+   if ERRORLEVEL 1 goto:showDurationAndExit
+   call :buildXamlCompilerTests
 )
 if ERRORLEVEL 1 goto:showDurationAndExit
 
@@ -316,6 +320,11 @@ echo Building mock package...
 call %RepoRoot%\pack.component.cmd /version %_version%
 if ERRORLEVEL 1 set _exitCode=%ERRORLEVEL%
 exit /b %_exitCode%
+
+
+:buildXamlCompilerTests
+call :buildSolution %reporoot%\src\XamlCompiler\XamlCompilerTests.sln /restore
+goto :eof
 
 
 :showDurationAndExit
