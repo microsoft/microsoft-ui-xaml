@@ -545,6 +545,7 @@ std::vector<::winrt::Microsoft::UI::Xaml::Markup::IXamlMetadataProvider> const& 
     {
         _otherProviders.push_back(::winrt::Microsoft::UI::Xaml::XamlTypeInfo::XamlControlsXamlMetaDataProvider());
         _otherProviders.push_back(::winrt::LinkedMDSubControlsCppWinRT::XamlMetaDataProvider());
+        _otherProviders.push_back(::winrt::Microsoft::UI::Xaml::XamlTypeInfo::XamlControlsChartsXamlMetaDataProvider());
     }
     return _otherProviders;
 }

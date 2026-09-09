@@ -38,13 +38,6 @@ $($xmldoc.packages.package | ? {$_.id.EndsWith("CsWinRT")}).version = $version
 $xmldoc.Save($filename)
 write-host "Updated $filename"
 
-$filename = "$rootPath\perf\scenarios\build\PackageVersions.props"
-CheckFile $filename
-$xmldoc = [System.Xml.XmlDocument](Get-Content $filename)
-$xmldoc.Project.PropertyGroup.CsWinRTVersion = $version
-$xmldoc.Save($filename)
-write-host "Updated $filename"   
-
 # update CsWinRT Version in ~\eng\versions.props
 $filename = "$rootPath\eng\versions.props"
 CheckFile $filename

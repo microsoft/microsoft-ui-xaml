@@ -426,53 +426,16 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
         private object Activate_61_ColorToStringConverter() { return new global::BindTestbedModel.ColorToStringConverter(); }
         private object Activate_62_EmployeeTextBlock() { return new global::BindTestbedModel.EmployeeTextBlock(); }
         private object Activate_63_TreeViewNode() { return new global::Microsoft.UI.Xaml.Controls.TreeViewNode(); }
-        private void StaticInitializer_0_DoubleToIntConverter() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.DoubleToIntConverter).TypeHandle);
-        private void StaticInitializer_2_BoolToVisibilityConverter() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.BoolToVisibilityConverter).TypeHandle);
         private void StaticInitializer_3_BasicTests() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.BasicTests).TypeHandle);
         private void StaticInitializer_6_DataModel() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.DataModel).TypeHandle);
         private void StaticInitializer_8_DOModel() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.DOModel).TypeHandle);
-        private void StaticInitializer_9_LanguageSpecific() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.LanguageSpecific).TypeHandle);
-        private void StaticInitializer_11_CastingTestsVM() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.CastingTestsVM).TypeHandle);
-        private void StaticInitializer_13_Nullable() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Nullable<global::System.Boolean>).TypeHandle);
-        private void StaticInitializer_14_ValueType() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.ValueType).TypeHandle);
-        private void StaticInitializer_17_Money() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.Money).TypeHandle);
-        private void StaticInitializer_18_CastingTests() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.CastingTests).TypeHandle);
         private void StaticInitializer_19_DetectLeaksPage() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.DetectLeaksPage).TypeHandle);
-        private void StaticInitializer_21_DisableXBindTests() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.DisableXBindTests).TypeHandle);
-        private void StaticInitializer_22_EventTests() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.EventTests).TypeHandle);
-        private void StaticInitializer_23_FunctionTests() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.FunctionTests).TypeHandle);
-        private void StaticInitializer_24_INotifyDataErrorInfoTests() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.INotifyDataErrorInfoTests).TypeHandle);
-        private void StaticInitializer_25_Templates() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.Templates).TypeHandle);
-        private void StaticInitializer_27_SubDictionary() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.subfolder.SubDictionary).TypeHandle);
-        private void StaticInitializer_28_ListAndTemplateTests() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.ListAndTemplateTests).TypeHandle);
         private void StaticInitializer_30_Circle() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.Circle).TypeHandle);
-        private void StaticInitializer_32_Diameter() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.Diameter).TypeHandle);
-        private void StaticInitializer_33_LoadAndCreateFromStringTests() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.LoadAndCreateFromStringTests).TypeHandle);
-        private void StaticInitializer_34_LonelyStaticBinding() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.LonelyStaticBinding).TypeHandle);
-        private void StaticInitializer_35_MainPage() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.MainPage).TypeHandle);
-        private void StaticInitializer_36_TwoWayTests() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.TwoWayTests).TypeHandle);
-        private void StaticInitializer_37_PhasingTests() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.PhasingTests).TypeHandle);
         private void StaticInitializer_38_TestsPage2() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.TestsPage2).TypeHandle);
-        private void StaticInitializer_39_IEmployee() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.IEmployee).TypeHandle);
-        private void StaticInitializer_40_IManager() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.IManager).TypeHandle);
-        private void StaticInitializer_41_xPropertiesTest() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.xPropertiesTest).TypeHandle);
-        private void StaticInitializer_43_NullableTests() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.NullableTests).TypeHandle);
-        private void StaticInitializer_45_MyUserControl1() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.MyUserControl1).TypeHandle);
-        private void StaticInitializer_46_NamedPageRootWithCompiledBindingUserChild() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.NamedRootsPage.NamedPageRootWithCompiledBindingUserChild).TypeHandle);
-        private void StaticInitializer_47_Color() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Windows.UI.Color).TypeHandle);
-        private void StaticInitializer_48_Byte() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Byte).TypeHandle);
         private void StaticInitializer_49_NullablePropertiesButton() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.NullablePropertiesButton).TypeHandle);
-        private void StaticInitializer_51_Nullable() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Nullable<global::System.Double>).TypeHandle);
-        private void StaticInitializer_52_Nullable() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Nullable<global::Windows.UI.Color>).TypeHandle);
-        private void StaticInitializer_53_Nullable() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Nullable<global::BindTestbedModel.TShirtSize>).TypeHandle);
-        private void StaticInitializer_54_TShirtSize() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.TShirtSize).TypeHandle);
-        private void StaticInitializer_55_Enum() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Enum).TypeHandle);
-        private void StaticInitializer_57_EmployeeCollection() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.EmployeeCollection).TypeHandle);
         private void StaticInitializer_59_AttachedProperties() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.AttachedProperties).TypeHandle);
         private void StaticInitializer_61_ColorToStringConverter() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.ColorToStringConverter).TypeHandle);
         private void StaticInitializer_62_EmployeeTextBlock() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.EmployeeTextBlock).TypeHandle);
-        private void StaticInitializer_63_TreeViewNode() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode).TypeHandle);
-        private void StaticInitializer_64_IList() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>).TypeHandle);
         private void MapAdd_25_Templates(object instance, object key, object item)
         {
             var collection = (global::System.Collections.Generic.IDictionary<global::System.Object, global::System.Object>)instance;
@@ -513,7 +476,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 0:   //  BindTestbedModel.DoubleToIntConverter
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
                 userType.Activator = Activate_0_DoubleToIntConverter;
-                userType.StaticInitializer = StaticInitializer_0_DoubleToIntConverter;
                 xamlType = userType;
                 break;
 
@@ -524,7 +486,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 2:   //  BindTestbedModel.BoolToVisibilityConverter
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
                 userType.Activator = Activate_2_BoolToVisibilityConverter;
-                userType.StaticInitializer = StaticInitializer_2_BoolToVisibilityConverter;
                 xamlType = userType;
                 break;
 
@@ -571,7 +532,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
 
             case 9:   //  BindTestbed.LanguageSpecific
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
-                userType.StaticInitializer = StaticInitializer_9_LanguageSpecific;
                 userType.SetIsReturnTypeStub();
                 userType.SetIsLocalType();
                 xamlType = userType;
@@ -584,7 +544,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 11:   //  BindTestbed.CastingTestsVM
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
                 userType.Activator = Activate_11_CastingTestsVM;
-                userType.StaticInitializer = StaticInitializer_11_CastingTestsVM;
                 userType.AddMemberName("Username");
                 userType.AddMemberName("IsVisible");
                 userType.AddMemberName("IsVisibleNullable");
@@ -607,14 +566,12 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.ValueType"));
                 userType.SetBoxedType(GetXamlTypeByName("Boolean"));
                 userType.BoxInstance = userType.BoxType<global::System.Boolean>;
-                userType.StaticInitializer = StaticInitializer_13_Nullable;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
 
             case 14:   //  System.ValueType
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
-                userType.StaticInitializer = StaticInitializer_14_ValueType;
                 xamlType = userType;
                 break;
 
@@ -628,7 +585,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
 
             case 17:   //  BindTestbed.Money
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
-                userType.StaticInitializer = StaticInitializer_17_Money;
                 userType.SetIsReturnTypeStub();
                 userType.SetIsLocalType();
                 xamlType = userType;
@@ -637,7 +593,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 18:   //  BindTestbed.CastingTests
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_18_CastingTests;
-                userType.StaticInitializer = StaticInitializer_18_CastingTests;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
@@ -657,7 +612,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 21:   //  BindTestbed.DisableXBindTests
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_21_DisableXBindTests;
-                userType.StaticInitializer = StaticInitializer_21_DisableXBindTests;
                 userType.AddMemberName("Model");
                 userType.AddMemberName("DOModel");
                 userType.AddMemberName("LanguageModel");
@@ -668,7 +622,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 22:   //  BindTestbed.EventTests
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_22_EventTests;
-                userType.StaticInitializer = StaticInitializer_22_EventTests;
                 userType.AddMemberName("Model");
                 userType.AddMemberName("DOModel");
                 userType.AddMemberName("LanguageModel");
@@ -679,7 +632,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 23:   //  BindTestbed.FunctionTests
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_23_FunctionTests;
-                userType.StaticInitializer = StaticInitializer_23_FunctionTests;
                 userType.AddMemberName("Model");
                 userType.AddMemberName("DOModel");
                 userType.AddMemberName("LanguageModel");
@@ -690,7 +642,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 24:   //  BindTestbed.INotifyDataErrorInfoTests
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
                 userType.Activator = Activate_24_INotifyDataErrorInfoTests;
-                userType.StaticInitializer = StaticInitializer_24_INotifyDataErrorInfoTests;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
@@ -698,7 +649,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 25:   //  BindTestbed.Templates
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.ResourceDictionary"));
                 userType.Activator = Activate_25_Templates;
-                userType.StaticInitializer = StaticInitializer_25_Templates;
                 userType.DictionaryAdd = MapAdd_25_Templates;
                 userType.SetIsLocalType();
                 xamlType = userType;
@@ -711,7 +661,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 27:   //  BindTestbed.subfolder.SubDictionary
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.ResourceDictionary"));
                 userType.Activator = Activate_27_SubDictionary;
-                userType.StaticInitializer = StaticInitializer_27_SubDictionary;
                 userType.DictionaryAdd = MapAdd_27_SubDictionary;
                 userType.SetIsLocalType();
                 xamlType = userType;
@@ -720,7 +669,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 28:   //  BindTestbed.ListAndTemplateTests
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_28_ListAndTemplateTests;
-                userType.StaticInitializer = StaticInitializer_28_ListAndTemplateTests;
                 userType.AddMemberName("Model");
                 userType.AddMemberName("DOModel");
                 userType.AddMemberName("LanguageModel");
@@ -748,7 +696,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
 
             case 32:   //  BindTestbedModel.Diameter
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.FrameworkElement"));
-                userType.StaticInitializer = StaticInitializer_32_Diameter;
                 userType.CreateFromStringMethod = global::BindTestbedModel.Diameter.MakeNewDiameter;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
@@ -757,7 +704,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 33:   //  BindTestbed.LoadAndCreateFromStringTests
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_33_LoadAndCreateFromStringTests;
-                userType.StaticInitializer = StaticInitializer_33_LoadAndCreateFromStringTests;
                 userType.CreateFromStringMethod = global::BindTestbed.LoadAndCreateFromStringTests.Factory.MakeNewInstance;
                 userType.AddMemberName("Model");
                 userType.AddMemberName("DOModel");
@@ -769,7 +715,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 34:   //  BindTestbed.LonelyStaticBinding
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
                 userType.Activator = Activate_34_LonelyStaticBinding;
-                userType.StaticInitializer = StaticInitializer_34_LonelyStaticBinding;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
@@ -777,7 +722,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 35:   //  BindTestbed.MainPage
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
                 userType.Activator = Activate_35_MainPage;
-                userType.StaticInitializer = StaticInitializer_35_MainPage;
                 userType.AddMemberName("Model");
                 userType.AddMemberName("DOModel");
                 userType.AddMemberName("LanguageModel");
@@ -788,7 +732,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 36:   //  BindTestbed.TwoWayTests
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_36_TwoWayTests;
-                userType.StaticInitializer = StaticInitializer_36_TwoWayTests;
                 userType.AddMemberName("Model");
                 userType.AddMemberName("DOModel");
                 userType.AddMemberName("LanguageModel");
@@ -799,7 +742,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 37:   //  BindTestbed.PhasingTests
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_37_PhasingTests;
-                userType.StaticInitializer = StaticInitializer_37_PhasingTests;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
@@ -821,7 +763,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
 
             case 39:   //  BindTestbedModel.IEmployee
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, null);
-                userType.StaticInitializer = StaticInitializer_39_IEmployee;
                 userType.AddMemberName("FirstName");
                 userType.AddMemberName("LastName");
                 userType.AddMemberName("DirectManager");
@@ -838,7 +779,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
 
             case 40:   //  BindTestbedModel.IManager
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, null);
-                userType.StaticInitializer = StaticInitializer_40_IManager;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
@@ -846,7 +786,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 41:   //  BindTestbed.xPropertiesTest
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_41_xPropertiesTest;
-                userType.StaticInitializer = StaticInitializer_41_xPropertiesTest;
                 userType.AddMemberName("TestStr");
                 userType.AddMemberName("TestInt");
                 userType.AddMemberName("TestComplexDefaultValue");
@@ -863,7 +802,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 43:   //  BindTestbed.NullableTests
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_43_NullableTests;
-                userType.StaticInitializer = StaticInitializer_43_NullableTests;
                 userType.AddMemberName("Model");
                 userType.AddMemberName("DOModel");
                 userType.SetIsLocalType();
@@ -877,7 +815,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 45:   //  BindTestbed.MyUserControl1
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_45_MyUserControl1;
-                userType.StaticInitializer = StaticInitializer_45_MyUserControl1;
                 userType.AddMemberName("Tag");
                 userType.SetIsLocalType();
                 xamlType = userType;
@@ -886,14 +823,12 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 46:   //  BindTestbed.NamedRootsPage.NamedPageRootWithCompiledBindingUserChild
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
                 userType.Activator = Activate_46_NamedPageRootWithCompiledBindingUserChild;
-                userType.StaticInitializer = StaticInitializer_46_NamedPageRootWithCompiledBindingUserChild;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
             case 47:   //  Windows.UI.Color
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.ValueType"));
-                userType.StaticInitializer = StaticInitializer_47_Color;
                 userType.AddMemberName("A");
                 userType.AddMemberName("R");
                 userType.AddMemberName("G");
@@ -903,7 +838,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
 
             case 48:   //  Byte
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.ValueType"));
-                userType.StaticInitializer = StaticInitializer_48_Byte;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
@@ -927,7 +861,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.ValueType"));
                 userType.SetBoxedType(GetXamlTypeByName("Double"));
                 userType.BoxInstance = userType.BoxType<global::System.Double>;
-                userType.StaticInitializer = StaticInitializer_51_Nullable;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
@@ -936,7 +869,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.ValueType"));
                 userType.SetBoxedType(GetXamlTypeByName("Windows.UI.Color"));
                 userType.BoxInstance = userType.BoxType<global::Windows.UI.Color>;
-                userType.StaticInitializer = StaticInitializer_52_Nullable;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
@@ -945,14 +877,12 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.ValueType"));
                 userType.SetBoxedType(GetXamlTypeByName("BindTestbedModel.TShirtSize"));
                 userType.BoxInstance = userType.BoxType<global::BindTestbedModel.TShirtSize>;
-                userType.StaticInitializer = StaticInitializer_53_Nullable;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
 
             case 54:   //  BindTestbedModel.TShirtSize
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.Enum"));
-                userType.StaticInitializer = StaticInitializer_54_TShirtSize;
                 userType.AddEnumValue("XtraSmall", global::BindTestbedModel.TShirtSize.XtraSmall);
                 userType.AddEnumValue("Small", global::BindTestbedModel.TShirtSize.Small);
                 userType.AddEnumValue("Medium", global::BindTestbedModel.TShirtSize.Medium);
@@ -963,7 +893,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
 
             case 55:   //  System.Enum
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.ValueType"));
-                userType.StaticInitializer = StaticInitializer_55_Enum;
                 xamlType = userType;
                 break;
 
@@ -974,7 +903,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 57:   //  BindTestbedModel.EmployeeCollection
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
                 userType.Activator = Activate_57_EmployeeCollection;
-                userType.StaticInitializer = StaticInitializer_57_EmployeeCollection;
                 userType.CollectionAdd = VectorAdd_57_EmployeeCollection;
                 userType.AddMemberName("Count");
                 userType.AddMemberName("IsReadOnly");
@@ -1016,7 +944,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             case 63:   //  Microsoft.UI.Xaml.Controls.TreeViewNode
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
                 userType.Activator = Activate_63_TreeViewNode;
-                userType.StaticInitializer = StaticInitializer_63_TreeViewNode;
                 userType.AddMemberName("Children");
                 userType.AddMemberName("Content");
                 userType.AddMemberName("Depth");
@@ -1030,7 +957,6 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
 
             case 64:   //  System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, null);
-                userType.StaticInitializer = StaticInitializer_64_IList;
                 userType.CollectionAdd = VectorAdd_64_IList;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
@@ -1051,6 +977,8 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                     provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
                     provider = new global::BindTestbedModel.BindTestbedModel_XamlTypeInfo.XamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
+                    otherProviders.Add(provider); 
+                    provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsChartsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
                     _otherProviders = otherProviders;
                 }
@@ -2565,7 +2493,7 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
 
         override public void RunInitializer() 
         {
-            StaticInitializer();
+            StaticInitializer?.Invoke();
         }
 
         override public object CreateFromString(string input)
