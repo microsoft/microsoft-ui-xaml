@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "activeSubtrial": "A",
-  "activeStage": "A1",
-  "activeCheckpoint": "runtime-canary-blocked-by-dependent-closure",
+  "activeStage": "A2",
+  "activeCheckpoint": "public-contract-migration",
   "architecture": "x64",
   "branchNativeImplementation": true,
   "repositories": {
@@ -83,7 +83,7 @@
     "systemIdlBuild": "blocked-by-vfs-createprocess-payload-mismatch-0x95e"
   },
   "latestCheckpoint": {
-    "winuiCommit": "34a579f8d3de49ff32e225002d85fe9f84cab848",
+    "winuiCommit": "93daa410f",
     "winuiGalleryCommit": "199f63ec57ee8457fa9745b8a0d1e951111331fc",
     "winuiBuild": "passed-product-package-amd64-with-clean-winui-payload-and-registration",
     "csharpScenarioApp": "passed-debug-x64-package-build-launches-with-forbidden-dependent-payload",
