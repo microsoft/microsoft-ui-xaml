@@ -4,6 +4,20 @@
 #include "precomp.h"
 #include "TimeMgr.h"
 
+// Temporary compatibility aliases for dependencies built with /Zc:wchar_t-.
+// This repo uses /Zc:wchar_t, so native wchar_t callers need to resolve the
+// legacy unsigned-short ConnectAnimation symbols.
+#  if defined(_M_X64) || defined(_M_ARM64EC) || defined(_M_ARM64)
+#    pragma comment(linker, "/alternatename:?ConnectAnimation@CompositionAnimationHelper@@QEAAJPEAUICompositionObject@Composition@UI@Microsoft@ABI@@PEB_WPEAUICompositionAnimation@3456@PEAPEAUICompositionAnimationController@@@Z=?ConnectAnimation@CompositionAnimationHelper@@QEAAJPEAUICompositionObject@Composition@UI@Microsoft@ABI@@PEBGPEAUICompositionAnimation@3456@PEAPEAUICompositionAnimationController@@@Z")
+#
+#    if defined(_M_ARM64EC)
+#      pragma comment(linker, "/alternatename:?ConnectAnimation@CompositionAnimationHelper@@$$hQEAAJPEAUICompositionObject@Composition@UI@Microsoft@ABI@@PEB_WPEAUICompositionAnimation@3456@PEAPEAUICompositionAnimationController@@@Z=?ConnectAnimation@CompositionAnimationHelper@@$$hQEAAJPEAUICompositionObject@Composition@UI@Microsoft@ABI@@PEBGPEAUICompositionAnimation@3456@PEAPEAUICompositionAnimationController@@@Z")
+#    endif
+#
+#  elif defined(_M_IX86)
+#    pragma comment(linker, "/alternatename:?ConnectAnimation@CompositionAnimationHelper@@QAEJPAUICompositionObject@Composition@UI@Microsoft@ABI@@PB_WPAUICompositionAnimation@3456@PAPAUICompositionAnimationController@@@Z=?ConnectAnimation@CompositionAnimationHelper@@QAEJPAUICompositionObject@Composition@UI@Microsoft@ABI@@PBGPAUICompositionAnimation@3456@PAPAUICompositionAnimationController@@@Z")
+#  endif
+
 #include <TranslateTransform.h>
 #include "animation.h"
 #include <palcore.h>

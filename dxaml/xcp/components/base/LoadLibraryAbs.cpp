@@ -4,6 +4,20 @@
 #include "precomp.h"
 #include "LoadLibraryAbs.h"
 
+// Temporary compatibility aliases for dependencies built with /Zc:wchar_t-.
+// This repo uses /Zc:wchar_t, so legacy unsigned-short callers need to resolve
+// the native wchar_t GetModuleHandleExWAbs symbol.
+#  if defined(_M_X64) || defined(_M_ARM64EC) || defined(_M_ARM64)
+#    pragma comment(linker, "/alternatename:?GetModuleHandleExWAbs@@YAHKPEBGPEAPEAUHINSTANCE__@@@Z=?GetModuleHandleExWAbs@@YAHKPEB_WPEAPEAUHINSTANCE__@@@Z")
+#
+#    if defined(_M_ARM64EC)
+#      pragma comment(linker, "/alternatename:?GetModuleHandleExWAbs@@$$hYAHKPEBGPEAPEAUHINSTANCE__@@@Z=?GetModuleHandleExWAbs@@$$hYAHKPEB_WPEAPEAUHINSTANCE__@@@Z")
+#    endif
+#
+#  elif defined(_M_IX86)
+#    pragma comment(linker, "/alternatename:?GetModuleHandleExWAbs@@YGHKPBGPAPAUHINSTANCE__@@@Z=?GetModuleHandleExWAbs@@YGHKPB_WPAPAUHINSTANCE__@@@Z")
+#  endif
+
 #include <windows.h>
 #include <string>
 #include <minerror.h>
