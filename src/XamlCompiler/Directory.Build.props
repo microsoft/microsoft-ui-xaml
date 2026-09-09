@@ -4,7 +4,6 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
   <Import Project="$(ProjectRoot)eng\winui-version.props" />
   <PropertyGroup>
-    <PublicMUXDir>$(ArtifactsBinDir)Product\</PublicMUXDir>
     <GenerateProjectSpecificOutputFolder>True</GenerateProjectSpecificOutputFolder>
     <TestCertificatePath>$(ProjectRoot)build\WinUITest.pfx</TestCertificatePath>
     <XamlCompilerTargetsPath>$(ObjectPathRoot)\src\XamlCompiler\BuildTasks\Microsoft.UI.Xaml.Markup.Compiler\Targets</XamlCompilerTargetsPath>

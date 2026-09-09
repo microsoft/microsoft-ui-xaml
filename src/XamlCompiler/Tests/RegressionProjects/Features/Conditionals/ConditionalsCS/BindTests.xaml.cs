@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Conditionals
 {
-    public sealed partial class BindTests : UserControl, Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+    public sealed partial class BindTests : UserControl, INotifyPropertyChanged
     {
         public Model Model = new Model();
 
@@ -17,7 +17,7 @@ namespace Conditionals
             this.InitializeComponent();
         }
 
-        public event Microsoft.UI.Xaml.Data.PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public string V2Property
         {
@@ -65,7 +65,7 @@ namespace Conditionals
 
         private void NotifyPropertyChanged(string propertyName)
         {
-            PropertyChanged?.Invoke(this, new Microsoft.UI.Xaml.Data.PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
