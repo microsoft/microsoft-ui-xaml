@@ -20,5 +20,16 @@ namespace winrt::DisableXamlGeneratedMainNoCtorCpp::implementation
         // automated tests can verify the app really launched through wWinMain and
         // the custom App(int) constructor.
         entryPointTextBlock().Text(g_launchMarker);
+        firstButton().Focus(FocusState::Programmatic);
+    }
+
+    void MainWindow::OnTestButtonClick(
+        winrt::Windows::Foundation::IInspectable const& sender,
+        winrt::Microsoft::UI::Xaml::RoutedEventArgs const& /*args*/)
+    {
+        const auto button = sender.as<Controls::Button>();
+        std::wstring status{ unbox_value<hstring>(button.Content()) };
+        status += L" invoked.";
+        invocationStatusTextBlock().Text(status);
     }
 }

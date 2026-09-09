@@ -44,6 +44,17 @@ _Check_return_ HRESULT DirectUI::EnableGamepadKeyRouting()
         return S_OK;
     }
 
+    boolean isTypePresent = false;
+    IFC_RETURN(apiInformationStatics->IsTypePresent(
+        wrl_wrappers::HStringReference(
+            RuntimeClass_Windows_UI_Input_GamepadKeyRoutingConfiguration).Get(),
+        &isTypePresent));
+
+    if (!isTypePresent)
+    {
+        return S_OK;
+    }
+
     ctl::ComPtr<wui::IGamepadKeyRoutingConfigurationStatics> gamepadKeyRoutingStatics;
     IFC_RETURN(ctl::GetActivationFactory(
         wrl_wrappers::HStringReference(RuntimeClass_Windows_UI_Input_GamepadKeyRoutingConfiguration).Get(),
