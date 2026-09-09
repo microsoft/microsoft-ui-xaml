@@ -19,7 +19,7 @@
       native consumer failed ResolveAssemblyReference with MSB3271 before the XAML compiler ran.
       See microsoft/CsWinRT#1097. This mirrors AppPreamble.csproj, which is already platform-specific.
     -->
-    <Platforms>x86;x64;ARM64</Platforms>
+    <Platforms>x86;x64;ARM64;ARM64EC</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

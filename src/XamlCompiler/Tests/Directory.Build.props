@@ -18,6 +18,10 @@
              clear "build the compiler first" error instead of a confusing task-not-found failure. -->
         <UseXamlCompiler Condition="'$(UseXamlCompiler)' == ''">true</UseXamlCompiler>
         <SkipXamlCompilerProjectReferences Condition="'$(SkipXamlCompilerProjectReferences)' == ''">true</SkipXamlCompilerProjectReferences>
+
+        <!-- WinUI's props and targets support ARM64EC test payloads even though the public
+             Windows App SDK validation still rejects packaged ARM64EC projects. -->
+        <ValidateArm64EcConfiguration Condition="'$(Platform)' == 'ARM64EC'">false</ValidateArm64EcConfiguration>
     </PropertyGroup>
 
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
