@@ -107,5 +107,102 @@ namespace UnitTests
                 Assert.IsFalse(pairs[0].Contents.Contains("ButtonBase"));
             }
         }
+
+        [TestMethod]
+        public void CodeGenerator_CSharpTypeInfoPass1StubMatchesPass2PublicApi()
+        {
+            string xaml = @"
+<Page
+    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+    xmlns:dll='using:LibManagedDll'>
+    <Page.Resources>
+        <dll:SimpleClass x:Key='key'/>
+    </Page.Resources>
+</Page>";
+
+            DirectUISchemaContext schema = _testHelper.LoadSchema(SchemaMode.LoadUserDll);
+            TypeInfoCollector collector = _testHelper.CollectTypes(xaml, schema);
+            CodeGeneratorProjectContext context = new CodeGeneratorProjectContext(
+                new Version(KnownVersions.Latest),
+                "CSharpTypeInfoPass1Stub");
+            context.IsLibrary = true;
+            context.RootNamespace = "StubRoot";
+            context.ProjectInfo.SetCodeGenFlags("FullXamlMetadataProvider");
+
+            List<FileNameAndContentPair> pass1 = _testHelper.GenerateTypeInfo(
+                true,
+                collector.SchemaInfo,
+                context.ProjectInfo,
+                new ClassName("StubRoot.App"),
+                CodeGenLanguage.CSharp);
+            List<FileNameAndContentPair> pass2 = _testHelper.GenerateTypeInfo(
+                false,
+                collector.SchemaInfo,
+                context.ProjectInfo,
+                new ClassName("StubRoot.App"),
+                CodeGenLanguage.CSharp);
+
+            Assert.AreEqual(1, pass1.Count);
+            Assert.AreEqual("XamlTypeInfo.g.cs", pass1[0].FileName);
+            Assert.AreEqual(1, pass2.Count);
+
+            string[] sharedPublicApi =
+            {
+                "namespace StubRoot.CSharpTypeInfoPass1Stub_XamlTypeInfo",
+                "[global::Microsoft.UI.Xaml.Markup.FullXamlMetadataProvider()]",
+                "public sealed partial class XamlMetaDataProvider : global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider",
+                "[global::Windows.Foundation.Metadata.DefaultOverload]",
+                "public global::Microsoft.UI.Xaml.Markup.IXamlType GetXamlType(global::System.Type type)",
+                "public global::Microsoft.UI.Xaml.Markup.IXamlType GetXamlType(string fullName)",
+                "public global::Microsoft.UI.Xaml.Markup.XmlnsDefinition[] GetXmlnsDefinitions()",
+            };
+
+            foreach (string api in sharedPublicApi)
+            {
+                Assert.IsTrue(pass1[0].Contents.Contains(api), "Pass 1 is missing: " + api);
+                Assert.IsTrue(pass2[0].Contents.Contains(api), "Pass 2 is missing: " + api);
+            }
+
+            Assert.AreEqual(
+                3,
+                CountOccurrences(pass1[0].Contents, "throw new global::System.NotImplementedException();"));
+            Assert.IsTrue(pass1[0].Contents.Contains("#pragma warning disable 3002, 3021"));
+            Assert.IsFalse(pass1[0].Contents.Contains("internal partial class XamlTypeInfoProvider"));
+            Assert.IsTrue(pass2[0].Contents.Contains("internal partial class XamlTypeInfoProvider"));
+        }
+
+        [TestMethod]
+        public void CodeGenerator_CSharpTypeInfoPass1PreservesNoLocalTypes()
+        {
+            CodeGeneratorProjectContext context = new CodeGeneratorProjectContext(
+                new Version(KnownVersions.Latest),
+                "CSharpTypeInfoNoLocalTypes");
+
+            List<FileNameAndContentPair> pass1 = _testHelper.GenerateTypeInfo(
+                true,
+                new XamlSchemaCodeInfo(),
+                context.ProjectInfo,
+                new ClassName("CSharpTypeInfoNoLocalTypes.App"),
+                CodeGenLanguage.CSharp);
+
+            Assert.AreEqual(1, pass1.Count);
+            Assert.AreEqual("XamlTypeInfo.g.cs", pass1[0].FileName);
+            Assert.IsTrue(pass1[0].Contents.Contains("XamlMetaDataProvider API stub for managed pass 1."));
+            Assert.IsTrue(pass1[0].Contents.Contains("// No local types."));
+            Assert.IsFalse(pass1[0].Contents.Contains("public sealed partial class XamlMetaDataProvider"));
+        }
+
+        private static int CountOccurrences(string text, string value)
+        {
+            int count = 0;
+            int index = 0;
+            while ((index = text.IndexOf(value, index, StringComparison.Ordinal)) >= 0)
+            {
+                count++;
+                index += value.Length;
+            }
+            return count;
+        }
     }
 }
