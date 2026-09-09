@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "activeSubtrial": "A",
-  "activeStage": "S0",
-  "activeCheckpoint": "baseline-branches-created",
+  "activeStage": "S1",
+  "activeCheckpoint": "inventory-tooling",
   "architecture": "x64",
   "branchNativeImplementation": true,
   "repositories": {
@@ -74,12 +74,12 @@
     "winuiGalleryBranch": "experiment/delift-a-wuc"
   },
   "latestCheckpoint": {
-    "winuiCommit": "1343553f9d705f76bf4b1e97c690f85b840242b0",
+    "winuiCommit": "b785ddb1af0321fcc66e045a9c75d213e7e68720",
     "winuiGalleryCommit": null,
-    "winuiBuild": "not-run",
+    "winuiBuild": "passed-mux-amd64chk",
     "csharpScenarioApp": "not-created",
     "cppWinrtScenarioApp": "not-created",
     "winuiGallery": "not-run",
-    "notes": "Subtrial A and B branches were created from the recorded baselines."
+    "notes": "Subtrial A baseline MUX build passed. Component inventory tooling is in progress."
   }
 }

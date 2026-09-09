@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "components": [
+    {
+      "id": "composition",
+      "liftedNamespaces": [
+        "Microsoft.UI.Composition"
+      ],
+      "candidateSystemNamespaces": [
+        "Windows.UI.Composition"
+      ],
+      "liftedIdlPatterns": [
+        "*Microsoft.UI.Composition*.idl"
+      ],
+      "systemIdlPatterns": [
+        "*windows.ui.composition*.idl"
+      ]
+    },
+    {
+      "id": "dispatching",
+      "liftedNamespaces": [
+        "Microsoft.UI.Dispatching"
+      ],
+      "candidateSystemNamespaces": [
+        "Windows.System"
+      ],
+      "liftedIdlPatterns": [
+        "*Microsoft.UI.Dispatching*.idl"
+      ],
+      "systemIdlPatterns": [
+        "*Windows.System.DispatcherQueue*.idl"
+      ]
+    },
+    {
+      "id": "content",
+      "liftedNamespaces": [
+        "Microsoft.UI.Content"
+      ],
+      "candidateSystemNamespaces": [
+        "Windows.UI.Content"
+      ],
+      "liftedIdlPatterns": [
+        "*Microsoft.UI.Content*.idl"
+      ],
+      "systemIdlPatterns": [
+        "*Windows.UI.Content*.idl",
+        "*windows.ui.composition.content*.idl"
+      ]
+    },
+    {
+      "id": "input",
+      "liftedNamespaces": [
+        "Microsoft.UI.Input"
+      ],
+      "candidateSystemNamespaces": [
+        "Windows.UI.Input"
+      ],
+      "liftedIdlPatterns": [
+        "*Microsoft.UI.Input*.idl"
+      ],
+      "systemIdlPatterns": [
+        "*Windows.UI.Input*.idl"
+      ]
+    },
+    {
+      "id": "windowing",
+      "liftedNamespaces": [
+        "Microsoft.UI.Windowing"
+      ],
+      "candidateSystemNamespaces": [
+        "Windows.UI.WindowManagement"
+      ],
+      "liftedIdlPatterns": [
+        "*Microsoft.UI.Windowing*.idl"
+      ],
+      "systemIdlPatterns": [
+        "*Windows.UI.WindowManagement*.idl"
+      ]
+    },
+    {
+      "id": "text",
+      "liftedNamespaces": [
+        "Microsoft.UI.Text"
+      ],
+      "candidateSystemNamespaces": [
+        "Windows.UI.Text"
+      ],
+      "liftedIdlPatterns": [
+        "*Microsoft.UI.Text*.idl"
+      ],
+      "systemIdlPatterns": [
+        "*Windows.UI.Text*.idl"
+      ]
+    },
+    {
+      "id": "resources",
+      "liftedNamespaces": [
+        "Microsoft.Windows.ApplicationModel.Resources"
+      ],
+      "candidateSystemNamespaces": [
+        "Windows.ApplicationModel.Resources",
+        "Windows.ApplicationModel.Resources.Core"
+      ],
+      "liftedIdlPatterns": [
+        "*Microsoft.Windows.ApplicationModel.Resources*.idl"
+      ],
+      "systemIdlPatterns": [
+        "*Windows.ApplicationModel.Resources*.idl"
+      ]
+    }
+  ]
+}
