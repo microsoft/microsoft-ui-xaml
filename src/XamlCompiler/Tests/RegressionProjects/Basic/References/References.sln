@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VCExe", "VCExe\VCExe.vcxpro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VCWinrtComponent", "VCWinrtComponent\VCWinrtComponent.vcxproj", "{E44D2AD9-5898-4AB3-8F03-BF174971B48C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CppWinRTExe", "CppWinRTExe\CppWinRTExe.vcxproj", "{5704C418-F504-4B54-AF95-F02A76A3B11E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -143,6 +145,18 @@ Global
 		{E44D2AD9-5898-4AB3-8F03-BF174971B48C}.Release|x64.Build.0 = Release|x64
 		{E44D2AD9-5898-4AB3-8F03-BF174971B48C}.Release|x86.ActiveCfg = Release|Win32
 		{E44D2AD9-5898-4AB3-8F03-BF174971B48C}.Release|x86.Build.0 = Release|Win32
+		{5704C418-F504-4B54-AF95-F02A76A3B11E}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{5704C418-F504-4B54-AF95-F02A76A3B11E}.Debug|ARM64.Build.0 = Debug|ARM64
+		{5704C418-F504-4B54-AF95-F02A76A3B11E}.Debug|x64.ActiveCfg = Debug|x64
+		{5704C418-F504-4B54-AF95-F02A76A3B11E}.Debug|x64.Build.0 = Debug|x64
+		{5704C418-F504-4B54-AF95-F02A76A3B11E}.Debug|x86.ActiveCfg = Debug|Win32
+		{5704C418-F504-4B54-AF95-F02A76A3B11E}.Debug|x86.Build.0 = Debug|Win32
+		{5704C418-F504-4B54-AF95-F02A76A3B11E}.Release|ARM64.ActiveCfg = Release|ARM64
+		{5704C418-F504-4B54-AF95-F02A76A3B11E}.Release|ARM64.Build.0 = Release|ARM64
+		{5704C418-F504-4B54-AF95-F02A76A3B11E}.Release|x64.ActiveCfg = Release|x64
+		{5704C418-F504-4B54-AF95-F02A76A3B11E}.Release|x64.Build.0 = Release|x64
+		{5704C418-F504-4B54-AF95-F02A76A3B11E}.Release|x86.ActiveCfg = Release|Win32
+		{5704C418-F504-4B54-AF95-F02A76A3B11E}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

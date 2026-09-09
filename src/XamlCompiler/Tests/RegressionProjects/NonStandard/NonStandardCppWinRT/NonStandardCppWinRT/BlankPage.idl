@@ -1,0 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+namespace NonStandardCppWinRT
+{
+    [Windows.Foundation.Metadata.WebHostHidden]
+    runtimeclass BlankPage : Microsoft.UI.Xaml.Controls.Page
+    {
+        BlankPage();
+    }
+}
