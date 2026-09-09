@@ -498,9 +498,8 @@ namespace UnitTests
             string result = _testHelper.MatchErrors(validator, expectedErrors, null);
             Assert.IsNull(result, result);
 
-            // The same assignment to IntListProp (IntList : List<Int32>) used to be a WMC0055 too.
-            // It is now legal: succinct collection syntax (PR 5107352 / PR 5193043) accepts text for
-            // a collection whose *items* are convertible from string, so '43' is a one-item list.
+            // IntListProp accepts text because succinct collection syntax converts each item from
+            // string.
             string succinctXaml = xaml.Replace("ButtonDictionaryProp", "IntListProp");
             var succinctValidator = _testHelper.ValidateXAML(succinctXaml, SchemaMode.LoadUserDll);
             string succinctResult = _testHelper.MatchErrors(succinctValidator, new string[] { }, null);
@@ -556,16 +555,9 @@ namespace UnitTests
             Assert.IsNull(result, result);
         }
 
-        // Disabled until C#/WinRT 3.0, which will project Windows.Foundation.Metadata.DeprecatedAttribute
-        // onto [Obsolete]. Until then this scenario cannot work for a managed project at all:
-        //   * a real net8.0 C# project passes the XAML compiler ReferenceAssemblies="@(ReferencePath)",
-        //     which contains Microsoft.WinUI.dll and no WinUI .winmd, and TestHelper now models that;
-        //   * measured on this tree, [Deprecated] sits on Microsoft.UI.Xaml.winmd's
-        //     get_/put_ContainerStyle accessors and is absent from the projection entirely - not even
-        //     re-emitted as [Obsolete] - so there is nothing left for the compiler to key WMC1500 off.
-        // This test only passed previously because the harness fed the compiler a .winmd that no
-        // managed build ever sees. When C#/WinRT 3.0 lands, re-enable this and check that the
-        // compiler's IsDeprecated lookup honours [Obsolete] and not just [Deprecated].
+        // Ignored until C#/WinRT projects DeprecatedAttribute as ObsoleteAttribute. Managed
+        // reference metadata currently has no deprecation marker for WMC1500; the projection is
+        // planned for the C#/WinRT 3.0 release.
         [TestMethod]
         [Ignore]
         public void WMC1500_XamlDeprecated()
@@ -1948,9 +1940,6 @@ namespace UnitTests
         public void WMC0155_ListViewDuplicateError()
         {
             //Creating a ListView combining both syntaxes, should result in an error
-            // NOTE: as authored in 2817b63809 this XAML was not well-formed - "< ListView.Items >"
-            // has a space after the '<', so the XML reader rejected it before the compiler ever saw
-            // it, and "x:string" should be "x:String". Corrected here.
             string xaml = @"
 <Page
     xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'

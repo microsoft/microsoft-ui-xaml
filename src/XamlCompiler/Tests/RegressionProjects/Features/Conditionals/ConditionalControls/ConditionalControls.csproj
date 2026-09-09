@@ -6,23 +6,9 @@
   <Import Project="$(CommonFilesPath)RuntimeComponentPreamble.csproj" />
 
   <PropertyGroup>
-    <!--
-      This project and the sibling Features\Conditionals\ConditionalsModel are two variants of one
-      logical component. They used to build to the *same* assembly identity, 'ConditionalControls',
-      which put two files of that name under BuildOutput and made it easy to inspect the wrong one -
-      as happened during the CsWinRT TypeRef-scope investigation, which first probed this project's
-      winmd and concluded the defect was absent.
-
-      This variant is the one nothing references, so it is the one that was given a distinct
-      identity. A distinct AssemblyName alone would not do: a winmd has to be named for the
-      namespace prefix of the types it carries, so the root namespace moves with it.
-
-      The project file and directory keep their original names deliberately. The codegen baseline
-      paths in Tests\UnitTests\CodegenTargets.txt, the masters directory and
-      CodegenTests.Codegen_ConditionalControls are all keyed off the *project* name, so renaming it
-      would churn all three for no further benefit. That is also why the generated provider type is
-      still called ConditionalControls_XamlTypeInfo - the compiler derives it from the project name.
-    -->
+    <!-- This standalone codegen target uses the distinct ConditionalControlsV2 assembly and root
+         namespace. Keep the ConditionalControls project name because CodegenTargets.txt and the
+         generated provider baselines are keyed by it. -->
     <RootNamespace>ConditionalControlsV2</RootNamespace>
     <AssemblyName>ConditionalControlsV2</AssemblyName>
   </PropertyGroup>

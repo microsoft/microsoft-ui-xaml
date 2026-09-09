@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Win8Xaml.CompilerProxies
@@ -18,9 +20,6 @@ namespace Win8Xaml.CompilerProxies
         {
             _directUiSystemType = new ProxyHelper("Microsoft.UI.Xaml.Markup.Compiler.DirectUI.DirectUISystem");
             _xamlTypeUniversesProperty = _directUiSystemType.GetProperty("XamlTypeUniverses", true);
-            // DirectUISystem's single 'WindowsWinmds' property became the 'PlatformAssemblies' list
-            // when WinUI gained more than one platform winmd. Both are lists; the proxy exposes the
-            // first entry, which is what the single-valued property used to return.
             _platformAssembliesProperty = _directUiSystemType.GetProperty("PlatformAssemblies", true);
         }
 
@@ -29,37 +28,26 @@ namespace Win8Xaml.CompilerProxies
             _instance = instance;
         }
 
-        public XamlTypeUniverse XamlTypeUniverse
+        public IReadOnlyList<XamlTypeUniverse> XamlTypeUniverses
         {
             get
             {
-                Object xamlTypeUniverse = First(_xamlTypeUniversesProperty.GetValue(_instance, null));
-                return new XamlTypeUniverse(xamlTypeUniverse);
+                return ((IEnumerable)_xamlTypeUniversesProperty.GetValue(_instance, null))
+                    .Cast<Object>()
+                    .Select(item => new XamlTypeUniverse(item))
+                    .ToList();
             }
         }
 
-        public DirectUIAssembly WindowsWinmd
+        public IReadOnlyList<DirectUIAssembly> PlatformAssemblies
         {
             get
             {
-                Object duiAsmInstance = First(_platformAssembliesProperty.GetValue(_instance, null));
-                DirectUIAssembly duiAsm = new DirectUIAssembly(duiAsmInstance);
-                return duiAsm;
+                return ((IEnumerable)_platformAssembliesProperty.GetValue(_instance, null))
+                    .Cast<Object>()
+                    .Select(item => new DirectUIAssembly(item))
+                    .ToList();
             }
-        }
-
-        private static Object First(Object list)
-        {
-            IEnumerable items = list as IEnumerable;
-            if (items == null)
-            {
-                return list;
-            }
-            foreach (Object item in items)
-            {
-                return item;
-            }
-            return null;
         }
     }
 }

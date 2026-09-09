@@ -131,13 +131,8 @@ namespace UnitTests
 
         private static void DiffCodegen(string targetDir, List<string> forbiddenLines = null)
         {
-            /* targetDir names a master directory, relative to
-             * XAMLCompiler\TestMasters\RegressionProjects\<chk|fre> - the same key
-             * copynewmasters.cmd uses. Tests\UnitTests\CodegenTargets.txt maps that key to the
-             * directory the XAML compiler actually wrote the codegen to. The two are not derivable
-             * from one another - master directory names are historical, while codegen goes wherever
-             * $(GeneratedFilesDir) points - so this test and copynewmasters.cmd both read the
-             * mapping from that one file rather than each keeping their own copy of it.
+            /* targetDir is the master-path key in CodegenTargets.txt. The manifest maps it to the
+             * independent $(GeneratedFilesDir) path used by this test and copynewmasters.cmd.
              */
             string masterDir = NormalizePath(targetDir);
 
