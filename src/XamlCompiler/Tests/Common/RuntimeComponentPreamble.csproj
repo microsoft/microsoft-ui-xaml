@@ -10,10 +10,23 @@
     <UseWinUI>true</UseWinUI>
     <!-- Enabling Single-project MSIX Packaging allows the project to be built using `dotnet build` -->
     <EnableMsixTooling>true</EnableMsixTooling>
+    <!--
+      A C#/WinRT component must be built for a specific architecture, not Any CPU. It ships a native
+      activation host, WinRT.Host.dll, beside its .winmd, and C#/WinRT selects which one to stage
+      from $(Platform) alone - Microsoft.Windows.CsWinRT.Authoring.targets:20-21 hard-codes x86 when
+      Platform is AnyCPU, and the item that consumes it is a static ItemGroup, so no other property
+      can influence the choice. An Any CPU component therefore always shipped an x86 host, and every
+      native consumer failed ResolveAssemblyReference with MSB3271 before the XAML compiler ran.
+      See microsoft/CsWinRT#1097. This mirrors AppPreamble.csproj, which is already platform-specific.
+    -->
+    <Platforms>x86;x64;ARM64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
   </ItemGroup>
+
+  <!-- Workaround for a C#/WinRT authoring defect; see the file for the full explanation. -->
+  <Import Project="$(CommonFilesPath)FixCsWinRTWinMDScopes.targets" />
 </Project>
