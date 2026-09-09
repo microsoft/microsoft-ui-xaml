@@ -29,6 +29,7 @@ namespace winrt::BindTestbed::implementation
         static_assert( is_type_complete_v<::winrt::Microsoft::UI::Xaml::Controls::ItemsControl>, "Please #include the implementation header for '::winrt::Microsoft::UI::Xaml::Controls::ItemsControl' in your precompiled header 'pch.h'." );
         static_assert( is_type_complete_v<::winrt::BindTestbedModel::Diameter>, "Please #include the implementation header for '::winrt::BindTestbedModel::Diameter' in your precompiled header 'pch.h'." );
         static_assert( is_type_complete_v<::winrt::BindTestbedModel::Circle>, "Please #include the implementation header for '::winrt::BindTestbedModel::Circle' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::Microsoft::UI::Xaml::Controls::ToolTipService>, "Please #include the implementation header for '::winrt::Microsoft::UI::Xaml::Controls::ToolTipService' in your precompiled header 'pch.h'." );
         static_assert( is_type_complete_v<::winrt::Microsoft::UI::Xaml::Controls::Control>, "Please #include the implementation header for '::winrt::Microsoft::UI::Xaml::Controls::Control' in your precompiled header 'pch.h'." );
 
     }
@@ -151,6 +152,12 @@ namespace winrt::BindTestbed::implementation
             break;
         case 20:
             {
+                auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
+                this->BoxedDeferredValueLoad(targetElement);
+            }
+            break;
+        case 21:
+            {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                 auto weakThis = ::winrt::make_weak<class_type>(*this);
                 targetElement.Click([weakThis](::winrt::Windows::Foundation::IInspectable const& p0, ::winrt::Microsoft::UI::Xaml::RoutedEventArgs const& p1){
@@ -161,7 +168,7 @@ namespace winrt::BindTestbed::implementation
                 });
             }
             break;
-        case 21:
+        case 22:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                 auto weakThis = ::winrt::make_weak<class_type>(*this);
@@ -173,49 +180,49 @@ namespace winrt::BindTestbed::implementation
                 });
             }
             break;
-        case 26:
+        case 27:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::StackPanel>();
                 this->nestedInnerPanel(targetElement);
             }
             break;
-        case 30:
+        case 31:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Grid>();
                 this->NamedElementBetweenXLoads(targetElement);
             }
             break;
-        case 31:
+        case 32:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::StackPanel>();
                 this->innerMostNestedPanel(targetElement);
             }
             break;
-        case 32:
+        case 33:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
                 this->innerMostNestedPanelStaticText(targetElement);
             }
             break;
-        case 34:
+        case 35:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Grid>();
                 this->AnotherNamedElementBetweenXLoads(targetElement);
             }
             break;
-        case 35:
+        case 36:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                 this->ButtonWithXLoadOn(targetElement);
             }
             break;
-        case 39:
+        case 40:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
                 this->ANamedTextBlock(targetElement);
             }
             break;
-        case 40:
+        case 41:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                 auto weakThis = ::winrt::make_weak<class_type>(*this);
@@ -227,31 +234,31 @@ namespace winrt::BindTestbed::implementation
                 });
             }
             break;
-        case 41:
+        case 42:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
                 this->AnUnloadedTextBlock(targetElement);
             }
             break;
-        case 42:
+        case 43:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::StackPanel>();
                 this->InnerPanel(targetElement);
             }
             break;
-        case 43:
+        case 44:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
                 this->TextBox2(targetElement);
             }
             break;
-        case 45:
+        case 46:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
                 this->TextBox1(targetElement);
             }
             break;
-        case 48:
+        case 49:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                 auto weakThis = ::winrt::make_weak<class_type>(*this);
@@ -263,7 +270,7 @@ namespace winrt::BindTestbed::implementation
                 });
             }
             break;
-        case 49:
+        case 50:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                 auto weakThis = ::winrt::make_weak<class_type>(*this);
@@ -275,7 +282,7 @@ namespace winrt::BindTestbed::implementation
                 });
             }
             break;
-        case 50:
+        case 51:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                 this->LoadInnerPanel(targetElement);
@@ -288,7 +295,7 @@ namespace winrt::BindTestbed::implementation
                 });
             }
             break;
-        case 51:
+        case 52:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                 auto weakThis = ::winrt::make_weak<class_type>(*this);
@@ -300,7 +307,7 @@ namespace winrt::BindTestbed::implementation
                 });
             }
             break;
-        case 52:
+        case 53:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                 auto weakThis = ::winrt::make_weak<class_type>(*this);
@@ -312,7 +319,7 @@ namespace winrt::BindTestbed::implementation
                 });
             }
             break;
-        case 53:
+        case 54:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                 auto weakThis = ::winrt::make_weak<class_type>(*this);
@@ -363,30 +370,35 @@ namespace winrt::BindTestbed::implementation
             {
                 DisconnectUnloadedObject(10);
             }
+            // LoadAndCreateFromStringTests.xaml line 167
+            if (unloadableObject == BoxedDeferredValueLoad())
+            {
+                DisconnectUnloadedObject(20);
+            }
             // LoadAndCreateFromStringTests.xaml line 99
             if (unloadableObject == nestedInnerPanel())
             {
-                DisconnectUnloadedObject(26);
+                DisconnectUnloadedObject(27);
             }
             // LoadAndCreateFromStringTests.xaml line 105
             if (unloadableObject == innerMostNestedPanel())
             {
-                DisconnectUnloadedObject(31);
+                DisconnectUnloadedObject(32);
             }
             // LoadAndCreateFromStringTests.xaml line 110
             if (unloadableObject == ButtonWithXLoadOn())
             {
-                DisconnectUnloadedObject(35);
+                DisconnectUnloadedObject(36);
             }
             // LoadAndCreateFromStringTests.xaml line 86
             if (unloadableObject == AnUnloadedTextBlock())
             {
-                DisconnectUnloadedObject(41);
+                DisconnectUnloadedObject(42);
             }
             // LoadAndCreateFromStringTests.xaml line 65
             if (unloadableObject == InnerPanel())
             {
-                DisconnectUnloadedObject(42);
+                DisconnectUnloadedObject(43);
             }
             ::winrt::Microsoft::UI::Xaml::Markup::XamlMarkupHelper::UnloadObject(unloadableObject);
         }
@@ -399,10 +411,10 @@ namespace winrt::BindTestbed::implementation
         {
             case 5: // LoadAndCreateFromStringTests.xaml line 55
             {
-                DisconnectUnloadedObject(42);
-                DisconnectUnloadedObject(45);
-                Bindings->DisconnectUnloadedObject(45);
+                DisconnectUnloadedObject(43);
+                DisconnectUnloadedObject(46);
                 Bindings->DisconnectUnloadedObject(46);
+                Bindings->DisconnectUnloadedObject(47);
                 OuterPanel(nullptr);
                 break;
             }
@@ -420,18 +432,18 @@ namespace winrt::BindTestbed::implementation
             }
             case 8: // LoadAndCreateFromStringTests.xaml line 82
             {
-                DisconnectUnloadedObject(39);
-                DisconnectUnloadedObject(41);
+                DisconnectUnloadedObject(40);
+                DisconnectUnloadedObject(42);
                 Bindings->DisconnectUnloadedObject(8);
                 UberStackPanel(nullptr);
                 break;
             }
             case 9: // LoadAndCreateFromStringTests.xaml line 96
             {
-                DisconnectUnloadedObject(26);
-                Bindings->DisconnectUnloadedObject(26);
+                DisconnectUnloadedObject(27);
                 Bindings->DisconnectUnloadedObject(27);
                 Bindings->DisconnectUnloadedObject(28);
+                Bindings->DisconnectUnloadedObject(29);
                 Bindings->DisconnectUnloadedObject(9);
                 nestedOuterPanel(nullptr);
                 break;
@@ -442,80 +454,86 @@ namespace winrt::BindTestbed::implementation
                 FallbackValueLoad(nullptr);
                 break;
             }
-            case 26: // LoadAndCreateFromStringTests.xaml line 99
+            case 20: // LoadAndCreateFromStringTests.xaml line 167
             {
-                Bindings->DisconnectUnloadedObject(29);
-                DisconnectUnloadedObject(30);
-                Bindings->DisconnectUnloadedObject(26);
+                Bindings->DisconnectUnloadedObject(20);
+                BoxedDeferredValueLoad(nullptr);
+                break;
+            }
+            case 27: // LoadAndCreateFromStringTests.xaml line 99
+            {
+                Bindings->DisconnectUnloadedObject(30);
+                DisconnectUnloadedObject(31);
+                Bindings->DisconnectUnloadedObject(27);
                 nestedInnerPanel(nullptr);
                 break;
             }
-            case 30: // LoadAndCreateFromStringTests.xaml line 104
+            case 31: // LoadAndCreateFromStringTests.xaml line 104
             {
-                DisconnectUnloadedObject(31);
-                Bindings->DisconnectUnloadedObject(31);
+                DisconnectUnloadedObject(32);
+                Bindings->DisconnectUnloadedObject(32);
                 NamedElementBetweenXLoads(nullptr);
                 break;
             }
-            case 31: // LoadAndCreateFromStringTests.xaml line 105
+            case 32: // LoadAndCreateFromStringTests.xaml line 105
             {
-                DisconnectUnloadedObject(32);
-                Bindings->DisconnectUnloadedObject(33);
-                DisconnectUnloadedObject(34);
-                Bindings->DisconnectUnloadedObject(31);
+                DisconnectUnloadedObject(33);
+                Bindings->DisconnectUnloadedObject(34);
+                DisconnectUnloadedObject(35);
+                Bindings->DisconnectUnloadedObject(32);
                 innerMostNestedPanel(nullptr);
                 break;
             }
-            case 32: // LoadAndCreateFromStringTests.xaml line 107
+            case 33: // LoadAndCreateFromStringTests.xaml line 107
             {
-                Bindings->DisconnectUnloadedObject(32);
+                Bindings->DisconnectUnloadedObject(33);
                 innerMostNestedPanelStaticText(nullptr);
                 break;
             }
-            case 34: // LoadAndCreateFromStringTests.xaml line 109
+            case 35: // LoadAndCreateFromStringTests.xaml line 109
             {
-                DisconnectUnloadedObject(35);
-                Bindings->DisconnectUnloadedObject(35);
+                DisconnectUnloadedObject(36);
+                Bindings->DisconnectUnloadedObject(36);
                 AnotherNamedElementBetweenXLoads(nullptr);
                 break;
             }
-            case 35: // LoadAndCreateFromStringTests.xaml line 110
+            case 36: // LoadAndCreateFromStringTests.xaml line 110
             {
-                Bindings->DisconnectUnloadedObject(35);
+                Bindings->DisconnectUnloadedObject(36);
                 ButtonWithXLoadOn(nullptr);
                 break;
             }
-            case 39: // LoadAndCreateFromStringTests.xaml line 84
+            case 40: // LoadAndCreateFromStringTests.xaml line 84
             {
                 ANamedTextBlock(nullptr);
                 break;
             }
-            case 40: // LoadAndCreateFromStringTests.xaml line 85
+            case 41: // LoadAndCreateFromStringTests.xaml line 85
             {
                 break;
             }
-            case 41: // LoadAndCreateFromStringTests.xaml line 86
+            case 42: // LoadAndCreateFromStringTests.xaml line 86
             {
                 AnUnloadedTextBlock(nullptr);
                 break;
             }
-            case 42: // LoadAndCreateFromStringTests.xaml line 65
+            case 43: // LoadAndCreateFromStringTests.xaml line 65
             {
-                DisconnectUnloadedObject(43);
-                Bindings->DisconnectUnloadedObject(43);
+                DisconnectUnloadedObject(44);
                 Bindings->DisconnectUnloadedObject(44);
+                Bindings->DisconnectUnloadedObject(45);
                 InnerPanel(nullptr);
                 break;
             }
-            case 43: // LoadAndCreateFromStringTests.xaml line 72
+            case 44: // LoadAndCreateFromStringTests.xaml line 72
             {
-                Bindings->DisconnectUnloadedObject(43);
+                Bindings->DisconnectUnloadedObject(44);
                 TextBox2(nullptr);
                 break;
             }
-            case 45: // LoadAndCreateFromStringTests.xaml line 63
+            case 46: // LoadAndCreateFromStringTests.xaml line 63
             {
-                Bindings->DisconnectUnloadedObject(45);
+                Bindings->DisconnectUnloadedObject(46);
                 TextBox1(nullptr);
                 break;
             }
@@ -542,15 +560,15 @@ namespace winrt::BindTestbed::implementation
                     element1.Loading({&*bindings, &::winrt::BindTestbed::implementation::XamlBindings::Loading});
                 }
                 break;
-            case 23: // LoadAndCreateFromStringTests.xaml line 131
+            case 24: // LoadAndCreateFromStringTests.xaml line 131
                 {
-                    auto element23 = target.as<::winrt::Microsoft::UI::Xaml::Controls::StackPanel>();
-                    auto objBindings = std::make_shared<LoadAndCreateFromStringTests_obj23_Bindings>();
-                    objBindings->SetDataRoot(element23.DataContext());
+                    auto element24 = target.as<::winrt::Microsoft::UI::Xaml::Controls::StackPanel>();
+                    auto objBindings = std::make_shared<LoadAndCreateFromStringTests_obj24_Bindings>();
+                    objBindings->SetDataRoot(element24.DataContext());
                     bindings = ::winrt::make_self<::winrt::BindTestbed::implementation::XamlBindings>(std::move(objBindings));
-                    bindings->SubscribeForDataContextChanged(element23);
-                    DataTemplate::SetExtensionInstance(element23, bindings.as<::winrt::Microsoft::UI::Xaml::IDataTemplateExtension>());
-                    XamlBindingHelper::SetDataTemplateComponent(element23, bindings.as<::winrt::Microsoft::UI::Xaml::Markup::IDataTemplateComponent>());
+                    bindings->SubscribeForDataContextChanged(element24);
+                    DataTemplate::SetExtensionInstance(element24, bindings.as<::winrt::Microsoft::UI::Xaml::IDataTemplateExtension>());
+                    XamlBindingHelper::SetDataTemplateComponent(element24, bindings.as<::winrt::Microsoft::UI::Xaml::Markup::IDataTemplateComponent>());
                 }
                 break;
         }
@@ -558,17 +576,17 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename ... I>
-    struct LoadAndCreateFromStringTestsT<D, I...>::LoadAndCreateFromStringTests_obj23_Bindings
+    struct LoadAndCreateFromStringTestsT<D, I...>::LoadAndCreateFromStringTests_obj24_Bindings
         : public ::winrt::BindTestbed::implementation::ReferenceTypeXamlBindings<::winrt::BindTestbedModel::IEmployee, ::winrt::BindTestbed::implementation::XamlBindingTrackingBase>
-        , public std::enable_shared_from_this<LoadAndCreateFromStringTestsT<D, I...>::LoadAndCreateFromStringTests_obj23_Bindings>
+        , public std::enable_shared_from_this<LoadAndCreateFromStringTestsT<D, I...>::LoadAndCreateFromStringTests_obj24_Bindings>
         , public ::winrt::BindTestbed::implementation::IXamlBindingTracking
 {
-        LoadAndCreateFromStringTests_obj23_Bindings()
+        LoadAndCreateFromStringTests_obj24_Bindings()
         {
             InitializeTracking(this);
         }
 
-        ~LoadAndCreateFromStringTests_obj23_Bindings()
+        ~LoadAndCreateFromStringTests_obj24_Bindings()
         {
             ReleaseAllListeners();
         }
@@ -577,22 +595,22 @@ namespace winrt::BindTestbed::implementation
         {
             switch(connectionId)
             {
-            case 23: // LoadAndCreateFromStringTests.xaml line 131
+            case 24: // LoadAndCreateFromStringTests.xaml line 131
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::StackPanel>();
-                    obj23 = targetElement;
-                }
-                break;
-            case 24: // LoadAndCreateFromStringTests.xaml line 132
-                {
-                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
                     obj24 = targetElement;
                 }
                 break;
-            case 25: // LoadAndCreateFromStringTests.xaml line 133
+            case 25: // LoadAndCreateFromStringTests.xaml line 132
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
                     obj25 = targetElement;
+                }
+                break;
+            case 26: // LoadAndCreateFromStringTests.xaml line 133
+                {
+                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
+                    obj26 = targetElement;
                 }
                 break;
             }
@@ -602,11 +620,11 @@ namespace winrt::BindTestbed::implementation
         {
             switch (connectionId)
             {
-                case 24: // LoadAndCreateFromStringTests.xaml line 132
+                case 25: // LoadAndCreateFromStringTests.xaml line 132
                     {
-                        if (obj24)
+                        if (obj25)
                         {
-                            obj24 = nullptr;
+                            obj25 = nullptr;
                         }
                 }
                 break;
@@ -619,20 +637,20 @@ namespace winrt::BindTestbed::implementation
         {
             switch (connectionId)
             {
-            case 24: // LoadAndCreateFromStringTests.xaml line 132
+            case 25: // LoadAndCreateFromStringTests.xaml line 132
                 {
                     // LoadAndCreateFromStringTests.xaml line 132
-                    if (obj24LoadDeferredValue)
+                    if (obj25LoadDeferredValue)
                     {
-                        this->obj23.get().FindName(L"IsEOM");
+                        this->obj24.get().FindName(L"IsEOM");
                     }
                     else
                     {
-                        if (obj24) 
+                        if (obj25) 
                         {
-                            ::winrt::Microsoft::UI::Xaml::Markup::XamlMarkupHelper::UnloadObject(obj24);
+                            ::winrt::Microsoft::UI::Xaml::Markup::XamlMarkupHelper::UnloadObject(obj25);
                         }
-                        DisconnectUnloadedObject(24);
+                        DisconnectUnloadedObject(25);
                     }
                     }
                     break;
@@ -657,7 +675,7 @@ namespace winrt::BindTestbed::implementation
                     SetDataRoot(item);
                     if (_dataContextChangedToken.value != 0)
                     {
-                        auto rootElement = this->obj23.get();
+                        auto rootElement = this->obj24.get();
                         if (rootElement != nullptr)
                         {
                             rootElement.DataContextChanged(_dataContextChangedToken);
@@ -674,10 +692,10 @@ namespace winrt::BindTestbed::implementation
 
     private:
         // Fields for each control that has bindings.
-        ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::Controls::StackPanel> obj23;
-        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj24 { nullptr };
-        bool obj24LoadDeferredValue {};
+        ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::Controls::StackPanel> obj24;
         ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj25 { nullptr };
+        bool obj25LoadDeferredValue {};
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj26 { nullptr };
         std::list<int> UnloadedElementsToUpdate;
 
         // Fields for binding tracking.
@@ -717,19 +735,19 @@ namespace winrt::BindTestbed::implementation
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
                 // LoadAndCreateFromStringTests.xaml line 132
-                obj24LoadDeferredValue = obj;
+                obj25LoadDeferredValue = obj;
     
                 if (obj)
                 {
-                    this->obj23.get().FindName(L"IsEOM");
+                    this->obj24.get().FindName(L"IsEOM");
                 }
                 else
                 {
-                    if (obj24) 
+                    if (obj25) 
                     {
-                        ::winrt::Microsoft::UI::Xaml::Markup::XamlMarkupHelper::UnloadObject(obj24);
+                        ::winrt::Microsoft::UI::Xaml::Markup::XamlMarkupHelper::UnloadObject(obj25);
                     }
-                    DisconnectUnloadedObject(24);
+                    DisconnectUnloadedObject(25);
                 }
             }
         }
@@ -739,7 +757,7 @@ namespace winrt::BindTestbed::implementation
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
                 // LoadAndCreateFromStringTests.xaml line 133
-                Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj25, obj);
+                Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj26, obj);
             }
         }
 
@@ -848,9 +866,9 @@ namespace winrt::BindTestbed::implementation
                     {
                         Set_Microsoft_UI_Xaml_Controls_StackPanel_BorderBrush(obj9, obj9BorderBrushDeferredValue, std::nullopt);
                     }
-                if (std::find(UnloadedElementsToUpdate.begin(), UnloadedElementsToUpdate.end(), 26) == UnloadedElementsToUpdate.end())
+                if (std::find(UnloadedElementsToUpdate.begin(), UnloadedElementsToUpdate.end(), 27) == UnloadedElementsToUpdate.end())
                 {
-                    UnloadedElementsToUpdate.push_back(26);
+                    UnloadedElementsToUpdate.push_back(27);
                 }
                 }
                 break;
@@ -908,70 +926,81 @@ namespace winrt::BindTestbed::implementation
                     obj19 = targetElement;
                 }
                 break;
-            case 26: // LoadAndCreateFromStringTests.xaml line 99
-                {
-                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::StackPanel>();
-                    obj26 = targetElement;
-                    // LoadAndCreateFromStringTests.xaml line 99
-                    if (obj26)
-                    {
-                        Set_Microsoft_UI_Xaml_Controls_StackPanel_BorderBrush(obj26, obj26BorderBrushDeferredValue, std::nullopt);
-                    }
-                }
-                break;
-            case 27: // LoadAndCreateFromStringTests.xaml line 117
+            case 20: // LoadAndCreateFromStringTests.xaml line 167
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
-                    obj27 = targetElement;
-                    // LoadAndCreateFromStringTests.xaml line 117
-                    if (obj27)
+                    obj20 = targetElement;
+                    // LoadAndCreateFromStringTests.xaml line 167
+                    if (obj20)
                     {
-                        Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj27, obj27TextDeferredValue);
+                        Set_Microsoft_UI_Xaml_Controls_ToolTipService_ToolTip(obj20, ::winrt::box_value(obj20ToolTipDeferredValue), std::nullopt);
                     }
                 }
                 break;
-            case 28: // LoadAndCreateFromStringTests.xaml line 118
+            case 27: // LoadAndCreateFromStringTests.xaml line 99
+                {
+                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::StackPanel>();
+                    obj27 = targetElement;
+                    // LoadAndCreateFromStringTests.xaml line 99
+                    if (obj27)
+                    {
+                        Set_Microsoft_UI_Xaml_Controls_StackPanel_BorderBrush(obj27, obj27BorderBrushDeferredValue, std::nullopt);
+                    }
+                }
+                break;
+            case 28: // LoadAndCreateFromStringTests.xaml line 117
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
                     obj28 = targetElement;
-                    // LoadAndCreateFromStringTests.xaml line 118
+                    // LoadAndCreateFromStringTests.xaml line 117
                     if (obj28)
                     {
                         Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj28, obj28TextDeferredValue);
                     }
                 }
                 break;
-            case 29: // LoadAndCreateFromStringTests.xaml line 103
+            case 29: // LoadAndCreateFromStringTests.xaml line 118
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
                     obj29 = targetElement;
-                    // LoadAndCreateFromStringTests.xaml line 103
+                    // LoadAndCreateFromStringTests.xaml line 118
                     if (obj29)
                     {
                         Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj29, obj29TextDeferredValue);
                     }
                 }
                 break;
-            case 30: // LoadAndCreateFromStringTests.xaml line 104
+            case 30: // LoadAndCreateFromStringTests.xaml line 103
                 {
-                if (std::find(UnloadedElementsToUpdate.begin(), UnloadedElementsToUpdate.end(), 31) == UnloadedElementsToUpdate.end())
-                {
-                    UnloadedElementsToUpdate.push_back(31);
-                }
-                }
-                break;
-            case 31: // LoadAndCreateFromStringTests.xaml line 105
-                {
-                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::StackPanel>();
-                    obj31 = targetElement;
-                    // LoadAndCreateFromStringTests.xaml line 105
-                    if (obj31)
+                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
+                    obj30 = targetElement;
+                    // LoadAndCreateFromStringTests.xaml line 103
+                    if (obj30)
                     {
-                        Set_Microsoft_UI_Xaml_Controls_StackPanel_BorderBrush(obj31, obj31BorderBrushDeferredValue, std::nullopt);
+                        Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj30, obj30TextDeferredValue);
                     }
                 }
                 break;
-            case 32: // LoadAndCreateFromStringTests.xaml line 107
+            case 31: // LoadAndCreateFromStringTests.xaml line 104
+                {
+                if (std::find(UnloadedElementsToUpdate.begin(), UnloadedElementsToUpdate.end(), 32) == UnloadedElementsToUpdate.end())
+                {
+                    UnloadedElementsToUpdate.push_back(32);
+                }
+                }
+                break;
+            case 32: // LoadAndCreateFromStringTests.xaml line 105
+                {
+                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::StackPanel>();
+                    obj32 = targetElement;
+                    // LoadAndCreateFromStringTests.xaml line 105
+                    if (obj32)
+                    {
+                        Set_Microsoft_UI_Xaml_Controls_StackPanel_BorderBrush(obj32, obj32BorderBrushDeferredValue, std::nullopt);
+                    }
+                }
+                break;
+            case 33: // LoadAndCreateFromStringTests.xaml line 107
                 {
                     this->UnloadableBindingSourcesToUpdate.push_back([this]()
                     {
@@ -979,35 +1008,35 @@ namespace winrt::BindTestbed::implementation
                     });
                 }
                 break;
-            case 33: // LoadAndCreateFromStringTests.xaml line 108
+            case 34: // LoadAndCreateFromStringTests.xaml line 108
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
-                    obj33 = targetElement;
+                    obj34 = targetElement;
                     // LoadAndCreateFromStringTests.xaml line 108
-                    if (obj33)
+                    if (obj34)
                     {
-                        Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj33, obj33TextDeferredValue);
+                        Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj34, obj34TextDeferredValue);
                     }
                 }
                 break;
-            case 34: // LoadAndCreateFromStringTests.xaml line 109
+            case 35: // LoadAndCreateFromStringTests.xaml line 109
                 {
-                if (std::find(UnloadedElementsToUpdate.begin(), UnloadedElementsToUpdate.end(), 35) == UnloadedElementsToUpdate.end())
+                if (std::find(UnloadedElementsToUpdate.begin(), UnloadedElementsToUpdate.end(), 36) == UnloadedElementsToUpdate.end())
                 {
-                    UnloadedElementsToUpdate.push_back(35);
+                    UnloadedElementsToUpdate.push_back(36);
                 }
                 }
                 break;
-            case 35: // LoadAndCreateFromStringTests.xaml line 110
-                {
-                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
-                    obj35 = targetElement;
-                }
-                break;
-            case 36: // LoadAndCreateFromStringTests.xaml line 92
+            case 36: // LoadAndCreateFromStringTests.xaml line 110
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                     obj36 = targetElement;
+                }
+                break;
+            case 37: // LoadAndCreateFromStringTests.xaml line 92
+                {
+                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
+                    obj37 = targetElement;
                     targetElement.Click([weakThis{ this->weak_from_this() }, this](::winrt::Windows::Foundation::IInspectable const& p0, ::winrt::Microsoft::UI::Xaml::RoutedEventArgs const& p1)
                     {
                         if (auto strongThis{ weakThis.lock() })
@@ -1026,10 +1055,10 @@ namespace winrt::BindTestbed::implementation
                     });
                 }
                 break;
-            case 37: // LoadAndCreateFromStringTests.xaml line 93
+            case 38: // LoadAndCreateFromStringTests.xaml line 93
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
-                    obj37 = targetElement;
+                    obj38 = targetElement;
                     targetElement.Click([weakThis{ this->weak_from_this() }, this](::winrt::Windows::Foundation::IInspectable const& p0, ::winrt::Microsoft::UI::Xaml::RoutedEventArgs const& p1)
                     {
                         if (auto strongThis{ weakThis.lock() })
@@ -1048,10 +1077,10 @@ namespace winrt::BindTestbed::implementation
                     });
                 }
                 break;
-            case 38: // LoadAndCreateFromStringTests.xaml line 94
+            case 39: // LoadAndCreateFromStringTests.xaml line 94
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
-                    obj38 = targetElement;
+                    obj39 = targetElement;
                     targetElement.Click([weakThis{ this->weak_from_this() }, this](::winrt::Windows::Foundation::IInspectable const& p0, ::winrt::Microsoft::UI::Xaml::RoutedEventArgs const& p1)
                     {
                         if (auto strongThis{ weakThis.lock() })
@@ -1070,54 +1099,54 @@ namespace winrt::BindTestbed::implementation
                     });
                 }
                 break;
-            case 43: // LoadAndCreateFromStringTests.xaml line 72
-                {
-                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
-                    obj43 = targetElement;
-                    // LoadAndCreateFromStringTests.xaml line 72
-                    if (obj43)
-                    {
-                        Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj43, obj43TextDeferredValue);
-                    }
-                }
-                break;
-            case 44: // LoadAndCreateFromStringTests.xaml line 68
+            case 44: // LoadAndCreateFromStringTests.xaml line 72
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
                     obj44 = targetElement;
-                    // LoadAndCreateFromStringTests.xaml line 68
+                    // LoadAndCreateFromStringTests.xaml line 72
                     if (obj44)
                     {
                         Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj44, obj44TextDeferredValue);
                     }
                 }
                 break;
-            case 45: // LoadAndCreateFromStringTests.xaml line 63
+            case 45: // LoadAndCreateFromStringTests.xaml line 68
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
                     obj45 = targetElement;
-                    // LoadAndCreateFromStringTests.xaml line 63
+                    // LoadAndCreateFromStringTests.xaml line 68
                     if (obj45)
                     {
                         Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj45, obj45TextDeferredValue);
                     }
                 }
                 break;
-            case 46: // LoadAndCreateFromStringTests.xaml line 59
+            case 46: // LoadAndCreateFromStringTests.xaml line 63
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
                     obj46 = targetElement;
-                    // LoadAndCreateFromStringTests.xaml line 59
+                    // LoadAndCreateFromStringTests.xaml line 63
                     if (obj46)
                     {
                         Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj46, obj46TextDeferredValue);
                     }
                 }
                 break;
-            case 47: // LoadAndCreateFromStringTests.xaml line 52
+            case 47: // LoadAndCreateFromStringTests.xaml line 59
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
                     obj47 = targetElement;
+                    // LoadAndCreateFromStringTests.xaml line 59
+                    if (obj47)
+                    {
+                        Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj47, obj47TextDeferredValue);
+                    }
+                }
+                break;
+            case 48: // LoadAndCreateFromStringTests.xaml line 52
+                {
+                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
+                    obj48 = targetElement;
                 }
                 break;
             }
@@ -1158,9 +1187,9 @@ namespace winrt::BindTestbed::implementation
                             obj9BorderBrushDeferredValue = obj9.BorderBrush();
                             obj9 = nullptr;
                         }
-                        DisconnectUnloadedObject(26);
                         DisconnectUnloadedObject(27);
                         DisconnectUnloadedObject(28);
+                        DisconnectUnloadedObject(29);
                 }
                 break;
                 case 10: // LoadAndCreateFromStringTests.xaml line 125
@@ -1171,27 +1200,27 @@ namespace winrt::BindTestbed::implementation
                         }
                 }
                 break;
-                case 26: // LoadAndCreateFromStringTests.xaml line 99
+                case 20: // LoadAndCreateFromStringTests.xaml line 167
                     {
-                        if (obj26)
+                        if (obj20)
                         {
-                            obj26BorderBrushDeferredValue = obj26.BorderBrush();
-                            obj26 = nullptr;
+                            obj20ToolTipDeferredValue = ::winrt::Microsoft::UI::Xaml::Controls::ToolTipService::GetToolTip(obj20);
+                            obj20 = nullptr;
                         }
-                        DisconnectUnloadedObject(29);
-                        DisconnectUnloadedObject(30);
                 }
                 break;
-                case 27: // LoadAndCreateFromStringTests.xaml line 117
+                case 27: // LoadAndCreateFromStringTests.xaml line 99
                     {
                         if (obj27)
                         {
-                            obj27TextDeferredValue = obj27.Text();
+                            obj27BorderBrushDeferredValue = obj27.BorderBrush();
                             obj27 = nullptr;
                         }
+                        DisconnectUnloadedObject(30);
+                        DisconnectUnloadedObject(31);
                 }
                 break;
-                case 28: // LoadAndCreateFromStringTests.xaml line 118
+                case 28: // LoadAndCreateFromStringTests.xaml line 117
                     {
                         if (obj28)
                         {
@@ -1200,7 +1229,7 @@ namespace winrt::BindTestbed::implementation
                         }
                 }
                 break;
-                case 29: // LoadAndCreateFromStringTests.xaml line 103
+                case 29: // LoadAndCreateFromStringTests.xaml line 118
                     {
                         if (obj29)
                         {
@@ -1209,23 +1238,32 @@ namespace winrt::BindTestbed::implementation
                         }
                 }
                 break;
-                case 30: // LoadAndCreateFromStringTests.xaml line 104
+                case 30: // LoadAndCreateFromStringTests.xaml line 103
+                    {
+                        if (obj30)
+                        {
+                            obj30TextDeferredValue = obj30.Text();
+                            obj30 = nullptr;
+                        }
+                }
+                break;
+                case 31: // LoadAndCreateFromStringTests.xaml line 104
                     {
                 }
                 break;
-                case 31: // LoadAndCreateFromStringTests.xaml line 105
+                case 32: // LoadAndCreateFromStringTests.xaml line 105
                     {
-                        if (obj31)
+                        if (obj32)
                         {
-                            obj31BorderBrushDeferredValue = obj31.BorderBrush();
-                            obj31 = nullptr;
+                            obj32BorderBrushDeferredValue = obj32.BorderBrush();
+                            obj32 = nullptr;
                         }
-                        DisconnectUnloadedObject(32);
                         DisconnectUnloadedObject(33);
                         DisconnectUnloadedObject(34);
+                        DisconnectUnloadedObject(35);
                 }
                 break;
-                case 32: // LoadAndCreateFromStringTests.xaml line 107
+                case 33: // LoadAndCreateFromStringTests.xaml line 107
                     {
                     this->UnloadableBindingSourcesToUpdate.push_back([this]()
                     {
@@ -1233,37 +1271,28 @@ namespace winrt::BindTestbed::implementation
                             });
                 }
                 break;
-                case 33: // LoadAndCreateFromStringTests.xaml line 108
+                case 34: // LoadAndCreateFromStringTests.xaml line 108
                     {
-                        if (obj33)
+                        if (obj34)
                         {
-                            obj33TextDeferredValue = obj33.Text();
-                            obj33 = nullptr;
+                            obj34TextDeferredValue = obj34.Text();
+                            obj34 = nullptr;
                         }
                 }
                 break;
-                case 34: // LoadAndCreateFromStringTests.xaml line 109
+                case 35: // LoadAndCreateFromStringTests.xaml line 109
                     {
                 }
                 break;
-                case 35: // LoadAndCreateFromStringTests.xaml line 110
+                case 36: // LoadAndCreateFromStringTests.xaml line 110
                     {
-                        if (obj35)
+                        if (obj36)
                         {
-                            obj35 = nullptr;
+                            obj36 = nullptr;
                         }
                 }
                 break;
-                case 43: // LoadAndCreateFromStringTests.xaml line 72
-                    {
-                        if (obj43)
-                        {
-                            obj43TextDeferredValue = obj43.Text();
-                            obj43 = nullptr;
-                        }
-                }
-                break;
-                case 44: // LoadAndCreateFromStringTests.xaml line 68
+                case 44: // LoadAndCreateFromStringTests.xaml line 72
                     {
                         if (obj44)
                         {
@@ -1272,7 +1301,7 @@ namespace winrt::BindTestbed::implementation
                         }
                 }
                 break;
-                case 45: // LoadAndCreateFromStringTests.xaml line 63
+                case 45: // LoadAndCreateFromStringTests.xaml line 68
                     {
                         if (obj45)
                         {
@@ -1281,12 +1310,21 @@ namespace winrt::BindTestbed::implementation
                         }
                 }
                 break;
-                case 46: // LoadAndCreateFromStringTests.xaml line 59
+                case 46: // LoadAndCreateFromStringTests.xaml line 63
                     {
                         if (obj46)
                         {
                             obj46TextDeferredValue = obj46.Text();
                             obj46 = nullptr;
+                        }
+                }
+                break;
+                case 47: // LoadAndCreateFromStringTests.xaml line 59
+                    {
+                        if (obj47)
+                        {
+                            obj47TextDeferredValue = obj47.Text();
+                            obj47 = nullptr;
                         }
                 }
                 break;
@@ -1364,42 +1402,55 @@ namespace winrt::BindTestbed::implementation
                     }
                     }
                     break;
-            case 26: // LoadAndCreateFromStringTests.xaml line 99
+            case 20: // LoadAndCreateFromStringTests.xaml line 167
+                {
+                    // LoadAndCreateFromStringTests.xaml line 167
+                    if (obj20LoadDeferredValue)
+                    {
+                        GetDataRoot().FindName(L"BoxedDeferredValueLoad");
+                    }
+                    else
+                    {
+                        ::winrt::get_self<::winrt::BindTestbed::implementation::LoadAndCreateFromStringTests>(GetDataRoot())->UnloadObject(obj20);
+                    }
+                    }
+                    break;
+            case 27: // LoadAndCreateFromStringTests.xaml line 99
                 {
                     // LoadAndCreateFromStringTests.xaml line 99
-                    if (obj26LoadDeferredValue)
+                    if (obj27LoadDeferredValue)
                     {
                         GetDataRoot().FindName(L"nestedInnerPanel");
                     }
                     else
                     {
-                        ::winrt::get_self<::winrt::BindTestbed::implementation::LoadAndCreateFromStringTests>(GetDataRoot())->UnloadObject(obj26);
+                        ::winrt::get_self<::winrt::BindTestbed::implementation::LoadAndCreateFromStringTests>(GetDataRoot())->UnloadObject(obj27);
                     }
                     }
                     break;
-            case 31: // LoadAndCreateFromStringTests.xaml line 105
+            case 32: // LoadAndCreateFromStringTests.xaml line 105
                 {
                     // LoadAndCreateFromStringTests.xaml line 105
-                    if (obj31LoadDeferredValue)
+                    if (obj32LoadDeferredValue)
                     {
                         GetDataRoot().FindName(L"innerMostNestedPanel");
                     }
                     else
                     {
-                        ::winrt::get_self<::winrt::BindTestbed::implementation::LoadAndCreateFromStringTests>(GetDataRoot())->UnloadObject(obj31);
+                        ::winrt::get_self<::winrt::BindTestbed::implementation::LoadAndCreateFromStringTests>(GetDataRoot())->UnloadObject(obj32);
                     }
                     }
                     break;
-            case 35: // LoadAndCreateFromStringTests.xaml line 110
+            case 36: // LoadAndCreateFromStringTests.xaml line 110
                 {
                     // LoadAndCreateFromStringTests.xaml line 110
-                    if (obj35LoadDeferredValue)
+                    if (obj36LoadDeferredValue)
                     {
                         GetDataRoot().FindName(L"ButtonWithXLoadOn");
                     }
                     else
                     {
-                        ::winrt::get_self<::winrt::BindTestbed::implementation::LoadAndCreateFromStringTests>(GetDataRoot())->UnloadObject(obj35);
+                        ::winrt::get_self<::winrt::BindTestbed::implementation::LoadAndCreateFromStringTests>(GetDataRoot())->UnloadObject(obj36);
                     }
                     }
                     break;
@@ -1430,27 +1481,28 @@ namespace winrt::BindTestbed::implementation
         ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj17 { nullptr };
         ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj18 { nullptr };
         ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj19 { nullptr };
-        ::winrt::Microsoft::UI::Xaml::Controls::StackPanel obj26 { nullptr };
-        ::winrt::Microsoft::UI::Xaml::Media::Brush obj26BorderBrushDeferredValue {nullptr};
-        bool obj26LoadDeferredValue {};
-        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj27 { nullptr };
-        ::winrt::hstring obj27TextDeferredValue {};
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj20 { nullptr };
+        bool obj20LoadDeferredValue {};
+        ::winrt::Windows::Foundation::IInspectable obj20ToolTipDeferredValue {nullptr};
+        ::winrt::Microsoft::UI::Xaml::Controls::StackPanel obj27 { nullptr };
+        ::winrt::Microsoft::UI::Xaml::Media::Brush obj27BorderBrushDeferredValue {nullptr};
+        bool obj27LoadDeferredValue {};
         ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj28 { nullptr };
         ::winrt::hstring obj28TextDeferredValue {};
         ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj29 { nullptr };
         ::winrt::hstring obj29TextDeferredValue {};
-        ::winrt::Microsoft::UI::Xaml::Controls::StackPanel obj31 { nullptr };
-        ::winrt::Microsoft::UI::Xaml::Media::Brush obj31BorderBrushDeferredValue {nullptr};
-        bool obj31LoadDeferredValue {};
-        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj33 { nullptr };
-        ::winrt::hstring obj33TextDeferredValue {};
-        ::winrt::Microsoft::UI::Xaml::Controls::Button obj35 { nullptr };
-        bool obj35LoadDeferredValue {};
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj30 { nullptr };
+        ::winrt::hstring obj30TextDeferredValue {};
+        ::winrt::Microsoft::UI::Xaml::Controls::StackPanel obj32 { nullptr };
+        ::winrt::Microsoft::UI::Xaml::Media::Brush obj32BorderBrushDeferredValue {nullptr};
+        bool obj32LoadDeferredValue {};
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj34 { nullptr };
+        ::winrt::hstring obj34TextDeferredValue {};
         ::winrt::Microsoft::UI::Xaml::Controls::Button obj36 { nullptr };
+        bool obj36LoadDeferredValue {};
         ::winrt::Microsoft::UI::Xaml::Controls::Button obj37 { nullptr };
         ::winrt::Microsoft::UI::Xaml::Controls::Button obj38 { nullptr };
-        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj43 { nullptr };
-        ::winrt::hstring obj43TextDeferredValue {};
+        ::winrt::Microsoft::UI::Xaml::Controls::Button obj39 { nullptr };
         ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj44 { nullptr };
         ::winrt::hstring obj44TextDeferredValue {};
         ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj45 { nullptr };
@@ -1458,6 +1510,8 @@ namespace winrt::BindTestbed::implementation
         ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj46 { nullptr };
         ::winrt::hstring obj46TextDeferredValue {};
         ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj47 { nullptr };
+        ::winrt::hstring obj47TextDeferredValue {};
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj48 { nullptr };
         std::list<std::function<void ()>> UnloadableBindingSourcesToUpdate;
         std::list<int> UnloadedElementsToUpdate;
 
@@ -1570,7 +1624,7 @@ namespace winrt::BindTestbed::implementation
                     obj9BorderBrushDeferredValue = result;
                 }
                 // LoadAndCreateFromStringTests.xaml line 93
-                Set_Microsoft_UI_Xaml_Controls_Control_Background(obj37, result, std::nullopt);
+                Set_Microsoft_UI_Xaml_Controls_Control_Background(obj38, result, std::nullopt);
             }
         }
 
@@ -1603,25 +1657,25 @@ namespace winrt::BindTestbed::implementation
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
                 // LoadAndCreateFromStringTests.xaml line 99
-                if (obj26)
+                if (obj27)
                 {
-                    Set_Microsoft_UI_Xaml_Controls_StackPanel_BorderBrush(obj26, result, std::nullopt);
+                    Set_Microsoft_UI_Xaml_Controls_StackPanel_BorderBrush(obj27, result, std::nullopt);
                 }
                 else
                 {
-                    obj26BorderBrushDeferredValue = result;
+                    obj27BorderBrushDeferredValue = result;
                 }
                 // LoadAndCreateFromStringTests.xaml line 105
-                if (obj31)
+                if (obj32)
                 {
-                    Set_Microsoft_UI_Xaml_Controls_StackPanel_BorderBrush(obj31, result, std::nullopt);
+                    Set_Microsoft_UI_Xaml_Controls_StackPanel_BorderBrush(obj32, result, std::nullopt);
                 }
                 else
                 {
-                    obj31BorderBrushDeferredValue = result;
+                    obj32BorderBrushDeferredValue = result;
                 }
                 // LoadAndCreateFromStringTests.xaml line 94
-                Set_Microsoft_UI_Xaml_Controls_Control_Background(obj38, result, std::nullopt);
+                Set_Microsoft_UI_Xaml_Controls_Control_Background(obj39, result, std::nullopt);
             }
         }
 
@@ -1633,7 +1687,7 @@ namespace winrt::BindTestbed::implementation
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
                 // LoadAndCreateFromStringTests.xaml line 99
-                obj26LoadDeferredValue = result;
+                obj27LoadDeferredValue = result;
     
                 if (result)
                 {
@@ -1641,7 +1695,7 @@ namespace winrt::BindTestbed::implementation
                 }
                 else
                 {
-                    ::winrt::get_self<::winrt::BindTestbed::implementation::LoadAndCreateFromStringTests>(GetDataRoot())->UnloadObject(obj26);
+                    ::winrt::get_self<::winrt::BindTestbed::implementation::LoadAndCreateFromStringTests>(GetDataRoot())->UnloadObject(obj27);
                 }
             }
         }
@@ -1654,7 +1708,7 @@ namespace winrt::BindTestbed::implementation
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
                 // LoadAndCreateFromStringTests.xaml line 105
-                obj31LoadDeferredValue = result;
+                obj32LoadDeferredValue = result;
     
                 if (result)
                 {
@@ -1662,7 +1716,7 @@ namespace winrt::BindTestbed::implementation
                 }
                 else
                 {
-                    ::winrt::get_self<::winrt::BindTestbed::implementation::LoadAndCreateFromStringTests>(GetDataRoot())->UnloadObject(obj31);
+                    ::winrt::get_self<::winrt::BindTestbed::implementation::LoadAndCreateFromStringTests>(GetDataRoot())->UnloadObject(obj32);
                 }
             }
         }
@@ -1675,7 +1729,7 @@ namespace winrt::BindTestbed::implementation
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
                 // LoadAndCreateFromStringTests.xaml line 92
-                Set_Microsoft_UI_Xaml_Controls_Control_Background(obj36, result, std::nullopt);
+                Set_Microsoft_UI_Xaml_Controls_Control_Background(obj37, result, std::nullopt);
             }
         }
 
@@ -1817,6 +1871,17 @@ namespace winrt::BindTestbed::implementation
                 {
                     ::winrt::get_self<::winrt::BindTestbed::implementation::LoadAndCreateFromStringTests>(GetDataRoot())->UnloadObject(obj8);
                 }
+                // LoadAndCreateFromStringTests.xaml line 167
+                obj20LoadDeferredValue = obj;
+    
+                if (obj)
+                {
+                    GetDataRoot().FindName(L"BoxedDeferredValueLoad");
+                }
+                else
+                {
+                    ::winrt::get_self<::winrt::BindTestbed::implementation::LoadAndCreateFromStringTests>(GetDataRoot())->UnloadObject(obj20);
+                }
             }
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -1832,7 +1897,7 @@ namespace winrt::BindTestbed::implementation
                     ::winrt::get_self<::winrt::BindTestbed::implementation::LoadAndCreateFromStringTests>(GetDataRoot())->UnloadObject(obj7);
                 }
                 // LoadAndCreateFromStringTests.xaml line 110
-                obj35LoadDeferredValue = obj;
+                obj36LoadDeferredValue = obj;
     
                 if (obj)
                 {
@@ -1840,7 +1905,7 @@ namespace winrt::BindTestbed::implementation
                 }
                 else
                 {
-                    ::winrt::get_self<::winrt::BindTestbed::implementation::LoadAndCreateFromStringTests>(GetDataRoot())->UnloadObject(obj35);
+                    ::winrt::get_self<::winrt::BindTestbed::implementation::LoadAndCreateFromStringTests>(GetDataRoot())->UnloadObject(obj36);
                 }
             }
         }
@@ -1989,34 +2054,34 @@ namespace winrt::BindTestbed::implementation
                 Set_BindTestbedModel_Circle_Diameter(obj15, ::winrt::unbox_value<::winrt::BindTestbedModel::Diameter>(::winrt::BindTestbedModel::Diameter::MakeNewDiameter(obj)), std::nullopt);
                 // LoadAndCreateFromStringTests.xaml line 154
                 Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj18, obj);
-                // LoadAndCreateFromStringTests.xaml line 103
-                if (obj29)
+                // LoadAndCreateFromStringTests.xaml line 167
+                if (obj20)
                 {
-                    Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj29, obj);
+                    Set_Microsoft_UI_Xaml_Controls_ToolTipService_ToolTip(obj20, ::winrt::box_value(obj), std::nullopt);
                 }
                 else
                 {
-                    obj29TextDeferredValue = obj;
+                    obj20ToolTipDeferredValue = ::winrt::box_value(obj);
+                }
+                // LoadAndCreateFromStringTests.xaml line 103
+                if (obj30)
+                {
+                    Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj30, obj);
+                }
+                else
+                {
+                    obj30TextDeferredValue = obj;
                 }
                 // LoadAndCreateFromStringTests.xaml line 108
-                if (obj33)
+                if (obj34)
                 {
-                    Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj33, obj);
+                    Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj34, obj);
                 }
                 else
                 {
-                    obj33TextDeferredValue = obj;
+                    obj34TextDeferredValue = obj;
                 }
                 // LoadAndCreateFromStringTests.xaml line 72
-                if (obj43)
-                {
-                    Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj43, obj);
-                }
-                else
-                {
-                    obj43TextDeferredValue = obj;
-                }
-                // LoadAndCreateFromStringTests.xaml line 68
                 if (obj44)
                 {
                     Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj44, obj);
@@ -2025,7 +2090,7 @@ namespace winrt::BindTestbed::implementation
                 {
                     obj44TextDeferredValue = obj;
                 }
-                // LoadAndCreateFromStringTests.xaml line 63
+                // LoadAndCreateFromStringTests.xaml line 68
                 if (obj45)
                 {
                     Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj45, obj);
@@ -2034,7 +2099,7 @@ namespace winrt::BindTestbed::implementation
                 {
                     obj45TextDeferredValue = obj;
                 }
-                // LoadAndCreateFromStringTests.xaml line 59
+                // LoadAndCreateFromStringTests.xaml line 63
                 if (obj46)
                 {
                     Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj46, obj);
@@ -2043,8 +2108,17 @@ namespace winrt::BindTestbed::implementation
                 {
                     obj46TextDeferredValue = obj;
                 }
+                // LoadAndCreateFromStringTests.xaml line 59
+                if (obj47)
+                {
+                    Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj47, obj);
+                }
+                else
+                {
+                    obj47TextDeferredValue = obj;
+                }
                 // LoadAndCreateFromStringTests.xaml line 52
-                Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj47, obj);
+                Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj48, obj);
             }
         }
 
@@ -2180,6 +2254,18 @@ namespace winrt::BindTestbed::implementation
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
                 // LoadAndCreateFromStringTests.xaml line 118
+                if (obj29)
+                {
+                    Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj29, obj);
+                }
+                else
+                {
+                    obj29TextDeferredValue = obj;
+                }
+            }
+            if((phase & ((1 << 0) | NOT_PHASED )) != 0)
+            {
+                // LoadAndCreateFromStringTests.xaml line 117
                 if (obj28)
                 {
                     Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj28, obj);
@@ -2187,18 +2273,6 @@ namespace winrt::BindTestbed::implementation
                 else
                 {
                     obj28TextDeferredValue = obj;
-                }
-            }
-            if((phase & ((1 << 0) | NOT_PHASED )) != 0)
-            {
-                // LoadAndCreateFromStringTests.xaml line 117
-                if (obj27)
-                {
-                    Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj27, obj);
-                }
-                else
-                {
-                    obj27TextDeferredValue = obj;
                 }
             }
         }
@@ -2271,25 +2345,25 @@ namespace winrt::BindTestbed::implementation
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
                 // LoadAndCreateFromStringTests.xaml line 118
-                if (obj28)
+                if (obj29)
                 {
-                    Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj28, L"Unloaded OneWay");
+                    Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj29, L"Unloaded OneWay");
                 }
                 else
                 {
-                    obj28TextDeferredValue = L"Unloaded OneWay";
+                    obj29TextDeferredValue = L"Unloaded OneWay";
                 }
             }
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
                 // LoadAndCreateFromStringTests.xaml line 117
-                if (obj27)
+                if (obj28)
                 {
-                    Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj27, L"Unloaded OneTime");
+                    Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj28, L"Unloaded OneTime");
                 }
                 else
                 {
-                    obj27TextDeferredValue = L"Unloaded OneTime";
+                    obj28TextDeferredValue = L"Unloaded OneTime";
                 }
             }
         }
@@ -2480,6 +2554,15 @@ namespace winrt::BindTestbed::implementation
         static void Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(::winrt::Microsoft::UI::Xaml::Controls::TextBlock const& obj, ::winrt::hstring const& value)
         {
             obj.Text(value);
+        }
+
+        static void Set_Microsoft_UI_Xaml_Controls_ToolTipService_ToolTip(::winrt::Microsoft::UI::Xaml::DependencyObject const& obj, ::winrt::Windows::Foundation::IInspectable value, std::optional<::winrt::hstring> const& targetNullValue)
+        {
+            if (!value && targetNullValue)
+            {
+                value = ::winrt::Microsoft::UI::Xaml::Markup::XamlBindingHelper::ConvertValue(::winrt::xaml_typename<::winrt::Windows::Foundation::IInspectable>(), ::winrt::box_value(::winrt::hstring(targetNullValue.value()))).as<::winrt::Windows::Foundation::IInspectable>();
+            }
+            ::winrt::Microsoft::UI::Xaml::Controls::ToolTipService::SetToolTip(obj, value);
         }
 
         static void Set_Microsoft_UI_Xaml_Controls_Control_Background(::winrt::Microsoft::UI::Xaml::Controls::Control const& obj, ::winrt::Microsoft::UI::Xaml::Media::Brush value, std::optional<::winrt::hstring> const& targetNullValue)

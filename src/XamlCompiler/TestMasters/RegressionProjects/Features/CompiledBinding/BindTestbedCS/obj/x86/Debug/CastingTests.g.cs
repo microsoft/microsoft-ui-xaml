@@ -95,16 +95,20 @@ namespace BindTestbed
             private global::Microsoft.UI.Xaml.Controls.TextBlock obj24;
             private global::Microsoft.UI.Xaml.Controls.TextBlock obj25;
             private global::Microsoft.UI.Xaml.Controls.TextBlock obj26;
-            private global::Microsoft.UI.Xaml.Controls.CheckBox obj27;
-            private global::Microsoft.UI.Xaml.Controls.CheckBox obj28;
-            private global::Microsoft.UI.Xaml.Controls.Button obj29;
-            private global::Microsoft.UI.Xaml.Controls.Button obj30;
-            private global::Microsoft.UI.Xaml.Controls.TextBlock obj31;
-            private global::Microsoft.UI.Xaml.Controls.TextBlock obj32;
-            private global::Microsoft.UI.Xaml.Controls.TextBlock obj33;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj27;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj28;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj29;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj30;
+            private global::Microsoft.UI.Xaml.Controls.CheckBox obj31;
+            private global::Microsoft.UI.Xaml.Controls.CheckBox obj32;
+            private global::Microsoft.UI.Xaml.Controls.Button obj33;
             private global::Microsoft.UI.Xaml.Controls.Button obj34;
-            private global::Microsoft.UI.Xaml.Controls.Button obj35;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj35;
             private global::Microsoft.UI.Xaml.Controls.TextBlock obj36;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj37;
+            private global::Microsoft.UI.Xaml.Controls.Button obj38;
+            private global::Microsoft.UI.Xaml.Controls.Button obj39;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj40;
 
             // Static fields for each binding's enabled/disabled state
             private static bool isobj2TextDisabled = false;
@@ -132,18 +136,22 @@ namespace BindTestbed
             private static bool isobj22VisibilityDisabled = false;
             private static bool isobj23VisibilityDisabled = false;
             private static bool isobj24VisibilityDisabled = false;
-            private static bool isobj25IsTapEnabledDisabled = false;
-            private static bool isobj26IsTapEnabledDisabled = false;
-            private static bool isobj27IsCheckedDisabled = false;
-            private static bool isobj28IsCheckedDisabled = false;
-            private static bool isobj29TabIndexDisabled = false;
-            private static bool isobj30TabIndexDisabled = false;
-            private static bool isobj31FontSizeDisabled = false;
-            private static bool isobj32FontSizeDisabled = false;
-            private static bool isobj33FontSizeDisabled = false;
+            private static bool isobj25VisibilityDisabled = false;
+            private static bool isobj26VisibilityDisabled = false;
+            private static bool isobj27VisibilityDisabled = false;
+            private static bool isobj28VisibilityDisabled = false;
+            private static bool isobj29IsTapEnabledDisabled = false;
+            private static bool isobj30IsTapEnabledDisabled = false;
+            private static bool isobj31IsCheckedDisabled = false;
+            private static bool isobj32IsCheckedDisabled = false;
+            private static bool isobj33TabIndexDisabled = false;
             private static bool isobj34TabIndexDisabled = false;
-            private static bool isobj35TabIndexDisabled = false;
-            private static bool isobj36TextDisabled = false;
+            private static bool isobj35FontSizeDisabled = false;
+            private static bool isobj36FontSizeDisabled = false;
+            private static bool isobj37FontSizeDisabled = false;
+            private static bool isobj38TabIndexDisabled = false;
+            private static bool isobj39TabIndexDisabled = false;
+            private static bool isobj40TextDisabled = false;
 
             private CastingTests_obj1_BindingsTracking bindingsTracking;
 
@@ -246,61 +254,77 @@ namespace BindTestbed
                 {
                     isobj22VisibilityDisabled = true;
                 }
-                else if (lineNumber == 66 && columnNumber == 53)
+                else if (lineNumber == 66 && columnNumber == 61)
                 {
                     isobj23VisibilityDisabled = true;
                 }
-                else if (lineNumber == 67 && columnNumber == 53)
+                else if (lineNumber == 67 && columnNumber == 61)
                 {
                     isobj24VisibilityDisabled = true;
                 }
-                else if (lineNumber == 71 && columnNumber == 51)
+                else if (lineNumber == 70 && columnNumber == 62)
                 {
-                    isobj25IsTapEnabledDisabled = true;
+                    isobj25VisibilityDisabled = true;
                 }
-                else if (lineNumber == 72 && columnNumber == 51)
+                else if (lineNumber == 71 && columnNumber == 62)
                 {
-                    isobj26IsTapEnabledDisabled = true;
+                    isobj26VisibilityDisabled = true;
                 }
-                else if (lineNumber == 76 && columnNumber == 55)
+                else if (lineNumber == 74 && columnNumber == 53)
                 {
-                    isobj27IsCheckedDisabled = true;
+                    isobj27VisibilityDisabled = true;
                 }
-                else if (lineNumber == 77 && columnNumber == 55)
+                else if (lineNumber == 75 && columnNumber == 53)
                 {
-                    isobj28IsCheckedDisabled = true;
+                    isobj28VisibilityDisabled = true;
                 }
-                else if (lineNumber == 81 && columnNumber == 47)
+                else if (lineNumber == 79 && columnNumber == 51)
                 {
-                    isobj29TabIndexDisabled = true;
+                    isobj29IsTapEnabledDisabled = true;
                 }
-                else if (lineNumber == 82 && columnNumber == 47)
+                else if (lineNumber == 80 && columnNumber == 51)
                 {
-                    isobj30TabIndexDisabled = true;
+                    isobj30IsTapEnabledDisabled = true;
                 }
-                else if (lineNumber == 86 && columnNumber == 47)
+                else if (lineNumber == 84 && columnNumber == 55)
                 {
-                    isobj31FontSizeDisabled = true;
+                    isobj31IsCheckedDisabled = true;
                 }
-                else if (lineNumber == 87 && columnNumber == 47)
+                else if (lineNumber == 85 && columnNumber == 55)
                 {
-                    isobj32FontSizeDisabled = true;
+                    isobj32IsCheckedDisabled = true;
                 }
-                else if (lineNumber == 88 && columnNumber == 47)
+                else if (lineNumber == 89 && columnNumber == 47)
                 {
-                    isobj33FontSizeDisabled = true;
+                    isobj33TabIndexDisabled = true;
                 }
-                else if (lineNumber == 95 && columnNumber == 60)
+                else if (lineNumber == 90 && columnNumber == 47)
                 {
                     isobj34TabIndexDisabled = true;
                 }
-                else if (lineNumber == 96 && columnNumber == 60)
+                else if (lineNumber == 94 && columnNumber == 47)
                 {
-                    isobj35TabIndexDisabled = true;
+                    isobj35FontSizeDisabled = true;
                 }
-                else if (lineNumber == 99 && columnNumber == 24)
+                else if (lineNumber == 95 && columnNumber == 47)
                 {
-                    isobj36TextDisabled = true;
+                    isobj36FontSizeDisabled = true;
+                }
+                else if (lineNumber == 96 && columnNumber == 47)
+                {
+                    isobj37FontSizeDisabled = true;
+                }
+                else if (lineNumber == 103 && columnNumber == 60)
+                {
+                    isobj38TabIndexDisabled = true;
+                }
+                else if (lineNumber == 104 && columnNumber == 60)
+                {
+                    isobj39TabIndexDisabled = true;
+                }
+                else if (lineNumber == 107 && columnNumber == 24)
+                {
+                    isobj40TextDisabled = true;
                 }
             }
 
@@ -382,42 +406,54 @@ namespace BindTestbed
                     case 24: // CastingTests.xaml line 67
                         this.obj24 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 25: // CastingTests.xaml line 71
+                    case 25: // CastingTests.xaml line 70
                         this.obj25 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 26: // CastingTests.xaml line 72
+                    case 26: // CastingTests.xaml line 71
                         this.obj26 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 27: // CastingTests.xaml line 76
-                        this.obj27 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.CheckBox>(target);
+                    case 27: // CastingTests.xaml line 74
+                        this.obj27 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 28: // CastingTests.xaml line 77
-                        this.obj28 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.CheckBox>(target);
+                    case 28: // CastingTests.xaml line 75
+                        this.obj28 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 29: // CastingTests.xaml line 81
-                        this.obj29 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    case 29: // CastingTests.xaml line 79
+                        this.obj29 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 30: // CastingTests.xaml line 82
-                        this.obj30 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    case 30: // CastingTests.xaml line 80
+                        this.obj30 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 31: // CastingTests.xaml line 86
-                        this.obj31 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                    case 31: // CastingTests.xaml line 84
+                        this.obj31 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.CheckBox>(target);
                         break;
-                    case 32: // CastingTests.xaml line 87
-                        this.obj32 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                    case 32: // CastingTests.xaml line 85
+                        this.obj32 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.CheckBox>(target);
                         break;
-                    case 33: // CastingTests.xaml line 88
-                        this.obj33 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
-                        this.bindingsTracking.RegisterTwoWayListener_33(this.obj33);
+                    case 33: // CastingTests.xaml line 89
+                        this.obj33 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                         break;
-                    case 34: // CastingTests.xaml line 95
+                    case 34: // CastingTests.xaml line 90
                         this.obj34 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                         break;
-                    case 35: // CastingTests.xaml line 96
-                        this.obj35 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    case 35: // CastingTests.xaml line 94
+                        this.obj35 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 36: // CastingTests.xaml line 99
+                    case 36: // CastingTests.xaml line 95
                         this.obj36 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                        break;
+                    case 37: // CastingTests.xaml line 96
+                        this.obj37 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                        this.bindingsTracking.RegisterTwoWayListener_37(this.obj37);
+                        break;
+                    case 38: // CastingTests.xaml line 103
+                        this.obj38 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                        break;
+                    case 39: // CastingTests.xaml line 104
+                        this.obj39 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                        break;
+                    case 40: // CastingTests.xaml line 107
+                        this.obj40 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
                     default:
                         break;
@@ -574,6 +610,49 @@ namespace BindTestbed
             private delegate void InvokeFunctionDelegate(int phase);
             private global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate> PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
 
+            private void Invoke_DataContext_Cast_DataContext_To_CastingTestsVM_IsChecked_M_Equals_2609910045(int phase)
+            {
+                global::System.Boolean p0 = false;
+                global::System.Boolean result = ((global::BindTestbed.CastingTestsVM)this.dataRoot.DataContext).IsChecked.Equals(p0);
+                if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+                {
+                    // CastingTests.xaml line 67
+                    if (!isobj24VisibilityDisabled)
+                    {
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_Visibility(this.obj24, result ? global::Microsoft.UI.Xaml.Visibility.Visible : global::Microsoft.UI.Xaml.Visibility.Collapsed);
+                    }
+                }
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
+                    // CastingTests.xaml line 66
+                    if (!isobj23VisibilityDisabled)
+                    {
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_Visibility(this.obj23, result ? global::Microsoft.UI.Xaml.Visibility.Visible : global::Microsoft.UI.Xaml.Visibility.Collapsed);
+                    }
+                }
+            }
+
+            private void Invoke_DataContext_Cast_DataContext_To_CastingTestsVM_M_GetIsCheckedNullable_371857150(int phase)
+            {
+                global::System.Nullable<global::System.Boolean> result = ((global::BindTestbed.CastingTestsVM)this.dataRoot.DataContext).GetIsCheckedNullable();
+                if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+                {
+                    // CastingTests.xaml line 71
+                    if (!isobj26VisibilityDisabled)
+                    {
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_Visibility(this.obj26, (result ?? false) ? global::Microsoft.UI.Xaml.Visibility.Visible : global::Microsoft.UI.Xaml.Visibility.Collapsed);
+                    }
+                }
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
+                    // CastingTests.xaml line 70
+                    if (!isobj25VisibilityDisabled)
+                    {
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_Visibility(this.obj25, (result ?? false) ? global::Microsoft.UI.Xaml.Visibility.Visible : global::Microsoft.UI.Xaml.Visibility.Collapsed);
+                    }
+                }
+            }
+
             private void Invoke_DataContext_Cast_DataContext_To_CastingTestsVM_M_CombineStringWithInt_3622450556(int phase)
             {
                 global::System.String p0;
@@ -583,10 +662,10 @@ namespace BindTestbed
                 global::System.String result = ((global::BindTestbed.CastingTestsVM)this.dataRoot.DataContext).CombineStringWithInt(p0, p1);
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // CastingTests.xaml line 99
-                    if (!isobj36TextDisabled)
+                    // CastingTests.xaml line 107
+                    if (!isobj40TextDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj36, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj40, result, null);
                     }
                 }
             }
@@ -688,6 +767,7 @@ namespace BindTestbed
                         this.Update_DataContext_Cast_DataContext_To_CastingTestsVM_IsChecked(obj.IsChecked, phase);
                         this.Update_DataContext_Cast_DataContext_To_CastingTestsVM_IsVisibleNullable(obj.IsVisibleNullable, phase);
                         this.Update_DataContext_Cast_DataContext_To_CastingTestsVM_IsVisible(obj.IsVisible, phase);
+                        this.Update_DataContext_Cast_DataContext_To_CastingTestsVM_M_GetIsCheckedNullable_371857150(phase);
                         this.Update_DataContext_Cast_DataContext_To_CastingTestsVM_VisibilityValue(obj.VisibilityValue, phase);
                         this.Update_DataContext_Cast_DataContext_To_CastingTestsVM_DoubleVal(obj.DoubleVal, phase);
                         this.Update_DataContext_Cast_DataContext_To_CastingTestsVM_IntVal(obj.IntVal, phase);
@@ -727,6 +807,10 @@ namespace BindTestbed
             }
             private void Update_DataContext_Cast_DataContext_To_CastingTestsVM_IsChecked(global::System.Boolean obj, int phase)
             {
+                if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
+                {
+                    this.Update_DataContext_Cast_DataContext_To_CastingTestsVM_IsChecked_M_Equals_2609910045(phase);
+                }
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     // CastingTests.xaml line 37
@@ -839,10 +923,10 @@ namespace BindTestbed
                     {
                         XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_Visibility(this.obj22, obj);
                     }
-                    // CastingTests.xaml line 67
-                    if (!isobj24VisibilityDisabled)
+                    // CastingTests.xaml line 75
+                    if (!isobj28VisibilityDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_Visibility(this.obj24, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_Visibility(this.obj28, obj);
                     }
                 }
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
@@ -852,10 +936,44 @@ namespace BindTestbed
                     {
                         XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_Visibility(this.obj21, obj);
                     }
-                    // CastingTests.xaml line 66
+                    // CastingTests.xaml line 74
+                    if (!isobj27VisibilityDisabled)
+                    {
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_Visibility(this.obj27, obj);
+                    }
+                }
+            }
+            private void Update_DataContext_Cast_DataContext_To_CastingTestsVM_IsChecked_M_Equals_2609910045(int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+                {
+                    if (!isobj24VisibilityDisabled)
+                    {
+                        this.PendingFunctionBindings["DataContext_Cast_DataContext_To_CastingTestsVM_IsChecked_M_Equals_2609910045"] = new InvokeFunctionDelegate(this.Invoke_DataContext_Cast_DataContext_To_CastingTestsVM_IsChecked_M_Equals_2609910045); 
+                    }
+                }
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
                     if (!isobj23VisibilityDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_Visibility(this.obj23, obj);
+                        this.PendingFunctionBindings["DataContext_Cast_DataContext_To_CastingTestsVM_IsChecked_M_Equals_2609910045"] = new InvokeFunctionDelegate(this.Invoke_DataContext_Cast_DataContext_To_CastingTestsVM_IsChecked_M_Equals_2609910045); 
+                    }
+                }
+            }
+            private void Update_DataContext_Cast_DataContext_To_CastingTestsVM_M_GetIsCheckedNullable_371857150(int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+                {
+                    if (!isobj26VisibilityDisabled)
+                    {
+                        this.PendingFunctionBindings["DataContext_Cast_DataContext_To_CastingTestsVM_M_GetIsCheckedNullable_371857150"] = new InvokeFunctionDelegate(this.Invoke_DataContext_Cast_DataContext_To_CastingTestsVM_M_GetIsCheckedNullable_371857150); 
+                    }
+                }
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
+                    if (!isobj25VisibilityDisabled)
+                    {
+                        this.PendingFunctionBindings["DataContext_Cast_DataContext_To_CastingTestsVM_M_GetIsCheckedNullable_371857150"] = new InvokeFunctionDelegate(this.Invoke_DataContext_Cast_DataContext_To_CastingTestsVM_M_GetIsCheckedNullable_371857150); 
                     }
                 }
             }
@@ -870,28 +988,28 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // CastingTests.xaml line 72
-                    if (!isobj26IsTapEnabledDisabled)
+                    // CastingTests.xaml line 80
+                    if (!isobj30IsTapEnabledDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_IsTapEnabled(this.obj26, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_IsTapEnabled(this.obj30, obj);
                     }
-                    // CastingTests.xaml line 77
-                    if (!isobj28IsCheckedDisabled)
+                    // CastingTests.xaml line 85
+                    if (!isobj32IsCheckedDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_Primitives_ToggleButton_IsChecked(this.obj28, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_Primitives_ToggleButton_IsChecked(this.obj32, obj, null);
                     }
                 }
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // CastingTests.xaml line 71
-                    if (!isobj25IsTapEnabledDisabled)
+                    // CastingTests.xaml line 79
+                    if (!isobj29IsTapEnabledDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_IsTapEnabled(this.obj25, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_IsTapEnabled(this.obj29, obj);
                     }
-                    // CastingTests.xaml line 76
-                    if (!isobj27IsCheckedDisabled)
+                    // CastingTests.xaml line 84
+                    if (!isobj31IsCheckedDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_Primitives_ToggleButton_IsChecked(this.obj27, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_Primitives_ToggleButton_IsChecked(this.obj31, obj, null);
                     }
                 }
             }
@@ -906,18 +1024,18 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // CastingTests.xaml line 82
-                    if (!isobj30TabIndexDisabled)
+                    // CastingTests.xaml line 90
+                    if (!isobj34TabIndexDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_TabIndex(this.obj30, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_TabIndex(this.obj34, obj);
                     }
                 }
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // CastingTests.xaml line 81
-                    if (!isobj29TabIndexDisabled)
+                    // CastingTests.xaml line 89
+                    if (!isobj33TabIndexDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_TabIndex(this.obj29, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_TabIndex(this.obj33, obj);
                     }
                 }
             }
@@ -925,23 +1043,23 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // CastingTests.xaml line 87
-                    if (!isobj32FontSizeDisabled)
+                    // CastingTests.xaml line 95
+                    if (!isobj36FontSizeDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_FontSize(this.obj32, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_FontSize(this.obj36, obj);
                     }
-                    // CastingTests.xaml line 88
-                    if (!isobj33FontSizeDisabled)
+                    // CastingTests.xaml line 96
+                    if (!isobj37FontSizeDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_FontSize(this.obj33, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_FontSize(this.obj37, obj);
                     }
                 }
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // CastingTests.xaml line 86
-                    if (!isobj31FontSizeDisabled)
+                    // CastingTests.xaml line 94
+                    if (!isobj35FontSizeDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_FontSize(this.obj31, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_FontSize(this.obj35, obj);
                     }
                 }
             }
@@ -959,18 +1077,18 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // CastingTests.xaml line 96
-                    if (!isobj35TabIndexDisabled)
+                    // CastingTests.xaml line 104
+                    if (!isobj39TabIndexDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_TabIndex(this.obj35, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_TabIndex(this.obj39, obj);
                     }
                 }
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // CastingTests.xaml line 95
-                    if (!isobj34TabIndexDisabled)
+                    // CastingTests.xaml line 103
+                    if (!isobj38TabIndexDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_TabIndex(this.obj34, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_TabIndex(this.obj38, obj);
                     }
                 }
             }
@@ -996,7 +1114,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    if (!isobj36TextDisabled)
+                    if (!isobj40TextDisabled)
                     {
                         this.PendingFunctionBindings["DataContext_Cast_DataContext_To_CastingTestsVM_M_CombineStringWithInt_3622450556"] = new InvokeFunctionDelegate(this.Invoke_DataContext_Cast_DataContext_To_CastingTestsVM_M_CombineStringWithInt_3622450556); 
                     }
@@ -1050,7 +1168,7 @@ namespace BindTestbed
                     }
                 }
             }
-            private void UpdateTwoWay_33_FontSize()
+            private void UpdateTwoWay_37_FontSize()
             {
                 if (this.initialized)
                 {
@@ -1060,7 +1178,7 @@ namespace BindTestbed
                         {
                             if (((global::BindTestbed.CastingTestsVM)this.dataRoot.DataContext) != null)
                             {
-                                ((global::BindTestbed.CastingTestsVM)this.dataRoot.DataContext).IntVal = (global::System.Int32)this.obj33.FontSize;
+                                ((global::BindTestbed.CastingTestsVM)this.dataRoot.DataContext).IntVal = (global::System.Int32)this.obj37.FontSize;
                             }
                         }
                     }
@@ -1144,6 +1262,7 @@ namespace BindTestbed
                                 bindings.Update_DataContext_Cast_DataContext_To_CastingTestsVM_IsChecked(obj.IsChecked, DATA_CHANGED);
                                 bindings.Update_DataContext_Cast_DataContext_To_CastingTestsVM_IsVisibleNullable(obj.IsVisibleNullable, DATA_CHANGED);
                                 bindings.Update_DataContext_Cast_DataContext_To_CastingTestsVM_IsVisible(obj.IsVisible, DATA_CHANGED);
+                                bindings.Update_DataContext_Cast_DataContext_To_CastingTestsVM_M_GetIsCheckedNullable_371857150(DATA_CHANGED);
                                 bindings.Update_DataContext_Cast_DataContext_To_CastingTestsVM_VisibilityValue(obj.VisibilityValue, DATA_CHANGED);
                                 bindings.Update_DataContext_Cast_DataContext_To_CastingTestsVM_DoubleVal(obj.DoubleVal, DATA_CHANGED);
                                 bindings.Update_DataContext_Cast_DataContext_To_CastingTestsVM_IntVal(obj.IntVal, DATA_CHANGED);
@@ -1218,6 +1337,14 @@ namespace BindTestbed
                                     }
                                     break;
                                 }
+                                case "GetIsCheckedNullable":
+                                {
+                                    if (obj != null)
+                                    {
+                                        bindings.Update_DataContext_Cast_DataContext_To_CastingTestsVM_M_GetIsCheckedNullable_371857150(DATA_CHANGED);
+                                    }
+                                    break;
+                                }
                                 default:
                                     break;
                             }
@@ -1275,14 +1402,14 @@ namespace BindTestbed
                         }
                     });
                 }
-                public void RegisterTwoWayListener_33(global::Microsoft.UI.Xaml.Controls.TextBlock sourceObject)
+                public void RegisterTwoWayListener_37(global::Microsoft.UI.Xaml.Controls.TextBlock sourceObject)
                 {
                     sourceObject.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Controls.TextBlock.FontSizeProperty, (sender, prop) =>
                     {
                         var bindingObj = this.TryGetBindingObject();
                         if (bindingObj != null)
                         {
-                            bindingObj.UpdateTwoWay_33_FontSize();
+                            bindingObj.UpdateTwoWay_37_FontSize();
                         }
                     });
                 }

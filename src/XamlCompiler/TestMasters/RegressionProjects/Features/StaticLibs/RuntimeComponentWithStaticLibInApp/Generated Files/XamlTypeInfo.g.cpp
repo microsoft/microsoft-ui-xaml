@@ -492,6 +492,7 @@ std::vector<::winrt::Microsoft::UI::Xaml::Markup::IXamlMetadataProvider> const& 
     if (_otherProviders.empty())
     {
         _otherProviders.push_back(::winrt::Microsoft::UI::Xaml::XamlTypeInfo::XamlControlsXamlMetaDataProvider());
+        _otherProviders.push_back(::winrt::Microsoft::UI::Xaml::XamlTypeInfo::XamlControlsChartsXamlMetaDataProvider());
         _otherProviders.push_back(::winrt::StaticLibInRuntimeComponent::XamlMetaDataProvider());
     }
     return _otherProviders;

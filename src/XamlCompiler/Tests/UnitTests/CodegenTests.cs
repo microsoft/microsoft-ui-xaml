@@ -29,50 +29,50 @@ namespace UnitTests
             _testHelper = new TestHelper();
         }
 
-        private static void DiffFiles(string codegenFile, string masterFile, List<string> forbiddenLines)
+        private static void DiffFiles(string actualFile, string expectedFile, List<string> forbiddenLines)
         {
-            string diffCommand = $"bcomp \"{codegenFile}\" \"{masterFile}\"";
+            string diffCommand = $"bcomp \"{actualFile}\" \"{expectedFile}\"";
 
-            FileInfo codegenFileInfo = new FileInfo(codegenFile);
-            FileInfo masterFileInfo = new FileInfo(masterFile);
+            FileInfo actualFileInfo = new FileInfo(actualFile);
+            FileInfo expectedFileInfo = new FileInfo(expectedFile);
 
-            using (var codegenReader = codegenFileInfo.OpenText())
+            using (var actualReader = actualFileInfo.OpenText())
             {
-                using (var masterReader = masterFileInfo.OpenText())
+                using (var expectedReader = expectedFileInfo.OpenText())
                 {
-                    string codegenLine;
-                    string masterLine;
+                    string actualLine;
+                    string expectedLine;
                     do
                     {
-                        if (codegenReader.EndOfStream || masterReader.EndOfStream)
+                        if (actualReader.EndOfStream || expectedReader.EndOfStream)
                         {
                             // If one of them is EOS, then both should be EOS.
-                            Assert.AreEqual(codegenReader.EndOfStream, masterReader.EndOfStream,
+                            Assert.AreEqual(expectedReader.EndOfStream, actualReader.EndOfStream,
                                 $"File lengths differ: {diffCommand}");
                             break;
                         }
 
-                        codegenLine = codegenReader.ReadLine();
-                        masterLine = masterReader.ReadLine();
+                        actualLine = actualReader.ReadLine();
+                        expectedLine = expectedReader.ReadLine();
 
-                        if (codegenLine != masterLine && !IsException(codegenLine))
+                        if (actualLine != expectedLine && !IsException(actualLine))
                         {
-                            Assert.AreEqual(codegenLine, masterLine, 
+                            Assert.AreEqual(expectedLine, actualLine,
                                 $"Files are different: {diffCommand}");
                         }
 
-                        if (forbiddenLines != null && codegenLine != null)
+                        if (forbiddenLines != null && actualLine != null)
                         {
                             foreach (string forbiddenLine in forbiddenLines)
                             {
-                                if (codegenLine.Contains(forbiddenLine))
+                                if (actualLine.Contains(forbiddenLine))
                                 {
-                                    Assert.Fail($"File {codegenFile} contains version-forbidden string '{forbiddenLine}'. {diffCommand}");
+                                    Assert.Fail($"File {actualFile} contains version-forbidden string '{forbiddenLine}'. {diffCommand}");
                                 }
                             }
                         }
                     }
-                    while (codegenLine != null);
+                    while (actualLine != null);
                 }
             }
         }

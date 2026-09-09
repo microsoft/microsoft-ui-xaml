@@ -297,9 +297,6 @@ namespace ConsumerCs.ConsumerCs_XamlTypeInfo
 
         private object Activate_0_MainPage() { return new global::ConsumerCs.MainPage(); }
         private object Activate_3_TreeViewNode() { return new global::Microsoft.UI.Xaml.Controls.TreeViewNode(); }
-        private void StaticInitializer_0_MainPage() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConsumerCs.MainPage).TypeHandle);
-        private void StaticInitializer_3_TreeViewNode() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode).TypeHandle);
-        private void StaticInitializer_5_IList() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>).TypeHandle);
         private void VectorAdd_5_IList(object instance, object item)
         {
             var collection = (global::System.Collections.Generic.ICollection<global::Microsoft.UI.Xaml.Controls.TreeViewNode>)instance;
@@ -320,7 +317,6 @@ namespace ConsumerCs.ConsumerCs_XamlTypeInfo
             case 0:   //  ConsumerCs.MainPage
                 userType = new global::ConsumerCs.ConsumerCs_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
                 userType.Activator = Activate_0_MainPage;
-                userType.StaticInitializer = StaticInitializer_0_MainPage;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
@@ -336,7 +332,6 @@ namespace ConsumerCs.ConsumerCs_XamlTypeInfo
             case 3:   //  Microsoft.UI.Xaml.Controls.TreeViewNode
                 userType = new global::ConsumerCs.ConsumerCs_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
                 userType.Activator = Activate_3_TreeViewNode;
-                userType.StaticInitializer = StaticInitializer_3_TreeViewNode;
                 userType.AddMemberName("Children");
                 userType.AddMemberName("Content");
                 userType.AddMemberName("Depth");
@@ -354,7 +349,6 @@ namespace ConsumerCs.ConsumerCs_XamlTypeInfo
 
             case 5:   //  System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
                 userType = new global::ConsumerCs.ConsumerCs_XamlTypeInfo.XamlUserType(this, typeName, type, null);
-                userType.StaticInitializer = StaticInitializer_5_IList;
                 userType.CollectionAdd = VectorAdd_5_IList;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
@@ -684,7 +678,7 @@ namespace ConsumerCs.ConsumerCs_XamlTypeInfo
 
         override public void RunInitializer() 
         {
-            StaticInitializer();
+            StaticInitializer?.Invoke();
         }
 
         override public object CreateFromString(string input)

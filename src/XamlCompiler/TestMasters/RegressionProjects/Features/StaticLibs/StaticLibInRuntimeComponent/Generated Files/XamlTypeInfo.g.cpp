@@ -227,10 +227,10 @@ const TypeInfo TypeInfos[] =
     -1,
     //   3
     L"StaticControlsLib.BlankUserControl", L"",
-    &ActivateType<::winrt::StaticControlsLib::BlankUserControl>, nullptr, nullptr, nullptr,
+    &ActivateLocalType<::winrt::StaticControlsLib::implementation::BlankUserControl>, nullptr, nullptr, nullptr,
     5, // Microsoft.UI.Xaml.Controls.UserControl
     0, 0, -1, TypeKind::Metadata,
-    TypeInfo_Flags_None,
+    TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
     -1,
     //   4
     L"Microsoft.UI.Xaml.DependencyObject", L"",
@@ -498,7 +498,7 @@ std::vector<::winrt::Microsoft::UI::Xaml::Markup::IXamlMetadataProvider> const& 
     if (_otherProviders.empty())
     {
         _otherProviders.push_back(::winrt::Microsoft::UI::Xaml::XamlTypeInfo::XamlControlsXamlMetaDataProvider());
-        _otherProviders.push_back(::winrt::StaticControlsLib::XamlMetaDataProvider());
+        _otherProviders.push_back(::winrt::Microsoft::UI::Xaml::XamlTypeInfo::XamlControlsChartsXamlMetaDataProvider());
     }
     return _otherProviders;
 }
