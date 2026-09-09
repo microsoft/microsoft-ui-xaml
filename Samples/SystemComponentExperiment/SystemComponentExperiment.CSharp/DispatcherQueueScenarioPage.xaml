@@ -1,0 +1,16 @@
+<Page
+    x:Class="SystemComponentExperiment.CSharp.DispatcherQueueScenarioPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel Padding="16" Spacing="12">
+        <TextBlock
+            Text="DispatcherQueue enqueue"
+            Style="{StaticResource TitleTextBlockStyle}"
+            AutomationProperties.HeadingLevel="Level1" />
+        <Button
+            Content="Run scenario"
+            Click="RunScenario_Click"
+            AutomationProperties.Name="Run DispatcherQueue scenario" />
+        <TextBlock x:Name="ResultText" AutomationProperties.Name="Scenario result" />
+    </StackPanel>
+</Page>

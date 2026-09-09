@@ -1,0 +1,37 @@
+<Page
+    x:Class="SystemComponentExperiment.CSharp.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid ColumnSpacing="16" Padding="16">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="320" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Spacing="8">
+            <TextBlock
+                Text="System component scenarios"
+                Style="{StaticResource TitleTextBlockStyle}"
+                AutomationProperties.HeadingLevel="Level1" />
+            <TextBlock Text="Subtrial A - baseline harness" />
+            <ListView
+                x:Name="ScenarioList"
+                ItemsSource="{x:Bind Scenarios}"
+                SelectionChanged="ScenarioList_SelectionChanged"
+                AutomationProperties.Name="Scenario index">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:ScenarioDefinition"
+                                  xmlns:local="using:SystemComponentExperiment.CSharp">
+                        <StackPanel Padding="4">
+                            <TextBlock Text="{x:Bind Title}" FontWeight="SemiBold" />
+                            <TextBlock Text="{x:Bind Component}" Opacity="0.7" />
+                            <TextBlock Text="{x:Bind MinimumOs}" Opacity="0.7" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
+
+        <Frame x:Name="ScenarioFrame" Grid.Column="1" />
+    </Grid>
+</Page>

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "activeSubtrial": "A",
   "activeStage": "S1",
-  "activeCheckpoint": "inventory-tooling",
+  "activeCheckpoint": "csharp-scenario-app",
   "architecture": "x64",
   "branchNativeImplementation": true,
   "repositories": {
@@ -69,17 +69,17 @@
   ],
   "validation": {
     "scenarioResultSchema": "result.schema.json",
-    "csharpScenarioApp": null,
+    "csharpScenarioApp": "Samples\\SystemComponentExperiment\\SystemComponentExperiment.CSharp",
     "cppWinrtScenarioApp": null,
     "winuiGalleryBranch": "experiment/delift-a-wuc"
   },
   "latestCheckpoint": {
-    "winuiCommit": "b785ddb1af0321fcc66e045a9c75d213e7e68720",
+    "winuiCommit": "5d43319c71ea35bf634dd6bbfc5055502e79238d",
     "winuiGalleryCommit": null,
     "winuiBuild": "passed-mux-amd64chk",
-    "csharpScenarioApp": "not-created",
+    "csharpScenarioApp": "passed-debug-x64-build",
     "cppWinrtScenarioApp": "not-created",
     "winuiGallery": "not-run",
-    "notes": "Subtrial A baseline MUX build passed. Component inventory tooling is in progress."
+    "notes": "Inventory and source-IDL comparison tooling passed. The packaged C# scenario app builds with baseline startup, Composition, and DispatcherQueue pages."
   }
 }

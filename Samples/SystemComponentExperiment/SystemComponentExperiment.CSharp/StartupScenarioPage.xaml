@@ -1,0 +1,21 @@
+<Page
+    x:Class="SystemComponentExperiment.CSharp.StartupScenarioPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <StackPanel Padding="16" Spacing="8">
+            <TextBlock
+                Text="Environment and module inventory"
+                Style="{StaticResource TitleTextBlockStyle}"
+                AutomationProperties.HeadingLevel="Level1" />
+            <TextBlock x:Name="StatusText" AutomationProperties.Name="Scenario result" />
+            <TextBox
+                x:Name="DetailsText"
+                IsReadOnly="True"
+                AcceptsReturn="True"
+                TextWrapping="Wrap"
+                MinHeight="320"
+                AutomationProperties.Name="Environment details" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

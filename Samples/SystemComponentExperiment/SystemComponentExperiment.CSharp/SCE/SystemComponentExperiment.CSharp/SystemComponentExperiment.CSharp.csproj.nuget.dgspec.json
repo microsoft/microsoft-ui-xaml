@@ -1,0 +1,131 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\microsoft-ui-xaml\\Samples\\SystemComponentExperiment\\SystemComponentExperiment.CSharp\\SystemComponentExperiment.CSharp.csproj": {}
+  },
+  "projects": {
+    "C:\\microsoft-ui-xaml\\Samples\\SystemComponentExperiment\\SystemComponentExperiment.CSharp\\SystemComponentExperiment.CSharp.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\microsoft-ui-xaml\\Samples\\SystemComponentExperiment\\SystemComponentExperiment.CSharp\\SystemComponentExperiment.CSharp.csproj",
+        "projectName": "SystemComponentExperiment.CSharp",
+        "projectPath": "C:\\microsoft-ui-xaml\\Samples\\SystemComponentExperiment\\SystemComponentExperiment.CSharp\\SystemComponentExperiment.CSharp.csproj",
+        "packagesPath": "C:\\.tools\\.nuget\\packages\\",
+        "outputPath": "C:\\microsoft-ui-xaml\\Samples\\SystemComponentExperiment\\SystemComponentExperiment.CSharp\\SCE\\SystemComponentExperiment.CSharp\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\microsoft-ui-xaml\\NuGet.Config",
+          "C:\\Users\\neeverma\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0-windows10.0.17763.0"
+        ],
+        "sources": {
+          "C:\\microsoft-ui-xaml\\packagestore": {},
+          "https://pkgs.dev.azure.com/shine-oss/microsoft-ui-xaml/_packaging/WinUI-Dependencies/nuget/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0-windows10.0.17763.0": {
+            "framework": "net8.0-windows10.0.17763",
+            "targetAlias": "net8.0-windows10.0.17763.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "noWarn": [
+            "NU1505"
+          ],
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net8.0-windows10.0.17763.0": {
+          "framework": "net8.0-windows10.0.17763",
+          "targetAlias": "net8.0-windows10.0.17763.0",
+          "dependencies": {
+            "Microsoft.Windows.CSWinRT": {
+              "target": "Package",
+              "version": "[2.1.1, )"
+            },
+            "Microsoft.WindowsAppSDK.WinUI": {
+              "target": "Package",
+              "version": "[3.0.0-dev, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[8.0.28, 8.0.28]"
+            },
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
+              "version": "[8.0.28, 8.0.28]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.win-x64",
+              "version": "[8.0.28, 8.0.28]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[8.0.28, 8.0.28]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.win-x64",
+              "version": "[8.0.28, 8.0.28]"
+            },
+            {
+              "name": "Microsoft.Windows.SDK.NET.Ref",
+              "version": "[10.0.17763.38, 10.0.17763.38]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[8.0.28, 8.0.28]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
+              "version": "[8.0.28, 8.0.28]"
+            }
+          ],
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            },
+            "Microsoft.Windows.SDK.NET.Ref": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\microsoft-ui-xaml\\.dotnet\\sdk\\9.0.318/PortableRuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "win-x64": {
+          "#import": []
+        }
+      }
+    }
+  }
+}
