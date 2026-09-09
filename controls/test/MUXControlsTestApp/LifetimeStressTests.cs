@@ -51,6 +51,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // ItemsRepeater realization/recycling scenario below demonstrates) is to add the offending create/teardown
     // sequence here so the fix is protected against regression.
     [TestClass]
+    // Classification=Integration makes this class an explicit member of the DevTestSuite PR gate
+    // (WinUI-GitHub-PR). The MUXControlsTestApp module sets Classification=Integration module-wide via
+    // ApiTestAssemblyHandling.AssemblyInitialize, but we declare it here as well so this suite's
+    // participation in the per-PR test pass is explicit and self-documenting, matching the convention
+    // used by the InteractionTests classes. The Helix work-item generator emits a dedicated
+    // "*-LifetimeStressTestSuite" work item for it, so it runs isolated from unrelated tests.
+    [TestProperty("Classification", "Integration")]
     [TestProperty("TestSuite", "LifetimeStressTestSuite")]
     public class LifetimeStressTests : ApiTestBase
     {
