@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
  Licensed under the MIT License. -->
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" InitialTargets="InvalidateXamlCompilerUnitTestPayload" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
@@ -64,6 +64,14 @@
     <Compile Include="ValidatorTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="$(ProjectRoot)eng\BuildGenXbfForMSBuild\BuildGenXbfForMSBuild.csproj">
+      <Project>{3CB5C51E-1F39-4EDC-8949-28812FC1C40E}</Project>
+      <Name>BuildGenXbfForMSBuild</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <Properties>CurrentSolutionConfigurationContents=;ShouldUnsetParentConfigurationAndPlatform=false</Properties>
+    </ProjectReference>
     <!-- These three are never compiled against; the tests feed them to the XAML compiler under test
          as on-disk metadata (TestHelper.GetUserAssemblyPath resolves them by file name next to the
          test assembly). They are therefore consumed as build outputs, exactly as MergedWinMD and
@@ -94,12 +102,6 @@
       <OutputItemType>Content</OutputItemType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </ProjectReference>
-    <!-- TODO: mult-targeting mismatch causing build error:
-    MSB4057: The target "GetTargetPathWithTargetPlatformMoniker" does not exist in the project.
-    <ProjectReference Include="..\..\BuildTasks\Microsoft.UI.Xaml.Markup.Compiler.csproj">
-      <Project>{fedfeea3-0e03-4798-bc77-a70ba8659a09}</Project>
-      <Name>Microsoft.UI.Xaml.Markup.Compiler</Name>
-    </ProjectReference> -->
     <ProjectReference Include="XamlCompilerProxies\XamlCompilerProxies.csproj">
       <Project>{f292fa71-2b98-4ccf-9f2e-5f21936d3715}</Project>
       <Name>XamlCompilerProxies</Name>
@@ -108,16 +110,9 @@
            alongside UnitTests.dll or every test fails in TestHelper's constructor. -->
       <Private>true</Private>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\MergedWinMD\MergedWinMD.vcxproj">
+    <ProjectReference Include="$(ProjectRoot)MergedWinMD\MergedWinMD.vcxproj">
       <Project>{52b2ed64-1cfc-401b-8c5b-6d1e1deadf98}</Project>
       <Name>MergedWinMD</Name>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <OutputItemType>Content</OutputItemType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\dxaml\xcp\tools\GenXbfDLL\GenXbf.vcxproj">
-      <Project>{42577057-854d-443d-ab59-f4e44c8f5207}</Project>
-      <Name>GenXbf</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <OutputItemType>Content</OutputItemType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -139,11 +134,31 @@
   <Target Name="AfterBuild" AfterTargets="Build" Inputs="@(TestMasters)" Outputs="@(TestMasters->'$(OutDir)TestMasters\%(RecursiveDir)%(Filename)%(Extension)')">
     <Copy SourceFiles="@(TestMasters)" DestinationFolder="$(OutDir)TestMasters\%(RecursiveDir)" ContinueOnError="false" />
   </Target>
-  <!-- Copy pre-built native artifacts (GenXbf.dll, compiler DLL) to the test output directory.
-       These are produced by the main repo build (build.cmd) and must exist before running tests. -->
-  <Target Name="CopyPrebuiltArtifacts" AfterTargets="Build">
+  <PropertyGroup>
+    <XamlCompilerUnitTestPayloadMarker>$(OutDir)XamlCompilerUnitTests.payload.complete</XamlCompilerUnitTestPayloadMarker>
+  </PropertyGroup>
+  <Target Name="InvalidateXamlCompilerUnitTestPayload" BeforeTargets="PrepareForBuild">
+    <Delete Files="$(XamlCompilerUnitTestPayloadMarker)" />
+  </Target>
+  <Target Name="BuildXamlCompilerRegressionProjects" BeforeTargets="PrepareXamlCompilerUnitTestPayload">
+    <Error Condition="'$(BUILDPLATFORM)' == ''"
+           Text="BUILDPLATFORM is not set. Run init.cmd before building XamlCompiler.sln." />
+    <Exec Command="call &quot;$(ProjectRoot)pack.component.cmd&quot;"
+          WorkingDirectory="$(ProjectRoot)" />
+    <!-- Keep compiler-consuming projects out of this build's reusable node pool so the next
+         solution build can replace the compiler binaries. -->
+    <Exec Command="&quot;$(MSBuildToolsPath)\MSBuild.exe&quot; &quot;$(ProjectRoot)src\XamlCompiler\XamlCompilerTests.sln&quot; /restore /m:4 /nologo /nr:false /v:minimal /p:Configuration=&quot;$(Configuration)&quot; /p:Platform=&quot;$(BUILDPLATFORM)&quot; /p:BuildingInsideVisualStudio=false /p:BuildProjectReferences=true" />
+  </Target>
+  <!-- Assemble a complete, runnable payload after the project references have finished building. -->
+  <Target Name="PrepareXamlCompilerUnitTestPayload" AfterTargets="Build">
     <PropertyGroup>
-      <GenXbfSourceDir>$(ProjectRoot)BuildOutput\bin\GenXBF\x64\</GenXbfSourceDir>
+      <_GenXbfPlatform Condition="'$(Platform)' == 'Win32' or '$(Platform)' == 'x86'">x86</_GenXbfPlatform>
+      <_GenXbfPlatform Condition="'$(Platform)' == 'ARM64'">ARM64</_GenXbfPlatform>
+      <_GenXbfPlatform Condition="'$(Platform)' == 'ARM64EC'">x64</_GenXbfPlatform>
+      <_GenXbfPlatform Condition="'$(_GenXbfPlatform)' == ''">x64</_GenXbfPlatform>
+      <_RequiresGenXbf Condition="'$(Platform)' != 'x64'">true</_RequiresGenXbf>
+      <GenXbfSourceDir>$(ToolsPackageLocation)\$(_GenXbfPlatform)\</GenXbfSourceDir>
+      <LibManagedOutputRoot>$(ArtifactsObjDir)src\XamlCompiler\Tests\UnitTests\</LibManagedOutputRoot>
       <!-- Use ArtifactsBinDir from the repo build system, or derive platform/config from MSBuild properties -->
       <CompilerSourceDir Condition="'$(ArtifactsBinDir)' != ''">$(ArtifactsBinDir)Product\Microsoft.UI.Xaml.Markup.Compiler\net472\</CompilerSourceDir>
 
@@ -161,8 +176,23 @@
       <ProductDir Condition="'$(ArtifactsBinDir)' != ''">$(ArtifactsBinDir)Product\</ProductDir>
       <ProductDir Condition="'$(ProductDir)' == '' or !Exists('$(ProductDir)')">$(ProjectRoot)BuildOutput\bin\$(_FallbackPlatform)$(_FallbackConfig)\Product\</ProductDir>
     </PropertyGroup>
-    <Copy SourceFiles="$(GenXbfSourceDir)GenXbf.dll" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(GenXbfSourceDir)GenXbf.dll')" />
-    <Copy SourceFiles="$(CompilerSourceDir)Microsoft.UI.Xaml.Markup.Compiler.dll" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(CompilerSourceDir)Microsoft.UI.Xaml.Markup.Compiler.dll')" />
+    <ItemGroup>
+      <_RequiredTopLevelPayloadInput Include="$(CompilerSourceDir)Microsoft.UI.Xaml.Markup.Compiler.dll" />
+      <_RequiredTopLevelPayloadInput Include="$(ProductDir)Microsoft.UI.Xaml.winmd" />
+      <_RequiredTopLevelPayloadInput Include="$(ProductDir)Microsoft.UI.winmd" />
+      <_RequiredTopLevelPayloadInput Include="$(LibManagedOutputRoot)LibManagedDll\LibManagedDll\LibManagedDll.dll" />
+      <_RequiredTopLevelPayloadInput Include="$(LibManagedOutputRoot)LibManagedDllSatellite\LibManagedDllSatellite\LibManagedDllSatellite.dll" />
+      <_RequiredTopLevelPayloadInput Include="$(LibManagedOutputRoot)LibManagedWinmd\LibManagedWinmd\LibManagedWinmd.winmd" />
+      <_OptionalTopLevelPayloadInput Include="$(GenXbfSourceDir)GenXbf.dll" Condition="Exists('$(GenXbfSourceDir)GenXbf.dll')" />
+      <_OptionalTopLevelPayloadInput Include="$(ProductDir)Microsoft.UI.dll" Condition="Exists('$(ProductDir)Microsoft.UI.dll')" />
+      <_OptionalTopLevelPayloadInput Include="$(ProductDir)Microsoft.ui.xaml.dll" Condition="Exists('$(ProductDir)Microsoft.ui.xaml.dll')" />
+    </ItemGroup>
+    <Error Condition="!Exists('%(_RequiredTopLevelPayloadInput.Identity)')"
+           Text="Required XamlCompiler unit-test payload input not found: %(_RequiredTopLevelPayloadInput.Identity). Build XamlCompiler.sln before running the tests." />
+    <Error Condition="'$(_RequiresGenXbf)' == 'true' and !Exists('$(GenXbfSourceDir)GenXbf.dll')"
+           Text="Required GenXbf.dll not found at '$(GenXbfSourceDir)GenXbf.dll'." />
+    <Copy SourceFiles="@(_RequiredTopLevelPayloadInput)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_OptionalTopLevelPayloadInput)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
     <!-- The compiler DLL alone is not loadable: it needs its net472 dependency closure
          (System.Collections.Immutable, System.Reflection.Metadata, Microsoft.Build.*, ...).
          $(ToolsPackageLocation) is the product build's packaging folder, defined in eng/packaging.props,
@@ -170,11 +200,9 @@
     <ItemGroup>
       <_XamlCompilerToolDependencies Include="$(ToolsPackageLocation)\net472\*.dll" />
     </ItemGroup>
-    <Copy SourceFiles="@(_XamlCompilerToolDependencies)" DestinationFolder="$(OutDir)" ContinueOnError="true" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(ProductDir)Microsoft.UI.Xaml.winmd" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(ProductDir)Microsoft.UI.Xaml.winmd')" />
-    <Copy SourceFiles="$(ProductDir)Microsoft.UI.winmd" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(ProductDir)Microsoft.UI.winmd')" />
-    <Copy SourceFiles="$(ProductDir)Microsoft.UI.dll" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(ProductDir)Microsoft.UI.dll')" />
-    <Copy SourceFiles="$(ProductDir)Microsoft.ui.xaml.dll" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(ProductDir)Microsoft.ui.xaml.dll')" />
+    <Error Condition="'@(_XamlCompilerToolDependencies)' == ''"
+           Text="No XamlCompiler net472 tool dependencies found under '$(ToolsPackageLocation)\net472'." />
+    <Copy SourceFiles="@(_XamlCompilerToolDependencies)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
 
     <!-- LibManagedDll is an SDK-style net8.0/WinAppSDK assembly, so the "user types" the tests
          feed to the compiler now reference the C#/WinRT projection closure - Microsoft.WinUI,
@@ -209,5 +237,24 @@
            Text="No .NET 8 reference assemblies found under '$(_NetCoreRefPackDir)'. The unit tests cannot resolve a net8.0 user assembly's type closure without them." />
     <Copy SourceFiles="@(_ManagedProjectionReference)" DestinationFolder="$(ProjectionReferencesDir)" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(_NetCoreFrameworkReference)" DestinationFolder="$(FrameworkReferencesDir)" SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <_RequiredPayloadOutput Include="$(OutDir)UnitTests.dll" />
+      <_RequiredPayloadOutput Include="$(OutDir)Win8Xaml.CompilerProxies.dll" />
+      <_RequiredPayloadOutput Include="$(OutDir)Microsoft.UI.Xaml.Markup.Compiler.dll" />
+      <_RequiredPayloadOutput Include="$(OutDir)Microsoft.UI.Xaml.winmd" />
+      <_RequiredPayloadOutput Include="$(OutDir)Microsoft.UI.winmd" />
+      <_RequiredPayloadOutput Include="$(OutDir)LibManagedDll.dll" />
+      <_RequiredPayloadOutput Include="$(OutDir)LibManagedDllSatellite.dll" />
+      <_RequiredPayloadOutput Include="$(OutDir)LibManagedWinmd.winmd" />
+      <_RequiredPayloadOutput Include="$(ProjectionReferencesDir)Microsoft.WinUI.dll" />
+      <_RequiredPayloadOutput Include="$(FrameworkReferencesDir)System.Runtime.dll" />
+      <_RequiredPayloadOutput Include="$(OutDir)GenXbf.dll" Condition="'$(_RequiresGenXbf)' == 'true'" />
+    </ItemGroup>
+    <Error Condition="!Exists('%(_RequiredPayloadOutput.Identity)')"
+           Text="XamlCompiler unit-test payload output not found after staging: %(_RequiredPayloadOutput.Identity)." />
+    <Touch Files="$(XamlCompilerUnitTestPayloadMarker)" AlwaysCreate="true" />
+    <ItemGroup>
+      <FileWrites Include="$(XamlCompilerUnitTestPayloadMarker)" />
+    </ItemGroup>
   </Target>
 </Project>
