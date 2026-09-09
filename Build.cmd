@@ -167,14 +167,14 @@ if "%_targetMux%" == "1" (
    if ERRORLEVEL 1 goto:showDurationAndExit
    if not "%_nomock%"=="1" call :buildMockPackage
    if ERRORLEVEL 1 goto:showDurationAndExit
-   call :buildXamlCompiler
+   call :buildXamlCompilerAndTests
 ) else if "%_targetProdTest%" == "1" (
    call :buildSolution %reporoot%\dxaml\Microsoft.UI.Xaml.sln
    if ERRORLEVEL 1 goto:showDurationAndExit
    if not "%_nomock%"=="1" call :buildMockPackage
    call :buildSolution %reporoot%\controls\MUXControls.sln /restore
    if ERRORLEVEL 1 goto:showDurationAndExit
-   call :buildXamlCompiler
+   call :buildXamlCompilerAndTests
 ) else if "%_targetTest%" == "1" (
    if not "%_nomock%"=="1" call :buildMockPackage
    call :buildSolution %reporoot%\controls\MUXControls.sln /restore
@@ -322,8 +322,10 @@ call :buildSolution %reporoot%\src\XamlCompiler\XamlCompilerTests.sln /restore
 goto :eof
 
 
-:buildXamlCompiler
+:buildXamlCompilerAndTests
 call :buildSolution %reporoot%\src\XamlCompiler\XamlCompiler.sln /restore
+if ERRORLEVEL 1 goto :eof
+call :buildXamlCompilerTests
 goto :eof
 
 
