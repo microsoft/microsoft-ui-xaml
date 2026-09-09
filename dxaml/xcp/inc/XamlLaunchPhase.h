@@ -3,6 +3,8 @@
 
 #pragma once
 
+#ifdef XAMLPROFILER_ENABLED
+
 #include <cstdint>
 
 // Labels for observed boundaries, not a state machine. See docs/design-notes/launch-phase-markers.md.
@@ -106,3 +108,5 @@ private:
     bool m_productionStarted = false;
     bool m_frameCompleted = false;
 };
+
+#endif // XAMLPROFILER_ENABLED

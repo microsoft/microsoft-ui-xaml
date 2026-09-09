@@ -6326,7 +6326,9 @@ CCoreServices::NWDrawTree(
     TraceFrameBegin();
 
     XUINT32 frameNumber = m_uFrameNumber;
+#ifdef XAMLPROFILER_ENABLED
     const auto launchDrawAttempt = m_launchTrace.BeginDrawAttempt();
+#endif
     TraceLoggingProviderWrite(
         XamlTelemetry, "CoreServices_Frame",
         TraceLoggingBoolean(true, "IsStart"),
@@ -6441,10 +6443,12 @@ CCoreServices::NWDrawTree(
         pLayoutManager = VisualTree::GetLayoutManagerForElement(pVisualRoot);
         IFCPTR(pLayoutManager);
 
+#ifdef XAMLPROFILER_ENABLED
         if (m_isFirstFrameAfterAppStart)
         {
             m_launchTrace.BeginLayout(frameNumber, launchDrawAttempt);
         }
+#endif
 
         // IMPORTANT: This is a synchronous callout to app code that could change state.
         {
@@ -6609,7 +6613,9 @@ CCoreServices::NWDrawTree(
         GetInputServices()->GetKeyTipManager().NotifyFiniteAnimationIsRunning(this, hasActiveFiniteAnimations);
     }
 
+#ifdef XAMLPROFILER_ENABLED
     m_launchTrace.BeginProduction(frameNumber, launchDrawAttempt);
+#endif
 
     // NOTE: No user code callbacks should be made beyond this point.
     // It's possible that one of the previous user-code callbacks closed the Window.
@@ -6951,7 +6957,9 @@ Cleanup:
         m_pendingFirstFrameTraceLoggingEvent = false;
     }
 
+#ifdef XAMLPROFILER_ENABLED
     m_launchTrace.EndDraw(frameNumber, launchDrawAttempt, *pFrameDrawn, static_cast<uint32_t>(hr));
+#endif
 
     SetVisibilityToggled(FALSE); // clear the flag, any processing based on it should be complete by now.
 

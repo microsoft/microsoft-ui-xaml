@@ -3,6 +3,8 @@
 
 #pragma once
 
+#ifdef XAMLPROFILER_ENABLED
+
 #include "WexTestClass.h"
 
 namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace Base {
@@ -26,3 +28,5 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
     };
 
 } } } } }
+
+#endif // XAMLPROFILER_ENABLED

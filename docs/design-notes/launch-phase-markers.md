@@ -2,10 +2,31 @@
 
 For the underlying startup paths, see [Startup for Xaml](startup-overview.md).
 
-`Microsoft-Windows-XAML` (`531a35ab-63ce-4bcf-aa98-f88c7a89e455`) emits the
-TraceLogging event `LaunchPhaseTransition` at six native boundaries. The event
-uses level 0 and keyword 0. The provider must still be enabled; filtering, late
-capture, truncation and event loss can leave incomplete observations.
+`Microsoft-Windows-XAML-Profiler` (`A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D`)
+emits the TraceLogging event `LaunchPhaseTransition` at six native boundaries
+in profiler-enabled builds. The event uses level 0 and keyword 0. The provider
+must still be enabled; filtering, late capture, truncation and event loss can
+leave incomplete observations.
+
+## Compile-time availability
+
+All launch instrumentation is guarded by `XAMLPROFILER_ENABLED`, the existing
+profiler macro driven by `XamlProfilerEnabled` in `dxaml\Xaml.Cpp.Props`.
+The property is off by default. Follow
+[Activating the framework-side profiler](../../tools/XamlProfiler/docs/activateframework.md)
+to opt into a profiler build; do not define the macro independently of the build
+property, which also controls source inclusion.
+
+When disabled, the launch implementation and test sources are excluded, and
+the compiler sees no launch declarations, core member, TLS/counters, startup
+scope, or callback/frame instrumentation. This is compile-time removal, not a
+runtime no-op. Existing standard XAML telemetry is unaffected.
+
+When compiled in, launch state continues to advance even if no ETW session is
+listening. Starting a capture late does not restart the launch sequence.
+Consumers must subscribe to the profiler provider above; this event is not
+emitted by the ordinary `Microsoft-Windows-XAML` provider. Missing launch events
+can mean the producer was not compiled into that binary, not necessarily event loss.
 
 ## Boundaries and canonical intervals
 

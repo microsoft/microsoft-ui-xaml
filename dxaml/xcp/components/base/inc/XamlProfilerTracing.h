@@ -5,14 +5,13 @@
 
 #include <TraceLoggingInterop.h>
 
-// XamlProfiler tree-tracking instrumentation is compiled into chk/Debug builds only
-// (XAMLPROFILER_ENABLED is defined alongside DBG when Configuration==Debug; see
-// Xaml.Cpp.Targets / LibraryCompile.props). In retail/fre builds this entire header is
-// empty, and the matching WucVisualTreeProfiler.cpp is excluded from the build, so the
-// profiler adds zero code/size to shipping binaries. Every consumer #includes this header
-// (and its call sites) inside its own #ifdef XAMLPROFILER_ENABLED, matching the
-// SwipeTestHooks convention.
+// XamlProfiler tree and launch instrumentation is opt-in through XamlProfilerEnabled
+// (off by default; see Xaml.Cpp.Props). Xaml.Cpp.Targets / LibraryCompile.props define
+// XAMLPROFILER_ENABLED when enabled. Dedicated profiler sources are excluded when off;
+// consumers guard their includes, declarations and call sites with the same macro.
 #ifdef XAMLPROFILER_ENABLED
+
+#include <XamlLaunchPhase.h>
 
 class CDependencyObject;
 
@@ -33,7 +32,7 @@ uint64_t XamlProfilerGetPeerHandle(_In_opt_ const CDependencyObject* obj) noexce
 // measured on demand. 0 when obj is null. Defined in uielement.cpp alongside XamlProfilerGetPeerHandle.
 uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept;
 
-// TraceLogging provider for XAML Profiler tree-tracking events.
+// TraceLogging provider for XAML Profiler tree-tracking and launch events.
 // These events allow an out-of-process profiler to reconstruct and diff the logical tree,
 // visual tree, and composition tree over the lifetime of the host process.
 //
@@ -50,6 +49,24 @@ class XamlProfilerTracing final : public TelemetryBase
     IMPLEMENT_TELEMETRY_CLASS(XamlProfilerTracing, XamlProfilerLogging);
 
 public:
+
+    // Level/keyword zero does not bypass provider enablement or guarantee delivery.
+    static void LaunchPhaseTransition(const XamlLaunchObservation& observation) noexcept
+    {
+        TraceLoggingProviderWrite(
+            XamlProfilerTracing, "LaunchPhaseTransition",
+            TraceLoggingUInt32(static_cast<uint32_t>(observation.previousPhase), "PreviousPhase"),
+            TraceLoggingUInt32(static_cast<uint32_t>(observation.nextPhase), "NextPhase"),
+            TraceLoggingUInt32(observation.ordinal, "Ordinal"),
+            TraceLoggingUInt32(observation.frameNumber, "FrameNumber"),
+            TraceLoggingUInt64(observation.startupId, "StartupId"),
+            TraceLoggingUInt64(observation.coreId, "CoreId"),
+            TraceLoggingUInt32(static_cast<uint32_t>(observation.entryKind), "EntryKind"),
+            TraceLoggingUInt64(observation.drawAttemptId, "DrawAttemptId"),
+            TraceLoggingUInt32(observation.flags, "Flags"),
+            TraceLoggingUInt32(observation.result, "Result"),
+            TraceLoggingLevel(WINEVENT_LEVEL_LOG_ALWAYS));
+    }
 
     // =====================================================================
     // Logical Tree Events

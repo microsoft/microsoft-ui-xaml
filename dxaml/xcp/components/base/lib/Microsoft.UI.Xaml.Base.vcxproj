@@ -24,11 +24,11 @@
         <ClCompile Include="..\FloatUtil.cpp"/>
         <ClCompile Include="..\bit_vector.cpp"/>
         <ClCompile Include="..\DesignMode.cpp"/>
-        <ClCompile Include="..\XamlLaunchTrace.cpp"/>
+        <ClCompile Condition="'$(XamlProfilerEnabled)'=='true'" Include="..\XamlLaunchTrace.cpp"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ClInclude Include="$(XcpPath)\inc\XamlLaunchPhase.h"/>
+        <ClInclude Condition="'$(XamlProfilerEnabled)'=='true'" Include="$(XcpPath)\inc\XamlLaunchPhase.h"/>
         <ClInclude Condition="'$(XamlProfilerEnabled)'=='true'" Include="..\inc\XamlProfilerTracing.h"/>
     </ItemGroup>
 

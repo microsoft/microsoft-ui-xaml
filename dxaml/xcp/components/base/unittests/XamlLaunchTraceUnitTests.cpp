@@ -2,6 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+
+#ifndef XAMLPROFILER_ENABLED
+#error "XamlLaunchTraceUnitTests.cpp requires XAMLPROFILER_ENABLED; keep its ClCompile entry conditioned on XamlProfilerEnabled."
+#endif
+
 #include "XamlLaunchTraceUnitTests.h"
 #include <XamlLaunchPhase.h>
 #include <thread>

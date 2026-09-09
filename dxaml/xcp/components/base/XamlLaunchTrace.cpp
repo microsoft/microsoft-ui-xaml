@@ -2,9 +2,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+
+#ifndef XAMLPROFILER_ENABLED
+#error "XamlLaunchTrace.cpp requires XAMLPROFILER_ENABLED; keep its ClCompile entry conditioned on XamlProfilerEnabled."
+#endif
+
 #include <atomic>
 #include <XamlLaunchPhase.h>
-#include <XamlTelemetry.h>
+#include <XamlProfilerTracing.h>
 
 namespace
 {
@@ -43,7 +48,7 @@ XamlLaunchStartupScope::XamlLaunchStartupScope() noexcept
     observation.entryKind = XamlLaunchEntryKind::ApplicationStart;
     observation.nextPhase = XamlLaunchPhase::FrameworkInitialization;
     observation.ordinal = 1;
-    XamlTelemetry::LaunchPhaseTransition(observation);
+    XamlProfilerTracing::LaunchPhaseTransition(observation);
 }
 
 XamlLaunchStartupScope::~XamlLaunchStartupScope()
@@ -104,7 +109,7 @@ XamlLaunchObservation XamlLaunchTrace::EndOnLaunched(
     auto observation = callbackStart;
     SetCallbackResult(observation, result);
     observation.flags |= static_cast<uint32_t>(XamlLaunchObservationFlags::CoreUnavailableAtCallbackReturn);
-    XamlTelemetry::LaunchPhaseTransition(observation);
+    XamlProfilerTracing::LaunchPhaseTransition(observation);
     return observation;
 }
 
@@ -164,5 +169,5 @@ void XamlLaunchTrace::WriteBoundary(
     m_observation.frameNumber = frameNumber;
     m_observation.drawAttemptId = drawAttemptId;
     m_observation.result = result;
-    XamlTelemetry::LaunchPhaseTransition(m_observation);
+    XamlProfilerTracing::LaunchPhaseTransition(m_observation);
 }
