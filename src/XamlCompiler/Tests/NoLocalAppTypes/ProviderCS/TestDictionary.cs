@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProviderCS
+namespace BlankProviderCS
 {
     public sealed class TestDictionary : Microsoft.UI.Xaml.ResourceDictionary
     {
