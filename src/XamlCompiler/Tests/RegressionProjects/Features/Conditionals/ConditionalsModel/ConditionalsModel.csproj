@@ -6,23 +6,9 @@
   <Import Project="$(CommonFilesPath)RuntimeComponentPreamble.csproj" />
 
   <PropertyGroup>
-    <!--
-      This project builds to assembly identity 'ConditionalControls', not 'ConditionalsModel'. It is
-      the variant that consumers use: ConditionalsCS and ConditionalsCppWinRT reference these types
-      by name, in source, so the identity and root namespace cannot move.
-
-      The sibling project Features\Conditionals\ConditionalControls is the other variant of the same
-      logical component. It used to build to this same identity, which put two files named
-      ConditionalControls.winmd under BuildOutput; it now builds to ConditionalControlsV2, so the
-      two are distinguishable. This one adds the model types (Employee, Organization, Collections,
-      Model) and uses a generic internal Test.EnsureVersion<T>; the sibling uses a public
-      non-generic Test.EnsureVersion(Type).
-
-      Neither project can be renamed: each is its own DiffCodegen target with its own baselines
-      (Tests\UnitTests\CodegenTargets.txt), and the generated XamlTypeInfo provider type name embeds
-      the *project* name - ConditionalsModel_XamlTypeInfo - so renaming this project invalidates the
-      masters of every consumer as well as its own.
-    -->
+    <!-- Consumer projects require the ConditionalControls assembly and root namespace. Keep the
+         ConditionalsModel project name because its generated provider and codegen baselines are
+         keyed by it. -->
     <RootNamespace>ConditionalControls</RootNamespace>
     <AssemblyName>ConditionalControls</AssemblyName>
     <DefineConstants>$(DefineConstants);CSWINRT_1642</DefineConstants>

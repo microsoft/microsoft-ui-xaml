@@ -1,11 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //
-// A native-only scenario: XamlTypeInfo generation for a XAML class that declares events whose
-// delegates take array and out parameters.  The C++/CX original used
-// const Platform::Array<unsigned int>^, Platform::WriteOnlyArray<unsigned int>^,
-// Platform::Array<unsigned int>^* and Platform::String^*; the MIDL 3 equivalents are a pass
-// array, a fill array (ref), a receive array (out) and an out string.
+// Exercises XamlTypeInfo generation for native events whose delegates cover pass, fill, and
+// receive arrays plus an out string.
 //
 namespace Simple
 {

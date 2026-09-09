@@ -6,6 +6,9 @@
   <Import Project="$(CommonFilesPath)AppPreamble.csproj" />
 
   <PropertyGroup>
+    <!-- The Windows SDK's standalone C#/WinRT AOT source generator emits unsafe ABI and vtable
+         code for this project's WinRT usage. This app does not directly reference the
+         Microsoft.Windows.CsWinRT package, whose targets would enable unsafe compilation. -->
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
