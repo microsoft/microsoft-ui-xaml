@@ -1,35 +1,35 @@
-﻿// WARNING: Please don't edit this file...
+// WARNING: Please don't edit this file...
 
 #pragma once
 #include "winrt/BindTestbed.h"
-#include "winrt/Windows.UI.Xaml.h"
-#include "winrt/Windows.UI.Xaml.Data.h"
+#include "winrt/Microsoft.UI.Xaml.h"
+#include "winrt/Microsoft.UI.Xaml.Data.h"
 namespace winrt::BindTestbed::implementation
 {
     template <typename D, typename... I>
-    struct __declspec(empty_bases) MyItem_base : implements<D, BindTestbed::MyItem, ::Windows::UI::Xaml::Data::INotifyPropertyChanged, composing, I...>,
-        impl::require<D, ::Windows::UI::Xaml::IDependencyObject, ::Windows::UI::Xaml::IDependencyObject2>,
-        impl::base<D, ::Windows::UI::Xaml::DependencyObject>
+    struct WINRT_IMPL_EMPTY_BASES MyItem_base : implements<D, BindTestbed::MyItem, winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged, composing, I...>,
+        impl::require<D, winrt::Microsoft::UI::Xaml::IDependencyObject>,
+        impl::base<D, winrt::Microsoft::UI::Xaml::DependencyObject>
     {
         using base_type = MyItem_base;
         using class_type = BindTestbed::MyItem;
         using implements_type = typename MyItem_base::implements_type;
         using implements_type::implements_type;
-        using composable_base = ::Windows::UI::Xaml::DependencyObject;
+        using composable_base = winrt::Microsoft::UI::Xaml::DependencyObject;
         hstring GetRuntimeClassName() const
         {
             return L"BindTestbed.MyItem";
         }
         MyItem_base()
         {
-            impl::call_factory<::Windows::UI::Xaml::DependencyObject, ::Windows::UI::Xaml::IDependencyObjectFactory>([&](auto&& f) { f.CreateInstance(*this, this->m_inner); });
+            impl::call_factory<winrt::Microsoft::UI::Xaml::DependencyObject, winrt::Microsoft::UI::Xaml::IDependencyObjectFactory>([&](winrt::Microsoft::UI::Xaml::IDependencyObjectFactory const& f) { [[maybe_unused]] auto winrt_impl_discarded = f.CreateInstance(*this, this->m_inner); });
         }
     };
 }
 namespace winrt::BindTestbed::factory_implementation
 {
     template <typename D, typename T, typename... I>
-    struct __declspec(empty_bases) MyItemT : implements<D, ::Windows::Foundation::IActivationFactory, BindTestbed::IMyItemStatics, I...>
+    struct WINRT_IMPL_EMPTY_BASES MyItemT : implements<D, winrt::Windows::Foundation::IActivationFactory, winrt::BindTestbed::IMyItemStatics, I...>
     {
         using instance_type = BindTestbed::MyItem;
 
@@ -45,7 +45,7 @@ namespace winrt::BindTestbed::factory_implementation
         {
             return T::DPOnMyItemProperty();
         }
-        auto DPOnMyItemProperty(::Windows::UI::Xaml::DependencyProperty const& value)
+        auto DPOnMyItemProperty(winrt::Microsoft::UI::Xaml::DependencyProperty const& value)
         {
             return T::DPOnMyItemProperty(value);
         }
@@ -53,7 +53,9 @@ namespace winrt::BindTestbed::factory_implementation
 }
 
 #if defined(WINRT_FORCE_INCLUDE_MYITEM_XAML_G_H) || __has_include("MyItem.xaml.g.h")
+
 #include "MyItem.xaml.g.h"
+
 #else
 
 namespace winrt::BindTestbed::implementation
