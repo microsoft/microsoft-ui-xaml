@@ -26,7 +26,6 @@
         <XamlDiagObjPath>$(XamlBinaryPath)\xcp\components\xamldiagnostics</XamlDiagObjPath>
         <ProjectIncludeDirectories>
             $(ProjectIncludeDirectories);
-            $(SystemComponentIncludePaths);
             $(LiftedIXPIncludePaths);
             $(RepoRoot)\external\inc;
             $(ExternalDependencies);

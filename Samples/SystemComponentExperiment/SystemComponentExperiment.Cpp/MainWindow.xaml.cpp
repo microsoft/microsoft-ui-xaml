@@ -81,7 +81,19 @@ namespace winrt::SystemComponentExperiment::Cpp::implementation
 
     void MainWindow::RunEnvironmentScenario()
     {
-        std::wstring result = L"Passed\r\nArchitecture: x64\r\nLoaded modules:\r\n";
+        static constexpr std::array forbiddenModules
+        {
+            L"CoreMessagingXP.dll",
+            L"dcompi.dll",
+            L"DwmSceneI.dll",
+            L"dwmcorei.dll",
+            L"marshal.dll",
+            L"Microsoft.UI.Composition.OSSupport.dll",
+            L"wuceffectsi.dll",
+        };
+
+        std::wstring loadedModules;
+        std::wstring forbiddenLoadedModules;
         HMODULE modules[1024]{};
         DWORD needed{};
 
@@ -104,11 +116,35 @@ namespace winrt::SystemComponentExperiment::Cpp::implementation
             wchar_t name[MAX_PATH]{};
             if (GetModuleBaseNameW(GetCurrentProcess(), modules[index], name, MAX_PATH))
             {
-                result.append(name);
-                result.append(L"\r\n");
+                loadedModules.append(name);
+                loadedModules.append(L"\r\n");
+                if (std::any_of(
+                        forbiddenModules.begin(),
+                        forbiddenModules.end(),
+                        [&name](auto forbidden)
+                        {
+                            return _wcsicmp(name, forbidden) == 0;
+                        }))
+                {
+                    forbiddenLoadedModules.append(name);
+                    forbiddenLoadedModules.append(L"\r\n");
+                }
             }
         }
 
+        std::wstring result = forbiddenLoadedModules.empty() ? L"Passed\r\n" : L"Failed\r\n";
+        result.append(L"Architecture: x64\r\nForbidden modules: ");
+        if (forbiddenLoadedModules.empty())
+        {
+            result.append(L"none\r\n");
+        }
+        else
+        {
+            result.append(L"\r\n");
+            result.append(forbiddenLoadedModules);
+        }
+        result.append(L"Loaded modules:\r\n");
+        result.append(loadedModules);
         ResultText().Text(result);
     }
 

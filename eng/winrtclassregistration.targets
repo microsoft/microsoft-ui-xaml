@@ -34,15 +34,22 @@
   <PropertyGroup>
     <LiftedIXPAppxManifest>$(LiftedIXPPackagePath)\runtimes-framework\package.appxfragment</LiftedIXPAppxManifest>
     <LiftedIXPAppxManifest Condition="'$(IsInternalWinUIBuild)' == 'true'">$(LiftedIXPPackagePath)\appxmanifest.xml</LiftedIXPAppxManifest>
+    <FilteredLiftedIXPAppxManifest>$(OutDir)SystemComponentFilteredIxpAppxManifest.xml</FilteredLiftedIXPAppxManifest>
     <LiftedIXPManifestQuery>/ns:Fragment/ns:Extensions/ns:Extension</LiftedIXPManifestQuery>
     <LiftedIXPManifestQuery Condition="'$(IsInternalWinUIBuild)' == 'true'">/ns:Package/ns:Extensions/ns:Extension</LiftedIXPManifestQuery>
   </PropertyGroup>
 
+  <Target Name="_FilterLiftedIXPAppxManifest"
+          Inputs="$(LiftedIXPAppxManifest);$(MSBuildThisFileDirectory)system-component-experiment\wuc-closure.json"
+          Outputs="$(FilteredLiftedIXPAppxManifest)">
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)system-component-experiment\Filter-IxpAppxFragment.ps1&quot; -InputPath &quot;$(LiftedIXPAppxManifest)&quot; -OutputPath &quot;$(FilteredLiftedIXPAppxManifest)&quot;" />
+  </Target>
+
   <Target Name="_GenerateWinRTClassRegistrations"
           BeforeTargets="_CreateWinUIPackageLayout;KillCreatedMSBuildInstances;Binplace"
           AfterTargets="Build"
-          DependsOnTargets="_GetClassRegistrationWinMDs"
-          Inputs="@(WinMdsForClassRegistration);@(WindowsSdkWinmds);$(LiftedIXPAppxManifest)"
+          DependsOnTargets="_GetClassRegistrationWinMDs;_FilterLiftedIXPAppxManifest"
+          Inputs="@(WinMdsForClassRegistration);@(WindowsSdkWinmds);$(FilteredLiftedIXPAppxManifest)"
           Outputs="$(OutDir)LiftedWinRTClassRegistrations.xml;$(OutDir)TestExtensions.xml">
 
     <GenerateWinRTClassRegistrations
@@ -54,7 +61,7 @@
     </GenerateWinRTClassRegistrations>
 
     <!--Copy IXP transport package appx manifest activatable class elements-->
-    <XmlPeek XmlInputPath="$(LiftedIXPAppxManifest)"
+    <XmlPeek XmlInputPath="$(FilteredLiftedIXPAppxManifest)"
         Query="$(LiftedIXPManifestQuery)"
         Namespaces="&lt;Namespace Prefix='ns' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10' /&gt;"
         Condition="'$(IncludeIxpExtensions)' == 'true'">

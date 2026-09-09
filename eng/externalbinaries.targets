@@ -15,6 +15,8 @@
       <IXPBinaries_Normal Include="$(LiftedIXPRuntimePath)\*.dll" />
       <IXPBinaries_Normal_Minus_Instrumented Include="@(IXPBinaries_Normal)"
         Condition="!Exists('$(LiftedIXPInternalPGIRuntimePath)\%(Filename)%(Extension)')"/>
+      <IXPBinaries_Instrumented Remove="$(LiftedIXPInternalPGIRuntimePath)\CoreMessagingXP.dll;$(LiftedIXPInternalPGIRuntimePath)\dcompi.dll;$(LiftedIXPInternalPGIRuntimePath)\DwmSceneI.dll;$(LiftedIXPInternalPGIRuntimePath)\dwmcorei.dll;$(LiftedIXPInternalPGIRuntimePath)\marshal.dll;$(LiftedIXPInternalPGIRuntimePath)\Microsoft.UI.Composition.OSSupport.dll;$(LiftedIXPInternalPGIRuntimePath)\wuceffectsi.dll" />
+      <IXPBinaries_Normal_Minus_Instrumented Remove="$(LiftedIXPRuntimePath)\CoreMessagingXP.dll;$(LiftedIXPRuntimePath)\dcompi.dll;$(LiftedIXPRuntimePath)\DwmSceneI.dll;$(LiftedIXPRuntimePath)\dwmcorei.dll;$(LiftedIXPRuntimePath)\marshal.dll;$(LiftedIXPRuntimePath)\Microsoft.UI.Composition.OSSupport.dll;$(LiftedIXPRuntimePath)\wuceffectsi.dll" />
         
       <ExternalBinaries Include="@(IXPBinaries_Instrumented)" />
       <ExternalBinaries Include="@(IXPBinaries_Normal_Minus_Instrumented)" />
@@ -22,7 +24,24 @@
     <ItemGroup Condition="'$(PGOBuildMode)' != 'Instrument'">
       <!-- Exclude FrameworkUdk DLL from IXP wildcard — it's already included from the FrameworkUdk package (line 7).
            The IXP and FrameworkUdk packages may ship different builds of this DLL, causing APPX1111 duplicate errors. -->
-      <ExternalBinaries Include="$(LiftedIXPRuntimePath)\*.dll" Exclude="$(LiftedIXPRuntimePath)\Microsoft.Internal.FrameworkUdk.dll" />
+      <_LiftedIxpBinaries Include="$(LiftedIXPRuntimePath)\*.dll" Exclude="$(LiftedIXPRuntimePath)\Microsoft.Internal.FrameworkUdk.dll" />
+      <_LiftedIxpBinaries Remove="$(LiftedIXPRuntimePath)\CoreMessagingXP.dll;$(LiftedIXPRuntimePath)\dcompi.dll;$(LiftedIXPRuntimePath)\DwmSceneI.dll;$(LiftedIXPRuntimePath)\dwmcorei.dll;$(LiftedIXPRuntimePath)\marshal.dll;$(LiftedIXPRuntimePath)\Microsoft.UI.Composition.OSSupport.dll;$(LiftedIXPRuntimePath)\wuceffectsi.dll" />
+      <ExternalBinaries Include="@(_LiftedIxpBinaries)" />
     </ItemGroup>
+  </Target>
+  <Target Name="AssertSystemComponentPayload"
+          AfterTargets="ChooseExternalBinaries">
+    <ItemGroup>
+      <_ForbiddenSystemComponentPayload Include="@(ExternalBinaries)"
+        Condition="'%(Filename)%(Extension)' == 'CoreMessagingXP.dll' or
+                   '%(Filename)%(Extension)' == 'dcompi.dll' or
+                   '%(Filename)%(Extension)' == 'DwmSceneI.dll' or
+                   '%(Filename)%(Extension)' == 'dwmcorei.dll' or
+                   '%(Filename)%(Extension)' == 'marshal.dll' or
+                   '%(Filename)%(Extension)' == 'Microsoft.UI.Composition.OSSupport.dll' or
+                   '%(Filename)%(Extension)' == 'wuceffectsi.dll'" />
+    </ItemGroup>
+    <Error Condition="'@(_ForbiddenSystemComponentPayload)' != ''"
+           Text="Forbidden lifted system-component payload remains: @(_ForbiddenSystemComponentPayload)" />
   </Target>
 </Project>

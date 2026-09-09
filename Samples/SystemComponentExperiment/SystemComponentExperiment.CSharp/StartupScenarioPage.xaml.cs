@@ -7,6 +7,18 @@ namespace SystemComponentExperiment.CSharp;
 
 public sealed partial class StartupScenarioPage : Page
 {
+    private static readonly HashSet<string> ForbiddenModules = new(
+        [
+            "CoreMessagingXP.dll",
+            "dcompi.dll",
+            "DwmSceneI.dll",
+            "dwmcorei.dll",
+            "marshal.dll",
+            "Microsoft.UI.Composition.OSSupport.dll",
+            "wuceffectsi.dll"
+        ],
+        StringComparer.OrdinalIgnoreCase);
+
     public StartupScenarioPage()
     {
         InitializeComponent();
@@ -24,13 +36,17 @@ public sealed partial class StartupScenarioPage : Page
                 .Where(name => name is not null)
                 .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
                 .ToArray()!;
+            string[] forbiddenModules = modules
+                .Where(ForbiddenModules.Contains)
+                .ToArray();
 
-            StatusText.Text = "Passed";
+            StatusText.Text = forbiddenModules.Length == 0 ? "Passed" : "Failed";
             DetailsText.Text = string.Join(
                 Environment.NewLine,
                 $"OS: {RuntimeInformation.OSDescription}",
                 $"Architecture: {RuntimeInformation.ProcessArchitecture}",
                 $"Packaged: {Windows.ApplicationModel.Package.Current is not null}",
+                $"Forbidden modules: {(forbiddenModules.Length == 0 ? "none" : string.Join(", ", forbiddenModules))}",
                 string.Empty,
                 "Loaded modules:",
                 string.Join(Environment.NewLine, modules));

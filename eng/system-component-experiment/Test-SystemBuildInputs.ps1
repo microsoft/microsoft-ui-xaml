@@ -20,6 +20,15 @@ $midlTargets = Get-Content (
 $generatorProject = Get-Content (
     Join-Path $PSScriptRoot "..\gencompheadersandidl\gencompheadersandidl.vcxproj"
 ) -Raw
+$registrationTargets = Get-Content (
+    Join-Path $PSScriptRoot "..\winrtclassregistration.targets"
+) -Raw
+$xcpCommonProps = Get-Content (
+    Join-Path $PSScriptRoot "..\..\dxaml\xcp\common.props"
+) -Raw
+$xcpBaseProps = Get-Content (
+    Join-Path $PSScriptRoot "..\..\dxaml\xcp\components\base.props"
+) -Raw
 
 foreach ($property in @(
     "SystemComponentOsRoot",
@@ -60,6 +69,18 @@ if (-not $generatorProject.Contains(
 ))
 {
     throw "Generated system IDLs are not normalized for the WinUI SDK toolchain."
+}
+if (-not $registrationTargets.Contains(
+    "SystemComponentFilteredIxpAppxManifest.xml",
+    [StringComparison]::Ordinal
+))
+{
+    throw "IXP activation registration does not use the filtered manifest."
+}
+if ($xcpCommonProps.Contains("SystemComponentIncludePaths", [StringComparison]::Ordinal) -or
+    $xcpBaseProps.Contains("SystemComponentIncludePaths", [StringComparison]::Ordinal))
+{
+    throw "System OS headers must remain isolated until native sources migrate in A2-A5."
 }
 
 if (-not $LatestOsRoot)
