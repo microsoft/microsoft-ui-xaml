@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "activeSubtrial": "A",
-  "activeStage": "S2",
-  "activeCheckpoint": "gallery-local-package-validated",
+  "activeStage": "A0",
+  "activeCheckpoint": "wuc-closure-and-probes-validated",
   "architecture": "x64",
   "branchNativeImplementation": true,
   "repositories": {
@@ -74,12 +74,12 @@
     "winuiGalleryBranch": "experiment/delift-a-wuc"
   },
   "latestCheckpoint": {
-    "winuiCommit": "9fe1fac323d9739900a8c96b4a6b8219e28533ea",
+    "winuiCommit": "32236373dc19f3b8f98309bb4c9d5002fa621c42",
     "winuiGalleryCommit": "199f63ec57ee8457fa9745b8a0d1e951111331fc",
     "winuiBuild": "passed-product-package-amd64",
-    "csharpScenarioApp": "passed-debug-x64-build",
-    "cppWinrtScenarioApp": "passed-debug-x64-build",
+    "csharpScenarioApp": "passed-debug-x64-package-build-and-launch",
+    "cppWinrtScenarioApp": "passed-debug-x64-package-build-and-launch",
     "winuiGallery": "passed-debug-x64-build",
-    "notes": "S2 complete. Both packaged scenario apps and the self-contained Gallery x64 app build against Microsoft.WindowsAppSDK.WinUI 3.0.0-dev from the local PackageStore."
+    "notes": "A0 complete. The closure maps 54 WinUI-used Composition symbols and all 14 public XAML Composition types. GE has no system counterpart for the lifted experimental property-change interfaces or SystemBackdropConfiguration; Windows 10 additionally lacks ICompositionSupportsSystemBackdrop, IVisualElement2, and CompositionEasingFunctionMode. Both scenario packages launched through the supported unsigned developer-package path."
   }
 }
