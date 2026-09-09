@@ -1,6 +1,50 @@
 {
   "schemaVersion": 1,
-  "conclusion": "Subtrial A requires a hybrid InteractiveExperiences rebuild. Non-equivalent lifted APIs remain public temporarily, but their implementations must be rebuilt against system Composition, DispatcherQueue, CoreMessaging, DirectManipulation, and system input/content primitives.",
+  "conclusion": "Subtrial A requires a hybrid InteractiveExperiences rebuild. Replace lifted DirectManipulation with the system runtime; rebuild Input, InputStateManager, and Windowing Core against system Composition, DispatcherQueue, and CoreMessaging; then retain their three public facade dependents against the rebuilt Windowing Core ABI.",
+  "runtimeModules": [
+    {
+      "name": "Microsoft.DirectManipulation.dll",
+      "action": "replace",
+      "replacement": "DirectManipulation.dll",
+      "reason": "The lifted runtime directly and transitively reaches dcompi, CoreMessagingXP, lifted Composition support, marshal, dwmcorei, and wuceffectsi."
+    },
+    {
+      "name": "Microsoft.UI.Input.dll",
+      "action": "rebuild",
+      "replacement": "Hybrid IXP binary using system Composition, CoreMessaging, DispatcherQueue, and system input/content primitives",
+      "reason": "This binary owns the lifted Input and Content activation surface and directly imports forbidden Composition and CoreMessaging support."
+    },
+    {
+      "name": "Microsoft.InputStateManager.dll",
+      "action": "rebuild",
+      "replacement": "Hybrid IXP binary using system Composition and CoreMessaging",
+      "reason": "The input state implementation shares the forbidden lifted Composition and CoreMessaging dependency chain with Microsoft.UI.Input.dll."
+    },
+    {
+      "name": "Microsoft.UI.Windowing.Core.dll",
+      "action": "rebuild",
+      "replacement": "Hybrid IXP binary using system CoreMessaging and DispatcherQueue",
+      "reason": "Windowing Core directly imports CoreMessagingXP and is the common dependency of the retained Windowing, Graphics.Display, and Microsoft.UI facades."
+    },
+    {
+      "name": "Microsoft.UI.Windowing.dll",
+      "action": "retain-after-dependency-rebuild",
+      "replacement": "Retain against the ABI-compatible rebuilt Microsoft.UI.Windowing.Core.dll",
+      "reason": "It has no direct forbidden import; its only forbidden reachability is through Windowing Core."
+    },
+    {
+      "name": "Microsoft.Graphics.Display.dll",
+      "action": "retain-after-dependency-rebuild",
+      "replacement": "Retain against the ABI-compatible rebuilt Microsoft.UI.Windowing.Core.dll",
+      "reason": "It has no direct forbidden import; its only forbidden reachability is through Windowing Core."
+    },
+    {
+      "name": "Microsoft.UI.dll",
+      "action": "retain-after-dependency-rebuild",
+      "replacement": "Retain against the ABI-compatible rebuilt Microsoft.UI.Windowing.Core.dll while XAML public common types are evaluated separately",
+      "reason": "It has no direct forbidden import; its only forbidden reachability is through Windowing Core."
+    }
+  ],
   "families": [
     {
       "id": "common-ui",

@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "latestOsRoot": "C:\\os",
+  "sourceBranch": "official/ge_current",
+  "sourceCommit": "1d1a5f3aafdb63cdfa5ce1b45e2625159a39ae92",
+  "architecture": "amd64fre",
+  "artifactSource": "Branch-aligned public and interim outputs restored by the OS build environment",
+  "buildDiagnostic": {
+    "directory": "src\\onecoreuap\\windows\\published\\winui\\idl\\system",
+    "status": "blocked-by-vfs-process-virtualization",
+    "error": "0x95e",
+    "detail": "VFS rejects the generated MIDL command line with a CreateProcess payload-size mismatch before midl.exe reports a compiler diagnostic. The checked artifacts below are already available from the same branch-aligned public output."
+  },
+  "artifacts": [
+    {
+      "id": "composition-abi",
+      "relativePath": "public\\amd64fre\\onecoreuap\\internal\\sdk\\inc\\windows.ui.composition.h",
+      "sha256": "6b9a9378ac4c4b09bd8aeb002a4f15a98c0c579b3f9205823ed805bfd731ed12"
+    },
+    {
+      "id": "composition-private-abi",
+      "relativePath": "public\\amd64fre\\onecoreuap\\private\\sdk\\inc\\windows.ui.composition.private.h",
+      "sha256": "a0fcb0aead2468f479620b81ae8a62d1b3d3cd7e7f04a2c3a3e1e34064deb2a3"
+    },
+    {
+      "id": "composition-internal-abi",
+      "relativePath": "public\\amd64fre\\onecoreuap\\internal\\sdk\\inc\\windows.ui.composition.internal.h",
+      "sha256": "7a74f7f78004ec07db75a4284f98374946cf9276bb40a54b14483a7d4bac52e1"
+    },
+    {
+      "id": "composition-core-private-abi",
+      "relativePath": "public\\amd64fre\\onecoreuap\\private\\sdk\\inc\\windows.ui.composition.core.private.h",
+      "sha256": "9aa5ff0c92dbaea242c18ad7337eceea6a7a7c6a016818593d950d9011b156c5"
+    },
+    {
+      "id": "composition-interactions-internal-abi",
+      "relativePath": "public\\amd64fre\\onecoreuap\\private\\sdk\\inc\\windows.ui.composition.interactions.internal.h",
+      "sha256": "1eebbdfad5b0dd017c0fff421f3b80ebb110cdd80c27cd789d2466de1014236f"
+    },
+    {
+      "id": "composition-metadata",
+      "relativePath": "public\\amd64fre\\onecoreuap\\internal\\interimmetadata\\windows.ui.composition.winmd",
+      "sha256": "3190d6131d5672a8eae7988211da96fa309f16584d1f6a292236a0a364d339cf"
+    },
+    {
+      "id": "composition-internal-metadata",
+      "relativePath": "public\\amd64fre\\onecoreuap\\internal\\interimmetadata\\windows.ui.composition.internal.winmd",
+      "sha256": "a10e0e48d5696700670d3c7e07684276eecfcaccb2d16424966605a8c45f40d0"
+    },
+    {
+      "id": "composition-private-metadata",
+      "relativePath": "public\\amd64fre\\onecoreuap\\internal\\interimmetadata\\windows.ui.composition.private.winmd",
+      "sha256": "e1568f317a78c4a8f833c45713929922a238b15c2341c755ccb5b88ecbff4d91"
+    },
+    {
+      "id": "dispatcherqueue-abi",
+      "relativePath": "public\\amd64fre\\onecore\\internal\\sdk\\inc\\windows.system.dispatcherqueue.h",
+      "sha256": "fb4ef7b6c13e9072e4041fe345917a91509fdba8aba57e4566462fbdd0041e0f"
+    },
+    {
+      "id": "dispatcherqueue-metadata",
+      "relativePath": "public\\amd64fre\\onecore\\internal\\interimmetadata\\windows.system.dispatcherqueue.winmd",
+      "sha256": "474cec0f3ee8d2104b0c68fd90b2a4359510fdf689e7cb63348733f3ea34e19e"
+    },
+    {
+      "id": "coremessaging-import-library",
+      "relativePath": "public\\amd64fre\\onecore\\external\\sdk\\lib\\coremessaging.lib",
+      "sha256": "9722ddaa66839d3dff78e525731401da3ce4d0b78e84a9822157c1fafda9bf83"
+    }
+  ]
+}

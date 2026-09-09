@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "activeSubtrial": "A",
   "activeStage": "A0",
-  "activeCheckpoint": "native-runtime-closure-reopened",
+  "activeCheckpoint": "system-inputs-and-runtime-topology",
   "architecture": "x64",
   "branchNativeImplementation": true,
   "repositories": {
@@ -75,13 +75,19 @@
     "cppWinrtScenarioApp": "Samples\\SystemComponentExperiment\\SystemComponentExperiment.Cpp",
     "winuiGalleryBranch": "experiment/delift-a-wuc"
   },
+  "systemBuildInputs": {
+    "configuration": "system-build-inputs.json",
+    "source": "C:\\os\\public\\amd64fre",
+    "status": "available-and-hash-verified",
+    "systemIdlBuild": "blocked-by-vfs-createprocess-payload-mismatch-0x95e"
+  },
   "latestCheckpoint": {
-    "winuiCommit": "32236373dc19f3b8f98309bb4c9d5002fa621c42",
+    "winuiCommit": "f4ac0e1be3288e85ee90277b9b6febd6349168ad",
     "winuiGalleryCommit": "199f63ec57ee8457fa9745b8a0d1e951111331fc",
     "winuiBuild": "passed-product-package-amd64",
     "csharpScenarioApp": "passed-debug-x64-package-build-and-launch",
     "cppWinrtScenarioApp": "passed-debug-x64-package-build-and-launch",
     "winuiGallery": "passed-debug-x64-build",
-    "notes": "A0 reopened during A1 payload tracing. The API closure maps 54 WinUI-used Composition symbols and all 14 public XAML Composition types, but native imports expand the strict no-lifted-module closure into Input/Content, DirectManipulation, Windowing Core, and common Microsoft.UI surfaces. Both scenario packages launched through the supported unsigned developer-package path."
+    "notes": "The API closure maps 54 WinUI-used Composition symbols and all 14 public XAML Composition types. The seven retained DLLs reaching forbidden modules now have explicit replace, rebuild, or retain-after-rebuild actions. Branch-aligned GE Composition/DispatcherQueue headers, metadata, and CoreMessaging library are available from C:\\os\\public\\amd64fre and are pinned by SHA-256. Rebuilding the source IDL directory is blocked before MIDL execution by a VFS CreateProcess payload-size mismatch (0x95e)."
   }
 }

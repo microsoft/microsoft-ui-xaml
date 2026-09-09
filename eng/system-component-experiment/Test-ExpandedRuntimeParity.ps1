@@ -39,6 +39,30 @@ if ($configuration.families.Count -ne 6)
     throw "The expanded runtime family classification is incomplete."
 }
 
+$expectedModuleActions = [ordered]@{
+    "Microsoft.DirectManipulation.dll" = "replace"
+    "Microsoft.UI.Input.dll" = "rebuild"
+    "Microsoft.InputStateManager.dll" = "rebuild"
+    "Microsoft.UI.Windowing.Core.dll" = "rebuild"
+    "Microsoft.UI.Windowing.dll" = "retain-after-dependency-rebuild"
+    "Microsoft.Graphics.Display.dll" = "retain-after-dependency-rebuild"
+    "Microsoft.UI.dll" = "retain-after-dependency-rebuild"
+}
+
+if ($configuration.runtimeModules.Count -ne $expectedModuleActions.Count)
+{
+    throw "The seven-module native runtime topology is incomplete."
+}
+
+foreach ($entry in $expectedModuleActions.GetEnumerator())
+{
+    $module = $configuration.runtimeModules | Where-Object name -eq $entry.Key
+    if ($null -eq $module -or $module.action -ne $entry.Value)
+    {
+        throw "Expected runtime action '$($entry.Value)' for '$($entry.Key)'."
+    }
+}
+
 $temporaryFiles = @()
 try
 {
