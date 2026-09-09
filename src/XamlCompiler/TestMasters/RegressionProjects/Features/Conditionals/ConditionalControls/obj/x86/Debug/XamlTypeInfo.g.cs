@@ -256,8 +256,6 @@ namespace ConditionalControlsV2.ConditionalControls_XamlTypeInfo
         private void StaticInitializer_6_TextBlock2() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControlsV2.TextBlock2).TypeHandle);
         private void StaticInitializer_7_TextBlock3() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControlsV2.TextBlock3).TypeHandle);
         private void StaticInitializer_8_TextBox1() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControlsV2.TextBox1).TypeHandle);
-        private void StaticInitializer_9_TreeViewNode() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode).TypeHandle);
-        private void StaticInitializer_11_IList() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>).TypeHandle);
         private void VectorAdd_11_IList(object instance, object item)
         {
             var collection = (global::System.Collections.Generic.ICollection<global::Microsoft.UI.Xaml.Controls.TreeViewNode>)instance;
@@ -361,7 +359,6 @@ namespace ConditionalControlsV2.ConditionalControls_XamlTypeInfo
             case 9:   //  Microsoft.UI.Xaml.Controls.TreeViewNode
                 userType = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
                 userType.Activator = Activate_9_TreeViewNode;
-                userType.StaticInitializer = StaticInitializer_9_TreeViewNode;
                 userType.AddMemberName("Children");
                 userType.AddMemberName("Content");
                 userType.AddMemberName("Depth");
@@ -379,7 +376,6 @@ namespace ConditionalControlsV2.ConditionalControls_XamlTypeInfo
 
             case 11:   //  System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
                 userType = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, null);
-                userType.StaticInitializer = StaticInitializer_11_IList;
                 userType.CollectionAdd = VectorAdd_11_IList;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
@@ -410,6 +406,8 @@ namespace ConditionalControlsV2.ConditionalControls_XamlTypeInfo
                     var otherProviders = new global::System.Collections.Generic.List<global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider>();
                     global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider provider;
                     provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
+                    otherProviders.Add(provider); 
+                    provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsChartsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
                     _otherProviders = otherProviders;
                 }
@@ -1007,7 +1005,7 @@ namespace ConditionalControlsV2.ConditionalControls_XamlTypeInfo
 
         override public void RunInitializer() 
         {
-            StaticInitializer();
+            StaticInitializer?.Invoke();
         }
 
         override public object CreateFromString(string input)

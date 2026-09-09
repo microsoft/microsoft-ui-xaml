@@ -173,6 +173,15 @@ namespace winrt::BindTestbed::implementation
             _testText4 = value;
         }
 
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock BoxedDeferredValueLoad()
+        {
+            return _BoxedDeferredValueLoad;
+        }
+        void BoxedDeferredValueLoad(::winrt::Microsoft::UI::Xaml::Controls::TextBlock value)
+        {
+            _BoxedDeferredValueLoad = value;
+        }
+
         ::winrt::Microsoft::UI::Xaml::Controls::StackPanel nestedInnerPanel()
         {
             return _nestedInnerPanel;
@@ -288,7 +297,7 @@ namespace winrt::BindTestbed::implementation
 
     private:
         struct LoadAndCreateFromStringTests_obj2_Bindings;
-        struct LoadAndCreateFromStringTests_obj23_Bindings;
+        struct LoadAndCreateFromStringTests_obj24_Bindings;
         struct LoadAndCreateFromStringTests_obj1_Bindings;
 
         ::winrt::Microsoft::UI::Xaml::Controls::StackPanel _OuterPanel{nullptr};
@@ -304,6 +313,7 @@ namespace winrt::BindTestbed::implementation
         ::winrt::Microsoft::UI::Xaml::Controls::TextBlock _testText2{nullptr};
         ::winrt::Microsoft::UI::Xaml::Controls::TextBlock _testText3{nullptr};
         ::winrt::Microsoft::UI::Xaml::Controls::TextBlock _testText4{nullptr};
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock _BoxedDeferredValueLoad{nullptr};
         ::winrt::Microsoft::UI::Xaml::Controls::StackPanel _nestedInnerPanel{nullptr};
         ::winrt::Microsoft::UI::Xaml::Controls::Grid _NamedElementBetweenXLoads{nullptr};
         ::winrt::Microsoft::UI::Xaml::Controls::StackPanel _innerMostNestedPanel{nullptr};

@@ -238,11 +238,6 @@ namespace ControlsCS.LinkedMdControlsCS_XamlTypeInfo
         private object Activate_4_A() { return new global::ControlsCS.A(); }
         private object Activate_5_B() { return new global::ControlsCS.B(); }
         private object Activate_6_TreeViewNode() { return new global::Microsoft.UI.Xaml.Controls.TreeViewNode(); }
-        private void StaticInitializer_3_T() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::SubControlsCS.T).TypeHandle);
-        private void StaticInitializer_4_A() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ControlsCS.A).TypeHandle);
-        private void StaticInitializer_5_B() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ControlsCS.B).TypeHandle);
-        private void StaticInitializer_6_TreeViewNode() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode).TypeHandle);
-        private void StaticInitializer_8_IList() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>).TypeHandle);
         private void VectorAdd_8_IList(object instance, object item)
         {
             var collection = (global::System.Collections.Generic.ICollection<global::Microsoft.UI.Xaml.Controls.TreeViewNode>)instance;
@@ -270,7 +265,6 @@ namespace ControlsCS.LinkedMdControlsCS_XamlTypeInfo
 
             case 3:   //  SubControlsCS.T
                 userType = new global::ControlsCS.LinkedMdControlsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
-                userType.StaticInitializer = StaticInitializer_3_T;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
@@ -278,7 +272,6 @@ namespace ControlsCS.LinkedMdControlsCS_XamlTypeInfo
             case 4:   //  ControlsCS.A
                 userType = new global::ControlsCS.LinkedMdControlsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_4_A;
-                userType.StaticInitializer = StaticInitializer_4_A;
                 userType.AddMemberName("StringPropertyOnA");
                 userType.AddMemberName("BPropertyOnA");
                 userType.SetIsLocalType();
@@ -288,7 +281,6 @@ namespace ControlsCS.LinkedMdControlsCS_XamlTypeInfo
             case 5:   //  ControlsCS.B
                 userType = new global::ControlsCS.LinkedMdControlsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_5_B;
-                userType.StaticInitializer = StaticInitializer_5_B;
                 userType.AddMemberName("StringPropertyOnB");
                 userType.SetIsLocalType();
                 xamlType = userType;
@@ -297,7 +289,6 @@ namespace ControlsCS.LinkedMdControlsCS_XamlTypeInfo
             case 6:   //  Microsoft.UI.Xaml.Controls.TreeViewNode
                 userType = new global::ControlsCS.LinkedMdControlsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
                 userType.Activator = Activate_6_TreeViewNode;
-                userType.StaticInitializer = StaticInitializer_6_TreeViewNode;
                 userType.AddMemberName("Children");
                 userType.AddMemberName("Content");
                 userType.AddMemberName("Depth");
@@ -315,7 +306,6 @@ namespace ControlsCS.LinkedMdControlsCS_XamlTypeInfo
 
             case 8:   //  System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
                 userType = new global::ControlsCS.LinkedMdControlsCS_XamlTypeInfo.XamlUserType(this, typeName, type, null);
-                userType.StaticInitializer = StaticInitializer_8_IList;
                 userType.CollectionAdd = VectorAdd_8_IList;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
@@ -346,6 +336,8 @@ namespace ControlsCS.LinkedMdControlsCS_XamlTypeInfo
                     var otherProviders = new global::System.Collections.Generic.List<global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider>();
                     global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider provider;
                     provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
+                    otherProviders.Add(provider); 
+                    provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsChartsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
                     provider = new global::SubControlsCS.LinkedMdSubControlsCS_XamlTypeInfo.XamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
@@ -696,7 +688,7 @@ namespace ControlsCS.LinkedMdControlsCS_XamlTypeInfo
 
         override public void RunInitializer() 
         {
-            StaticInitializer();
+            StaticInitializer?.Invoke();
         }
 
         override public object CreateFromString(string input)

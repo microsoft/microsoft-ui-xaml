@@ -249,15 +249,6 @@ namespace ConditionalControls.ConditionalsModel_XamlTypeInfo
         private object Activate_7_TextBlock3() { return new global::ConditionalControls.TextBlock3(); }
         private object Activate_8_TextBox1() { return new global::ConditionalControls.TextBox1(); }
         private object Activate_9_TreeViewNode() { return new global::Microsoft.UI.Xaml.Controls.TreeViewNode(); }
-        private void StaticInitializer_0_Button1() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.Button1).TypeHandle);
-        private void StaticInitializer_3_Button2() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.Button2).TypeHandle);
-        private void StaticInitializer_4_Button3() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.Button3).TypeHandle);
-        private void StaticInitializer_5_TextBlock1() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.TextBlock1).TypeHandle);
-        private void StaticInitializer_6_TextBlock2() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.TextBlock2).TypeHandle);
-        private void StaticInitializer_7_TextBlock3() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.TextBlock3).TypeHandle);
-        private void StaticInitializer_8_TextBox1() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.TextBox1).TypeHandle);
-        private void StaticInitializer_9_TreeViewNode() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode).TypeHandle);
-        private void StaticInitializer_11_IList() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>).TypeHandle);
         private void VectorAdd_11_IList(object instance, object item)
         {
             var collection = (global::System.Collections.Generic.ICollection<global::Microsoft.UI.Xaml.Controls.TreeViewNode>)instance;
@@ -278,7 +269,6 @@ namespace ConditionalControls.ConditionalsModel_XamlTypeInfo
             case 0:   //  ConditionalControls.Button1
                 userType = new global::ConditionalControls.ConditionalsModel_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_0_Button1;
-                userType.StaticInitializer = StaticInitializer_0_Button1;
                 userType.AddMemberName("Text");
                 userType.AddMemberName("Caption");
                 userType.AddMemberName("V1Property");
@@ -299,7 +289,6 @@ namespace ConditionalControls.ConditionalsModel_XamlTypeInfo
             case 3:   //  ConditionalControls.Button2
                 userType = new global::ConditionalControls.ConditionalsModel_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_3_Button2;
-                userType.StaticInitializer = StaticInitializer_3_Button2;
                 userType.AddMemberName("Text");
                 userType.AddMemberName("Caption");
                 userType.AddMemberName("V1Property");
@@ -312,7 +301,6 @@ namespace ConditionalControls.ConditionalsModel_XamlTypeInfo
             case 4:   //  ConditionalControls.Button3
                 userType = new global::ConditionalControls.ConditionalsModel_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_4_Button3;
-                userType.StaticInitializer = StaticInitializer_4_Button3;
                 userType.AddMemberName("Text");
                 userType.AddMemberName("Caption");
                 userType.AddMemberName("V1Property");
@@ -325,7 +313,6 @@ namespace ConditionalControls.ConditionalsModel_XamlTypeInfo
             case 5:   //  ConditionalControls.TextBlock1
                 userType = new global::ConditionalControls.ConditionalsModel_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_5_TextBlock1;
-                userType.StaticInitializer = StaticInitializer_5_TextBlock1;
                 userType.AddMemberName("Text");
                 userType.SetIsLocalType();
                 xamlType = userType;
@@ -334,7 +321,6 @@ namespace ConditionalControls.ConditionalsModel_XamlTypeInfo
             case 6:   //  ConditionalControls.TextBlock2
                 userType = new global::ConditionalControls.ConditionalsModel_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_6_TextBlock2;
-                userType.StaticInitializer = StaticInitializer_6_TextBlock2;
                 userType.AddMemberName("Text");
                 userType.SetIsLocalType();
                 xamlType = userType;
@@ -343,7 +329,6 @@ namespace ConditionalControls.ConditionalsModel_XamlTypeInfo
             case 7:   //  ConditionalControls.TextBlock3
                 userType = new global::ConditionalControls.ConditionalsModel_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_7_TextBlock3;
-                userType.StaticInitializer = StaticInitializer_7_TextBlock3;
                 userType.AddMemberName("Text");
                 userType.SetIsLocalType();
                 xamlType = userType;
@@ -352,7 +337,6 @@ namespace ConditionalControls.ConditionalsModel_XamlTypeInfo
             case 8:   //  ConditionalControls.TextBox1
                 userType = new global::ConditionalControls.ConditionalsModel_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_8_TextBox1;
-                userType.StaticInitializer = StaticInitializer_8_TextBox1;
                 userType.AddMemberName("Text");
                 userType.SetIsLocalType();
                 xamlType = userType;
@@ -361,7 +345,6 @@ namespace ConditionalControls.ConditionalsModel_XamlTypeInfo
             case 9:   //  Microsoft.UI.Xaml.Controls.TreeViewNode
                 userType = new global::ConditionalControls.ConditionalsModel_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
                 userType.Activator = Activate_9_TreeViewNode;
-                userType.StaticInitializer = StaticInitializer_9_TreeViewNode;
                 userType.AddMemberName("Children");
                 userType.AddMemberName("Content");
                 userType.AddMemberName("Depth");
@@ -379,7 +362,6 @@ namespace ConditionalControls.ConditionalsModel_XamlTypeInfo
 
             case 11:   //  System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
                 userType = new global::ConditionalControls.ConditionalsModel_XamlTypeInfo.XamlUserType(this, typeName, type, null);
-                userType.StaticInitializer = StaticInitializer_11_IList;
                 userType.CollectionAdd = VectorAdd_11_IList;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
@@ -410,6 +392,8 @@ namespace ConditionalControls.ConditionalsModel_XamlTypeInfo
                     var otherProviders = new global::System.Collections.Generic.List<global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider>();
                     global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider provider;
                     provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
+                    otherProviders.Add(provider); 
+                    provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsChartsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
                     _otherProviders = otherProviders;
                 }
@@ -1007,7 +991,7 @@ namespace ConditionalControls.ConditionalsModel_XamlTypeInfo
 
         override public void RunInitializer() 
         {
-            StaticInitializer();
+            StaticInitializer?.Invoke();
         }
 
         override public object CreateFromString(string input)

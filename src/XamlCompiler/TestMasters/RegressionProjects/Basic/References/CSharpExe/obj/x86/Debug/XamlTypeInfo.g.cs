@@ -292,12 +292,6 @@ namespace CSharpExe.CSharpExe_XamlTypeInfo
         private object Activate_3_CppWinRTUserControlFromWinRTComponent() { return new global::CppWinRTComponent.CppWinRTUserControlFromWinRTComponent(); }
         private object Activate_4_MainPage() { return new global::CSharpExe.MainPage(); }
         private object Activate_6_TreeViewNode() { return new global::Microsoft.UI.Xaml.Controls.TreeViewNode(); }
-        private void StaticInitializer_0_CSharpUserControlFromProjectLibrary() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::CSharpLib.CSharpUserControlFromProjectLibrary).TypeHandle);
-        private void StaticInitializer_2_CSharpUserControlFromProjectWinrtComponent() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::CSharpWinrtComponent.CSharpUserControlFromProjectWinrtComponent).TypeHandle);
-        private void StaticInitializer_3_CppWinRTUserControlFromWinRTComponent() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::CppWinRTComponent.CppWinRTUserControlFromWinRTComponent).TypeHandle);
-        private void StaticInitializer_4_MainPage() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::CSharpExe.MainPage).TypeHandle);
-        private void StaticInitializer_6_TreeViewNode() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode).TypeHandle);
-        private void StaticInitializer_8_IList() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>).TypeHandle);
         private void VectorAdd_8_IList(object instance, object item)
         {
             var collection = (global::System.Collections.Generic.ICollection<global::Microsoft.UI.Xaml.Controls.TreeViewNode>)instance;
@@ -318,7 +312,6 @@ namespace CSharpExe.CSharpExe_XamlTypeInfo
             case 0:   //  CSharpLib.CSharpUserControlFromProjectLibrary
                 userType = new global::CSharpExe.CSharpExe_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_0_CSharpUserControlFromProjectLibrary;
-                userType.StaticInitializer = StaticInitializer_0_CSharpUserControlFromProjectLibrary;
                 xamlType = userType;
                 break;
 
@@ -329,21 +322,18 @@ namespace CSharpExe.CSharpExe_XamlTypeInfo
             case 2:   //  CSharpWinrtComponent.CSharpUserControlFromProjectWinrtComponent
                 userType = new global::CSharpExe.CSharpExe_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_2_CSharpUserControlFromProjectWinrtComponent;
-                userType.StaticInitializer = StaticInitializer_2_CSharpUserControlFromProjectWinrtComponent;
                 xamlType = userType;
                 break;
 
             case 3:   //  CppWinRTComponent.CppWinRTUserControlFromWinRTComponent
                 userType = new global::CSharpExe.CSharpExe_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_3_CppWinRTUserControlFromWinRTComponent;
-                userType.StaticInitializer = StaticInitializer_3_CppWinRTUserControlFromWinRTComponent;
                 xamlType = userType;
                 break;
 
             case 4:   //  CSharpExe.MainPage
                 userType = new global::CSharpExe.CSharpExe_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
                 userType.Activator = Activate_4_MainPage;
-                userType.StaticInitializer = StaticInitializer_4_MainPage;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
@@ -355,7 +345,6 @@ namespace CSharpExe.CSharpExe_XamlTypeInfo
             case 6:   //  Microsoft.UI.Xaml.Controls.TreeViewNode
                 userType = new global::CSharpExe.CSharpExe_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
                 userType.Activator = Activate_6_TreeViewNode;
-                userType.StaticInitializer = StaticInitializer_6_TreeViewNode;
                 userType.AddMemberName("Children");
                 userType.AddMemberName("Content");
                 userType.AddMemberName("Depth");
@@ -373,7 +362,6 @@ namespace CSharpExe.CSharpExe_XamlTypeInfo
 
             case 8:   //  System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
                 userType = new global::CSharpExe.CSharpExe_XamlTypeInfo.XamlUserType(this, typeName, type, null);
-                userType.StaticInitializer = StaticInitializer_8_IList;
                 userType.CollectionAdd = VectorAdd_8_IList;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
@@ -410,6 +398,8 @@ namespace CSharpExe.CSharpExe_XamlTypeInfo
                     provider = new global::CSharpLib.CSharpLib_XamlTypeInfo.XamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
                     provider = new global::CSharpWinrtComponent.CSharpWinrtComponent_XamlTypeInfo.XamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
+                    otherProviders.Add(provider); 
+                    provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsChartsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
                     _otherProviders = otherProviders;
                 }
@@ -703,7 +693,7 @@ namespace CSharpExe.CSharpExe_XamlTypeInfo
 
         override public void RunInitializer() 
         {
-            StaticInitializer();
+            StaticInitializer?.Invoke();
         }
 
         override public object CreateFromString(string input)
