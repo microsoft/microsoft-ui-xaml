@@ -1,0 +1,248 @@
+{
+  "schemaVersion": 1,
+  "roots": [
+    "composition",
+    "dispatching"
+  ],
+  "externalSymbolsDeclaredByCompositionIdl": [
+    "CoreDispatcher",
+    "IWindowContextPartner",
+    "PointerPoint"
+  ],
+  "nodes": [
+    {
+      "id": "composition",
+      "kind": "system-replacement",
+      "liftedIdl": "onecoreuap/windows/published/winui/idl/Microsoft.UI.Composition.idl",
+      "systemIdl": "onecoreuap/windows/published/winui/idl/windows.ui.composition.idl",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true,
+      "winuiEvidence": [
+        "Microsoft.UI.Composition"
+      ],
+      "decision": "Replace with Windows.UI.Composition."
+    },
+    {
+      "id": "composition-core",
+      "kind": "system-replacement",
+      "liftedIdl": "onecoreuap/windows/published/winui/idl/Microsoft.UI.Composition.Core.idl",
+      "systemIdl": "onecoreuap/windows/published/winui/idl/windows.ui.composition.core.idl",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true,
+      "winuiEvidence": [
+        "Microsoft.UI.Composition.Core"
+      ],
+      "decision": "Move with the Composition metadata family."
+    },
+    {
+      "id": "composition-core-private",
+      "kind": "system-replacement",
+      "liftedIdl": "onecoreuap/windows/published/winui/idl/Microsoft.UI.Composition.Core.Private.idl",
+      "systemIdl": "onecoreuap/windows/published/winui/idl/windows.ui.composition.core.private.idl",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true,
+      "winuiEvidence": [],
+      "decision": "Use the system private ABI when required by compositor/device interop."
+    },
+    {
+      "id": "composition-desktop",
+      "kind": "system-replacement",
+      "liftedIdl": "onecoreuap/windows/published/winui/idl/Microsoft.UI.Composition.Desktop.idl",
+      "systemIdl": "onecoreuap/windows/published/winui/idl/windows.ui.composition.desktop.idl",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true,
+      "winuiEvidence": [
+        "Microsoft.UI.Composition.Desktop"
+      ],
+      "decision": "Replace with Windows.UI.Composition.Desktop."
+    },
+    {
+      "id": "composition-diagnostics",
+      "kind": "system-replacement",
+      "liftedIdl": "onecoreuap/windows/published/winui/idl/Microsoft.UI.Composition.Diagnostics.idl",
+      "systemIdl": "onecoreuap/windows/published/winui/idl/windows.ui.composition.diagnostics.idl",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true,
+      "winuiEvidence": [
+        "Microsoft.UI.Composition.Diagnostics"
+      ],
+      "decision": "Replace with Windows.UI.Composition.Diagnostics and gate by its system contract."
+    },
+    {
+      "id": "composition-effects",
+      "kind": "system-replacement",
+      "liftedIdl": "onecoreuap/windows/published/winui/idl/Microsoft.UI.Composition.Effects.idl",
+      "systemIdl": "onecoreuap/windows/published/winui/idl/windows.ui.composition.effects.idl",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true,
+      "winuiEvidence": [
+        "Microsoft.UI.Composition.Effects"
+      ],
+      "decision": "Replace with Windows.UI.Composition.Effects and preserve system contract gating."
+    },
+    {
+      "id": "composition-interactions",
+      "kind": "system-replacement",
+      "liftedIdl": "onecoreuap/windows/published/winui/idl/Microsoft.UI.Composition.Interactions.idl",
+      "systemIdl": "onecoreuap/windows/published/winui/idl/windows.ui.composition.interactions.idl",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true,
+      "winuiEvidence": [
+        "Microsoft.UI.Composition.Interactions"
+      ],
+      "decision": "Replace with Windows.UI.Composition.Interactions; the system surface consumes Windows.UI.Input.PointerPoint rather than lifted Input."
+    },
+    {
+      "id": "composition-interactions-internal",
+      "kind": "system-replacement",
+      "liftedIdl": "onecoreuap/windows/published/winui/idl/Microsoft.UI.Composition.Interactions.Internal.idl",
+      "systemIdl": "onecoreuap/windows/published/winui/idl/windows.ui.composition.interactions.internal.idl",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true,
+      "winuiEvidence": [],
+      "decision": "Use the system internal ABI where WinUI interaction code requires it."
+    },
+    {
+      "id": "composition-internal",
+      "kind": "system-replacement",
+      "liftedIdl": "onecoreuap/windows/published/winui/idl/Microsoft.UI.Composition.Internal.idl",
+      "systemIdl": "onecoreuap/windows/published/winui/idl/windows.ui.composition.internal.idl",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true,
+      "winuiEvidence": [
+        "Microsoft.UI.Composition.Internal"
+      ],
+      "decision": "Use the system internal ABI and validate every private IID at runtime."
+    },
+    {
+      "id": "composition-private",
+      "kind": "system-replacement",
+      "liftedIdl": "onecoreuap/windows/published/winui/idl/Microsoft.UI.Composition.Private.idl",
+      "systemIdl": "onecoreuap/windows/published/winui/idl/windows.ui.composition.private.idl",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true,
+      "winuiEvidence": [],
+      "decision": "Use the system private ABI; lifted SystemVisualProxyVisualPrivate is excluded and requires a separate replacement decision."
+    },
+    {
+      "id": "composition-scenes",
+      "kind": "system-replacement",
+      "liftedIdl": "onecoreuap/windows/published/winui/idl/Microsoft.UI.Composition.Scenes.idl",
+      "systemIdl": "onecoreuap/windows/published/winui/idl/windows.ui.composition.scenes.idl",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true,
+      "winuiEvidence": [
+        "Microsoft.UI.Composition.Scenes"
+      ],
+      "decision": "Replace with Windows.UI.Composition.Scenes and gate unavailable members."
+    },
+    {
+      "id": "composition-experimental-property-change",
+      "kind": "redesign-required",
+      "liftedIdl": "onecoreuap/windows/published/winui/idl/Microsoft.UI.Composition.Experimental.idl",
+      "systemIdl": null,
+      "latestSystemAvailable": false,
+      "windows10SystemAvailable": false,
+      "winuiEvidence": [
+        "ExpComp::IExpCompositionPropertyChanged",
+        "ExpComp::IExpCompositionPropertyChangedListener"
+      ],
+      "decision": "No system metadata counterpart exists. Replace WinUI facade/property synchronization or bind to a verified system private ABI; do not retain the lifted interface on system objects."
+    },
+    {
+      "id": "system-backdrops",
+      "kind": "lifted-feature-retarget",
+      "liftedIdl": "onecoreuap/windows/published/winui/idl/Microsoft.UI.Composition.SystemBackdrops.idl",
+      "systemIdl": null,
+      "latestSystemAvailable": false,
+      "windows10SystemAvailable": false,
+      "winuiEvidence": [
+        "Microsoft.UI.Composition.SystemBackdrops",
+        "ICompositionSupportsSystemBackdrop"
+      ],
+      "decision": "Backdrop controllers remain lifted, but their target ABI must be retargeted to Windows.UI.Composition.ICompositionSupportsSystemBackdrop. That system interface is unavailable on Windows 10 and requires OS gating."
+    },
+    {
+      "id": "dispatching",
+      "kind": "system-replacement-with-lifecycle-redesign",
+      "liftedIdl": "mincore/CoreUI/Published/idl/Microsoft.UI.Dispatching.DispatcherQueue.idl",
+      "systemIdl": "mincore/CoreUI/Published/idl/Windows.System.DispatcherQueue.idl",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true,
+      "winuiEvidence": [
+        "Microsoft.UI.Dispatching",
+        "msy::IDispatcherQueue3",
+        "CreateOnCurrentThread"
+      ],
+      "decision": "Replace the public queue types with Windows.System.DispatcherQueue. Rebuild startup and shutdown around system queue-controller interop because IDispatcherQueue3, CreateOnCurrentThread, ShutdownQueue, and FrameworkShutdown events are lifted-only."
+    },
+    {
+      "id": "direct-manipulation",
+      "kind": "runtime-closure",
+      "liftedIdl": null,
+      "systemIdl": null,
+      "latestSystemAvailable": null,
+      "windows10SystemAvailable": null,
+      "winuiEvidence": [
+        "Microsoft.DirectManipulation.dll"
+      ],
+      "decision": "Replace the lifted DirectManipulation runtime/interop path or prove it can consume system WUC objects. Existing explicit Microsoft.DirectManipulation.dll loads make it part of the runtime closure."
+    },
+    {
+      "id": "content-hosting",
+      "kind": "object-compatibility-boundary",
+      "liftedIdl": null,
+      "systemIdl": null,
+      "latestSystemAvailable": null,
+      "windows10SystemAvailable": null,
+      "winuiEvidence": [
+        "Microsoft.UI.Content"
+      ],
+      "decision": "Not a direct system-WUC metadata dependency. Retain initially, then prove its visual/site bridge accepts system Composition objects before A5."
+    },
+    {
+      "id": "input",
+      "kind": "object-compatibility-boundary",
+      "liftedIdl": null,
+      "systemIdl": null,
+      "latestSystemAvailable": null,
+      "windows10SystemAvailable": null,
+      "winuiEvidence": [
+        "Microsoft.UI.Input.dll"
+      ],
+      "decision": "Not required by system Composition metadata. Retain initially, but validate pointer/focus/DirectManipulation ownership across the system compositor boundary before A5."
+    }
+  ],
+  "edges": [
+    {
+      "from": "composition",
+      "to": "dispatching",
+      "reason": "The system Composition IDL imports Windows.System.DispatcherQueue."
+    },
+    {
+      "from": "composition",
+      "to": "composition-experimental-property-change",
+      "reason": "WinUI property/facade synchronization queries the lifted experimental property-change interfaces from Composition objects."
+    },
+    {
+      "from": "composition",
+      "to": "system-backdrops",
+      "reason": "WinUI public backdrop APIs and window/island/popup targets expose ICompositionSupportsSystemBackdrop."
+    },
+    {
+      "from": "composition-interactions",
+      "to": "direct-manipulation",
+      "reason": "WinUI attaches DirectManipulation interactions to Composition visuals and explicitly loads the lifted runtime."
+    },
+    {
+      "from": "composition",
+      "to": "content-hosting",
+      "reason": "Content islands and site bridges own visuals and compositor-facing objects."
+    },
+    {
+      "from": "composition-interactions",
+      "to": "input",
+      "reason": "Pointer, focus, and manipulation paths cross the Composition interaction boundary."
+    }
+  ]
+}
