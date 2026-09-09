@@ -8,13 +8,8 @@
     <RootNamespace>BindTestbed</RootNamespace>
     <XamlCodeGenerationControlFlags>IncrementalTypeInfoCodeGen</XamlCodeGenerationControlFlags>
     <SuppressXamlWarnings>1004</SuppressXamlWarnings>
-    <!--
-      This project shares its directory with BindTestbedCppWinRT.vcxproj, so it would otherwise
-      share that project's generated-files directory too, and the two would overwrite each other's
-      codegen (MSB8028). Tests\Directory.Build.props turns this into its own generated-files
-      directory; setting GeneratedFilesDir here directly would not work, because for a .vcxproj
-      Directory.Build.props is imported after this Globals group.
-    -->
+    <!-- Isolate generated files from BindTestbedCppWinRT.vcxproj, which shares this source
+         directory. -->
     <GeneratedFilesSubdirectory>BindTestbedCppWinRTIncremental</GeneratedFilesSubdirectory>
     <!--
       Win32 desktop app model. AppContainerApplication=false is what makes the produced

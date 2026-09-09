@@ -9,11 +9,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <!-- All four modifiers are exercised here, matching Basic\CSharp\Simple\FieldModifierTests.xaml.
-         The C++/CX version of this page could only use private and internal because CX emitted the
-         modifier verbatim into the ref class; C++/WinRT emits every named field as a private member
-         with a public accessor pair on the generated page base, so x:FieldModifier is accepted and
-         validated but does not change the generated code. -->
+    <!-- Exercises all x:FieldModifier values. C++/WinRT validates each modifier but emits named
+         fields as private members with public accessors. -->
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <TextBlock x:Name="Private1" x:FieldModifier="private"/>
         <TextBlock x:Name="Private2" x:FieldModifier="Private"/>

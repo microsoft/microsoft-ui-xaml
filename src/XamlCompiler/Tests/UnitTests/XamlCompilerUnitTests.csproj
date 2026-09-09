@@ -19,6 +19,7 @@
     <SccProvider>SAK</SccProvider>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <TargetFrameworkProfile />
+    <RuntimeIdentifiers>win;$(RuntimeIdentifiers)</RuntimeIdentifiers>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
     <DefineConstants>DO_NOT_USE_GENXBF</DefineConstants>
@@ -29,6 +30,11 @@
     <Reference Include="System" />
     <Reference Include="System.Windows" />
     <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
@@ -195,15 +201,9 @@
            Text="No XamlCompiler net472 tool dependencies found under '$(ToolsPackageLocation)\net472'." />
     <Copy SourceFiles="@(_XamlCompilerToolDependencies)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
 
-    <!-- LibManagedDll is an SDK-style net8.0/WinAppSDK assembly, so the "user types" the tests
-         feed to the compiler now reference the C#/WinRT projection closure - Microsoft.WinUI,
-         Microsoft.Windows.SDK.NET, WinRT.Runtime and Microsoft.InteractiveExperiences.Projection -
-         rather than raw winmds, and its BCL closure is .NET 8 rather than .NET Framework. The
-         compiler's type universe can only resolve assemblies it has been handed, so both sets are
-         staged here and loaded by TestHelper. This mirrors what MSBuild hands the real CompileXaml
-         task on @(ReferencePath): CompileXamlInternal.SortReferenceAssemblies already treats
-         microsoft.winui.dll as a load-by-default reference alongside the winmds.
-         Nothing is hard-coded: every path below is derived from the repo's own version properties. -->
+    <!-- Stage the C#/WinRT projection and .NET 8 reference closures required to resolve
+         LibManagedDll. TestHelper loads them from the payload analogous to how CompileXaml receives
+         them via @(ReferencePath). -->
     <PropertyGroup>
       <ProjectionReferencesDir>$(OutDir)ProjectionReferences\</ProjectionReferencesDir>
       <FrameworkReferencesDir>$(OutDir)FrameworkReferences\</FrameworkReferencesDir>

@@ -456,8 +456,6 @@ namespace UnitTests
                 count += 1;
                 memberNames.Add(member.Name);
             }
-            // DispatcherQueue was added to DependencyObject in WinUI 3; Dispatcher is its
-            // predecessor and both are surfaced on Style.
             String[] shouldBeNames = new string[] { "BasedOn", "IsSealed", "Setters", "TargetType", "Dispatcher", "DispatcherQueue" };
             _testHelper.AssertListsAreEqual("property", memberNames, shouldBeNames);
         }

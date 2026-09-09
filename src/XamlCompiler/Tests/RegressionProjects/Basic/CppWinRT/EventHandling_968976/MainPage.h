@@ -14,9 +14,8 @@ namespace winrt::EventHandling_968976::implementation
     {
         MainPage();
 
-        // Handlers attached in MainPage.xaml. Their signatures are what bug 968976 was
-        // about: array and out parameters have to be generated correctly by the XAML
-        // compiler when it wires up a XAML-declared event handler.
+        // XAML-attached handlers covering delegate pass, fill, and receive arrays plus an out
+        // string.
         void FirstHandler(winrt::array_view<uint32_t const> args);
         void SecondHandler(winrt::array_view<uint32_t> args);
         void ThirdHandler(winrt::com_array<uint32_t>& args);
