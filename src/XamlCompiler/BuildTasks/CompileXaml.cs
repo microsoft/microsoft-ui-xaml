@@ -170,8 +170,26 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Tasks
 
         private bool _designTimeBuildMode;
 
+        /// <summary>
+        /// Disables modal Debug.Assert UI for the MSBuild task. The default trace listener still
+        /// emits the assertion message and stack through OutputDebugString, where an attached
+        /// debugger or DebugView can display them.
+        /// </summary>
+        private static void DisableAssertDialogs()
+        {
+            foreach (TraceListener listener in Trace.Listeners)
+            {
+                if (listener is DefaultTraceListener defaultListener)
+                {
+                    defaultListener.AssertUiEnabled = false;
+                }
+            }
+        }
+
         public override bool Execute()
         {
+            DisableAssertDialogs();
+
             this._designTimeBuildMode = this.CheckForDesignTimeBuildMode();
            CompileXamlInternal compileXamlInternal = new CompileXamlInternal();
 

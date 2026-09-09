@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Reflection.Adds;
 using System.Reflection.Metadata;
 using System.Text;
-using Debug=Microsoft.UI.Xaml.Markup.Compiler.Lmr.Internal.Debug;
+using Debug = System.Diagnostics.Debug;
 
 using System.Reflection;  
 

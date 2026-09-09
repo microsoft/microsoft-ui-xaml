@@ -2,8 +2,10 @@
 // Licensed under the MIT License.
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Reflection.Adds;
 using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
 namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
@@ -96,25 +98,38 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             // Is there a way of caching this result somehow?
             string fullName = name.FullName;
 
-            if (!_asmNameCache.TryGetValue(fullName, out asm))
+            if (_asmNameCache.TryGetValue(fullName, out asm))
             {
-                asm = base.ResolveAssembly(name, throwOnError);
+                // A previous ResolveAssembly(name, throwOnError: false) is allowed to cache a null,
+                // and that negative entry is worth keeping - it stops us re-probing an assembly we
+                // already know is absent. But the cache must not be a way around throwOnError:
+                // without this, a caller that asked us to throw silently gets a null instead, and
+                // ResolveTypeRef ends up reporting "Resolver must resolve to a valid assembly"
+                // rather than naming the assembly that is actually missing.
+                if (asm == null && throwOnError)
+                {
+                    throw new UnresolvedAssemblyException(string.Format(
+                        CultureInfo.InvariantCulture, Resources.UniverseCannotResolveAssembly, name));
+                }
+                return asm;
+            }
 
-                //   base.ResolveAssembly() then went and did something that loaded the assembly.
-                // It either went through LoadAssemblyFromFile() and added to the cache,
-                // or some other path that didn't add it to the cache.
-                //   Check if it is in the cache and add it if it needs to be added.
-                // It is NOT EXPECTED that the new asm in the cache be different
-                // than the return value from base.
-                Assembly asm2;
-                if (!_asmNameCache.TryGetValue(fullName, out asm2))
-                {
-                    _asmNameCache.Add(fullName, asm);
-                }
-                else
-                {
-                    System.Diagnostics.Debug.Assert(asm == asm2);
-                }
+            asm = base.ResolveAssembly(name, throwOnError);
+
+            //   base.ResolveAssembly() then went and did something that loaded the assembly.
+            // It either went through LoadAssemblyFromFile() and added to the cache,
+            // or some other path that didn't add it to the cache.
+            //   Check if it is in the cache and add it if it needs to be added.
+            // It is NOT EXPECTED that the new asm in the cache be different
+            // than the return value from base.
+            Assembly asm2;
+            if (!_asmNameCache.TryGetValue(fullName, out asm2))
+            {
+                _asmNameCache.Add(fullName, asm);
+            }
+            else
+            {
+                System.Diagnostics.Debug.Assert(asm == asm2);
             }
             return asm;
         }
