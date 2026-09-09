@@ -14,6 +14,8 @@
   <PropertyGroup>
     <ProjectIncludeDirectories>
       $(ProjectIncludeDirectories);
+      $(SystemCompositionIdlPath);
+      $(SystemDispatcherQueueIdlPath);
       $(ProjectRoot)\dxaml\xcp\inc;
       $(LiftedIXPGeneratedIdlPath);
       $(LiftedMRTGeneratedIdlPath);

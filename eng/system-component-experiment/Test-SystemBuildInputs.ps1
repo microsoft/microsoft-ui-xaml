@@ -17,8 +17,10 @@ foreach ($property in @(
     "SystemCompositionInternalIncludePath",
     "SystemCompositionPrivateIncludePath",
     "SystemCompositionMetadataPath",
+    "SystemCompositionIdlPath",
     "SystemDispatcherQueueIncludePath",
     "SystemDispatcherQueueMetadataPath",
+    "SystemDispatcherQueueIdlPath",
     "SystemCoreMessagingLibPath"
 ))
 {

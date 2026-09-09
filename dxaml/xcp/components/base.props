@@ -32,6 +32,7 @@
         </LegacyIncludes>
         <ProjectIncludeDirectories>
             $(ProjectIncludeDirectories);
+            $(SystemComponentIncludePaths);
             $(LiftedIXPIncludePaths);
             $(RepoRoot)\external\inc;
             $(ExternalDependencies);
