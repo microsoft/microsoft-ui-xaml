@@ -7,6 +7,7 @@
 
 #include "pch.h"
 #include <windows.h>
+#include <type_traits>
 #include "App.h"
 
 #if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
@@ -14,12 +15,12 @@ extern "C" __declspec(dllimport) int __stdcall IsDebuggerPresent();
 #endif
 
 
-#if (defined(_M_IX86) || defined(_M_AMD64)) && !defined(_VSDESIGNER_DONT_LOAD_AS_DLL)
+#if (defined(_M_IX86) || defined(_M_AMD64) || defined(_M_ARM) || defined(_M_ARM64)) && !defined(_VSDESIGNER_DONT_LOAD_AS_DLL)
 #if defined(_M_IX86)
 #pragma comment(linker, "/EXPORT:DllGetActivationFactory=_VSDesignerDllGetActivationFactory@8,PRIVATE")
 #pragma comment(linker, "/EXPORT:DllCanUnloadNow=_VSDesignerCanUnloadNow@0,PRIVATE")
 #pragma comment(linker, "/EXPORT:VSDesignerDllMain=_VSDesignerDllMain@12,PRIVATE")
-#elif defined(_M_AMD64)
+#elif defined(_M_AMD64) || defined(_M_ARM) || defined(_M_ARM64)
 #pragma comment(linker, "/EXPORT:DllGetActivationFactory=VSDesignerDllGetActivationFactory,PRIVATE")
 #pragma comment(linker, "/EXPORT:VSDesignerCanUnloadNow,PRIVATE")
 #pragma comment(linker, "/EXPORT:VSDesignerDllMain,PRIVATE")
@@ -45,17 +46,52 @@ extern "C"
     }
 }
 
-#endif // (defined(_M_IX86) || defined(_M_AMD64)) && !defined(_VSDESIGNER_DONT_LOAD_AS_DLL)
+#endif // (defined(_M_IX86) || defined(_M_AMD64) || defined(_M_ARM) || defined(_M_ARM64))) && !defined(_VSDESIGNER_DONT_LOAD_AS_DLL)
+
+#ifdef DISABLE_XAML_GENERATED_MAIN
+namespace
+{
+    // True iff the unevaluated expression T() is well-formed - i.e. T has an accessible,
+    // non-deleted parameterless constructor. Unlike std::is_default_constructible, this does
+    // not also require an accessible destructor. C++/WinRT implementation types (such as XAML
+    // App classes deriving from winrt::implements<>) intentionally have a non-public
+    // destructor to force heap allocation via winrt::make<>, which makes
+    // std::is_default_constructible evaluate to false even when a public parameterless
+    // constructor exists. Using an unevaluated functional-cast expression performs overload
+    // resolution for the constructor without materializing (and therefore destroying) a
+    // temporary, so it detects the constructor without requiring destructibility.
+    template <typename T, typename = void>
+    inline constexpr bool has_parameterless_ctor_v = false;
+
+    template <typename T>
+    inline constexpr bool has_parameterless_ctor_v<T, std::void_t<decltype(T())>> = true;
+}
+#endif
 
 #ifndef DISABLE_XAML_GENERATED_MAIN
 int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
+#else
+int __stdcall wXamlGeneratedMain()
+#endif
 {
-    winrt::init_apartment();
-    ::winrt::Windows::UI::Xaml::Application::Start(
+    winrt::init_apartment(winrt::apartment_type::single_threaded);
+    ::winrt::Microsoft::UI::Xaml::Application::Start(
         [](auto&&)
         {
+#ifdef DISABLE_XAML_GENERATED_MAIN
+            // The App is constructed here only when it has an accessible parameterless
+            // constructor. This lets an application that defines DISABLE_XAML_GENERATED_MAIN
+            // supply its own entry point and omit a parameterless App constructor without
+            // breaking this generated helper.
+            if constexpr (has_parameterless_ctor_v<::winrt::RuntimeComponentWithStaticLibInApp::implementation::App>)
+            {
+                ::winrt::make<::winrt::RuntimeComponentWithStaticLibInApp::implementation::App>();
+            }
+#else
             ::winrt::make<::winrt::RuntimeComponentWithStaticLibInApp::implementation::App>();
+#endif
         });
+
     return 0;
 }
-#endif
+

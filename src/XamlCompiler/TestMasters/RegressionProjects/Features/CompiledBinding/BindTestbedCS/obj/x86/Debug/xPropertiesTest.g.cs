@@ -11,15 +11,14 @@
 namespace BindTestbed
 {
     partial class xPropertiesTest : 
-        global::Windows.UI.Xaml.Controls.UserControl, 
-        global::Windows.UI.Xaml.Markup.IComponentConnector,
-        global::Windows.UI.Xaml.Markup.IComponentConnector2
+        global::Microsoft.UI.Xaml.Controls.UserControl, 
+        global::Microsoft.UI.Xaml.Markup.IComponentConnector
     {
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         private static class XamlBindingSetters
         {
-            public static void Set_Windows_UI_Xaml_Controls_TextBlock_Text(global::Windows.UI.Xaml.Controls.TextBlock obj, global::System.String value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(global::Microsoft.UI.Xaml.Controls.TextBlock obj, global::System.String value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
@@ -29,12 +28,12 @@ namespace BindTestbed
             }
         };
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class xPropertiesTest_obj1_Bindings :
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class xPropertiesTest_obj1_Bindings :
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IxPropertiesTest_Bindings
         {
             private global::BindTestbed.xPropertiesTest dataRoot;
@@ -43,9 +42,9 @@ namespace BindTestbed
             private const int DATA_CHANGED = (1 << 30);
 
             // Fields for each control that has bindings.
-            private global::Windows.UI.Xaml.Controls.TextBlock obj2;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj3;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj4;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj2;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj3;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj4;
 
             // Static fields for each binding's enabled/disabled state
             private static bool isobj2TextDisabled = false;
@@ -58,15 +57,15 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 30 && columnNumber == 28)
+                if (lineNumber == 32 && columnNumber == 28)
                 {
                     isobj2TextDisabled = true;
                 }
-                else if (lineNumber == 33 && columnNumber == 28)
+                else if (lineNumber == 35 && columnNumber == 28)
                 {
                     isobj3TextDisabled = true;
                 }
-                else if (lineNumber == 36 && columnNumber == 28)
+                else if (lineNumber == 38 && columnNumber == 28)
                 {
                     isobj4TextDisabled = true;
                 }
@@ -78,19 +77,25 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 2: // xPropertiesTest.xaml line 30
-                        this.obj2 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 2: // xPropertiesTest.xaml line 32
+                        this.obj2 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 3: // xPropertiesTest.xaml line 33
-                        this.obj3 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 3: // xPropertiesTest.xaml line 35
+                        this.obj3 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 4: // xPropertiesTest.xaml line 36
-                        this.obj4 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 4: // xPropertiesTest.xaml line 38
+                        this.obj4 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
             // IDataTemplateComponent
 
@@ -133,13 +138,18 @@ namespace BindTestbed
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbed.xPropertiesTest)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbed.xPropertiesTest>(newDataRoot);
                     return true;
                 }
                 return false;
             }
 
-            public void Loading(global::Windows.UI.Xaml.FrameworkElement src, object data)
+            public void Activated(object obj, global::Microsoft.UI.Xaml.WindowActivatedEventArgs data)
+            {
+                this.Initialize();
+            }
+
+            public void Loading(global::Microsoft.UI.Xaml.FrameworkElement src, object data)
             {
                 this.Initialize();
             }
@@ -181,10 +191,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // xPropertiesTest.xaml line 30
+                    // xPropertiesTest.xaml line 32
                     if (!isobj2TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj2, obj.ToString(), null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj2, obj.ToString(), null);
                     }
                 }
             }
@@ -192,10 +202,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // xPropertiesTest.xaml line 33
+                    // xPropertiesTest.xaml line 35
                     if (!isobj3TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj3, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj3, obj, null);
                     }
                 }
             }
@@ -213,36 +223,37 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // xPropertiesTest.xaml line 36
+                    // xPropertiesTest.xaml line 38
                     if (!isobj4TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj4, obj.ToString(), null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj4, obj.ToString(), null);
                     }
                 }
             }
         }
+
         /// <summary>
         /// Connect()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public void Connect(int connectionId, object target)
         {
             switch(connectionId)
             {
-            case 2: // xPropertiesTest.xaml line 30
+            case 2: // xPropertiesTest.xaml line 32
                 {
-                    this.testText1 = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.testText1 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 3: // xPropertiesTest.xaml line 33
+            case 3: // xPropertiesTest.xaml line 35
                 {
-                    this.testText2 = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.testText2 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 4: // xPropertiesTest.xaml line 36
+            case 4: // xPropertiesTest.xaml line 38
                 {
-                    this.testText3 = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.testText3 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
             default:
@@ -251,25 +262,26 @@ namespace BindTestbed
             this._contentLoaded = true;
         }
 
+
         /// <summary>
         /// GetBindingConnector(int connectionId, object target)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
+        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
         {
-            global::Windows.UI.Xaml.Markup.IComponentConnector returnValue = null;
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector returnValue = null;
             switch(connectionId)
             {
-            case 1: // xPropertiesTest.xaml line 1
+            case 1: // xPropertiesTest.xaml line 3
                 {                    
-                    global::Windows.UI.Xaml.Controls.UserControl element1 = (global::Windows.UI.Xaml.Controls.UserControl)target;
+                    global::Microsoft.UI.Xaml.Controls.UserControl element1 = (global::Microsoft.UI.Xaml.Controls.UserControl)target;
                     xPropertiesTest_obj1_Bindings bindings = new xPropertiesTest_obj1_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(this);
                     this.Bindings = bindings;
                     element1.Loading += bindings.Loading;
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
                 }
                 break;
             }
@@ -279,15 +291,15 @@ namespace BindTestbed
         /// <summary>
         /// InitializeXProperties()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         partial void InitializeXProperties()
         {
-            _TestStr = (global::System.String) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.String), "default value");
-            _TestInt = (global::System.Int32) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Int32), "2");
-            _TestComplexDefaultValue = (global::BindTestbedModel.Circle)(global::Windows.UI.Xaml.Markup.XamlReader.Load(@"<model:Circle Diameter=""300"" TestStringProperty=""test string prop default\ttab"" xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" xmlns:local=""using:BindTestbed"" xmlns:d=""http://schemas.microsoft.com/expression/blend/2008"" xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"" xmlns:model=""using:BindTestbedModel"" xmlns:modelCx=""using:BindTestbedCXModel"" />
+            _TestStr = (global::System.String) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.String), "default value");
+            _TestInt = (global::System.Int32) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Int32), "2");
+            _TestComplexDefaultValue = (global::BindTestbedModel.Circle)(global::Microsoft.UI.Xaml.Markup.XamlReader.Load(@"<model:Circle Diameter=""300"" TestStringProperty=""test string prop default\ttab"" xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" xmlns:local=""using:BindTestbed"" xmlns:d=""http://schemas.microsoft.com/expression/blend/2008"" xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"" xmlns:model=""using:BindTestbedModel"" />
 "));
-            _TestMultilineDefaultValue = (global::Windows.UI.Xaml.Controls.Button)(global::Windows.UI.Xaml.Markup.XamlReader.Load(@"<Button xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" xmlns:local=""using:BindTestbed"" xmlns:d=""http://schemas.microsoft.com/expression/blend/2008"" xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"" xmlns:model=""using:BindTestbedModel"" xmlns:modelCx=""using:BindTestbedCXModel"" >
+            _TestMultilineDefaultValue = (global::Microsoft.UI.Xaml.Controls.Button)(global::Microsoft.UI.Xaml.Markup.XamlReader.Load(@"<Button xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" xmlns:local=""using:BindTestbed"" xmlns:d=""http://schemas.microsoft.com/expression/blend/2008"" xmlns:mc=""http://schemas.openxmlformats.org/markup-compatibility/2006"" xmlns:model=""using:BindTestbedModel"" >
                 hello world!
             </Button>
 "));

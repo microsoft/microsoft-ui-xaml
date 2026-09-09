@@ -42,5 +42,28 @@
         <IntDir>$(IntDir.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</IntDir>
         <BaseIntermediateOutputPath>$(BaseIntermediateOutputPath.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</BaseIntermediateOutputPath>
         <IntermediateOutputPath>$(IntermediateOutputPath.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</IntermediateOutputPath>
+        <!-- eng\folderpaths.props derives GeneratedFilesDir from BaseIntermediateOutputPath before this
+             file is evaluated, so it has to be trimmed here as well. Without this, a project's XAML
+             codegen lands in a different tree from its own intermediates. -->
+        <GeneratedFilesDir>$(GeneratedFilesDir.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</GeneratedFilesDir>
+        <!-- Opt-in for the case of two projects sharing one directory, which would otherwise share one
+             generated-files directory and overwrite each other's codegen (MSB8028). A project cannot
+             simply set GeneratedFilesDir itself: for a .vcxproj this file is imported by
+             Microsoft.Cpp.Default.props, i.e. *after* the project's Globals group, so folderpaths.props
+             overwrites anything the project set. Setting the subdirectory name instead survives. -->
+        <GeneratedFilesDir Condition="'$(GeneratedFilesSubdirectory)' != ''">$(BaseIntermediateOutputPath)$(GeneratedFilesSubdirectory)\generated\</GeneratedFilesDir>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- The codegen-to-masters path contract: every XAML compiler generated file, in every
+             language, is written to $(GeneratedFilesDir), and Tests\UnitTests\CodegenTargets.txt maps
+             that location to the baseline under TestMasters. CodegenTests.DiffCodegen and
+             copynewmasters.cmd both read that manifest, so all three stay in agreement.
+
+             C++ projects already default XamlGeneratedOutputPath to GeneratedFilesDir. Managed
+             projects default it to IntermediateOutputPath instead, which carries the target framework
+             and runtime identifier and so changes path on every TFM bump; point them at the same
+             configuration-independent directory the native projects use. -->
+        <XamlGeneratedOutputPath>$(GeneratedFilesDir)</XamlGeneratedOutputPath>
     </PropertyGroup>
 </Project>

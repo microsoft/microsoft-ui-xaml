@@ -11,15 +11,14 @@
 namespace BindTestbed
 {
     partial class FunctionTests : 
-        global::Windows.UI.Xaml.Controls.UserControl, 
-        global::Windows.UI.Xaml.Markup.IComponentConnector,
-        global::Windows.UI.Xaml.Markup.IComponentConnector2
+        global::Microsoft.UI.Xaml.Controls.UserControl, 
+        global::Microsoft.UI.Xaml.Markup.IComponentConnector
     {
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         private static class XamlBindingSetters
         {
-            public static void Set_Windows_UI_Xaml_Controls_TextBlock_Text(global::Windows.UI.Xaml.Controls.TextBlock obj, global::System.String value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(global::Microsoft.UI.Xaml.Controls.TextBlock obj, global::System.String value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
@@ -27,7 +26,7 @@ namespace BindTestbed
                 }
                 obj.Text = value ?? global::System.String.Empty;
             }
-            public static void Set_Windows_UI_Xaml_Controls_TextBox_Text(global::Windows.UI.Xaml.Controls.TextBox obj, global::System.String value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_TextBox_Text(global::Microsoft.UI.Xaml.Controls.TextBox obj, global::System.String value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
@@ -35,18 +34,18 @@ namespace BindTestbed
                 }
                 obj.Text = value ?? global::System.String.Empty;
             }
-            public static void Set_Windows_UI_Xaml_UIElement_Visibility(global::Windows.UI.Xaml.UIElement obj, global::Windows.UI.Xaml.Visibility value)
+            public static void Set_Microsoft_UI_Xaml_UIElement_Visibility(global::Microsoft.UI.Xaml.UIElement obj, global::Microsoft.UI.Xaml.Visibility value)
             {
                 obj.Visibility = value;
             }
         };
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class FunctionTests_obj1_Bindings :
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class FunctionTests_obj1_Bindings :
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IFunctionTests_Bindings
         {
             private global::BindTestbed.FunctionTests dataRoot;
@@ -55,45 +54,45 @@ namespace BindTestbed
             private const int DATA_CHANGED = (1 << 30);
 
             // Fields for each control that has bindings.
-            private global::Windows.UI.Xaml.Controls.TextBlock obj2;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj3;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj4;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj5;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj6;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj7;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj8;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj9;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj10;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj11;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj12;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj13;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj14;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj15;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj16;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj17;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj18;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj19;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj20;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj21;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj22;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj23;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj24;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj25;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj26;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj27;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj28;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj29;
-            private global::Windows.UI.Xaml.Controls.TextBox obj30;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj31;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj32;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj33;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj34;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj35;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj36;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj37;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj38;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj39;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj40;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj2;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj3;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj4;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj5;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj6;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj7;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj8;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj9;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj10;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj11;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj12;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj13;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj14;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj15;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj16;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj17;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj18;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj19;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj20;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj21;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj22;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj23;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj24;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj25;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj26;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj27;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj28;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj29;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj30;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj31;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj32;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj33;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj34;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj35;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj36;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj37;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj38;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj39;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj40;
 
             // Static fields for each binding's enabled/disabled state
             private static bool isobj2TextDisabled = false;
@@ -145,159 +144,159 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 34 && columnNumber == 28)
+                if (lineNumber == 36 && columnNumber == 28)
                 {
                     isobj2TextDisabled = true;
                 }
-                else if (lineNumber == 35 && columnNumber == 28)
+                else if (lineNumber == 37 && columnNumber == 28)
                 {
                     isobj3TextDisabled = true;
                 }
-                else if (lineNumber == 38 && columnNumber == 28)
+                else if (lineNumber == 40 && columnNumber == 28)
                 {
                     isobj4TextDisabled = true;
                 }
-                else if (lineNumber == 39 && columnNumber == 28)
+                else if (lineNumber == 41 && columnNumber == 28)
                 {
                     isobj5TextDisabled = true;
                 }
-                else if (lineNumber == 40 && columnNumber == 28)
+                else if (lineNumber == 42 && columnNumber == 28)
                 {
                     isobj6TextDisabled = true;
                 }
-                else if (lineNumber == 41 && columnNumber == 28)
+                else if (lineNumber == 43 && columnNumber == 28)
                 {
                     isobj7TextDisabled = true;
                 }
-                else if (lineNumber == 42 && columnNumber == 28)
+                else if (lineNumber == 44 && columnNumber == 28)
                 {
                     isobj8TextDisabled = true;
                 }
-                else if (lineNumber == 43 && columnNumber == 28)
+                else if (lineNumber == 45 && columnNumber == 28)
                 {
                     isobj9TextDisabled = true;
                 }
-                else if (lineNumber == 44 && columnNumber == 28)
+                else if (lineNumber == 46 && columnNumber == 28)
                 {
                     isobj10TextDisabled = true;
                 }
-                else if (lineNumber == 48 && columnNumber == 28)
+                else if (lineNumber == 50 && columnNumber == 28)
                 {
                     isobj11TextDisabled = true;
                 }
-                else if (lineNumber == 49 && columnNumber == 28)
+                else if (lineNumber == 51 && columnNumber == 28)
                 {
                     isobj12TextDisabled = true;
                 }
-                else if (lineNumber == 51 && columnNumber == 28)
+                else if (lineNumber == 53 && columnNumber == 28)
                 {
                     isobj13TextDisabled = true;
                 }
-                else if (lineNumber == 54 && columnNumber == 28)
+                else if (lineNumber == 56 && columnNumber == 28)
                 {
                     isobj14TextDisabled = true;
                 }
-                else if (lineNumber == 55 && columnNumber == 28)
+                else if (lineNumber == 57 && columnNumber == 28)
                 {
                     isobj15TextDisabled = true;
                 }
-                else if (lineNumber == 56 && columnNumber == 28)
+                else if (lineNumber == 58 && columnNumber == 28)
                 {
                     isobj16TextDisabled = true;
                 }
-                else if (lineNumber == 59 && columnNumber == 28)
+                else if (lineNumber == 61 && columnNumber == 28)
                 {
                     isobj17TextDisabled = true;
                 }
-                else if (lineNumber == 60 && columnNumber == 28)
+                else if (lineNumber == 62 && columnNumber == 28)
                 {
                     isobj18TextDisabled = true;
                 }
-                else if (lineNumber == 63 && columnNumber == 28)
+                else if (lineNumber == 65 && columnNumber == 28)
                 {
                     isobj19TextDisabled = true;
                 }
-                else if (lineNumber == 64 && columnNumber == 28)
+                else if (lineNumber == 66 && columnNumber == 28)
                 {
                     isobj20TextDisabled = true;
                 }
-                else if (lineNumber == 65 && columnNumber == 28)
+                else if (lineNumber == 67 && columnNumber == 28)
                 {
                     isobj21TextDisabled = true;
                 }
-                else if (lineNumber == 66 && columnNumber == 28)
+                else if (lineNumber == 68 && columnNumber == 28)
                 {
                     isobj22TextDisabled = true;
                 }
-                else if (lineNumber == 69 && columnNumber == 28)
+                else if (lineNumber == 71 && columnNumber == 28)
                 {
                     isobj23TextDisabled = true;
                 }
-                else if (lineNumber == 72 && columnNumber == 28)
+                else if (lineNumber == 74 && columnNumber == 28)
                 {
                     isobj24TextDisabled = true;
                 }
-                else if (lineNumber == 75 && columnNumber == 28)
+                else if (lineNumber == 77 && columnNumber == 28)
                 {
                     isobj25TextDisabled = true;
                 }
-                else if (lineNumber == 76 && columnNumber == 28)
+                else if (lineNumber == 78 && columnNumber == 28)
                 {
                     isobj26TextDisabled = true;
                 }
-                else if (lineNumber == 77 && columnNumber == 28)
+                else if (lineNumber == 79 && columnNumber == 28)
                 {
                     isobj27TextDisabled = true;
                 }
-                else if (lineNumber == 78 && columnNumber == 28)
+                else if (lineNumber == 80 && columnNumber == 28)
                 {
                     isobj28TextDisabled = true;
                 }
-                else if (lineNumber == 79 && columnNumber == 28)
+                else if (lineNumber == 81 && columnNumber == 28)
                 {
                     isobj29TextDisabled = true;
                 }
-                else if (lineNumber == 82 && columnNumber == 26)
+                else if (lineNumber == 84 && columnNumber == 26)
                 {
                     isobj30TextDisabled = true;
                 }
-                else if (lineNumber == 85 && columnNumber == 28)
+                else if (lineNumber == 87 && columnNumber == 28)
                 {
                     isobj31TextDisabled = true;
                 }
-                else if (lineNumber == 86 && columnNumber == 28)
+                else if (lineNumber == 88 && columnNumber == 28)
                 {
                     isobj32TextDisabled = true;
                 }
-                else if (lineNumber == 87 && columnNumber == 28)
+                else if (lineNumber == 89 && columnNumber == 28)
                 {
                     isobj33VisibilityDisabled = true;
                 }
-                else if (lineNumber == 89 && columnNumber == 28)
+                else if (lineNumber == 91 && columnNumber == 28)
                 {
                     isobj34TextDisabled = true;
                 }
-                else if (lineNumber == 91 && columnNumber == 28)
+                else if (lineNumber == 93 && columnNumber == 28)
                 {
                     isobj35TextDisabled = true;
                 }
-                else if (lineNumber == 93 && columnNumber == 28)
+                else if (lineNumber == 95 && columnNumber == 28)
                 {
                     isobj36TextDisabled = true;
                 }
-                else if (lineNumber == 96 && columnNumber == 28)
+                else if (lineNumber == 98 && columnNumber == 28)
                 {
                     isobj37TextDisabled = true;
                 }
-                else if (lineNumber == 99 && columnNumber == 28)
+                else if (lineNumber == 101 && columnNumber == 28)
                 {
                     isobj38TextDisabled = true;
                 }
-                else if (lineNumber == 100 && columnNumber == 28)
+                else if (lineNumber == 102 && columnNumber == 28)
                 {
                     isobj39TextDisabled = true;
                 }
-                else if (lineNumber == 103 && columnNumber == 28)
+                else if (lineNumber == 105 && columnNumber == 28)
                 {
                     isobj40TextDisabled = true;
                 }
@@ -309,128 +308,134 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 2: // FunctionTests.xaml line 34
-                        this.obj2 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 2: // FunctionTests.xaml line 36
+                        this.obj2 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 3: // FunctionTests.xaml line 35
-                        this.obj3 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 3: // FunctionTests.xaml line 37
+                        this.obj3 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 4: // FunctionTests.xaml line 38
-                        this.obj4 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 4: // FunctionTests.xaml line 40
+                        this.obj4 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 5: // FunctionTests.xaml line 39
-                        this.obj5 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 5: // FunctionTests.xaml line 41
+                        this.obj5 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 6: // FunctionTests.xaml line 40
-                        this.obj6 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 6: // FunctionTests.xaml line 42
+                        this.obj6 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 7: // FunctionTests.xaml line 41
-                        this.obj7 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 7: // FunctionTests.xaml line 43
+                        this.obj7 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 8: // FunctionTests.xaml line 42
-                        this.obj8 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 8: // FunctionTests.xaml line 44
+                        this.obj8 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 9: // FunctionTests.xaml line 43
-                        this.obj9 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 9: // FunctionTests.xaml line 45
+                        this.obj9 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 10: // FunctionTests.xaml line 44
-                        this.obj10 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 10: // FunctionTests.xaml line 46
+                        this.obj10 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 11: // FunctionTests.xaml line 48
-                        this.obj11 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 11: // FunctionTests.xaml line 50
+                        this.obj11 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 12: // FunctionTests.xaml line 49
-                        this.obj12 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 12: // FunctionTests.xaml line 51
+                        this.obj12 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 13: // FunctionTests.xaml line 51
-                        this.obj13 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 13: // FunctionTests.xaml line 53
+                        this.obj13 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 14: // FunctionTests.xaml line 54
-                        this.obj14 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 14: // FunctionTests.xaml line 56
+                        this.obj14 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 15: // FunctionTests.xaml line 55
-                        this.obj15 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 15: // FunctionTests.xaml line 57
+                        this.obj15 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 16: // FunctionTests.xaml line 56
-                        this.obj16 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 16: // FunctionTests.xaml line 58
+                        this.obj16 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 17: // FunctionTests.xaml line 59
-                        this.obj17 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 17: // FunctionTests.xaml line 61
+                        this.obj17 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 18: // FunctionTests.xaml line 60
-                        this.obj18 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 18: // FunctionTests.xaml line 62
+                        this.obj18 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 19: // FunctionTests.xaml line 63
-                        this.obj19 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 19: // FunctionTests.xaml line 65
+                        this.obj19 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 20: // FunctionTests.xaml line 64
-                        this.obj20 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 20: // FunctionTests.xaml line 66
+                        this.obj20 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 21: // FunctionTests.xaml line 65
-                        this.obj21 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 21: // FunctionTests.xaml line 67
+                        this.obj21 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 22: // FunctionTests.xaml line 66
-                        this.obj22 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 22: // FunctionTests.xaml line 68
+                        this.obj22 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 23: // FunctionTests.xaml line 69
-                        this.obj23 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 23: // FunctionTests.xaml line 71
+                        this.obj23 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 24: // FunctionTests.xaml line 72
-                        this.obj24 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 24: // FunctionTests.xaml line 74
+                        this.obj24 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 25: // FunctionTests.xaml line 75
-                        this.obj25 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 25: // FunctionTests.xaml line 77
+                        this.obj25 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 26: // FunctionTests.xaml line 76
-                        this.obj26 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 26: // FunctionTests.xaml line 78
+                        this.obj26 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 27: // FunctionTests.xaml line 77
-                        this.obj27 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 27: // FunctionTests.xaml line 79
+                        this.obj27 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 28: // FunctionTests.xaml line 78
-                        this.obj28 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 28: // FunctionTests.xaml line 80
+                        this.obj28 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 29: // FunctionTests.xaml line 79
-                        this.obj29 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 29: // FunctionTests.xaml line 81
+                        this.obj29 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 30: // FunctionTests.xaml line 82
-                        this.obj30 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                    case 30: // FunctionTests.xaml line 84
+                        this.obj30 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                         this.bindingsTracking.RegisterTwoWayListener_30(this.obj30);
                         break;
-                    case 31: // FunctionTests.xaml line 85
-                        this.obj31 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 31: // FunctionTests.xaml line 87
+                        this.obj31 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 32: // FunctionTests.xaml line 86
-                        this.obj32 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 32: // FunctionTests.xaml line 88
+                        this.obj32 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 33: // FunctionTests.xaml line 87
-                        this.obj33 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 33: // FunctionTests.xaml line 89
+                        this.obj33 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 34: // FunctionTests.xaml line 89
-                        this.obj34 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 34: // FunctionTests.xaml line 91
+                        this.obj34 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 35: // FunctionTests.xaml line 91
-                        this.obj35 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 35: // FunctionTests.xaml line 93
+                        this.obj35 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 36: // FunctionTests.xaml line 93
-                        this.obj36 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 36: // FunctionTests.xaml line 95
+                        this.obj36 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 37: // FunctionTests.xaml line 96
-                        this.obj37 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 37: // FunctionTests.xaml line 98
+                        this.obj37 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 38: // FunctionTests.xaml line 99
-                        this.obj38 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 38: // FunctionTests.xaml line 101
+                        this.obj38 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 39: // FunctionTests.xaml line 100
-                        this.obj39 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 39: // FunctionTests.xaml line 102
+                        this.obj39 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 40: // FunctionTests.xaml line 103
-                        this.obj40 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 40: // FunctionTests.xaml line 105
+                        this.obj40 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
             // IDataTemplateComponent
 
@@ -476,13 +481,18 @@ namespace BindTestbed
                 this.bindingsTracking.ReleaseAllListeners();
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbed.FunctionTests)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbed.FunctionTests>(newDataRoot);
                     return true;
                 }
                 return false;
             }
 
-            public void Loading(global::Windows.UI.Xaml.FrameworkElement src, object data)
+            public void Activated(object obj, global::Microsoft.UI.Xaml.WindowActivatedEventArgs data)
+            {
+                this.Initialize();
+            }
+
+            public void Loading(global::Microsoft.UI.Xaml.FrameworkElement src, object data)
             {
                 this.Initialize();
             }
@@ -757,55 +767,55 @@ namespace BindTestbed
             private delegate void InvokeFunctionDelegate(int phase);
             private global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate> PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
 
-            private void Invoke_M_FunctionOnRootNoArgs_757602046(int phase)
+            private void Invoke_M_FunctionOnRootNoArgs_371857150(int phase)
             {
                 global::System.String result = this.dataRoot.FunctionOnRootNoArgs();
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 34
+                    // FunctionTests.xaml line 36
                     if (!isobj2TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj2, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj2, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelNoArgs_757602046(int phase)
+            private void Invoke_Model_M_FunctionOnModelNoArgs_371857150(int phase)
             {
                 global::System.String result = this.dataRoot.Model.FunctionOnModelNoArgs();
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // FunctionTests.xaml line 82
+                    // FunctionTests.xaml line 84
                     if (!isobj30TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj30, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj30, result, null);
                     }
                 }
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 35
+                    // FunctionTests.xaml line 37
                     if (!isobj3TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj3, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj3, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelOneStringArg_536991770(int phase)
+            private void Invoke_Model_M_FunctionOnModelOneStringArg_1099313834(int phase)
             {
                 global::System.String p0 = "abc";
                 global::System.String result = this.dataRoot.Model.FunctionOnModelOneStringArg(p0);
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 38
+                    // FunctionTests.xaml line 40
                     if (!isobj4TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj4, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj4, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelThreeArgs_62230659(int phase)
+            private void Invoke_Model_M_FunctionOnModelThreeArgs_1453962476(int phase)
             {
                 global::System.String p0 = "abc";
                 global::System.Double p1 = -2.1;
@@ -813,15 +823,15 @@ namespace BindTestbed
                 global::System.String result = this.dataRoot.Model.FunctionOnModelThreeArgs(p0, p1, p2);
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 39
+                    // FunctionTests.xaml line 41
                     if (!isobj5TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj5, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj5, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelThreeArgs_1325036321(int phase)
+            private void Invoke_Model_M_FunctionOnModelThreeArgs_618233644(int phase)
             {
                 global::System.String p0 = null;
                 global::System.Double p1 = -2.1;
@@ -829,15 +839,15 @@ namespace BindTestbed
                 global::System.String result = this.dataRoot.Model.FunctionOnModelThreeArgs(p0, p1, p2);
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 40
+                    // FunctionTests.xaml line 42
                     if (!isobj6TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj6, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj6, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelTwoArgs_3936143113(int phase)
+            private void Invoke_Model_M_FunctionOnModelTwoArgs_3954157887(int phase)
             {
                 global::System.Double p1 = 2.8;
                 global::System.Int32 p0;
@@ -845,15 +855,15 @@ namespace BindTestbed
                 global::System.String result = this.dataRoot.Model.FunctionOnModelTwoArgs(p0, p1);
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 41
+                    // FunctionTests.xaml line 43
                     if (!isobj7TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj7, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj7, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelTwoArgs_3918136443(int phase)
+            private void Invoke_Model_M_FunctionOnModelTwoArgs_3830204370(int phase)
             {
                 global::System.Double p1 = 3.9;
                 global::System.Int32 p0;
@@ -861,23 +871,23 @@ namespace BindTestbed
                 global::System.String result = this.dataRoot.Model.FunctionOnModelTwoArgs(p0, p1);
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // FunctionTests.xaml line 76
+                    // FunctionTests.xaml line 78
                     if (!isobj26TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj26, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj26, result, null);
                     }
                 }
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 42
+                    // FunctionTests.xaml line 44
                     if (!isobj8TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj8, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj8, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelTwoArgs_1628856813(int phase)
+            private void Invoke_Model_M_FunctionOnModelTwoArgs_2838666143(int phase)
             {
                 global::System.Double p1 = 4.1;
                 global::System.Int32 p0;
@@ -885,15 +895,15 @@ namespace BindTestbed
                 global::System.String result = this.dataRoot.Model.FunctionOnModelTwoArgs(p0, p1);
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 43
+                    // FunctionTests.xaml line 45
                     if (!isobj9TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj9, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj9, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelTwoArgs_4126661114(int phase)
+            private void Invoke_Model_M_FunctionOnModelTwoArgs_2724760160(int phase)
             {
                 global::System.Int16 p0;
                 if (!TryGet_Model_ShortProperty(out p0)) { return; }
@@ -902,56 +912,56 @@ namespace BindTestbed
                 global::System.String result = this.dataRoot.Model.FunctionOnModelTwoArgs(p0, p1);
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 44
+                    // FunctionTests.xaml line 46
                     if (!isobj10TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj10, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj10, result, null);
                     }
                 }
             }
 
-            private void Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_757602046(int phase)
+            private void Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
             {
                 global::System.String result = global::BindTestbedModel.DataModel.StaticFunctionOnModelNoArgs();
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 48
+                    // FunctionTests.xaml line 50
                     if (!isobj11TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj11, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj11, result, null);
                     }
                 }
             }
 
-            private void Invoke_BindTestbedModel_DataModel_StaticStringProperty_M_ToString1_757602046(int phase)
+            private void Invoke_BindTestbedModel_DataModel_StaticStringProperty_M_ToString_371857150(int phase)
             {
                 global::System.String result = global::BindTestbedModel.DataModel.StaticStringProperty.ToString();
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 49
+                    // FunctionTests.xaml line 51
                     if (!isobj12TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj12, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj12, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelOneStringArg_1668010001(int phase)
+            private void Invoke_Model_M_FunctionOnModelOneStringArg_2617613830(int phase)
             {
                 global::System.String p0;
                 if (!TryGet_BindTestbedModel_DataModel_StaticStringProperty(out p0)) { return; }
                 global::System.String result = this.dataRoot.Model.FunctionOnModelOneStringArg(p0);
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 51
+                    // FunctionTests.xaml line 53
                     if (!isobj13TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj13, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj13, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelInfrequentTypes_3986505586(int phase)
+            private void Invoke_Model_M_FunctionOnModelInfrequentTypes_328014997(int phase)
             {
                 global::System.Single p1 = 2.8F;
                 global::System.Int16 p0;
@@ -959,30 +969,30 @@ namespace BindTestbed
                 global::System.String result = this.dataRoot.Model.FunctionOnModelInfrequentTypes(p0, p1);
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 54
+                    // FunctionTests.xaml line 56
                     if (!isobj14TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj14, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj14, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelInfrequentTypes_1496249149(int phase)
+            private void Invoke_Model_M_FunctionOnModelInfrequentTypes_465019801(int phase)
             {
                 global::System.Int16 p0 = 14;
                 global::System.Single p1 = 2.8F;
                 global::System.String result = this.dataRoot.Model.FunctionOnModelInfrequentTypes(p0, p1);
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 55
+                    // FunctionTests.xaml line 57
                     if (!isobj15TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj15, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj15, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelInfrequentTypes_4126661114(int phase)
+            private void Invoke_Model_M_FunctionOnModelInfrequentTypes_2724760160(int phase)
             {
                 global::System.Int16 p0;
                 if (!TryGet_Model_ShortProperty(out p0)) { return; }
@@ -991,83 +1001,83 @@ namespace BindTestbed
                 global::System.String result = this.dataRoot.Model.FunctionOnModelInfrequentTypes(p0, p1);
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 56
+                    // FunctionTests.xaml line 58
                     if (!isobj16TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj16, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj16, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_FloatProperty_M_ToString_757602046(int phase)
+            private void Invoke_Model_FloatProperty_M_ToString_371857150(int phase)
             {
                 global::System.String result = this.dataRoot.Model.FloatProperty.ToString();
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 59
+                    // FunctionTests.xaml line 61
                     if (!isobj17TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj17, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj17, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_ExtractionPoint_Coords_Latitude_M_ToString_757602046(int phase)
+            private void Invoke_Model_ExtractionPoint_Coords_Latitude_M_ToString_371857150(int phase)
             {
                 global::System.String result = this.dataRoot.Model.ExtractionPoint.Coords.Latitude.ToString();
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // FunctionTests.xaml line 60
+                    // FunctionTests.xaml line 62
                     if (!isobj18TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj18, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj18, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_ArityTest_757602046(int phase)
+            private void Invoke_Model_M_ArityTest_371857150(int phase)
             {
                 global::System.String result = this.dataRoot.Model.ArityTest();
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 63
+                    // FunctionTests.xaml line 65
                     if (!isobj19TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj19, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj19, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_ArityTest1_3452614543(int phase)
+            private void Invoke_Model_M_ArityTest1_372029325(int phase)
             {
                 global::System.Int32 p0 = 1;
                 global::System.String result = this.dataRoot.Model.ArityTest(p0);
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 64
+                    // FunctionTests.xaml line 66
                     if (!isobj20TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj20, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj20, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_ArityTest2_3451434895(int phase)
+            private void Invoke_Model_M_ArityTest2_3231012647(int phase)
             {
                 global::System.Int32 p0 = 1;
                 global::System.Int32 p1 = 2;
                 global::System.String result = this.dataRoot.Model.ArityTest(p0, p1);
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 65
+                    // FunctionTests.xaml line 67
                     if (!isobj21TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj21, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj21, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_ArityTest3_2671228154(int phase)
+            private void Invoke_Model_M_ArityTest3_3236694458(int phase)
             {
                 global::System.Int32 p0 = 1;
                 global::System.Int32 p1 = 2;
@@ -1075,56 +1085,56 @@ namespace BindTestbed
                 global::System.String result = this.dataRoot.Model.ArityTest(p0, p1, p2);
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 66
+                    // FunctionTests.xaml line 68
                     if (!isobj22TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj22, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj22, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_IntPropWithINPC_M_ToString_757602046(int phase)
+            private void Invoke_Model_IntPropWithINPC_M_ToString_371857150(int phase)
             {
                 global::System.String result = this.dataRoot.Model.IntPropWithINPC.ToString();
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // FunctionTests.xaml line 69
+                    // FunctionTests.xaml line 71
                     if (!isobj23TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj23, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj23, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionReturningIntProperty_757602046(int phase)
+            private void Invoke_Model_M_FunctionReturningIntProperty_371857150(int phase)
             {
                 global::System.Int32 result = this.dataRoot.Model.FunctionReturningIntProperty();
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // FunctionTests.xaml line 72
+                    // FunctionTests.xaml line 74
                     if (!isobj24TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj24, result.ToString(), null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj24, result.ToString(), null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelNullArg_3348340388(int phase)
+            private void Invoke_Model_M_FunctionOnModelNullArg_1321078201(int phase)
             {
                 global::System.String p0;
                 if (!TryGet_Model_NullEmployee_Name(out p0)) { return; }
                 global::System.String result = this.dataRoot.Model.FunctionOnModelNullArg(p0);
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // FunctionTests.xaml line 75
+                    // FunctionTests.xaml line 77
                     if (!isobj25TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj25, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj25, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelTwoArgs_437740013(int phase)
+            private void Invoke_Model_M_FunctionOnModelTwoArgs_3188248288(int phase)
             {
                 global::System.Double p1 = 3.9;
                 global::System.Int32 p0;
@@ -1132,15 +1142,15 @@ namespace BindTestbed
                 global::System.String result = this.dataRoot.Model.FunctionOnModelTwoArgs(p0, p1);
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // FunctionTests.xaml line 77
+                    // FunctionTests.xaml line 79
                     if (!isobj27TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj27, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj27, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelThreeArgs_706606279(int phase)
+            private void Invoke_Model_M_FunctionOnModelThreeArgs_4063502775(int phase)
             {
                 global::System.Double p1 = 3.9;
                 global::System.Boolean p2 = false;
@@ -1149,15 +1159,15 @@ namespace BindTestbed
                 global::System.String result = this.dataRoot.Model.FunctionOnModelThreeArgs(p0, p1, p2);
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // FunctionTests.xaml line 78
+                    // FunctionTests.xaml line 80
                     if (!isobj28TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj28, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj28, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelThreeArgs_2448615814(int phase)
+            private void Invoke_Model_M_FunctionOnModelThreeArgs_328806414(int phase)
             {
                 global::System.Double p1 = 2;
                 global::System.String p0;
@@ -1167,54 +1177,54 @@ namespace BindTestbed
                 global::System.String result = this.dataRoot.Model.FunctionOnModelThreeArgs(p0, p1, p2);
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // FunctionTests.xaml line 79
+                    // FunctionTests.xaml line 81
                     if (!isobj29TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj29, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj29, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_NullEmployee_M_GetName_757602046(int phase)
+            private void Invoke_Model_NullEmployee_M_GetName_371857150(int phase)
             {
                 global::System.String result = this.dataRoot.Model.NullEmployee.GetName();
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 85
+                    // FunctionTests.xaml line 87
                     if (!isobj31TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj31, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj31, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_NullEmployee_FirstName_M_ToString1_757602046(int phase)
+            private void Invoke_Model_NullEmployee_FirstName_M_ToString_371857150(int phase)
             {
                 global::System.String result = this.dataRoot.Model.NullEmployee.FirstName.ToString();
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 86
+                    // FunctionTests.xaml line 88
                     if (!isobj32TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj32, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj32, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_NullEmployee_M_GetVisibility_757602046(int phase)
+            private void Invoke_Model_NullEmployee_M_GetVisibility_371857150(int phase)
             {
-                global::Windows.UI.Xaml.Visibility result = this.dataRoot.Model.NullEmployee.GetVisibility();
+                global::Microsoft.UI.Xaml.Visibility result = this.dataRoot.Model.NullEmployee.GetVisibility();
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 87
+                    // FunctionTests.xaml line 89
                     if (!isobj33VisibilityDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_UIElement_Visibility(this.obj33, result);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_Visibility(this.obj33, result);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelThreeArgs_1187614766(int phase)
+            private void Invoke_Model_M_FunctionOnModelThreeArgs_512945308(int phase)
             {
                 global::System.Double p1 = 3.9;
                 global::System.String p0;
@@ -1224,76 +1234,76 @@ namespace BindTestbed
                 global::System.String result = this.dataRoot.Model.FunctionOnModelThreeArgs(p0, p1, p2);
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // FunctionTests.xaml line 89
+                    // FunctionTests.xaml line 91
                     if (!isobj34TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj34, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj34, result, null);
                     }
-                    // FunctionTests.xaml line 91
+                    // FunctionTests.xaml line 93
                     if (!isobj35TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj35, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj35, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionReturningNull_757602046(int phase)
+            private void Invoke_Model_M_FunctionReturningNull_371857150(int phase)
             {
                 global::System.String result = this.dataRoot.Model.FunctionReturningNull();
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 93
+                    // FunctionTests.xaml line 95
                     if (!isobj36TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj36, result, "Great, TargetNullValue works!");
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj36, result, "Great, TargetNullValue works!");
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionReturningInt_757602046(int phase)
+            private void Invoke_Model_M_FunctionReturningInt_371857150(int phase)
             {
                 global::System.Int32 result = this.dataRoot.Model.FunctionReturningInt();
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 96
+                    // FunctionTests.xaml line 98
                     if (!isobj37TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj37, result.ToString(), null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj37, result.ToString(), null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelOneStringArg_2532831189(int phase)
+            private void Invoke_Model_M_FunctionOnModelOneStringArg_2882328291(int phase)
             {
                 global::System.String p0;
                 if (!TryGet_Model_Employees_I0_Name(out p0)) { return; }
                 global::System.String result = this.dataRoot.Model.FunctionOnModelOneStringArg(p0);
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // FunctionTests.xaml line 99
+                    // FunctionTests.xaml line 101
                     if (!isobj38TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj38, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj38, result, null);
                     }
                 }
             }
 
-            private void Invoke_Model_M_FunctionOnModelOneStringArg_2530340821(int phase)
+            private void Invoke_Model_M_FunctionOnModelOneStringArg_3609118765(int phase)
             {
                 global::System.String p0;
                 if (!TryGet_Model_Employees_I2_Name(out p0)) { return; }
                 global::System.String result = this.dataRoot.Model.FunctionOnModelOneStringArg(p0);
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // FunctionTests.xaml line 100
+                    // FunctionTests.xaml line 102
                     if (!isobj39TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj39, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj39, result, null);
                     }
                 }
             }
 
-            private void Invoke_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(int phase)
+            private void Invoke_BindTestbedModel_DataModel_M_UpdateReentrancyString_2909797973(int phase)
             {
                 global::BindTestbedModel.DataModel p0;
                 if (!TryGet_Model(out p0)) { return; }
@@ -1302,10 +1312,10 @@ namespace BindTestbed
                 global::System.String result = global::BindTestbedModel.DataModel.UpdateReentrancyString(p0, p1);
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // FunctionTests.xaml line 103
+                    // FunctionTests.xaml line 105
                     if (!isobj40TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj40, result, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj40, result, null);
                     }
                 }
             }
@@ -1327,7 +1337,7 @@ namespace BindTestbed
                 {
                     if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                     {
-                        this.Update_M_FunctionOnRootNoArgs_757602046(phase);
+                        this.Update_M_FunctionOnRootNoArgs_371857150(phase);
                     }
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
@@ -1341,18 +1351,18 @@ namespace BindTestbed
                         this.UpdateFallback_Model(phase);
                     }
                 }
-                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_757602046(phase);
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
                 this.Update_BindTestbedModel_DataModel_StaticStringProperty(global::BindTestbedModel.DataModel.StaticStringProperty, phase);
-                this.Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
+                this.Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_2909797973(phase);
                 this.CompleteUpdate(phase);
             }
-            private void Update_M_FunctionOnRootNoArgs_757602046(int phase)
+            private void Update_M_FunctionOnRootNoArgs_371857150(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj2TextDisabled)
                     {
-                        this.PendingFunctionBindings["M_FunctionOnRootNoArgs_757602046"] = new InvokeFunctionDelegate(this.Invoke_M_FunctionOnRootNoArgs_757602046); 
+                        this.PendingFunctionBindings["M_FunctionOnRootNoArgs_371857150"] = new InvokeFunctionDelegate(this.Invoke_M_FunctionOnRootNoArgs_371857150); 
                     }
                 }
             }
@@ -1363,32 +1373,32 @@ namespace BindTestbed
                 {
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.Update_Model_M_FunctionOnModelNoArgs_757602046(phase);
+                        this.Update_Model_M_FunctionOnModelNoArgs_371857150(phase);
                     }
                     if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                     {
-                        this.Update_Model_M_FunctionOnModelOneStringArg_536991770(phase);
-                        this.Update_Model_M_FunctionOnModelThreeArgs_62230659(phase);
-                        this.Update_Model_M_FunctionOnModelThreeArgs_1325036321(phase);
+                        this.Update_Model_M_FunctionOnModelOneStringArg_1099313834(phase);
+                        this.Update_Model_M_FunctionOnModelThreeArgs_1453962476(phase);
+                        this.Update_Model_M_FunctionOnModelThreeArgs_618233644(phase);
                         this.Update_Model_IntPropNoINPC(obj.IntPropNoINPC, phase);
-                        this.Update_Model_M_FunctionOnModelTwoArgs_3936143113(phase);
+                        this.Update_Model_M_FunctionOnModelTwoArgs_3954157887(phase);
                     }
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
                         this.Update_Model_IntPropWithINPC(obj.IntPropWithINPC, phase);
-                        this.Update_Model_M_FunctionOnModelTwoArgs_3918136443(phase);
+                        this.Update_Model_M_FunctionOnModelTwoArgs_3830204370(phase);
                         this.Update_Model_IntPropertyDP(obj.IntPropertyDP, phase);
                     }
                     if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                     {
-                        this.Update_Model_M_FunctionOnModelTwoArgs_1628856813(phase);
+                        this.Update_Model_M_FunctionOnModelTwoArgs_2838666143(phase);
                         this.Update_Model_ShortProperty(obj.ShortProperty, phase);
                         this.Update_Model_FloatProperty(obj.FloatProperty, phase);
-                        this.Update_Model_M_FunctionOnModelTwoArgs_4126661114(phase);
-                        this.Update_Model_M_FunctionOnModelOneStringArg_1668010001(phase);
-                        this.Update_Model_M_FunctionOnModelInfrequentTypes_3986505586(phase);
-                        this.Update_Model_M_FunctionOnModelInfrequentTypes_1496249149(phase);
-                        this.Update_Model_M_FunctionOnModelInfrequentTypes_4126661114(phase);
+                        this.Update_Model_M_FunctionOnModelTwoArgs_2724760160(phase);
+                        this.Update_Model_M_FunctionOnModelOneStringArg_2617613830(phase);
+                        this.Update_Model_M_FunctionOnModelInfrequentTypes_328014997(phase);
+                        this.Update_Model_M_FunctionOnModelInfrequentTypes_465019801(phase);
+                        this.Update_Model_M_FunctionOnModelInfrequentTypes_2724760160(phase);
                     }
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
@@ -1396,32 +1406,32 @@ namespace BindTestbed
                     }
                     if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                     {
-                        this.Update_Model_M_ArityTest_757602046(phase);
-                        this.Update_Model_M_ArityTest1_3452614543(phase);
-                        this.Update_Model_M_ArityTest2_3451434895(phase);
-                        this.Update_Model_M_ArityTest3_2671228154(phase);
+                        this.Update_Model_M_ArityTest_371857150(phase);
+                        this.Update_Model_M_ArityTest1_372029325(phase);
+                        this.Update_Model_M_ArityTest2_3231012647(phase);
+                        this.Update_Model_M_ArityTest3_3236694458(phase);
                     }
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.Update_Model_M_FunctionReturningIntProperty_757602046(phase);
+                        this.Update_Model_M_FunctionReturningIntProperty_371857150(phase);
                         this.Update_Model_NullEmployee(obj.NullEmployee, phase);
-                        this.Update_Model_M_FunctionOnModelNullArg_3348340388(phase);
-                        this.Update_Model_M_FunctionOnModelTwoArgs_437740013(phase);
+                        this.Update_Model_M_FunctionOnModelNullArg_1321078201(phase);
+                        this.Update_Model_M_FunctionOnModelTwoArgs_3188248288(phase);
                         this.Update_Model_StringPropertyDP(obj.StringPropertyDP, phase);
-                        this.Update_Model_M_FunctionOnModelThreeArgs_706606279(phase);
+                        this.Update_Model_M_FunctionOnModelThreeArgs_4063502775(phase);
                         this.Update_Model_Employees(obj.Employees, phase);
-                        this.Update_Model_M_FunctionOnModelThreeArgs_2448615814(phase);
-                        this.Update_Model_M_FunctionOnModelThreeArgs_1187614766(phase);
+                        this.Update_Model_M_FunctionOnModelThreeArgs_328806414(phase);
+                        this.Update_Model_M_FunctionOnModelThreeArgs_512945308(phase);
                     }
                     if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                     {
-                        this.Update_Model_M_FunctionReturningNull_757602046(phase);
-                        this.Update_Model_M_FunctionReturningInt_757602046(phase);
+                        this.Update_Model_M_FunctionReturningNull_371857150(phase);
+                        this.Update_Model_M_FunctionReturningInt_371857150(phase);
                     }
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.Update_Model_M_FunctionOnModelOneStringArg_2532831189(phase);
-                        this.Update_Model_M_FunctionOnModelOneStringArg_2530340821(phase);
+                        this.Update_Model_M_FunctionOnModelOneStringArg_2882328291(phase);
+                        this.Update_Model_M_FunctionOnModelOneStringArg_3609118765(phase);
                         this.Update_Model_ReentrancyString(obj.ReentrancyString, phase);
                     }
                 }
@@ -1437,7 +1447,7 @@ namespace BindTestbed
                     }
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.UpdateFallback_Model_M_FunctionOnModelThreeArgs_1187614766(phase);
+                        this.UpdateFallback_Model_M_FunctionOnModelThreeArgs_512945308(phase);
                     }
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
@@ -1446,71 +1456,71 @@ namespace BindTestbed
                 }
                 if (obj != null)
                 {
-                    this.Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
+                    this.Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_2909797973(phase);
                 }
                 else
                 {
-                    this.UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
+                    this.UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_2909797973(phase);
                 }
             }
-            private void Update_Model_M_FunctionOnModelNoArgs_757602046(int phase)
+            private void Update_Model_M_FunctionOnModelNoArgs_371857150(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     if (!isobj30TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelNoArgs_757602046"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelNoArgs_757602046); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelNoArgs_371857150"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelNoArgs_371857150); 
                     }
                 }
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj3TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelNoArgs_757602046"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelNoArgs_757602046); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelNoArgs_371857150"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelNoArgs_371857150); 
                     }
                 }
             }
-            private void Update_Model_M_FunctionOnModelOneStringArg_536991770(int phase)
+            private void Update_Model_M_FunctionOnModelOneStringArg_1099313834(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj4TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelOneStringArg_536991770"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelOneStringArg_536991770); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelOneStringArg_1099313834"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelOneStringArg_1099313834); 
                     }
                 }
             }
-            private void Update_Model_M_FunctionOnModelThreeArgs_62230659(int phase)
+            private void Update_Model_M_FunctionOnModelThreeArgs_1453962476(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj5TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelThreeArgs_62230659"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelThreeArgs_62230659); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelThreeArgs_1453962476"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelThreeArgs_1453962476); 
                     }
                 }
             }
-            private void Update_Model_M_FunctionOnModelThreeArgs_1325036321(int phase)
+            private void Update_Model_M_FunctionOnModelThreeArgs_618233644(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj6TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelThreeArgs_1325036321"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelThreeArgs_1325036321); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelThreeArgs_618233644"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelThreeArgs_618233644); 
                     }
                 }
             }
             private void Update_Model_IntPropNoINPC(global::System.Int32 obj, int phase)
             {
-                this.Update_Model_M_FunctionOnModelTwoArgs_3936143113(phase);
+                this.Update_Model_M_FunctionOnModelTwoArgs_3954157887(phase);
             }
-            private void Update_Model_M_FunctionOnModelTwoArgs_3936143113(int phase)
+            private void Update_Model_M_FunctionOnModelTwoArgs_3954157887(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj7TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelTwoArgs_3936143113"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelTwoArgs_3936143113); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelTwoArgs_3954157887"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelTwoArgs_3954157887); 
                     }
                 }
             }
@@ -1518,74 +1528,74 @@ namespace BindTestbed
             {
                 if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                 {
-                    this.Update_Model_IntPropWithINPC_M_ToString_757602046(phase);
+                    this.Update_Model_IntPropWithINPC_M_ToString_371857150(phase);
                 }
-                this.Update_Model_M_FunctionOnModelTwoArgs_3918136443(phase);
+                this.Update_Model_M_FunctionOnModelTwoArgs_3830204370(phase);
             }
-            private void Update_Model_M_FunctionOnModelTwoArgs_3918136443(int phase)
+            private void Update_Model_M_FunctionOnModelTwoArgs_3830204370(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     if (!isobj26TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelTwoArgs_3918136443"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelTwoArgs_3918136443); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelTwoArgs_3830204370"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelTwoArgs_3830204370); 
                     }
                 }
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj8TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelTwoArgs_3918136443"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelTwoArgs_3918136443); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelTwoArgs_3830204370"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelTwoArgs_3830204370); 
                     }
                 }
             }
             private void Update_Model_IntPropertyDP(global::System.Int32 obj, int phase)
             {
-                this.Update_Model_M_FunctionOnModelTwoArgs_1628856813(phase);
-                this.Update_Model_M_FunctionOnModelTwoArgs_437740013(phase);
+                this.Update_Model_M_FunctionOnModelTwoArgs_2838666143(phase);
+                this.Update_Model_M_FunctionOnModelTwoArgs_3188248288(phase);
             }
-            private void Update_Model_M_FunctionOnModelTwoArgs_1628856813(int phase)
+            private void Update_Model_M_FunctionOnModelTwoArgs_2838666143(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj9TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelTwoArgs_1628856813"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelTwoArgs_1628856813); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelTwoArgs_2838666143"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelTwoArgs_2838666143); 
                     }
                 }
             }
             private void Update_Model_ShortProperty(global::System.Int16 obj, int phase)
             {
-                this.Update_Model_M_FunctionOnModelTwoArgs_4126661114(phase);
-                this.Update_Model_M_FunctionOnModelInfrequentTypes_3986505586(phase);
-                this.Update_Model_M_FunctionOnModelInfrequentTypes_4126661114(phase);
+                this.Update_Model_M_FunctionOnModelTwoArgs_2724760160(phase);
+                this.Update_Model_M_FunctionOnModelInfrequentTypes_328014997(phase);
+                this.Update_Model_M_FunctionOnModelInfrequentTypes_2724760160(phase);
             }
             private void Update_Model_FloatProperty(global::System.Single obj, int phase)
             {
                 if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                 {
-                    this.Update_Model_FloatProperty_M_ToString_757602046(phase);
+                    this.Update_Model_FloatProperty_M_ToString_371857150(phase);
                 }
-                this.Update_Model_M_FunctionOnModelTwoArgs_4126661114(phase);
-                this.Update_Model_M_FunctionOnModelInfrequentTypes_4126661114(phase);
+                this.Update_Model_M_FunctionOnModelTwoArgs_2724760160(phase);
+                this.Update_Model_M_FunctionOnModelInfrequentTypes_2724760160(phase);
             }
-            private void Update_Model_M_FunctionOnModelTwoArgs_4126661114(int phase)
+            private void Update_Model_M_FunctionOnModelTwoArgs_2724760160(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj10TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelTwoArgs_4126661114"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelTwoArgs_4126661114); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelTwoArgs_2724760160"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelTwoArgs_2724760160); 
                     }
                 }
             }
-            private void Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_757602046(int phase)
+            private void Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj11TextDisabled)
                     {
-                        this.PendingFunctionBindings["BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_757602046"] = new InvokeFunctionDelegate(this.Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_757602046); 
+                        this.PendingFunctionBindings["BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150"] = new InvokeFunctionDelegate(this.Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150); 
                     }
                 }
             }
@@ -1595,71 +1605,71 @@ namespace BindTestbed
                 {
                     if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                     {
-                        this.Update_BindTestbedModel_DataModel_StaticStringProperty_M_ToString1_757602046(phase);
+                        this.Update_BindTestbedModel_DataModel_StaticStringProperty_M_ToString_371857150(phase);
                     }
                 }
                 if (obj != null)
                 {
-                    this.Update_Model_M_FunctionOnModelOneStringArg_1668010001(phase);
+                    this.Update_Model_M_FunctionOnModelOneStringArg_2617613830(phase);
                 }
             }
-            private void Update_BindTestbedModel_DataModel_StaticStringProperty_M_ToString1_757602046(int phase)
+            private void Update_BindTestbedModel_DataModel_StaticStringProperty_M_ToString_371857150(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj12TextDisabled)
                     {
-                        this.PendingFunctionBindings["BindTestbedModel_DataModel_StaticStringProperty_M_ToString1_757602046"] = new InvokeFunctionDelegate(this.Invoke_BindTestbedModel_DataModel_StaticStringProperty_M_ToString1_757602046); 
+                        this.PendingFunctionBindings["BindTestbedModel_DataModel_StaticStringProperty_M_ToString_371857150"] = new InvokeFunctionDelegate(this.Invoke_BindTestbedModel_DataModel_StaticStringProperty_M_ToString_371857150); 
                     }
                 }
             }
-            private void Update_Model_M_FunctionOnModelOneStringArg_1668010001(int phase)
+            private void Update_Model_M_FunctionOnModelOneStringArg_2617613830(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj13TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelOneStringArg_1668010001"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelOneStringArg_1668010001); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelOneStringArg_2617613830"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelOneStringArg_2617613830); 
                     }
                 }
             }
-            private void Update_Model_M_FunctionOnModelInfrequentTypes_3986505586(int phase)
+            private void Update_Model_M_FunctionOnModelInfrequentTypes_328014997(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj14TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelInfrequentTypes_3986505586"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelInfrequentTypes_3986505586); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelInfrequentTypes_328014997"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelInfrequentTypes_328014997); 
                     }
                 }
             }
-            private void Update_Model_M_FunctionOnModelInfrequentTypes_1496249149(int phase)
+            private void Update_Model_M_FunctionOnModelInfrequentTypes_465019801(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj15TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelInfrequentTypes_1496249149"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelInfrequentTypes_1496249149); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelInfrequentTypes_465019801"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelInfrequentTypes_465019801); 
                     }
                 }
             }
-            private void Update_Model_M_FunctionOnModelInfrequentTypes_4126661114(int phase)
+            private void Update_Model_M_FunctionOnModelInfrequentTypes_2724760160(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj16TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelInfrequentTypes_4126661114"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelInfrequentTypes_4126661114); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelInfrequentTypes_2724760160"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelInfrequentTypes_2724760160); 
                     }
                 }
             }
-            private void Update_Model_FloatProperty_M_ToString_757602046(int phase)
+            private void Update_Model_FloatProperty_M_ToString_371857150(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj17TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_FloatProperty_M_ToString_757602046"] = new InvokeFunctionDelegate(this.Invoke_Model_FloatProperty_M_ToString_757602046); 
+                        this.PendingFunctionBindings["Model_FloatProperty_M_ToString_371857150"] = new InvokeFunctionDelegate(this.Invoke_Model_FloatProperty_M_ToString_371857150); 
                     }
                 }
             }
@@ -1681,76 +1691,76 @@ namespace BindTestbed
             {
                 if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                 {
-                    this.Update_Model_ExtractionPoint_Coords_Latitude_M_ToString_757602046(phase);
+                    this.Update_Model_ExtractionPoint_Coords_Latitude_M_ToString_371857150(phase);
                 }
             }
-            private void Update_Model_ExtractionPoint_Coords_Latitude_M_ToString_757602046(int phase)
+            private void Update_Model_ExtractionPoint_Coords_Latitude_M_ToString_371857150(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     if (!isobj18TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_ExtractionPoint_Coords_Latitude_M_ToString_757602046"] = new InvokeFunctionDelegate(this.Invoke_Model_ExtractionPoint_Coords_Latitude_M_ToString_757602046); 
+                        this.PendingFunctionBindings["Model_ExtractionPoint_Coords_Latitude_M_ToString_371857150"] = new InvokeFunctionDelegate(this.Invoke_Model_ExtractionPoint_Coords_Latitude_M_ToString_371857150); 
                     }
                 }
             }
-            private void Update_Model_M_ArityTest_757602046(int phase)
+            private void Update_Model_M_ArityTest_371857150(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj19TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_ArityTest_757602046"] = new InvokeFunctionDelegate(this.Invoke_Model_M_ArityTest_757602046); 
+                        this.PendingFunctionBindings["Model_M_ArityTest_371857150"] = new InvokeFunctionDelegate(this.Invoke_Model_M_ArityTest_371857150); 
                     }
                 }
             }
-            private void Update_Model_M_ArityTest1_3452614543(int phase)
+            private void Update_Model_M_ArityTest1_372029325(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj20TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_ArityTest1_3452614543"] = new InvokeFunctionDelegate(this.Invoke_Model_M_ArityTest1_3452614543); 
+                        this.PendingFunctionBindings["Model_M_ArityTest1_372029325"] = new InvokeFunctionDelegate(this.Invoke_Model_M_ArityTest1_372029325); 
                     }
                 }
             }
-            private void Update_Model_M_ArityTest2_3451434895(int phase)
+            private void Update_Model_M_ArityTest2_3231012647(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj21TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_ArityTest2_3451434895"] = new InvokeFunctionDelegate(this.Invoke_Model_M_ArityTest2_3451434895); 
+                        this.PendingFunctionBindings["Model_M_ArityTest2_3231012647"] = new InvokeFunctionDelegate(this.Invoke_Model_M_ArityTest2_3231012647); 
                     }
                 }
             }
-            private void Update_Model_M_ArityTest3_2671228154(int phase)
+            private void Update_Model_M_ArityTest3_3236694458(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj22TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_ArityTest3_2671228154"] = new InvokeFunctionDelegate(this.Invoke_Model_M_ArityTest3_2671228154); 
+                        this.PendingFunctionBindings["Model_M_ArityTest3_3236694458"] = new InvokeFunctionDelegate(this.Invoke_Model_M_ArityTest3_3236694458); 
                     }
                 }
             }
-            private void Update_Model_IntPropWithINPC_M_ToString_757602046(int phase)
+            private void Update_Model_IntPropWithINPC_M_ToString_371857150(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     if (!isobj23TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_IntPropWithINPC_M_ToString_757602046"] = new InvokeFunctionDelegate(this.Invoke_Model_IntPropWithINPC_M_ToString_757602046); 
+                        this.PendingFunctionBindings["Model_IntPropWithINPC_M_ToString_371857150"] = new InvokeFunctionDelegate(this.Invoke_Model_IntPropWithINPC_M_ToString_371857150); 
                     }
                 }
             }
-            private void Update_Model_M_FunctionReturningIntProperty_757602046(int phase)
+            private void Update_Model_M_FunctionReturningIntProperty_371857150(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     if (!isobj24TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionReturningIntProperty_757602046"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionReturningIntProperty_757602046); 
+                        this.PendingFunctionBindings["Model_M_FunctionReturningIntProperty_371857150"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionReturningIntProperty_371857150); 
                     }
                 }
             }
@@ -1765,7 +1775,7 @@ namespace BindTestbed
                     }
                     if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                     {
-                        this.Update_Model_NullEmployee_M_GetName_757602046(phase);
+                        this.Update_Model_NullEmployee_M_GetName_371857150(phase);
                     }
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
@@ -1773,14 +1783,14 @@ namespace BindTestbed
                     }
                     if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                     {
-                        this.Update_Model_NullEmployee_M_GetVisibility_757602046(phase);
+                        this.Update_Model_NullEmployee_M_GetVisibility_371857150(phase);
                     }
                 }
                 else
                 {
                     if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                     {
-                        this.UpdateFallback_Model_NullEmployee_M_GetName_757602046(phase);
+                        this.UpdateFallback_Model_NullEmployee_M_GetName_371857150(phase);
                     }
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
@@ -1788,7 +1798,7 @@ namespace BindTestbed
                     }
                     if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                     {
-                        this.UpdateFallback_Model_NullEmployee_M_GetVisibility_757602046(phase);
+                        this.UpdateFallback_Model_NullEmployee_M_GetVisibility_371857150(phase);
                     }
                 }
             }
@@ -1796,26 +1806,26 @@ namespace BindTestbed
             {
                 if (obj != null)
                 {
-                    this.Update_Model_M_FunctionOnModelNullArg_3348340388(phase);
+                    this.Update_Model_M_FunctionOnModelNullArg_1321078201(phase);
                 }
             }
-            private void Update_Model_M_FunctionOnModelNullArg_3348340388(int phase)
+            private void Update_Model_M_FunctionOnModelNullArg_1321078201(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     if (!isobj25TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelNullArg_3348340388"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelNullArg_3348340388); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelNullArg_1321078201"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelNullArg_1321078201); 
                     }
                 }
             }
-            private void Update_Model_M_FunctionOnModelTwoArgs_437740013(int phase)
+            private void Update_Model_M_FunctionOnModelTwoArgs_3188248288(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     if (!isobj27TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelTwoArgs_437740013"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelTwoArgs_437740013); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelTwoArgs_3188248288"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelTwoArgs_3188248288); 
                     }
                 }
             }
@@ -1823,16 +1833,16 @@ namespace BindTestbed
             {
                 if (obj != null)
                 {
-                    this.Update_Model_M_FunctionOnModelThreeArgs_706606279(phase);
+                    this.Update_Model_M_FunctionOnModelThreeArgs_4063502775(phase);
                 }
             }
-            private void Update_Model_M_FunctionOnModelThreeArgs_706606279(int phase)
+            private void Update_Model_M_FunctionOnModelThreeArgs_4063502775(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     if (!isobj28TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelThreeArgs_706606279"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelThreeArgs_706606279); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelThreeArgs_4063502775"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelThreeArgs_4063502775); 
                     }
                 }
             }
@@ -1878,32 +1888,32 @@ namespace BindTestbed
             {
                 if (obj != null)
                 {
-                    this.Update_Model_M_FunctionOnModelThreeArgs_2448615814(phase);
-                    this.Update_Model_M_FunctionOnModelOneStringArg_2532831189(phase);
+                    this.Update_Model_M_FunctionOnModelThreeArgs_328806414(phase);
+                    this.Update_Model_M_FunctionOnModelOneStringArg_2882328291(phase);
                 }
             }
             private void Update_Model_Employees_I0_IsManager(global::System.Boolean obj, int phase)
             {
-                this.Update_Model_M_FunctionOnModelThreeArgs_2448615814(phase);
-                this.Update_Model_M_FunctionOnModelThreeArgs_1187614766(phase);
+                this.Update_Model_M_FunctionOnModelThreeArgs_328806414(phase);
+                this.Update_Model_M_FunctionOnModelThreeArgs_512945308(phase);
             }
-            private void Update_Model_M_FunctionOnModelThreeArgs_2448615814(int phase)
+            private void Update_Model_M_FunctionOnModelThreeArgs_328806414(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     if (!isobj29TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelThreeArgs_2448615814"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelThreeArgs_2448615814); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelThreeArgs_328806414"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelThreeArgs_328806414); 
                     }
                 }
             }
-            private void Update_Model_NullEmployee_M_GetName_757602046(int phase)
+            private void Update_Model_NullEmployee_M_GetName_371857150(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj31TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_NullEmployee_M_GetName_757602046"] = new InvokeFunctionDelegate(this.Invoke_Model_NullEmployee_M_GetName_757602046); 
+                        this.PendingFunctionBindings["Model_NullEmployee_M_GetName_371857150"] = new InvokeFunctionDelegate(this.Invoke_Model_NullEmployee_M_GetName_371857150); 
                     }
                 }
             }
@@ -1913,86 +1923,86 @@ namespace BindTestbed
                 {
                     if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                     {
-                        this.Update_Model_NullEmployee_FirstName_M_ToString1_757602046(phase);
+                        this.Update_Model_NullEmployee_FirstName_M_ToString_371857150(phase);
                     }
                 }
                 else
                 {
                     if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                     {
-                        this.UpdateFallback_Model_NullEmployee_FirstName_M_ToString1_757602046(phase);
+                        this.UpdateFallback_Model_NullEmployee_FirstName_M_ToString_371857150(phase);
                     }
                 }
                 if (obj != null)
                 {
-                    this.Update_Model_M_FunctionOnModelThreeArgs_1187614766(phase);
+                    this.Update_Model_M_FunctionOnModelThreeArgs_512945308(phase);
                 }
                 else
                 {
-                    this.UpdateFallback_Model_M_FunctionOnModelThreeArgs_1187614766(phase);
+                    this.UpdateFallback_Model_M_FunctionOnModelThreeArgs_512945308(phase);
                 }
             }
-            private void Update_Model_NullEmployee_FirstName_M_ToString1_757602046(int phase)
+            private void Update_Model_NullEmployee_FirstName_M_ToString_371857150(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj32TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_NullEmployee_FirstName_M_ToString1_757602046"] = new InvokeFunctionDelegate(this.Invoke_Model_NullEmployee_FirstName_M_ToString1_757602046); 
+                        this.PendingFunctionBindings["Model_NullEmployee_FirstName_M_ToString_371857150"] = new InvokeFunctionDelegate(this.Invoke_Model_NullEmployee_FirstName_M_ToString_371857150); 
                     }
                 }
             }
-            private void Update_Model_NullEmployee_M_GetVisibility_757602046(int phase)
+            private void Update_Model_NullEmployee_M_GetVisibility_371857150(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj33VisibilityDisabled)
                     {
-                        this.PendingFunctionBindings["Model_NullEmployee_M_GetVisibility_757602046"] = new InvokeFunctionDelegate(this.Invoke_Model_NullEmployee_M_GetVisibility_757602046); 
+                        this.PendingFunctionBindings["Model_NullEmployee_M_GetVisibility_371857150"] = new InvokeFunctionDelegate(this.Invoke_Model_NullEmployee_M_GetVisibility_371857150); 
                     }
                 }
             }
-            private void Update_Model_M_FunctionOnModelThreeArgs_1187614766(int phase)
+            private void Update_Model_M_FunctionOnModelThreeArgs_512945308(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     if (!isobj34TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelThreeArgs_1187614766"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelThreeArgs_1187614766); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelThreeArgs_512945308"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelThreeArgs_512945308); 
                     }
                     if (!isobj35TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelThreeArgs_1187614766"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelThreeArgs_1187614766); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelThreeArgs_512945308"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelThreeArgs_512945308); 
                     }
                 }
             }
-            private void Update_Model_M_FunctionReturningNull_757602046(int phase)
+            private void Update_Model_M_FunctionReturningNull_371857150(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj36TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionReturningNull_757602046"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionReturningNull_757602046); 
+                        this.PendingFunctionBindings["Model_M_FunctionReturningNull_371857150"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionReturningNull_371857150); 
                     }
                 }
             }
-            private void Update_Model_M_FunctionReturningInt_757602046(int phase)
+            private void Update_Model_M_FunctionReturningInt_371857150(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj37TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionReturningInt_757602046"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionReturningInt_757602046); 
+                        this.PendingFunctionBindings["Model_M_FunctionReturningInt_371857150"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionReturningInt_371857150); 
                     }
                 }
             }
-            private void Update_Model_M_FunctionOnModelOneStringArg_2532831189(int phase)
+            private void Update_Model_M_FunctionOnModelOneStringArg_2882328291(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     if (!isobj38TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelOneStringArg_2532831189"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelOneStringArg_2532831189); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelOneStringArg_2882328291"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelOneStringArg_2882328291); 
                     }
                 }
             }
@@ -2011,16 +2021,16 @@ namespace BindTestbed
             {
                 if (obj != null)
                 {
-                    this.Update_Model_M_FunctionOnModelOneStringArg_2530340821(phase);
+                    this.Update_Model_M_FunctionOnModelOneStringArg_3609118765(phase);
                 }
             }
-            private void Update_Model_M_FunctionOnModelOneStringArg_2530340821(int phase)
+            private void Update_Model_M_FunctionOnModelOneStringArg_3609118765(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     if (!isobj39TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionOnModelOneStringArg_2530340821"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelOneStringArg_2530340821); 
+                        this.PendingFunctionBindings["Model_M_FunctionOnModelOneStringArg_3609118765"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionOnModelOneStringArg_3609118765); 
                     }
                 }
             }
@@ -2028,20 +2038,20 @@ namespace BindTestbed
             {
                 if (obj != null)
                 {
-                    this.Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
+                    this.Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_2909797973(phase);
                 }
                 else
                 {
-                    this.UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
+                    this.UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_2909797973(phase);
                 }
             }
-            private void Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(int phase)
+            private void Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_2909797973(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     if (!isobj40TextDisabled)
                     {
-                        this.PendingFunctionBindings["BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332"] = new InvokeFunctionDelegate(this.Invoke_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332); 
+                        this.PendingFunctionBindings["BindTestbedModel_DataModel_M_UpdateReentrancyString_2909797973"] = new InvokeFunctionDelegate(this.Invoke_BindTestbedModel_DataModel_M_UpdateReentrancyString_2909797973); 
                     }
                 }
             }
@@ -2050,16 +2060,16 @@ namespace BindTestbed
             {
                 this.UpdateFallback_Model_NullEmployee(phase);
                 this.UpdateFallback_Model_Employees(phase);
-                this.UpdateFallback_Model_M_FunctionOnModelThreeArgs_1187614766(phase);
+                this.UpdateFallback_Model_M_FunctionOnModelThreeArgs_512945308(phase);
                 this.UpdateFallback_Model_ReentrancyString(phase);
-                this.UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
+                this.UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_2909797973(phase);
             }
 
             private void UpdateFallback_Model_NullEmployee(int phase)
             {
-                this.UpdateFallback_Model_NullEmployee_M_GetName_757602046(phase);
+                this.UpdateFallback_Model_NullEmployee_M_GetName_371857150(phase);
                 this.UpdateFallback_Model_NullEmployee_FirstName(phase);
-                this.UpdateFallback_Model_NullEmployee_M_GetVisibility_757602046(phase);
+                this.UpdateFallback_Model_NullEmployee_M_GetVisibility_371857150(phase);
             }
 
             private void UpdateFallback_Model_Employees(int phase)
@@ -2074,74 +2084,74 @@ namespace BindTestbed
 
             private void UpdateFallback_Model_Employees_I0_IsManager(int phase)
             {
-                this.UpdateFallback_Model_M_FunctionOnModelThreeArgs_1187614766(phase);
+                this.UpdateFallback_Model_M_FunctionOnModelThreeArgs_512945308(phase);
             }
 
-            private void UpdateFallback_Model_NullEmployee_M_GetName_757602046(int phase)
+            private void UpdateFallback_Model_NullEmployee_M_GetName_371857150(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 85
+                    // FunctionTests.xaml line 87
                     if (!isobj31TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj31, "Great, fallback works on leaf!", null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj31, "Great, fallback works on leaf!", null);
                     }
                 }
             }
 
             private void UpdateFallback_Model_NullEmployee_FirstName(int phase)
             {
-                this.UpdateFallback_Model_NullEmployee_FirstName_M_ToString1_757602046(phase);
-                this.UpdateFallback_Model_M_FunctionOnModelThreeArgs_1187614766(phase);
+                this.UpdateFallback_Model_NullEmployee_FirstName_M_ToString_371857150(phase);
+                this.UpdateFallback_Model_M_FunctionOnModelThreeArgs_512945308(phase);
             }
 
-            private void UpdateFallback_Model_NullEmployee_FirstName_M_ToString1_757602046(int phase)
+            private void UpdateFallback_Model_NullEmployee_FirstName_M_ToString_371857150(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 86
+                    // FunctionTests.xaml line 88
                     if (!isobj32TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj32, "Great, fallback works on non-leaf!", null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj32, "Great, fallback works on non-leaf!", null);
                     }
                 }
             }
 
-            private void UpdateFallback_Model_NullEmployee_M_GetVisibility_757602046(int phase)
+            private void UpdateFallback_Model_NullEmployee_M_GetVisibility_371857150(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // FunctionTests.xaml line 87
+                    // FunctionTests.xaml line 89
                     if (!isobj33VisibilityDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_UIElement_Visibility(this.obj33, (global::Windows.UI.Xaml.Visibility) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::Windows.UI.Xaml.Visibility), "Visible"));
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_Visibility(this.obj33, (global::Microsoft.UI.Xaml.Visibility) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::Microsoft.UI.Xaml.Visibility), "Visible"));
                     }
                 }
             }
 
-            private void UpdateFallback_Model_M_FunctionOnModelThreeArgs_1187614766(int phase)
+            private void UpdateFallback_Model_M_FunctionOnModelThreeArgs_512945308(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // FunctionTests.xaml line 89
+                    // FunctionTests.xaml line 91
                     if (!isobj34TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj34, "Great, fallback works with parameters!", null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj34, "Great, fallback works with parameters!", null);
                     }
-                    // FunctionTests.xaml line 91
+                    // FunctionTests.xaml line 93
                     if (!isobj35TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj35, null, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj35, null, null);
                     }
                 }
             }
 
             private void UpdateFallback_Model_ReentrancyString(int phase)
             {
-                this.UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
+                this.UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_2909797973(phase);
             }
 
-            private void UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(int phase)
+            private void UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_2909797973(int phase)
             {
             }
             private void UpdateTwoWay_30_Text()
@@ -2159,7 +2169,7 @@ namespace BindTestbed
                 }
             }
 
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             private class FunctionTests_obj1_BindingsTracking
             {
@@ -2205,32 +2215,32 @@ namespace BindTestbed
                         {
                             if (obj != null)
                             {
-                                bindings.Update_Model_M_FunctionOnModelNoArgs_757602046(DATA_CHANGED);
+                                bindings.Update_Model_M_FunctionOnModelNoArgs_371857150(DATA_CHANGED);
                                 bindings.Update_Model_IntPropWithINPC(obj.IntPropWithINPC, DATA_CHANGED);
-                                bindings.Update_Model_M_FunctionOnModelTwoArgs_3918136443(DATA_CHANGED);
+                                bindings.Update_Model_M_FunctionOnModelTwoArgs_3830204370(DATA_CHANGED);
                                 bindings.Update_Model_IntPropertyDP(obj.IntPropertyDP, DATA_CHANGED);
                                 bindings.Update_Model_ExtractionPoint(obj.ExtractionPoint, DATA_CHANGED);
-                                bindings.Update_Model_M_FunctionReturningIntProperty_757602046(DATA_CHANGED);
+                                bindings.Update_Model_M_FunctionReturningIntProperty_371857150(DATA_CHANGED);
                                 bindings.Update_Model_NullEmployee(obj.NullEmployee, DATA_CHANGED);
-                                bindings.Update_Model_M_FunctionOnModelNullArg_3348340388(DATA_CHANGED);
-                                bindings.Update_Model_M_FunctionOnModelTwoArgs_437740013(DATA_CHANGED);
+                                bindings.Update_Model_M_FunctionOnModelNullArg_1321078201(DATA_CHANGED);
+                                bindings.Update_Model_M_FunctionOnModelTwoArgs_3188248288(DATA_CHANGED);
                                 bindings.Update_Model_StringPropertyDP(obj.StringPropertyDP, DATA_CHANGED);
-                                bindings.Update_Model_M_FunctionOnModelThreeArgs_706606279(DATA_CHANGED);
+                                bindings.Update_Model_M_FunctionOnModelThreeArgs_4063502775(DATA_CHANGED);
                                 bindings.Update_Model_Employees(obj.Employees, DATA_CHANGED);
-                                bindings.Update_Model_M_FunctionOnModelThreeArgs_2448615814(DATA_CHANGED);
-                                bindings.Update_Model_M_FunctionOnModelThreeArgs_1187614766(DATA_CHANGED);
-                                bindings.Update_Model_M_FunctionOnModelOneStringArg_2532831189(DATA_CHANGED);
-                                bindings.Update_Model_M_FunctionOnModelOneStringArg_2530340821(DATA_CHANGED);
+                                bindings.Update_Model_M_FunctionOnModelThreeArgs_328806414(DATA_CHANGED);
+                                bindings.Update_Model_M_FunctionOnModelThreeArgs_512945308(DATA_CHANGED);
+                                bindings.Update_Model_M_FunctionOnModelOneStringArg_2882328291(DATA_CHANGED);
+                                bindings.Update_Model_M_FunctionOnModelOneStringArg_3609118765(DATA_CHANGED);
                                 bindings.Update_Model_ReentrancyString(obj.ReentrancyString, DATA_CHANGED);
-                                bindings.Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(DATA_CHANGED);
+                                bindings.Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_2909797973(DATA_CHANGED);
                             }
                             else
                             {
                                 bindings.UpdateFallback_Model_NullEmployee(DATA_CHANGED);
                                 bindings.UpdateFallback_Model_Employees(DATA_CHANGED);
-                                bindings.UpdateFallback_Model_M_FunctionOnModelThreeArgs_1187614766(DATA_CHANGED);
+                                bindings.UpdateFallback_Model_M_FunctionOnModelThreeArgs_512945308(DATA_CHANGED);
                                 bindings.UpdateFallback_Model_ReentrancyString(DATA_CHANGED);
-                                bindings.UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(DATA_CHANGED);
+                                bindings.UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_2909797973(DATA_CHANGED);
                             }
                         }
                         else
@@ -2309,7 +2319,7 @@ namespace BindTestbed
                                 {
                                     if (obj != null)
                                     {
-                                        bindings.Update_Model_M_FunctionOnModelNoArgs_757602046(DATA_CHANGED);
+                                        bindings.Update_Model_M_FunctionOnModelNoArgs_371857150(DATA_CHANGED);
                                     }
                                     break;
                                 }
@@ -2317,8 +2327,8 @@ namespace BindTestbed
                                 {
                                     if (obj != null)
                                     {
-                                        bindings.Update_Model_M_FunctionOnModelTwoArgs_3918136443(DATA_CHANGED);
-                                        bindings.Update_Model_M_FunctionOnModelTwoArgs_437740013(DATA_CHANGED);
+                                        bindings.Update_Model_M_FunctionOnModelTwoArgs_3830204370(DATA_CHANGED);
+                                        bindings.Update_Model_M_FunctionOnModelTwoArgs_3188248288(DATA_CHANGED);
                                     }
                                     break;
                                 }
@@ -2326,7 +2336,7 @@ namespace BindTestbed
                                 {
                                     if (obj != null)
                                     {
-                                        bindings.Update_Model_M_FunctionReturningIntProperty_757602046(DATA_CHANGED);
+                                        bindings.Update_Model_M_FunctionReturningIntProperty_371857150(DATA_CHANGED);
                                     }
                                     break;
                                 }
@@ -2334,7 +2344,7 @@ namespace BindTestbed
                                 {
                                     if (obj != null)
                                     {
-                                        bindings.Update_Model_M_FunctionOnModelNullArg_3348340388(DATA_CHANGED);
+                                        bindings.Update_Model_M_FunctionOnModelNullArg_1321078201(DATA_CHANGED);
                                     }
                                     break;
                                 }
@@ -2342,13 +2352,13 @@ namespace BindTestbed
                                 {
                                     if (obj != null)
                                     {
-                                        bindings.Update_Model_M_FunctionOnModelThreeArgs_706606279(DATA_CHANGED);
-                                        bindings.Update_Model_M_FunctionOnModelThreeArgs_2448615814(DATA_CHANGED);
-                                        bindings.Update_Model_M_FunctionOnModelThreeArgs_1187614766(DATA_CHANGED);
+                                        bindings.Update_Model_M_FunctionOnModelThreeArgs_4063502775(DATA_CHANGED);
+                                        bindings.Update_Model_M_FunctionOnModelThreeArgs_328806414(DATA_CHANGED);
+                                        bindings.Update_Model_M_FunctionOnModelThreeArgs_512945308(DATA_CHANGED);
                                     }
                                     else
                                     {
-                                        bindings.UpdateFallback_Model_M_FunctionOnModelThreeArgs_1187614766(DATA_CHANGED);
+                                        bindings.UpdateFallback_Model_M_FunctionOnModelThreeArgs_512945308(DATA_CHANGED);
                                     }
                                     break;
                                 }
@@ -2356,8 +2366,8 @@ namespace BindTestbed
                                 {
                                     if (obj != null)
                                     {
-                                        bindings.Update_Model_M_FunctionOnModelOneStringArg_2532831189(DATA_CHANGED);
-                                        bindings.Update_Model_M_FunctionOnModelOneStringArg_2530340821(DATA_CHANGED);
+                                        bindings.Update_Model_M_FunctionOnModelOneStringArg_2882328291(DATA_CHANGED);
+                                        bindings.Update_Model_M_FunctionOnModelOneStringArg_3609118765(DATA_CHANGED);
                                     }
                                     break;
                                 }
@@ -2365,11 +2375,11 @@ namespace BindTestbed
                                 {
                                     if (obj != null)
                                     {
-                                        bindings.Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(DATA_CHANGED);
+                                        bindings.Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_2909797973(DATA_CHANGED);
                                     }
                                     else
                                     {
-                                        bindings.UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(DATA_CHANGED);
+                                        bindings.UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_2909797973(DATA_CHANGED);
                                     }
                                     break;
                                 }
@@ -2380,7 +2390,7 @@ namespace BindTestbed
                         bindings.CompleteUpdate(DATA_CHANGED);
                     }
                 }
-                public void DependencyPropertyChanged_Model_IntPropertyDP(global::Windows.UI.Xaml.DependencyObject sender, global::Windows.UI.Xaml.DependencyProperty prop)
+                public void DependencyPropertyChanged_Model_IntPropertyDP(global::Microsoft.UI.Xaml.DependencyObject sender, global::Microsoft.UI.Xaml.DependencyProperty prop)
                 {
                     FunctionTests_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
@@ -2393,7 +2403,7 @@ namespace BindTestbed
                         bindings.CompleteUpdate(DATA_CHANGED);
                     }
                 }
-                public void DependencyPropertyChanged_Model_StringPropertyDP(global::Windows.UI.Xaml.DependencyObject sender, global::Windows.UI.Xaml.DependencyProperty prop)
+                public void DependencyPropertyChanged_Model_StringPropertyDP(global::Microsoft.UI.Xaml.DependencyObject sender, global::Microsoft.UI.Xaml.DependencyProperty prop)
                 {
                     FunctionTests_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
@@ -2648,7 +2658,7 @@ namespace BindTestbed
                         }
                     }
                 }
-                public void RegisterTwoWayListener_30(global::Windows.UI.Xaml.Controls.TextBox sourceObject)
+                public void RegisterTwoWayListener_30(global::Microsoft.UI.Xaml.Controls.TextBox sourceObject)
                 {
                     sourceObject.LostFocus += (sender, e) =>
                     {
@@ -2661,49 +2671,50 @@ namespace BindTestbed
                 }
             }
         }
+
         /// <summary>
         /// Connect()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public void Connect(int connectionId, object target)
         {
             switch(connectionId)
             {
-            case 41: // FunctionTests.xaml line 106
+            case 41: // FunctionTests.xaml line 108
                 {
-                    global::Windows.UI.Xaml.Controls.Button element41 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element41).Click += this.UpdateValuesClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element41 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element41).Click += this.UpdateValuesClick;
                 }
                 break;
-            case 42: // FunctionTests.xaml line 107
+            case 42: // FunctionTests.xaml line 109
                 {
-                    global::Windows.UI.Xaml.Controls.Button element42 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element42).Click += this.ResetValuesClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element42 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element42).Click += this.ResetValuesClick;
                 }
                 break;
-            case 43: // FunctionTests.xaml line 108
+            case 43: // FunctionTests.xaml line 110
                 {
-                    global::Windows.UI.Xaml.Controls.Button element43 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element43).Click += this.StopTrackingClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element43 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element43).Click += this.StopTrackingClick;
                 }
                 break;
-            case 44: // FunctionTests.xaml line 109
+            case 44: // FunctionTests.xaml line 111
                 {
-                    global::Windows.UI.Xaml.Controls.Button element44 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element44).Click += this.ReInitializeBindingsClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element44 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element44).Click += this.ReInitializeBindingsClick;
                 }
                 break;
-            case 45: // FunctionTests.xaml line 27
+            case 45: // FunctionTests.xaml line 29
                 {
-                    global::Windows.UI.Xaml.Controls.Button element45 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element45).Click += this.UpdateValuesClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element45 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element45).Click += this.UpdateValuesClick;
                 }
                 break;
-            case 46: // FunctionTests.xaml line 28
+            case 46: // FunctionTests.xaml line 30
                 {
-                    global::Windows.UI.Xaml.Controls.Button element46 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element46).Click += this.ResetValuesClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element46 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element46).Click += this.ResetValuesClick;
                 }
                 break;
             default:
@@ -2712,25 +2723,26 @@ namespace BindTestbed
             this._contentLoaded = true;
         }
 
+
         /// <summary>
         /// GetBindingConnector(int connectionId, object target)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
+        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
         {
-            global::Windows.UI.Xaml.Markup.IComponentConnector returnValue = null;
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector returnValue = null;
             switch(connectionId)
             {
-            case 1: // FunctionTests.xaml line 1
+            case 1: // FunctionTests.xaml line 3
                 {                    
-                    global::Windows.UI.Xaml.Controls.UserControl element1 = (global::Windows.UI.Xaml.Controls.UserControl)target;
+                    global::Microsoft.UI.Xaml.Controls.UserControl element1 = (global::Microsoft.UI.Xaml.Controls.UserControl)target;
                     FunctionTests_obj1_Bindings bindings = new FunctionTests_obj1_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(this);
                     this.Bindings = bindings;
                     element1.Loading += bindings.Loading;
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
                 }
                 break;
             }
