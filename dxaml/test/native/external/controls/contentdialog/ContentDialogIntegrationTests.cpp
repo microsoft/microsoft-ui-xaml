@@ -208,18 +208,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             ContentDialogStyleSource::ExplicitInCode);
     }
 
-    void ContentDialogIntegrationTests::ShowingAnimationPlaysWithImplicitStyleAndOptimizeApplyStyles()
+    void ContentDialogIntegrationTests::ApplyTemplateUsesExplicitAndImplicitStylesWithoutOptimizeApplyStyles()
     {
-        ShowingAnimationPlaysWorker(
-            true /* expectOptimizeApplyStylesEnabled */,
-            ContentDialogStyleSource::Implicit);
+        ApplyTemplateUsesExplicitAndImplicitStylesWorker(false /* expectOptimizeApplyStylesEnabled */);
     }
 
-    void ContentDialogIntegrationTests::ShowingAnimationPlaysWithImplicitStyleWithoutOptimizeApplyStyles()
+    void ContentDialogIntegrationTests::ApplyTemplateUsesExplicitAndImplicitStylesWithOptimizeApplyStyles()
     {
-        ShowingAnimationPlaysWorker(
-            false /* expectOptimizeApplyStylesEnabled */,
-            ContentDialogStyleSource::Implicit);
+        ApplyTemplateUsesExplicitAndImplicitStylesWorker(true /* expectOptimizeApplyStylesEnabled */);
     }
 
     void ContentDialogIntegrationTests::ShowingAnimationPlaysWorker(
@@ -264,13 +260,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             contentDialogStyle->Setters->Append(
                 ref new xaml::Setter(xaml_controls::ContentDialog::TagProperty, styleMarker));
-
-            if (styleSource == ContentDialogStyleSource::Implicit)
-            {
-                // Keep this style out of Application resources so ApplyBuiltInStyle cannot find it.
-                // It should be discovered as an implicit style only when the dialog enters this XamlRoot.
-                windowContent->Resources->Insert(xaml_controls::ContentDialog::typeid, contentDialogStyle);
-            }
 
             loadedRegistration.Attach(windowContent, ref new xaml::RoutedEventHandler(
                 [windowLoadedEvent](Platform::Object^, xaml::RoutedEventArgs^) { windowLoadedEvent->Set(); }));
@@ -359,6 +348,88 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             L"whether OptimizeApplyStyles is enabled. Regression coverage for GitHub #11257.");
 
         CloseContentDialog(contentDialog);
+    }
+
+    void ContentDialogIntegrationTests::ApplyTemplateUsesExplicitAndImplicitStylesWorker(
+        bool expectOptimizeApplyStylesEnabled)
+    {
+        TestCleanupWrapper cleanup;
+
+        VERIFY_ARE_EQUAL(
+            expectOptimizeApplyStylesEnabled,
+            (bool)xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::OptimizeApplyStyles),
+            L"Test is not running in the expected OptimizeApplyStyles configuration.");
+
+        auto windowLoadedEvent = std::make_shared<Event>();
+        auto loadedRegistration = CreateSafeEventRegistration(xaml_controls::Grid, Loaded);
+
+        RunOnUIThread([&]()
+        {
+            auto windowContent = ref new xaml_controls::Grid();
+            loadedRegistration.Attach(windowContent, ref new xaml::RoutedEventHandler(
+                [windowLoadedEvent](Platform::Object^, xaml::RoutedEventArgs^) { windowLoadedEvent->Set(); }));
+            TestServices::WindowHelper->WindowContent = windowContent;
+        });
+
+        windowLoadedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        auto contentDialogStyle = safe_cast<xaml::Style^>(
+            LoadXamlFileOnUIThread(GetResourcesPath() + L"ContentDialogStyleWithTemplateMarker.xaml"));
+
+        RunOnUIThread([&]()
+        {
+            Platform::String^ styleResourceKey = L"ApplyTemplateContentDialogStyle";
+            auto applicationResources = xaml::Application::Current->Resources;
+
+            for (const auto styleSource :
+                { ContentDialogStyleSource::ExplicitInMarkup, ContentDialogStyleSource::Implicit })
+            {
+                xaml_controls::ContentDialog^ contentDialog = nullptr;
+                Platform::Object^ applicationResourceKey =
+                    styleSource == ContentDialogStyleSource::ExplicitInMarkup
+                    ? safe_cast<Platform::Object^>(styleResourceKey)
+                    : ref new Platform::Box<::Windows::UI::Xaml::Interop::TypeName>(
+                        xaml_controls::ContentDialog::typeid);
+
+                applicationResources->Insert(applicationResourceKey, contentDialogStyle);
+                auto removeStyleResource = wil::scope_exit([&]()
+                {
+                    applicationResources->Remove(applicationResourceKey);
+                });
+
+                if (styleSource == ContentDialogStyleSource::ExplicitInMarkup)
+                {
+                    LOG_OUTPUT(L"TESTING: ExplicitInMarkup");
+                    contentDialog = safe_cast<xaml_controls::ContentDialog^>(xaml_markup::XamlReader::Load(
+                        L"<ContentDialog xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                        L"xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
+                        L"Title='ContentDialog Title' Content='ContentDialog Content' "
+                        L"PrimaryButtonText='OK' CloseButtonText='Custom close' "
+                        L"Style='{StaticResource ApplyTemplateContentDialogStyle}' />"));
+                }
+                else
+                {
+                    LOG_OUTPUT(L"TESTING: Implicit");
+                    contentDialog = safe_cast<xaml_controls::ContentDialog^>(xaml_markup::XamlReader::Load(
+                        L"<ContentDialog xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                        L"xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
+                        L"Title='ContentDialog Title' Content='ContentDialog Content' "
+                        L"PrimaryButtonText='OK' CloseButtonText='Custom close' />"));
+                }
+
+                VERIFY_IS_NOT_NULL(contentDialog);
+                contentDialog->XamlRoot = TestServices::WindowHelper->WindowContent->XamlRoot;
+
+                VERIFY_IS_TRUE(contentDialog->ApplyTemplate(), L"ApplyTemplate should expand the ContentDialog template.");
+                VERIFY_ARE_EQUAL(1, xaml_media::VisualTreeHelper::GetChildrenCount(contentDialog), L"The ContentDialog should have a template root.");
+
+                auto templateRoot = safe_cast<xaml::FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(contentDialog, 0));
+                VERIFY_IS_NOT_NULL(templateRoot);
+                VERIFY_IS_NOT_NULL(dynamic_cast<xaml_controls::Grid^>(templateRoot->FindName(L"PART_VerifyThisTemplateWasUsed")),
+                    L"ApplyTemplate should use the template supplied by the explicit or implicit style.");
+            }
+        });
     }
 
     void ContentDialogIntegrationTests::ValidateUnconstrainedPopupPlacementBehavior()
