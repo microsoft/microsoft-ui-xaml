@@ -45,10 +45,6 @@
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
     <EnableDotNetNativeCompatibleProfile>true</EnableDotNetNativeCompatibleProfile>
     <AppxOSMinVersion>6.3.0</AppxOSMinVersion>
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
     <SuppressXamlWarnings>1004;1503</SuppressXamlWarnings>
   </PropertyGroup>
   <PropertyGroup>

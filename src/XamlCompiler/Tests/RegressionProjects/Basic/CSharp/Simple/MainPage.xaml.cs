@@ -25,7 +25,6 @@ namespace Simple
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    [CLSCompliant(false)]
     public sealed partial class MainPage : Page
     {
         public MainPage()
@@ -47,14 +46,14 @@ namespace Simple
         async void RunTestScenario(string navigationParameter)
         {
             // First allow the UI to complete rendering the page and 
-            // the test process to open this process and retreives a handle.
+            // the test process to open this process and retrieves a handle.
             await this.ReleaseUIThreadForFewSeconds();
 
             // Execute the validation. Note that we may be running on a worker thread
             // here, which cannot access UI Elements, so use the dispatcher to execute the 
             // validation on the UI Thread.
 
-            await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            this.DispatcherQueue.TryEnqueue(() =>
             {
 
                 // We are called normally, no explicit background value to check.

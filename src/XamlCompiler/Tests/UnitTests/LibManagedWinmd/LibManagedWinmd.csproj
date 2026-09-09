@@ -103,8 +103,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="$(PublicMUXDir)\Microsoft.UI.winmd" />
-    <Reference Include="$(PublicMUXDir)\Microsoft.UI.Xaml.winmd" />
+    <Reference Include="$(WinMDPackageLocation)\Microsoft.UI.winmd" />
+    <Reference Include="$(WinMDPackageLocation)\Microsoft.UI.Xaml.winmd" />
     <ProjectReference Include="$(ProjectRoot)\MergedWinMD\MergedWinMD.vcxproj">
       <Project>{52b2ed64-1cfc-401b-8c5b-6d1e1deadf98}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

@@ -9,16 +9,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:CSharpLib="using:CSharpLib"
     xmlns:CSharpWinrt="using:CSharpWinrtComponent"
-    xmlns:VBLib="using:VbLib"
-    xmlns:VBWinrt="using:VbWinrtComponent"
     xmlns:VCWinrt="using:VCWinrtComponent"
     mc:Ignorable="d">
 
     <StackPanel>
         <CSharpLib:CSharpUserControlFromProjectLibrary/>
         <CSharpWinrt:CSharpUserControlFromProjectWinrtComponent/>
-        <VBLib:VbUserControlFromProjectLibrary/>
-        <VBWinrt:VBUserControlFromWinrtComponent/>
         <VCWinrt:VCUserControlFromWinrtComponent/>
     </StackPanel>
 </Page>

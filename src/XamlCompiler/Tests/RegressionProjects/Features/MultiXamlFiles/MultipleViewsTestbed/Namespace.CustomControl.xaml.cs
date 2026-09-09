@@ -15,7 +15,8 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 
-// The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
+// This class and its associated views verify that XamlCompiler properly handles pages
+// with multiple periods in their name.
 
 namespace MultipleViewsTestbed
 {

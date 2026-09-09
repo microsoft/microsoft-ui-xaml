@@ -45,10 +45,6 @@
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
     <EnableDotNetNativeCompatibleProfile>true</EnableDotNetNativeCompatibleProfile>
     <AppxOSMinVersion>6.3.0</AppxOSMinVersion>
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
     <XamlCodeGenerationControlFlags>IncrementalTypeInfoCodeGen</XamlCodeGenerationControlFlags>
     <SuppressXamlWarnings>1004</SuppressXamlWarnings>
   </PropertyGroup>
@@ -318,11 +314,6 @@
     <ProjectReference Include="..\BindTestbedCXModel\BindTestbedCXModel.vcxproj">
       <Project>{6eb67720-b6ed-486b-9bed-98a4c3696cec}</Project>
       <Name>BindTestbedCXModel</Name>
-      <Private>true</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\BindTestbedModel\BindTestbedModel.csproj">
-      <Project>{0748b16e-2455-494b-9d33-0231960ff58a}</Project>
-      <Name>BindTestbedModel</Name>
       <Private>true</Private>
     </ProjectReference>
   </ItemGroup>

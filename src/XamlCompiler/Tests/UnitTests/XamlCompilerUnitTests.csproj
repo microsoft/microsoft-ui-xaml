@@ -73,7 +73,7 @@
       <Project>{fedfeea3-0e03-4798-bc77-a70ba8659a09}</Project>
       <Name>Microsoft.UI.Xaml.Markup.Compiler</Name>
     </ProjectReference> -->
-    <ProjectReference Include="..\XamlCompilerProxies\XamlCompilerProxies.csproj">
+    <ProjectReference Include="XamlCompilerProxies\XamlCompilerProxies.csproj">
       <Project>{f292fa71-2b98-4ccf-9f2e-5f21936d3715}</Project>
       <Name>XamlCompilerProxies</Name>
     </ProjectReference>
