@@ -8,8 +8,11 @@
     <TargetFramework>$(DotNetCoreTargetFrameworkMoniker)</TargetFramework>
     <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
     <ApplicationManifest>$(MSBuildProjectDirectory)\app.manifest</ApplicationManifest>
-    <Platforms>x86;x64;ARM64</Platforms>
-    <PublishProfile>win-$(Platform).pubxml</PublishProfile>
+    <Platforms>x86;x64;ARM64;ARM64EC</Platforms>
+    <PublishProfile Condition="'$(Platform)' != 'ARM64EC' and '$(BUILDPLATFORM)' != 'ARM64EC'">win-$(Platform).pubxml</PublishProfile>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64EC' or '$(BUILDPLATFORM)' == 'ARM64EC'">win-x64</RuntimeIdentifier>
+    <PlatformTarget Condition="'$(BUILDPLATFORM)' == 'ARM64EC'">x64</PlatformTarget>
+    <WindowsAppSdkSelfContained Condition="'$(Platform)' == 'ARM64EC' or '$(BUILDPLATFORM)' == 'ARM64EC'">true</WindowsAppSdkSelfContained>
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
   </PropertyGroup>
