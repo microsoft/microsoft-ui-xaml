@@ -25,7 +25,7 @@ namespace winrt::FolderTreeAppCpp::implementation
         Title(L"Composition Animations");
     }
 
-    // Everything is hand-built Composition: a dark animated gradient backdrop, an orbit of
+    // Everything is hand-built Composition: a light animated gradient backdrop, an orbit of
     // sprites, pulsing rings, and a row of bouncing tiles. All driven by infinite keyframe
     // animations so the scene is alive the moment the window opens. A single ContainerVisual
     // (_scene) parents every visual, since SetElementChildVisual only takes one root.
