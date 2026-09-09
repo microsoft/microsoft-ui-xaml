@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ConditionalControls
+namespace ConditionalControlsV2
 {
     partial class TextBox1 : 
         global::Microsoft.UI.Xaml.Controls.UserControl, 
@@ -36,7 +36,7 @@ namespace ConditionalControls
             global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             ITextBox1_Bindings
         {
-            private global::ConditionalControls.TextBox1 dataRoot;
+            private global::ConditionalControlsV2.TextBox1 dataRoot;
             private bool initialized = false;
             private const int NOT_PHASED = (1 << 31);
             private const int DATA_CHANGED = (1 << 30);
@@ -120,7 +120,7 @@ namespace ConditionalControls
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = global::WinRT.CastExtensions.As<global::ConditionalControls.TextBox1>(newDataRoot);
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::ConditionalControlsV2.TextBox1>(newDataRoot);
                     return true;
                 }
                 return false;
@@ -137,7 +137,7 @@ namespace ConditionalControls
             }
 
             // Update methods for each path node used in binding steps.
-            private void Update_(global::ConditionalControls.TextBox1 obj, int phase)
+            private void Update_(global::ConditionalControlsV2.TextBox1 obj, int phase)
             {
                 if (obj != null)
                 {

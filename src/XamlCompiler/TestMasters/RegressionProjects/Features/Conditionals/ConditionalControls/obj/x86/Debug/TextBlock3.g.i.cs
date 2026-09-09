@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ConditionalControls
+namespace ConditionalControlsV2
 {
     partial class TextBlock3 : global::Microsoft.UI.Xaml.Controls.UserControl
     {
@@ -35,7 +35,7 @@ namespace ConditionalControls
 
             _contentLoaded = true;
 
-            global::System.Uri resourceLocator = new global::System.Uri("ms-appx:///ConditionalControls/TextBlock3.xaml");
+            global::System.Uri resourceLocator = new global::System.Uri("ms-appx:///ConditionalControlsV2/TextBlock3.xaml");
             global::Microsoft.UI.Xaml.Application.LoadComponent(this, resourceLocator, global::Microsoft.UI.Xaml.Controls.Primitives.ComponentResourceLocation.Nested);
         }
 
