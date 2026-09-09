@@ -38,4 +38,14 @@
     </PropertyGroup>
     <Error Condition="Exists('$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.props'))" />
   </Target>
+  <!-- The MSIX targets imported above replace the repo-wide ARM64EC override, so define
+       this last and package ARM64EC binaries in the supported x64 package format. -->
+  <Target Name="_GetPackageArchitecture">
+    <PropertyGroup Condition="'$(Platform)' == 'ARM64EC'">
+      <PackageArchitecture>x64</PackageArchitecture>
+    </PropertyGroup>
+    <WinAppSdkGetPackageArchitecture Platform="$(Platform)" ProjectArchitecture="@(ProjectArchitecture)" RecursiveProjectArchitecture="@(_RecursiveProjectArchitecture)" VsTelemetrySession="$(VsTelemetrySession)" Condition="'$(Platform)' != 'ARM64EC'">
+      <Output TaskParameter="PackageArchitecture" PropertyName="PackageArchitecture" />
+    </WinAppSdkGetPackageArchitecture>
+  </Target>
 </Project>
