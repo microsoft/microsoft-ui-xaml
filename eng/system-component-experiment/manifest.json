@@ -23,7 +23,9 @@
     "latestOs": {
       "path": "C:\\os\\src",
       "branch": "official/ge_current",
-      "commit": "1d1a5f3aafdb63cdfa5ce1b45e2625159a39ae92"
+      "commit": "1d1a5f3aafdb63cdfa5ce1b45e2625159a39ae92",
+      "subtrialABranch": "experiment/delift-a-wuc",
+      "subtrialBBranch": "experiment/delift-b-max-system"
     },
     "windows10Os": {
       "path": "C:\\os1VB\\src",

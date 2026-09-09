@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "conclusion": "Subtrial A requires a hybrid InteractiveExperiences rebuild. Non-equivalent lifted APIs remain public temporarily, but their implementations must be rebuilt against system Composition, DispatcherQueue, CoreMessaging, DirectManipulation, and system input/content primitives.",
+  "families": [
+    {
+      "id": "common-ui",
+      "publicTypes": [
+        "Microsoft.UI.WindowId",
+        "Microsoft.UI.Colors",
+        "Microsoft.UI.ColorHelper"
+      ],
+      "systemTypes": [
+        "Windows.UI.WindowId",
+        "Windows.UI.ColorHelper"
+      ],
+      "strategy": "replace-public-types",
+      "windows11": "Windows.UI.WindowId is available in the GE system IDL; Colors and ColorHelper are system XAML/UI surfaces.",
+      "windows10": "Windows.UI.WindowId is absent. The intentional API break is accepted for Windows 10.",
+      "sourceEvidence": [
+        "onecoreuap/windows/published/winui/idl/Microsoft.UI.idl",
+        "onecoreuap/windows/published/winui/idl/windows.ui.idl"
+      ]
+    },
+    {
+      "id": "input",
+      "publicTypes": [
+        "Microsoft.UI.Input.HoldingState",
+        "Microsoft.UI.Input.InputCursor",
+        "Microsoft.UI.Input.InputPointerSource",
+        "Microsoft.UI.Input.InputPointerSourceDeviceKinds",
+        "Microsoft.UI.Input.ManipulationDelta",
+        "Microsoft.UI.Input.ManipulationVelocities",
+        "Microsoft.UI.Input.PointerDeviceType",
+        "Microsoft.UI.Input.PointerPoint"
+      ],
+      "systemTypes": [
+        "Windows.UI.Input",
+        "Windows.UI.Internal.Input"
+      ],
+      "strategy": "hybrid-os-rebuild",
+      "windows11": "System input supplies the underlying implementation primitives, but only a small subset is shape-compatible with the lifted public API.",
+      "windows10": "System input exists but lacks later island/input-object functionality and is not a public one-to-one replacement.",
+      "sourceEvidence": [
+        "onecoreuap/windows/moderncore/Inputv2/Inc/SystemAndLiftedTypes.h",
+        "onecoreuap/windows/published/winui/idl/Microsoft.UI.Input.idl"
+      ]
+    },
+    {
+      "id": "content-hosting",
+      "publicTypes": [
+        "Microsoft.UI.Content.ContentCoordinateConverter",
+        "Microsoft.UI.Content.ContentIsland",
+        "Microsoft.UI.Content.ContentIslandEnvironment",
+        "Microsoft.UI.Content.DesktopChildSiteBridge"
+      ],
+      "systemTypes": [
+        "Windows.UI.UIContentRoot",
+        "Windows.UI.Composition.CompositionIsland",
+        "Windows.UI.Internal.Input.InputSite"
+      ],
+      "strategy": "hybrid-os-rebuild",
+      "windows11": "System primitives can host the implementation, but ContentIsland and site-bridge contracts have no public one-to-one system replacement.",
+      "windows10": "The available system content/island surface differs further and cannot preserve the lifted API shape.",
+      "sourceEvidence": [
+        "onecoreuap/windows/published/winui/idl/Microsoft.UI.Content.idl",
+        "onecoreuap/windows/published/winui/idl/windows.ui.composition.content.idl"
+      ]
+    },
+    {
+      "id": "windowing",
+      "publicTypes": [
+        "Microsoft.UI.Windowing.AppWindow"
+      ],
+      "systemTypes": [
+        "Windows.UI.WindowManagement.AppWindow"
+      ],
+      "strategy": "hybrid-os-rebuild",
+      "windows11": "The system WindowManagement API is not shape- or behavior-equivalent to Microsoft.UI.Windowing.",
+      "windows10": "Windows.UI.WindowManagement exists, but the same incompatibility remains.",
+      "sourceEvidence": [
+        "onecoreuap/windows/published/winui/idl/Microsoft.UI.Windowing.idl",
+        "onecoreuap/base/appmodel/WindowManagement/API/Idl/windows.ui.windowmanagement.idl"
+      ]
+    },
+    {
+      "id": "direct-manipulation",
+      "publicTypes": [],
+      "systemTypes": [
+        "DirectManipulation.dll"
+      ],
+      "strategy": "replace-runtime",
+      "windows11": "System and lifted builds share source partitions; switch WinUI to the system runtime and validate every lifted extension used by XAML.",
+      "windows10": "The system runtime exists, but later lifted extensions may be unavailable and require accepted feature loss.",
+      "sourceEvidence": [
+        "onecoreuap/windows/dwm/dmanip/dll/sources",
+        "onecoreuap/windows/dwm/dmanip/lifted/dll/sources"
+      ]
+    },
+    {
+      "id": "core-messaging",
+      "publicTypes": [
+        "Microsoft.UI.Dispatching.DispatcherQueue"
+      ],
+      "systemTypes": [
+        "Windows.System.DispatcherQueue",
+        "CoreMessaging.dll"
+      ],
+      "strategy": "replace-and-rebuild-dependents",
+      "windows11": "Use the system DispatcherQueue/CoreMessaging implementation and rebuild dependent IXP binaries to remove CoreMessagingXP imports.",
+      "windows10": "Basic system DispatcherQueue is available; lifted lifecycle extensions require WinUI-owned replacement logic.",
+      "sourceEvidence": [
+        "mincore/CoreUI/Published/idl/Microsoft.UI.Dispatching.DispatcherQueue.idl",
+        "mincore/CoreUI/Published/idl/Windows.System.DispatcherQueue.idl",
+        "mincore/CoreUI/Dev/Dll/Nt/Microsoft.IXP.LiftedSDK.CoreMessagingXP.pkg.xml"
+      ]
+    }
+  ]
+}

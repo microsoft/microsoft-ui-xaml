@@ -43,7 +43,7 @@
         "*Microsoft.UI.Content*.idl"
       ],
       "systemIdlPatterns": [
-        "*Windows.UI.Content*.idl",
+        "*windows.ui.content*.idl",
         "*windows.ui.composition.content*.idl"
       ]
     },
@@ -59,7 +59,7 @@
         "*Microsoft.UI.Input*.idl"
       ],
       "systemIdlPatterns": [
-        "*Windows.UI.Input*.idl"
+        "*windows.ui.input*.idl"
       ]
     },
     {
@@ -74,7 +74,7 @@
         "*Microsoft.UI.Windowing*.idl"
       ],
       "systemIdlPatterns": [
-        "*Windows.UI.WindowManagement*.idl"
+        "*windows.ui.windowmanagement*.idl"
       ]
     },
     {
