@@ -11,6 +11,7 @@
     <PublishProfile>win-x64.pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
+    <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
     <AppxPackageName>SystemComponentExperiment.CSharp</AppxPackageName>
     <Configurations>Debug;Release</Configurations>
     <Nullable>enable</Nullable>
