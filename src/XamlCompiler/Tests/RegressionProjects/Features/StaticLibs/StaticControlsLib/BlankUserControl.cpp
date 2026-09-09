@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 #include "pch.h"
 #include "BlankUserControl.h"
+#include "BlankUserControl.g.cpp"
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;

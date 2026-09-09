@@ -6,6 +6,7 @@
 
 #include "pch.h"
 #include "CPPEventArgumentsTest.h"
+#include "CPPEventArgumentsTest.g.cpp"
 
 namespace winrt::Simple::implementation
 {

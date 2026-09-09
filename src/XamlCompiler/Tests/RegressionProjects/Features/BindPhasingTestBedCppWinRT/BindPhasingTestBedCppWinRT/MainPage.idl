@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 namespace BindPhasingTestBedCppWinRT
 {
+    [default_interface]
     runtimeclass MainPage : Microsoft.UI.Xaml.Controls.Page
     {
         MainPage();

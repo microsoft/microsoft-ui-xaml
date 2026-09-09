@@ -6,6 +6,7 @@
 
 #include "pch.h"
 #include "Namespace.CustomControl.h"
+#include "Namespace.g.cpp"
 
 namespace winrt::MultipleViewsTestbedCppWinRT::implementation
 {

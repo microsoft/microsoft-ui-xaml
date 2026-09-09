@@ -9,6 +9,8 @@
 
 #include "pch.h"
 #include "MainPage.xaml.h++WinRT"
+// Required by C++/WinRT optimized mode to emit the winrt_make_* activation factory.
+#include "MainPage.g.cpp"
 
 namespace winrt::NonStandardCppWinRT::implementation
 {

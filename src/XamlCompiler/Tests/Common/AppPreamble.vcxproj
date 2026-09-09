@@ -33,6 +33,12 @@
       (.exe/.pri/etc.) have a name that matches the .winmd.
     -->
     <TargetName Condition="'$(TargetName)' == ''">$(RootNamespace)</TargetName>
+    <!--
+      Name of the precompiled header, without extension. Every project here uses pch.h/pch.cpp;
+      Basic\CppWinRT\PrecompiledHeader overrides it, because proving the XAML compiler copes
+      with a differently named precompiled header is the whole point of that project.
+    -->
+    <TestPchName Condition="'$(TestPchName)' == ''">pch</TestPchName>
     <!-- These are compile-only regression projects; nothing needs to be deployed. -->
     <AppxPackage>false</AppxPackage>
     <AppxBundle>Never</AppxBundle>
@@ -100,10 +106,15 @@
   <PropertyGroup Label="UserMacros" />
 
   <ItemDefinitionGroup>
-    <ClCompile>
+    <ClCompile Condition="'$(UsingPrecompiledHeader)' != 'false'">
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderFile>$(TestPchName).h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TestPchName).pch</PrecompiledHeaderOutputFile>
+    </ClCompile>
+    <ClCompile Condition="'$(UsingPrecompiledHeader)' == 'false'">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalOptions>%(AdditionalOptions) /permissive- /bigobj</AdditionalOptions>
@@ -132,9 +143,9 @@
 
   <!-- Items every C++/WinRT app test project has, by convention. -->
   <ItemGroup>
-    <ClInclude Include="pch.h" />
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader>Create</PrecompiledHeader>
+    <ClInclude Include="$(TestPchName).h" />
+    <ClCompile Include="$(TestPchName).cpp">
+      <PrecompiledHeader Condition="'$(UsingPrecompiledHeader)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
     <Manifest Include="app.manifest" Condition="Exists('app.manifest')" />

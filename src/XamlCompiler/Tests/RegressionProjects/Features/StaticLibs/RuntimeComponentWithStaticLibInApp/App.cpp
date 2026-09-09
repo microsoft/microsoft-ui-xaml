@@ -11,9 +11,9 @@
 #include "MainPage.h"
 
 using namespace winrt;
-using namespace ::Windows::ApplicationModel;
-using namespace ::Windows::ApplicationModel::Activation;
-using namespace ::Windows::Foundation;
+using namespace ::winrt::Windows::ApplicationModel;
+using namespace ::winrt::Windows::ApplicationModel::Activation;
+using namespace ::winrt::Windows::Foundation;
 using namespace Microsoft::UI::Xaml;
 using namespace Microsoft::UI::Xaml::Controls;
 using namespace Microsoft::UI::Xaml::Navigation;

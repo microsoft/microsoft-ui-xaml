@@ -83,8 +83,6 @@ namespace BindTestbed
         ListAndTemplateTests();
         BindTestbedModel.DataModel Model;
         BindTestbedModel.DOModel DOModel;
-        //TODO: Convert BindTestbedModelCX to C++/WinRT
-        //BindTestbedCXModel.ModelCX ModelCX;
         Microsoft.UI.Xaml.Controls.ListView FirstListView;
         Object SomeButtonContent;
         Windows.Foundation.Collections.IObservableVector<BindTestbedModel.IEmployee> Employees;
@@ -108,9 +106,6 @@ namespace BindTestbed
         BindTestbedModel.Circle test2;
         BindTestbedModel.Circle test3;
         BindTestbedModel.Circle test4;
-        //TODO: Convert BindTestbedModelCX to C++/WinRT
-        //BindTestbedCXModel.StarCx test5;
-        //BindTestbedCXModel.StarCx test6;
         Microsoft.UI.Xaml.Controls.TextBlock innerMostNestedPanelStaticText;
     }
 
@@ -125,8 +120,6 @@ namespace BindTestbed
         MainModel();
         BindTestbedModel.DataModel Model { get; };
         BindTestbedModel.DOModel DOModel{ get; };
-        //TODO: Convert BindTestbedModelCX to C++/WinRT
-        //BindTestbedCXModel.ModelCX ModelCX{ get; };
         Windows.Foundation.Collections.IObservableVector<BindTestbedModel.IEmployee> Employees;
         Windows.Foundation.Collections.IObservableVector<String> AllFirstNames;
         Windows.Foundation.Collections.IObservableVector<String> AllLastNames;
@@ -256,6 +249,7 @@ namespace BindTestbed
 
     namespace NamedRootsPage {
 
+        [default_interface]
         runtimeclass NamedPageRootWithCompiledBindingUserChild : Microsoft.UI.Xaml.Controls.Page
         {
             NamedPageRootWithCompiledBindingUserChild();

@@ -17,10 +17,11 @@
         BindTestbed.idl and implemented in xPropertiesTest.h instead.  Two separate limitations
         stack up here:
 
-        1. Carried forward from the C++/CX original (BindTestbedCX\xPropertiesTest.xaml):
-           complex and multiline x:Property default values are not supported in C++ because the
-           CodeDomProvider on which x:Property's default-value emission is implemented was
-           deprecated in VS2017.  Only simple string DefaultValue attributes work there.
+        1. Carried forward from the C++/CX original (removed with the rest of the C++/CX
+           projects in this change): complex and multiline x:Property default values are not
+           supported in C++ because the CodeDomProvider on which x:Property's default-value
+           emission is implemented was deprecated in VS2017.  Only simple string DefaultValue
+           attributes work there.
 
         2. New for C++/WinRT: the C++/WinRT code generator has no x:Properties support of any
            kind.  CSharpPagePass1/2, VisualBasicPagePass1/2 and MoComCppPagePass1/2 all emit an
