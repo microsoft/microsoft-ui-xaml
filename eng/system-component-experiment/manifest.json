@@ -74,7 +74,7 @@
     "winuiGalleryBranch": "experiment/delift-a-wuc"
   },
   "latestCheckpoint": {
-    "winuiCommit": null,
+    "winuiCommit": "1343553f9d705f76bf4b1e97c690f85b840242b0",
     "winuiGalleryCommit": null,
     "winuiBuild": "not-run",
     "csharpScenarioApp": "not-created",
