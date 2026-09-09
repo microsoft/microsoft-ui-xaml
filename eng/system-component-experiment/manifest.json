@@ -83,12 +83,12 @@
     "systemIdlBuild": "blocked-by-vfs-createprocess-payload-mismatch-0x95e"
   },
   "latestCheckpoint": {
-    "winuiCommit": "579b9657c",
+    "winuiCommit": "71be07802",
     "winuiGalleryCommit": "199f63ec57ee8457fa9745b8a0d1e951111331fc",
     "winuiBuild": "a2-metadata-merges-pass-native-build-blocked-at-a3-interface-implementation",
     "csharpScenarioApp": "source-updated-to-system-composition-and-dispatcherqueue-awaiting-a3-product-build",
     "cppWinrtScenarioApp": "source-updated-to-system-composition-and-dispatcherqueue-awaiting-a3-product-build",
     "winuiGallery": "passed-debug-x64-build",
-    "notes": "A2 changes XamlOM, generated IDL, generated ABI stubs, and scenario source to Windows.UI.Composition and Windows.System.DispatcherQueue. Public and private metadata merges pass using current SDK system metadata; Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration remains explicitly retained because no system counterpart exists. The full native build now reaches A3 failures where DependencyObject, UIElement, and related native classes still implement lifted DispatcherQueue and private Composition interfaces. A1 runtime canaries remain red until the A3-A5 native closure is rebuilt."
+    "notes": "A2 changes XamlOM, generated IDL, generated ABI stubs, and scenario source to Windows.UI.Composition and Windows.System.DispatcherQueue. Public and private metadata merges pass using current SDK system metadata; Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration remains explicitly retained because no system counterpart exists. A3 has rebound the native msy DispatcherQueue alias to Windows.System, removing the DependencyObject DispatcherQueue override mismatch. The remaining native build boundary is system Composition private ABI availability and conversion of lifted ixp objects to system interfaces. A1 runtime canaries remain red until the A3-A5 native closure is rebuilt."
   }
 }
