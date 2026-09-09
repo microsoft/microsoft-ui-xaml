@@ -96,6 +96,24 @@
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+  <!--
+    Two projects that share a source directory also share an $(IntDir), and therefore compile the
+    same source names to the same .obj paths. Whichever builds second overwrites the first one's
+    objects, and since the two do not necessarily compile the same set of translation units - a
+    project using IncrementalTypeInfoCodeGen compiles the generated .xaml.g.hpp files separately,
+    a normal one does not - the first project then links stale objects and fails with a wall of
+    LNK2001. Building either project on its own succeeds, which makes this look like a phantom.
+
+    Projects in that situation already declare themselves by setting GeneratedFilesSubdirectory,
+    so give them their own object directory as well. This has to come after Microsoft.Cpp.props,
+    which is what defines IntDir; the repo's Directory.Build.props is imported by
+    Microsoft.Cpp.Default.props, i.e. too early for IntDir to exist.
+  -->
+  <PropertyGroup Condition="'$(GeneratedFilesSubdirectory)' != ''">
+    <IntDir>$(IntDir)$(GeneratedFilesSubdirectory)\</IntDir>
+  </PropertyGroup>
+
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">

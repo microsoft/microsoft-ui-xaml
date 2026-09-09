@@ -2,6 +2,31 @@
 <!-- Copyright (c) Microsoft Corporation.
  Licensed under the MIT License. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <!-- Compile these projects with the XAML compiler built from this repo, not the prebuilt one
+             carried in the Microsoft.WindowsAppSDK.WinUI package. Without this, the XAML compiler's
+             own regression suite silently tests a stale binary: every generated file compared against
+             TestMasters would come from the package rather than from the source being changed.
+
+             This has to be set before the parent Directory.Build.props is imported, because that is
+             where eng\usexamlcompiler.props is conditionally imported from. That file repoints
+             XamlCompilerPropsAndTargetsDirectory at the local build's packaging staging folder, which
+             the WinUI package's own Microsoft.WinUI.props then honors, so both the compiler task and
+             its .props/.targets come from this enlistment.
+
+             SkipXamlCompilerProjectReferences enables the EnsureCompilerExists check, which reports a
+             clear "build the compiler first" error instead of a confusing task-not-found failure. -->
+        <UseXamlCompiler Condition="'$(UseXamlCompiler)' == ''">true</UseXamlCompiler>
+        <!-- Except for packaging projects. The WinUI package deliberately skips the XAML compiler
+             props for .wapproj (see the '$(MSBuildProjectExtension)'!='.wapproj' condition on the
+             import in Microsoft.WinUI.props), because a packaging project has no XAML of its own.
+             eng\usexamlcompiler.targets has no such exclusion, so opting a .wapproj in gives it the
+             compiler targets without the compiler props, and the build then fails with
+             "MSB4057: The target XamlPreCompile does not exist in the project". -->
+        <UseXamlCompiler Condition="'$(MSBuildProjectExtension)' == '.wapproj'">false</UseXamlCompiler>
+        <SkipXamlCompilerProjectReferences Condition="'$(SkipXamlCompilerProjectReferences)' == ''">true</SkipXamlCompilerProjectReferences>
+    </PropertyGroup>
+
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
         
     <PropertyGroup>
@@ -52,6 +77,9 @@
              Microsoft.Cpp.Default.props, i.e. *after* the project's Globals group, so folderpaths.props
              overwrites anything the project set. Setting the subdirectory name instead survives. -->
         <GeneratedFilesDir Condition="'$(GeneratedFilesSubdirectory)' != ''">$(BaseIntermediateOutputPath)$(GeneratedFilesSubdirectory)\generated\</GeneratedFilesDir>
+        <!-- Such projects also need their own object directory, or they overwrite each other's
+             .obj files; see AppPreamble.vcxproj, which sets IntDir from the same property once
+             Microsoft.Cpp.props has defined it. -->
     </PropertyGroup>
 
     <PropertyGroup>

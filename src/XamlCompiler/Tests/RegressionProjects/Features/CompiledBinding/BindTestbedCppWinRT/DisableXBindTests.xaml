@@ -22,7 +22,11 @@
                 <TextBlock Style="{StaticResource Note}">Function tests</TextBlock>
                 <TextBlock Text="{x:Bind Model.IntPropWithINPC.ToString(), Mode=OneWay}"/>
                 <TextBlock Text="{x:Bind Model.FunctionOnModelTwoArgs(Model.IntPropWithINPC, 3.9), Mode=OneWay}"/>
-                <TextBlock Text="{x:Bind Model.FunctionReturningNull(), TargetNullValue='Great, TargetNullValue works!'}"/>
+                <!-- The C# original binds this to TextBlock.Text. That cannot be ported literally:
+                     TargetNullValue requires a nullable *target* property, and String projects to
+                     the non-nullable hstring in C++/WinRT. Bind a nullable target instead, exactly
+                     as FunctionTests.xaml does for the same scenario. -->
+                <Button Content="{x:Bind FunctionReturningNull(), TargetNullValue='Great, TargetNullValue works!'}"/>
                 <TextBlock Text="{x:Bind Model.FunctionReturningInt()}"/>
 
                 <TextBlock Style="{StaticResource Note}">Event tests</TextBlock>

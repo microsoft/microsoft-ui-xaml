@@ -36,6 +36,11 @@ namespace BindTestbed
         BindTestbedModel.DataModel Model;
         BindTestbedModel.DOModel DOModel;
 
+        // Returns Object, not String: this is bound with TargetNullValue, and in C++/WinRT a
+        // String projects to the non-nullable hstring, so TargetNullValue cannot apply to it.
+        // FunctionTests declares the same member for the same reason.
+        Object FunctionReturningNull();
+
         void Click_RegularArgs(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
         void Click_NoArgs();
         void On_Loaded(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);

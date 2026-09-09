@@ -17,6 +17,21 @@
     <DesktopCompatible>true</DesktopCompatible>
     <ApplicationType>Windows Store</ApplicationType>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+
+    <!--
+      This project has runtime classes in sub-namespaces (BindTestbed.subfolder.SubDictionary and
+      BindTestbed.NamedRootsPage.NamedPageRootWithCompiledBindingUserChild). C++/WinRT names the
+      component headers it generates for those two ways: with -prefix (the package default) it
+      flattens the sub-namespace into the file name - subfolder.SubDictionary.g.h - and without it
+      it mirrors the namespace as a directory - subfolder\SubDictionary.g.h.
+
+      The XAML compiler always uses the directory form for the files it generates (it writes
+      subfolder\SubDictionary.xaml.g.h into the same generated folder), so leaving prefixes on makes
+      the two generators disagree inside one directory and the hand-written headers, which include
+      "subfolder/SubDictionary.g.h", cannot find their base class. controls\CppWinRT.props turns
+      prefixes off for the product code for the same reason.
+    -->
+    <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
