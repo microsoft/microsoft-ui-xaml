@@ -10,41 +10,45 @@
 
 namespace Simple
 {
-    partial class FieldModifierTests : global::Windows.UI.Xaml.Controls.Page
+    partial class FieldModifierTests : global::Microsoft.UI.Xaml.Controls.Page
     {
 
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock Private1; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock Private2; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock Private3; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        public global::Windows.UI.Xaml.Controls.TextBlock Public1; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        public global::Windows.UI.Xaml.Controls.TextBlock Public2; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        public global::Windows.UI.Xaml.Controls.TextBlock Public3; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        protected global::Windows.UI.Xaml.Controls.TextBlock Protected1; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        protected global::Windows.UI.Xaml.Controls.TextBlock Protected2; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        protected global::Windows.UI.Xaml.Controls.TextBlock Protected3; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        internal global::Windows.UI.Xaml.Controls.TextBlock Internal1; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        internal global::Windows.UI.Xaml.Controls.TextBlock Internal2; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        internal global::Windows.UI.Xaml.Controls.TextBlock Internal3; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+#pragma warning disable 0169    //  Proactively suppress unused/uninitialized field warning in case they aren't used, for things like x:Name
+#pragma warning disable 0649
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock Private1; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock Private2; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock Private3; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        public global::Microsoft.UI.Xaml.Controls.TextBlock Public1; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        public global::Microsoft.UI.Xaml.Controls.TextBlock Public2; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        public global::Microsoft.UI.Xaml.Controls.TextBlock Public3; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        protected global::Microsoft.UI.Xaml.Controls.TextBlock Protected1; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        protected global::Microsoft.UI.Xaml.Controls.TextBlock Protected2; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        protected global::Microsoft.UI.Xaml.Controls.TextBlock Protected3; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        internal global::Microsoft.UI.Xaml.Controls.TextBlock Internal1; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        internal global::Microsoft.UI.Xaml.Controls.TextBlock Internal2; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        internal global::Microsoft.UI.Xaml.Controls.TextBlock Internal3; 
+#pragma warning restore 0649
+#pragma warning restore 0169
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private bool _contentLoaded;
 
         /// <summary>
         /// InitializeComponent()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public void InitializeComponent()
         {
@@ -54,10 +58,10 @@ namespace Simple
             _contentLoaded = true;
 
             global::System.Uri resourceLocator = new global::System.Uri("ms-appx:///FieldModifierTests.xaml");
-            global::Windows.UI.Xaml.Application.LoadComponent(this, resourceLocator, global::Windows.UI.Xaml.Controls.Primitives.ComponentResourceLocation.Application);
+            global::Microsoft.UI.Xaml.Application.LoadComponent(this, resourceLocator, global::Microsoft.UI.Xaml.Controls.Primitives.ComponentResourceLocation.Application);
         }
 
-        partial void UnloadObject(global::Windows.UI.Xaml.DependencyObject unloadableObject);
+        partial void UnloadObject(global::Microsoft.UI.Xaml.DependencyObject unloadableObject);
 
     }
 }

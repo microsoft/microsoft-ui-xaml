@@ -8,24 +8,32 @@
 //------------------------------------------------------------------------------
 #pragma once
 
+#include <unknwn.h>
+
+// Undefine GetCurrentTime macro to prevent
+// conflict with Storyboard::GetCurrentTime
+#undef GetCurrentTime
+
 #include "winrt/windows.foundation.h"
-#include "winrt/windows.ui.xaml.controls.h"
-#include "winrt/windows.ui.xaml.data.h"
 #include "winrt/windows.ui.xaml.interop.h"
-#include "winrt/windows.ui.xaml.markup.h"
+#include "winrt/microsoft.ui.xaml.controls.h"
+#include "winrt/microsoft.ui.xaml.data.h"
+#include "winrt/microsoft.ui.xaml.markup.h"
 
 namespace winrt::LinkedMDAppCppWinRT::implementation
 {
-    using DataContextChangedEventArgs = ::winrt::Windows::UI::Xaml::DataContextChangedEventArgs;
-    using DependencyObject = ::winrt::Windows::UI::Xaml::DependencyObject;
-    using DependencyProperty = ::winrt::Windows::UI::Xaml::DependencyProperty;
-    using FrameworkElement = ::winrt::Windows::UI::Xaml::FrameworkElement;
+    using DataContextChangedEventArgs = ::winrt::Microsoft::UI::Xaml::DataContextChangedEventArgs;
+    using DependencyObject = ::winrt::Microsoft::UI::Xaml::DependencyObject;
+    using DependencyProperty = ::winrt::Microsoft::UI::Xaml::DependencyProperty;
+    using FrameworkElement = ::winrt::Microsoft::UI::Xaml::FrameworkElement;
     using IInspectable = ::winrt::Windows::Foundation::IInspectable;
-    using INotifyCollectionChanged = ::winrt::Windows::UI::Xaml::Interop::INotifyCollectionChanged;
-    using INotifyPropertyChanged = ::winrt::Windows::UI::Xaml::Data::INotifyPropertyChanged;
-    using PropertyChangedEventArgs = ::winrt::Windows::UI::Xaml::Data::PropertyChangedEventArgs;
-    using NotifyCollectionChangedEventArgs = ::winrt::Windows::UI::Xaml::Interop::NotifyCollectionChangedEventArgs;
-    using ContainerContentChangingEventArgs = ::winrt::Windows::UI::Xaml::Controls::ContainerContentChangingEventArgs;
+    using INotifyCollectionChanged = ::winrt::Microsoft::UI::Xaml::Interop::INotifyCollectionChanged;
+    using INotifyPropertyChanged = ::winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged;
+    using PropertyChangedEventArgs = ::winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs;
+    using NotifyCollectionChangedEventArgs = ::winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs;
+    using ContainerContentChangingEventArgs = ::winrt::Microsoft::UI::Xaml::Controls::ContainerContentChangingEventArgs;
+    using IComponentConnector = ::winrt::Microsoft::UI::Xaml::Markup::IComponentConnector;
+    using WindowActivatedEventArgs = ::winrt::Microsoft::UI::Xaml::WindowActivatedEventArgs;
 
     struct XamlBindings;
 
@@ -53,14 +61,15 @@ namespace winrt::LinkedMDAppCppWinRT::implementation
     };
 
     struct XamlBindings : public winrt::implements<XamlBindings,
-        ::winrt::Windows::UI::Xaml::IDataTemplateExtension,
-        ::winrt::Windows::UI::Xaml::Markup::IComponentConnector,
-        ::winrt::Windows::UI::Xaml::Markup::IDataTemplateComponent>
+        ::winrt::Microsoft::UI::Xaml::IDataTemplateExtension,
+        ::winrt::Microsoft::UI::Xaml::Markup::IComponentConnector,
+        ::winrt::Microsoft::UI::Xaml::Markup::IDataTemplateComponent>
     {
-        XamlBindings(std::unique_ptr<IXamlBindings>&& pBindings);
+        XamlBindings(std::shared_ptr<IXamlBindings>&& pBindings);
 
         // IComponentConnector
         void Connect(int connectionId, IInspectable const& target);
+        IComponentConnector GetBindingConnector(int32_t, IInspectable const&);
 
         // IDataTemplateComponent
         virtual void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase);
@@ -75,12 +84,13 @@ namespace winrt::LinkedMDAppCppWinRT::implementation
         void Update();
         void StopTracking();
         void Loading(FrameworkElement const& src, IInspectable const& data);
+        void Activated(IInspectable const& sender, WindowActivatedEventArgs const& args);
         void DataContextChanged(FrameworkElement const& sender, DataContextChangedEventArgs const& args);
         void SubscribeForDataContextChanged(FrameworkElement const& object);
         virtual void DisconnectUnloadedObject(int connectionId);
 
     private:
-        std::unique_ptr<IXamlBindings> _pBindings;
+        std::shared_ptr<IXamlBindings> _pBindings;
     };
 
     template <typename TBindingsTracking>
@@ -159,10 +169,10 @@ namespace winrt::LinkedMDAppCppWinRT::implementation
 
         // Listener update functions
         void UpdatePropertyChangedListener(INotifyPropertyChanged const& obj, INotifyPropertyChanged& cache, ::winrt::event_token& token);
-        void UpdatePropertyChangedListener(INotifyPropertyChanged const& obj, ::winrt::weak_ref<::winrt::Windows::UI::Xaml::Data::INotifyPropertyChanged>& cache, ::winrt::event_token& token);
+        void UpdatePropertyChangedListener(INotifyPropertyChanged const& obj, ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>& cache, ::winrt::event_token& token);
         void UpdateCollectionChangedListener(INotifyCollectionChanged const& obj, INotifyCollectionChanged& cache, ::winrt::event_token& token);
         void UpdateDependencyPropertyChangedListener(DependencyObject const& obj, DependencyProperty const& property, DependencyObject&  cache, int64_t& token);
-        void UpdateDependencyPropertyChangedListener(DependencyObject const& obj, DependencyProperty const& property, ::winrt::weak_ref<::winrt::Windows::UI::Xaml::DependencyObject>& cache, int64_t& token);
+        void UpdateDependencyPropertyChangedListener(DependencyObject const& obj, DependencyProperty const& property, ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::DependencyObject>& cache, int64_t& token);
 
     private:
         IXamlBindingTracking* _pBindingsTrackingWeakRef{nullptr};

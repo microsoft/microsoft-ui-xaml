@@ -9,6 +9,14 @@
     <XamlCodeGenerationControlFlags>IncrementalTypeInfoCodeGen</XamlCodeGenerationControlFlags>
     <SuppressXamlWarnings>1004</SuppressXamlWarnings>
     <!--
+      This project shares its directory with BindTestbedCppWinRT.vcxproj, so it would otherwise
+      share that project's generated-files directory too, and the two would overwrite each other's
+      codegen (MSB8028). Tests\Directory.Build.props turns this into its own generated-files
+      directory; setting GeneratedFilesDir here directly would not work, because for a .vcxproj
+      Directory.Build.props is imported after this Globals group.
+    -->
+    <GeneratedFilesSubdirectory>BindTestbedCppWinRTIncremental</GeneratedFilesSubdirectory>
+    <!--
       Win32 desktop app model. AppContainerApplication=false is what makes the produced
       binary a desktop app; the AppContainer ("WinUI 3 in UWP") app model is not supported.
       ApplicationType selects the C++ toolset flavor that provides WinRT metadata, XAML and

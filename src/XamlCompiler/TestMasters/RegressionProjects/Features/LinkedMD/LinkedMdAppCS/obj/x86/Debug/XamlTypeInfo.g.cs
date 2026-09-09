@@ -7,15 +7,17 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Diagnostics.CodeAnalysis;
+
 
 namespace AppCS
 {
-    public partial class App : global::Windows.UI.Xaml.Markup.IXamlMetadataProvider
+    public partial class App : global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider
     {
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlMetaDataProvider __appProvider;
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         private global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlMetaDataProvider _AppProvider
         {
@@ -32,9 +34,9 @@ namespace AppCS
         /// <summary>
         /// GetXamlType(Type)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.IXamlType GetXamlType(global::System.Type type)
+        public global::Microsoft.UI.Xaml.Markup.IXamlType GetXamlType(global::System.Type type)
         {
             return _AppProvider.GetXamlType(type);
         }
@@ -42,9 +44,9 @@ namespace AppCS
         /// <summary>
         /// GetXamlType(String)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.IXamlType GetXamlType(string fullName)
+        public global::Microsoft.UI.Xaml.Markup.IXamlType GetXamlType(string fullName)
         {
             return _AppProvider.GetXamlType(fullName);
         }
@@ -52,9 +54,9 @@ namespace AppCS
         /// <summary>
         /// GetXmlnsDefinitions()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.XmlnsDefinition[] GetXmlnsDefinitions()
+        public global::Microsoft.UI.Xaml.Markup.XmlnsDefinition[] GetXmlnsDefinitions()
         {
             return _AppProvider.GetXmlnsDefinitions();
         }
@@ -66,9 +68,9 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
     /// <summary>
     /// Main class for providing metadata for the app or library
     /// </summary>
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    public sealed class XamlMetaDataProvider : global::Windows.UI.Xaml.Markup.IXamlMetadataProvider
+    public sealed partial class XamlMetaDataProvider : global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider
     {
         private global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlTypeInfoProvider _provider = null;
 
@@ -87,7 +89,8 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
         /// <summary>
         /// GetXamlType(Type)
         /// </summary>
-        public global::Windows.UI.Xaml.Markup.IXamlType GetXamlType(global::System.Type type)
+        [global::Windows.Foundation.Metadata.DefaultOverload]
+        public global::Microsoft.UI.Xaml.Markup.IXamlType GetXamlType(global::System.Type type)
         {
             return Provider.GetXamlTypeByType(type);
         }
@@ -95,7 +98,7 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
         /// <summary>
         /// GetXamlType(String)
         /// </summary>
-        public global::Windows.UI.Xaml.Markup.IXamlType GetXamlType(string fullName)
+        public global::Microsoft.UI.Xaml.Markup.IXamlType GetXamlType(string fullName)
         {
             return Provider.GetXamlTypeByName(fullName);
         }
@@ -103,19 +106,19 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
         /// <summary>
         /// GetXmlnsDefinitions()
         /// </summary>
-        public global::Windows.UI.Xaml.Markup.XmlnsDefinition[] GetXmlnsDefinitions()
+        public global::Microsoft.UI.Xaml.Markup.XmlnsDefinition[] GetXmlnsDefinitions()
         {
-            return new global::Windows.UI.Xaml.Markup.XmlnsDefinition[0];
+            return new global::Microsoft.UI.Xaml.Markup.XmlnsDefinition[0];
         }
     }
 
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     internal partial class XamlTypeInfoProvider
     {
-        public global::Windows.UI.Xaml.Markup.IXamlType GetXamlTypeByType(global::System.Type type)
+        public global::Microsoft.UI.Xaml.Markup.IXamlType GetXamlTypeByType(global::System.Type type)
         {
-            global::Windows.UI.Xaml.Markup.IXamlType xamlType;
+            global::Microsoft.UI.Xaml.Markup.IXamlType xamlType;
             lock (_xamlTypeCacheByType) 
             { 
                 if (_xamlTypeCacheByType.TryGetValue(type, out xamlType))
@@ -130,7 +133,7 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
                 var userXamlType = xamlType as global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType;
                 if(xamlType == null || (userXamlType != null && userXamlType.IsReturnTypeStub && !userXamlType.IsLocalType))
                 {
-                    global::Windows.UI.Xaml.Markup.IXamlType libXamlType = CheckOtherMetadataProvidersForType(type);
+                    global::Microsoft.UI.Xaml.Markup.IXamlType libXamlType = CheckOtherMetadataProvidersForType(type);
                     if (libXamlType != null)
                     {
                         if(libXamlType.IsConstructible || xamlType == null)
@@ -148,13 +151,13 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
             return xamlType;
         }
 
-        public global::Windows.UI.Xaml.Markup.IXamlType GetXamlTypeByName(string typeName)
+        public global::Microsoft.UI.Xaml.Markup.IXamlType GetXamlTypeByName(string typeName)
         {
             if (string.IsNullOrEmpty(typeName))
             {
                 return null;
             }
-            global::Windows.UI.Xaml.Markup.IXamlType xamlType;
+            global::Microsoft.UI.Xaml.Markup.IXamlType xamlType;
             lock (_xamlTypeCacheByType)
             {
                 if (_xamlTypeCacheByName.TryGetValue(typeName, out xamlType))
@@ -169,7 +172,7 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
                 var userXamlType = xamlType as global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType;
                 if(xamlType == null || (userXamlType != null && userXamlType.IsReturnTypeStub && !userXamlType.IsLocalType))
                 {
-                    global::Windows.UI.Xaml.Markup.IXamlType libXamlType = CheckOtherMetadataProvidersForName(typeName);
+                    global::Microsoft.UI.Xaml.Markup.IXamlType libXamlType = CheckOtherMetadataProvidersForName(typeName);
                     if (libXamlType != null)
                     {
                         if(libXamlType.IsConstructible || xamlType == null)
@@ -187,13 +190,13 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
             return xamlType;
         }
 
-        public global::Windows.UI.Xaml.Markup.IXamlMember GetMemberByLongName(string longMemberName)
+        public global::Microsoft.UI.Xaml.Markup.IXamlMember GetMemberByLongName(string longMemberName)
         {
             if (string.IsNullOrEmpty(longMemberName))
             {
                 return null;
             }
-            global::Windows.UI.Xaml.Markup.IXamlMember xamlMember;
+            global::Microsoft.UI.Xaml.Markup.IXamlMember xamlMember;
             lock (_xamlMembers)
             {
                 if (_xamlMembers.TryGetValue(longMemberName, out xamlMember))
@@ -209,37 +212,47 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
             return xamlMember;
         }
 
-        global::System.Collections.Generic.Dictionary<string, global::Windows.UI.Xaml.Markup.IXamlType>
-                _xamlTypeCacheByName = new global::System.Collections.Generic.Dictionary<string, global::Windows.UI.Xaml.Markup.IXamlType>();
+        global::System.Collections.Generic.Dictionary<string, global::Microsoft.UI.Xaml.Markup.IXamlType>
+                _xamlTypeCacheByName = new global::System.Collections.Generic.Dictionary<string, global::Microsoft.UI.Xaml.Markup.IXamlType>();
 
-        global::System.Collections.Generic.Dictionary<global::System.Type, global::Windows.UI.Xaml.Markup.IXamlType>
-                _xamlTypeCacheByType = new global::System.Collections.Generic.Dictionary<global::System.Type, global::Windows.UI.Xaml.Markup.IXamlType>();
+        global::System.Collections.Generic.Dictionary<global::System.Type, global::Microsoft.UI.Xaml.Markup.IXamlType>
+                _xamlTypeCacheByType = new global::System.Collections.Generic.Dictionary<global::System.Type, global::Microsoft.UI.Xaml.Markup.IXamlType>();
 
-        global::System.Collections.Generic.Dictionary<string, global::Windows.UI.Xaml.Markup.IXamlMember>
-                _xamlMembers = new global::System.Collections.Generic.Dictionary<string, global::Windows.UI.Xaml.Markup.IXamlMember>();
+        global::System.Collections.Generic.Dictionary<string, global::Microsoft.UI.Xaml.Markup.IXamlMember>
+                _xamlMembers = new global::System.Collections.Generic.Dictionary<string, global::Microsoft.UI.Xaml.Markup.IXamlMember>();
 
         string[] _typeNameTable = null;
         global::System.Type[] _typeTable = null;
-
+        
         private void InitTypeTables()
         {
-            _typeNameTable = new string[10];
-            _typeNameTable[1] = "Windows.UI.Xaml.Controls.UserControl";
+            _typeNameTable = new string[14];
+            _typeNameTable[1] = "Microsoft.UI.Xaml.Controls.UserControl";
             _typeNameTable[2] = "String";
             _typeNameTable[3] = "ControlsCS.B";
-            _typeNameTable[5] = "ControlsCX.B";
-            _typeNameTable[7] = "Windows.UI.Xaml.Controls.Page";
-            _typeNameTable[8] = "LinkedMDControlsCppWinRT.B";
-            _typeNameTable[9] = "AppCS.MainPage";
+            _typeNameTable[5] = "Microsoft.UI.Xaml.Controls.Page";
+            _typeNameTable[6] = "LinkedMDControlsCppWinRT.B";
+            _typeNameTable[7] = "AppCS.MainPage";
+            _typeNameTable[8] = "Microsoft.UI.Xaml.Controls.TreeViewNode";
+            _typeNameTable[9] = "Microsoft.UI.Xaml.DependencyObject";
+            _typeNameTable[10] = "System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>";
+            _typeNameTable[11] = "Object";
+            _typeNameTable[12] = "Int32";
+            _typeNameTable[13] = "Boolean";
 
-            _typeTable = new global::System.Type[10];
-            _typeTable[1] = typeof(global::Windows.UI.Xaml.Controls.UserControl);
+            _typeTable = new global::System.Type[14];
+            _typeTable[1] = typeof(global::Microsoft.UI.Xaml.Controls.UserControl);
             _typeTable[2] = typeof(global::System.String);
             _typeTable[3] = typeof(global::ControlsCS.B);
-            _typeTable[5] = typeof(global::ControlsCX.B);
-            _typeTable[7] = typeof(global::Windows.UI.Xaml.Controls.Page);
-            _typeTable[8] = typeof(global::LinkedMDControlsCppWinRT.B);
-            _typeTable[9] = typeof(global::AppCS.MainPage);
+            _typeTable[5] = typeof(global::Microsoft.UI.Xaml.Controls.Page);
+            _typeTable[6] = typeof(global::LinkedMDControlsCppWinRT.B);
+            _typeTable[7] = typeof(global::AppCS.MainPage);
+            _typeTable[8] = typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode);
+            _typeTable[9] = typeof(global::Microsoft.UI.Xaml.DependencyObject);
+            _typeTable[10] = typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>);
+            _typeTable[11] = typeof(global::System.Object);
+            _typeTable[12] = typeof(global::System.Int32);
+            _typeTable[13] = typeof(global::System.Boolean);
         }
 
         private int LookupTypeIndexByName(string typeName)
@@ -275,11 +288,22 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
         }
 
         private object Activate_3_B() { return new global::ControlsCS.B(); }
-        private object Activate_5_B() { return new global::ControlsCX.B(); }
-        private object Activate_8_B() { return new global::LinkedMDControlsCppWinRT.B(); }
-        private object Activate_9_MainPage() { return new global::AppCS.MainPage(); }
+        private object Activate_6_B() { return new global::LinkedMDControlsCppWinRT.B(); }
+        private object Activate_7_MainPage() { return new global::AppCS.MainPage(); }
+        private object Activate_8_TreeViewNode() { return new global::Microsoft.UI.Xaml.Controls.TreeViewNode(); }
+        private void StaticInitializer_3_B() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ControlsCS.B).TypeHandle);
+        private void StaticInitializer_6_B() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::LinkedMDControlsCppWinRT.B).TypeHandle);
+        private void StaticInitializer_7_MainPage() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::AppCS.MainPage).TypeHandle);
+        private void StaticInitializer_8_TreeViewNode() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode).TypeHandle);
+        private void StaticInitializer_10_IList() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>).TypeHandle);
+        private void VectorAdd_10_IList(object instance, object item)
+        {
+            var collection = (global::System.Collections.Generic.ICollection<global::Microsoft.UI.Xaml.Controls.TreeViewNode>)instance;
+            var newItem = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)item;
+            collection.Add(newItem);
+        }
 
-        private global::Windows.UI.Xaml.Markup.IXamlType CreateXamlType(int typeIndex)
+        private global::Microsoft.UI.Xaml.Markup.IXamlType CreateXamlType(int typeIndex)
         {
             global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlSystemBaseType xamlType = null;
             global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType userType;
@@ -289,7 +313,7 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
             switch (typeIndex)
             {
 
-            case 1:   //  Windows.UI.Xaml.Controls.UserControl
+            case 1:   //  Microsoft.UI.Xaml.Controls.UserControl
                 xamlType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
@@ -298,51 +322,91 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
                 break;
 
             case 3:   //  ControlsCS.B
-                userType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.UserControl"));
+                userType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
+                userType.StaticInitializer = StaticInitializer_3_B;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
 
-            case 5:   //  ControlsCX.B
-                userType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.UserControl"));
-                userType.SetIsReturnTypeStub();
-                xamlType = userType;
-                break;
-
-            case 7:   //  Windows.UI.Xaml.Controls.Page
+            case 5:   //  Microsoft.UI.Xaml.Controls.Page
                 xamlType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 8:   //  LinkedMDControlsCppWinRT.B
-                userType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
+            case 6:   //  LinkedMDControlsCppWinRT.B
+                userType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
+                userType.StaticInitializer = StaticInitializer_6_B;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
 
-            case 9:   //  AppCS.MainPage
-                userType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
-                userType.Activator = Activate_9_MainPage;
+            case 7:   //  AppCS.MainPage
+                userType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
+                userType.Activator = Activate_7_MainPage;
+                userType.StaticInitializer = StaticInitializer_7_MainPage;
                 userType.SetIsLocalType();
                 xamlType = userType;
+                break;
+
+            case 8:   //  Microsoft.UI.Xaml.Controls.TreeViewNode
+                userType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
+                userType.Activator = Activate_8_TreeViewNode;
+                userType.StaticInitializer = StaticInitializer_8_TreeViewNode;
+                userType.AddMemberName("Children");
+                userType.AddMemberName("Content");
+                userType.AddMemberName("Depth");
+                userType.AddMemberName("HasChildren");
+                userType.AddMemberName("HasUnrealizedChildren");
+                userType.AddMemberName("IsExpanded");
+                userType.AddMemberName("Parent");
+                userType.SetIsBindable();
+                xamlType = userType;
+                break;
+
+            case 9:   //  Microsoft.UI.Xaml.DependencyObject
+                xamlType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 10:   //  System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
+                userType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType(this, typeName, type, null);
+                userType.StaticInitializer = StaticInitializer_10_IList;
+                userType.CollectionAdd = VectorAdd_10_IList;
+                userType.SetIsReturnTypeStub();
+                xamlType = userType;
+                break;
+
+            case 11:   //  Object
+                xamlType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 12:   //  Int32
+                xamlType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 13:   //  Boolean
+                xamlType = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
             }
             return xamlType;
         }
 
-        private global::System.Collections.Generic.List<global::Windows.UI.Xaml.Markup.IXamlMetadataProvider> _otherProviders;
-        private global::System.Collections.Generic.List<global::Windows.UI.Xaml.Markup.IXamlMetadataProvider> OtherProviders
+        private global::System.Collections.Generic.List<global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider> _otherProviders;
+        private global::System.Collections.Generic.List<global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider> OtherProviders
         {
             get
             {
                 if(_otherProviders == null)
                 {
-                    var otherProviders = new global::System.Collections.Generic.List<global::Windows.UI.Xaml.Markup.IXamlMetadataProvider>();
-                    global::Windows.UI.Xaml.Markup.IXamlMetadataProvider provider;
-                    provider = new global::ControlsCS.LinkedMdControlsCS_XamlTypeInfo.XamlMetaDataProvider() as global::Windows.UI.Xaml.Markup.IXamlMetadataProvider;
+                    var otherProviders = new global::System.Collections.Generic.List<global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider>();
+                    global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider provider;
+                    provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
-                    provider = new global::ControlsCX.ControlsCX_XamlTypeInfo.XamlMetaDataProvider() as global::Windows.UI.Xaml.Markup.IXamlMetadataProvider;
+                    provider = new global::ControlsCS.LinkedMdControlsCS_XamlTypeInfo.XamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
-                    provider = new global::LinkedMDControlsCppWinRT.XamlMetaDataProvider() as global::Windows.UI.Xaml.Markup.IXamlMetadataProvider;
+                    provider = new global::LinkedMDControlsCppWinRT.XamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
+                    otherProviders.Add(provider); 
+                    provider = new global::LinkedMDSubControlsCppWinRT.XamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
+                    otherProviders.Add(provider); 
+                    provider = new global::SubControlsCS.LinkedMdSubControlsCS_XamlTypeInfo.XamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
                     _otherProviders = otherProviders;
                 }
@@ -350,11 +414,11 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
             }
         }
 
-        private global::Windows.UI.Xaml.Markup.IXamlType CheckOtherMetadataProvidersForName(string typeName)
+        private global::Microsoft.UI.Xaml.Markup.IXamlType CheckOtherMetadataProvidersForName(string typeName)
         {
-            global::Windows.UI.Xaml.Markup.IXamlType xamlType = null;
-            global::Windows.UI.Xaml.Markup.IXamlType foundXamlType = null;
-            foreach(global::Windows.UI.Xaml.Markup.IXamlMetadataProvider xmp in OtherProviders)
+            global::Microsoft.UI.Xaml.Markup.IXamlType xamlType = null;
+            global::Microsoft.UI.Xaml.Markup.IXamlType foundXamlType = null;
+            foreach(global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider xmp in OtherProviders)
             {
                 xamlType = xmp.GetXamlType(typeName);
                 if(xamlType != null)
@@ -369,11 +433,11 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
             return foundXamlType;
         }
 
-        private global::Windows.UI.Xaml.Markup.IXamlType CheckOtherMetadataProvidersForType(global::System.Type type)
+        private global::Microsoft.UI.Xaml.Markup.IXamlType CheckOtherMetadataProvidersForType(global::System.Type type)
         {
-            global::Windows.UI.Xaml.Markup.IXamlType xamlType = null;
-            global::Windows.UI.Xaml.Markup.IXamlType foundXamlType = null;
-            foreach(global::Windows.UI.Xaml.Markup.IXamlMetadataProvider xmp in OtherProviders)
+            global::Microsoft.UI.Xaml.Markup.IXamlType xamlType = null;
+            global::Microsoft.UI.Xaml.Markup.IXamlType foundXamlType = null;
+            foreach(global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider xmp in OtherProviders)
             {
                 xamlType = xmp.GetXamlType(type);
                 if(xamlType != null)
@@ -400,26 +464,66 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
         }
         private object get_2_A_BPropertyOnA(object instance)
         {
-            var that = (global::ControlsCX.A)instance;
+            var that = (global::LinkedMDControlsCppWinRT.A)instance;
             return that.BPropertyOnA;
         }
         private object get_3_A_StringPropertyOnA(object instance)
         {
-            var that = (global::ControlsCX.A)instance;
-            return that.StringPropertyOnA;
-        }
-        private object get_4_A_BPropertyOnA(object instance)
-        {
-            var that = (global::LinkedMDControlsCppWinRT.A)instance;
-            return that.BPropertyOnA;
-        }
-        private object get_5_A_StringPropertyOnA(object instance)
-        {
             var that = (global::LinkedMDControlsCppWinRT.A)instance;
             return that.StringPropertyOnA;
+        }
+        private object get_4_TreeViewNode_Children(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            return that.Children;
+        }
+        private object get_5_TreeViewNode_Content(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            return that.Content;
+        }
+        private void set_5_TreeViewNode_Content(object instance, object Value)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            that.Content = (global::System.Object)Value;
+        }
+        private object get_6_TreeViewNode_Depth(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            return that.Depth;
+        }
+        private object get_7_TreeViewNode_HasChildren(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            return that.HasChildren;
+        }
+        private object get_8_TreeViewNode_HasUnrealizedChildren(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            return that.HasUnrealizedChildren;
+        }
+        private void set_8_TreeViewNode_HasUnrealizedChildren(object instance, object Value)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            that.HasUnrealizedChildren = (global::System.Boolean)Value;
+        }
+        private object get_9_TreeViewNode_IsExpanded(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            return that.IsExpanded;
+        }
+        private void set_9_TreeViewNode_IsExpanded(object instance, object Value)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            that.IsExpanded = (global::System.Boolean)Value;
+        }
+        private object get_10_TreeViewNode_Parent(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            return that.Parent;
         }
 
-        private global::Windows.UI.Xaml.Markup.IXamlMember CreateXamlMember(string longMemberName)
+        private global::Microsoft.UI.Xaml.Markup.IXamlMember CreateXamlMember(string longMemberName)
         {
             global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlMember xamlMember = null;
             global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType userType;
@@ -438,28 +542,62 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
                 xamlMember.Getter = get_1_A_BPropertyOnA;
                 xamlMember.SetIsReadOnly();
                 break;
-            case "ControlsCX.A.BPropertyOnA":
-                userType = (global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ControlsCX.A");
-                xamlMember = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlMember(this, "BPropertyOnA", "ControlsCX.B");
-                xamlMember.Getter = get_2_A_BPropertyOnA;
-                xamlMember.SetIsReadOnly();
-                break;
-            case "ControlsCX.A.StringPropertyOnA":
-                userType = (global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ControlsCX.A");
-                xamlMember = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlMember(this, "StringPropertyOnA", "String");
-                xamlMember.Getter = get_3_A_StringPropertyOnA;
-                xamlMember.SetIsReadOnly();
-                break;
             case "LinkedMDControlsCppWinRT.A.BPropertyOnA":
                 userType = (global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("LinkedMDControlsCppWinRT.A");
                 xamlMember = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlMember(this, "BPropertyOnA", "LinkedMDControlsCppWinRT.B");
-                xamlMember.Getter = get_4_A_BPropertyOnA;
+                xamlMember.Getter = get_2_A_BPropertyOnA;
                 xamlMember.SetIsReadOnly();
                 break;
             case "LinkedMDControlsCppWinRT.A.StringPropertyOnA":
                 userType = (global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("LinkedMDControlsCppWinRT.A");
                 xamlMember = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlMember(this, "StringPropertyOnA", "String");
-                xamlMember.Getter = get_5_A_StringPropertyOnA;
+                xamlMember.Getter = get_3_A_StringPropertyOnA;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "Microsoft.UI.Xaml.Controls.TreeViewNode.Children":
+                userType = (global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlMember(this, "Children", "System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>");
+                xamlMember.Getter = get_4_TreeViewNode_Children;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "Microsoft.UI.Xaml.Controls.TreeViewNode.Content":
+                userType = (global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlMember(this, "Content", "Object");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_5_TreeViewNode_Content;
+                xamlMember.Setter = set_5_TreeViewNode_Content;
+                break;
+            case "Microsoft.UI.Xaml.Controls.TreeViewNode.Depth":
+                userType = (global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlMember(this, "Depth", "Int32");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_6_TreeViewNode_Depth;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "Microsoft.UI.Xaml.Controls.TreeViewNode.HasChildren":
+                userType = (global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlMember(this, "HasChildren", "Boolean");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_7_TreeViewNode_HasChildren;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "Microsoft.UI.Xaml.Controls.TreeViewNode.HasUnrealizedChildren":
+                userType = (global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlMember(this, "HasUnrealizedChildren", "Boolean");
+                xamlMember.Getter = get_8_TreeViewNode_HasUnrealizedChildren;
+                xamlMember.Setter = set_8_TreeViewNode_HasUnrealizedChildren;
+                break;
+            case "Microsoft.UI.Xaml.Controls.TreeViewNode.IsExpanded":
+                userType = (global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlMember(this, "IsExpanded", "Boolean");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_9_TreeViewNode_IsExpanded;
+                xamlMember.Setter = set_9_TreeViewNode_IsExpanded;
+                break;
+            case "Microsoft.UI.Xaml.Controls.TreeViewNode.Parent":
+                userType = (global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlMember(this, "Parent", "Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember.Getter = get_10_TreeViewNode_Parent;
                 xamlMember.SetIsReadOnly();
                 break;
             }
@@ -467,14 +605,15 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
         }
     }
 
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    internal class XamlSystemBaseType : global::Windows.UI.Xaml.Markup.IXamlType
+    internal partial class XamlSystemBaseType : global::Microsoft.UI.Xaml.Markup.IXamlType
     {
         string _fullName;
         global::System.Type _underlyingType;
 
-        public XamlSystemBaseType(string fullName, global::System.Type underlyingType)
+        public XamlSystemBaseType(string fullName, 
+            global::System.Type underlyingType)
         {
             _fullName = fullName;
             _underlyingType = underlyingType;
@@ -490,9 +629,9 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
             }
         }
 
-        virtual public global::Windows.UI.Xaml.Markup.IXamlType BaseType { get { throw new global::System.NotImplementedException(); } }
-        virtual public global::Windows.UI.Xaml.Markup.IXamlMember ContentProperty { get { throw new global::System.NotImplementedException(); } }
-        virtual public global::Windows.UI.Xaml.Markup.IXamlMember GetMember(string name) { throw new global::System.NotImplementedException(); }
+        virtual public global::Microsoft.UI.Xaml.Markup.IXamlType BaseType { get { throw new global::System.NotImplementedException(); } }
+        virtual public global::Microsoft.UI.Xaml.Markup.IXamlMember ContentProperty { get { throw new global::System.NotImplementedException(); } }
+        virtual public global::Microsoft.UI.Xaml.Markup.IXamlMember GetMember(string name) { throw new global::System.NotImplementedException(); }
         virtual public bool IsArray { get { throw new global::System.NotImplementedException(); } }
         virtual public bool IsCollection { get { throw new global::System.NotImplementedException(); } }
         virtual public bool IsConstructible { get { throw new global::System.NotImplementedException(); } }
@@ -501,8 +640,9 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
         virtual public bool IsBindable { get { throw new global::System.NotImplementedException(); } }
         virtual public bool IsReturnTypeStub { get { throw new global::System.NotImplementedException(); } }
         virtual public bool IsLocalType { get { throw new global::System.NotImplementedException(); } }
-        virtual public global::Windows.UI.Xaml.Markup.IXamlType ItemType { get { throw new global::System.NotImplementedException(); } }
-        virtual public global::Windows.UI.Xaml.Markup.IXamlType KeyType { get { throw new global::System.NotImplementedException(); } }
+        virtual public global::Microsoft.UI.Xaml.Markup.IXamlType ItemType { get { throw new global::System.NotImplementedException(); } }
+        virtual public global::Microsoft.UI.Xaml.Markup.IXamlType KeyType { get { throw new global::System.NotImplementedException(); } }
+        virtual public global::Microsoft.UI.Xaml.Markup.IXamlType BoxedType { get { throw new global::System.NotImplementedException(); } }
         virtual public object ActivateInstance() { throw new global::System.NotImplementedException(); }
         virtual public void AddToMap(object instance, object key, object item)  { throw new global::System.NotImplementedException(); }
         virtual public void AddToVector(object instance, object item)  { throw new global::System.NotImplementedException(); }
@@ -511,24 +651,25 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
     }
     
     internal delegate object Activator();
+    internal delegate void StaticInitializer();
     internal delegate void AddToCollection(object instance, object item);
     internal delegate void AddToDictionary(object instance, object key, object item);
     internal delegate object CreateFromStringMethod(string args);
     internal delegate object BoxInstanceMethod(object instance);
 
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    internal class XamlUserType : global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlSystemBaseType
-        , global::Windows.UI.Xaml.Markup.IXamlType2
+    internal partial class XamlUserType : global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlSystemBaseType
+        , global::Microsoft.UI.Xaml.Markup.IXamlType
     {
         global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlTypeInfoProvider _provider;
-        global::Windows.UI.Xaml.Markup.IXamlType _baseType;
+        global::Microsoft.UI.Xaml.Markup.IXamlType _baseType;
+        global::Microsoft.UI.Xaml.Markup.IXamlType _boxedType;
         bool _isArray;
         bool _isMarkupExtension;
         bool _isBindable;
         bool _isReturnTypeStub;
         bool _isLocalType;
-        global::Windows.UI.Xaml.Markup.IXamlType _boxedType;
 
         string _contentPropertyName;
         string _itemTypeName;
@@ -536,7 +677,8 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
         global::System.Collections.Generic.Dictionary<string, string> _memberNames;
         global::System.Collections.Generic.Dictionary<string, object> _enumValues;
 
-        public XamlUserType(global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlTypeInfoProvider provider, string fullName, global::System.Type fullType, global::Windows.UI.Xaml.Markup.IXamlType baseType)
+        public XamlUserType(global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlTypeInfoProvider provider, string fullName, 
+            global::System.Type fullType, global::Microsoft.UI.Xaml.Markup.IXamlType baseType)
             :base(fullName, fullType)
         {
             _provider = provider;
@@ -545,7 +687,7 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
 
         // --- Interface methods ----
 
-        override public global::Windows.UI.Xaml.Markup.IXamlType BaseType { get { return _baseType; } }
+        override public global::Microsoft.UI.Xaml.Markup.IXamlType BaseType { get { return _baseType; } }
         override public bool IsArray { get { return _isArray; } }
         override public bool IsCollection { get { return (CollectionAdd != null); } }
         override public bool IsConstructible { get { return (Activator != null); } }
@@ -554,24 +696,24 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
         override public bool IsBindable { get { return _isBindable; } }
         override public bool IsReturnTypeStub { get { return _isReturnTypeStub; } }
         override public bool IsLocalType { get { return _isLocalType; } }
-        public global::Windows.UI.Xaml.Markup.IXamlType BoxedType { get { return _boxedType; } }
+        override public global::Microsoft.UI.Xaml.Markup.IXamlType BoxedType { get { return _boxedType; } }
 
-        override public global::Windows.UI.Xaml.Markup.IXamlMember ContentProperty
+        override public global::Microsoft.UI.Xaml.Markup.IXamlMember ContentProperty
         {
             get { return _provider.GetMemberByLongName(_contentPropertyName); }
         }
 
-        override public global::Windows.UI.Xaml.Markup.IXamlType ItemType
+        override public global::Microsoft.UI.Xaml.Markup.IXamlType ItemType
         {
             get { return _provider.GetXamlTypeByName(_itemTypeName); }
         }
 
-        override public global::Windows.UI.Xaml.Markup.IXamlType KeyType
+        override public global::Microsoft.UI.Xaml.Markup.IXamlType KeyType
         {
             get { return _provider.GetXamlTypeByName(_keyTypeName); }
         }
 
-        override public global::Windows.UI.Xaml.Markup.IXamlMember GetMember(string name)
+        override public global::Microsoft.UI.Xaml.Markup.IXamlMember GetMember(string name)
         {
             if (_memberNames == null)
             {
@@ -602,7 +744,7 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
 
         override public void RunInitializer() 
         {
-            global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(UnderlyingType.TypeHandle);
+            StaticInitializer();
         }
 
         override public object CreateFromString(string input)
@@ -618,25 +760,25 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
             }
             else if (_enumValues != null)
             {
-                int value = 0;
+                long value = 0;
 
                 string[] valueParts = input.Split(',');
 
                 foreach (string valuePart in valueParts) 
                 {
                     object partValue;
-                    int enumFieldValue = 0;
+                    long enumFieldValue = 0;
                     try
                     {
                         if (_enumValues.TryGetValue(valuePart.Trim(), out partValue))
                         {
-                            enumFieldValue = global::System.Convert.ToInt32(partValue);
+                            enumFieldValue = global::System.Convert.ToInt64(partValue);
                         }
                         else
                         {
                             try
                             {
-                                enumFieldValue = global::System.Convert.ToInt32(valuePart.Trim());
+                                enumFieldValue = global::System.Convert.ToInt64(valuePart.Trim());
                             }
                             catch( global::System.FormatException )
                             {
@@ -646,7 +788,7 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
                                     {
                                         if( _enumValues.TryGetValue(key.Trim(), out partValue) )
                                         {
-                                            enumFieldValue = global::System.Convert.ToInt32(partValue);
+                                            enumFieldValue = global::System.Convert.ToInt64(partValue);
                                             break;
                                         }
                                     }
@@ -661,7 +803,7 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
                     }
                 }
 
-                return value; 
+                return global::System.Convert.ChangeType(value, global::System.Enum.GetUnderlyingType(this.UnderlyingType));
             }
             throw new global::System.ArgumentException(input, FullName);
         }
@@ -669,6 +811,7 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
         // --- End of Interface methods
 
         public Activator Activator { get; set; }
+        public StaticInitializer StaticInitializer { get; set; }
         public AddToCollection CollectionAdd { get; set; }
         public AddToDictionary DictionaryAdd { get; set; }
         public CreateFromStringMethod CreateFromStringMethod {get; set; }
@@ -714,7 +857,7 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
             _keyTypeName = keyTypeName;
         }
 
-        public void SetBoxedType(global::Windows.UI.Xaml.Markup.IXamlType boxedType)
+        public void SetBoxedType(global::Microsoft.UI.Xaml.Markup.IXamlType boxedType)
         {
             _boxedType = boxedType;
         }
@@ -747,9 +890,9 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
     internal delegate object Getter(object instance);
     internal delegate void Setter(object instance, object value);
 
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    internal class XamlMember : global::Windows.UI.Xaml.Markup.IXamlMember
+    internal partial class XamlMember : global::Microsoft.UI.Xaml.Markup.IXamlMember
     {
         global::AppCS.LinkedMdAppCS_XamlTypeInfo.XamlTypeInfoProvider _provider;
         string _name;
@@ -769,7 +912,7 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
 
         public string Name { get { return _name; } }
 
-        public global::Windows.UI.Xaml.Markup.IXamlType Type
+        public global::Microsoft.UI.Xaml.Markup.IXamlType Type
         {
             get { return _provider.GetXamlTypeByName(_typeName); }
         }
@@ -778,7 +921,7 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
         {
             _targetTypeName = targetTypeName;
         }
-        public global::Windows.UI.Xaml.Markup.IXamlType TargetType
+        public global::Microsoft.UI.Xaml.Markup.IXamlType TargetType
         {
             get { return _provider.GetXamlTypeByName(_targetTypeName); }
         }

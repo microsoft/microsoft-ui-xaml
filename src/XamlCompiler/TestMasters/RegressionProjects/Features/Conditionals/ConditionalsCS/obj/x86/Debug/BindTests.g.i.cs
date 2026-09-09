@@ -10,27 +10,31 @@
 
 namespace Conditionals
 {
-    partial class BindTests : global::Windows.UI.Xaml.Controls.UserControl
+    partial class BindTests : global::Microsoft.UI.Xaml.Controls.UserControl
     {
 
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock v3TextBlock; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock clickV2results; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+#pragma warning disable 0169    //  Proactively suppress unused/uninitialized field warning in case they aren't used, for things like x:Name
+#pragma warning disable 0649
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock v3TextBlock; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock clickV2results; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private global::ConditionalControls.Button1 aButton; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock clickV3results; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock clickV3results; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private global::ConditionalControls.Button1 fire; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+#pragma warning restore 0649
+#pragma warning restore 0169
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private bool _contentLoaded;
 
         /// <summary>
         /// InitializeComponent()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public void InitializeComponent()
         {
@@ -40,12 +44,12 @@ namespace Conditionals
             _contentLoaded = true;
 
             global::System.Uri resourceLocator = new global::System.Uri("ms-appx:///BindTests.xaml");
-            global::Windows.UI.Xaml.Application.LoadComponent(this, resourceLocator, global::Windows.UI.Xaml.Controls.Primitives.ComponentResourceLocation.Application);
+            global::Microsoft.UI.Xaml.Application.LoadComponent(this, resourceLocator, global::Microsoft.UI.Xaml.Controls.Primitives.ComponentResourceLocation.Application);
         }
 
-        partial void UnloadObject(global::Windows.UI.Xaml.DependencyObject unloadableObject);
+        partial void UnloadObject(global::Microsoft.UI.Xaml.DependencyObject unloadableObject);
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private interface IBindTests_Bindings
         {
             void Initialize();
@@ -58,11 +62,11 @@ namespace Conditionals
         {
             global::System.WeakReference Parent { get; set; }
             bool ContainsElement(int connectionId);
-            void RegisterForElementConnection(int connectionId, global::Windows.UI.Xaml.Markup.IComponentConnector connector);
+            void RegisterForElementConnection(int connectionId, global::Microsoft.UI.Xaml.Markup.IComponentConnector connector);
         }
 #pragma warning disable 0169    //  Proactively suppress unused field warning in case Bindings is not used.
 #pragma warning disable 0649
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private IBindTests_Bindings Bindings;
 #pragma warning restore 0649
 #pragma warning restore 0169
