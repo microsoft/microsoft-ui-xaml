@@ -286,13 +286,11 @@ namespace UnitTests
         //
 
         [TestMethod]
-        [Ignore]
         public void Codegen_BasicCppWinRT()
         {
             DiffCodegen(@"RegressionProjects\Basic\CppWinRT\Simple\Generated Files");
         }
 
-        [Ignore]
         [TestMethod]
         public void Codegen_BasicCS()
         {
@@ -300,14 +298,12 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_EventHandlingCppWinRT()
         {
             DiffCodegen(@"RegressionProjects\Basic\CppWinRT\EventHandling_968976\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_NonStandardCppWinRT()
         {
             DiffCodegen(@"RegressionProjects\NonStandard\NonStandardCppWinRT\NonStandardCppWinRT\Generated Files");
@@ -318,35 +314,30 @@ namespace UnitTests
         //
 
         [TestMethod]
-        [Ignore]
         public void Codegen_References_CSExe()
         {
             DiffCodegen(@"RegressionProjects\Basic\References\CSharpExe\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_References_CSLib()
         {
             DiffCodegen(@"RegressionProjects\Basic\References\CSharpLib\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_References_CSWinRT()
         {
             DiffCodegen(@"RegressionProjects\Basic\References\CSharpWinrtComponent\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_References_CppWinRTExe()
         {
             DiffCodegen(@"RegressionProjects\Basic\References\CppWinRTExe\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_References_CppWinRTComponent()
         {
             DiffCodegen(@"RegressionProjects\Basic\References\CppWinRTComponent\Generated Files");
@@ -357,28 +348,24 @@ namespace UnitTests
         //
 
         [TestMethod]
-        [Ignore]
         public void Codegen_BindtestbedCS()
         {
             DiffCodegen(@"RegressionProjects\Features\CompiledBinding\BindTestbedCS\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_BindtestbedCppWinRT()
         {
             DiffCodegen(@"RegressionProjects\Features\CompiledBinding\BindTestbedCppWinRT\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_BindTestbedCppWinRTIncremental()
         {
             DiffCodegen(@"RegressionProjects\Features\CompiledBinding\BindTestbedCppWinRT\Incremental\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_BindPhasingTestbedCppWinRT()
         {
             DiffCodegen(@"RegressionProjects\Features\BindPhasingTestBedCppWinRT\BindPhasingTestBedCppWinRT\Generated Files");
@@ -389,105 +376,90 @@ namespace UnitTests
         //
 
         [TestMethod]
-        [Ignore]
         public void Codegen_DeferLoadStrategyCS()
         {
             DiffCodegen(@"RegressionProjects\Features\DeferLoadStrategy\CSharp\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_DeferLoadStrategyCppWinRT()
         {
             DiffCodegen(@"RegressionProjects\Features\DeferLoadStrategy\CppWinRT\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_MetadataTestbedCppWinRT()
         {
             DiffCodegen(@"RegressionProjects\Features\Metadata\MetadataTestbedCppWinRT\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_ReduceProviderLoading_ConsumerCS()
         {
             DiffCodegen(@"RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ConsumerCs\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_ReduceProviderLoading_ProviderCS()
         {
             DiffCodegen(@"RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ProviderCs\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_ReduceProviderLoading_ProviderCppWinRT()
         {
             DiffCodegen(@"RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ProviderCppWinRT\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_ReduceProviderLoading_ConsumerCppWinRT()
         {
             DiffCodegen(@"RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ConsumerCppWinRT\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_MultipleViewsCppWinRT()
         {
             DiffCodegen(@"RegressionProjects\Features\MultiXamlFiles\MultipleViewsTestbedCppWinRT\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_MultipleViewsCS()
         {
             DiffCodegen(@"RegressionProjects\Features\MultiXamlFiles\MultipleViewsTestbed\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_ConditionalControls()
         {
             DiffCodegen(@"RegressionProjects\Features\Conditionals\ConditionalControls\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_ConditionalsModel()
         {
             DiffCodegen(@"RegressionProjects\Features\Conditionals\ConditionalsModel\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_ConditionalsCS()
         {
             DiffCodegen(@"RegressionProjects\Features\Conditionals\ConditionalsCS\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_ConditionalsCppWinRT()
         {
             DiffCodegen(@"RegressionProjects\Features\Conditionals\ConditionalsCppWinRT\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_MarkupExtensionsCppWinRT()
         {
             DiffCodegen(@"RegressionProjects/Features/MarkupExtensions/MarkupExtensionsCppWinRT/Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_MarkupExtensionsCS()
         {
             DiffCodegen(@"RegressionProjects/Features/MarkupExtensions/MarkupExtensionsCS/obj/x86/Debug");

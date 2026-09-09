@@ -12,39 +12,49 @@
 #include <map>
 #include <vector>
 #include <unknwn.h>
+#include <mutex>
 
-#include "winrt/Windows.UI.Xaml.h"
-#include "winrt/Windows.UI.Xaml.Data.h"
-#include "winrt/Windows.UI.Xaml.Markup.h"
+// Undefine GetCurrentTime macro to prevent
+// conflict with Storyboard::GetCurrentTime
+#undef GetCurrentTime
+
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Collections.h>
+#include "winrt/Microsoft.UI.Xaml.h"
+#include "winrt/Microsoft.UI.Xaml.Data.h"
+#include "winrt/Microsoft.UI.Xaml.Markup.h"
+#include "winrt/Microsoft.UI.Xaml.Interop.h"
 #include "winrt/Windows.UI.Xaml.Interop.h"
+#include "winrt/Microsoft.UI.Xaml.XamlTypeInfo.h"
 
 namespace winrt::ConditionalsCppWinRT::implementation
 {
     using IInspectable = ::winrt::Windows::Foundation::IInspectable;
-    using IXamlMember = ::winrt::Windows::UI::Xaml::Markup::IXamlMember;
-    using IXamlType = ::winrt::Windows::UI::Xaml::Markup::IXamlType;
+    using IXamlMember = ::winrt::Microsoft::UI::Xaml::Markup::IXamlMember;
+    using IXamlType = ::winrt::Microsoft::UI::Xaml::Markup::IXamlType;
 
     struct XamlTypeInfoProvider : public std::enable_shared_from_this<XamlTypeInfoProvider>
     {
         IXamlType GetXamlTypeByName(::winrt::hstring const& typeName);
         IXamlType GetXamlTypeByType(::winrt::Windows::UI::Xaml::Interop::TypeName const& t);
         IXamlMember GetMemberByLongName(::winrt::hstring const& longMemberName);
-        void AddOtherProvider(::winrt::Windows::UI::Xaml::Markup::IXamlMetadataProvider otherProvider);
 
     private:
+        std::recursive_mutex _xamlTypesCriticalSection;
+        std::recursive_mutex _xamlMembersCriticalSection;
         std::map<std::wstring, ::winrt::weak_ref<IXamlType>> _xamlTypes;
         std::map<std::wstring, IXamlMember> _xamlMembers;
         IXamlType CreateXamlType(::winrt::hstring const& typeName);
         IXamlMember CreateXamlMember(::winrt::hstring const& longMemberName);
 
-        std::vector<::winrt::Windows::UI::Xaml::Markup::IXamlMetadataProvider> _otherProviders;
-        std::vector<::winrt::Windows::UI::Xaml::Markup::IXamlMetadataProvider> const& OtherProviders();
+        std::vector<::winrt::Microsoft::UI::Xaml::Markup::IXamlMetadataProvider> _otherProviders;
+        std::vector<::winrt::Microsoft::UI::Xaml::Markup::IXamlMetadataProvider> const& OtherProviders();
 
         IXamlType CheckOtherMetadataProvidersForName(::winrt::hstring const& typeName);
         IXamlType CheckOtherMetadataProvidersForType(::winrt::Windows::UI::Xaml::Interop::TypeName const& t);
     };
 
-    struct XamlSystemBaseType : public ::winrt::implements<XamlSystemBaseType, ::winrt::Windows::UI::Xaml::Markup::IXamlType>
+    struct XamlSystemBaseType : public ::winrt::implements<XamlSystemBaseType, ::winrt::Microsoft::UI::Xaml::Markup::IXamlType>
     {
         explicit XamlSystemBaseType(::winrt::hstring const& name);
 
@@ -63,6 +73,8 @@ namespace winrt::ConditionalsCppWinRT::implementation
         bool IsBindable() const;
         IXamlType ItemType() const;
         IXamlType KeyType() const;
+        IXamlType BoxedType() const;
+
         ::winrt::Windows::UI::Xaml::Interop::TypeName UnderlyingType() const;
         IInspectable ActivateInstance() const;
         IInspectable CreateFromString(::winrt::hstring const& value) const;
@@ -81,7 +93,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
         virtual bool IsLocalType() const = 0;
     };
 
-    struct XamlUserType : public ::winrt::implements<XamlUserType, IXamlUserType, ::winrt::Windows::UI::Xaml::Markup::IXamlType, ::winrt::Windows::UI::Xaml::Markup::IXamlType2>
+    struct XamlUserType : public ::winrt::implements<XamlUserType, IXamlUserType, ::winrt::Microsoft::UI::Xaml::Markup::IXamlType>
     {
         explicit XamlUserType(
             std::shared_ptr<XamlTypeInfoProvider> const& provider, 
@@ -105,6 +117,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
         bool IsBindable() const;
         IXamlType ItemType() const;
         IXamlType KeyType() const;
+        IXamlType BoxedType() const;
         ::winrt::Windows::UI::Xaml::Interop::TypeName UnderlyingType() const;
         IInspectable ActivateInstance() const;
         IInspectable CreateFromString(::winrt::hstring const& value) const;
@@ -112,9 +125,6 @@ namespace winrt::ConditionalsCppWinRT::implementation
         void AddToVector(IInspectable const& instance, IInspectable const& value) const;
         void AddToMap(IInspectable const& instance, IInspectable const& key, IInspectable const& value) const;
         void RunInitializer() const;
-
-        // IXamlType2
-        IXamlType BoxedType() const;
 
         // Additional Setters
         void IsArray(bool value);
@@ -167,7 +177,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
         bool _isLocalType{ false };
     };
 
-    struct XamlMember : public ::winrt::implements<XamlMember, ::winrt::Windows::UI::Xaml::Markup::IXamlMember>
+    struct XamlMember : public ::winrt::implements<XamlMember, ::winrt::Microsoft::UI::Xaml::Markup::IXamlMember>
     {
         explicit XamlMember(
             std::shared_ptr<XamlTypeInfoProvider> const& provider, 
