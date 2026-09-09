@@ -27,10 +27,21 @@ namespace UnitTests
 
     class TestHelper
     {
+        // Folder next to the test assembly that XamlCompilerUnitTests.csproj stages the C#/WinRT
+        // projection reference closure into. Keep in sync with $(ProjectionReferencesDir) there.
+        private const string ProjectionReferencesFolderName = "ProjectionReferences";
+
+        // Folder next to the test assembly that XamlCompilerUnitTests.csproj stages the .NET 8
+        // targeting pack into. Keep in sync with $(FrameworkReferencesDir) there.
+        private const string FrameworkReferencesFolderName = "FrameworkReferences";
+
         public TestHelper()
         {
-            // Use .NET Framework 4.7.2 Facades which has System.Runtime.dll and other required facades.
-            // Falls back to .NETCore\v4.5 if Facades path doesn't exist.
+            // The .NET Framework 4.7.2 Facades are the second layer of the managed framework
+            // reference set - the staged .NET 8 targeting pack takes precedence (see
+            // FrameworkAssemblyFilePaths). They are retained because the winmd path still needs the
+            // WinRT projection facades that .NET 5+ removed.
+            // Falls back to .NETCore\v4.5 if the Facades path doesn't exist.
             string facadesPath = null;
             try
             {
@@ -358,7 +369,102 @@ namespace UnitTests
             return (schema.UserAssemblies.Count > 0) ? schema.UserAssemblies[0] : null;
         }
 
+        /// <summary>
+        /// A type universe and its initialized <see cref="TypeResolver"/>, cached for the lifetime
+        /// of the test process and keyed by <see cref="SchemaMode"/>.
+        ///
+        /// This mirrors what the compiler itself does. CompileXamlInternal holds its universe and
+        /// resolver in statics (<c>s_typeUniverse</c> / <c>s_typeResolver</c>) and rebuilds them only
+        /// when the project changes; <c>InstanceCacheManager.ClearCache()</c> runs per compile pass,
+        /// and a fresh DirectUISchemaContext is built per pass. Here "same project" is "same
+        /// SchemaMode", because GetRuntimeAssemblyPaths is a pure function of the mode.
+        /// </summary>
+        private sealed class UniverseEntry
+        {
+            public XamlTypeUniverse Universe;
+            public TypeResolver Resolver;
+            public List<Assembly> Assemblies;
+            public Assembly UserTypeAssembly;
+            public Assembly LocalAssembly;
+        }
+
+        private static readonly Dictionary<SchemaMode, UniverseEntry> s_universeCache =
+            new Dictionary<SchemaMode, UniverseEntry>();
+
         public DirectUISchemaContext LoadSchema(SchemaMode schemaMode)
+        {
+            // Give this schema the same clean slate a real compile pass gets. The compiler's
+            // process-wide Core.InstanceCache<,> caches - FileHelpers' platform/WinUI assembly cache
+            // among them - are scoped by CompileXamlInternal calling ClearCache() at the end of every
+            // pass. These tests build schemas directly and never go through CompileXamlInternal, so
+            // without this the first schema built in the process decides, for every later test, which
+            // assembly is "the platform assembly" and which is "the WinUI assembly", and the suite
+            // becomes order-dependent.
+            //
+            // This stays per-call even though the universe below is cached: the universe is the part
+            // that is expensive and immutable, the instance caches are the part that must not leak
+            // between tests.
+            InstanceCacheManager.ClearCache();
+
+            UniverseEntry entry;
+            bool isNewUniverse = !s_universeCache.TryGetValue(schemaMode, out entry);
+            if (isNewUniverse)
+            {
+                entry = BuildUniverse(schemaMode);
+            }
+
+            // The schema itself is never shared. Every cache it owns - masterTypeTable, uiXamlCache,
+            // masterTypeTableByFullName, domFullTypeNameCache, SchemaErrors, SchemaWarnings - is an
+            // instance field, and it re-wraps the assemblies per instance via DirectUIAssembly.Wrap,
+            // so a fresh context per call keeps all schema-level state per test. The assembly list is
+            // copied so nothing downstream can mutate the cached one.
+            var schema = new DirectUISchemaContext(new List<Assembly>(entry.Assemblies), null, null, null, true);
+
+            if (isNewUniverse)
+            {
+                // Built after the first schema, which is the order this code has always used.
+                // InitializeTypeNameMap asserts if called twice, so it happens once per mode.
+                entry.Resolver = new TypeResolver(entry.Universe);
+                entry.Resolver.InitializeTypeNameMap();
+                s_universeCache.Add(schemaMode, entry);
+            }
+
+            schema.TypeResolver = entry.Resolver;
+
+            if (entry.LocalAssembly != null)
+            {
+                schema.LocalAssembly = entry.LocalAssembly;
+            }
+            if (entry.UserTypeAssembly != null)
+            {
+                schema.UserAssemblies.Add(entry.UserTypeAssembly);
+            }
+
+            return schema;
+        }
+
+        /// <summary>
+        /// Disposes every cached universe and drops the compiler statics that reference them. Called
+        /// from the assembly-level cleanup; the equivalent in the product is
+        /// CompileXamlInternal.UnloadReferences.
+        /// </summary>
+        internal static void ReleaseCachedUniverses()
+        {
+            foreach (UniverseEntry entry in s_universeCache.Values)
+            {
+                entry.Resolver = null;
+                entry.Universe.Dispose();
+            }
+            s_universeCache.Clear();
+
+            InstanceCacheManager.ClearCache();
+
+            // Not an InstanceCache<,>, so ClearCache above does not reach it. Its CustomAttributeData
+            // values reference Types from the universes just disposed.
+            ReflectionHelper.Release();
+        }
+
+        private UniverseEntry BuildUniverse(SchemaMode schemaMode)
         {
             // Find the Run Time assemblies.
             bool loadNativeRuntime = (schemaMode & SchemaMode.NativeRuntime) == SchemaMode.NativeRuntime;
@@ -409,22 +515,13 @@ namespace UnitTests
                 assemblies.Add(mscorlib);
             }
 
-            var schema = new DirectUISchemaContext(assemblies, null, null, null, true);
-
-            TypeResolver typeResolver = new TypeResolver(typeUniverse);
-            typeResolver.InitializeTypeNameMap();
-            schema.TypeResolver = typeResolver;
-
-            if (localAsm != null)
+            return new UniverseEntry
             {
-                schema.LocalAssembly = localAsm;
-            }
-            if (userTypeAssembly != null)
-            {
-                schema.UserAssemblies.Add(userTypeAssembly);
-            }
-
-            return schema;
+                Universe = typeUniverse,
+                Assemblies = assemblies,
+                UserTypeAssembly = userTypeAssembly,
+                LocalAssembly = localAsm,
+            };
         }
 
         public void XamlRewrite(string xamlFileName, XamlClassCodeInfo classInfo, XamlFileCodeInfo fileInfo)
@@ -577,6 +674,29 @@ namespace UnitTests
             paths.Add(ProxyHelper.FindProgramFilesFile(
                 referencesPath + @"Windows.Foundation.UniversalApiContract\{0}\Windows.Foundation.UniversalApiContract.winmd",
                 KnownVersions.UniversalApiContractVersion));
+
+            if (!loadNativeRuntime)
+            {
+                // The C#/WinRT projection closure the net8.0 user assembly is built against, loaded
+                // BEFORE the winmds. This mirrors a real managed project, which passes
+                // ReferenceAssemblies="@(ReferencePath)" - for a net8.0 WinAppSDK project that is
+                // Microsoft.WinUI.dll and no WinUI .winmd at all.
+                //
+                // Ordering matters twice over:
+                //  * FileHelpers.IsWinUIAssembly latches onto the first loaded assembly that defines
+                //    Microsoft.UI.Xaml.DependencyObject, and that assembly supplies the property
+                //    types the schema validates against. LibManagedDll's base types are TypeRefs
+                //    scoped to Microsoft.WinUI, so the projection has to win or the two are distinct
+                //    Type identities and every assignability check against a WinUI type fails.
+                //  * The winmds still follow, because they carry the platform surface the projection
+                //    does not define - Windows.Foundation.HResult (IsPlatformAssembly's sentinel) and
+                //    the Microsoft.UI.* types outside Microsoft.UI.Xaml.
+                //
+                // This ordering is only safe because LoadSchema clears the compiler's process-wide
+                // caches first; see the comment there.
+                paths.AddRange(ProjectionReferenceFilePaths);
+            }
+
             // Load Microsoft.UI.winmd before Microsoft.UI.Xaml.winmd (dependency order)
             string winuiDir = Path.GetDirectoryName(ProxyHelper.WinUIWinmdPath);
             if (!String.IsNullOrEmpty(winuiDir))
@@ -622,6 +742,21 @@ namespace UnitTests
                 if (_frameworkAssemblyFilePaths == null)
                 {
                     _frameworkAssemblyFilePaths = new List<string>();
+
+                    // .NET 8 reference assemblies come FIRST. The user assembly the tests feed the
+                    // compiler (LibManagedDll) is net8.0, and so is the C#/WinRT projection
+                    // closure it drags in; those assemblies reference BCL surface that simply does
+                    // not exist in .NET Framework (System.Runtime.InteropServices.IDynamicInterfaceCastable,
+                    // for one). The universe resolves an assembly reference to the first loaded
+                    // assembly whose simple name matches (SimpleUniverse.TryResolveAssembly ->
+                    // AssemblyName.ReferenceMatchesDefinition), so ordering is what selects .NET 8
+                    // semantics over the .NET Framework facades below.
+                    _frameworkAssemblyFilePaths.AddRange(Directory.EnumerateFiles(StagedFrameworkReferencesPath, "*.dll"));
+
+                    // The .NET Framework facades stay as a second layer. They are still required by
+                    // the winmd path (SchemaMode.LoadUserWinmd): a .winmd's projected types reference
+                    // System.Runtime.InteropServices.WindowsRuntime and friends, which .NET 5+ removed.
+                    // Anything the .NET 8 pack already provides is shadowed by the ordering above.
                     _frameworkAssemblyFilePaths.AddRange(Directory.EnumerateFiles(FrameworkSDKPath, "*.dll"));
 
                     // The .NETFramework v4.7.2\Facades folder does NOT ship
@@ -659,6 +794,56 @@ namespace UnitTests
                     }
                 }
                 return _frameworkAssemblyFilePaths;
+            }
+        }
+
+        /// <summary>
+        /// The .NET 8 targeting pack, staged next to the test assembly by XamlCompilerUnitTests.csproj.
+        /// </summary>
+        private static String StagedFrameworkReferencesPath
+        {
+            get { return GetStagedReferenceFolder(FrameworkReferencesFolderName); }
+        }
+
+        private static String GetStagedReferenceFolder(string folderName)
+        {
+            string testAssemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string dir = Path.Combine(testAssemblyDir, folderName);
+            if (!Directory.Exists(dir))
+            {
+                throw new DirectoryNotFoundException(
+                    $"The staged reference folder '{dir}' is missing. It is produced by " +
+                    "XamlCompilerUnitTests.csproj; rebuild the test project.");
+            }
+            return dir;
+        }
+
+        List<String> _projectionReferenceFilePaths;
+        /// <summary>
+        /// The C#/WinRT projection closure that the net8.0 / WinAppSDK LibManagedDll assembly is
+        /// compiled against: Microsoft.WinUI, Microsoft.Windows.SDK.NET, WinRT.Runtime and
+        /// Microsoft.InteractiveExperiences.Projection. Without these the type universe cannot resolve
+        /// the base types of the user types the tests feed it, and every LoadUserDll test fails with
+        /// "Type universe cannot resolve assembly".
+        ///
+        /// The real compiler is handed the same assemblies by MSBuild on @(ReferencePath);
+        /// CompileXamlInternal.SortReferenceAssemblies treats microsoft.winui.dll as a load-by-default
+        /// reference alongside microsoft.ui.xaml.winmd, so loading both here matches the product.
+        ///
+        /// XamlCompilerUnitTests.csproj stages them into this folder next to the test assembly, so
+        /// this works from a test payload as well as from an enlistment.
+        /// </summary>
+        private List<String> ProjectionReferenceFilePaths
+        {
+            get
+            {
+                if (_projectionReferenceFilePaths == null)
+                {
+                    _projectionReferenceFilePaths = new List<string>();
+                    _projectionReferenceFilePaths.AddRange(
+                        Directory.EnumerateFiles(GetStagedReferenceFolder(ProjectionReferencesFolderName), "*.dll"));
+                }
+                return _projectionReferenceFilePaths;
             }
         }
 

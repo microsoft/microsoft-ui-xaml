@@ -30,8 +30,12 @@ namespace Win8Xaml.CompilerProxies
 
         public TypeInfoCollector(DirectUISchemaContext schema)
         {
+            // Microsoft.UI.Xaml.Markup.Compiler.TypeInfoCollector's constructor gained a third
+            // parameter, 'bool enableBindingDiagnostics', in 384fb378b2 (PR 12002979, "Add warnings
+            // for Bindings when PublishAot is set"). Pass false, which is what CompileXamlInternal
+            // passes unless the project opts into binding diagnostics.
             var targetPlatformType = new ProxyHelper("Microsoft.UI.Xaml.Markup.Compiler.Platform");
-            Object[] args = new Object[] { schema.Instance, targetPlatformType.CreateInstance() };
+            Object[] args = new Object[] { schema.Instance, targetPlatformType.CreateInstance(), false };
             _instance = _typeInfoCollectorType.CreateInstance(args);
         }
 

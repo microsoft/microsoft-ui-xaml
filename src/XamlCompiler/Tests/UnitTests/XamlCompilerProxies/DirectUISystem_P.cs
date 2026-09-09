@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 using System;
+using System.Collections;
 using System.Reflection;
 
 namespace Win8Xaml.CompilerProxies
@@ -8,16 +9,19 @@ namespace Win8Xaml.CompilerProxies
     public class DirectUISystem
     {
         static ProxyHelper _directUiSystemType;
-        static PropertyInfo _xamlTypeUniverseProperty;
-        static PropertyInfo _windowsWinmdProperty;
+        static PropertyInfo _xamlTypeUniversesProperty;
+        static PropertyInfo _platformAssembliesProperty;
 
         Object _instance;
 
         static DirectUISystem()
         {
             _directUiSystemType = new ProxyHelper("Microsoft.UI.Xaml.Markup.Compiler.DirectUI.DirectUISystem");
-            _xamlTypeUniverseProperty = _directUiSystemType.GetProperty("XamlTypeUniverses", true);
-            _windowsWinmdProperty = _directUiSystemType.GetProperty("WindowsWinmds", true);
+            _xamlTypeUniversesProperty = _directUiSystemType.GetProperty("XamlTypeUniverses", true);
+            // DirectUISystem's single 'WindowsWinmds' property became the 'PlatformAssemblies' list
+            // when WinUI gained more than one platform winmd. Both are lists; the proxy exposes the
+            // first entry, which is what the single-valued property used to return.
+            _platformAssembliesProperty = _directUiSystemType.GetProperty("PlatformAssemblies", true);
         }
 
         public DirectUISystem(object instance)
@@ -29,7 +33,7 @@ namespace Win8Xaml.CompilerProxies
         {
             get
             {
-                Object xamlTypeUniverse = _xamlTypeUniverseProperty.GetValue(_instance, null);
+                Object xamlTypeUniverse = First(_xamlTypeUniversesProperty.GetValue(_instance, null));
                 return new XamlTypeUniverse(xamlTypeUniverse);
             }
         }
@@ -38,10 +42,24 @@ namespace Win8Xaml.CompilerProxies
         {
             get
             {
-                Object duiAsmInstance = _windowsWinmdProperty.GetValue(_instance, null);
+                Object duiAsmInstance = First(_platformAssembliesProperty.GetValue(_instance, null));
                 DirectUIAssembly duiAsm = new DirectUIAssembly(duiAsmInstance);
                 return duiAsm;
             }
+        }
+
+        private static Object First(Object list)
+        {
+            IEnumerable items = list as IEnumerable;
+            if (items == null)
+            {
+                return list;
+            }
+            foreach (Object item in items)
+            {
+                return item;
+            }
+            return null;
         }
     }
 }
