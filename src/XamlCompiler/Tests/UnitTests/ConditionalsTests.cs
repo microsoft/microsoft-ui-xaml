@@ -103,11 +103,7 @@ namespace UnitTests
                 "<rs1:TextBlock Text='Foo'/>"
                 );
 
-            // Custom predicates. Since 7027415b09 ("Custom Predicate Support for XAML", PR 14429148)
-            // a function name that is not one of the six built-ins above is no longer an error -
-            // ApiInformation's constructor treats it as a user-supplied predicate
-            // (ApiInformation.cs, IsCustomPredicate). These two therefore parse cleanly; they used to
-            // be expected failures in _SchemaErrors and _SyntaxErrors respectively.
+            // Unrecognized names are assumed to be custom predicates.
             TestParseConditionalNamespaceExpectSuccess("xmlns:rs1='http://schemas.microsoft.com/winfx/2006/xaml/presentation?FooBar(Windows.Foundation.UniversalApiContract,3,0)'",
                 "<rs1:TextBlock Text='Foo'/>"
                 );
@@ -148,12 +144,6 @@ namespace UnitTests
                     }
                 );
             // Other syntax errors(
-            // NOTE: 'IsAPIContractPresent(,,)' used to be listed here as a third syntax error. The
-            // grammar's function_param rule matches any tokens between the parens
-            // (ConditionalNamespace.g4), so an empty argument list has never been a *syntax* error;
-            // it was rejected because the function name was unknown. Since 7027415b09 unknown names
-            // are legal custom predicates, so it now parses cleanly and has moved to
-            // Conditionals_ParseConditionalNamespace_Success.
         }
 
         [TestMethod]
@@ -184,11 +174,6 @@ namespace UnitTests
         [TestMethod]
         public void Conditionals_ParseConditionalNamespace_SchemaErrors()
         {
-            // NOTE: 'FooBar(...)' used to be listed here as an unrecognised API information method.
-            // Since 7027415b09 an unknown name is a legal custom predicate, so it now parses cleanly
-            // and has moved to Conditionals_ParseConditionalNamespace_Success. What is still
-            // validated is the argument count of the six built-in methods.
-
             // More params than needed
             TestParseConditionalNamespaceExpectErrors("xmlns:rs1='http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,3,0,4)'",
                 "<rs1:TextBlock Test='Foo'/>",

@@ -13,7 +13,9 @@
     d:DesignWidth="400">
     <!--
         x:Property is not usable from C++ at all, so the whole x:Properties block below is
-        commented out and the two properties it would have generated are declared in
+        commented out. C++/WinRT support is tracked by
+        https://github.com/microsoft/microsoft-ui-xaml/issues/11825.
+        The two properties it would have generated are declared in
         BindTestbed.idl and implemented in xPropertiesTest.h instead.  Two separate limitations
         stack up here:
 

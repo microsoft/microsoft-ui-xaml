@@ -3,12 +3,8 @@
 //
 // Implementation of the MainPage class.
 //
-// This is the C++/WinRT counterpart of MetadataTestbedCS: it repeatedly resolves a type
-// and one of its members through the IXamlMetadataProvider the XAML compiler generates
-// for this project. The C++/CX original reached into the generated
-// XamlTypeInfo::InfoProvider::XamlTypeInfoProvider directly; going through
-// IXamlMetadataProvider exercises the same generated metadata over a public API and
-// matches what the C# project does.
+// Repeatedly resolves a type and member through the generated IXamlMetadataProvider, matching
+// the public API exercised by MetadataTestbedCS.
 //
 
 #include "pch.h"

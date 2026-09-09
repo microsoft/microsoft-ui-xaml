@@ -11,26 +11,8 @@ namespace UnitTests
 {
     /// <summary>
     /// Assembly-wide trace configuration.
-    ///
-    /// The tests load a <c>chk</c> build of the compiler, so <see cref="Debug"/> output is compiled
-    /// in. Two sites in <c>TypeResolver</c> (<c>AddClrAssemblies</c> and <c>AddWinmdAssembly</c>)
-    /// emit one formatted <c>Debug.WriteLine</c> per duplicate type name, and a managed schema
-    /// carries ~6,360 duplicates because every C#/WinRT projection is loaded alongside the winmd it
-    /// projects - <c>Microsoft.WinUI</c> vs <c>Microsoft.UI.Xaml.winmd</c>,
-    /// <c>Microsoft.Windows.SDK.NET</c> vs <c>Windows.Foundation.UniversalApiContract.winmd</c>,
-    /// <c>Microsoft.InteractiveExperiences.Projection</c> vs <c>Microsoft.UI.winmd</c>. Loading both
-    /// is deliberate; see the ordering comment in <c>TestHelper.GetRuntimeAssemblyPaths</c>.
-    ///
-    /// A full run builds 550 such universes, so ~1.75 million messages are produced. While
-    /// <c>App.config</c> set <c>&lt;assert logfilename="..."/&gt;</c>, every one of them was written
-    /// to disk by <c>DefaultTraceListener</c>, which opens, seeks, writes, flushes and closes the
-    /// file on each call. Measured cost: 15.8 of 36.2 minutes, and a log that had grown to 6.77 GB
-    /// because it is appended to and never truncated.
-    ///
-    /// The log existed so that assertion failures stay visible when the modal assert dialog is
-    /// disabled, and that is preserved here: <see cref="AssertOnlyTraceListener"/> drops
-    /// Write/WriteLine but still records <c>Fail</c>. Measured over a full run, the old log
-    /// contained 0 assertions and 100% duplicate-type messages, so nothing diagnostic is lost.
+    /// Replaces the default trace listener so ordinary Debug output is discarded while Debug.Assert
+    /// failures remain visible and are written to UnitTests.assertions.log.
     /// </summary>
     [TestClass]
     public static class TestRunSetup
@@ -57,10 +39,7 @@ namespace UnitTests
     }
 
     /// <summary>
-    /// Records assertion failures and discards ordinary trace output. Assertions keep the behaviour
-    /// the old <c>&lt;assert logfilename="..."/&gt;</c> configuration had: they are logged and
-    /// execution continues, so a test is not turned into a failure by an assert that did not
-    /// previously fail one.
+    /// Discards ordinary trace output and logs assertion failures without failing the test process.
     /// </summary>
     internal sealed class AssertOnlyTraceListener : TraceListener
     {

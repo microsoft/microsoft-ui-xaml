@@ -31,13 +31,8 @@ namespace winrt::BindTestbed::implementation
 
     void DisableXBindTests::On_Loaded(IInspectable const&, wux::RoutedEventArgs const&)
     {
-        // The C#, VB and C++/CX code generators implement IXamlBindScopeDiagnostics on the generated
-        // XamlBindings class when EnableXBindDiagnostics is set (see the ShouldGenerateDisableXBind
-        // branches in MoComCppBindingInfoPass1.tt / MoComCppBindingInfoPass2.tt).  The C++/WinRT
-        // generator has no equivalent, so Bindings does not expose Disable(line, column) and the
-        // query below is expected to fail today.  The page is still exercised for the x:Bind code
-        // generation it shares with its C# and C++/CX counterparts: function bindings, event
-        // bindings and two-way bindings.
+        // C++/WinRT does not generate IXamlBindScopeDiagnostics, so Disable(line, column) is
+        // unavailable. The page still covers function, event, and two-way x:Bind generation.
         if (!Bindings)
         {
             return;

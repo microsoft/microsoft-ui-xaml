@@ -65,11 +65,8 @@
     <Image Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
   <ItemGroup>
-    <!--
-      A native app consuming WinRT components authored in both supported languages, which
-      is what the removed C++/CX native-exe project covered. CSharpExe covers the
-      same ground from the managed side.
-    -->
+    <!-- Native consumer coverage for C#/WinRT- and C++/WinRT-authored components; CSharpExe
+         covers the managed consumer. -->
     <ProjectReference Include="..\CppWinRTComponent\CppWinRTComponent.vcxproj">
       <Project>{7c8d2b51-b3c2-490c-859e-13ff73ae618f}</Project>
     </ProjectReference>

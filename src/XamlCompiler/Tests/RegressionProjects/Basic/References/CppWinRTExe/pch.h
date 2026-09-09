@@ -29,10 +29,5 @@
 
 #include "winrt/CppWinRTComponent.h"
 #include "winrt/CSharpWinrtComponent.h"
-// This project deliberately does NOT include
-// winrt/CSharpWinrtComponent.CSharpWinrtComponent_XamlTypeInfo.h by hand. The XAML compiler chains
-// this component's generated metadata provider from XamlTypeInfo.g.cpp's OtherProviders(), and a
-// managed component puts its provider in a nested <Ns>.<Ns>_XamlTypeInfo namespace that cppwinrt
-// projects into its own header. Emitting that include is the compiler's job, and
-// TypeInfoDefinition.LookupNeededCppWinRTProjectionHeaderFiles does it. Leaving it out here is what
-// keeps this project a regression test for that behavior.
+// Do not include the managed component's metadata-provider header here; generated
+// XamlTypeInfo.g.cpp must include it for OtherProviders() to compile.

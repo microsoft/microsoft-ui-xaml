@@ -153,19 +153,19 @@ namespace winrt::BindTestbed::implementation
                     obj3 = targetElement;
                 }
                 break;
-            case 4: // DisableXBindTests.xaml line 29
+            case 4: // DisableXBindTests.xaml line 25
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                     obj4 = targetElement;
                 }
                 break;
-            case 5: // DisableXBindTests.xaml line 30
+            case 5: // DisableXBindTests.xaml line 26
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
                     obj5 = targetElement;
                 }
                 break;
-            case 6: // DisableXBindTests.xaml line 40
+            case 6: // DisableXBindTests.xaml line 36
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Slider>();
                     obj6 = targetElement;
@@ -189,7 +189,7 @@ namespace winrt::BindTestbed::implementation
                         });
                 }
                 break;
-            case 7: // DisableXBindTests.xaml line 41
+            case 7: // DisableXBindTests.xaml line 37
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Slider>();
                     obj7 = targetElement;
@@ -216,7 +216,7 @@ namespace winrt::BindTestbed::implementation
                         });
                 }
                 break;
-            case 8: // DisableXBindTests.xaml line 34
+            case 8: // DisableXBindTests.xaml line 30
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                     obj8 = targetElement;
@@ -232,7 +232,7 @@ namespace winrt::BindTestbed::implementation
                     });
                 }
                 break;
-            case 9: // DisableXBindTests.xaml line 35
+            case 9: // DisableXBindTests.xaml line 31
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                     obj9 = targetElement;
@@ -248,7 +248,7 @@ namespace winrt::BindTestbed::implementation
                     });
                 }
                 break;
-            case 10: // DisableXBindTests.xaml line 36
+            case 10: // DisableXBindTests.xaml line 32
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::GridView>();
                     obj10 = targetElement;
@@ -357,7 +357,7 @@ namespace winrt::BindTestbed::implementation
             ::winrt::Windows::Foundation::IInspectable result = GetDataRoot().FunctionReturningNull();
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
-                // DisableXBindTests.xaml line 29
+                // DisableXBindTests.xaml line 25
                 Set_Microsoft_UI_Xaml_Controls_ContentControl_Content(obj4, result, L"Great, TargetNullValue works!");
             }
         }
@@ -367,7 +367,7 @@ namespace winrt::BindTestbed::implementation
             int32_t result = GetDataRoot().Model().FunctionReturningInt();
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
-                // DisableXBindTests.xaml line 30
+                // DisableXBindTests.xaml line 26
                 Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj5, ::winrt::to_hstring(result));
             }
         }
@@ -480,7 +480,7 @@ namespace winrt::BindTestbed::implementation
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
-                // DisableXBindTests.xaml line 40
+                // DisableXBindTests.xaml line 36
                 Set_Microsoft_UI_Xaml_Controls_Primitives_RangeBase_Value(obj6, obj);
             }
         }
@@ -501,7 +501,7 @@ namespace winrt::BindTestbed::implementation
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
-                // DisableXBindTests.xaml line 41
+                // DisableXBindTests.xaml line 37
                 Set_Microsoft_UI_Xaml_Controls_Primitives_RangeBase_Value(obj7, obj);
             }
         }

@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+// Normalizes volatile lines in copied XAML compiler masters for stable codegen comparisons while
+// preserving each file's UTF-8 byte order mark.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -33,10 +36,8 @@ namespace FixMasters
 
         static void FixMasters(FileInfo file)
         {
-            // Whether the file has a byte order mark is a property of the generated file, not
-            // something this tool gets to decide. Rewriting every master with one would churn the
-            // masters of targets that were not regenerated, and would stop a second run of
-            // copynewmasters.cmd from being a no-op.
+            // Preserve each generated file's existing UTF-8 BOM so unchanged baselines remain
+            // byte-stable.
             bool hasByteOrderMark = HasUtf8ByteOrderMark(file);
 
             var lines = new Queue<string>();

@@ -1,24 +1,8 @@
-# XAML compiler codegen targets - the single source of truth for the codegen-to-masters path
-# contract. Both consumers read this file, so neither can drift from the other:
-#
-#   * copynewmasters.cmd   - copies codegen over the masters to accept a new baseline
-#   * CodegenTests.cs      - DiffCodegen diffs codegen against the masters
-#
-# One target per line:
-#
-#   <master directory>|<codegen directory>
-#
-# The master directory is relative to
-# src\XamlCompiler\TestMasters\RegressionProjects\<chk|fre>.
-# The codegen directory is relative to the build flavor root, i.e.
-# %BuildOutputRoot%\%_BuildArch%%_BuildType% (BuildOutput\obj\amd64chk\ for an amd64chk window).
-#
-# Codegen directories are $(GeneratedFilesDir), which src\XamlCompiler\Tests\Directory.Build.props
-# defines for every test project, in every language. They are deliberately free of configuration,
-# target framework and runtime identifier, so this file does not need editing when those change.
-# The master directory names below are historical and intentionally left alone; they are not
-# required to resemble the codegen directory names.
-#
+# Shared codegen-to-master mapping consumed by copynewmasters.cmd and CodegenTests.cs.
+# Format: <master directory>|<codegen directory>
+# Master directories are relative to TestMasters\RegressionProjects\<chk|fre>.
+# Codegen directories are $(GeneratedFilesDir) paths relative to the build flavor root.
+# The two paths are independent and do not need matching names.
 # Blank lines and lines starting with # are ignored.
 
 # Basic

@@ -2,30 +2,25 @@
 <!-- Copyright (c) Microsoft Corporation.
  Licensed under the MIT License. -->
 <!--
-  WORKAROUND for a C#/WinRT authoring defect. Remove this file once the defect is fixed upstream.
-
-  C#/WinRT picks the assembly for a TypeRef in WinRTTypeWriter.GetTypeReference: types carrying
-  [WindowsRuntimeType("...")] are scoped from that attribute, and everything else that has a custom
-  WinRT<->.NET mapping is scoped from a hard-coded table in TypeMapper.cs. In the WinUI branch of
-  that table all 13 entries whose namespace is Microsoft.UI.Xaml.* declare the assembly
-  "Microsoft.UI" - for example:
+  C#/WinRT's WinRTTypeWriter.GetTypeReference chooses a TypeRef's assembly scope from
+  WindowsRuntimeTypeAttribute when one is present. For mapped types without that attribute, it uses
+  the hard-coded mappings in TypeMapper.cs. The 13 Microsoft.UI.Xaml.* mappings name Microsoft.UI
+  as their assembly even though those types are defined by Microsoft.UI.Xaml. For example:
 
       { "System.ComponentModel.INotifyPropertyChanged",
             new MappedType("Microsoft.UI.Xaml.Data", "INotifyPropertyChanged", "Microsoft.UI") },
 
-  Those types are defined in assembly Microsoft.UI.Xaml. Microsoft.UI is the IXP assembly and
-  defines none of them. The sibling UWP branch of the same table gets this right, scoping the
-  equivalent entries to "Windows.UI.Xaml", which is what shows this to be a defect rather than a
-  convention. It is still present on CsWinRT master, so upgrading the package does not fix it.
+  The authored WinMD consequently references both assemblies but scopes these TypeRefs to
+  Microsoft.UI, which does not define them. Consumers that search outside the declared scope can
+  hide the mismatch. The XAML compiler intentionally resolves the declared ResolutionScope and then
+  calls GetType(name, throwOnError: true), so it reports WMC9999 for the missing type and stops before
+  code generation.
 
-  The authored winmd therefore references both assemblies and points a handful of TypeRefs at the
-  wrong one of the two. Lenient consumers never notice. The XAML compiler resolves TypeRefs strictly
-  - ResolveTypeRef resolves the scope and then calls GetType(name, throwOnError: true) - so it
-  correctly reports "WMC9999: Cannot find type Microsoft.UI.Xaml.Data.INotifyPropertyChanged in
-  module Microsoft.UI.winmd" and the consuming project never reaches codegen.
-
-  This target repoints those TypeRefs at the assembly that actually defines them. It is a metadata
-  repair, not compiler leniency: the compiler keeps resolving strictly, so nothing else is masked.
+  This target scans the authored WinMD for Microsoft.UI.Xaml.* TypeRefs scoped to Microsoft.UI and
+  rewrites their ResolutionScope to the existing Microsoft.UI.Xaml AssemblyRef. Both scopes use the
+  AssemblyRef coded-index tag and width, so the task can update the rows in place without moving
+  metadata or renumbering tokens. It verifies the written file afterward, preserving strict XAML
+  compiler resolution while leaving unrelated metadata untouched.
 -->
 <Project>
 
@@ -221,10 +216,8 @@ public class FixCsWinRTWinMDScopes : Microsoft.Build.Utilities.Task
   </UsingTask>
 
   <!--
-    Runs after C#/WinRT has placed the authored winmd in the output folder, which is the copy that
-    midlrt, cppwinrt and the XAML compiler are handed (verified in the .rsp files of a consuming
-    project). The task is idempotent, so it is harmless on incremental builds where the winmd was
-    not regenerated, and a no-op for components that never reference the wrong assembly.
+    Repair the WinMD copy consumed by midlrt, cppwinrt, and the XAML compiler. The task is
+    idempotent and skips metadata without matching TypeRefs.
   -->
   <Target Name="FixCsWinRTWinMDTypeRefScopes"
           AfterTargets="CsWinRTPlaceWinMDInOutputFolder"
