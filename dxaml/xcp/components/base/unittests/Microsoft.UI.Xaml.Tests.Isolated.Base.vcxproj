@@ -26,12 +26,14 @@
         <ClInclude Include="SmartPointerUnitTests.h"/>
         <ClInclude Include="ThreadLocalStorageUnitTests.h"/>
         <ClInclude Include="VectorTreeUnitTests.h"/>
+        <ClInclude Include="XamlLaunchTraceUnitTests.h"/>
 
         <ClCompile Include="CompactInlineVectorUnitTests.cpp"/>
         <ClCompile Include="SmartPointerUnitTests.cpp"/>
         <ClCompile Include="ThreadLocalStorageUnitTests.cpp"/>
         <ClCompile Include="VectorTreeUnitTests.cpp"/>
         <ClCompile Include="BitVectorUnitTests.cpp"/>
+        <ClCompile Include="XamlLaunchTraceUnitTests.cpp"/>
     </ItemGroup>
 
     <ItemDefinitionGroup>

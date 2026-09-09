@@ -4,6 +4,7 @@
 #pragma once
 
 #include <TraceLoggingInterop.h>
+#include <XamlLaunchPhase.h>
 
 // Uncomment to trace allocations via ETW
 //#define TRACE_ALLOC 1
@@ -30,6 +31,24 @@ class XamlTelemetry final : public TelemetryBase
     IMPLEMENT_TELEMETRY_CLASS(XamlTelemetry, XamlTelemetryLogging);
 
 public:
+
+    // Level/keyword zero does not bypass provider enablement or guarantee delivery.
+    static void LaunchPhaseTransition(const XamlLaunchObservation& observation) noexcept
+    {
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "LaunchPhaseTransition",
+            TraceLoggingUInt32(static_cast<uint32_t>(observation.previousPhase), "PreviousPhase"),
+            TraceLoggingUInt32(static_cast<uint32_t>(observation.nextPhase), "NextPhase"),
+            TraceLoggingUInt32(observation.ordinal, "Ordinal"),
+            TraceLoggingUInt32(observation.frameNumber, "FrameNumber"),
+            TraceLoggingUInt64(observation.startupId, "StartupId"),
+            TraceLoggingUInt64(observation.coreId, "CoreId"),
+            TraceLoggingUInt32(static_cast<uint32_t>(observation.entryKind), "EntryKind"),
+            TraceLoggingUInt64(observation.drawAttemptId, "DrawAttemptId"),
+            TraceLoggingUInt32(observation.flags, "Flags"),
+            TraceLoggingUInt32(observation.result, "Result"),
+            TraceLoggingLevel(WINEVENT_LEVEL_LOG_ALWAYS));
+    }
 
     // Calling into a public API
     DEFINE_TRACELOGGING_EVENT_PARAM4(PublicApiCall,

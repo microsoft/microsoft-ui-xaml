@@ -26,6 +26,7 @@
 #include <DesktopWindowImpl.h>
 #include <Microsoft.UI.Dispatching.Interop.h>
 #include <Microsoft.Windows.ApplicationModel.Resources.h>
+#include <XamlLaunchPhase.h>
 
 using namespace RuntimeFeatureBehavior;
 using namespace DirectUI;
@@ -162,6 +163,7 @@ _Check_return_ HRESULT FrameworkApplication::RemoveIslandImpl(_In_ xaml_hosting:
 // See startup-overview.md for details
 _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IApplicationInitializationCallback* pCallback)
 {
+    XamlLaunchStartupScope launchScope;
     g_spApplicationInitializationCallback = pCallback;
 
     // Determine which AppPolicyWindowingModel the application is using.
@@ -881,7 +883,15 @@ _Check_return_ HRESULT FrameworkApplication::InvokeOnLaunchActivated(
     IFC_RETURN(launchActivatedEventArgs->put_UWPLaunchActivatedEventArgs(uwpLaunchActivatedEventArgs));
 
     // Invoke the application's custom Application.OnLaunched method
+    const auto launchCallback = DXamlCore::GetCurrent()->GetHandle()->GetLaunchTrace().BeginOnLaunched();
     HRESULT hr = FrameworkApplication::GetCurrentNoRef()->OnLaunchedProtected(launchActivatedEventArgs.Get());
+
+    // Reacquire instead of retaining a core pointer across application code.
+    auto currentCore = DXamlCore::GetCurrentNoCreate();
+    auto currentCoreHandle = currentCore ? currentCore->GetHandle() : nullptr;
+    XamlLaunchTrace::EndOnLaunched(
+        launchCallback, currentCoreHandle ? &currentCoreHandle->GetLaunchTrace() : nullptr, static_cast<uint32_t>(hr));
+
     if (FAILED(hr))
     {
         IGNOREHR(ErrorHelper::ReportUnhandledError(hr));
