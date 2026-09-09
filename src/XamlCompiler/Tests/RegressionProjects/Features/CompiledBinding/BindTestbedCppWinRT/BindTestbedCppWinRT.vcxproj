@@ -243,14 +243,15 @@
     <Midl Include="BindTestbed.idl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="WinRT.Host.runtimeconfig.json">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <!--
       BindTestbedModel is a C#/WinRT component; referencing the project gives this app its
       .winmd and .dll without a hard-coded, flavor-specific HintPath into BuildOutput.
+
+      The component also generates the WinRT.Host.runtimeconfig.json its activation host
+      needs, so this project does not carry one. The hand-authored file that used to sit
+      here dated from before the model was a C#/WinRT component: it asked for a shared
+      Microsoft.NETCore.App 8.0.0 and set none of the CSWINRT_* configuration properties,
+      and it collided with the generated one when the packaging project harvested both.
     -->
     <ProjectReference Include="..\BindTestbedModel\BindTestbedModel.csproj">
       <Private>false</Private>

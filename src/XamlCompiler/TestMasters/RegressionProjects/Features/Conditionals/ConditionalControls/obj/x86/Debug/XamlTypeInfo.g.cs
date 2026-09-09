@@ -11,7 +11,7 @@ using System.Diagnostics.CodeAnalysis;
 
 
 
-namespace ConditionalControls.ConditionalControls_XamlTypeInfo
+namespace ConditionalControlsV2.ConditionalControls_XamlTypeInfo
 {
     /// <summary>
     /// Main class for providing metadata for the app or library
@@ -20,15 +20,15 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public sealed partial class XamlMetaDataProvider : global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider
     {
-        private global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlTypeInfoProvider _provider = null;
+        private global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlTypeInfoProvider _provider = null;
 
-        private global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlTypeInfoProvider Provider
+        private global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlTypeInfoProvider Provider
         {
             get
             {
                 if (_provider == null)
                 {
-                    _provider = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlTypeInfoProvider();
+                    _provider = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlTypeInfoProvider();
                 }
                 return _provider;
             }
@@ -78,7 +78,7 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
                 {
                     xamlType = CreateXamlType(typeIndex);
                 }
-                var userXamlType = xamlType as global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType;
+                var userXamlType = xamlType as global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType;
                 if(xamlType == null || (userXamlType != null && userXamlType.IsReturnTypeStub && !userXamlType.IsLocalType))
                 {
                     global::Microsoft.UI.Xaml.Markup.IXamlType libXamlType = CheckOtherMetadataProvidersForType(type);
@@ -117,7 +117,7 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
                 {
                     xamlType = CreateXamlType(typeIndex);
                 }
-                var userXamlType = xamlType as global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType;
+                var userXamlType = xamlType as global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType;
                 if(xamlType == null || (userXamlType != null && userXamlType.IsReturnTypeStub && !userXamlType.IsLocalType))
                 {
                     global::Microsoft.UI.Xaml.Markup.IXamlType libXamlType = CheckOtherMetadataProvidersForName(typeName);
@@ -175,15 +175,15 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
         private void InitTypeTables()
         {
             _typeNameTable = new string[15];
-            _typeNameTable[0] = "ConditionalControls.Button1";
+            _typeNameTable[0] = "ConditionalControlsV2.Button1";
             _typeNameTable[1] = "Microsoft.UI.Xaml.Controls.UserControl";
             _typeNameTable[2] = "String";
-            _typeNameTable[3] = "ConditionalControls.Button2";
-            _typeNameTable[4] = "ConditionalControls.Button3";
-            _typeNameTable[5] = "ConditionalControls.TextBlock1";
-            _typeNameTable[6] = "ConditionalControls.TextBlock2";
-            _typeNameTable[7] = "ConditionalControls.TextBlock3";
-            _typeNameTable[8] = "ConditionalControls.TextBox1";
+            _typeNameTable[3] = "ConditionalControlsV2.Button2";
+            _typeNameTable[4] = "ConditionalControlsV2.Button3";
+            _typeNameTable[5] = "ConditionalControlsV2.TextBlock1";
+            _typeNameTable[6] = "ConditionalControlsV2.TextBlock2";
+            _typeNameTable[7] = "ConditionalControlsV2.TextBlock3";
+            _typeNameTable[8] = "ConditionalControlsV2.TextBox1";
             _typeNameTable[9] = "Microsoft.UI.Xaml.Controls.TreeViewNode";
             _typeNameTable[10] = "Microsoft.UI.Xaml.DependencyObject";
             _typeNameTable[11] = "System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>";
@@ -192,15 +192,15 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
             _typeNameTable[14] = "Boolean";
 
             _typeTable = new global::System.Type[15];
-            _typeTable[0] = typeof(global::ConditionalControls.Button1);
+            _typeTable[0] = typeof(global::ConditionalControlsV2.Button1);
             _typeTable[1] = typeof(global::Microsoft.UI.Xaml.Controls.UserControl);
             _typeTable[2] = typeof(global::System.String);
-            _typeTable[3] = typeof(global::ConditionalControls.Button2);
-            _typeTable[4] = typeof(global::ConditionalControls.Button3);
-            _typeTable[5] = typeof(global::ConditionalControls.TextBlock1);
-            _typeTable[6] = typeof(global::ConditionalControls.TextBlock2);
-            _typeTable[7] = typeof(global::ConditionalControls.TextBlock3);
-            _typeTable[8] = typeof(global::ConditionalControls.TextBox1);
+            _typeTable[3] = typeof(global::ConditionalControlsV2.Button2);
+            _typeTable[4] = typeof(global::ConditionalControlsV2.Button3);
+            _typeTable[5] = typeof(global::ConditionalControlsV2.TextBlock1);
+            _typeTable[6] = typeof(global::ConditionalControlsV2.TextBlock2);
+            _typeTable[7] = typeof(global::ConditionalControlsV2.TextBlock3);
+            _typeTable[8] = typeof(global::ConditionalControlsV2.TextBox1);
             _typeTable[9] = typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode);
             _typeTable[10] = typeof(global::Microsoft.UI.Xaml.DependencyObject);
             _typeTable[11] = typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>);
@@ -241,21 +241,21 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
             return -1;
         }
 
-        private object Activate_0_Button1() { return new global::ConditionalControls.Button1(); }
-        private object Activate_3_Button2() { return new global::ConditionalControls.Button2(); }
-        private object Activate_4_Button3() { return new global::ConditionalControls.Button3(); }
-        private object Activate_5_TextBlock1() { return new global::ConditionalControls.TextBlock1(); }
-        private object Activate_6_TextBlock2() { return new global::ConditionalControls.TextBlock2(); }
-        private object Activate_7_TextBlock3() { return new global::ConditionalControls.TextBlock3(); }
-        private object Activate_8_TextBox1() { return new global::ConditionalControls.TextBox1(); }
+        private object Activate_0_Button1() { return new global::ConditionalControlsV2.Button1(); }
+        private object Activate_3_Button2() { return new global::ConditionalControlsV2.Button2(); }
+        private object Activate_4_Button3() { return new global::ConditionalControlsV2.Button3(); }
+        private object Activate_5_TextBlock1() { return new global::ConditionalControlsV2.TextBlock1(); }
+        private object Activate_6_TextBlock2() { return new global::ConditionalControlsV2.TextBlock2(); }
+        private object Activate_7_TextBlock3() { return new global::ConditionalControlsV2.TextBlock3(); }
+        private object Activate_8_TextBox1() { return new global::ConditionalControlsV2.TextBox1(); }
         private object Activate_9_TreeViewNode() { return new global::Microsoft.UI.Xaml.Controls.TreeViewNode(); }
-        private void StaticInitializer_0_Button1() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.Button1).TypeHandle);
-        private void StaticInitializer_3_Button2() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.Button2).TypeHandle);
-        private void StaticInitializer_4_Button3() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.Button3).TypeHandle);
-        private void StaticInitializer_5_TextBlock1() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.TextBlock1).TypeHandle);
-        private void StaticInitializer_6_TextBlock2() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.TextBlock2).TypeHandle);
-        private void StaticInitializer_7_TextBlock3() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.TextBlock3).TypeHandle);
-        private void StaticInitializer_8_TextBox1() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.TextBox1).TypeHandle);
+        private void StaticInitializer_0_Button1() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControlsV2.Button1).TypeHandle);
+        private void StaticInitializer_3_Button2() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControlsV2.Button2).TypeHandle);
+        private void StaticInitializer_4_Button3() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControlsV2.Button3).TypeHandle);
+        private void StaticInitializer_5_TextBlock1() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControlsV2.TextBlock1).TypeHandle);
+        private void StaticInitializer_6_TextBlock2() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControlsV2.TextBlock2).TypeHandle);
+        private void StaticInitializer_7_TextBlock3() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControlsV2.TextBlock3).TypeHandle);
+        private void StaticInitializer_8_TextBox1() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControlsV2.TextBox1).TypeHandle);
         private void StaticInitializer_9_TreeViewNode() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode).TypeHandle);
         private void StaticInitializer_11_IList() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>).TypeHandle);
         private void VectorAdd_11_IList(object instance, object item)
@@ -267,16 +267,16 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
 
         private global::Microsoft.UI.Xaml.Markup.IXamlType CreateXamlType(int typeIndex)
         {
-            global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlSystemBaseType xamlType = null;
-            global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType userType;
+            global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlSystemBaseType xamlType = null;
+            global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType userType;
             string typeName = _typeNameTable[typeIndex];
             global::System.Type type = _typeTable[typeIndex];
 
             switch (typeIndex)
             {
 
-            case 0:   //  ConditionalControls.Button1
-                userType = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
+            case 0:   //  ConditionalControlsV2.Button1
+                userType = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_0_Button1;
                 userType.StaticInitializer = StaticInitializer_0_Button1;
                 userType.AddMemberName("Text");
@@ -289,15 +289,15 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
                 break;
 
             case 1:   //  Microsoft.UI.Xaml.Controls.UserControl
-                xamlType = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                xamlType = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
             case 2:   //  String
-                xamlType = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                xamlType = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 3:   //  ConditionalControls.Button2
-                userType = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
+            case 3:   //  ConditionalControlsV2.Button2
+                userType = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_3_Button2;
                 userType.StaticInitializer = StaticInitializer_3_Button2;
                 userType.AddMemberName("Text");
@@ -309,8 +309,8 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 4:   //  ConditionalControls.Button3
-                userType = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
+            case 4:   //  ConditionalControlsV2.Button3
+                userType = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_4_Button3;
                 userType.StaticInitializer = StaticInitializer_4_Button3;
                 userType.AddMemberName("Text");
@@ -322,8 +322,8 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 5:   //  ConditionalControls.TextBlock1
-                userType = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
+            case 5:   //  ConditionalControlsV2.TextBlock1
+                userType = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_5_TextBlock1;
                 userType.StaticInitializer = StaticInitializer_5_TextBlock1;
                 userType.AddMemberName("Text");
@@ -331,8 +331,8 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 6:   //  ConditionalControls.TextBlock2
-                userType = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
+            case 6:   //  ConditionalControlsV2.TextBlock2
+                userType = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_6_TextBlock2;
                 userType.StaticInitializer = StaticInitializer_6_TextBlock2;
                 userType.AddMemberName("Text");
@@ -340,8 +340,8 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 7:   //  ConditionalControls.TextBlock3
-                userType = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
+            case 7:   //  ConditionalControlsV2.TextBlock3
+                userType = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_7_TextBlock3;
                 userType.StaticInitializer = StaticInitializer_7_TextBlock3;
                 userType.AddMemberName("Text");
@@ -349,8 +349,8 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 8:   //  ConditionalControls.TextBox1
-                userType = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
+            case 8:   //  ConditionalControlsV2.TextBox1
+                userType = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_8_TextBox1;
                 userType.StaticInitializer = StaticInitializer_8_TextBox1;
                 userType.AddMemberName("Text");
@@ -359,7 +359,7 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
                 break;
 
             case 9:   //  Microsoft.UI.Xaml.Controls.TreeViewNode
-                userType = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
+                userType = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
                 userType.Activator = Activate_9_TreeViewNode;
                 userType.StaticInitializer = StaticInitializer_9_TreeViewNode;
                 userType.AddMemberName("Children");
@@ -374,11 +374,11 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
                 break;
 
             case 10:   //  Microsoft.UI.Xaml.DependencyObject
-                xamlType = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                xamlType = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
             case 11:   //  System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
-                userType = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, null);
+                userType = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType(this, typeName, type, null);
                 userType.StaticInitializer = StaticInitializer_11_IList;
                 userType.CollectionAdd = VectorAdd_11_IList;
                 userType.SetIsReturnTypeStub();
@@ -386,15 +386,15 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
                 break;
 
             case 12:   //  Object
-                xamlType = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                xamlType = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
             case 13:   //  Int32
-                xamlType = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                xamlType = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
             case 14:   //  Boolean
-                xamlType = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                xamlType = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
             }
             return xamlType;
@@ -457,192 +457,192 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
 
         private object get_0_Button1_Text(object instance)
         {
-            var that = (global::ConditionalControls.Button1)instance;
+            var that = (global::ConditionalControlsV2.Button1)instance;
             return that.Text;
         }
         private void set_0_Button1_Text(object instance, object Value)
         {
-            var that = (global::ConditionalControls.Button1)instance;
+            var that = (global::ConditionalControlsV2.Button1)instance;
             that.Text = (global::System.String)Value;
         }
         private object get_1_Button1_Caption(object instance)
         {
-            var that = (global::ConditionalControls.Button1)instance;
+            var that = (global::ConditionalControlsV2.Button1)instance;
             return that.Caption;
         }
         private void set_1_Button1_Caption(object instance, object Value)
         {
-            var that = (global::ConditionalControls.Button1)instance;
+            var that = (global::ConditionalControlsV2.Button1)instance;
             that.Caption = (global::System.String)Value;
         }
         private object get_2_Button1_V1Property(object instance)
         {
-            var that = (global::ConditionalControls.Button1)instance;
+            var that = (global::ConditionalControlsV2.Button1)instance;
             return that.V1Property;
         }
         private void set_2_Button1_V1Property(object instance, object Value)
         {
-            var that = (global::ConditionalControls.Button1)instance;
+            var that = (global::ConditionalControlsV2.Button1)instance;
             that.V1Property = (global::System.String)Value;
         }
         private object get_3_Button1_V2Property(object instance)
         {
-            var that = (global::ConditionalControls.Button1)instance;
+            var that = (global::ConditionalControlsV2.Button1)instance;
             return that.V2Property;
         }
         private void set_3_Button1_V2Property(object instance, object Value)
         {
-            var that = (global::ConditionalControls.Button1)instance;
+            var that = (global::ConditionalControlsV2.Button1)instance;
             that.V2Property = (global::System.String)Value;
         }
         private object get_4_Button1_V3Property(object instance)
         {
-            var that = (global::ConditionalControls.Button1)instance;
+            var that = (global::ConditionalControlsV2.Button1)instance;
             return that.V3Property;
         }
         private void set_4_Button1_V3Property(object instance, object Value)
         {
-            var that = (global::ConditionalControls.Button1)instance;
+            var that = (global::ConditionalControlsV2.Button1)instance;
             that.V3Property = (global::System.String)Value;
         }
         private object get_5_Button2_Text(object instance)
         {
-            var that = (global::ConditionalControls.Button2)instance;
+            var that = (global::ConditionalControlsV2.Button2)instance;
             return that.Text;
         }
         private void set_5_Button2_Text(object instance, object Value)
         {
-            var that = (global::ConditionalControls.Button2)instance;
+            var that = (global::ConditionalControlsV2.Button2)instance;
             that.Text = (global::System.String)Value;
         }
         private object get_6_Button2_Caption(object instance)
         {
-            var that = (global::ConditionalControls.Button2)instance;
+            var that = (global::ConditionalControlsV2.Button2)instance;
             return that.Caption;
         }
         private void set_6_Button2_Caption(object instance, object Value)
         {
-            var that = (global::ConditionalControls.Button2)instance;
+            var that = (global::ConditionalControlsV2.Button2)instance;
             that.Caption = (global::System.String)Value;
         }
         private object get_7_Button2_V1Property(object instance)
         {
-            var that = (global::ConditionalControls.Button2)instance;
+            var that = (global::ConditionalControlsV2.Button2)instance;
             return that.V1Property;
         }
         private void set_7_Button2_V1Property(object instance, object Value)
         {
-            var that = (global::ConditionalControls.Button2)instance;
+            var that = (global::ConditionalControlsV2.Button2)instance;
             that.V1Property = (global::System.String)Value;
         }
         private object get_8_Button2_V2Property(object instance)
         {
-            var that = (global::ConditionalControls.Button2)instance;
+            var that = (global::ConditionalControlsV2.Button2)instance;
             return that.V2Property;
         }
         private void set_8_Button2_V2Property(object instance, object Value)
         {
-            var that = (global::ConditionalControls.Button2)instance;
+            var that = (global::ConditionalControlsV2.Button2)instance;
             that.V2Property = (global::System.String)Value;
         }
         private object get_9_Button2_V3Property(object instance)
         {
-            var that = (global::ConditionalControls.Button2)instance;
+            var that = (global::ConditionalControlsV2.Button2)instance;
             return that.V3Property;
         }
         private void set_9_Button2_V3Property(object instance, object Value)
         {
-            var that = (global::ConditionalControls.Button2)instance;
+            var that = (global::ConditionalControlsV2.Button2)instance;
             that.V3Property = (global::System.String)Value;
         }
         private object get_10_Button3_Text(object instance)
         {
-            var that = (global::ConditionalControls.Button3)instance;
+            var that = (global::ConditionalControlsV2.Button3)instance;
             return that.Text;
         }
         private void set_10_Button3_Text(object instance, object Value)
         {
-            var that = (global::ConditionalControls.Button3)instance;
+            var that = (global::ConditionalControlsV2.Button3)instance;
             that.Text = (global::System.String)Value;
         }
         private object get_11_Button3_Caption(object instance)
         {
-            var that = (global::ConditionalControls.Button3)instance;
+            var that = (global::ConditionalControlsV2.Button3)instance;
             return that.Caption;
         }
         private void set_11_Button3_Caption(object instance, object Value)
         {
-            var that = (global::ConditionalControls.Button3)instance;
+            var that = (global::ConditionalControlsV2.Button3)instance;
             that.Caption = (global::System.String)Value;
         }
         private object get_12_Button3_V1Property(object instance)
         {
-            var that = (global::ConditionalControls.Button3)instance;
+            var that = (global::ConditionalControlsV2.Button3)instance;
             return that.V1Property;
         }
         private void set_12_Button3_V1Property(object instance, object Value)
         {
-            var that = (global::ConditionalControls.Button3)instance;
+            var that = (global::ConditionalControlsV2.Button3)instance;
             that.V1Property = (global::System.String)Value;
         }
         private object get_13_Button3_V2Property(object instance)
         {
-            var that = (global::ConditionalControls.Button3)instance;
+            var that = (global::ConditionalControlsV2.Button3)instance;
             return that.V2Property;
         }
         private void set_13_Button3_V2Property(object instance, object Value)
         {
-            var that = (global::ConditionalControls.Button3)instance;
+            var that = (global::ConditionalControlsV2.Button3)instance;
             that.V2Property = (global::System.String)Value;
         }
         private object get_14_Button3_V3Property(object instance)
         {
-            var that = (global::ConditionalControls.Button3)instance;
+            var that = (global::ConditionalControlsV2.Button3)instance;
             return that.V3Property;
         }
         private void set_14_Button3_V3Property(object instance, object Value)
         {
-            var that = (global::ConditionalControls.Button3)instance;
+            var that = (global::ConditionalControlsV2.Button3)instance;
             that.V3Property = (global::System.String)Value;
         }
         private object get_15_TextBlock1_Text(object instance)
         {
-            var that = (global::ConditionalControls.TextBlock1)instance;
+            var that = (global::ConditionalControlsV2.TextBlock1)instance;
             return that.Text;
         }
         private void set_15_TextBlock1_Text(object instance, object Value)
         {
-            var that = (global::ConditionalControls.TextBlock1)instance;
+            var that = (global::ConditionalControlsV2.TextBlock1)instance;
             that.Text = (global::System.String)Value;
         }
         private object get_16_TextBlock2_Text(object instance)
         {
-            var that = (global::ConditionalControls.TextBlock2)instance;
+            var that = (global::ConditionalControlsV2.TextBlock2)instance;
             return that.Text;
         }
         private void set_16_TextBlock2_Text(object instance, object Value)
         {
-            var that = (global::ConditionalControls.TextBlock2)instance;
+            var that = (global::ConditionalControlsV2.TextBlock2)instance;
             that.Text = (global::System.String)Value;
         }
         private object get_17_TextBlock3_Text(object instance)
         {
-            var that = (global::ConditionalControls.TextBlock3)instance;
+            var that = (global::ConditionalControlsV2.TextBlock3)instance;
             return that.Text;
         }
         private void set_17_TextBlock3_Text(object instance, object Value)
         {
-            var that = (global::ConditionalControls.TextBlock3)instance;
+            var that = (global::ConditionalControlsV2.TextBlock3)instance;
             that.Text = (global::System.String)Value;
         }
         private object get_18_TextBox1_Text(object instance)
         {
-            var that = (global::ConditionalControls.TextBox1)instance;
+            var that = (global::ConditionalControlsV2.TextBox1)instance;
             return that.Text;
         }
         private void set_18_TextBox1_Text(object instance, object Value)
         {
-            var that = (global::ConditionalControls.TextBox1)instance;
+            var that = (global::ConditionalControlsV2.TextBox1)instance;
             that.Text = (global::System.String)Value;
         }
         private object get_19_TreeViewNode_Children(object instance)
@@ -698,168 +698,168 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
 
         private global::Microsoft.UI.Xaml.Markup.IXamlMember CreateXamlMember(string longMemberName)
         {
-            global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember xamlMember = null;
-            global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType userType;
+            global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember xamlMember = null;
+            global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType userType;
 
             switch (longMemberName)
             {
-            case "ConditionalControls.Button1.Text":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button1");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "Text", "String");
+            case "ConditionalControlsV2.Button1.Text":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.Button1");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "Text", "String");
                 xamlMember.Getter = get_0_Button1_Text;
                 xamlMember.Setter = set_0_Button1_Text;
                 break;
-            case "ConditionalControls.Button1.Caption":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button1");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "Caption", "String");
+            case "ConditionalControlsV2.Button1.Caption":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.Button1");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "Caption", "String");
                 xamlMember.Getter = get_1_Button1_Caption;
                 xamlMember.Setter = set_1_Button1_Caption;
                 break;
-            case "ConditionalControls.Button1.V1Property":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button1");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "V1Property", "String");
+            case "ConditionalControlsV2.Button1.V1Property":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.Button1");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "V1Property", "String");
                 xamlMember.Getter = get_2_Button1_V1Property;
                 xamlMember.Setter = set_2_Button1_V1Property;
                 break;
-            case "ConditionalControls.Button1.V2Property":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button1");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "V2Property", "String");
+            case "ConditionalControlsV2.Button1.V2Property":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.Button1");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "V2Property", "String");
                 xamlMember.Getter = get_3_Button1_V2Property;
                 xamlMember.Setter = set_3_Button1_V2Property;
                 break;
-            case "ConditionalControls.Button1.V3Property":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button1");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "V3Property", "String");
+            case "ConditionalControlsV2.Button1.V3Property":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.Button1");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "V3Property", "String");
                 xamlMember.Getter = get_4_Button1_V3Property;
                 xamlMember.Setter = set_4_Button1_V3Property;
                 break;
-            case "ConditionalControls.Button2.Text":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button2");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "Text", "String");
+            case "ConditionalControlsV2.Button2.Text":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.Button2");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "Text", "String");
                 xamlMember.Getter = get_5_Button2_Text;
                 xamlMember.Setter = set_5_Button2_Text;
                 break;
-            case "ConditionalControls.Button2.Caption":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button2");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "Caption", "String");
+            case "ConditionalControlsV2.Button2.Caption":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.Button2");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "Caption", "String");
                 xamlMember.Getter = get_6_Button2_Caption;
                 xamlMember.Setter = set_6_Button2_Caption;
                 break;
-            case "ConditionalControls.Button2.V1Property":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button2");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "V1Property", "String");
+            case "ConditionalControlsV2.Button2.V1Property":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.Button2");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "V1Property", "String");
                 xamlMember.Getter = get_7_Button2_V1Property;
                 xamlMember.Setter = set_7_Button2_V1Property;
                 break;
-            case "ConditionalControls.Button2.V2Property":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button2");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "V2Property", "String");
+            case "ConditionalControlsV2.Button2.V2Property":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.Button2");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "V2Property", "String");
                 xamlMember.Getter = get_8_Button2_V2Property;
                 xamlMember.Setter = set_8_Button2_V2Property;
                 break;
-            case "ConditionalControls.Button2.V3Property":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button2");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "V3Property", "String");
+            case "ConditionalControlsV2.Button2.V3Property":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.Button2");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "V3Property", "String");
                 xamlMember.Getter = get_9_Button2_V3Property;
                 xamlMember.Setter = set_9_Button2_V3Property;
                 break;
-            case "ConditionalControls.Button3.Text":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button3");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "Text", "String");
+            case "ConditionalControlsV2.Button3.Text":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.Button3");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "Text", "String");
                 xamlMember.Getter = get_10_Button3_Text;
                 xamlMember.Setter = set_10_Button3_Text;
                 break;
-            case "ConditionalControls.Button3.Caption":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button3");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "Caption", "String");
+            case "ConditionalControlsV2.Button3.Caption":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.Button3");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "Caption", "String");
                 xamlMember.Getter = get_11_Button3_Caption;
                 xamlMember.Setter = set_11_Button3_Caption;
                 break;
-            case "ConditionalControls.Button3.V1Property":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button3");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "V1Property", "String");
+            case "ConditionalControlsV2.Button3.V1Property":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.Button3");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "V1Property", "String");
                 xamlMember.Getter = get_12_Button3_V1Property;
                 xamlMember.Setter = set_12_Button3_V1Property;
                 break;
-            case "ConditionalControls.Button3.V2Property":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button3");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "V2Property", "String");
+            case "ConditionalControlsV2.Button3.V2Property":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.Button3");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "V2Property", "String");
                 xamlMember.Getter = get_13_Button3_V2Property;
                 xamlMember.Setter = set_13_Button3_V2Property;
                 break;
-            case "ConditionalControls.Button3.V3Property":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button3");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "V3Property", "String");
+            case "ConditionalControlsV2.Button3.V3Property":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.Button3");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "V3Property", "String");
                 xamlMember.Getter = get_14_Button3_V3Property;
                 xamlMember.Setter = set_14_Button3_V3Property;
                 break;
-            case "ConditionalControls.TextBlock1.Text":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.TextBlock1");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "Text", "String");
+            case "ConditionalControlsV2.TextBlock1.Text":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.TextBlock1");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "Text", "String");
                 xamlMember.Getter = get_15_TextBlock1_Text;
                 xamlMember.Setter = set_15_TextBlock1_Text;
                 break;
-            case "ConditionalControls.TextBlock2.Text":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.TextBlock2");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "Text", "String");
+            case "ConditionalControlsV2.TextBlock2.Text":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.TextBlock2");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "Text", "String");
                 xamlMember.Getter = get_16_TextBlock2_Text;
                 xamlMember.Setter = set_16_TextBlock2_Text;
                 break;
-            case "ConditionalControls.TextBlock3.Text":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.TextBlock3");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "Text", "String");
+            case "ConditionalControlsV2.TextBlock3.Text":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.TextBlock3");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "Text", "String");
                 xamlMember.Getter = get_17_TextBlock3_Text;
                 xamlMember.Setter = set_17_TextBlock3_Text;
                 break;
-            case "ConditionalControls.TextBox1.Text":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.TextBox1");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "Text", "String");
+            case "ConditionalControlsV2.TextBox1.Text":
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControlsV2.TextBox1");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "Text", "String");
                 xamlMember.Getter = get_18_TextBox1_Text;
                 xamlMember.Setter = set_18_TextBox1_Text;
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.Children":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "Children", "System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>");
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "Children", "System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>");
                 xamlMember.Getter = get_19_TreeViewNode_Children;
                 xamlMember.SetIsReadOnly();
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.Content":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "Content", "Object");
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "Content", "Object");
                 xamlMember.SetIsDependencyProperty();
                 xamlMember.Getter = get_20_TreeViewNode_Content;
                 xamlMember.Setter = set_20_TreeViewNode_Content;
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.Depth":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "Depth", "Int32");
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "Depth", "Int32");
                 xamlMember.SetIsDependencyProperty();
                 xamlMember.Getter = get_21_TreeViewNode_Depth;
                 xamlMember.SetIsReadOnly();
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.HasChildren":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "HasChildren", "Boolean");
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "HasChildren", "Boolean");
                 xamlMember.SetIsDependencyProperty();
                 xamlMember.Getter = get_22_TreeViewNode_HasChildren;
                 xamlMember.SetIsReadOnly();
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.HasUnrealizedChildren":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "HasUnrealizedChildren", "Boolean");
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "HasUnrealizedChildren", "Boolean");
                 xamlMember.Getter = get_23_TreeViewNode_HasUnrealizedChildren;
                 xamlMember.Setter = set_23_TreeViewNode_HasUnrealizedChildren;
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.IsExpanded":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "IsExpanded", "Boolean");
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "IsExpanded", "Boolean");
                 xamlMember.SetIsDependencyProperty();
                 xamlMember.Getter = get_24_TreeViewNode_IsExpanded;
                 xamlMember.Setter = set_24_TreeViewNode_IsExpanded;
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.Parent":
-                userType = (global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
-                xamlMember = new global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlMember(this, "Parent", "Microsoft.UI.Xaml.Controls.TreeViewNode");
+                userType = (global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlMember(this, "Parent", "Microsoft.UI.Xaml.Controls.TreeViewNode");
                 xamlMember.Getter = get_25_TreeViewNode_Parent;
                 xamlMember.SetIsReadOnly();
                 break;
@@ -922,10 +922,10 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    internal partial class XamlUserType : global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlSystemBaseType
+    internal partial class XamlUserType : global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlSystemBaseType
         , global::Microsoft.UI.Xaml.Markup.IXamlType
     {
-        global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlTypeInfoProvider _provider;
+        global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlTypeInfoProvider _provider;
         global::Microsoft.UI.Xaml.Markup.IXamlType _baseType;
         global::Microsoft.UI.Xaml.Markup.IXamlType _boxedType;
         bool _isArray;
@@ -940,7 +940,7 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
         global::System.Collections.Generic.Dictionary<string, string> _memberNames;
         global::System.Collections.Generic.Dictionary<string, object> _enumValues;
 
-        public XamlUserType(global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlTypeInfoProvider provider, string fullName, 
+        public XamlUserType(global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlTypeInfoProvider provider, string fullName, 
             global::System.Type fullType, global::Microsoft.UI.Xaml.Markup.IXamlType baseType)
             :base(fullName, fullType)
         {
@@ -1157,7 +1157,7 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     internal partial class XamlMember : global::Microsoft.UI.Xaml.Markup.IXamlMember
     {
-        global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlTypeInfoProvider _provider;
+        global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlTypeInfoProvider _provider;
         string _name;
         bool _isAttachable;
         bool _isDependencyProperty;
@@ -1166,7 +1166,7 @@ namespace ConditionalControls.ConditionalControls_XamlTypeInfo
         string _typeName;
         string _targetTypeName;
 
-        public XamlMember(global::ConditionalControls.ConditionalControls_XamlTypeInfo.XamlTypeInfoProvider provider, string name, string typeName)
+        public XamlMember(global::ConditionalControlsV2.ConditionalControls_XamlTypeInfo.XamlTypeInfoProvider provider, string name, string typeName)
         {
             _name = name;
             _typeName = typeName;

@@ -5,13 +5,29 @@
   <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
   <Import Project="$(CommonFilesPath)RuntimeComponentPreamble.csproj" />
 
-  <!--
-    This project builds to assembly identity 'ConditionalControls' (taken from the project name).
-    The sibling project Features\Conditionals\ConditionalsModel overrides its AssemblyName to that
-    *same* identity - see the note there for why. Nothing references both, so nothing mis-resolves,
-    but two files named ConditionalControls.winmd exist under BuildOutput and it is easy to inspect
-    the wrong one.
+  <PropertyGroup>
+    <!--
+      This project and the sibling Features\Conditionals\ConditionalsModel are two variants of one
+      logical component. They used to build to the *same* assembly identity, 'ConditionalControls',
+      which put two files of that name under BuildOutput and made it easy to inspect the wrong one -
+      as happened during the CsWinRT TypeRef-scope investigation, which first probed this project's
+      winmd and concluded the defect was absent.
 
+      This variant is the one nothing references, so it is the one that was given a distinct
+      identity. A distinct AssemblyName alone would not do: a winmd has to be named for the
+      namespace prefix of the types it carries, so the root namespace moves with it.
+
+      The project file and directory keep their original names deliberately. The codegen baseline
+      paths in Tests\UnitTests\CodegenTargets.txt, the masters directory and
+      CodegenTests.Codegen_ConditionalControls are all keyed off the *project* name, so renaming it
+      would churn all three for no further benefit. That is also why the generated provider type is
+      still called ConditionalControls_XamlTypeInfo - the compiler derives it from the project name.
+    -->
+    <RootNamespace>ConditionalControlsV2</RootNamespace>
+    <AssemblyName>ConditionalControlsV2</AssemblyName>
+  </PropertyGroup>
+
+  <!--
     Nothing has a ProjectReference to this project, so a reference search alone makes it look unused.
     It is not: it is a codegen baseline target. See Tests\UnitTests\CodegenTargets.txt and
     CodegenTests.Codegen_ConditionalControls, with masters under

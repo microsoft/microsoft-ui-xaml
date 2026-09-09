@@ -80,6 +80,15 @@
         <!-- Such projects also need their own object directory, or they overwrite each other's
              .obj files; see AppPreamble.vcxproj, which sets IntDir from the same property once
              Microsoft.Cpp.props has defined it. -->
+        <!-- And their own XAML saved-state file. That one is derived from IntermediateOutputPath
+             (Microsoft.UI.Xaml.Markup.Compiler.interop.targets:30), which is *not* subdivided by
+             the property above, so the pair shared a single XamlSaveStateFile.xml. On a build from
+             scratch the project that built first recorded every page as up to date, and the second
+             took the compiler's skipped-file path: it reported the generated files as already
+             present without writing them into its own generated-files directory, and then failed
+             at C1083 because they were not there. Incremental builds hid this, because the files
+             survived from an earlier build. -->
+        <XamlSavedStateFileName Condition="'$(GeneratedFilesSubdirectory)' != ''">XamlSaveStateFile.$(GeneratedFilesSubdirectory).xml</XamlSavedStateFileName>
     </PropertyGroup>
 
     <PropertyGroup>

@@ -7,21 +7,21 @@
 
   <PropertyGroup>
     <!--
-      This project builds to assembly identity 'ConditionalControls', not 'ConditionalsModel'. The
-      sibling project Features\Conditionals\ConditionalControls builds to the *same* identity; the
-      two are variants of one logical component. This one adds the model types (Employee,
-      Organization, Collections, Model) and uses a generic internal Test.EnsureVersion<T>; the
-      sibling uses a public non-generic Test.EnsureVersion(Type).
+      This project builds to assembly identity 'ConditionalControls', not 'ConditionalsModel'. It is
+      the variant that consumers use: ConditionalsCS and ConditionalsCppWinRT reference these types
+      by name, in source, so the identity and root namespace cannot move.
 
-      Nothing references both, so nothing mis-resolves - but two files named ConditionalControls.winmd
-      exist under BuildOutput. When inspecting metadata, note that *this* project's output is the one
-      consumed by ConditionalsCS and ConditionalsCppWinRT; the sibling's is reached only by its
-      codegen baseline test.
+      The sibling project Features\Conditionals\ConditionalControls is the other variant of the same
+      logical component. It used to build to this same identity, which put two files named
+      ConditionalControls.winmd under BuildOutput; it now builds to ConditionalControlsV2, so the
+      two are distinguishable. This one adds the model types (Employee, Organization, Collections,
+      Model) and uses a generic internal Test.EnsureVersion<T>; the sibling uses a public
+      non-generic Test.EnsureVersion(Type).
 
-      Neither project can simply be deleted or renamed: each is its own DiffCodegen target with its
-      own baselines (Tests\UnitTests\CodegenTargets.txt), and the generated XamlTypeInfo provider
-      type name embeds the *project* name - ConditionalsModel_XamlTypeInfo - so renaming this project
-      invalidates the masters of every consumer as well as its own.
+      Neither project can be renamed: each is its own DiffCodegen target with its own baselines
+      (Tests\UnitTests\CodegenTargets.txt), and the generated XamlTypeInfo provider type name embeds
+      the *project* name - ConditionalsModel_XamlTypeInfo - so renaming this project invalidates the
+      masters of every consumer as well as its own.
     -->
     <RootNamespace>ConditionalControls</RootNamespace>
     <AssemblyName>ConditionalControls</AssemblyName>
