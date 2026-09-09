@@ -1078,15 +1078,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Member &apos;{3}&apos; on type &apos;{0}&apos; is defined under contract &apos;{1}&apos; version &apos;{2}&apos;, but the contract doesn&apos;t exist in the targeted min version!.
-        /// </summary>
-        internal static string XamlCompiler_MemberContractDoesNotExist {
-            get {
-                return ResourceManager.GetString("XamlCompiler_MemberContractDoesNotExist", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Missing Content Property definition for Element &apos;{0}&apos; to receive content &apos;{1}&apos;.
         /// </summary>
         internal static string XamlCompiler_MissingCPA {
@@ -1294,15 +1285,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Type &apos;{0}&apos; is defined under contract &apos;{1}&apos; version &apos;{2}&apos;, but the contract doesn&apos;t exist in the targeted min version!.
-        /// </summary>
-        internal static string XamlCompiler_TypeContractDoesNotExist {
-            get {
-                return ResourceManager.GetString("XamlCompiler_TypeContractDoesNotExist", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid class name &apos;{0}&apos;. Types must be in a namespace to be referenced in XAML; they cannot be declared in the global namespace.
         /// </summary>
         internal static string XamlCompiler_TypeMustHaveANamespace {
@@ -1371,24 +1353,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Properties {
         internal static string XamlCompiler_UnresolvedForwardedTypeAssembly {
             get {
                 return ResourceManager.GetString("XamlCompiler_UnresolvedForwardedTypeAssembly", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Member &apos;{4}&apos; on type &apos;{0}&apos; is defined under contract &apos;{1}&apos; version &apos;{2}&apos;, but the contract version for the targeted min version is &apos;{3}&apos;!.
-        /// </summary>
-        internal static string XamlCompiler_WrongMemberContract {
-            get {
-                return ResourceManager.GetString("XamlCompiler_WrongMemberContract", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Type &apos;{0}&apos; is defined under contract &apos;{1}&apos; version &apos;{2}&apos;, but the contract version for the targeted min version is &apos;{3}&apos;!.
-        /// </summary>
-        internal static string XamlCompiler_WrongTypeContract {
-            get {
-                return ResourceManager.GetString("XamlCompiler_WrongTypeContract", resourceCulture);
             }
         }
         
@@ -1632,15 +1596,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Properties {
         internal static string XamlValidationError_AmbiguousEvent {
             get {
                 return ResourceManager.GetString("XamlValidationError_AmbiguousEvent", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to DataType is only allowed for DataTemplate..
-        /// </summary>
-        internal static string XamlValidationError_DataTypeOnlyAllowedOnDataTemplate {
-            get {
-                return ResourceManager.GetString("XamlValidationError_DataTypeOnlyAllowedOnDataTemplate", resourceCulture);
             }
         }
         

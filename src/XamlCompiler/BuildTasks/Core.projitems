@@ -45,7 +45,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\BindAssignmentBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\BindAssignment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\CompiledBindingParseException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\ContractVersion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\CodeGenerators\BindPathParameterCodeGenerators.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\BindUniverse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\BoundEventAssignment.cs" />

@@ -19,7 +19,6 @@ namespace XAMLCompiler.BuildTasks.Core {
         f`Microsoft/Xaml/XamlCompiler/BoundEventAssignment.cs`,
         f`Microsoft/Xaml/XamlCompiler/BoundPropertyAssignment.cs`,
         f`Microsoft/Xaml/XamlCompiler/BoundLoadAssignment.cs`,
-        f`Microsoft/Xaml/XamlCompiler/ContractVersion.cs`,
         f`Microsoft/Xaml/XamlCompiler/CreateFromStringMethod.cs`,
         f`Microsoft/Xaml/XamlCompiler/DataTypeAssignment.cs`,
         f`Microsoft/Xaml/XamlCompiler/DeferLoadStrategy.cs`,
