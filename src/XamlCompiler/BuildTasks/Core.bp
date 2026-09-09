@@ -147,7 +147,6 @@ namespace XAMLCompiler.BuildTasks.Core {
         f`Microsoft/Lmr/ReflectionAdds/AssemblyProxy.cs`,
         f`Microsoft/Lmr/ReflectionAdds/ConstructorInfoProxy.cs`,
         f`Microsoft/Lmr/ReflectionAdds/CorElementType.cs`,
-        f`Microsoft/Lmr/ReflectionAdds/DebugHelpers.cs`,
         f`Microsoft/Lmr/ReflectionAdds/ExtraAPIs.cs`,
         f`Microsoft/Lmr/ReflectionAdds/IMutableTypeUniverse.cs`,
         f`Microsoft/Lmr/ReflectionAdds/ITypeProxy.cs`,
