@@ -11,7 +11,7 @@
 #include "MainPage.xaml.h++WinRT"
 
 using namespace winrt;
-using namespace ::Windows::Foundation;
+using namespace ::winrt::Windows::Foundation;
 using namespace Microsoft::UI::Xaml;
 using namespace Microsoft::UI::Xaml::Controls;
 using namespace Microsoft::UI::Xaml::Navigation;

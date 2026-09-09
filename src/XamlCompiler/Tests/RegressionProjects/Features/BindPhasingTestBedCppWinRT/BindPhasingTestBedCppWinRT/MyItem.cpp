@@ -6,6 +6,11 @@
 
 #include "pch.h"
 #include "MyItem.h"
+// MyItem.h/.cpp carry all three model types, so this translation unit also has to pull in
+// the activation stubs cppwinrt generates for the other two.
+#include "ExtraInfo.g.cpp"
+#include "MyInfo.g.cpp"
+#include "MyItem.g.cpp"
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;

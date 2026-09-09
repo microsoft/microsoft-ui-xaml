@@ -6,6 +6,7 @@
 
 #include "pch.h"
 #include "MainPage.h"
+#include "MainPage.g.cpp"
 
 namespace winrt::CppWinRTExe::implementation
 {

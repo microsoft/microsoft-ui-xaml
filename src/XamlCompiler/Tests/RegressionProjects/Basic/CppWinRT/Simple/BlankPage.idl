@@ -13,6 +13,7 @@ namespace Simple
         void OnLoaded(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
     };
 
+    [default_interface]
     runtimeclass BlankPage : BlankPageBase
     {
         BlankPage();

@@ -2,6 +2,7 @@
 <!-- Copyright (c) Microsoft Corporation.
  Licensed under the MIT License. -->
 <Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
   <Import Project="$(CommonFilesPath)AppPreamble.csproj" />
 
   <ItemGroup>

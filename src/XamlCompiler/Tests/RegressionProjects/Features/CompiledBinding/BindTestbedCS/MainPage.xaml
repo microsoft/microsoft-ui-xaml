@@ -49,8 +49,6 @@
             
             <HubSection Header="List Scenarios">
                 <DataTemplate x:DataType="local:MainPage">
-                    <!--TODO: Convert BindTestbedModelCX to C++/WinRT-->
-                    <!--ModelCX="{x:Bind ModelCX-} should be added below pending the BindTestbedModelCX C++/WinRT conversion -->
                     <local:ListAndTemplateTests Model="{x:Bind Model}" DOModel="{x:Bind DOModel}" LanguageModel="{x:Bind LanguageModel}" SomeButtonContent="{x:Bind Model.Employees[0]}" Width="800"/>
                 </DataTemplate>
             </HubSection>

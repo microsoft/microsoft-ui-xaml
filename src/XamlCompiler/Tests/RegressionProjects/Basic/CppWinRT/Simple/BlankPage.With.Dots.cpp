@@ -6,6 +6,8 @@
 
 #include "pch.h"
 #include "BlankPage.With.Dots.h"
+#include "BlankPageBase.g.cpp"
+#include "BlankPage.g.cpp"
 
 namespace winrt::Simple::implementation
 {

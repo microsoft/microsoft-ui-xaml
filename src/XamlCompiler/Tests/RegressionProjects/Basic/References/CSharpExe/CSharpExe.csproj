@@ -2,6 +2,7 @@
 <!-- Copyright (c) Microsoft Corporation.
  Licensed under the MIT License. -->
 <Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
   <Import Project="$(CommonFilesPath)AppPreamble.csproj" />
 
   <ItemGroup>
@@ -17,9 +18,9 @@
   <ItemGroup>
     <ProjectReference Include="..\CSharpLib\CSharpLib.csproj" />
     <ProjectReference Include="..\CSharpWinrtComponent\CSharpWinrtComponent.csproj" />
-    <ProjectReference Include="..\VCWinrtComponent\VCWinrtComponent.vcxproj">
-      <Project>{e44d2ad9-5898-4ab3-8f03-bf174971b48c}</Project>
-      <Name>VCWinrtComponent</Name>
-    </ProjectReference>
+    <!-- The C++/WinRT component is consumed through its C#/WinRT projection assembly. A .NET 5+
+         project cannot reference a .winmd directly (NETSDK1130); the projection project owns that
+         reference and keeps the native component building and copy-local. -->
+    <ProjectReference Include="..\CppWinRTComponent.Projection\CppWinRTComponent.Projection.csproj" />
   </ItemGroup>
 </Project>

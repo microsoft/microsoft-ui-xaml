@@ -6,6 +6,7 @@
 
 #include "pch.h"
 #include "MyUserControl.h"
+#include "MyUserControl.g.cpp"
 
 namespace winrt::EventHandling_968976::implementation
 {

@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
+  <Import Project="$(CommonFilesPath)ClassLibraryPreamble.csproj" />
+
+  <PropertyGroup>
+    <!-- Generate the C#/WinRT projection for this component's namespace only.
+         LinkedMDSubControlsCppWinRT arrives transitively and is needed by cswinrt to resolve
+         members such as S.TPropertyOnS, but its types are projected by their own sibling
+         projection assembly - generating them here as well would define them twice. -->
+    <CSWinRTIncludes>LinkedMDControlsCppWinRT</CSWinRTIncludes>
+    <CSWinRTExcludes>LinkedMDSubControlsCppWinRT</CSWinRTExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Supplies LinkedMDControlsCppWinRT.winmd (and, transitively,
+         LinkedMDSubControlsCppWinRT.winmd) as cswinrt inputs. CsWinRT's
+         CsWinRTRemoveWinMDReferences target moves them out of the C# reference set, which is
+         what keeps .NET 5+ consumers from hitting NETSDK1130. -->
+    <ProjectReference Include="..\LinkedMDControlsCppWinRT\LinkedMDControlsCppWinRT.vcxproj">
+      <Project>{ecab1852-f97a-4f5b-9d20-077155b8ad06}</Project>
+      <Name>LinkedMDControlsCppWinRT</Name>
+      <!-- The winmd is an implementation detail of this projection. Without PrivateAssets it flows
+           transitively to managed consumers, which then fail with NETSDK1130. -->
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
+    <!-- Supplies the managed types for the excluded LinkedMDSubControlsCppWinRT namespace. -->
+    <ProjectReference Include="..\LinkedMDSubControlsCppWinRT.Projection\LinkedMDSubControlsCppWinRT.Projection.csproj" />
+  </ItemGroup>
+</Project>

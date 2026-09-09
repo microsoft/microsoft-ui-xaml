@@ -5,8 +5,6 @@ VisualStudioVersion = 17.9.34902.65
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MultipleViewsTestbedCS", "MultipleViewsTestbed\MultipleViewsTestbedCS.csproj", "{1FAA19BF-436E-43CD-84F9-EF6DA16D674C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MultipleViewsTestbedCPP", "MultipleViewsTestbedCPP\MultipleViewsTestbedCPP.vcxproj", "{5CF29EAB-1436-492D-B838-47DA4E2A0C58}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -35,24 +33,6 @@ Global
 		{1FAA19BF-436E-43CD-84F9-EF6DA16D674C}.Release|x86.ActiveCfg = Release|x86
 		{1FAA19BF-436E-43CD-84F9-EF6DA16D674C}.Release|x86.Build.0 = Release|x86
 		{1FAA19BF-436E-43CD-84F9-EF6DA16D674C}.Release|x86.Deploy.0 = Release|x86
-		{5CF29EAB-1436-492D-B838-47DA4E2A0C58}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{5CF29EAB-1436-492D-B838-47DA4E2A0C58}.Debug|ARM64.Build.0 = Debug|ARM64
-		{5CF29EAB-1436-492D-B838-47DA4E2A0C58}.Debug|ARM64.Deploy.0 = Debug|ARM64
-		{5CF29EAB-1436-492D-B838-47DA4E2A0C58}.Debug|x64.ActiveCfg = Debug|x64
-		{5CF29EAB-1436-492D-B838-47DA4E2A0C58}.Debug|x64.Build.0 = Debug|x64
-		{5CF29EAB-1436-492D-B838-47DA4E2A0C58}.Debug|x64.Deploy.0 = Debug|x64
-		{5CF29EAB-1436-492D-B838-47DA4E2A0C58}.Debug|x86.ActiveCfg = Debug|Win32
-		{5CF29EAB-1436-492D-B838-47DA4E2A0C58}.Debug|x86.Build.0 = Debug|Win32
-		{5CF29EAB-1436-492D-B838-47DA4E2A0C58}.Debug|x86.Deploy.0 = Debug|Win32
-		{5CF29EAB-1436-492D-B838-47DA4E2A0C58}.Release|ARM64.ActiveCfg = Release|ARM64
-		{5CF29EAB-1436-492D-B838-47DA4E2A0C58}.Release|ARM64.Build.0 = Release|ARM64
-		{5CF29EAB-1436-492D-B838-47DA4E2A0C58}.Release|ARM64.Deploy.0 = Release|ARM64
-		{5CF29EAB-1436-492D-B838-47DA4E2A0C58}.Release|x64.ActiveCfg = Release|x64
-		{5CF29EAB-1436-492D-B838-47DA4E2A0C58}.Release|x64.Build.0 = Release|x64
-		{5CF29EAB-1436-492D-B838-47DA4E2A0C58}.Release|x64.Deploy.0 = Release|x64
-		{5CF29EAB-1436-492D-B838-47DA4E2A0C58}.Release|x86.ActiveCfg = Release|Win32
-		{5CF29EAB-1436-492D-B838-47DA4E2A0C58}.Release|x86.Build.0 = Release|Win32
-		{5CF29EAB-1436-492D-B838-47DA4E2A0C58}.Release|x86.Deploy.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -7,6 +7,9 @@
 #pragma once
 
 #include "MainPage.g.h"
+// The generated MainPage.xaml.g.hpp uses implementation::MyItem for the x:Phase bindings, and
+// it only includes MainPage.h - same as BindTestbedCppWinRT's PhasingTests.h.
+#include "MyItem.h"
 
 namespace winrt::BindPhasingTestBedCppWinRT::implementation
 {
@@ -20,7 +23,8 @@ namespace winrt::BindPhasingTestBedCppWinRT::implementation
             Microsoft::UI::Xaml::Controls::ListViewBase const& sender,
             Microsoft::UI::Xaml::Controls::ContainerContentChangingEventArgs const& args);
 
-    protected:
+        // Overrides are dispatched by the projection through IPageOverridesT, which calls
+        // shim().OnNavigatedTo(...) from outside this class, so it has to be public.
         void OnNavigatedTo(Microsoft::UI::Xaml::Navigation::NavigationEventArgs const& e);
 
     private:

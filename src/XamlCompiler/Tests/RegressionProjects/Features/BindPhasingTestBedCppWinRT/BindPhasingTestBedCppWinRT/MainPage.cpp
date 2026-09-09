@@ -6,6 +6,7 @@
 
 #include "pch.h"
 #include "MainPage.h"
+#include "MainPage.g.cpp"
 #include "MyItem.h"
 
 using namespace winrt;
@@ -66,7 +67,9 @@ namespace winrt::BindPhasingTestBedCppWinRT::implementation
 
         // First, show the items' placeholders.
         auto templateRoot = args.ItemContainer().ContentTemplateRoot().try_as<StackPanel>();
-        auto placeholderRectangle = templateRoot.FindName(L"placeholderRectangle").try_as<Rectangle>();
+        // Qualified: pch.h pulls in windows.h, whose wingdi.h declares a global Rectangle()
+        // function that makes the unqualified name ambiguous.
+        auto placeholderRectangle = templateRoot.FindName(L"placeholderRectangle").try_as<Shapes::Rectangle>();
         auto titleTextBlock = templateRoot.FindName(L"titleTextBlock").try_as<TextBlock>();
         auto subtitleTextBlock = templateRoot.FindName(L"subtitleTextBlock").try_as<TextBlock>();
         auto descriptionTextBlock = templateRoot.FindName(L"descriptionTextBlock").try_as<TextBlock>();
@@ -144,7 +147,7 @@ namespace winrt::BindPhasingTestBedCppWinRT::implementation
         auto itemContainer = args.ItemContainer().try_as<SelectorItem>();
         auto templateRoot = itemContainer.ContentTemplateRoot().try_as<StackPanel>();
 
-        auto placeholderRectangle = templateRoot.FindName(L"placeholderRectangle").try_as<Rectangle>();
+        auto placeholderRectangle = templateRoot.FindName(L"placeholderRectangle").try_as<Shapes::Rectangle>();
         auto descriptionTextBlock = templateRoot.FindName(L"descriptionTextBlock").try_as<TextBlock>();
 
         descriptionTextBlock.Text(myItem.Description());

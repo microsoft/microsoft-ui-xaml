@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" IgnorableNamespaces="uap mp">
-  <Identity Name="205487c2-7d3d-4003-967c-0a5e16ddae6f" Publisher="CN=xamlcompiler" Version="1.0.0.0" />
+  <Identity Name="205487c2-7d3d-4003-967c-0a5e16ddae6f" Publisher="CN=WinUITest" Version="1.0.0.0" />
   <mp:PhoneIdentity PhoneProductId="205487c2-7d3d-4003-967c-0a5e16ddae6f" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>BindTestbedCppWinRT</DisplayName>
-    <PublisherDisplayName>xamlcompiler</PublisherDisplayName>
+    <PublisherDisplayName>WinUITest</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
     <uap:SupportedUsers>multiple</uap:SupportedUsers>
   </Properties>
