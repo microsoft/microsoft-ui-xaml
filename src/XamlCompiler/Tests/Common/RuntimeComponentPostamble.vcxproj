@@ -32,7 +32,7 @@
     <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.InteractiveExperiences.$(IXPPackageVersion)\build\native\Microsoft.WindowsAppSDK.InteractiveExperiences.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.InteractiveExperiences.$(IXPPackageVersion)\build\native\Microsoft.WindowsAppSDK.InteractiveExperiences.targets'))" />
     <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Foundation.$(FoundationPackageVersion)\build\native\Microsoft.WindowsAppSDK.Foundation.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Foundation.$(FoundationPackageVersion)\build\native\Microsoft.WindowsAppSDK.Foundation.props'))" />
     <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Foundation.$(FoundationPackageVersion)\build\native\Microsoft.WindowsAppSDK.Foundation.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Foundation.$(FoundationPackageVersion)\build\native\Microsoft.WindowsAppSDK.Foundation.targets'))" />
-    <!-- Detect addition of a props file to the WebView2 package (best practice is to always include both props and targets, even if empty, for future-proofing) -->
+    <!-- Fail if WebView2 ships a props file that this project does not import. -->
     <PropertyGroup>
       <ErrorText>This project does not import the newly added WebView2 NuGet package props file {0}.</ErrorText>
     </PropertyGroup>

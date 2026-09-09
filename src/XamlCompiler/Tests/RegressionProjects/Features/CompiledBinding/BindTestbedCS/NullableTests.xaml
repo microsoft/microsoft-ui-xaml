@@ -30,7 +30,7 @@
                 <TextBlock Text="Values below should be: NullableDouble: 123, NullableBool: True, NullableEnum: , NullableColor:" />
                 <model:NullablePropertiesButton NullableDoubleDP="{x:Bind Model.ExtractionPoint.Coords.Longitude}" NullableBool="{x:Bind Model.AlwaysNullNullableBoolProperty, TargetNullValue=True}" />
 
-                <!-- TODO: https://task.ms/51693920 -->
+                <!-- TODO: Re-enable the nullable property-literal x:Bind scenario below. https://task.ms/51693920 -->
                 <!--<TextBlock Text="Values below should be: NullableDouble: 420, NullableBool: False, NullableEnum: Large, NullableColor: #FFFFFF00" />
                 <model:NullablePropertiesButton NullableDoubleDP="{x:Bind Model.ExtractionPoint.Altitude}" NullableBool="False"  NullableEnum="Large" NullableColor="Yellow"/>-->
 
