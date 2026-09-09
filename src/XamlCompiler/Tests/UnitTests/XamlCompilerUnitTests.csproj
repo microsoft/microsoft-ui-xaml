@@ -140,15 +140,6 @@
   <Target Name="InvalidateXamlCompilerUnitTestPayload" BeforeTargets="PrepareForBuild">
     <Delete Files="$(XamlCompilerUnitTestPayloadMarker)" />
   </Target>
-  <Target Name="BuildXamlCompilerRegressionProjects" BeforeTargets="PrepareXamlCompilerUnitTestPayload">
-    <Error Condition="'$(BUILDPLATFORM)' == ''"
-           Text="BUILDPLATFORM is not set. Run init.cmd before building XamlCompiler.sln." />
-    <Exec Command="call &quot;$(ProjectRoot)pack.component.cmd&quot;"
-          WorkingDirectory="$(ProjectRoot)" />
-    <!-- Keep compiler-consuming projects out of this build's reusable node pool so the next
-         solution build can replace the compiler binaries. -->
-    <Exec Command="&quot;$(MSBuildToolsPath)\MSBuild.exe&quot; &quot;$(ProjectRoot)src\XamlCompiler\XamlCompilerTests.sln&quot; /restore /m:4 /nologo /nr:false /v:minimal /p:Configuration=&quot;$(Configuration)&quot; /p:Platform=&quot;$(BUILDPLATFORM)&quot; /p:BuildingInsideVisualStudio=false /p:BuildProjectReferences=true" />
-  </Target>
   <!-- Assemble a complete, runnable payload after the project references have finished building. -->
   <Target Name="PrepareXamlCompilerUnitTestPayload" AfterTargets="Build">
     <PropertyGroup>
@@ -188,7 +179,7 @@
       <_OptionalTopLevelPayloadInput Include="$(ProductDir)Microsoft.ui.xaml.dll" Condition="Exists('$(ProductDir)Microsoft.ui.xaml.dll')" />
     </ItemGroup>
     <Error Condition="!Exists('%(_RequiredTopLevelPayloadInput.Identity)')"
-           Text="Required XamlCompiler unit-test payload input not found: %(_RequiredTopLevelPayloadInput.Identity). Build XamlCompiler.sln before running the tests." />
+           Text="Required XamlCompiler unit-test payload input not found: %(_RequiredTopLevelPayloadInput.Identity). Build XamlCompiler.sln, then build XamlCompilerTests.sln." />
     <Error Condition="'$(_RequiresGenXbf)' == 'true' and !Exists('$(GenXbfSourceDir)GenXbf.dll')"
            Text="Required GenXbf.dll not found at '$(GenXbfSourceDir)GenXbf.dll'." />
     <Copy SourceFiles="@(_RequiredTopLevelPayloadInput)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
