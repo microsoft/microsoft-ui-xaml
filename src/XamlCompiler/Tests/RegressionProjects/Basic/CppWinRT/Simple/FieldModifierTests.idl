@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 namespace Simple
 {
+    [default_interface]
     runtimeclass FieldModifierTests : Microsoft.UI.Xaml.Controls.Page
     {
         FieldModifierTests();

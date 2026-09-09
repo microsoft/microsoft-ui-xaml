@@ -9,7 +9,6 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
     <UseWinUI>true</UseWinUI>
-    <WindowsAppSdkSelfContained>false</WindowsAppSdkSelfContained>
   </PropertyGroup>
 
   <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\build\native\Microsoft.WindowsAppSDK.WinUI.props" Condition="Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\build\native\Microsoft.WindowsAppSDK.WinUI.props')" />
@@ -47,7 +46,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <!--
+      A consuming project that is not a DLL (e.g. a static library) selects its own flavor
+      by setting $(TestProjectConfigurationType) before importing this file. It cannot set
+      $(ConfigurationType) directly, because Microsoft.Cpp.Default.props has already
+      defaulted that to Application by the time this file is reached.
+    -->
+    <TestProjectConfigurationType Condition="'$(TestProjectConfigurationType)' == ''">DynamicLibrary</TestProjectConfigurationType>
+    <ConfigurationType>$(TestProjectConfigurationType)</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>

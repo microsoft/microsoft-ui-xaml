@@ -105,8 +105,6 @@ namespace BindTestbed
             App.Model.UpdateValues();
             App.DOModel.UpdateValues();
             App.LanguageModel.UpdateValues();
-            //TODO: Convert BindTestbedModelCX to C++/WinRT
-            //App.ModelCX.UpdateValues();
         }
     }
 }
