@@ -17,7 +17,6 @@ namespace Win8Xaml.CompilerProxies
         static PropertyInfo _fieldTypeNameProperty;
         static PropertyInfo _fieldTypeProperty;
         static PropertyInfo _isValueTypeProperty;
-        static PropertyInfo _isSystemTypeProperty;
         static PropertyInfo _isDeprecatedProperty;
 
         object _instance;
@@ -31,7 +30,8 @@ namespace Win8Xaml.CompilerProxies
             _fieldTypeNameProperty = _fieldDefinitionType.GetProperty("FieldTypeName");
             _fieldTypeProperty = _fieldDefinitionType.GetProperty("FieldType");
             _isValueTypeProperty = _fieldDefinitionType.GetProperty("IsValueType"); ;
-            _isSystemTypeProperty = _fieldDefinitionType.GetProperty("IsSystemType"); ;
+            // FieldDefinition.IsSystemType was removed from the compiler in 6fbe97bf8e; nothing in
+            // the tests consumed it. InternalTypeEntry still has an IsSystemType and is unaffected.
             _isDeprecatedProperty = _fieldDefinitionType.GetProperty("IsDeprecated"); ;
         }
 
@@ -63,11 +63,6 @@ namespace Win8Xaml.CompilerProxies
         public bool IsValueType
         {
             get { return (bool)_isValueTypeProperty.GetValue(_instance, null); }
-        }
-
-        public bool IsSystemType
-        {
-            get { return (bool)_isSystemTypeProperty.GetValue(_instance, null); }
         }
 
         public bool IsDeprecatedType

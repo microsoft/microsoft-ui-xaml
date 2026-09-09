@@ -44,6 +44,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BindPathStep_P.cs" />
+    <Compile Include="InstanceCacheManager_P.cs" />
+    <Compile Include="ReflectionHelper_P.cs" />
     <Compile Include="BindAssignment_P.cs" />
     <Compile Include="BindUniverse_P.cs" />
     <Compile Include="BindPathParser_P.cs" />
