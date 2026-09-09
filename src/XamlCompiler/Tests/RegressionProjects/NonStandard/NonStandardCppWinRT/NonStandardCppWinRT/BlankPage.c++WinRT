@@ -1,0 +1,19 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+//
+// BlankPage.c++WinRT
+// Implementation of the BlankPage class.
+//
+// The file extension is deliberately non-standard - see BlankPage.h++WinRT.
+//
+
+#include "pch.h"
+#include "BlankPage.h++WinRT"
+
+namespace winrt::NonStandardCppWinRT::implementation
+{
+    BlankPage::BlankPage()
+    {
+        InitializeComponent();
+    }
+}
