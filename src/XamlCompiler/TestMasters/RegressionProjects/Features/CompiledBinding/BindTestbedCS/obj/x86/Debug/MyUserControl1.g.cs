@@ -11,15 +11,14 @@
 namespace BindTestbed
 {
     partial class MyUserControl1 : 
-        global::Windows.UI.Xaml.Controls.UserControl, 
-        global::Windows.UI.Xaml.Markup.IComponentConnector,
-        global::Windows.UI.Xaml.Markup.IComponentConnector2
+        global::Microsoft.UI.Xaml.Controls.UserControl, 
+        global::Microsoft.UI.Xaml.Markup.IComponentConnector
     {
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         private static class XamlBindingSetters
         {
-            public static void Set_Windows_UI_Xaml_Controls_TextBlock_Text(global::Windows.UI.Xaml.Controls.TextBlock obj, global::System.String value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(global::Microsoft.UI.Xaml.Controls.TextBlock obj, global::System.String value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
@@ -29,12 +28,12 @@ namespace BindTestbed
             }
         };
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class MyUserControl1_obj1_Bindings :
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class MyUserControl1_obj1_Bindings :
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IMyUserControl1_Bindings
         {
             private global::BindTestbed.MyUserControl1 dataRoot;
@@ -43,7 +42,7 @@ namespace BindTestbed
             private const int DATA_CHANGED = (1 << 30);
 
             // Fields for each control that has bindings.
-            private global::Windows.UI.Xaml.Controls.TextBlock obj5;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj5;
 
             // Static fields for each binding's enabled/disabled state
             private static bool isobj5TextDisabled = false;
@@ -54,7 +53,7 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 31 && columnNumber == 20)
+                if (lineNumber == 33 && columnNumber == 20)
                 {
                     isobj5TextDisabled = true;
                 }
@@ -66,13 +65,19 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 5: // MyUserControl1.xaml line 31
-                        this.obj5 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 5: // MyUserControl1.xaml line 33
+                        this.obj5 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
             // IDataTemplateComponent
 
@@ -115,13 +120,18 @@ namespace BindTestbed
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbed.MyUserControl1)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbed.MyUserControl1>(newDataRoot);
                     return true;
                 }
                 return false;
             }
 
-            public void Loading(global::Windows.UI.Xaml.FrameworkElement src, object data)
+            public void Activated(object obj, global::Microsoft.UI.Xaml.WindowActivatedEventArgs data)
+            {
+                this.Initialize();
+            }
+
+            public void Loading(global::Microsoft.UI.Xaml.FrameworkElement src, object data)
             {
                 this.Initialize();
             }
@@ -141,27 +151,28 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MyUserControl1.xaml line 31
+                    // MyUserControl1.xaml line 33
                     if (!isobj5TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj5, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj5, obj, null);
                     }
                 }
             }
         }
+
         /// <summary>
         /// Connect()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public void Connect(int connectionId, object target)
         {
             switch(connectionId)
             {
-            case 4: // MyUserControl1.xaml line 20
+            case 4: // MyUserControl1.xaml line 22
                 {
-                    global::Windows.UI.Xaml.Controls.TextBlock element4 = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
-                    ((global::Windows.UI.Xaml.Controls.TextBlock)element4).Tapped += this.aLazyTextBlock_Tapped;
+                    global::Microsoft.UI.Xaml.Controls.TextBlock element4 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.TextBlock)element4).Tapped += this.aLazyTextBlock_Tapped;
                 }
                 break;
             default:
@@ -170,25 +181,26 @@ namespace BindTestbed
             this._contentLoaded = true;
         }
 
+
         /// <summary>
         /// GetBindingConnector(int connectionId, object target)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
+        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
         {
-            global::Windows.UI.Xaml.Markup.IComponentConnector returnValue = null;
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector returnValue = null;
             switch(connectionId)
             {
-            case 1: // MyUserControl1.xaml line 1
+            case 1: // MyUserControl1.xaml line 3
                 {                    
-                    global::Windows.UI.Xaml.Controls.UserControl element1 = (global::Windows.UI.Xaml.Controls.UserControl)target;
+                    global::Microsoft.UI.Xaml.Controls.UserControl element1 = (global::Microsoft.UI.Xaml.Controls.UserControl)target;
                     MyUserControl1_obj1_Bindings bindings = new MyUserControl1_obj1_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(this);
                     this.Bindings = bindings;
                     element1.Loading += bindings.Loading;
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
                 }
                 break;
             }

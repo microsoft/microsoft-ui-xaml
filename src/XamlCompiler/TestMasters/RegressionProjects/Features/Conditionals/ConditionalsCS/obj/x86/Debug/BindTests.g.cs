@@ -11,15 +11,14 @@
 namespace Conditionals
 {
     partial class BindTests : 
-        global::Windows.UI.Xaml.Controls.UserControl, 
-        global::Windows.UI.Xaml.Markup.IComponentConnector,
-        global::Windows.UI.Xaml.Markup.IComponentConnector2
+        global::Microsoft.UI.Xaml.Controls.UserControl, 
+        global::Microsoft.UI.Xaml.Markup.IComponentConnector
     {
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         private static class XamlBindingSetters
         {
-            public static void Set_Windows_UI_Xaml_Controls_TextBlock_Text(global::Windows.UI.Xaml.Controls.TextBlock obj, global::System.String value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(global::Microsoft.UI.Xaml.Controls.TextBlock obj, global::System.String value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
@@ -27,7 +26,7 @@ namespace Conditionals
                 }
                 obj.Text = value ?? global::System.String.Empty;
             }
-            public static void Set_Windows_UI_Xaml_Controls_TextBox_Text(global::Windows.UI.Xaml.Controls.TextBox obj, global::System.String value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_TextBox_Text(global::Microsoft.UI.Xaml.Controls.TextBox obj, global::System.String value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
@@ -35,11 +34,11 @@ namespace Conditionals
                 }
                 obj.Text = value ?? global::System.String.Empty;
             }
-            public static void Set_Windows_UI_Xaml_Controls_ItemsControl_ItemsSource(global::Windows.UI.Xaml.Controls.ItemsControl obj, global::System.Object value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(global::Microsoft.UI.Xaml.Controls.ItemsControl obj, global::System.Object value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::System.Object) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
+                    value = (global::System.Object) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
                 }
                 obj.ItemsSource = value;
             }
@@ -53,13 +52,13 @@ namespace Conditionals
             }
         };
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class BindTests_obj14_Bindings :
-            global::Windows.UI.Xaml.IDataTemplateExtension,
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class BindTests_obj14_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IBindTests_Bindings
         {
             private global::ConditionalControls.IEmployee dataRoot;
@@ -87,19 +86,19 @@ namespace Conditionals
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 76 && columnNumber == 53)
+                if (lineNumber == 78 && columnNumber == 53)
                 {
                     isobj15TextDisabled = true;
                 }
-                else if (lineNumber == 77 && columnNumber == 53)
+                else if (lineNumber == 79 && columnNumber == 53)
                 {
                     isobj16TextDisabled = true;
                 }
-                else if (lineNumber == 78 && columnNumber == 53)
+                else if (lineNumber == 80 && columnNumber == 53)
                 {
                     isobj17TextDisabled = true;
                 }
-                else if (lineNumber == 79 && columnNumber == 53)
+                else if (lineNumber == 81 && columnNumber == 53)
                 {
                     isobj18TextDisabled = true;
                 }
@@ -111,39 +110,45 @@ namespace Conditionals
             {
                 switch(connectionId)
                 {
-                    case 14: // BindTests.xaml line 75
-                        this.obj14 = new global::System.WeakReference((global::Windows.UI.Xaml.Controls.StackPanel)target);
+                    case 14: // BindTests.xaml line 77
+                        this.obj14 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.StackPanel>(target));
                         break;
-                    case 15: // BindTests.xaml line 76
+                    case 15: // BindTests.xaml line 78
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj15 = (global::ConditionalControls.TextBlock1)target;
+                            this.obj15 = global::WinRT.CastExtensions.As<global::ConditionalControls.TextBlock1>(target);
                         }
                         break;
-                    case 16: // BindTests.xaml line 77
+                    case 16: // BindTests.xaml line 79
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj16 = (global::ConditionalControls.TextBlock1)target;
+                            this.obj16 = global::WinRT.CastExtensions.As<global::ConditionalControls.TextBlock1>(target);
                         }
                         break;
-                    case 17: // BindTests.xaml line 78
+                    case 17: // BindTests.xaml line 80
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj17 = (global::ConditionalControls.TextBlock1)target;
+                            this.obj17 = global::WinRT.CastExtensions.As<global::ConditionalControls.TextBlock1>(target);
                         }
                         break;
-                    case 18: // BindTests.xaml line 79
+                    case 18: // BindTests.xaml line 81
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj18 = (global::ConditionalControls.TextBlock1)target;
+                            this.obj18 = global::WinRT.CastExtensions.As<global::ConditionalControls.TextBlock1>(target);
                         }
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
-            public void DataContextChangedHandler(global::Windows.UI.Xaml.FrameworkElement sender, global::Windows.UI.Xaml.DataContextChangedEventArgs args)
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
             {
                  if (this.SetDataRoot(args.NewValue))
                  {
@@ -158,7 +163,7 @@ namespace Conditionals
                 throw new global::System.NotImplementedException();
             }
 
-            public int ProcessBindings(global::Windows.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
             {
                 int nextPhase = -1;
                 ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
@@ -183,26 +188,30 @@ namespace Conditionals
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            (this.obj14.Target as global::Windows.UI.Xaml.Controls.StackPanel).DataContextChanged -= this.DataContextChangedHandler;
+                            var rootElement = (this.obj14.Target as global::Microsoft.UI.Xaml.Controls.StackPanel);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
                         }
                         this.initialized = true;
                         break;
                     case 2:
-                        global::Windows.UI.Xaml.Markup.XamlBindingHelper.ResumeRendering(this.obj17);
+                        global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ResumeRendering(this.obj17);
                         nextPhase = 3;
                         break;
                     case 3:
-                        global::Windows.UI.Xaml.Markup.XamlBindingHelper.ResumeRendering(this.obj18);
+                        global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ResumeRendering(this.obj18);
                         nextPhase = -1;
                         break;
                 }
-                this.Update_((global::ConditionalControls.IEmployee) item, 1 << phase);
+                this.Update_(global::WinRT.CastExtensions.As<global::ConditionalControls.IEmployee>(item), 1 << phase);
             }
 
             public void Recycle()
             {
-                global::Windows.UI.Xaml.Markup.XamlBindingHelper.SuspendRendering(this.obj17);
-                global::Windows.UI.Xaml.Markup.XamlBindingHelper.SuspendRendering(this.obj18);
+                global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SuspendRendering(this.obj17);
+                global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SuspendRendering(this.obj18);
             }
 
             // IBindTests_Bindings
@@ -234,7 +243,7 @@ namespace Conditionals
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::ConditionalControls.IEmployee)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::ConditionalControls.IEmployee>(newDataRoot);
                     return true;
                 }
                 return false;
@@ -243,12 +252,12 @@ namespace Conditionals
             private delegate void InvokeFunctionDelegate(int phase);
             private global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate> PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
 
-            private void Invoke_OfficeNumber1_2852933302_M_ToString_757602046_2852933302(int phase)
+            private void Invoke_OfficeNumber1_4169577821_M_ToString_371857150_4169577821(int phase)
             {
                 global::System.String result = this.dataRoot.OfficeNumber1.ToString();
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // BindTests.xaml line 77
+                    // BindTests.xaml line 79
                     if (!isobj16TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
@@ -259,12 +268,12 @@ namespace Conditionals
                 }
             }
 
-            private void Invoke_OfficeNumber2_3751497398_M_ToString_757602046_3751497398(int phase)
+            private void Invoke_OfficeNumber2_1189802222_M_ToString_371857150_1189802222(int phase)
             {
                 global::System.String result = this.dataRoot.OfficeNumber2.ToString();
                 if ((phase & ((1 << 2) | NOT_PHASED )) != 0)
                 {
-                    // BindTests.xaml line 78
+                    // BindTests.xaml line 80
                     if (!isobj17TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
@@ -275,12 +284,12 @@ namespace Conditionals
                 }
             }
 
-            private void Invoke_OfficeNumber3_1284918966_M_ToString_757602046_1284918966(int phase)
+            private void Invoke_OfficeNumber3_2553856403_M_ToString_371857150_2553856403(int phase)
             {
                 global::System.String result = this.dataRoot.OfficeNumber3.ToString();
                 if ((phase & ((1 << 3) | NOT_PHASED )) != 0)
                 {
-                    // BindTests.xaml line 79
+                    // BindTests.xaml line 81
                     if (!isobj18TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
@@ -310,35 +319,35 @@ namespace Conditionals
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.Update_FirstName_2852933302(obj.FirstName, phase);
+                            this.Update_FirstName_4169577821(obj.FirstName, phase);
                         }
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.Update_OfficeNumber1_2852933302(obj.OfficeNumber1, phase);
+                            this.Update_OfficeNumber1_4169577821(obj.OfficeNumber1, phase);
                         }
                     }
                     if ((phase & (NOT_PHASED | (1 << 0) | (1 << 2))) != 0)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                         {
-                            this.Update_OfficeNumber2_3751497398(obj.OfficeNumber2, phase);
+                            this.Update_OfficeNumber2_1189802222(obj.OfficeNumber2, phase);
                         }
                     }
                     if ((phase & (NOT_PHASED | (1 << 0) | (1 << 3))) != 0)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                         {
-                            this.Update_OfficeNumber3_1284918966(obj.OfficeNumber3, phase);
+                            this.Update_OfficeNumber3_2553856403(obj.OfficeNumber3, phase);
                         }
                     }
                 }
                 this.CompleteUpdate(phase);
             }
-            private void Update_FirstName_2852933302(global::System.String obj, int phase)
+            private void Update_FirstName_4169577821(global::System.String obj, int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // BindTests.xaml line 76
+                    // BindTests.xaml line 78
                     if (!isobj15TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
@@ -348,65 +357,65 @@ namespace Conditionals
                     }
                 }
             }
-            private void Update_OfficeNumber1_2852933302(global::System.Int32 obj, int phase)
+            private void Update_OfficeNumber1_4169577821(global::System.Int32 obj, int phase)
             {
                 if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                 {
-                    this.Update_OfficeNumber1_2852933302_M_ToString_757602046_2852933302(phase);
+                    this.Update_OfficeNumber1_4169577821_M_ToString_371857150_4169577821(phase);
                 }
             }
-            private void Update_OfficeNumber1_2852933302_M_ToString_757602046_2852933302(int phase)
+            private void Update_OfficeNumber1_4169577821_M_ToString_371857150_4169577821(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     if (!isobj16TextDisabled)
                     {
-                        this.PendingFunctionBindings["OfficeNumber1_2852933302_M_ToString_757602046_2852933302"] = new InvokeFunctionDelegate(this.Invoke_OfficeNumber1_2852933302_M_ToString_757602046_2852933302); 
+                        this.PendingFunctionBindings["OfficeNumber1_4169577821_M_ToString_371857150_4169577821"] = new InvokeFunctionDelegate(this.Invoke_OfficeNumber1_4169577821_M_ToString_371857150_4169577821); 
                     }
                 }
             }
-            private void Update_OfficeNumber2_3751497398(global::System.Int32 obj, int phase)
+            private void Update_OfficeNumber2_1189802222(global::System.Int32 obj, int phase)
             {
                 if ((phase & (NOT_PHASED | (1 << 0) | (1 << 2))) != 0)
                 {
-                    this.Update_OfficeNumber2_3751497398_M_ToString_757602046_3751497398(phase);
+                    this.Update_OfficeNumber2_1189802222_M_ToString_371857150_1189802222(phase);
                 }
             }
-            private void Update_OfficeNumber2_3751497398_M_ToString_757602046_3751497398(int phase)
+            private void Update_OfficeNumber2_1189802222_M_ToString_371857150_1189802222(int phase)
             {
                 if ((phase & ((1 << 2) | NOT_PHASED )) != 0)
                 {
                     if (!isobj17TextDisabled)
                     {
-                        this.PendingFunctionBindings["OfficeNumber2_3751497398_M_ToString_757602046_3751497398"] = new InvokeFunctionDelegate(this.Invoke_OfficeNumber2_3751497398_M_ToString_757602046_3751497398); 
+                        this.PendingFunctionBindings["OfficeNumber2_1189802222_M_ToString_371857150_1189802222"] = new InvokeFunctionDelegate(this.Invoke_OfficeNumber2_1189802222_M_ToString_371857150_1189802222); 
                     }
                 }
             }
-            private void Update_OfficeNumber3_1284918966(global::System.Int32 obj, int phase)
+            private void Update_OfficeNumber3_2553856403(global::System.Int32 obj, int phase)
             {
                 if ((phase & (NOT_PHASED | (1 << 0) | (1 << 3))) != 0)
                 {
-                    this.Update_OfficeNumber3_1284918966_M_ToString_757602046_1284918966(phase);
+                    this.Update_OfficeNumber3_2553856403_M_ToString_371857150_2553856403(phase);
                 }
             }
-            private void Update_OfficeNumber3_1284918966_M_ToString_757602046_1284918966(int phase)
+            private void Update_OfficeNumber3_2553856403_M_ToString_371857150_2553856403(int phase)
             {
                 if ((phase & ((1 << 3) | NOT_PHASED )) != 0)
                 {
                     if (!isobj18TextDisabled)
                     {
-                        this.PendingFunctionBindings["OfficeNumber3_1284918966_M_ToString_757602046_1284918966"] = new InvokeFunctionDelegate(this.Invoke_OfficeNumber3_1284918966_M_ToString_757602046_1284918966); 
+                        this.PendingFunctionBindings["OfficeNumber3_2553856403_M_ToString_371857150_2553856403"] = new InvokeFunctionDelegate(this.Invoke_OfficeNumber3_2553856403_M_ToString_371857150_2553856403); 
                     }
                 }
             }
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class BindTests_obj1_Bindings :
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class BindTests_obj1_Bindings :
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IBindTests_Bindings
         {
             private global::Conditionals.BindTests dataRoot;
@@ -415,14 +424,14 @@ namespace Conditionals
             private const int DATA_CHANGED = (1 << 30);
 
             // Fields for each control that has bindings.
-            private global::Windows.UI.Xaml.Controls.TextBlock obj3;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj3;
             private global::ConditionalControls.Button1 obj4;
             private global::ConditionalControls.Button1 obj6;
-            private global::Windows.UI.Xaml.Controls.TextBox obj8;
-            private global::Windows.UI.Xaml.Controls.TextBox obj9;
-            private global::Windows.UI.Xaml.Controls.TextBox obj10;
-            private global::Windows.UI.Xaml.Controls.TextBox obj11;
-            private global::Windows.UI.Xaml.Controls.ListView obj12;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj8;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj9;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj10;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj11;
+            private global::Microsoft.UI.Xaml.Controls.ListView obj12;
             private global::ConditionalControls.TextBlock1 obj19;
             private global::ConditionalControls.TextBlock1 obj20;
             private global::ConditionalControls.Button1 obj21;
@@ -430,24 +439,27 @@ namespace Conditionals
             private global::ConditionalControls.Button1 obj23;
             private global::ConditionalControls.Button1 obj24;
             private global::System.Boolean obj24LoadDeferredValue;
-            private global::Windows.UI.Xaml.Controls.TextBox obj25;
-            private global::Windows.UI.Xaml.Controls.TextBox obj26;
-            private global::Windows.UI.Xaml.Controls.TextBox obj27;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj28;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj29;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj25;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj26;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj27;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj28;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj29;
 
             // Fields for each event bindings event handler.
-            private global::Windows.UI.Xaml.RoutedEventHandler obj4Click;
+            private global::Microsoft.UI.Xaml.RoutedEventHandler obj4Click;
 
-            private void obj4ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            private void obj4ClickHandler(global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1)
             {
+                if (this.dataRoot != null)
+                {
                 this.dataRoot.Click_V2(p0, p1);
+                }
             }
 
-            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj4Click()
+            private global::Microsoft.UI.Xaml.RoutedEventHandler Create_obj4Click()
             {
                 var weakBindings = new global::System.WeakReference<BindTests_obj1_Bindings>(this);
-                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                return (global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1) =>
                 {
                     BindTests_obj1_Bindings bindings;
                     if (weakBindings.TryGetTarget(out bindings))
@@ -456,17 +468,20 @@ namespace Conditionals
                     }
                 };
             }
-            private global::Windows.UI.Xaml.RoutedEventHandler obj6Click;
+            private global::Microsoft.UI.Xaml.RoutedEventHandler obj6Click;
 
-            private void obj6ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            private void obj6ClickHandler(global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1)
             {
+                if (this.dataRoot != null)
+                {
                 this.dataRoot.Click_V3(p0, p1);
+                }
             }
 
-            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj6Click()
+            private global::Microsoft.UI.Xaml.RoutedEventHandler Create_obj6Click()
             {
                 var weakBindings = new global::System.WeakReference<BindTests_obj1_Bindings>(this);
-                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                return (global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1) =>
                 {
                     BindTests_obj1_Bindings bindings;
                     if (weakBindings.TryGetTarget(out bindings))
@@ -475,17 +490,26 @@ namespace Conditionals
                     }
                 };
             }
-            private global::Windows.UI.Xaml.RoutedEventHandler obj21Click;
+            private global::Microsoft.UI.Xaml.RoutedEventHandler obj21Click;
 
-            private void obj21ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            private void obj21ClickHandler(global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1)
             {
+                if (this.dataRoot != null)
+                {
+                if (this.dataRoot.Model != null)
+                {
+                if (this.dataRoot.Model.Org != null)
+                {
                 this.dataRoot.Model.Org.Hire1();
+                }
+                }
+                }
             }
 
-            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj21Click()
+            private global::Microsoft.UI.Xaml.RoutedEventHandler Create_obj21Click()
             {
                 var weakBindings = new global::System.WeakReference<BindTests_obj1_Bindings>(this);
-                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                return (global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1) =>
                 {
                     BindTests_obj1_Bindings bindings;
                     if (weakBindings.TryGetTarget(out bindings))
@@ -494,17 +518,26 @@ namespace Conditionals
                     }
                 };
             }
-            private global::Windows.UI.Xaml.RoutedEventHandler obj22Click;
+            private global::Microsoft.UI.Xaml.RoutedEventHandler obj22Click;
 
-            private void obj22ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            private void obj22ClickHandler(global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1)
             {
+                if (this.dataRoot != null)
+                {
+                if (this.dataRoot.Model != null)
+                {
+                if (this.dataRoot.Model.Org != null)
+                {
                 this.dataRoot.Model.Org.Hire2();
+                }
+                }
+                }
             }
 
-            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj22Click()
+            private global::Microsoft.UI.Xaml.RoutedEventHandler Create_obj22Click()
             {
                 var weakBindings = new global::System.WeakReference<BindTests_obj1_Bindings>(this);
-                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                return (global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1) =>
                 {
                     BindTests_obj1_Bindings bindings;
                     if (weakBindings.TryGetTarget(out bindings))
@@ -513,17 +546,26 @@ namespace Conditionals
                     }
                 };
             }
-            private global::Windows.UI.Xaml.RoutedEventHandler obj23Click;
+            private global::Microsoft.UI.Xaml.RoutedEventHandler obj23Click;
 
-            private void obj23ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            private void obj23ClickHandler(global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1)
             {
+                if (this.dataRoot != null)
+                {
+                if (this.dataRoot.Model != null)
+                {
+                if (this.dataRoot.Model.Org != null)
+                {
                 this.dataRoot.Model.Org.Hire3();
+                }
+                }
+                }
             }
 
-            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj23Click()
+            private global::Microsoft.UI.Xaml.RoutedEventHandler Create_obj23Click()
             {
                 var weakBindings = new global::System.WeakReference<BindTests_obj1_Bindings>(this);
-                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                return (global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1) =>
                 {
                     BindTests_obj1_Bindings bindings;
                     if (weakBindings.TryGetTarget(out bindings))
@@ -532,17 +574,26 @@ namespace Conditionals
                     }
                 };
             }
-            private global::Windows.UI.Xaml.RoutedEventHandler obj24Click;
+            private global::Microsoft.UI.Xaml.RoutedEventHandler obj24Click;
 
-            private void obj24ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            private void obj24ClickHandler(global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1)
             {
+                if (this.dataRoot != null)
+                {
+                if (this.dataRoot.Model != null)
+                {
+                if (this.dataRoot.Model.Org != null)
+                {
                 this.dataRoot.Model.Org.Fire();
+                }
+                }
+                }
             }
 
-            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj24Click()
+            private global::Microsoft.UI.Xaml.RoutedEventHandler Create_obj24Click()
             {
                 var weakBindings = new global::System.WeakReference<BindTests_obj1_Bindings>(this);
-                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                return (global::System.Object p0, global::Microsoft.UI.Xaml.RoutedEventArgs p1) =>
                 {
                     BindTests_obj1_Bindings bindings;
                     if (weakBindings.TryGetTarget(out bindings))
@@ -578,83 +629,83 @@ namespace Conditionals
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 27 && columnNumber == 28)
+                if (lineNumber == 29 && columnNumber == 28)
                 {
                     isobj3TextDisabled = true;
                 }
-                else if (lineNumber == 54 && columnNumber == 30)
+                else if (lineNumber == 56 && columnNumber == 30)
                 {
                     this.obj4.Click -= obj4Click;
                 }
-                else if (lineNumber == 56 && columnNumber == 30)
+                else if (lineNumber == 58 && columnNumber == 30)
                 {
                     this.obj6.Click -= obj6Click;
                 }
-                else if (lineNumber == 96 && columnNumber == 33)
+                else if (lineNumber == 98 && columnNumber == 33)
                 {
                     isobj8TextDisabled = true;
                 }
-                else if (lineNumber == 97 && columnNumber == 33)
+                else if (lineNumber == 99 && columnNumber == 33)
                 {
                     isobj9TextDisabled = true;
                 }
-                else if (lineNumber == 90 && columnNumber == 33)
+                else if (lineNumber == 92 && columnNumber == 33)
                 {
                     isobj10TextDisabled = true;
                 }
-                else if (lineNumber == 91 && columnNumber == 33)
+                else if (lineNumber == 93 && columnNumber == 33)
                 {
                     isobj11TextDisabled = true;
                 }
-                else if (lineNumber == 72 && columnNumber == 58)
+                else if (lineNumber == 74 && columnNumber == 58)
                 {
                     isobj12ItemsSourceDisabled = true;
                 }
-                else if (lineNumber == 68 && columnNumber == 41)
+                else if (lineNumber == 70 && columnNumber == 41)
                 {
                     isobj19TextDisabled = true;
                 }
-                else if (lineNumber == 70 && columnNumber == 41)
+                else if (lineNumber == 72 && columnNumber == 41)
                 {
                     isobj20TextDisabled = true;
                 }
-                else if (lineNumber == 61 && columnNumber == 38)
+                else if (lineNumber == 63 && columnNumber == 38)
                 {
                     this.obj21.Click -= obj21Click;
                 }
-                else if (lineNumber == 62 && columnNumber == 38)
+                else if (lineNumber == 64 && columnNumber == 38)
                 {
                     this.obj22.Click -= obj22Click;
                 }
-                else if (lineNumber == 63 && columnNumber == 38)
+                else if (lineNumber == 65 && columnNumber == 38)
                 {
                     this.obj23.Click -= obj23Click;
                 }
-                else if (lineNumber == 64 && columnNumber == 89)
+                else if (lineNumber == 66 && columnNumber == 89)
                 {
                     isobj24LoadDisabled = true;
                 }
-                else if (lineNumber == 64 && columnNumber == 38)
+                else if (lineNumber == 66 && columnNumber == 38)
                 {
                     this.obj24.Click -= obj24Click;
                 }
-                else if (lineNumber == 46 && columnNumber == 62)
+                else if (lineNumber == 48 && columnNumber == 62)
                 {
                     isobj25TextDisabled = true;
                 }
-                else if (lineNumber == 48 && columnNumber == 62)
+                else if (lineNumber == 50 && columnNumber == 62)
                 {
                     isobj26TextDisabled = true;
                 }
-                else if (lineNumber == 50 && columnNumber == 62)
+                else if (lineNumber == 52 && columnNumber == 62)
                 {
                     isobj27TextDisabled = true;
                 }
-                else if (lineNumber == 30 && columnNumber == 35)
+                else if (lineNumber == 32 && columnNumber == 35)
                 {
                     isobj28TextDisabled = true;
                 }
-                else if (lineNumber == 31 && columnNumber == 35)
+                else if (lineNumber == 33 && columnNumber == 35)
                 {
                     isobj29TextDisabled = true;
                 }
@@ -666,152 +717,158 @@ namespace Conditionals
             {
                 switch(connectionId)
                 {
-                    case 3: // BindTests.xaml line 27
-                        this.obj3 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 3: // BindTests.xaml line 29
+                        this.obj3 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 4: // BindTests.xaml line 54
+                    case 4: // BindTests.xaml line 56
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj4 = (global::ConditionalControls.Button1)target;
+                            this.obj4 = global::WinRT.CastExtensions.As<global::ConditionalControls.Button1>(target);
                             if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                             {
                                 this.obj4Click = this.Create_obj4Click();
-                                ((global::ConditionalControls.Button1)target).Click += obj4Click;
+                                (global::WinRT.CastExtensions.As<global::ConditionalControls.Button1>(target)).Click += obj4Click;
                             }
                         }
                         break;
-                    case 6: // BindTests.xaml line 56
+                    case 6: // BindTests.xaml line 58
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj6 = (global::ConditionalControls.Button1)target;
+                            this.obj6 = global::WinRT.CastExtensions.As<global::ConditionalControls.Button1>(target);
                             if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                             {
                                 this.obj6Click = this.Create_obj6Click();
-                                ((global::ConditionalControls.Button1)target).Click += obj6Click;
+                                (global::WinRT.CastExtensions.As<global::ConditionalControls.Button1>(target)).Click += obj6Click;
                             }
                         }
                         break;
-                    case 8: // BindTests.xaml line 96
+                    case 8: // BindTests.xaml line 98
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj8 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                            this.obj8 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                             this.bindingsTracking.RegisterTwoWayListener_8(this.obj8);
                         }
                         break;
-                    case 9: // BindTests.xaml line 97
+                    case 9: // BindTests.xaml line 99
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj9 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                            this.obj9 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                             this.bindingsTracking.RegisterTwoWayListener_9(this.obj9);
                         }
                         break;
-                    case 10: // BindTests.xaml line 90
+                    case 10: // BindTests.xaml line 92
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj10 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                            this.obj10 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                             this.bindingsTracking.RegisterTwoWayListener_10(this.obj10);
                         }
                         break;
-                    case 11: // BindTests.xaml line 91
+                    case 11: // BindTests.xaml line 93
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj11 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                            this.obj11 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                             this.bindingsTracking.RegisterTwoWayListener_11(this.obj11);
                         }
                         break;
-                    case 12: // BindTests.xaml line 72
-                        this.obj12 = (global::Windows.UI.Xaml.Controls.ListView)target;
+                    case 12: // BindTests.xaml line 74
+                        this.obj12 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
                         break;
-                    case 19: // BindTests.xaml line 68
+                    case 19: // BindTests.xaml line 70
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj19 = (global::ConditionalControls.TextBlock1)target;
+                            this.obj19 = global::WinRT.CastExtensions.As<global::ConditionalControls.TextBlock1>(target);
                         }
                         break;
-                    case 20: // BindTests.xaml line 70
+                    case 20: // BindTests.xaml line 72
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj20 = (global::ConditionalControls.TextBlock1)target;
+                            this.obj20 = global::WinRT.CastExtensions.As<global::ConditionalControls.TextBlock1>(target);
                         }
                         break;
-                    case 21: // BindTests.xaml line 61
+                    case 21: // BindTests.xaml line 63
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj21 = (global::ConditionalControls.Button1)target;
+                            this.obj21 = global::WinRT.CastExtensions.As<global::ConditionalControls.Button1>(target);
                             if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                             {
                                 this.obj21Click = this.Create_obj21Click();
-                                ((global::ConditionalControls.Button1)target).Click += obj21Click;
+                                (global::WinRT.CastExtensions.As<global::ConditionalControls.Button1>(target)).Click += obj21Click;
                             }
                         }
                         break;
-                    case 22: // BindTests.xaml line 62
+                    case 22: // BindTests.xaml line 64
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj22 = (global::ConditionalControls.Button1)target;
+                            this.obj22 = global::WinRT.CastExtensions.As<global::ConditionalControls.Button1>(target);
                             if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                             {
                                 this.obj22Click = this.Create_obj22Click();
-                                ((global::ConditionalControls.Button1)target).Click += obj22Click;
+                                (global::WinRT.CastExtensions.As<global::ConditionalControls.Button1>(target)).Click += obj22Click;
                             }
                         }
                         break;
-                    case 23: // BindTests.xaml line 63
+                    case 23: // BindTests.xaml line 65
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj23 = (global::ConditionalControls.Button1)target;
+                            this.obj23 = global::WinRT.CastExtensions.As<global::ConditionalControls.Button1>(target);
                             if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                             {
                                 this.obj23Click = this.Create_obj23Click();
-                                ((global::ConditionalControls.Button1)target).Click += obj23Click;
+                                (global::WinRT.CastExtensions.As<global::ConditionalControls.Button1>(target)).Click += obj23Click;
                             }
                         }
                         break;
-                    case 24: // BindTests.xaml line 64
+                    case 24: // BindTests.xaml line 66
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj24 = (global::ConditionalControls.Button1)target;
+                            this.obj24 = global::WinRT.CastExtensions.As<global::ConditionalControls.Button1>(target);
                             if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                             {
                                 this.obj24Click = this.Create_obj24Click();
-                                ((global::ConditionalControls.Button1)target).Click += obj24Click;
+                                (global::WinRT.CastExtensions.As<global::ConditionalControls.Button1>(target)).Click += obj24Click;
                             }
                         }
                         break;
-                    case 25: // BindTests.xaml line 46
+                    case 25: // BindTests.xaml line 48
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj25 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                            this.obj25 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                         }
                         break;
-                    case 26: // BindTests.xaml line 48
+                    case 26: // BindTests.xaml line 50
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj26 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                            this.obj26 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                         }
                         break;
-                    case 27: // BindTests.xaml line 50
+                    case 27: // BindTests.xaml line 52
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj27 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                            this.obj27 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                         }
                         break;
-                    case 28: // BindTests.xaml line 30
+                    case 28: // BindTests.xaml line 32
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj28 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                            this.obj28 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         }
                         break;
-                    case 29: // BindTests.xaml line 31
+                    case 29: // BindTests.xaml line 33
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.obj29 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                            this.obj29 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         }
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
             // IDataTemplateComponent
 
@@ -851,7 +908,7 @@ namespace Conditionals
             {
                 switch (connectionId)
                 {
-                    case 24: // BindTests.xaml line 64
+                    case 24: // BindTests.xaml line 66
                     {
                 if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                 {
@@ -873,9 +930,9 @@ namespace Conditionals
             {
                 switch (connectionId)
                 {
-                    case 24: // BindTests.xaml line 64
+                    case 24: // BindTests.xaml line 66
                     {
-                        // BindTests.xaml line 64
+                        // BindTests.xaml line 66
                         if (!isobj24LoadDisabled)
                         {
                             if (BindTests.IsTypePresent_ConditionalControls_V1Type)
@@ -904,13 +961,18 @@ namespace Conditionals
                 this.bindingsTracking.ReleaseAllListeners();
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::Conditionals.BindTests)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::Conditionals.BindTests>(newDataRoot);
                     return true;
                 }
                 return false;
             }
 
-            public void Loading(global::Windows.UI.Xaml.FrameworkElement src, object data)
+            public void Activated(object obj, global::Microsoft.UI.Xaml.WindowActivatedEventArgs data)
+            {
+                this.Initialize();
+            }
+
+            public void Loading(global::Microsoft.UI.Xaml.FrameworkElement src, object data)
             {
                 this.Initialize();
             }
@@ -969,14 +1031,14 @@ namespace Conditionals
             private delegate void InvokeFunctionDelegate(int phase);
             private global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate> PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
 
-            private void Invoke_ConditionalControls_Organization_M_IsNonEmpty_2973382484(int phase)
+            private void Invoke_ConditionalControls_Organization_M_IsNonEmpty_3843776612(int phase)
             {
                 global::ConditionalControls.IObservableCollection p0;
                 if (!TryGet_Model_Org_Employees(out p0)) { return; }
                 global::System.Boolean result = global::ConditionalControls.Organization.IsNonEmpty(p0);
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // BindTests.xaml line 64
+                    // BindTests.xaml line 66
                     if (!isobj24LoadDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
@@ -996,49 +1058,49 @@ namespace Conditionals
                 }
             }
 
-            private void Invoke_V2Property_3751497398_M_ToString1_757602046_3751497398(int phase)
+            private void Invoke_V2Property_1189802222_M_ToString_371857150_1189802222(int phase)
             {
                 global::System.String result = this.dataRoot.V2Property.ToString();
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // BindTests.xaml line 46
+                    // BindTests.xaml line 48
                     if (!isobj25TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj25, result, null);
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj25, result, null);
                         }
                     }
                 }
             }
 
-            private void Invoke_V3Property_1284918966_M_ToString1_757602046_1284918966(int phase)
+            private void Invoke_V3Property_2553856403_M_ToString_371857150_2553856403(int phase)
             {
                 global::System.String result = this.dataRoot.V3Property.ToString();
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // BindTests.xaml line 48
+                    // BindTests.xaml line 50
                     if (!isobj26TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj26, result, null);
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj26, result, null);
                         }
                     }
                 }
             }
 
-            private void Invoke_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966_M_GetNameV3_757602046_1284918966(int phase)
+            private void Invoke_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403_M_GetNameV3_371857150_2553856403(int phase)
             {
                 global::System.String result = this.dataRoot.Model.Org.EmployeeOfTheMonth.GetNameV3();
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // BindTests.xaml line 50
+                    // BindTests.xaml line 52
                     if (!isobj27TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj27, result, null);
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj27, result, null);
                         }
                     }
                 }
@@ -1068,39 +1130,39 @@ namespace Conditionals
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                         {
-                            this.Update_v3TextBlock_1284918966(obj.v3TextBlock, phase);
+                            this.Update_v3TextBlock_2553856403(obj.v3TextBlock, phase);
                         }
                     }
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                         {
-                            this.Update_V2Property_3751497398(obj.V2Property, phase);
+                            this.Update_V2Property_1189802222(obj.V2Property, phase);
                         }
                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                         {
-                            this.Update_V2Property_1284918966(obj.V2Property, phase);
+                            this.Update_V2Property_2553856403(obj.V2Property, phase);
                         }
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.Update_V2Property_2852933302(obj.V2Property, phase);
+                            this.Update_V2Property_4169577821(obj.V2Property, phase);
                         }
                         this.Update_Model(obj.Model, phase);
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.Update_Model_2852933302(obj.Model, phase);
+                            this.Update_Model_4169577821(obj.Model, phase);
                         }
                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                         {
-                            this.Update_Model_1284918966(obj.Model, phase);
+                            this.Update_Model_2553856403(obj.Model, phase);
                         }
                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                         {
-                            this.Update_V3Property_1284918966(obj.V3Property, phase);
+                            this.Update_V3Property_2553856403(obj.V3Property, phase);
                         }
                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                         {
-                            this.Update_Model_3751497398(obj.Model, phase);
+                            this.Update_Model_1189802222(obj.Model, phase);
                         }
                     }
                 }
@@ -1108,29 +1170,29 @@ namespace Conditionals
                 {
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.UpdateFallback_V2Property_3751497398(phase);
+                        this.UpdateFallback_V2Property_1189802222(phase);
                     }
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.UpdateFallback_V2Property_1284918966(phase);
+                        this.UpdateFallback_V2Property_2553856403(phase);
                     }
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.UpdateFallback_V2Property_2852933302(phase);
+                        this.UpdateFallback_V2Property_4169577821(phase);
                     }
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.UpdateFallback_Model_1284918966(phase);
+                        this.UpdateFallback_Model_2553856403(phase);
                     }
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.UpdateFallback_Model_3751497398(phase);
+                        this.UpdateFallback_Model_1189802222(phase);
                     }
                 }
-                this.Update_ConditionalControls_Organization_M_IsNonEmpty_2973382484(phase);
+                this.Update_ConditionalControls_Organization_M_IsNonEmpty_3843776612(phase);
                 this.CompleteUpdate(phase);
             }
-            private void Update_v3TextBlock_1284918966(global::Windows.UI.Xaml.Controls.TextBlock obj, int phase)
+            private void Update_v3TextBlock_2553856403(global::Microsoft.UI.Xaml.Controls.TextBlock obj, int phase)
             {
                 if (obj != null)
                 {
@@ -1138,78 +1200,78 @@ namespace Conditionals
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                         {
-                            this.Update_v3TextBlock_1284918966_Text_1284918966(obj.Text, phase);
+                            this.Update_v3TextBlock_2553856403_Text_2553856403(obj.Text, phase);
                         }
                     }
                 }
             }
-            private void Update_v3TextBlock_1284918966_Text_1284918966(global::System.String obj, int phase)
+            private void Update_v3TextBlock_2553856403_Text_2553856403(global::System.String obj, int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // BindTests.xaml line 27
+                    // BindTests.xaml line 29
                     if (!isobj3TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj3, obj, null);
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj3, obj, null);
                         }
                     }
                 }
             }
-            private void Update_V2Property_3751497398(global::System.String obj, int phase)
+            private void Update_V2Property_1189802222(global::System.String obj, int phase)
             {
                 if (obj != null)
                 {
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.Update_V2Property_3751497398_M_ToString1_757602046_3751497398(phase);
+                        this.Update_V2Property_1189802222_M_ToString_371857150_1189802222(phase);
                     }
                 }
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // BindTests.xaml line 96
+                    // BindTests.xaml line 98
                     if (!isobj8TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj8, obj, "Bar");
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj8, obj, "Bar");
                         }
                     }
-                    // BindTests.xaml line 91
+                    // BindTests.xaml line 93
                     if (!isobj11TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj11, obj, "Bar");
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj11, obj, "Bar");
                         }
                     }
                 }
             }
-            private void Update_V2Property_1284918966(global::System.String obj, int phase)
+            private void Update_V2Property_2553856403(global::System.String obj, int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // BindTests.xaml line 97
+                    // BindTests.xaml line 99
                     if (!isobj9TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj9, obj, "Bar");
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj9, obj, "Bar");
                         }
                     }
                 }
             }
-            private void Update_V2Property_2852933302(global::System.String obj, int phase)
+            private void Update_V2Property_4169577821(global::System.String obj, int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // BindTests.xaml line 90
+                    // BindTests.xaml line 92
                     if (!isobj10TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj10, obj, "Bar");
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj10, obj, "Bar");
                         }
                     }
                 }
@@ -1239,18 +1301,18 @@ namespace Conditionals
                 this.bindingsTracking.UpdateChildListeners_Model_Org_Employees(obj);
                 if (obj != null)
                 {
-                    this.Update_ConditionalControls_Organization_M_IsNonEmpty_2973382484(phase);
+                    this.Update_ConditionalControls_Organization_M_IsNonEmpty_3843776612(phase);
                 }
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // BindTests.xaml line 72
+                    // BindTests.xaml line 74
                     if (!isobj12ItemsSourceDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj12, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj12, obj, null);
                     }
                 }
             }
-            private void Update_Model_2852933302(global::ConditionalControls.Model obj, int phase)
+            private void Update_Model_4169577821(global::ConditionalControls.Model obj, int phase)
             {
                 if (obj != null)
                 {
@@ -1258,12 +1320,12 @@ namespace Conditionals
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.Update_Model_2852933302_Org_2852933302(obj.Org, phase);
+                            this.Update_Model_4169577821_Org_4169577821(obj.Org, phase);
                         }
                     }
                 }
             }
-            private void Update_Model_2852933302_Org_2852933302(global::ConditionalControls.Organization obj, int phase)
+            private void Update_Model_4169577821_Org_4169577821(global::ConditionalControls.Organization obj, int phase)
             {
                 if (obj != null)
                 {
@@ -1271,30 +1333,30 @@ namespace Conditionals
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.Update_Model_2852933302_Org_2852933302_Employees_2852933302(obj.Employees, phase);
+                            this.Update_Model_4169577821_Org_4169577821_Employees_4169577821(obj.Employees, phase);
                         }
                     }
                 }
             }
-            private void Update_Model_2852933302_Org_2852933302_Employees_2852933302(global::ConditionalControls.IObservableCollection obj, int phase)
+            private void Update_Model_4169577821_Org_4169577821_Employees_4169577821(global::ConditionalControls.IObservableCollection obj, int phase)
             {
-                this.bindingsTracking.UpdateChildListeners_Model_2852933302_Org_2852933302_Employees_2852933302(obj);
+                this.bindingsTracking.UpdateChildListeners_Model_4169577821_Org_4169577821_Employees_4169577821(obj);
                 if (obj != null)
                 {
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            this.Update_Model_2852933302_Org_2852933302_Employees_2852933302_ItemCount_2852933302(obj.ItemCount, phase);
+                            this.Update_Model_4169577821_Org_4169577821_Employees_4169577821_ItemCount_4169577821(obj.ItemCount, phase);
                         }
                     }
                 }
             }
-            private void Update_Model_2852933302_Org_2852933302_Employees_2852933302_ItemCount_2852933302(global::System.Int32 obj, int phase)
+            private void Update_Model_4169577821_Org_4169577821_Employees_4169577821_ItemCount_4169577821(global::System.Int32 obj, int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // BindTests.xaml line 68
+                    // BindTests.xaml line 70
                     if (!isobj19TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
@@ -1304,7 +1366,7 @@ namespace Conditionals
                     }
                 }
             }
-            private void Update_Model_1284918966(global::ConditionalControls.Model obj, int phase)
+            private void Update_Model_2553856403(global::ConditionalControls.Model obj, int phase)
             {
                 if (obj != null)
                 {
@@ -1312,7 +1374,7 @@ namespace Conditionals
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                         {
-                            this.Update_Model_1284918966_Org_1284918966(obj.Org, phase);
+                            this.Update_Model_2553856403_Org_2553856403(obj.Org, phase);
                         }
                     }
                 }
@@ -1320,11 +1382,11 @@ namespace Conditionals
                 {
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.UpdateFallback_Model_1284918966_Org_1284918966(phase);
+                        this.UpdateFallback_Model_2553856403_Org_2553856403(phase);
                     }
                 }
             }
-            private void Update_Model_1284918966_Org_1284918966(global::ConditionalControls.Organization obj, int phase)
+            private void Update_Model_2553856403_Org_2553856403(global::ConditionalControls.Organization obj, int phase)
             {
                 if (obj != null)
                 {
@@ -1332,11 +1394,11 @@ namespace Conditionals
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                         {
-                            this.Update_Model_1284918966_Org_1284918966_EmployeesV3_1284918966(obj.EmployeesV3, phase);
+                            this.Update_Model_2553856403_Org_2553856403_EmployeesV3_2553856403(obj.EmployeesV3, phase);
                         }
                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                         {
-                            this.Update_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966(obj.EmployeeOfTheMonth, phase);
+                            this.Update_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403(obj.EmployeeOfTheMonth, phase);
                         }
                     }
                 }
@@ -1344,29 +1406,29 @@ namespace Conditionals
                 {
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.UpdateFallback_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966(phase);
+                        this.UpdateFallback_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403(phase);
                     }
                 }
             }
-            private void Update_Model_1284918966_Org_1284918966_EmployeesV3_1284918966(global::ConditionalControls.IObservableCollection obj, int phase)
+            private void Update_Model_2553856403_Org_2553856403_EmployeesV3_2553856403(global::ConditionalControls.IObservableCollection obj, int phase)
             {
-                this.bindingsTracking.UpdateChildListeners_Model_1284918966_Org_1284918966_EmployeesV3_1284918966(obj);
+                this.bindingsTracking.UpdateChildListeners_Model_2553856403_Org_2553856403_EmployeesV3_2553856403(obj);
                 if (obj != null)
                 {
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                         {
-                            this.Update_Model_1284918966_Org_1284918966_EmployeesV3_1284918966_ItemCount_1284918966(obj.ItemCount, phase);
+                            this.Update_Model_2553856403_Org_2553856403_EmployeesV3_2553856403_ItemCount_2553856403(obj.ItemCount, phase);
                         }
                     }
                 }
             }
-            private void Update_Model_1284918966_Org_1284918966_EmployeesV3_1284918966_ItemCount_1284918966(global::System.Int32 obj, int phase)
+            private void Update_Model_2553856403_Org_2553856403_EmployeesV3_2553856403_ItemCount_2553856403(global::System.Int32 obj, int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // BindTests.xaml line 70
+                    // BindTests.xaml line 72
                     if (!isobj20TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
@@ -1376,75 +1438,75 @@ namespace Conditionals
                     }
                 }
             }
-            private void Update_ConditionalControls_Organization_M_IsNonEmpty_2973382484(int phase)
+            private void Update_ConditionalControls_Organization_M_IsNonEmpty_3843776612(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     if (!isobj24LoadDisabled)
                     {
-                        this.PendingFunctionBindings["ConditionalControls_Organization_M_IsNonEmpty_2973382484"] = new InvokeFunctionDelegate(this.Invoke_ConditionalControls_Organization_M_IsNonEmpty_2973382484); 
+                        this.PendingFunctionBindings["ConditionalControls_Organization_M_IsNonEmpty_3843776612"] = new InvokeFunctionDelegate(this.Invoke_ConditionalControls_Organization_M_IsNonEmpty_3843776612); 
                     }
                 }
             }
-            private void Update_V2Property_3751497398_M_ToString1_757602046_3751497398(int phase)
+            private void Update_V2Property_1189802222_M_ToString_371857150_1189802222(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     if (!isobj25TextDisabled)
                     {
-                        this.PendingFunctionBindings["V2Property_3751497398_M_ToString1_757602046_3751497398"] = new InvokeFunctionDelegate(this.Invoke_V2Property_3751497398_M_ToString1_757602046_3751497398); 
+                        this.PendingFunctionBindings["V2Property_1189802222_M_ToString_371857150_1189802222"] = new InvokeFunctionDelegate(this.Invoke_V2Property_1189802222_M_ToString_371857150_1189802222); 
                     }
                 }
             }
-            private void Update_V3Property_1284918966(global::System.String obj, int phase)
+            private void Update_V3Property_2553856403(global::System.String obj, int phase)
             {
                 if (obj != null)
                 {
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.Update_V3Property_1284918966_M_ToString1_757602046_1284918966(phase);
+                        this.Update_V3Property_2553856403_M_ToString_371857150_2553856403(phase);
                     }
                 }
             }
-            private void Update_V3Property_1284918966_M_ToString1_757602046_1284918966(int phase)
+            private void Update_V3Property_2553856403_M_ToString_371857150_2553856403(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     if (!isobj26TextDisabled)
                     {
-                        this.PendingFunctionBindings["V3Property_1284918966_M_ToString1_757602046_1284918966"] = new InvokeFunctionDelegate(this.Invoke_V3Property_1284918966_M_ToString1_757602046_1284918966); 
+                        this.PendingFunctionBindings["V3Property_2553856403_M_ToString_371857150_2553856403"] = new InvokeFunctionDelegate(this.Invoke_V3Property_2553856403_M_ToString_371857150_2553856403); 
                     }
                 }
             }
-            private void Update_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966(global::ConditionalControls.IEmployee obj, int phase)
+            private void Update_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403(global::ConditionalControls.IEmployee obj, int phase)
             {
-                this.bindingsTracking.UpdateChildListeners_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966(obj);
+                this.bindingsTracking.UpdateChildListeners_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403(obj);
                 if (obj != null)
                 {
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.Update_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966_M_GetNameV3_757602046_1284918966(phase);
+                        this.Update_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403_M_GetNameV3_371857150_2553856403(phase);
                     }
                 }
                 else
                 {
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.UpdateFallback_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966_M_GetNameV3_757602046_1284918966(phase);
+                        this.UpdateFallback_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403_M_GetNameV3_371857150_2553856403(phase);
                     }
                 }
             }
-            private void Update_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966_M_GetNameV3_757602046_1284918966(int phase)
+            private void Update_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403_M_GetNameV3_371857150_2553856403(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     if (!isobj27TextDisabled)
                     {
-                        this.PendingFunctionBindings["Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966_M_GetNameV3_757602046_1284918966"] = new InvokeFunctionDelegate(this.Invoke_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966_M_GetNameV3_757602046_1284918966); 
+                        this.PendingFunctionBindings["Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403_M_GetNameV3_371857150_2553856403"] = new InvokeFunctionDelegate(this.Invoke_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403_M_GetNameV3_371857150_2553856403); 
                     }
                 }
             }
-            private void Update_Model_3751497398(global::ConditionalControls.Model obj, int phase)
+            private void Update_Model_1189802222(global::ConditionalControls.Model obj, int phase)
             {
                 if (obj != null)
                 {
@@ -1452,7 +1514,7 @@ namespace Conditionals
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                         {
-                            this.Update_Model_3751497398_Org_3751497398(obj.Org, phase);
+                            this.Update_Model_1189802222_Org_1189802222(obj.Org, phase);
                         }
                     }
                 }
@@ -1460,11 +1522,11 @@ namespace Conditionals
                 {
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.UpdateFallback_Model_3751497398_Org_3751497398(phase);
+                        this.UpdateFallback_Model_1189802222_Org_1189802222(phase);
                     }
                 }
             }
-            private void Update_Model_3751497398_Org_3751497398(global::ConditionalControls.Organization obj, int phase)
+            private void Update_Model_1189802222_Org_1189802222(global::ConditionalControls.Organization obj, int phase)
             {
                 if (obj != null)
                 {
@@ -1472,11 +1534,11 @@ namespace Conditionals
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                         {
-                            this.Update_Model_3751497398_Org_3751497398_NullProperty_3751497398(obj.NullProperty, phase);
+                            this.Update_Model_1189802222_Org_1189802222_NullProperty_1189802222(obj.NullProperty, phase);
                         }
                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                         {
-                            this.Update_Model_3751497398_Org_3751497398_NullEmployee_3751497398(obj.NullEmployee, phase);
+                            this.Update_Model_1189802222_Org_1189802222_NullEmployee_1189802222(obj.NullEmployee, phase);
                         }
                     }
                 }
@@ -1484,38 +1546,38 @@ namespace Conditionals
                 {
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.UpdateFallback_Model_3751497398_Org_3751497398_NullProperty_3751497398(phase);
+                        this.UpdateFallback_Model_1189802222_Org_1189802222_NullProperty_1189802222(phase);
                     }
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.UpdateFallback_Model_3751497398_Org_3751497398_NullEmployee_3751497398(phase);
+                        this.UpdateFallback_Model_1189802222_Org_1189802222_NullEmployee_1189802222(phase);
                     }
                 }
             }
-            private void Update_Model_3751497398_Org_3751497398_NullProperty_3751497398(global::System.String obj, int phase)
+            private void Update_Model_1189802222_Org_1189802222_NullProperty_1189802222(global::System.String obj, int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // BindTests.xaml line 30
+                    // BindTests.xaml line 32
                     if (!isobj28TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj28, obj, "Target null value");
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj28, obj, "Target null value");
                         }
                     }
                 }
             }
-            private void Update_Model_3751497398_Org_3751497398_NullEmployee_3751497398(global::ConditionalControls.IEmployee obj, int phase)
+            private void Update_Model_1189802222_Org_1189802222_NullEmployee_1189802222(global::ConditionalControls.IEmployee obj, int phase)
             {
-                this.bindingsTracking.UpdateChildListeners_Model_3751497398_Org_3751497398_NullEmployee_3751497398(obj);
+                this.bindingsTracking.UpdateChildListeners_Model_1189802222_Org_1189802222_NullEmployee_1189802222(obj);
                 if (obj != null)
                 {
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                         {
-                            this.Update_Model_3751497398_Org_3751497398_NullEmployee_3751497398_FirstName_3751497398(obj.FirstName, phase);
+                            this.Update_Model_1189802222_Org_1189802222_NullEmployee_1189802222_FirstName_1189802222(obj.FirstName, phase);
                         }
                     }
                 }
@@ -1523,149 +1585,149 @@ namespace Conditionals
                 {
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.UpdateFallback_Model_3751497398_Org_3751497398_NullEmployee_3751497398_FirstName_3751497398(phase);
+                        this.UpdateFallback_Model_1189802222_Org_1189802222_NullEmployee_1189802222_FirstName_1189802222(phase);
                     }
                 }
             }
-            private void Update_Model_3751497398_Org_3751497398_NullEmployee_3751497398_FirstName_3751497398(global::System.String obj, int phase)
+            private void Update_Model_1189802222_Org_1189802222_NullEmployee_1189802222_FirstName_1189802222(global::System.String obj, int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // BindTests.xaml line 31
+                    // BindTests.xaml line 33
                     if (!isobj29TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj29, obj, "ou should not see this");
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj29, obj, "ou should not see this");
                         }
                     }
                 }
             }
 
-            private void UpdateFallback_V2Property_3751497398(int phase)
+            private void UpdateFallback_V2Property_1189802222(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // BindTests.xaml line 96
+                    // BindTests.xaml line 98
                     if (!isobj8TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj8, "Foo", "Bar");
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj8, "Foo", "Bar");
                         }
                     }
-                    // BindTests.xaml line 91
+                    // BindTests.xaml line 93
                     if (!isobj11TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj11, "Foo", "Bar");
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj11, "Foo", "Bar");
                         }
                     }
                 }
             }
 
-            private void UpdateFallback_V2Property_1284918966(int phase)
+            private void UpdateFallback_V2Property_2553856403(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // BindTests.xaml line 97
+                    // BindTests.xaml line 99
                     if (!isobj9TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj9, "Foo", "Bar");
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj9, "Foo", "Bar");
                         }
                     }
                 }
             }
 
-            private void UpdateFallback_V2Property_2852933302(int phase)
+            private void UpdateFallback_V2Property_4169577821(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // BindTests.xaml line 90
+                    // BindTests.xaml line 92
                     if (!isobj10TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj10, "Foo", "Bar");
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj10, "Foo", "Bar");
                         }
                     }
                 }
             }
 
-            private void UpdateFallback_Model_1284918966(int phase)
+            private void UpdateFallback_Model_2553856403(int phase)
             {
-                this.UpdateFallback_Model_1284918966_Org_1284918966(phase);
+                this.UpdateFallback_Model_2553856403_Org_2553856403(phase);
             }
 
-            private void UpdateFallback_Model_1284918966_Org_1284918966(int phase)
+            private void UpdateFallback_Model_2553856403_Org_2553856403(int phase)
             {
-                this.UpdateFallback_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966(phase);
+                this.UpdateFallback_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403(phase);
             }
 
-            private void UpdateFallback_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966(int phase)
+            private void UpdateFallback_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403(int phase)
             {
-                this.UpdateFallback_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966_M_GetNameV3_757602046_1284918966(phase);
+                this.UpdateFallback_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403_M_GetNameV3_371857150_2553856403(phase);
             }
 
-            private void UpdateFallback_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966_M_GetNameV3_757602046_1284918966(int phase)
+            private void UpdateFallback_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403_M_GetNameV3_371857150_2553856403(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // BindTests.xaml line 50
+                    // BindTests.xaml line 52
                     if (!isobj27TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj27, "No employees", null);
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj27, "No employees", null);
                         }
                     }
                 }
             }
 
-            private void UpdateFallback_Model_3751497398(int phase)
+            private void UpdateFallback_Model_1189802222(int phase)
             {
-                this.UpdateFallback_Model_3751497398_Org_3751497398(phase);
+                this.UpdateFallback_Model_1189802222_Org_1189802222(phase);
             }
 
-            private void UpdateFallback_Model_3751497398_Org_3751497398(int phase)
+            private void UpdateFallback_Model_1189802222_Org_1189802222(int phase)
             {
-                this.UpdateFallback_Model_3751497398_Org_3751497398_NullProperty_3751497398(phase);
-                this.UpdateFallback_Model_3751497398_Org_3751497398_NullEmployee_3751497398(phase);
+                this.UpdateFallback_Model_1189802222_Org_1189802222_NullProperty_1189802222(phase);
+                this.UpdateFallback_Model_1189802222_Org_1189802222_NullEmployee_1189802222(phase);
             }
 
-            private void UpdateFallback_Model_3751497398_Org_3751497398_NullProperty_3751497398(int phase)
+            private void UpdateFallback_Model_1189802222_Org_1189802222_NullProperty_1189802222(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // BindTests.xaml line 30
+                    // BindTests.xaml line 32
                     if (!isobj28TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj28, "you should not see this", "Target null value");
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj28, "you should not see this", "Target null value");
                         }
                     }
                 }
             }
 
-            private void UpdateFallback_Model_3751497398_Org_3751497398_NullEmployee_3751497398(int phase)
+            private void UpdateFallback_Model_1189802222_Org_1189802222_NullEmployee_1189802222(int phase)
             {
-                this.UpdateFallback_Model_3751497398_Org_3751497398_NullEmployee_3751497398_FirstName_3751497398(phase);
+                this.UpdateFallback_Model_1189802222_Org_1189802222_NullEmployee_1189802222_FirstName_1189802222(phase);
             }
 
-            private void UpdateFallback_Model_3751497398_Org_3751497398_NullEmployee_3751497398_FirstName_3751497398(int phase)
+            private void UpdateFallback_Model_1189802222_Org_1189802222_NullEmployee_1189802222_FirstName_1189802222(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // BindTests.xaml line 31
+                    // BindTests.xaml line 33
                     if (!isobj29TextDisabled)
                     {
                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj29, "Fallback value", "ou should not see this");
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj29, "Fallback value", "ou should not see this");
                         }
                     }
                 }
@@ -1711,7 +1773,7 @@ namespace Conditionals
                 }
             }
 
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             private class BindTests_obj1_BindingsTracking
             {
@@ -1743,19 +1805,19 @@ namespace Conditionals
                     UpdateChildListeners_Model_Org_Employees(null);
                     if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                     {
-                        UpdateChildListeners_Model_2852933302_Org_2852933302_Employees_2852933302(null);
+                        UpdateChildListeners_Model_4169577821_Org_4169577821_Employees_4169577821(null);
                     }
                     if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                     {
-                        UpdateChildListeners_Model_1284918966_Org_1284918966_EmployeesV3_1284918966(null);
+                        UpdateChildListeners_Model_2553856403_Org_2553856403_EmployeesV3_2553856403(null);
                     }
                     if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                     {
-                        UpdateChildListeners_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966(null);
+                        UpdateChildListeners_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403(null);
                     }
                     if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                     {
-                        UpdateChildListeners_Model_3751497398_Org_3751497398_NullEmployee_3751497398(null);
+                        UpdateChildListeners_Model_1189802222_Org_1189802222_NullEmployee_1189802222(null);
                     }
                 }
 
@@ -1772,41 +1834,41 @@ namespace Conditionals
                             {
                                 if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                                 {
-                                    bindings.Update_V2Property_3751497398(obj.V2Property, DATA_CHANGED);
+                                    bindings.Update_V2Property_1189802222(obj.V2Property, DATA_CHANGED);
                                 }
                                 if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                                 {
-                                    bindings.Update_V2Property_1284918966(obj.V2Property, DATA_CHANGED);
+                                    bindings.Update_V2Property_2553856403(obj.V2Property, DATA_CHANGED);
                                 }
                                 if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                                 {
-                                    bindings.Update_V2Property_2852933302(obj.V2Property, DATA_CHANGED);
+                                    bindings.Update_V2Property_4169577821(obj.V2Property, DATA_CHANGED);
                                 }
                                 bindings.Update_Model(obj.Model, DATA_CHANGED);
                                 if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                                 {
-                                    bindings.Update_Model_2852933302(obj.Model, DATA_CHANGED);
+                                    bindings.Update_Model_4169577821(obj.Model, DATA_CHANGED);
                                 }
                                 if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                                 {
-                                    bindings.Update_Model_1284918966(obj.Model, DATA_CHANGED);
+                                    bindings.Update_Model_2553856403(obj.Model, DATA_CHANGED);
                                 }
                                 if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                                 {
-                                    bindings.Update_V3Property_1284918966(obj.V3Property, DATA_CHANGED);
+                                    bindings.Update_V3Property_2553856403(obj.V3Property, DATA_CHANGED);
                                 }
                                 if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                                 {
-                                    bindings.Update_Model_3751497398(obj.Model, DATA_CHANGED);
+                                    bindings.Update_Model_1189802222(obj.Model, DATA_CHANGED);
                                 }
                             }
                             else
                             {
-                                bindings.UpdateFallback_V2Property_3751497398(DATA_CHANGED);
-                                bindings.UpdateFallback_V2Property_1284918966(DATA_CHANGED);
-                                bindings.UpdateFallback_V2Property_2852933302(DATA_CHANGED);
-                                bindings.UpdateFallback_Model_1284918966(DATA_CHANGED);
-                                bindings.UpdateFallback_Model_3751497398(DATA_CHANGED);
+                                bindings.UpdateFallback_V2Property_1189802222(DATA_CHANGED);
+                                bindings.UpdateFallback_V2Property_2553856403(DATA_CHANGED);
+                                bindings.UpdateFallback_V2Property_4169577821(DATA_CHANGED);
+                                bindings.UpdateFallback_Model_2553856403(DATA_CHANGED);
+                                bindings.UpdateFallback_Model_1189802222(DATA_CHANGED);
                             }
                         }
                         else
@@ -1819,34 +1881,34 @@ namespace Conditionals
                                     {
                                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                                         {
-                                            bindings.Update_V2Property_3751497398(obj.V2Property, DATA_CHANGED);
+                                            bindings.Update_V2Property_1189802222(obj.V2Property, DATA_CHANGED);
                                         }
                                     }
                                     else
                                     {
-                                        bindings.UpdateFallback_V2Property_3751497398(DATA_CHANGED);
+                                        bindings.UpdateFallback_V2Property_1189802222(DATA_CHANGED);
                                     }
                                     if (obj != null)
                                     {
                                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                                         {
-                                            bindings.Update_V2Property_1284918966(obj.V2Property, DATA_CHANGED);
+                                            bindings.Update_V2Property_2553856403(obj.V2Property, DATA_CHANGED);
                                         }
                                     }
                                     else
                                     {
-                                        bindings.UpdateFallback_V2Property_1284918966(DATA_CHANGED);
+                                        bindings.UpdateFallback_V2Property_2553856403(DATA_CHANGED);
                                     }
                                     if (obj != null)
                                     {
                                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                                         {
-                                            bindings.Update_V2Property_2852933302(obj.V2Property, DATA_CHANGED);
+                                            bindings.Update_V2Property_4169577821(obj.V2Property, DATA_CHANGED);
                                         }
                                     }
                                     else
                                     {
-                                        bindings.UpdateFallback_V2Property_2852933302(DATA_CHANGED);
+                                        bindings.UpdateFallback_V2Property_4169577821(DATA_CHANGED);
                                     }
                                     break;
                                 }
@@ -1860,30 +1922,30 @@ namespace Conditionals
                                     {
                                         if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                                         {
-                                            bindings.Update_Model_2852933302(obj.Model, DATA_CHANGED);
+                                            bindings.Update_Model_4169577821(obj.Model, DATA_CHANGED);
                                         }
                                     }
                                     if (obj != null)
                                     {
                                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                                         {
-                                            bindings.Update_Model_1284918966(obj.Model, DATA_CHANGED);
+                                            bindings.Update_Model_2553856403(obj.Model, DATA_CHANGED);
                                         }
                                     }
                                     else
                                     {
-                                        bindings.UpdateFallback_Model_1284918966(DATA_CHANGED);
+                                        bindings.UpdateFallback_Model_2553856403(DATA_CHANGED);
                                     }
                                     if (obj != null)
                                     {
                                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                                         {
-                                            bindings.Update_Model_3751497398(obj.Model, DATA_CHANGED);
+                                            bindings.Update_Model_1189802222(obj.Model, DATA_CHANGED);
                                         }
                                     }
                                     else
                                     {
-                                        bindings.UpdateFallback_Model_3751497398(DATA_CHANGED);
+                                        bindings.UpdateFallback_Model_1189802222(DATA_CHANGED);
                                     }
                                     break;
                                 }
@@ -1893,7 +1955,7 @@ namespace Conditionals
                                     {
                                         if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                                         {
-                                            bindings.Update_V3Property_1284918966(obj.V3Property, DATA_CHANGED);
+                                            bindings.Update_V3Property_2553856403(obj.V3Property, DATA_CHANGED);
                                         }
                                     }
                                     break;
@@ -1929,7 +1991,7 @@ namespace Conditionals
                         global::ConditionalControls.IObservableCollection obj = sender as global::ConditionalControls.IObservableCollection;
                 if (obj != null)
                 {
-                    bindings.Update_ConditionalControls_Organization_M_IsNonEmpty_2973382484(DATA_CHANGED);
+                    bindings.Update_ConditionalControls_Organization_M_IsNonEmpty_3843776612(DATA_CHANGED);
                 }
                         bindings.CompleteUpdate(DATA_CHANGED);
                     }
@@ -1951,7 +2013,7 @@ namespace Conditionals
                         }
                     }
                 }
-                public void CollectionChanged_Model_2852933302_Org_2852933302_Employees_2852933302(object sender, global::System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+                public void CollectionChanged_Model_4169577821_Org_4169577821_Employees_4169577821(object sender, global::System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
                 {
                     BindTests_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
@@ -1961,30 +2023,30 @@ namespace Conditionals
                 {
                     if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                     {
-                        bindings.Update_Model_2852933302_Org_2852933302_Employees_2852933302_ItemCount_2852933302(obj.ItemCount, DATA_CHANGED);
+                        bindings.Update_Model_4169577821_Org_4169577821_Employees_4169577821_ItemCount_4169577821(obj.ItemCount, DATA_CHANGED);
                     }
                 }
                         bindings.CompleteUpdate(DATA_CHANGED);
                     }
                 }
-                private global::ConditionalControls.IObservableCollection cache_Model_2852933302_Org_2852933302_Employees_2852933302 = null;
-                public void UpdateChildListeners_Model_2852933302_Org_2852933302_Employees_2852933302(global::ConditionalControls.IObservableCollection obj)
+                private global::ConditionalControls.IObservableCollection cache_Model_4169577821_Org_4169577821_Employees_4169577821 = null;
+                public void UpdateChildListeners_Model_4169577821_Org_4169577821_Employees_4169577821(global::ConditionalControls.IObservableCollection obj)
                 {
-                    if (obj != cache_Model_2852933302_Org_2852933302_Employees_2852933302)
+                    if (obj != cache_Model_4169577821_Org_4169577821_Employees_4169577821)
                     {
-                        if (cache_Model_2852933302_Org_2852933302_Employees_2852933302 != null)
+                        if (cache_Model_4169577821_Org_4169577821_Employees_4169577821 != null)
                         {
-                            ((global::System.Collections.Specialized.INotifyCollectionChanged)cache_Model_2852933302_Org_2852933302_Employees_2852933302).CollectionChanged -= CollectionChanged_Model_2852933302_Org_2852933302_Employees_2852933302;
-                            cache_Model_2852933302_Org_2852933302_Employees_2852933302 = null;
+                            ((global::System.Collections.Specialized.INotifyCollectionChanged)cache_Model_4169577821_Org_4169577821_Employees_4169577821).CollectionChanged -= CollectionChanged_Model_4169577821_Org_4169577821_Employees_4169577821;
+                            cache_Model_4169577821_Org_4169577821_Employees_4169577821 = null;
                         }
                         if (obj != null)
                         {
-                            cache_Model_2852933302_Org_2852933302_Employees_2852933302 = obj;
-                            ((global::System.Collections.Specialized.INotifyCollectionChanged)obj).CollectionChanged += CollectionChanged_Model_2852933302_Org_2852933302_Employees_2852933302;
+                            cache_Model_4169577821_Org_4169577821_Employees_4169577821 = obj;
+                            ((global::System.Collections.Specialized.INotifyCollectionChanged)obj).CollectionChanged += CollectionChanged_Model_4169577821_Org_4169577821_Employees_4169577821;
                         }
                     }
                 }
-                public void CollectionChanged_Model_1284918966_Org_1284918966_EmployeesV3_1284918966(object sender, global::System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+                public void CollectionChanged_Model_2553856403_Org_2553856403_EmployeesV3_2553856403(object sender, global::System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
                 {
                     BindTests_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
@@ -1994,30 +2056,30 @@ namespace Conditionals
                 {
                     if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                     {
-                        bindings.Update_Model_1284918966_Org_1284918966_EmployeesV3_1284918966_ItemCount_1284918966(obj.ItemCount, DATA_CHANGED);
+                        bindings.Update_Model_2553856403_Org_2553856403_EmployeesV3_2553856403_ItemCount_2553856403(obj.ItemCount, DATA_CHANGED);
                     }
                 }
                         bindings.CompleteUpdate(DATA_CHANGED);
                     }
                 }
-                private global::ConditionalControls.IObservableCollection cache_Model_1284918966_Org_1284918966_EmployeesV3_1284918966 = null;
-                public void UpdateChildListeners_Model_1284918966_Org_1284918966_EmployeesV3_1284918966(global::ConditionalControls.IObservableCollection obj)
+                private global::ConditionalControls.IObservableCollection cache_Model_2553856403_Org_2553856403_EmployeesV3_2553856403 = null;
+                public void UpdateChildListeners_Model_2553856403_Org_2553856403_EmployeesV3_2553856403(global::ConditionalControls.IObservableCollection obj)
                 {
-                    if (obj != cache_Model_1284918966_Org_1284918966_EmployeesV3_1284918966)
+                    if (obj != cache_Model_2553856403_Org_2553856403_EmployeesV3_2553856403)
                     {
-                        if (cache_Model_1284918966_Org_1284918966_EmployeesV3_1284918966 != null)
+                        if (cache_Model_2553856403_Org_2553856403_EmployeesV3_2553856403 != null)
                         {
-                            ((global::System.Collections.Specialized.INotifyCollectionChanged)cache_Model_1284918966_Org_1284918966_EmployeesV3_1284918966).CollectionChanged -= CollectionChanged_Model_1284918966_Org_1284918966_EmployeesV3_1284918966;
-                            cache_Model_1284918966_Org_1284918966_EmployeesV3_1284918966 = null;
+                            ((global::System.Collections.Specialized.INotifyCollectionChanged)cache_Model_2553856403_Org_2553856403_EmployeesV3_2553856403).CollectionChanged -= CollectionChanged_Model_2553856403_Org_2553856403_EmployeesV3_2553856403;
+                            cache_Model_2553856403_Org_2553856403_EmployeesV3_2553856403 = null;
                         }
                         if (obj != null)
                         {
-                            cache_Model_1284918966_Org_1284918966_EmployeesV3_1284918966 = obj;
-                            ((global::System.Collections.Specialized.INotifyCollectionChanged)obj).CollectionChanged += CollectionChanged_Model_1284918966_Org_1284918966_EmployeesV3_1284918966;
+                            cache_Model_2553856403_Org_2553856403_EmployeesV3_2553856403 = obj;
+                            ((global::System.Collections.Specialized.INotifyCollectionChanged)obj).CollectionChanged += CollectionChanged_Model_2553856403_Org_2553856403_EmployeesV3_2553856403;
                         }
                     }
                 }
-                public void PropertyChanged_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
+                public void PropertyChanged_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
                 {
                     BindTests_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
@@ -2028,11 +2090,11 @@ namespace Conditionals
                         {
                             if (obj != null)
                             {
-                                bindings.Update_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966_M_GetNameV3_757602046_1284918966(DATA_CHANGED);
+                                bindings.Update_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403_M_GetNameV3_371857150_2553856403(DATA_CHANGED);
                             }
                             else
                             {
-                                bindings.UpdateFallback_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966_M_GetNameV3_757602046_1284918966(DATA_CHANGED);
+                                bindings.UpdateFallback_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403_M_GetNameV3_371857150_2553856403(DATA_CHANGED);
                             }
                         }
                         else
@@ -2043,11 +2105,11 @@ namespace Conditionals
                                 {
                                     if (obj != null)
                                     {
-                                        bindings.Update_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966_M_GetNameV3_757602046_1284918966(DATA_CHANGED);
+                                        bindings.Update_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403_M_GetNameV3_371857150_2553856403(DATA_CHANGED);
                                     }
                                     else
                                     {
-                                        bindings.UpdateFallback_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966_M_GetNameV3_757602046_1284918966(DATA_CHANGED);
+                                        bindings.UpdateFallback_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403_M_GetNameV3_371857150_2553856403(DATA_CHANGED);
                                     }
                                     break;
                                 }
@@ -2058,24 +2120,24 @@ namespace Conditionals
                         bindings.CompleteUpdate(DATA_CHANGED);
                     }
                 }
-                private global::ConditionalControls.IEmployee cache_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966 = null;
-                public void UpdateChildListeners_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966(global::ConditionalControls.IEmployee obj)
+                private global::ConditionalControls.IEmployee cache_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403 = null;
+                public void UpdateChildListeners_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403(global::ConditionalControls.IEmployee obj)
                 {
-                    if (obj != cache_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966)
+                    if (obj != cache_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403)
                     {
-                        if (cache_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966 != null)
+                        if (cache_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403 != null)
                         {
-                            ((global::System.ComponentModel.INotifyPropertyChanged)cache_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966).PropertyChanged -= PropertyChanged_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966;
-                            cache_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966 = null;
+                            ((global::System.ComponentModel.INotifyPropertyChanged)cache_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403).PropertyChanged -= PropertyChanged_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403;
+                            cache_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403 = null;
                         }
                         if (obj != null)
                         {
-                            cache_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966 = obj;
-                            ((global::System.ComponentModel.INotifyPropertyChanged)obj).PropertyChanged += PropertyChanged_Model_1284918966_Org_1284918966_EmployeeOfTheMonth_1284918966;
+                            cache_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403 = obj;
+                            ((global::System.ComponentModel.INotifyPropertyChanged)obj).PropertyChanged += PropertyChanged_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403;
                         }
                     }
                 }
-                public void PropertyChanged_Model_3751497398_Org_3751497398_NullEmployee_3751497398(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
+                public void PropertyChanged_Model_1189802222_Org_1189802222_NullEmployee_1189802222(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
                 {
                     BindTests_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
@@ -2088,12 +2150,12 @@ namespace Conditionals
                             {
                                 if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                                 {
-                                    bindings.Update_Model_3751497398_Org_3751497398_NullEmployee_3751497398_FirstName_3751497398(obj.FirstName, DATA_CHANGED);
+                                    bindings.Update_Model_1189802222_Org_1189802222_NullEmployee_1189802222_FirstName_1189802222(obj.FirstName, DATA_CHANGED);
                                 }
                             }
                             else
                             {
-                                bindings.UpdateFallback_Model_3751497398_Org_3751497398_NullEmployee_3751497398_FirstName_3751497398(DATA_CHANGED);
+                                bindings.UpdateFallback_Model_1189802222_Org_1189802222_NullEmployee_1189802222_FirstName_1189802222(DATA_CHANGED);
                             }
                         }
                         else
@@ -2106,12 +2168,12 @@ namespace Conditionals
                                     {
                                         if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                                         {
-                                            bindings.Update_Model_3751497398_Org_3751497398_NullEmployee_3751497398_FirstName_3751497398(obj.FirstName, DATA_CHANGED);
+                                            bindings.Update_Model_1189802222_Org_1189802222_NullEmployee_1189802222_FirstName_1189802222(obj.FirstName, DATA_CHANGED);
                                         }
                                     }
                                     else
                                     {
-                                        bindings.UpdateFallback_Model_3751497398_Org_3751497398_NullEmployee_3751497398_FirstName_3751497398(DATA_CHANGED);
+                                        bindings.UpdateFallback_Model_1189802222_Org_1189802222_NullEmployee_1189802222_FirstName_1189802222(DATA_CHANGED);
                                     }
                                     break;
                                 }
@@ -2122,24 +2184,24 @@ namespace Conditionals
                         bindings.CompleteUpdate(DATA_CHANGED);
                     }
                 }
-                private global::ConditionalControls.IEmployee cache_Model_3751497398_Org_3751497398_NullEmployee_3751497398 = null;
-                public void UpdateChildListeners_Model_3751497398_Org_3751497398_NullEmployee_3751497398(global::ConditionalControls.IEmployee obj)
+                private global::ConditionalControls.IEmployee cache_Model_1189802222_Org_1189802222_NullEmployee_1189802222 = null;
+                public void UpdateChildListeners_Model_1189802222_Org_1189802222_NullEmployee_1189802222(global::ConditionalControls.IEmployee obj)
                 {
-                    if (obj != cache_Model_3751497398_Org_3751497398_NullEmployee_3751497398)
+                    if (obj != cache_Model_1189802222_Org_1189802222_NullEmployee_1189802222)
                     {
-                        if (cache_Model_3751497398_Org_3751497398_NullEmployee_3751497398 != null)
+                        if (cache_Model_1189802222_Org_1189802222_NullEmployee_1189802222 != null)
                         {
-                            ((global::System.ComponentModel.INotifyPropertyChanged)cache_Model_3751497398_Org_3751497398_NullEmployee_3751497398).PropertyChanged -= PropertyChanged_Model_3751497398_Org_3751497398_NullEmployee_3751497398;
-                            cache_Model_3751497398_Org_3751497398_NullEmployee_3751497398 = null;
+                            ((global::System.ComponentModel.INotifyPropertyChanged)cache_Model_1189802222_Org_1189802222_NullEmployee_1189802222).PropertyChanged -= PropertyChanged_Model_1189802222_Org_1189802222_NullEmployee_1189802222;
+                            cache_Model_1189802222_Org_1189802222_NullEmployee_1189802222 = null;
                         }
                         if (obj != null)
                         {
-                            cache_Model_3751497398_Org_3751497398_NullEmployee_3751497398 = obj;
-                            ((global::System.ComponentModel.INotifyPropertyChanged)obj).PropertyChanged += PropertyChanged_Model_3751497398_Org_3751497398_NullEmployee_3751497398;
+                            cache_Model_1189802222_Org_1189802222_NullEmployee_1189802222 = obj;
+                            ((global::System.ComponentModel.INotifyPropertyChanged)obj).PropertyChanged += PropertyChanged_Model_1189802222_Org_1189802222_NullEmployee_1189802222;
                         }
                     }
                 }
-                public void RegisterTwoWayListener_8(global::Windows.UI.Xaml.Controls.TextBox sourceObject)
+                public void RegisterTwoWayListener_8(global::Microsoft.UI.Xaml.Controls.TextBox sourceObject)
                 {
                     if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                     {
@@ -2153,7 +2215,7 @@ namespace Conditionals
                         };
                     }
                 }
-                public void RegisterTwoWayListener_9(global::Windows.UI.Xaml.Controls.TextBox sourceObject)
+                public void RegisterTwoWayListener_9(global::Microsoft.UI.Xaml.Controls.TextBox sourceObject)
                 {
                     if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                     {
@@ -2167,7 +2229,7 @@ namespace Conditionals
                         };
                     }
                 }
-                public void RegisterTwoWayListener_10(global::Windows.UI.Xaml.Controls.TextBox sourceObject)
+                public void RegisterTwoWayListener_10(global::Microsoft.UI.Xaml.Controls.TextBox sourceObject)
                 {
                     if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                     {
@@ -2181,7 +2243,7 @@ namespace Conditionals
                         };
                     }
                 }
-                public void RegisterTwoWayListener_11(global::Windows.UI.Xaml.Controls.TextBox sourceObject)
+                public void RegisterTwoWayListener_11(global::Microsoft.UI.Xaml.Controls.TextBox sourceObject)
                 {
                     if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                     {
@@ -2197,46 +2259,47 @@ namespace Conditionals
                 }
             }
         }
+
         /// <summary>
         /// Connect()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public void Connect(int connectionId, object target)
         {
             switch(connectionId)
             {
-            case 2: // BindTests.xaml line 26
+            case 2: // BindTests.xaml line 28
                 {
                     if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                     {
-                        this.v3TextBlock = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                        this.v3TextBlock = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                     }
                 }
                 break;
-            case 5: // BindTests.xaml line 55
+            case 5: // BindTests.xaml line 57
                 {
-                    this.clickV2results = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.clickV2results = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 6: // BindTests.xaml line 56
+            case 6: // BindTests.xaml line 58
                 {
                     if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                     {
-                        this.aButton = (global::ConditionalControls.Button1)(target);
+                        this.aButton = global::WinRT.CastExtensions.As<global::ConditionalControls.Button1>(target);
                     }
                 }
                 break;
-            case 7: // BindTests.xaml line 57
+            case 7: // BindTests.xaml line 59
                 {
-                    this.clickV3results = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.clickV3results = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 24: // BindTests.xaml line 64
+            case 24: // BindTests.xaml line 66
                 {
                     if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                     {
-                        this.fire = (global::ConditionalControls.Button1)(target);
+                        this.fire = global::WinRT.CastExtensions.As<global::ConditionalControls.Button1>(target);
                     }
                 }
                 break;
@@ -2249,13 +2312,13 @@ namespace Conditionals
         /// <summary>
         /// UnloadObject(DependencyObject)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        partial void UnloadObject(global::Windows.UI.Xaml.DependencyObject unloadableObject)
+        partial void UnloadObject(global::Microsoft.UI.Xaml.DependencyObject unloadableObject)
         {
             if (unloadableObject != null)
             {
-                // BindTests.xaml line 64
+                // BindTests.xaml line 66
                 if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                 {
                     if (unloadableObject == this.fire)
@@ -2263,20 +2326,20 @@ namespace Conditionals
                         this.DisconnectUnloadedObject(24);
                     }
                 }
-                global::Windows.UI.Xaml.Markup.XamlMarkupHelper.UnloadObject(unloadableObject);
+                global::Microsoft.UI.Xaml.Markup.XamlMarkupHelper.UnloadObject(unloadableObject);
             }
         }
 
         /// <summary>
         /// DisconnectUnloadedObject(int connectionId)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         private void DisconnectUnloadedObject(int connectionId)
         {
             switch(connectionId)
             {
-                case 24: // BindTests.xaml line 64
+                case 24: // BindTests.xaml line 66
                 {
                     this.Bindings.DisconnectUnloadedObject(24);
                     if (BindTests.IsTypePresent_ConditionalControls_V1Type)
@@ -2292,36 +2355,37 @@ namespace Conditionals
             }
         }
 
+
         /// <summary>
         /// GetBindingConnector(int connectionId, object target)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
+        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
         {
-            global::Windows.UI.Xaml.Markup.IComponentConnector returnValue = null;
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector returnValue = null;
             switch(connectionId)
             {
-            case 1: // BindTests.xaml line 1
+            case 1: // BindTests.xaml line 3
                 {                    
-                    global::Windows.UI.Xaml.Controls.UserControl element1 = (global::Windows.UI.Xaml.Controls.UserControl)target;
+                    global::Microsoft.UI.Xaml.Controls.UserControl element1 = (global::Microsoft.UI.Xaml.Controls.UserControl)target;
                     BindTests_obj1_Bindings bindings = new BindTests_obj1_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(this);
                     this.Bindings = bindings;
                     element1.Loading += bindings.Loading;
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
                 }
                 break;
-            case 14: // BindTests.xaml line 75
+            case 14: // BindTests.xaml line 77
                 {                    
-                    global::Windows.UI.Xaml.Controls.StackPanel element14 = (global::Windows.UI.Xaml.Controls.StackPanel)target;
+                    global::Microsoft.UI.Xaml.Controls.StackPanel element14 = (global::Microsoft.UI.Xaml.Controls.StackPanel)target;
                     BindTests_obj14_Bindings bindings = new BindTests_obj14_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(element14.DataContext);
                     element14.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Windows.UI.Xaml.DataTemplate.SetExtensionInstance(element14, bindings);
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element14, bindings);
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element14, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element14, bindings);
                 }
                 break;
             }

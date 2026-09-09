@@ -1,65 +1,73 @@
-﻿// WARNING: Please don't edit this file...
+// WARNING: Please don't edit this file...
 
 #include "pch.h"
-#include "S.h"
-#include "T.h"
-#include "XamlMetaDataProvider.h"
+#include "winrt/base.h"
+void* winrt_make_LinkedMDSubControlsCppWinRT_S();
+void* winrt_make_LinkedMDSubControlsCppWinRT_T();
+void* winrt_make_LinkedMDSubControlsCppWinRT_XamlMetaDataProvider();
 
-int32_t WINRT_CALL WINRT_CanUnloadNow() noexcept
+bool __stdcall winrt_can_unload_now() noexcept
+{
+    if (winrt::get_module_lock())
+    {
+        return false;
+    }
+
+    winrt::clear_factory_cache();
+    return true;
+}
+
+void* __stdcall winrt_get_activation_factory([[maybe_unused]] std::wstring_view const& name)
+{
+    auto requal = [](std::wstring_view const& left, std::wstring_view const& right) noexcept
+    {
+        return std::equal(left.rbegin(), left.rend(), right.rbegin(), right.rend());
+    };
+
+    if (requal(name, L"LinkedMDSubControlsCppWinRT.S"))
+    {
+        return winrt_make_LinkedMDSubControlsCppWinRT_S();
+    }
+
+    if (requal(name, L"LinkedMDSubControlsCppWinRT.T"))
+    {
+        return winrt_make_LinkedMDSubControlsCppWinRT_T();
+    }
+
+    if (requal(name, L"LinkedMDSubControlsCppWinRT.XamlMetaDataProvider"))
+    {
+        return winrt_make_LinkedMDSubControlsCppWinRT_XamlMetaDataProvider();
+    }
+
+    return nullptr;
+}
+
+int32_t __stdcall WINRT_CanUnloadNow() noexcept
 {
 #ifdef _WRL_MODULE_H_
     if (!::Microsoft::WRL::Module<::Microsoft::WRL::InProc>::GetModule().Terminate())
     {
-        return 1; // S_FALSE
+        return 1;
     }
 #endif
 
-    if (winrt::get_module_lock())
-    {
-        return 1; // S_FALSE
-    }
-
-    winrt::clear_factory_cache();
-    return 0; // S_OK
+    return winrt_can_unload_now() ? 0 : 1;
 }
 
-int32_t WINRT_CALL WINRT_GetActivationFactory(void* classId, void** factory) noexcept
+int32_t __stdcall WINRT_GetActivationFactory(void* classId, void** factory) noexcept try
 {
-    try
+    std::wstring_view const name{ *reinterpret_cast<winrt::hstring*>(&classId) };
+    *factory = winrt_get_activation_factory(name);
+
+    if (*factory)
     {
-        *factory = nullptr;
-        uint32_t length{};
-        wchar_t const* const buffer = WINRT_WindowsGetStringRawBuffer(classId, &length);
-        std::wstring_view const name{ buffer, length };
-
-        auto requal = [](std::wstring_view const& left, std::wstring_view const& right) noexcept
-        {
-            return std::equal(left.rbegin(), left.rend(), right.rbegin(), right.rend());
-        };
-
-        if (requal(name, L"LinkedMDSubControlsCppWinRT.S"))
-        {
-            *factory = winrt::detach_abi(winrt::make<winrt::LinkedMDSubControlsCppWinRT::factory_implementation::S>());
-            return 0;
-        }
-
-        if (requal(name, L"LinkedMDSubControlsCppWinRT.T"))
-        {
-            *factory = winrt::detach_abi(winrt::make<winrt::LinkedMDSubControlsCppWinRT::factory_implementation::T>());
-            return 0;
-        }
-
-        if (requal(name, L"LinkedMDSubControlsCppWinRT.XamlMetaDataProvider"))
-        {
-            *factory = winrt::detach_abi(winrt::make<winrt::LinkedMDSubControlsCppWinRT::factory_implementation::XamlMetaDataProvider>());
-            return 0;
-        }
+        return 0;
+    }
 
 #ifdef _WRL_MODULE_H_
-        return ::Microsoft::WRL::Module<::Microsoft::WRL::InProc>::GetModule().GetActivationFactory(static_cast<HSTRING>(classId), reinterpret_cast<::IActivationFactory**>(factory));
+    return ::Microsoft::WRL::Module<::Microsoft::WRL::InProc>::GetModule().GetActivationFactory(static_cast<HSTRING>(classId), reinterpret_cast<::IActivationFactory**>(factory));
 #else
-        return winrt::hresult_class_not_available(name).to_abi();
+    return winrt::hresult_class_not_available(name).to_abi();
 #endif
-    }
-    catch (...) { return winrt::to_hresult(); }
 }
+catch (...) { return winrt::to_hresult(); }

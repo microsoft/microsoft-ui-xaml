@@ -1,11 +1,11 @@
-﻿// WARNING: Please don't edit this file...
+// WARNING: Please don't edit this file...
 
 #pragma once
 #include "winrt/Simple.h"
 namespace winrt::Simple::implementation
 {
     template <typename D, typename... I>
-    struct __declspec(empty_bases) PropBag_base : implements<D, Simple::PropBag, I...>
+    struct WINRT_IMPL_EMPTY_BASES PropBag_base : implements<D, Simple::PropBag, I...>
     {
         using base_type = PropBag_base;
         using class_type = Simple::PropBag;
@@ -21,7 +21,7 @@ namespace winrt::Simple::implementation
 namespace winrt::Simple::factory_implementation
 {
     template <typename D, typename T, typename... I>
-    struct __declspec(empty_bases) PropBagT : implements<D, ::Windows::Foundation::IActivationFactory, I...>
+    struct WINRT_IMPL_EMPTY_BASES PropBagT : implements<D, winrt::Windows::Foundation::IActivationFactory, I...>
     {
         using instance_type = Simple::PropBag;
 
@@ -37,7 +37,9 @@ namespace winrt::Simple::factory_implementation
 }
 
 #if defined(WINRT_FORCE_INCLUDE_PROPBAG_XAML_G_H) || __has_include("PropBag.xaml.g.h")
+
 #include "PropBag.xaml.g.h"
+
 #else
 
 namespace winrt::Simple::implementation

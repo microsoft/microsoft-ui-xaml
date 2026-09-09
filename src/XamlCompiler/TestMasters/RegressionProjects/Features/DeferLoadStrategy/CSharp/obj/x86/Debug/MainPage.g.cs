@@ -11,31 +11,30 @@
 namespace CSharp
 {
     partial class MainPage : 
-        global::Windows.UI.Xaml.Controls.Page, 
-        global::Windows.UI.Xaml.Markup.IComponentConnector,
-        global::Windows.UI.Xaml.Markup.IComponentConnector2
+        global::Microsoft.UI.Xaml.Controls.Page, 
+        global::Microsoft.UI.Xaml.Markup.IComponentConnector
     {
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         private static class XamlBindingSetters
         {
-            public static void Set_Windows_UI_Xaml_FrameworkElement_Tag(global::Windows.UI.Xaml.FrameworkElement obj, global::System.Object value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_FrameworkElement_Tag(global::Microsoft.UI.Xaml.FrameworkElement obj, global::System.Object value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::System.Object) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
+                    value = (global::System.Object) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
                 }
                 obj.Tag = value;
             }
-            public static void Set_Windows_UI_Xaml_Controls_ContentControl_Content(global::Windows.UI.Xaml.Controls.ContentControl obj, global::System.Object value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_ContentControl_Content(global::Microsoft.UI.Xaml.Controls.ContentControl obj, global::System.Object value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::System.Object) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
+                    value = (global::System.Object) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
                 }
                 obj.Content = value;
             }
-            public static void Set_Windows_UI_Xaml_Controls_TextBlock_Text(global::Windows.UI.Xaml.Controls.TextBlock obj, global::System.String value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(global::Microsoft.UI.Xaml.Controls.TextBlock obj, global::System.String value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
@@ -45,13 +44,13 @@ namespace CSharp
             }
         };
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class MainPage_obj5_Bindings :
-            global::Windows.UI.Xaml.IDataTemplateExtension,
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class MainPage_obj5_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IMainPage_Bindings
         {
             private global::CSharp.MainPage dataRoot;
@@ -62,7 +61,7 @@ namespace CSharp
 
             // Fields for each control that has bindings.
             private global::System.WeakReference obj5;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj8;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj8;
             private global::System.String obj8TextDeferredValue;
 
             // Static fields for each binding's enabled/disabled state
@@ -74,7 +73,7 @@ namespace CSharp
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 25 && columnNumber == 44)
+                if (lineNumber == 27 && columnNumber == 44)
                 {
                     isobj8TextDisabled = true;
                 }
@@ -86,17 +85,17 @@ namespace CSharp
             {
                 switch(connectionId)
                 {
-                    case 5: // MainPage.xaml line 22
-                        this.obj5 = new global::System.WeakReference((global::Windows.UI.Xaml.Controls.StackPanel)target);
+                    case 5: // MainPage.xaml line 24
+                        this.obj5 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.StackPanel>(target));
                         break;
-                    case 8: // MainPage.xaml line 25
-                        this.obj8 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
-                        // MainPage.xaml line 25
+                    case 8: // MainPage.xaml line 27
+                        this.obj8 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                        // MainPage.xaml line 27
                         if (!isobj8TextDisabled)
                         {
                             if (this.obj8 != null)
                             {
-                                XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj8, this.obj8TextDeferredValue, null);
+                                XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj8, this.obj8TextDeferredValue, null);
                             }
                         }
                         break;
@@ -104,8 +103,14 @@ namespace CSharp
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
-            public void DataContextChangedHandler(global::Windows.UI.Xaml.FrameworkElement sender, global::Windows.UI.Xaml.DataContextChangedEventArgs args)
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
             {
                  if (this.SetDataRoot(args.NewValue))
                  {
@@ -120,7 +125,7 @@ namespace CSharp
                 throw new global::System.NotImplementedException();
             }
 
-            public int ProcessBindings(global::Windows.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
             {
                 int nextPhase = -1;
                 ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
@@ -145,12 +150,16 @@ namespace CSharp
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            (this.obj5.Target as global::Windows.UI.Xaml.Controls.StackPanel).DataContextChanged -= this.DataContextChangedHandler;
+                            var rootElement = (this.obj5.Target as global::Microsoft.UI.Xaml.Controls.StackPanel);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
                         }
                         this.initialized = true;
                         break;
                 }
-                this.Update_((global::CSharp.MainPage) item, 1 << phase);
+                this.Update_(global::WinRT.CastExtensions.As<global::CSharp.MainPage>(item), 1 << phase);
             }
 
             public void Recycle()
@@ -181,7 +190,7 @@ namespace CSharp
             {
                 switch (connectionId)
                 {
-                    case 8: // MainPage.xaml line 25
+                    case 8: // MainPage.xaml line 27
                     {
                         if (this.obj8 != null)
                         {
@@ -201,7 +210,7 @@ namespace CSharp
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::CSharp.MainPage)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::CSharp.MainPage>(newDataRoot);
                     return true;
                 }
                 return false;
@@ -222,12 +231,12 @@ namespace CSharp
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 25
+                    // MainPage.xaml line 27
                     if (!isobj8TextDisabled)
                     {
                         if (this.obj8 != null)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj8, obj.ToString(), null);
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj8, obj.ToString(), null);
                         }
                         else
                         {
@@ -238,12 +247,12 @@ namespace CSharp
             }
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class MainPage_obj1_Bindings :
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class MainPage_obj1_Bindings :
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IMainPage_Bindings
         {
             private global::CSharp.MainPage dataRoot;
@@ -252,9 +261,9 @@ namespace CSharp
             private const int DATA_CHANGED = (1 << 30);
 
             // Fields for each control that has bindings.
-            private global::Windows.UI.Xaml.Controls.Grid obj2;
+            private global::Microsoft.UI.Xaml.Controls.Grid obj2;
             private global::System.Object obj2TagDeferredValue;
-            private global::Windows.UI.Xaml.Controls.Button obj9;
+            private global::Microsoft.UI.Xaml.Controls.Button obj9;
             private global::System.Object obj9ContentDeferredValue;
 
             // Static fields for each binding's enabled/disabled state
@@ -267,11 +276,11 @@ namespace CSharp
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 13 && columnNumber == 129)
+                if (lineNumber == 15 && columnNumber == 129)
                 {
                     isobj2TagDisabled = true;
                 }
-                else if (lineNumber == 14 && columnNumber == 40)
+                else if (lineNumber == 16 && columnNumber == 40)
                 {
                     isobj9ContentDisabled = true;
                 }
@@ -283,25 +292,25 @@ namespace CSharp
             {
                 switch(connectionId)
                 {
-                    case 2: // MainPage.xaml line 13
-                        this.obj2 = (global::Windows.UI.Xaml.Controls.Grid)target;
-                        // MainPage.xaml line 13
+                    case 2: // MainPage.xaml line 15
+                        this.obj2 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Grid>(target);
+                        // MainPage.xaml line 15
                         if (!isobj2TagDisabled)
                         {
                             if (this.obj2 != null)
                             {
-                                XamlBindingSetters.Set_Windows_UI_Xaml_FrameworkElement_Tag(this.obj2, this.obj2TagDeferredValue, null);
+                                XamlBindingSetters.Set_Microsoft_UI_Xaml_FrameworkElement_Tag(this.obj2, this.obj2TagDeferredValue, null);
                             }
                         }
                         break;
-                    case 9: // MainPage.xaml line 14
-                        this.obj9 = (global::Windows.UI.Xaml.Controls.Button)target;
-                        // MainPage.xaml line 14
+                    case 9: // MainPage.xaml line 16
+                        this.obj9 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                        // MainPage.xaml line 16
                         if (!isobj9ContentDisabled)
                         {
                             if (this.obj9 != null)
                             {
-                                XamlBindingSetters.Set_Windows_UI_Xaml_Controls_ContentControl_Content(this.obj9, this.obj9ContentDeferredValue, null);
+                                XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ContentControl_Content(this.obj9, this.obj9ContentDeferredValue, null);
                             }
                         }
                         break;
@@ -309,6 +318,12 @@ namespace CSharp
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
             // IDataTemplateComponent
 
@@ -346,7 +361,7 @@ namespace CSharp
             {
                 switch (connectionId)
                 {
-                    case 2: // MainPage.xaml line 13
+                    case 2: // MainPage.xaml line 15
                     {
                         if (this.obj2 != null)
                         {
@@ -356,7 +371,7 @@ namespace CSharp
                         this.DisconnectUnloadedObject(9);
                         break;
                     }
-                    case 9: // MainPage.xaml line 14
+                    case 9: // MainPage.xaml line 16
                     {
                         if (this.obj9 != null)
                         {
@@ -376,13 +391,18 @@ namespace CSharp
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::CSharp.MainPage)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::CSharp.MainPage>(newDataRoot);
                     return true;
                 }
                 return false;
             }
 
-            public void Loading(global::Windows.UI.Xaml.FrameworkElement src, object data)
+            public void Activated(object obj, global::Microsoft.UI.Xaml.WindowActivatedEventArgs data)
+            {
+                this.Initialize();
+            }
+
+            public void Loading(global::Microsoft.UI.Xaml.FrameworkElement src, object data)
             {
                 this.Initialize();
             }
@@ -402,24 +422,24 @@ namespace CSharp
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // MainPage.xaml line 13
+                    // MainPage.xaml line 15
                     if (!isobj2TagDisabled)
                     {
                         if (this.obj2 != null)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_FrameworkElement_Tag(this.obj2, obj, null);
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_FrameworkElement_Tag(this.obj2, obj, null);
                         }
                         else
                         {
                             this.obj2TagDeferredValue = obj;
                         }
                     }
-                    // MainPage.xaml line 14
+                    // MainPage.xaml line 16
                     if (!isobj9ContentDisabled)
                     {
                         if (this.obj9 != null)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_Controls_ContentControl_Content(this.obj9, obj, null);
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ContentControl_Content(this.obj9, obj, null);
                         }
                         else
                         {
@@ -429,40 +449,41 @@ namespace CSharp
                 }
             }
         }
+
         /// <summary>
         /// Connect()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public void Connect(int connectionId, object target)
         {
             switch(connectionId)
             {
-            case 2: // MainPage.xaml line 13
+            case 2: // MainPage.xaml line 15
                 {
-                    this.MainGrid = (global::Windows.UI.Xaml.Controls.Grid)(target);
+                    this.MainGrid = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Grid>(target);
                 }
                 break;
-            case 3: // MainPage.xaml line 19
+            case 3: // MainPage.xaml line 21
                 {
-                    this.contentcontrol = (global::Windows.UI.Xaml.Controls.ContentControl)(target);
+                    this.contentcontrol = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ContentControl>(target);
                 }
                 break;
-            case 6: // MainPage.xaml line 23
+            case 6: // MainPage.xaml line 25
                 {
-                    global::Windows.UI.Xaml.Controls.Button element6 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element6).Click += this.Button_Click;
+                    global::Microsoft.UI.Xaml.Controls.Button element6 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element6).Click += this.Button_Click;
                 }
                 break;
-            case 7: // MainPage.xaml line 24
+            case 7: // MainPage.xaml line 26
                 {
-                    global::Windows.UI.Xaml.Controls.Button element7 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element7).Click += this.deferred_Click;
+                    global::Microsoft.UI.Xaml.Controls.Button element7 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element7).Click += this.deferred_Click;
                 }
                 break;
-            case 9: // MainPage.xaml line 14
+            case 9: // MainPage.xaml line 16
                 {
-                    this.Button1 = (global::Windows.UI.Xaml.Controls.Button)(target);
+                    this.Button1 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                 }
                 break;
             default:
@@ -474,31 +495,31 @@ namespace CSharp
         /// <summary>
         /// UnloadObject(DependencyObject)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        partial void UnloadObject(global::Windows.UI.Xaml.DependencyObject unloadableObject)
+        partial void UnloadObject(global::Microsoft.UI.Xaml.DependencyObject unloadableObject)
         {
             if (unloadableObject != null)
             {
-                // MainPage.xaml line 13
+                // MainPage.xaml line 15
                 if (unloadableObject == this.MainGrid)
                 { 
                     this.DisconnectUnloadedObject(2);
                 }
-                global::Windows.UI.Xaml.Markup.XamlMarkupHelper.UnloadObject(unloadableObject);
+                global::Microsoft.UI.Xaml.Markup.XamlMarkupHelper.UnloadObject(unloadableObject);
             }
         }
 
         /// <summary>
         /// DisconnectUnloadedObject(int connectionId)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         private void DisconnectUnloadedObject(int connectionId)
         {
             switch(connectionId)
             {
-                case 2: // MainPage.xaml line 13
+                case 2: // MainPage.xaml line 15
                 {
                     this.DisconnectUnloadedObject(9);
                     this.Bindings.DisconnectUnloadedObject(9);
@@ -506,11 +527,11 @@ namespace CSharp
                     this.MainGrid = null;
                     break;
                 }
-                case 7: // MainPage.xaml line 24
+                case 7: // MainPage.xaml line 26
                 {
                     break;
                 }
-                case 9: // MainPage.xaml line 14
+                case 9: // MainPage.xaml line 16
                 {
                     this.Bindings.DisconnectUnloadedObject(9);
                     this.Button1 = null;
@@ -523,36 +544,37 @@ namespace CSharp
             }
         }
 
+
         /// <summary>
         /// GetBindingConnector(int connectionId, object target)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
+        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
         {
-            global::Windows.UI.Xaml.Markup.IComponentConnector returnValue = null;
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector returnValue = null;
             switch(connectionId)
             {
-            case 1: // MainPage.xaml line 1
+            case 1: // MainPage.xaml line 3
                 {                    
-                    global::Windows.UI.Xaml.Controls.Page element1 = (global::Windows.UI.Xaml.Controls.Page)target;
+                    global::Microsoft.UI.Xaml.Controls.Page element1 = (global::Microsoft.UI.Xaml.Controls.Page)target;
                     MainPage_obj1_Bindings bindings = new MainPage_obj1_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(this);
                     this.Bindings = bindings;
                     element1.Loading += bindings.Loading;
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
                 }
                 break;
-            case 5: // MainPage.xaml line 22
+            case 5: // MainPage.xaml line 24
                 {                    
-                    global::Windows.UI.Xaml.Controls.StackPanel element5 = (global::Windows.UI.Xaml.Controls.StackPanel)target;
+                    global::Microsoft.UI.Xaml.Controls.StackPanel element5 = (global::Microsoft.UI.Xaml.Controls.StackPanel)target;
                     MainPage_obj5_Bindings bindings = new MainPage_obj5_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(element5.DataContext);
                     element5.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Windows.UI.Xaml.DataTemplate.SetExtensionInstance(element5, bindings);
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element5, bindings);
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element5, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element5, bindings);
                 }
                 break;
             }

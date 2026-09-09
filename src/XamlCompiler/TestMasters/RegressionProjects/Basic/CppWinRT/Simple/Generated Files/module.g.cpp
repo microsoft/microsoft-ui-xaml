@@ -1,7 +1,11 @@
-﻿// WARNING: Please don't edit this file...
+// WARNING: Please don't edit this file...
 
 #include "pch.h"
 #include "winrt/base.h"
+void* winrt_make_Simple_BlankPage();
+void* winrt_make_Simple_BlankPageBase();
+void* winrt_make_Simple_CPPEventArgumentsTest();
+void* winrt_make_Simple_FieldModifierTests();
 void* winrt_make_Simple_MainPage();
 void* winrt_make_Simple_MainPageBase();
 void* winrt_make_Simple_PropBag();
@@ -24,6 +28,26 @@ void* __stdcall winrt_get_activation_factory([[maybe_unused]] std::wstring_view 
     {
         return std::equal(left.rbegin(), left.rend(), right.rbegin(), right.rend());
     };
+
+    if (requal(name, L"Simple.BlankPage"))
+    {
+        return winrt_make_Simple_BlankPage();
+    }
+
+    if (requal(name, L"Simple.BlankPageBase"))
+    {
+        return winrt_make_Simple_BlankPageBase();
+    }
+
+    if (requal(name, L"Simple.CPPEventArgumentsTest"))
+    {
+        return winrt_make_Simple_CPPEventArgumentsTest();
+    }
+
+    if (requal(name, L"Simple.FieldModifierTests"))
+    {
+        return winrt_make_Simple_FieldModifierTests();
+    }
 
     if (requal(name, L"Simple.MainPage"))
     {
@@ -62,9 +86,7 @@ int32_t __stdcall WINRT_CanUnloadNow() noexcept
 
 int32_t __stdcall WINRT_GetActivationFactory(void* classId, void** factory) noexcept try
 {
-    uint32_t length{};
-    wchar_t const* const buffer = WINRT_WindowsGetStringRawBuffer(classId, &length);
-    std::wstring_view const name{ buffer, length };
+    std::wstring_view const name{ *reinterpret_cast<winrt::hstring*>(&classId) };
     *factory = winrt_get_activation_factory(name);
 
     if (*factory)

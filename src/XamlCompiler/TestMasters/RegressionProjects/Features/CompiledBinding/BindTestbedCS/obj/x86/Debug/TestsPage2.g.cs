@@ -11,27 +11,26 @@
 namespace BindTestbed
 {
     partial class TestsPage2 : 
-        global::Windows.UI.Xaml.Controls.UserControl, 
-        global::Windows.UI.Xaml.Markup.IComponentConnector,
-        global::Windows.UI.Xaml.Markup.IComponentConnector2
+        global::Microsoft.UI.Xaml.Controls.UserControl, 
+        global::Microsoft.UI.Xaml.Markup.IComponentConnector
     {
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         private static class XamlBindingSetters
         {
-            public static void Set_Windows_UI_Xaml_Controls_Grid_Row(global::Windows.UI.Xaml.FrameworkElement obj, global::System.Int32 value)
+            public static void Set_Microsoft_UI_Xaml_Controls_Grid_Row(global::Microsoft.UI.Xaml.FrameworkElement obj, global::System.Int32 value)
             {
-                global::Windows.UI.Xaml.Controls.Grid.SetRow(obj, value);
+                global::Microsoft.UI.Xaml.Controls.Grid.SetRow(obj, value);
             }
-            public static void Set_Windows_UI_Xaml_Controls_Primitives_RangeBase_Value(global::Windows.UI.Xaml.Controls.Primitives.RangeBase obj, global::System.Double value)
+            public static void Set_Microsoft_UI_Xaml_Controls_Primitives_RangeBase_Value(global::Microsoft.UI.Xaml.Controls.Primitives.RangeBase obj, global::System.Double value)
             {
                 obj.Value = value;
             }
-            public static void Set_Windows_UI_Xaml_Media_RotateTransform_Angle(global::Windows.UI.Xaml.Media.RotateTransform obj, global::System.Double value)
+            public static void Set_Microsoft_UI_Xaml_Media_RotateTransform_Angle(global::Microsoft.UI.Xaml.Media.RotateTransform obj, global::System.Double value)
             {
                 obj.Angle = value;
             }
-            public static void Set_Windows_UI_Xaml_Controls_TextBlock_Text(global::Windows.UI.Xaml.Controls.TextBlock obj, global::System.String value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(global::Microsoft.UI.Xaml.Controls.TextBlock obj, global::System.String value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
@@ -39,51 +38,51 @@ namespace BindTestbed
                 }
                 obj.Text = value ?? global::System.String.Empty;
             }
-            public static void Set_Windows_UI_Xaml_Controls_TextBlock_FontSize(global::Windows.UI.Xaml.Controls.TextBlock obj, global::System.Double value)
+            public static void Set_Microsoft_UI_Xaml_Controls_TextBlock_FontSize(global::Microsoft.UI.Xaml.Controls.TextBlock obj, global::System.Double value)
             {
                 obj.FontSize = value;
             }
-            public static void Set_Windows_UI_Xaml_Media_TranslateTransform_X(global::Windows.UI.Xaml.Media.TranslateTransform obj, global::System.Double value)
+            public static void Set_Microsoft_UI_Xaml_Media_TranslateTransform_X(global::Microsoft.UI.Xaml.Media.TranslateTransform obj, global::System.Double value)
             {
                 obj.X = value;
             }
-            public static void Set_Windows_UI_Xaml_Controls_Grid_Column(global::Windows.UI.Xaml.FrameworkElement obj, global::System.Int32 value)
+            public static void Set_Microsoft_UI_Xaml_Controls_Grid_Column(global::Microsoft.UI.Xaml.FrameworkElement obj, global::System.Int32 value)
             {
-                global::Windows.UI.Xaml.Controls.Grid.SetColumn(obj, value);
+                global::Microsoft.UI.Xaml.Controls.Grid.SetColumn(obj, value);
             }
-            public static void Set_BindTestbedModel_AttachedProperties_AttachedEmployee(global::Windows.UI.Xaml.Controls.TextBlock obj, global::BindTestbedModel.IEmployee value, string targetNullValue)
+            public static void Set_BindTestbedModel_AttachedProperties_AttachedEmployee(global::Microsoft.UI.Xaml.Controls.TextBlock obj, global::BindTestbedModel.IEmployee value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.IEmployee) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.IEmployee), targetNullValue);
+                    value = (global::BindTestbedModel.IEmployee) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.IEmployee), targetNullValue);
                 }
                 global::BindTestbedModel.AttachedProperties.SetAttachedEmployee(obj, value);
             }
-            public static void Set_Windows_UI_Xaml_UIElement_Visibility(global::Windows.UI.Xaml.UIElement obj, global::Windows.UI.Xaml.Visibility value)
+            public static void Set_Microsoft_UI_Xaml_UIElement_Visibility(global::Microsoft.UI.Xaml.UIElement obj, global::Microsoft.UI.Xaml.Visibility value)
             {
                 obj.Visibility = value;
             }
-            public static void Set_Windows_UI_Xaml_Controls_Image_Source(global::Windows.UI.Xaml.Controls.Image obj, global::Windows.UI.Xaml.Media.ImageSource value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_Image_Source(global::Microsoft.UI.Xaml.Controls.Image obj, global::Microsoft.UI.Xaml.Media.ImageSource value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::Windows.UI.Xaml.Media.ImageSource) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::Windows.UI.Xaml.Media.ImageSource), targetNullValue);
+                    value = (global::Microsoft.UI.Xaml.Media.ImageSource) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::Microsoft.UI.Xaml.Media.ImageSource), targetNullValue);
                 }
                 obj.Source = value;
             }
-            public static void Set_BindTestbedModel_AttachedProperties_AttachedBool(global::Windows.UI.Xaml.Controls.TextBlock obj, global::System.Boolean value)
+            public static void Set_BindTestbedModel_AttachedProperties_AttachedBool(global::Microsoft.UI.Xaml.Controls.TextBlock obj, global::System.Boolean value)
             {
                 global::BindTestbedModel.AttachedProperties.SetAttachedBool(obj, value);
             }
         };
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class TestsPage2_obj4_Bindings :
-            global::Windows.UI.Xaml.IDataTemplateExtension,
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class TestsPage2_obj4_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             ITestsPage2_Bindings
         {
             private global::System.String dataRoot;
@@ -94,7 +93,7 @@ namespace BindTestbed
 
             // Fields for each control that has bindings.
             private global::System.WeakReference obj4;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj5;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj5;
 
             // Static fields for each binding's enabled/disabled state
             private static bool isobj5TextDisabled = false;
@@ -105,7 +104,7 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 23 && columnNumber == 32)
+                if (lineNumber == 25 && columnNumber == 32)
                 {
                     isobj5TextDisabled = true;
                 }
@@ -117,18 +116,24 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 4: // TestsPage2.xaml line 22
-                        this.obj4 = new global::System.WeakReference((global::Windows.UI.Xaml.Controls.Border)target);
+                    case 4: // TestsPage2.xaml line 24
+                        this.obj4 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Border>(target));
                         break;
-                    case 5: // TestsPage2.xaml line 23
-                        this.obj5 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 5: // TestsPage2.xaml line 25
+                        this.obj5 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
-            public void DataContextChangedHandler(global::Windows.UI.Xaml.FrameworkElement sender, global::Windows.UI.Xaml.DataContextChangedEventArgs args)
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
             {
                  if (this.SetDataRoot(args.NewValue))
                  {
@@ -143,7 +148,7 @@ namespace BindTestbed
                 throw new global::System.NotImplementedException();
             }
 
-            public int ProcessBindings(global::Windows.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
             {
                 int nextPhase = -1;
                 ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
@@ -168,12 +173,16 @@ namespace BindTestbed
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            (this.obj4.Target as global::Windows.UI.Xaml.Controls.Border).DataContextChanged -= this.DataContextChangedHandler;
+                            var rootElement = (this.obj4.Target as global::Microsoft.UI.Xaml.Controls.Border);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
                         }
                         this.initialized = true;
                         break;
                 }
-                this.Update_((global::System.String) item, 1 << phase);
+                this.Update_(global::WinRT.CastExtensions.As<global::System.String>(item), 1 << phase);
             }
 
             public void Recycle()
@@ -209,7 +218,7 @@ namespace BindTestbed
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::System.String)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::System.String>(newDataRoot);
                     return true;
                 }
                 return false;
@@ -220,63 +229,63 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // TestsPage2.xaml line 23
+                    // TestsPage2.xaml line 25
                     if (!isobj5TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj5, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj5, obj, null);
                     }
                 }
             }
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class TestsPage2_obj1_Bindings :
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class TestsPage2_obj1_Bindings :
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             ITestsPage2_Bindings
         {
             private global::BindTestbed.TestsPage2 dataRoot;
             private bool initialized = false;
             private const int NOT_PHASED = (1 << 31);
             private const int DATA_CHANGED = (1 << 30);
-            private global::Windows.UI.Xaml.ResourceDictionary localResources;
-            private global::System.WeakReference<global::Windows.UI.Xaml.FrameworkElement> converterLookupRoot;
+            private global::Microsoft.UI.Xaml.ResourceDictionary localResources;
+            private global::System.WeakReference<global::Microsoft.UI.Xaml.FrameworkElement> converterLookupRoot;
 
             // Fields for each control that has bindings.
-            private global::Windows.UI.Xaml.Controls.StackPanel obj8;
-            private global::Windows.UI.Xaml.Controls.Slider obj9;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj11;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj12;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj13;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj14;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj15;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj16;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj17;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj18;
-            private global::Windows.UI.Xaml.Controls.Image obj19;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj21;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj23;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj24;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj25;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj26;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj32;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj34;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj35;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj36;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj37;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj38;
-            private global::Windows.UI.Xaml.Controls.Image obj39;
-            private global::Windows.UI.Xaml.Media.RotateTransform obj40;
-            private global::Windows.UI.Xaml.Media.TranslateTransform obj41;
-            private global::Windows.UI.Xaml.Shapes.Rectangle obj42;
-            private global::Windows.UI.Xaml.Shapes.Rectangle obj43;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj44;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj45;
-            private global::Windows.UI.Xaml.Shapes.Rectangle obj46;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj47;
-            private global::Windows.UI.Xaml.Controls.Slider obj48;
+            private global::Microsoft.UI.Xaml.Controls.StackPanel obj8;
+            private global::Microsoft.UI.Xaml.Controls.Slider obj9;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj11;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj12;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj13;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj14;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj15;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj16;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj17;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj18;
+            private global::Microsoft.UI.Xaml.Controls.Image obj19;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj21;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj23;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj24;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj25;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj26;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj32;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj34;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj35;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj36;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj37;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj38;
+            private global::Microsoft.UI.Xaml.Controls.Image obj39;
+            private global::Microsoft.UI.Xaml.Media.RotateTransform obj40;
+            private global::Microsoft.UI.Xaml.Media.TranslateTransform obj41;
+            private global::Microsoft.UI.Xaml.Shapes.Rectangle obj42;
+            private global::Microsoft.UI.Xaml.Shapes.Rectangle obj43;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj44;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj45;
+            private global::Microsoft.UI.Xaml.Shapes.Rectangle obj46;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj47;
+            private global::Microsoft.UI.Xaml.Controls.Slider obj48;
 
             // Static fields for each binding's enabled/disabled state
             private static bool isobj8RowDisabled = false;
@@ -323,139 +332,139 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 33 && columnNumber == 37)
+                if (lineNumber == 35 && columnNumber == 37)
                 {
                     isobj8RowDisabled = true;
                 }
-                else if (lineNumber == 47 && columnNumber == 51)
+                else if (lineNumber == 49 && columnNumber == 51)
                 {
                     isobj9ValueDisabled = true;
                 }
-                else if (lineNumber == 75 && columnNumber == 28)
+                else if (lineNumber == 77 && columnNumber == 28)
                 {
                     isobj11TextDisabled = true;
                 }
-                else if (lineNumber == 75 && columnNumber == 75)
+                else if (lineNumber == 77 && columnNumber == 75)
                 {
                     isobj11FontSizeDisabled = true;
                 }
-                else if (lineNumber == 128 && columnNumber == 28)
+                else if (lineNumber == 130 && columnNumber == 28)
                 {
                     isobj12TextDisabled = true;
                 }
-                else if (lineNumber == 129 && columnNumber == 28)
+                else if (lineNumber == 131 && columnNumber == 28)
                 {
                     isobj13VisibilityDisabled = true;
                 }
-                else if (lineNumber == 129 && columnNumber == 125)
+                else if (lineNumber == 131 && columnNumber == 125)
                 {
                     isobj13TextDisabled = true;
                 }
-                else if (lineNumber == 133 && columnNumber == 28)
+                else if (lineNumber == 135 && columnNumber == 28)
                 {
                     isobj14VisibilityDisabled = true;
                 }
-                else if (lineNumber == 135 && columnNumber == 28)
+                else if (lineNumber == 137 && columnNumber == 28)
                 {
                     isobj15VisibilityDisabled = true;
                 }
-                else if (lineNumber == 138 && columnNumber == 28)
+                else if (lineNumber == 140 && columnNumber == 28)
                 {
                     isobj16TextDisabled = true;
                 }
-                else if (lineNumber == 139 && columnNumber == 28)
+                else if (lineNumber == 141 && columnNumber == 28)
                 {
                     isobj17TextDisabled = true;
                 }
-                else if (lineNumber == 141 && columnNumber == 28)
+                else if (lineNumber == 143 && columnNumber == 28)
                 {
                     isobj18TextDisabled = true;
                 }
-                else if (lineNumber == 144 && columnNumber == 47)
+                else if (lineNumber == 146 && columnNumber == 47)
                 {
                     isobj19SourceDisabled = true;
                 }
-                else if (lineNumber == 189 && columnNumber == 28)
+                else if (lineNumber == 191 && columnNumber == 28)
                 {
                     isobj21TextDisabled = true;
                 }
-                else if (lineNumber == 207 && columnNumber == 21)
+                else if (lineNumber == 209 && columnNumber == 21)
                 {
                     isobj23AttachedBoolDisabled = true;
                 }
-                else if (lineNumber == 211 && columnNumber == 28)
+                else if (lineNumber == 213 && columnNumber == 28)
                 {
                     isobj24AttachedEmployeeDisabled = true;
                 }
-                else if (lineNumber == 212 && columnNumber == 28)
+                else if (lineNumber == 214 && columnNumber == 28)
                 {
                     isobj25TextDisabled = true;
                 }
-                else if (lineNumber == 214 && columnNumber == 55)
+                else if (lineNumber == 216 && columnNumber == 55)
                 {
                     isobj26VisibilityDisabled = true;
                 }
-                else if (lineNumber == 203 && columnNumber == 61)
+                else if (lineNumber == 205 && columnNumber == 61)
                 {
                     isobj32TextDisabled = true;
                 }
-                else if (lineNumber == 198 && columnNumber == 32)
+                else if (lineNumber == 200 && columnNumber == 32)
                 {
                     isobj34TextDisabled = true;
                 }
-                else if (lineNumber == 183 && columnNumber == 32)
+                else if (lineNumber == 185 && columnNumber == 32)
                 {
                     isobj35TextDisabled = true;
                 }
-                else if (lineNumber == 184 && columnNumber == 32)
+                else if (lineNumber == 186 && columnNumber == 32)
                 {
                     isobj36TextDisabled = true;
                 }
-                else if (lineNumber == 177 && columnNumber == 36)
+                else if (lineNumber == 179 && columnNumber == 36)
                 {
                     isobj37TextDisabled = true;
                 }
-                else if (lineNumber == 173 && columnNumber == 36)
+                else if (lineNumber == 175 && columnNumber == 36)
                 {
                     isobj38TextDisabled = true;
                 }
-                else if (lineNumber == 150 && columnNumber == 51)
+                else if (lineNumber == 152 && columnNumber == 51)
                 {
                     isobj39SourceDisabled = true;
                 }
-                else if (lineNumber == 118 && columnNumber == 50)
+                else if (lineNumber == 120 && columnNumber == 50)
                 {
                     isobj40AngleDisabled = true;
                 }
-                else if (lineNumber == 119 && columnNumber == 53)
+                else if (lineNumber == 121 && columnNumber == 53)
                 {
                     isobj41XDisabled = true;
                 }
-                else if (lineNumber == 103 && columnNumber == 36)
+                else if (lineNumber == 105 && columnNumber == 36)
                 {
                     isobj42ColumnDisabled = true;
                 }
-                else if (lineNumber == 105 && columnNumber == 49)
+                else if (lineNumber == 107 && columnNumber == 49)
                 {
                     isobj43ColumnDisabled = true;
                 }
-                else if (lineNumber == 71 && columnNumber == 32)
+                else if (lineNumber == 73 && columnNumber == 32)
                 {
                     isobj44TextDisabled = true;
                 }
-                else if (lineNumber == 66 && columnNumber == 32)
+                else if (lineNumber == 68 && columnNumber == 32)
                 {
                     isobj45TextDisabled = true;
                 }
-                else if (lineNumber == 58 && columnNumber == 57)
+                else if (lineNumber == 60 && columnNumber == 57)
                 {
                     isobj46ColumnDisabled = true;
                 }
-                else if (lineNumber == 59 && columnNumber == 48)
+                else if (lineNumber == 61 && columnNumber == 48)
                 {
                     isobj47TextDisabled = true;
                 }
-                else if (lineNumber == 44 && columnNumber == 54)
+                else if (lineNumber == 46 && columnNumber == 54)
                 {
                     isobj48ValueDisabled = true;
                 }
@@ -467,109 +476,115 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 8: // TestsPage2.xaml line 33
-                        this.obj8 = (global::Windows.UI.Xaml.Controls.StackPanel)target;
+                    case 8: // TestsPage2.xaml line 35
+                        this.obj8 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.StackPanel>(target);
                         break;
-                    case 9: // TestsPage2.xaml line 47
-                        this.obj9 = (global::Windows.UI.Xaml.Controls.Slider)target;
+                    case 9: // TestsPage2.xaml line 49
+                        this.obj9 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Slider>(target);
                         break;
-                    case 11: // TestsPage2.xaml line 75
-                        this.obj11 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 11: // TestsPage2.xaml line 77
+                        this.obj11 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 12: // TestsPage2.xaml line 128
-                        this.obj12 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 12: // TestsPage2.xaml line 130
+                        this.obj12 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 13: // TestsPage2.xaml line 129
-                        this.obj13 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 13: // TestsPage2.xaml line 131
+                        this.obj13 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 14: // TestsPage2.xaml line 133
-                        this.obj14 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 14: // TestsPage2.xaml line 135
+                        this.obj14 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 15: // TestsPage2.xaml line 135
-                        this.obj15 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 15: // TestsPage2.xaml line 137
+                        this.obj15 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 16: // TestsPage2.xaml line 138
-                        this.obj16 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 16: // TestsPage2.xaml line 140
+                        this.obj16 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 17: // TestsPage2.xaml line 139
-                        this.obj17 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 17: // TestsPage2.xaml line 141
+                        this.obj17 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 18: // TestsPage2.xaml line 141
-                        this.obj18 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 18: // TestsPage2.xaml line 143
+                        this.obj18 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 19: // TestsPage2.xaml line 144
-                        this.obj19 = (global::Windows.UI.Xaml.Controls.Image)target;
+                    case 19: // TestsPage2.xaml line 146
+                        this.obj19 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Image>(target);
                         break;
-                    case 21: // TestsPage2.xaml line 189
-                        this.obj21 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 21: // TestsPage2.xaml line 191
+                        this.obj21 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 23: // TestsPage2.xaml line 206
-                        this.obj23 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 23: // TestsPage2.xaml line 208
+                        this.obj23 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 24: // TestsPage2.xaml line 209
-                        this.obj24 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 24: // TestsPage2.xaml line 211
+                        this.obj24 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         this.bindingsTracking.RegisterTwoWayListener_24(this.obj24);
                         break;
-                    case 25: // TestsPage2.xaml line 212
-                        this.obj25 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 25: // TestsPage2.xaml line 214
+                        this.obj25 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         this.bindingsTracking.RegisterTwoWayListener_25(this.obj25);
                         break;
-                    case 26: // TestsPage2.xaml line 214
-                        this.obj26 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 26: // TestsPage2.xaml line 216
+                        this.obj26 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 32: // TestsPage2.xaml line 203
-                        this.obj32 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 32: // TestsPage2.xaml line 205
+                        this.obj32 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 34: // TestsPage2.xaml line 198
-                        this.obj34 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 34: // TestsPage2.xaml line 200
+                        this.obj34 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 35: // TestsPage2.xaml line 183
-                        this.obj35 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 35: // TestsPage2.xaml line 185
+                        this.obj35 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 36: // TestsPage2.xaml line 184
-                        this.obj36 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 36: // TestsPage2.xaml line 186
+                        this.obj36 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 37: // TestsPage2.xaml line 177
-                        this.obj37 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 37: // TestsPage2.xaml line 179
+                        this.obj37 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 38: // TestsPage2.xaml line 173
-                        this.obj38 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 38: // TestsPage2.xaml line 175
+                        this.obj38 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 39: // TestsPage2.xaml line 150
-                        this.obj39 = (global::Windows.UI.Xaml.Controls.Image)target;
+                    case 39: // TestsPage2.xaml line 152
+                        this.obj39 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Image>(target);
                         break;
-                    case 40: // TestsPage2.xaml line 118
-                        this.obj40 = (global::Windows.UI.Xaml.Media.RotateTransform)target;
+                    case 40: // TestsPage2.xaml line 120
+                        this.obj40 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Media.RotateTransform>(target);
                         break;
-                    case 41: // TestsPage2.xaml line 119
-                        this.obj41 = (global::Windows.UI.Xaml.Media.TranslateTransform)target;
+                    case 41: // TestsPage2.xaml line 121
+                        this.obj41 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Media.TranslateTransform>(target);
                         break;
-                    case 42: // TestsPage2.xaml line 103
-                        this.obj42 = (global::Windows.UI.Xaml.Shapes.Rectangle)target;
+                    case 42: // TestsPage2.xaml line 105
+                        this.obj42 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Shapes.Rectangle>(target);
                         break;
-                    case 43: // TestsPage2.xaml line 105
-                        this.obj43 = (global::Windows.UI.Xaml.Shapes.Rectangle)target;
+                    case 43: // TestsPage2.xaml line 107
+                        this.obj43 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Shapes.Rectangle>(target);
                         break;
-                    case 44: // TestsPage2.xaml line 71
-                        this.obj44 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 44: // TestsPage2.xaml line 73
+                        this.obj44 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 45: // TestsPage2.xaml line 66
-                        this.obj45 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 45: // TestsPage2.xaml line 68
+                        this.obj45 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 46: // TestsPage2.xaml line 58
-                        this.obj46 = (global::Windows.UI.Xaml.Shapes.Rectangle)target;
+                    case 46: // TestsPage2.xaml line 60
+                        this.obj46 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Shapes.Rectangle>(target);
                         this.bindingsTracking.RegisterTwoWayListener_46(this.obj46);
                         break;
-                    case 47: // TestsPage2.xaml line 59
-                        this.obj47 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 47: // TestsPage2.xaml line 61
+                        this.obj47 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 48: // TestsPage2.xaml line 44
-                        this.obj48 = (global::Windows.UI.Xaml.Controls.Slider)target;
+                    case 48: // TestsPage2.xaml line 46
+                        this.obj48 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Slider>(target);
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
             // IDataTemplateComponent
 
@@ -615,31 +630,36 @@ namespace BindTestbed
                 this.bindingsTracking.ReleaseAllListeners();
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbed.TestsPage2)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbed.TestsPage2>(newDataRoot);
                     return true;
                 }
                 return false;
             }
 
-            public void Loading(global::Windows.UI.Xaml.FrameworkElement src, object data)
+            public void Activated(object obj, global::Microsoft.UI.Xaml.WindowActivatedEventArgs data)
             {
                 this.Initialize();
             }
-            public void SetConverterLookupRoot(global::Windows.UI.Xaml.FrameworkElement rootElement)
+
+            public void Loading(global::Microsoft.UI.Xaml.FrameworkElement src, object data)
             {
-                this.converterLookupRoot = new global::System.WeakReference<global::Windows.UI.Xaml.FrameworkElement>(rootElement);
+                this.Initialize();
+            }
+            public void SetConverterLookupRoot(global::Microsoft.UI.Xaml.FrameworkElement rootElement)
+            {
+                this.converterLookupRoot = new global::System.WeakReference<global::Microsoft.UI.Xaml.FrameworkElement>(rootElement);
             }
 
-            public global::Windows.UI.Xaml.Data.IValueConverter LookupConverter(string key)
+            public global::Microsoft.UI.Xaml.Data.IValueConverter LookupConverter(string key)
             {
                 if (this.localResources == null)
                 {
-                    global::Windows.UI.Xaml.FrameworkElement rootElement;
+                    global::Microsoft.UI.Xaml.FrameworkElement rootElement;
                     this.converterLookupRoot.TryGetTarget(out rootElement);
                     this.localResources = rootElement.Resources;
                     this.converterLookupRoot = null;
                 }
-                return (global::Windows.UI.Xaml.Data.IValueConverter) (this.localResources.ContainsKey(key) ? this.localResources[key] : global::Windows.UI.Xaml.Application.Current.Resources[key]);
+                return (global::Microsoft.UI.Xaml.Data.IValueConverter) (this.localResources.ContainsKey(key) ? this.localResources[key] : global::Microsoft.UI.Xaml.Application.Current.Resources[key]);
             }
 
             // Update methods for each path node used in binding steps.
@@ -709,10 +729,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // TestsPage2.xaml line 33
+                    // TestsPage2.xaml line 35
                     if (!isobj8RowDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_Grid_Row(this.obj8, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_Grid_Row(this.obj8, obj);
                     }
                 }
             }
@@ -738,19 +758,19 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TestsPage2.xaml line 47
+                    // TestsPage2.xaml line 49
                     if (!isobj9ValueDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_Primitives_RangeBase_Value(this.obj9, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_Primitives_RangeBase_Value(this.obj9, obj);
                     }
-                    // TestsPage2.xaml line 118
+                    // TestsPage2.xaml line 120
                     if (!isobj40AngleDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Media_RotateTransform_Angle(this.obj40, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Media_RotateTransform_Angle(this.obj40, obj);
                     }
                 }
             }
-            private void Update_LocalTextBox(global::Windows.UI.Xaml.Controls.TextBox obj, int phase)
+            private void Update_LocalTextBox(global::Microsoft.UI.Xaml.Controls.TextBox obj, int phase)
             {
                 this.bindingsTracking.UpdateChildListeners_LocalTextBox(obj);
                 if (obj != null)
@@ -765,10 +785,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TestsPage2.xaml line 75
+                    // TestsPage2.xaml line 77
                     if (!isobj11TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj11, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj11, obj, null);
                     }
                 }
             }
@@ -776,45 +796,45 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TestsPage2.xaml line 75
+                    // TestsPage2.xaml line 77
                     if (!isobj11FontSizeDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_FontSize(this.obj11, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_FontSize(this.obj11, obj);
                     }
-                    // TestsPage2.xaml line 119
+                    // TestsPage2.xaml line 121
                     if (!isobj41XDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Media_TranslateTransform_X(this.obj41, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Media_TranslateTransform_X(this.obj41, obj);
                     }
-                    // TestsPage2.xaml line 103
+                    // TestsPage2.xaml line 105
                     if (!isobj42ColumnDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_Grid_Column(this.obj42, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_Grid_Column(this.obj42, obj);
                     }
-                    // TestsPage2.xaml line 58
+                    // TestsPage2.xaml line 60
                     if (!isobj46ColumnDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_Grid_Column(this.obj46, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_Grid_Column(this.obj46, obj);
                     }
-                    // TestsPage2.xaml line 59
+                    // TestsPage2.xaml line 61
                     if (!isobj47TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj47, obj.ToString(), null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj47, obj.ToString(), null);
                     }
-                    // TestsPage2.xaml line 44
+                    // TestsPage2.xaml line 46
                     if (!isobj48ValueDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_Primitives_RangeBase_Value(this.obj48, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_Primitives_RangeBase_Value(this.obj48, obj);
                     }
                 }
             }
-            private void Update_Background(global::Windows.UI.Xaml.Media.Brush obj, int phase)
+            private void Update_Background(global::Microsoft.UI.Xaml.Media.Brush obj, int phase)
             {
                 if (obj != null)
                 {
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.Update_Background_Cast_Background_To_SolidColorBrush((global::Windows.UI.Xaml.Media.SolidColorBrush)obj, phase);
+                        this.Update_Background_Cast_Background_To_SolidColorBrush((global::Microsoft.UI.Xaml.Media.SolidColorBrush)obj, phase);
                     }
                 }
                 else
@@ -825,7 +845,7 @@ namespace BindTestbed
                     }
                 }
             }
-            private void Update_Background_Cast_Background_To_SolidColorBrush(global::Windows.UI.Xaml.Media.SolidColorBrush obj, int phase)
+            private void Update_Background_Cast_Background_To_SolidColorBrush(global::Microsoft.UI.Xaml.Media.SolidColorBrush obj, int phase)
             {
                 if (obj != null)
                 {
@@ -846,10 +866,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TestsPage2.xaml line 128
+                    // TestsPage2.xaml line 130
                     if (!isobj12TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj12, obj.ToString(), null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj12, obj.ToString(), null);
                     }
                 }
             }
@@ -876,7 +896,7 @@ namespace BindTestbed
                 }
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TestsPage2.xaml line 209
+                    // TestsPage2.xaml line 211
                     if (!isobj24AttachedEmployeeDisabled)
                     {
                         XamlBindingSetters.Set_BindTestbedModel_AttachedProperties_AttachedEmployee(this.obj24, obj, null);
@@ -887,15 +907,15 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // TestsPage2.xaml line 129
+                    // TestsPage2.xaml line 131
                     if (!isobj13VisibilityDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_UIElement_Visibility(this.obj13, (global::Windows.UI.Xaml.Visibility)this.LookupConverter("BoolToVisibility").Convert(obj, typeof(global::Windows.UI.Xaml.Visibility), null, null));
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_Visibility(this.obj13, (global::Microsoft.UI.Xaml.Visibility)this.LookupConverter("BoolToVisibility").Convert(obj, typeof(global::Microsoft.UI.Xaml.Visibility), null, null));
                     }
-                    // TestsPage2.xaml line 129
+                    // TestsPage2.xaml line 131
                     if (!isobj13TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj13, obj.ToString(), null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj13, obj.ToString(), null);
                     }
                 }
             }
@@ -930,15 +950,15 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // TestsPage2.xaml line 133
+                    // TestsPage2.xaml line 135
                     if (!isobj14VisibilityDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_UIElement_Visibility(this.obj14, (global::Windows.UI.Xaml.Visibility)this.LookupConverter("BoolToVisibility").Convert(obj, typeof(global::Windows.UI.Xaml.Visibility), null, null));
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_Visibility(this.obj14, (global::Microsoft.UI.Xaml.Visibility)this.LookupConverter("BoolToVisibility").Convert(obj, typeof(global::Microsoft.UI.Xaml.Visibility), null, null));
                     }
-                    // TestsPage2.xaml line 135
+                    // TestsPage2.xaml line 137
                     if (!isobj15VisibilityDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_UIElement_Visibility(this.obj15, (global::Windows.UI.Xaml.Visibility)this.LookupConverter("BoolToVisibility").Convert(obj, typeof(global::Windows.UI.Xaml.Visibility), null, null));
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_Visibility(this.obj15, (global::Microsoft.UI.Xaml.Visibility)this.LookupConverter("BoolToVisibility").Convert(obj, typeof(global::Microsoft.UI.Xaml.Visibility), null, null));
                     }
                 }
             }
@@ -946,10 +966,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // TestsPage2.xaml line 138
+                    // TestsPage2.xaml line 140
                     if (!isobj16TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj16, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj16, obj, null);
                     }
                 }
             }
@@ -957,48 +977,48 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // TestsPage2.xaml line 139
+                    // TestsPage2.xaml line 141
                     if (!isobj17TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj17, obj, "This-is-a-null-string-property");
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj17, obj, "This-is-a-null-string-property");
                     }
-                    // TestsPage2.xaml line 141
+                    // TestsPage2.xaml line 143
                     if (!isobj18TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj18, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj18, obj, null);
                     }
                 }
             }
-            private void Update_NullEmployee_NullImageSource(global::Windows.UI.Xaml.Media.ImageSource obj, int phase)
+            private void Update_NullEmployee_NullImageSource(global::Microsoft.UI.Xaml.Media.ImageSource obj, int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // TestsPage2.xaml line 144
+                    // TestsPage2.xaml line 146
                     if (!isobj19SourceDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_Image_Source(this.obj19, obj, "http://static-hp-wus.s-msn.com/sc/homepage/i/65/e8a77758e8644573ba5d41ada16e8c.jpg");
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_Image_Source(this.obj19, obj, "http://static-hp-wus.s-msn.com/sc/homepage/i/65/e8a77758e8644573ba5d41ada16e8c.jpg");
                     }
                 }
             }
-            private void Update_TextBlockWAttachedRow(global::Windows.UI.Xaml.Controls.TextBlock obj, int phase)
+            private void Update_TextBlockWAttachedRow(global::Microsoft.UI.Xaml.Controls.TextBlock obj, int phase)
             {
                 this.bindingsTracking.UpdateChildListeners_TextBlockWAttachedRow(obj);
                 if (obj != null)
                 {
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.Update_TextBlockWAttachedRow_A_Windows_UI_Xaml_Controls_Grid_Row(global::Windows.UI.Xaml.Controls.Grid.GetRow(obj), phase);
+                        this.Update_TextBlockWAttachedRow_A_Microsoft_UI_Xaml_Controls_Grid_Row(global::Microsoft.UI.Xaml.Controls.Grid.GetRow(obj), phase);
                     }
                 }
             }
-            private void Update_TextBlockWAttachedRow_A_Windows_UI_Xaml_Controls_Grid_Row(global::System.Int32 obj, int phase)
+            private void Update_TextBlockWAttachedRow_A_Microsoft_UI_Xaml_Controls_Grid_Row(global::System.Int32 obj, int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TestsPage2.xaml line 189
+                    // TestsPage2.xaml line 191
                     if (!isobj21TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj21, obj.ToString(), null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj21, obj.ToString(), null);
                     }
                 }
             }
@@ -1006,14 +1026,14 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TestsPage2.xaml line 206
+                    // TestsPage2.xaml line 208
                     if (!isobj23AttachedBoolDisabled)
                     {
                         XamlBindingSetters.Set_BindTestbedModel_AttachedProperties_AttachedBool(this.obj23, obj);
                     }
                 }
             }
-            private void Update_tbWithAttachedEmployee(global::Windows.UI.Xaml.Controls.TextBlock obj, int phase)
+            private void Update_tbWithAttachedEmployee(global::Microsoft.UI.Xaml.Controls.TextBlock obj, int phase)
             {
                 this.bindingsTracking.UpdateChildListeners_tbWithAttachedEmployee(obj);
                 if (obj != null)
@@ -1039,10 +1059,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TestsPage2.xaml line 212
+                    // TestsPage2.xaml line 214
                     if (!isobj25TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj25, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj25, obj, null);
                     }
                 }
             }
@@ -1052,22 +1072,22 @@ namespace BindTestbed
                 {
                     if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                     {
-                        this.Update_Model_NullableBoolProperty_Cast_NullableBoolProperty_To_Visibility((obj ?? false) ? global::Windows.UI.Xaml.Visibility.Visible : global::Windows.UI.Xaml.Visibility.Collapsed, phase);
+                        this.Update_Model_NullableBoolProperty_Cast_NullableBoolProperty_To_Visibility((obj ?? false) ? global::Microsoft.UI.Xaml.Visibility.Visible : global::Microsoft.UI.Xaml.Visibility.Collapsed, phase);
                     }
                 }
             }
-            private void Update_Model_NullableBoolProperty_Cast_NullableBoolProperty_To_Visibility(global::Windows.UI.Xaml.Visibility obj, int phase)
+            private void Update_Model_NullableBoolProperty_Cast_NullableBoolProperty_To_Visibility(global::Microsoft.UI.Xaml.Visibility obj, int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // TestsPage2.xaml line 214
+                    // TestsPage2.xaml line 216
                     if (!isobj26VisibilityDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_UIElement_Visibility(this.obj26, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_Visibility(this.obj26, obj);
                     }
                 }
             }
-            private void Update_Grid1(global::Windows.UI.Xaml.Controls.Grid obj, int phase)
+            private void Update_Grid1(global::Microsoft.UI.Xaml.Controls.Grid obj, int phase)
             {
                 if (obj != null)
                 {
@@ -1077,7 +1097,7 @@ namespace BindTestbed
                     }
                 }
             }
-            private void Update_Grid1_Children(global::Windows.UI.Xaml.Controls.UIElementCollection obj, int phase)
+            private void Update_Grid1_Children(global::Microsoft.UI.Xaml.Controls.UIElementCollection obj, int phase)
             {
                 if (obj != null)
                 {
@@ -1087,7 +1107,7 @@ namespace BindTestbed
                     }
                 }
             }
-            private void Update_Grid1_Children_I0(global::Windows.UI.Xaml.UIElement obj, int phase)
+            private void Update_Grid1_Children_I0(global::Microsoft.UI.Xaml.UIElement obj, int phase)
             {
                 this.bindingsTracking.UpdateChildListeners_Grid1_Children_I0(obj);
                 if (obj != null)
@@ -1098,18 +1118,18 @@ namespace BindTestbed
                     }
                 }
             }
-            private void Update_Grid1_Children_I0_Visibility(global::Windows.UI.Xaml.Visibility obj, int phase)
+            private void Update_Grid1_Children_I0_Visibility(global::Microsoft.UI.Xaml.Visibility obj, int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TestsPage2.xaml line 203
+                    // TestsPage2.xaml line 205
                     if (!isobj32TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj32, obj.ToString(), null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj32, obj.ToString(), null);
                     }
                 }
             }
-            private void Update_TimeZonePicker2(global::Windows.UI.Xaml.Controls.ComboBox obj, int phase)
+            private void Update_TimeZonePicker2(global::Microsoft.UI.Xaml.Controls.ComboBox obj, int phase)
             {
                 if (obj != null)
                 {
@@ -1119,7 +1139,7 @@ namespace BindTestbed
                     }
                 }
             }
-            private void Update_TimeZonePicker2_Items(global::Windows.UI.Xaml.Controls.ItemCollection obj, int phase)
+            private void Update_TimeZonePicker2_Items(global::Microsoft.UI.Xaml.Controls.ItemCollection obj, int phase)
             {
                 if (obj != null)
                 {
@@ -1133,10 +1153,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // TestsPage2.xaml line 198
+                    // TestsPage2.xaml line 200
                     if (!isobj34TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj34, obj.ToString(), null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj34, obj.ToString(), null);
                     }
                 }
             }
@@ -1145,10 +1165,10 @@ namespace BindTestbed
                 this.bindingsTracking.UpdateChildListeners_NiceEmployees(obj);
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TestsPage2.xaml line 183
+                    // TestsPage2.xaml line 185
                     if (!isobj35TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj35, obj != null ? obj.ToString() : null, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj35, obj != null ? obj.ToString() : null, null);
                     }
                 }
             }
@@ -1167,10 +1187,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TestsPage2.xaml line 184
+                    // TestsPage2.xaml line 186
                     if (!isobj36TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj36, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj36, obj, null);
                     }
                 }
             }
@@ -1189,10 +1209,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // TestsPage2.xaml line 177
+                    // TestsPage2.xaml line 179
                     if (!isobj37TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj37, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj37, obj, null);
                     }
                 }
             }
@@ -1200,10 +1220,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // TestsPage2.xaml line 173
+                    // TestsPage2.xaml line 175
                     if (!isobj38TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj38, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj38, obj, null);
                     }
                 }
             }
@@ -1211,14 +1231,14 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // TestsPage2.xaml line 150
+                    // TestsPage2.xaml line 152
                     if (!isobj39SourceDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_Image_Source(this.obj39, (global::Windows.UI.Xaml.Media.ImageSource) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::Windows.UI.Xaml.Media.ImageSource), obj), null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_Image_Source(this.obj39, (global::Microsoft.UI.Xaml.Media.ImageSource) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::Microsoft.UI.Xaml.Media.ImageSource), obj), null);
                     }
                 }
             }
-            private void Update_OneTimeSlider3(global::Windows.UI.Xaml.Controls.Slider obj, int phase)
+            private void Update_OneTimeSlider3(global::Microsoft.UI.Xaml.Controls.Slider obj, int phase)
             {
                 this.bindingsTracking.UpdateChildListeners_OneTimeSlider3(obj);
                 if (obj != null)
@@ -1233,10 +1253,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TestsPage2.xaml line 105
+                    // TestsPage2.xaml line 107
                     if (!isobj43ColumnDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_Grid_Column(this.obj43, (global::System.Int32)this.LookupConverter("DoubleToInt").Convert(obj, typeof(global::System.Int32), "DoItQuick", "Eng"));
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_Grid_Column(this.obj43, (global::System.Int32)this.LookupConverter("DoubleToInt").Convert(obj, typeof(global::System.Int32), "DoItQuick", "Eng"));
                     }
                 }
             }
@@ -1264,14 +1284,14 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // TestsPage2.xaml line 71
+                    // TestsPage2.xaml line 73
                     if (!isobj44TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj44, obj.ToString(), null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj44, obj.ToString(), null);
                     }
                 }
             }
-            private void Update_G(global::Windows.UI.Xaml.Controls.Grid obj, int phase)
+            private void Update_G(global::Microsoft.UI.Xaml.Controls.Grid obj, int phase)
             {
                 if (obj != null)
                 {
@@ -1281,7 +1301,7 @@ namespace BindTestbed
                     }
                 }
             }
-            private void Update_G_Children(global::Windows.UI.Xaml.Controls.UIElementCollection obj, int phase)
+            private void Update_G_Children(global::Microsoft.UI.Xaml.Controls.UIElementCollection obj, int phase)
             {
                 if (obj != null)
                 {
@@ -1291,7 +1311,7 @@ namespace BindTestbed
                     }
                 }
             }
-            private void Update_G_Children_I0(global::Windows.UI.Xaml.UIElement obj, int phase)
+            private void Update_G_Children_I0(global::Microsoft.UI.Xaml.UIElement obj, int phase)
             {
                 if (obj != null)
                 {
@@ -1301,14 +1321,14 @@ namespace BindTestbed
                     }
                 }
             }
-            private void Update_G_Children_I0_Visibility(global::Windows.UI.Xaml.Visibility obj, int phase)
+            private void Update_G_Children_I0_Visibility(global::Microsoft.UI.Xaml.Visibility obj, int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // TestsPage2.xaml line 66
+                    // TestsPage2.xaml line 68
                     if (!isobj45TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj45, obj.ToString(), null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj45, obj.ToString(), null);
                     }
                 }
             }
@@ -1327,10 +1347,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TestsPage2.xaml line 128
+                    // TestsPage2.xaml line 130
                     if (!isobj12TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj12, "Nope", null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj12, "Nope", null);
                     }
                 }
             }
@@ -1346,15 +1366,15 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // TestsPage2.xaml line 133
+                    // TestsPage2.xaml line 135
                     if (!isobj14VisibilityDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_UIElement_Visibility(this.obj14, (global::Windows.UI.Xaml.Visibility) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::Windows.UI.Xaml.Visibility), "Collapsed"));
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_Visibility(this.obj14, (global::Microsoft.UI.Xaml.Visibility) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::Microsoft.UI.Xaml.Visibility), "Collapsed"));
                     }
-                    // TestsPage2.xaml line 135
+                    // TestsPage2.xaml line 137
                     if (!isobj15VisibilityDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_UIElement_Visibility(this.obj15, (global::Windows.UI.Xaml.Visibility) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::Windows.UI.Xaml.Visibility), "Visible"));
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_UIElement_Visibility(this.obj15, (global::Microsoft.UI.Xaml.Visibility) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::Microsoft.UI.Xaml.Visibility), "Visible"));
                     }
                 }
             }
@@ -1363,10 +1383,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // TestsPage2.xaml line 138
+                    // TestsPage2.xaml line 140
                     if (!isobj16TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj16, "Name-Not-Available", null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj16, "Name-Not-Available", null);
                     }
                 }
             }
@@ -1375,10 +1395,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // TestsPage2.xaml line 144
+                    // TestsPage2.xaml line 146
                     if (!isobj19SourceDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_Image_Source(this.obj19, (global::Windows.UI.Xaml.Media.ImageSource) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::Windows.UI.Xaml.Media.ImageSource), "http://static-hp-wus.s-msn.com/sc/homepage/i/65/e8a77758e8644573ba5d41ada16e8c.jpg"), "http://static-hp-wus.s-msn.com/sc/homepage/i/65/e8a77758e8644573ba5d41ada16e8c.jpg");
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_Image_Source(this.obj19, (global::Microsoft.UI.Xaml.Media.ImageSource) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::Microsoft.UI.Xaml.Media.ImageSource), "http://static-hp-wus.s-msn.com/sc/homepage/i/65/e8a77758e8644573ba5d41ada16e8c.jpg"), "http://static-hp-wus.s-msn.com/sc/homepage/i/65/e8a77758e8644573ba5d41ada16e8c.jpg");
                     }
                 }
             }
@@ -1422,13 +1442,13 @@ namespace BindTestbed
                     {
                         if (this.dataRoot.Model != null)
                         {
-                            this.dataRoot.Model.IntPropWithINPC = global::Windows.UI.Xaml.Controls.Grid.GetColumn(this.obj46);
+                            this.dataRoot.Model.IntPropWithINPC = global::Microsoft.UI.Xaml.Controls.Grid.GetColumn(this.obj46);
                         }
                     }
                 }
             }
 
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             private class TestsPage2_obj1_BindingsTracking
             {
@@ -1470,7 +1490,7 @@ namespace BindTestbed
                     UpdateChildListeners_OneTimeSlider3(null);
                 }
 
-                public void DependencyPropertyChanged_Background(global::Windows.UI.Xaml.DependencyObject sender, global::Windows.UI.Xaml.DependencyProperty prop)
+                public void DependencyPropertyChanged_Background(global::Microsoft.UI.Xaml.DependencyObject sender, global::Microsoft.UI.Xaml.DependencyProperty prop)
                 {
                     TestsPage2_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
@@ -1494,12 +1514,12 @@ namespace BindTestbed
                     {
                         if (bindings.dataRoot != null)
                         {
-                            bindings.dataRoot.UnregisterPropertyChangedCallback(global::Windows.UI.Xaml.Controls.Control.BackgroundProperty, tokenDPC_Background);
+                            bindings.dataRoot.UnregisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Controls.Control.BackgroundProperty, tokenDPC_Background);
                         }
                         if (obj != null)
                         {
                             bindings.dataRoot = obj;
-                            tokenDPC_Background = obj.RegisterPropertyChangedCallback(global::Windows.UI.Xaml.Controls.Control.BackgroundProperty, DependencyPropertyChanged_Background);
+                            tokenDPC_Background = obj.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Controls.Control.BackgroundProperty, DependencyPropertyChanged_Background);
                         }
                     }
                 }
@@ -1562,7 +1582,7 @@ namespace BindTestbed
                         }
                     }
                 }
-                public void DependencyPropertyChanged_Model_IntPropertyDP(global::Windows.UI.Xaml.DependencyObject sender, global::Windows.UI.Xaml.DependencyProperty prop)
+                public void DependencyPropertyChanged_Model_IntPropertyDP(global::Microsoft.UI.Xaml.DependencyObject sender, global::Microsoft.UI.Xaml.DependencyProperty prop)
                 {
                     TestsPage2_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
@@ -1594,33 +1614,33 @@ namespace BindTestbed
                         }
                     }
                 }
-                public void DependencyPropertyChanged_LocalTextBox_Text(global::Windows.UI.Xaml.DependencyObject sender, global::Windows.UI.Xaml.DependencyProperty prop)
+                public void DependencyPropertyChanged_LocalTextBox_Text(global::Microsoft.UI.Xaml.DependencyObject sender, global::Microsoft.UI.Xaml.DependencyProperty prop)
                 {
                     TestsPage2_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
                     {
-                        global::Windows.UI.Xaml.Controls.TextBox obj = sender as global::Windows.UI.Xaml.Controls.TextBox;
+                        global::Microsoft.UI.Xaml.Controls.TextBox obj = sender as global::Microsoft.UI.Xaml.Controls.TextBox;
                         if (obj != null)
                         {
                             bindings.Update_LocalTextBox_Text(obj.Text, DATA_CHANGED);
                         }
                     }
                 }
-                private global::Windows.UI.Xaml.Controls.TextBox cache_LocalTextBox = null;
+                private global::Microsoft.UI.Xaml.Controls.TextBox cache_LocalTextBox = null;
                 private long tokenDPC_LocalTextBox_Text = 0;
-                public void UpdateChildListeners_LocalTextBox(global::Windows.UI.Xaml.Controls.TextBox obj)
+                public void UpdateChildListeners_LocalTextBox(global::Microsoft.UI.Xaml.Controls.TextBox obj)
                 {
                     if (obj != cache_LocalTextBox)
                     {
                         if (cache_LocalTextBox != null)
                         {
-                            cache_LocalTextBox.UnregisterPropertyChangedCallback(global::Windows.UI.Xaml.Controls.TextBox.TextProperty, tokenDPC_LocalTextBox_Text);
+                            cache_LocalTextBox.UnregisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Controls.TextBox.TextProperty, tokenDPC_LocalTextBox_Text);
                             cache_LocalTextBox = null;
                         }
                         if (obj != null)
                         {
                             cache_LocalTextBox = obj;
-                            tokenDPC_LocalTextBox_Text = obj.RegisterPropertyChangedCallback(global::Windows.UI.Xaml.Controls.TextBox.TextProperty, DependencyPropertyChanged_LocalTextBox_Text);
+                            tokenDPC_LocalTextBox_Text = obj.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Controls.TextBox.TextProperty, DependencyPropertyChanged_LocalTextBox_Text);
                         }
                     }
                 }
@@ -1690,51 +1710,51 @@ namespace BindTestbed
                         }
                     }
                 }
-                public void DependencyPropertyChanged_TextBlockWAttachedRow_A_Windows_UI_Xaml_Controls_Grid_Row(global::Windows.UI.Xaml.DependencyObject sender, global::Windows.UI.Xaml.DependencyProperty prop)
+                public void DependencyPropertyChanged_TextBlockWAttachedRow_A_Microsoft_UI_Xaml_Controls_Grid_Row(global::Microsoft.UI.Xaml.DependencyObject sender, global::Microsoft.UI.Xaml.DependencyProperty prop)
                 {
                     TestsPage2_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
                     {
-                        global::Windows.UI.Xaml.Controls.TextBlock obj = sender as global::Windows.UI.Xaml.Controls.TextBlock;
+                        global::Microsoft.UI.Xaml.Controls.TextBlock obj = sender as global::Microsoft.UI.Xaml.Controls.TextBlock;
                         if (obj != null)
                         {
-                            bindings.Update_TextBlockWAttachedRow_A_Windows_UI_Xaml_Controls_Grid_Row(global::Windows.UI.Xaml.Controls.Grid.GetRow(obj), DATA_CHANGED);
+                            bindings.Update_TextBlockWAttachedRow_A_Microsoft_UI_Xaml_Controls_Grid_Row(global::Microsoft.UI.Xaml.Controls.Grid.GetRow(obj), DATA_CHANGED);
                         }
                     }
                 }
-                private global::Windows.UI.Xaml.Controls.TextBlock cache_TextBlockWAttachedRow = null;
-                private long tokenDPC_TextBlockWAttachedRow_A_Windows_UI_Xaml_Controls_Grid_Row = 0;
-                public void UpdateChildListeners_TextBlockWAttachedRow(global::Windows.UI.Xaml.Controls.TextBlock obj)
+                private global::Microsoft.UI.Xaml.Controls.TextBlock cache_TextBlockWAttachedRow = null;
+                private long tokenDPC_TextBlockWAttachedRow_A_Microsoft_UI_Xaml_Controls_Grid_Row = 0;
+                public void UpdateChildListeners_TextBlockWAttachedRow(global::Microsoft.UI.Xaml.Controls.TextBlock obj)
                 {
                     if (obj != cache_TextBlockWAttachedRow)
                     {
                         if (cache_TextBlockWAttachedRow != null)
                         {
-                            cache_TextBlockWAttachedRow.UnregisterPropertyChangedCallback(global::Windows.UI.Xaml.Controls.Grid.RowProperty, tokenDPC_TextBlockWAttachedRow_A_Windows_UI_Xaml_Controls_Grid_Row);
+                            cache_TextBlockWAttachedRow.UnregisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Controls.Grid.RowProperty, tokenDPC_TextBlockWAttachedRow_A_Microsoft_UI_Xaml_Controls_Grid_Row);
                             cache_TextBlockWAttachedRow = null;
                         }
                         if (obj != null)
                         {
                             cache_TextBlockWAttachedRow = obj;
-                            tokenDPC_TextBlockWAttachedRow_A_Windows_UI_Xaml_Controls_Grid_Row = obj.RegisterPropertyChangedCallback(global::Windows.UI.Xaml.Controls.Grid.RowProperty, DependencyPropertyChanged_TextBlockWAttachedRow_A_Windows_UI_Xaml_Controls_Grid_Row);
+                            tokenDPC_TextBlockWAttachedRow_A_Microsoft_UI_Xaml_Controls_Grid_Row = obj.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Controls.Grid.RowProperty, DependencyPropertyChanged_TextBlockWAttachedRow_A_Microsoft_UI_Xaml_Controls_Grid_Row);
                         }
                     }
                 }
-                public void DependencyPropertyChanged_tbWithAttachedEmployee_A_BindTestbedModel_AttachedProperties_AttachedEmployee(global::Windows.UI.Xaml.DependencyObject sender, global::Windows.UI.Xaml.DependencyProperty prop)
+                public void DependencyPropertyChanged_tbWithAttachedEmployee_A_BindTestbedModel_AttachedProperties_AttachedEmployee(global::Microsoft.UI.Xaml.DependencyObject sender, global::Microsoft.UI.Xaml.DependencyProperty prop)
                 {
                     TestsPage2_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
                     {
-                        global::Windows.UI.Xaml.Controls.TextBlock obj = sender as global::Windows.UI.Xaml.Controls.TextBlock;
+                        global::Microsoft.UI.Xaml.Controls.TextBlock obj = sender as global::Microsoft.UI.Xaml.Controls.TextBlock;
                         if (obj != null)
                         {
                             bindings.Update_tbWithAttachedEmployee_A_BindTestbedModel_AttachedProperties_AttachedEmployee(global::BindTestbedModel.AttachedProperties.GetAttachedEmployee(obj), DATA_CHANGED);
                         }
                     }
                 }
-                private global::Windows.UI.Xaml.Controls.TextBlock cache_tbWithAttachedEmployee = null;
+                private global::Microsoft.UI.Xaml.Controls.TextBlock cache_tbWithAttachedEmployee = null;
                 private long tokenDPC_tbWithAttachedEmployee_A_BindTestbedModel_AttachedProperties_AttachedEmployee = 0;
-                public void UpdateChildListeners_tbWithAttachedEmployee(global::Windows.UI.Xaml.Controls.TextBlock obj)
+                public void UpdateChildListeners_tbWithAttachedEmployee(global::Microsoft.UI.Xaml.Controls.TextBlock obj)
                 {
                     if (obj != cache_tbWithAttachedEmployee)
                     {
@@ -1799,33 +1819,33 @@ namespace BindTestbed
                         }
                     }
                 }
-                public void DependencyPropertyChanged_Grid1_Children_I0_Visibility(global::Windows.UI.Xaml.DependencyObject sender, global::Windows.UI.Xaml.DependencyProperty prop)
+                public void DependencyPropertyChanged_Grid1_Children_I0_Visibility(global::Microsoft.UI.Xaml.DependencyObject sender, global::Microsoft.UI.Xaml.DependencyProperty prop)
                 {
                     TestsPage2_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
                     {
-                        global::Windows.UI.Xaml.UIElement obj = sender as global::Windows.UI.Xaml.UIElement;
+                        global::Microsoft.UI.Xaml.UIElement obj = sender as global::Microsoft.UI.Xaml.UIElement;
                         if (obj != null)
                         {
                             bindings.Update_Grid1_Children_I0_Visibility(obj.Visibility, DATA_CHANGED);
                         }
                     }
                 }
-                private global::Windows.UI.Xaml.UIElement cache_Grid1_Children_I0 = null;
+                private global::Microsoft.UI.Xaml.UIElement cache_Grid1_Children_I0 = null;
                 private long tokenDPC_Grid1_Children_I0_Visibility = 0;
-                public void UpdateChildListeners_Grid1_Children_I0(global::Windows.UI.Xaml.UIElement obj)
+                public void UpdateChildListeners_Grid1_Children_I0(global::Microsoft.UI.Xaml.UIElement obj)
                 {
                     if (obj != cache_Grid1_Children_I0)
                     {
                         if (cache_Grid1_Children_I0 != null)
                         {
-                            cache_Grid1_Children_I0.UnregisterPropertyChangedCallback(global::Windows.UI.Xaml.UIElement.VisibilityProperty, tokenDPC_Grid1_Children_I0_Visibility);
+                            cache_Grid1_Children_I0.UnregisterPropertyChangedCallback(global::Microsoft.UI.Xaml.UIElement.VisibilityProperty, tokenDPC_Grid1_Children_I0_Visibility);
                             cache_Grid1_Children_I0 = null;
                         }
                         if (obj != null)
                         {
                             cache_Grid1_Children_I0 = obj;
-                            tokenDPC_Grid1_Children_I0_Visibility = obj.RegisterPropertyChangedCallback(global::Windows.UI.Xaml.UIElement.VisibilityProperty, DependencyPropertyChanged_Grid1_Children_I0_Visibility);
+                            tokenDPC_Grid1_Children_I0_Visibility = obj.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.UIElement.VisibilityProperty, DependencyPropertyChanged_Grid1_Children_I0_Visibility);
                         }
                     }
                 }
@@ -1903,37 +1923,37 @@ namespace BindTestbed
                         }
                     }
                 }
-                public void DependencyPropertyChanged_OneTimeSlider3_Value(global::Windows.UI.Xaml.DependencyObject sender, global::Windows.UI.Xaml.DependencyProperty prop)
+                public void DependencyPropertyChanged_OneTimeSlider3_Value(global::Microsoft.UI.Xaml.DependencyObject sender, global::Microsoft.UI.Xaml.DependencyProperty prop)
                 {
                     TestsPage2_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
                     {
-                        global::Windows.UI.Xaml.Controls.Slider obj = sender as global::Windows.UI.Xaml.Controls.Slider;
+                        global::Microsoft.UI.Xaml.Controls.Slider obj = sender as global::Microsoft.UI.Xaml.Controls.Slider;
                         if (obj != null)
                         {
                             bindings.Update_OneTimeSlider3_Value(obj.Value, DATA_CHANGED);
                         }
                     }
                 }
-                private global::Windows.UI.Xaml.Controls.Slider cache_OneTimeSlider3 = null;
+                private global::Microsoft.UI.Xaml.Controls.Slider cache_OneTimeSlider3 = null;
                 private long tokenDPC_OneTimeSlider3_Value = 0;
-                public void UpdateChildListeners_OneTimeSlider3(global::Windows.UI.Xaml.Controls.Slider obj)
+                public void UpdateChildListeners_OneTimeSlider3(global::Microsoft.UI.Xaml.Controls.Slider obj)
                 {
                     if (obj != cache_OneTimeSlider3)
                     {
                         if (cache_OneTimeSlider3 != null)
                         {
-                            cache_OneTimeSlider3.UnregisterPropertyChangedCallback(global::Windows.UI.Xaml.Controls.Primitives.RangeBase.ValueProperty, tokenDPC_OneTimeSlider3_Value);
+                            cache_OneTimeSlider3.UnregisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Controls.Primitives.RangeBase.ValueProperty, tokenDPC_OneTimeSlider3_Value);
                             cache_OneTimeSlider3 = null;
                         }
                         if (obj != null)
                         {
                             cache_OneTimeSlider3 = obj;
-                            tokenDPC_OneTimeSlider3_Value = obj.RegisterPropertyChangedCallback(global::Windows.UI.Xaml.Controls.Primitives.RangeBase.ValueProperty, DependencyPropertyChanged_OneTimeSlider3_Value);
+                            tokenDPC_OneTimeSlider3_Value = obj.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Controls.Primitives.RangeBase.ValueProperty, DependencyPropertyChanged_OneTimeSlider3_Value);
                         }
                     }
                 }
-                public void RegisterTwoWayListener_24(global::Windows.UI.Xaml.Controls.TextBlock sourceObject)
+                public void RegisterTwoWayListener_24(global::Microsoft.UI.Xaml.Controls.TextBlock sourceObject)
                 {
                     sourceObject.RegisterPropertyChangedCallback(global::BindTestbedModel.AttachedProperties.AttachedEmployeeProperty, (sender, prop) =>
                     {
@@ -1944,9 +1964,9 @@ namespace BindTestbed
                         }
                     });
                 }
-                public void RegisterTwoWayListener_25(global::Windows.UI.Xaml.Controls.TextBlock sourceObject)
+                public void RegisterTwoWayListener_25(global::Microsoft.UI.Xaml.Controls.TextBlock sourceObject)
                 {
-                    sourceObject.RegisterPropertyChangedCallback(global::Windows.UI.Xaml.Controls.TextBlock.TextProperty, (sender, prop) =>
+                    sourceObject.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Controls.TextBlock.TextProperty, (sender, prop) =>
                     {
                         var bindingObj = this.TryGetBindingObject();
                         if (bindingObj != null)
@@ -1955,9 +1975,9 @@ namespace BindTestbed
                         }
                     });
                 }
-                public void RegisterTwoWayListener_46(global::Windows.UI.Xaml.Shapes.Rectangle sourceObject)
+                public void RegisterTwoWayListener_46(global::Microsoft.UI.Xaml.Shapes.Rectangle sourceObject)
                 {
-                    sourceObject.RegisterPropertyChangedCallback(global::Windows.UI.Xaml.Controls.Grid.ColumnProperty, (sender, prop) =>
+                    sourceObject.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Controls.Grid.ColumnProperty, (sender, prop) =>
                     {
                         var bindingObj = this.TryGetBindingObject();
                         if (bindingObj != null)
@@ -1968,114 +1988,115 @@ namespace BindTestbed
                 }
             }
         }
+
         /// <summary>
         /// Connect()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public void Connect(int connectionId, object target)
         {
             switch(connectionId)
             {
-            case 1: // TestsPage2.xaml line 1
+            case 1: // TestsPage2.xaml line 3
                 {
-                    this.MyPage = (global::Windows.UI.Xaml.Controls.UserControl)(target);
+                    this.MyPage = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.UserControl>(target);
                 }
                 break;
-            case 2: // TestsPage2.xaml line 26
+            case 2: // TestsPage2.xaml line 28
                 {
-                    this.NiceEmployees = (global::BindTestbedModel.EmployeeCollection)(target);
+                    this.NiceEmployees = global::WinRT.CastExtensions.As<global::BindTestbedModel.EmployeeCollection>(target);
                 }
                 break;
-            case 6: // TestsPage2.xaml line 30
+            case 6: // TestsPage2.xaml line 32
                 {
-                    this.G = (global::Windows.UI.Xaml.Controls.Grid)(target);
+                    this.G = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Grid>(target);
                 }
                 break;
-            case 7: // TestsPage2.xaml line 230
+            case 7: // TestsPage2.xaml line 232
                 {
-                    this.deferedTextBlock = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.deferedTextBlock = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 10: // TestsPage2.xaml line 74
+            case 10: // TestsPage2.xaml line 76
                 {
-                    this.LocalTextBox = (global::Windows.UI.Xaml.Controls.TextBox)(target);
+                    this.LocalTextBox = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                 }
                 break;
-            case 20: // TestsPage2.xaml line 188
+            case 20: // TestsPage2.xaml line 190
                 {
-                    this.TextBlockWAttachedRow = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.TextBlockWAttachedRow = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 22: // TestsPage2.xaml line 202
+            case 22: // TestsPage2.xaml line 204
                 {
-                    this.Grid1 = (global::Windows.UI.Xaml.Controls.Grid)(target);
+                    this.Grid1 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Grid>(target);
                 }
                 break;
-            case 24: // TestsPage2.xaml line 209
+            case 24: // TestsPage2.xaml line 211
                 {
-                    this.tbWithAttachedEmployee = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.tbWithAttachedEmployee = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 27: // TestsPage2.xaml line 223
+            case 27: // TestsPage2.xaml line 225
                 {
-                    this.cb = (global::Windows.UI.Xaml.Controls.ComboBox)(target);
+                    this.cb = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ComboBox>(target);
                 }
                 break;
-            case 28: // TestsPage2.xaml line 217
+            case 28: // TestsPage2.xaml line 219
                 {
-                    global::Windows.UI.Xaml.Controls.Button element28 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element28).Click += this.UpdateValuesClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element28 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element28).Click += this.UpdateValuesClick;
                 }
                 break;
-            case 29: // TestsPage2.xaml line 218
+            case 29: // TestsPage2.xaml line 220
                 {
-                    global::Windows.UI.Xaml.Controls.Button element29 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element29).Click += this.ResetValuesClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element29 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element29).Click += this.ResetValuesClick;
                 }
                 break;
-            case 30: // TestsPage2.xaml line 219
+            case 30: // TestsPage2.xaml line 221
                 {
-                    this.target = (global::Windows.UI.Xaml.Controls.Button)(target);
+                    this.target = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                 }
                 break;
-            case 31: // TestsPage2.xaml line 220
+            case 31: // TestsPage2.xaml line 222
                 {
-                    global::Windows.UI.Xaml.Controls.Button element31 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element31).Click += this.UndeferElementClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element31 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element31).Click += this.UndeferElementClick;
                 }
                 break;
-            case 33: // TestsPage2.xaml line 193
+            case 33: // TestsPage2.xaml line 195
                 {
-                    this.TimeZonePicker2 = (global::Windows.UI.Xaml.Controls.ComboBox)(target);
+                    this.TimeZonePicker2 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ComboBox>(target);
                 }
                 break;
-            case 46: // TestsPage2.xaml line 58
+            case 46: // TestsPage2.xaml line 60
                 {
-                    this.BisqueRectangle = (global::Windows.UI.Xaml.Shapes.Rectangle)(target);
+                    this.BisqueRectangle = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Shapes.Rectangle>(target);
                 }
                 break;
-            case 48: // TestsPage2.xaml line 44
+            case 48: // TestsPage2.xaml line 46
                 {
-                    this.OneTimeSlider3 = (global::Windows.UI.Xaml.Controls.Slider)(target);
+                    this.OneTimeSlider3 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Slider>(target);
                 }
                 break;
-            case 49: // TestsPage2.xaml line 36
+            case 49: // TestsPage2.xaml line 38
                 {
-                    global::Windows.UI.Xaml.Controls.Button element49 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element49).Click += this.UpdateValuesClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element49 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element49).Click += this.UpdateValuesClick;
                 }
                 break;
-            case 50: // TestsPage2.xaml line 37
+            case 50: // TestsPage2.xaml line 39
                 {
-                    global::Windows.UI.Xaml.Controls.Button element50 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element50).Click += this.ResetValuesClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element50 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element50).Click += this.ResetValuesClick;
                 }
                 break;
-            case 51: // TestsPage2.xaml line 38
+            case 51: // TestsPage2.xaml line 40
                 {
-                    global::Windows.UI.Xaml.Controls.Button element51 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element51).Click += this.UndeferElementClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element51 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element51).Click += this.UndeferElementClick;
                 }
                 break;
             default:
@@ -2087,31 +2108,31 @@ namespace BindTestbed
         /// <summary>
         /// UnloadObject(DependencyObject)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        partial void UnloadObject(global::Windows.UI.Xaml.DependencyObject unloadableObject)
+        partial void UnloadObject(global::Microsoft.UI.Xaml.DependencyObject unloadableObject)
         {
             if (unloadableObject != null)
             {
-                // TestsPage2.xaml line 230
+                // TestsPage2.xaml line 232
                 if (unloadableObject == this.deferedTextBlock)
                 { 
                     this.DisconnectUnloadedObject(7);
                 }
-                global::Windows.UI.Xaml.Markup.XamlMarkupHelper.UnloadObject(unloadableObject);
+                global::Microsoft.UI.Xaml.Markup.XamlMarkupHelper.UnloadObject(unloadableObject);
             }
         }
 
         /// <summary>
         /// DisconnectUnloadedObject(int connectionId)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         private void DisconnectUnloadedObject(int connectionId)
         {
             switch(connectionId)
             {
-                case 7: // TestsPage2.xaml line 230
+                case 7: // TestsPage2.xaml line 232
                 {
                     this.deferedTextBlock = null;
                     break;
@@ -2123,37 +2144,38 @@ namespace BindTestbed
             }
         }
 
+
         /// <summary>
         /// GetBindingConnector(int connectionId, object target)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
+        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
         {
-            global::Windows.UI.Xaml.Markup.IComponentConnector returnValue = null;
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector returnValue = null;
             switch(connectionId)
             {
-            case 1: // TestsPage2.xaml line 1
+            case 1: // TestsPage2.xaml line 3
                 {                    
-                    global::Windows.UI.Xaml.Controls.UserControl element1 = (global::Windows.UI.Xaml.Controls.UserControl)target;
+                    global::Microsoft.UI.Xaml.Controls.UserControl element1 = (global::Microsoft.UI.Xaml.Controls.UserControl)target;
                     TestsPage2_obj1_Bindings bindings = new TestsPage2_obj1_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(this);
                     bindings.SetConverterLookupRoot(this);
                     this.Bindings = bindings;
                     element1.Loading += bindings.Loading;
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
                 }
                 break;
-            case 4: // TestsPage2.xaml line 22
+            case 4: // TestsPage2.xaml line 24
                 {                    
-                    global::Windows.UI.Xaml.Controls.Border element4 = (global::Windows.UI.Xaml.Controls.Border)target;
+                    global::Microsoft.UI.Xaml.Controls.Border element4 = (global::Microsoft.UI.Xaml.Controls.Border)target;
                     TestsPage2_obj4_Bindings bindings = new TestsPage2_obj4_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(element4.DataContext);
                     element4.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Windows.UI.Xaml.DataTemplate.SetExtensionInstance(element4, bindings);
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element4, bindings);
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element4, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element4, bindings);
                 }
                 break;
             }

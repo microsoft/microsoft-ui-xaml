@@ -11,15 +11,14 @@
 namespace BindTestbed.subfolder
 {
     partial class SubDictionary : 
-        global::Windows.UI.Xaml.ResourceDictionary, 
-        global::Windows.UI.Xaml.Markup.IComponentConnector,
-        global::Windows.UI.Xaml.Markup.IComponentConnector2
+        global::Microsoft.UI.Xaml.ResourceDictionary, 
+        global::Microsoft.UI.Xaml.Markup.IComponentConnector
     {
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         private static class XamlBindingSetters
         {
-            public static void Set_Windows_UI_Xaml_Controls_TextBlock_Text(global::Windows.UI.Xaml.Controls.TextBlock obj, global::System.String value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(global::Microsoft.UI.Xaml.Controls.TextBlock obj, global::System.String value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
@@ -29,13 +28,13 @@ namespace BindTestbed.subfolder
             }
         };
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class SubDictionary_obj3_Bindings :
-            global::Windows.UI.Xaml.IDataTemplateExtension,
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class SubDictionary_obj3_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             ISubDictionary_Bindings
         {
             private global::BindTestbedModel.IEmployee dataRoot;
@@ -46,7 +45,7 @@ namespace BindTestbed.subfolder
 
             // Fields for each control that has bindings.
             private global::System.WeakReference obj3;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj4;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj4;
 
             // Static fields for each binding's enabled/disabled state
             private static bool isobj4TextDisabled = false;
@@ -57,7 +56,7 @@ namespace BindTestbed.subfolder
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 12 && columnNumber == 28)
+                if (lineNumber == 14 && columnNumber == 28)
                 {
                     isobj4TextDisabled = true;
                 }
@@ -69,18 +68,24 @@ namespace BindTestbed.subfolder
             {
                 switch(connectionId)
                 {
-                    case 3: // subfolder\SubDictionary.xaml line 9
-                        this.obj3 = new global::System.WeakReference((global::Windows.UI.Xaml.Controls.Grid)target);
+                    case 3: // subfolder\SubDictionary.xaml line 11
+                        this.obj3 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Grid>(target));
                         break;
-                    case 4: // subfolder\SubDictionary.xaml line 12
-                        this.obj4 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 4: // subfolder\SubDictionary.xaml line 14
+                        this.obj4 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
-            public void DataContextChangedHandler(global::Windows.UI.Xaml.FrameworkElement sender, global::Windows.UI.Xaml.DataContextChangedEventArgs args)
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
             {
                  if (this.SetDataRoot(args.NewValue))
                  {
@@ -95,7 +100,7 @@ namespace BindTestbed.subfolder
                 throw new global::System.NotImplementedException();
             }
 
-            public int ProcessBindings(global::Windows.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
             {
                 int nextPhase = -1;
                 ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
@@ -120,12 +125,16 @@ namespace BindTestbed.subfolder
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            (this.obj3.Target as global::Windows.UI.Xaml.Controls.Grid).DataContextChanged -= this.DataContextChangedHandler;
+                            var rootElement = (this.obj3.Target as global::Microsoft.UI.Xaml.Controls.Grid);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
                         }
                         this.initialized = true;
                         break;
                 }
-                this.Update_((global::BindTestbedModel.IEmployee) item, 1 << phase);
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbedModel.IEmployee>(item), 1 << phase);
             }
 
             public void Recycle()
@@ -161,7 +170,7 @@ namespace BindTestbed.subfolder
             {
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbedModel.IEmployee)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbedModel.IEmployee>(newDataRoot);
                     return true;
                 }
                 return false;
@@ -182,43 +191,45 @@ namespace BindTestbed.subfolder
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // subfolder\SubDictionary.xaml line 12
+                    // subfolder\SubDictionary.xaml line 14
                     if (!isobj4TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj4, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj4, obj, null);
                     }
                 }
             }
         }
+
         /// <summary>
         /// Connect()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public void Connect(int connectionId, object target)
         {
             this._contentLoaded = true;
         }
 
+
         /// <summary>
         /// GetBindingConnector(int connectionId, object target)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
+        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
         {
-            global::Windows.UI.Xaml.Markup.IComponentConnector returnValue = null;
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector returnValue = null;
             switch(connectionId)
             {
-            case 3: // subfolder\SubDictionary.xaml line 9
+            case 3: // subfolder\SubDictionary.xaml line 11
                 {                    
-                    global::Windows.UI.Xaml.Controls.Grid element3 = (global::Windows.UI.Xaml.Controls.Grid)target;
+                    global::Microsoft.UI.Xaml.Controls.Grid element3 = (global::Microsoft.UI.Xaml.Controls.Grid)target;
                     SubDictionary_obj3_Bindings bindings = new SubDictionary_obj3_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(element3.DataContext);
                     element3.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Windows.UI.Xaml.DataTemplate.SetExtensionInstance(element3, bindings);
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element3, bindings);
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element3, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element3, bindings);
                 }
                 break;
             }

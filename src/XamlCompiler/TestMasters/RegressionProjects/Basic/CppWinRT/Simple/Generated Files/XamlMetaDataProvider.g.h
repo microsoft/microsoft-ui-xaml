@@ -1,12 +1,12 @@
-﻿// WARNING: Please don't edit this file...
+// WARNING: Please don't edit this file...
 
 #pragma once
+#include "winrt/Microsoft.UI.Xaml.Markup.h"
 #include "winrt/Simple.h"
-#include "winrt/Windows.UI.Xaml.Markup.h"
 namespace winrt::Simple::implementation
 {
     template <typename D, typename... I>
-    struct __declspec(empty_bases) XamlMetaDataProvider_base : implements<D, Simple::XamlMetaDataProvider, I...>
+    struct WINRT_IMPL_EMPTY_BASES XamlMetaDataProvider_base : implements<D, Simple::XamlMetaDataProvider, I...>
     {
         using base_type = XamlMetaDataProvider_base;
         using class_type = Simple::XamlMetaDataProvider;
@@ -22,7 +22,7 @@ namespace winrt::Simple::implementation
 namespace winrt::Simple::factory_implementation
 {
     template <typename D, typename T, typename... I>
-    struct __declspec(empty_bases) XamlMetaDataProviderT : implements<D, ::Windows::Foundation::IActivationFactory, I...>
+    struct WINRT_IMPL_EMPTY_BASES XamlMetaDataProviderT : implements<D, winrt::Windows::Foundation::IActivationFactory, I...>
     {
         using instance_type = Simple::XamlMetaDataProvider;
 
@@ -38,7 +38,9 @@ namespace winrt::Simple::factory_implementation
 }
 
 #if defined(WINRT_FORCE_INCLUDE_XAMLMETADATAPROVIDER_XAML_G_H) || __has_include("XamlMetaDataProvider.xaml.g.h")
+
 #include "XamlMetaDataProvider.xaml.g.h"
+
 #else
 
 namespace winrt::Simple::implementation

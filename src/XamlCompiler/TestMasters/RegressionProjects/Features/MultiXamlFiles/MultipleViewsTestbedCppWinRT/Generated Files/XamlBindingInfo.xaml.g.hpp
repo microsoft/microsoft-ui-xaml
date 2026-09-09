@@ -12,19 +12,21 @@
 namespace winrt::MultipleViewsTestbedCppWinRT::implementation
 {
 
-using DataContextChangedEventArgs = ::winrt::Windows::UI::Xaml::DataContextChangedEventArgs;
-using DependencyObject = ::winrt::Windows::UI::Xaml::DependencyObject;
-using DependencyProperty = ::winrt::Windows::UI::Xaml::DependencyProperty;
-using FrameworkElement = ::winrt::Windows::UI::Xaml::FrameworkElement;
-using INotifyCollectionChanged = ::winrt::Windows::UI::Xaml::Interop::INotifyCollectionChanged;
-using INotifyPropertyChanged = ::winrt::Windows::UI::Xaml::Data::INotifyPropertyChanged;
-using PropertyChangedEventArgs = ::winrt::Windows::UI::Xaml::Data::PropertyChangedEventArgs;
-using NotifyCollectionChangedEventArgs = ::winrt::Windows::UI::Xaml::Interop::NotifyCollectionChangedEventArgs;
-using ContainerContentChangingEventArgs = ::winrt::Windows::UI::Xaml::Controls::ContainerContentChangingEventArgs;
+using DataContextChangedEventArgs = ::winrt::Microsoft::UI::Xaml::DataContextChangedEventArgs;
+using DependencyObject = ::winrt::Microsoft::UI::Xaml::DependencyObject;
+using DependencyProperty = ::winrt::Microsoft::UI::Xaml::DependencyProperty;
+using FrameworkElement = ::winrt::Microsoft::UI::Xaml::FrameworkElement;
+using INotifyCollectionChanged = ::winrt::Microsoft::UI::Xaml::Interop::INotifyCollectionChanged;
+using INotifyPropertyChanged = ::winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged;
+using PropertyChangedEventArgs = ::winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs;
+using NotifyCollectionChangedEventArgs = ::winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs;
+using ContainerContentChangingEventArgs = ::winrt::Microsoft::UI::Xaml::Controls::ContainerContentChangingEventArgs;
+using IComponentConnector = ::winrt::Microsoft::UI::Xaml::Markup::IComponentConnector;
+using WindowActivatedEventArgs = ::winrt::Microsoft::UI::Xaml::WindowActivatedEventArgs;
 
 // XamlBindings
 
-XamlBindings::XamlBindings(std::unique_ptr<IXamlBindings>&& pBindings)
+XamlBindings::XamlBindings(std::shared_ptr<IXamlBindings>&& pBindings)
     : _pBindings(std::move(pBindings))
 {
 }
@@ -52,6 +54,11 @@ void XamlBindings::Loading(FrameworkElement const&, IInspectable const&)
     Initialize();
 }
 
+void XamlBindings::Activated(IInspectable const&, WindowActivatedEventArgs const&)
+{
+    Initialize();
+}
+
 void XamlBindings::DataContextChanged(
     FrameworkElement const&,
     DataContextChangedEventArgs const& args)
@@ -75,6 +82,11 @@ void XamlBindings::DisconnectUnloadedObject(int connectionId)
 void XamlBindings::Connect(int connectionId, IInspectable const& target)
 {
     _pBindings->Connect(connectionId, target);
+}
+
+IComponentConnector XamlBindings::GetBindingConnector(int32_t, IInspectable const&)
+{
+    return nullptr;
 }
 
 bool XamlBindings::ProcessBinding(unsigned int)
@@ -186,7 +198,7 @@ void XamlBindingTrackingBase::UpdatePropertyChangedListener(
 
 void XamlBindingTrackingBase::UpdatePropertyChangedListener(
     INotifyPropertyChanged const& obj,
-    ::winrt::weak_ref<::winrt::Windows::UI::Xaml::Data::INotifyPropertyChanged>& cacheRef,
+    ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>& cacheRef,
     ::winrt::event_token& token)
 {
     INotifyPropertyChanged cache = cacheRef.get();
@@ -245,7 +257,7 @@ void XamlBindingTrackingBase::UpdateDependencyPropertyChangedListener(
 void XamlBindingTrackingBase::UpdateDependencyPropertyChangedListener(
     DependencyObject const& obj,
     DependencyProperty const& property,
-    winrt::weak_ref<::winrt::Windows::UI::Xaml::DependencyObject>& cacheRef,
+    winrt::weak_ref<::winrt::Microsoft::UI::Xaml::DependencyObject>& cacheRef,
     int64_t& token)
 {
     DependencyObject cache = cacheRef.get();

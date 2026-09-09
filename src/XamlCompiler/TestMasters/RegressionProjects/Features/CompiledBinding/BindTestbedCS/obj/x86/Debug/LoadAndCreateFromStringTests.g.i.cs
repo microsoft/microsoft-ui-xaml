@@ -10,75 +10,71 @@
 
 namespace BindTestbed
 {
-    partial class LoadAndCreateFromStringTests : global::Windows.UI.Xaml.Controls.UserControl
+    partial class LoadAndCreateFromStringTests : global::Microsoft.UI.Xaml.Controls.UserControl
     {
 
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.StackPanel OuterPanel; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock YouShouldSeeMe; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock YouShouldNotSeeMe; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.StackPanel UberStackPanel; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.StackPanel nestedOuterPanel; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock FallbackValueLoad; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+#pragma warning disable 0169    //  Proactively suppress unused/uninitialized field warning in case they aren't used, for things like x:Name
+#pragma warning disable 0649
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.StackPanel OuterPanel; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock YouShouldSeeMe; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock YouShouldNotSeeMe; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.StackPanel UberStackPanel; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.StackPanel nestedOuterPanel; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock FallbackValueLoad; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private global::BindTestbedModel.Circle test1; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private global::BindTestbedModel.Circle test2; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private global::BindTestbedModel.Circle test3; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private global::BindTestbedModel.Circle test4; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::BindTestbedCXModel.StarCx test5; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::BindTestbedCXModel.StarCx test6; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock testText2; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock testText3; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock testText4; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock testText5; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock testText6; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.StackPanel nestedInnerPanel; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.Grid NamedElementBetweenXLoads; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.StackPanel innerMostNestedPanel; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock innerMostNestedPanelStaticText; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.Grid AnotherNamedElementBetweenXLoads; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.Button ButtonWithXLoadOn; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock ANamedTextBlock; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock AnUnloadedTextBlock; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.StackPanel InnerPanel; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock TextBox2; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock TextBox1; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.Button LoadInnerPanel; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock testText2; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock testText3; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock testText4; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.StackPanel nestedInnerPanel; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.Grid NamedElementBetweenXLoads; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.StackPanel innerMostNestedPanel; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock innerMostNestedPanelStaticText; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.Grid AnotherNamedElementBetweenXLoads; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.Button ButtonWithXLoadOn; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock ANamedTextBlock; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock AnUnloadedTextBlock; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.StackPanel InnerPanel; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock TextBox2; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock TextBox1; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.Button LoadInnerPanel; 
+#pragma warning restore 0649
+#pragma warning restore 0169
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private bool _contentLoaded;
 
         /// <summary>
         /// InitializeComponent()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public void InitializeComponent()
         {
@@ -88,12 +84,12 @@ namespace BindTestbed
             _contentLoaded = true;
 
             global::System.Uri resourceLocator = new global::System.Uri("ms-appx:///LoadAndCreateFromStringTests.xaml");
-            global::Windows.UI.Xaml.Application.LoadComponent(this, resourceLocator, global::Windows.UI.Xaml.Controls.Primitives.ComponentResourceLocation.Application);
+            global::Microsoft.UI.Xaml.Application.LoadComponent(this, resourceLocator, global::Microsoft.UI.Xaml.Controls.Primitives.ComponentResourceLocation.Application);
         }
 
-        partial void UnloadObject(global::Windows.UI.Xaml.DependencyObject unloadableObject);
+        partial void UnloadObject(global::Microsoft.UI.Xaml.DependencyObject unloadableObject);
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private interface ILoadAndCreateFromStringTests_Bindings
         {
             void Initialize();
@@ -106,11 +102,11 @@ namespace BindTestbed
         {
             global::System.WeakReference Parent { get; set; }
             bool ContainsElement(int connectionId);
-            void RegisterForElementConnection(int connectionId, global::Windows.UI.Xaml.Markup.IComponentConnector connector);
+            void RegisterForElementConnection(int connectionId, global::Microsoft.UI.Xaml.Markup.IComponentConnector connector);
         }
 #pragma warning disable 0169    //  Proactively suppress unused field warning in case Bindings is not used.
 #pragma warning disable 0649
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private ILoadAndCreateFromStringTests_Bindings Bindings;
 #pragma warning restore 0649
 #pragma warning restore 0169

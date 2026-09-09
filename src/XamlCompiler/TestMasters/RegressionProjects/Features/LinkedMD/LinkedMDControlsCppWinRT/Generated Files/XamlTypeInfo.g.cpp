@@ -8,6 +8,21 @@
 //------------------------------------------------------------------------------
 #include "pch.h"
 #include <memory>
+#include <unknwn.h>
+
+// Undefine GetCurrentTime macro to prevent
+// conflict with Storyboard::GetCurrentTime
+#undef GetCurrentTime
+
+#if __has_include(<winrt/LinkedMDControlsCppWinRT.h>)
+#include <winrt/LinkedMDControlsCppWinRT.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.Collections.h>)
+#include <winrt/Windows.Foundation.Collections.h>
+#endif
 
 #include "XamlTypeInfo.xaml.g.h"
 
@@ -19,9 +34,24 @@
 
 namespace winrt::LinkedMDControlsCppWinRT::implementation
 {
-using IXamlMember = ::winrt::Windows::UI::Xaml::Markup::IXamlMember;
-using IXamlType = ::winrt::Windows::UI::Xaml::Markup::IXamlType;
+using IXamlMember = ::winrt::Microsoft::UI::Xaml::Markup::IXamlMember;
+using IXamlType = ::winrt::Microsoft::UI::Xaml::Markup::IXamlType;
 using TypeKind = ::winrt::Windows::UI::Xaml::Interop::TypeKind;
+
+    namespace XamlTypeInfo_staticasserts
+    {
+        template<typename, typename = void>
+        constexpr bool is_type_complete_v = false;
+
+        template<typename T>
+        constexpr bool is_type_complete_v<T, std::void_t<decltype(sizeof(T))>> = true;
+
+        static_assert( is_type_complete_v<::winrt::LinkedMDControlsCppWinRT::A>, "Please #include the implementation header for '::winrt::LinkedMDControlsCppWinRT::A' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::LinkedMDControlsCppWinRT::B>, "Please #include the implementation header for '::winrt::LinkedMDControlsCppWinRT::B' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>, "Please #include the implementation header for '::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode' in your precompiled header 'pch.h'." );
+        static_assert( is_type_complete_v<::winrt::Windows::Foundation::Collections::IVector<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>>, "Please #include the implementation header for '::winrt::Windows::Foundation::Collections::IVector<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>' in your precompiled header 'pch.h'." );
+
+    }
 
 template <typename T>
 ::winrt::Windows::Foundation::IInspectable ActivateType()
@@ -60,20 +90,44 @@ template<typename T>
     return ::winrt::box_value(static_cast<T>(userType.CreateEnumUIntFromString(input)));
 }
 
+template<typename TDeclaringType, typename TValue>
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_IsExpanded(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().IsExpanded());
+}
+
+template<typename TDeclaringType, typename TValue>
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_HasUnrealizedChildren(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().HasUnrealizedChildren());
+}
+
+template<typename TDeclaringType, typename TValue>
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_Depth(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().Depth());
+}
+
+template<typename TDeclaringType, typename TValue>
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_HasChildren(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().HasChildren());
+}
+
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_StringPropertyOnS(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_StringPropertyOnS(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().StringPropertyOnS()));
 }
 
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_StringPropertyOnA(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_StringPropertyOnA(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().StringPropertyOnA()));
 }
 
 template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_StringPropertyOnB(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeStringMember_StringPropertyOnB(::winrt::Windows::Foundation::IInspectable const& instance)
 {
    return ::winrt::box_value(::winrt::Windows::Foundation::PropertyValue::CreateString(instance.as<T>().StringPropertyOnB()));
 }
@@ -88,6 +142,48 @@ template <typename T>
 ::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_BPropertyOnA(::winrt::Windows::Foundation::IInspectable const& instance)
 {
     return ::winrt::box_value(instance.as<T>().BPropertyOnA());
+}
+
+template <typename T>
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Content(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value(instance.as<T>().Content());
+}
+
+template <typename T>
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Children(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value(instance.as<T>().Children());
+}
+
+template <typename T>
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Parent(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value(instance.as<T>().Parent());
+}
+
+template<typename TDeclaringType, typename TValue>
+void SetValueTypeMember_IsExpanded(
+    ::winrt::Windows::Foundation::IInspectable const& instance, 
+    ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<TDeclaringType>().IsExpanded(::winrt::unbox_value<TValue>(value));
+}
+
+template<typename TDeclaringType, typename TValue>
+void SetValueTypeMember_HasUnrealizedChildren(
+    ::winrt::Windows::Foundation::IInspectable const& instance, 
+    ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<TDeclaringType>().HasUnrealizedChildren(::winrt::unbox_value<TValue>(value));
+}
+
+template<typename TDeclaringType, typename TValue>
+void SetReferenceTypeMember_Content(
+    ::winrt::Windows::Foundation::IInspectable const& instance, 
+    ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<TDeclaringType>().Content(value.as<TValue>());
 }
 
 enum TypeInfo_Flags
@@ -121,52 +217,94 @@ struct TypeInfo
 const TypeInfo TypeInfos[] = 
 {
     //   0
-    L"String", L"",
+    L"Int32", L"",
     nullptr, nullptr, nullptr, nullptr,
     -1,
     0, 0, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
     -1,
     //   1
-    L"LinkedMDControlsCppWinRT.A", L"",
-    &ActivateLocalType<::winrt::LinkedMDControlsCppWinRT::implementation::A>, nullptr, nullptr, nullptr,
-    3, // Windows.UI.Xaml.Controls.Page
-    0, 0, -1, TypeKind::Metadata,
-    TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
-    -1,
-    //   2
-    L"LinkedMDControlsCppWinRT.B", L"",
-    &ActivateLocalType<::winrt::LinkedMDControlsCppWinRT::implementation::B>, nullptr, nullptr, nullptr,
-    3, // Windows.UI.Xaml.Controls.Page
-    2, 0, -1, TypeKind::Metadata,
-    TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
-    -1,
-    //   3
-    L"Windows.UI.Xaml.Controls.Page", L"",
+    L"String", L"",
     nullptr, nullptr, nullptr, nullptr,
     -1,
-    3, 0, -1, TypeKind::Metadata,
+    0, 0, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
+    -1,
+    //   2
+    L"Object", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    -1,
+    0, 0, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
+    -1,
+    //   3
+    L"Boolean", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    -1,
+    0, 0, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
     -1,
     //   4
+    L"LinkedMDControlsCppWinRT.A", L"",
+    &ActivateLocalType<::winrt::LinkedMDControlsCppWinRT::implementation::A>, nullptr, nullptr, nullptr,
+    7, // Microsoft.UI.Xaml.Controls.Page
+    0, 0, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
+    -1,
+    //   5
+    L"LinkedMDControlsCppWinRT.B", L"",
+    &ActivateLocalType<::winrt::LinkedMDControlsCppWinRT::implementation::B>, nullptr, nullptr, nullptr,
+    7, // Microsoft.UI.Xaml.Controls.Page
+    2, 0, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
+    -1,
+    //   6
     L"LinkedMDSubControlsCppWinRT.T", L"",
     nullptr, nullptr, nullptr, nullptr,
-    5, // Windows.UI.Xaml.Controls.UserControl
+    9, // Microsoft.UI.Xaml.Controls.UserControl
     3, 0, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
     -1,
-    //   5
-    L"Windows.UI.Xaml.Controls.UserControl", L"",
+    //   7
+    L"Microsoft.UI.Xaml.Controls.Page", L"",
     nullptr, nullptr, nullptr, nullptr,
     -1,
     3, 0, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
+    -1,
+    //   8
+    L"Microsoft.UI.Xaml.DependencyObject", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    -1,
+    3, 0, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
+    -1,
+    //   9
+    L"Microsoft.UI.Xaml.Controls.UserControl", L"",
+    nullptr, nullptr, nullptr, nullptr,
+    -1,
+    3, 0, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsSystemType | TypeInfo_Flags_None,
+    -1,
+    //  10
+    L"Microsoft.UI.Xaml.Controls.TreeViewNode", L"",
+    &ActivateType<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>, nullptr, nullptr, nullptr,
+    8, // Microsoft.UI.Xaml.DependencyObject
+    3, 0, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsBindable | TypeInfo_Flags_None,
+    -1,
+    //  11
+    L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.TreeViewNode>", L"",
+    nullptr, &CollectionAdd<::winrt::Windows::Foundation::Collections::IVector<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>, ::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>, nullptr, nullptr,
+    -1,
+    10, 0, -1, TypeKind::Metadata,
+    TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
     -1,
     //  Last type here is for padding
     L"", L"",
     nullptr, nullptr, nullptr, nullptr,
     -1, 
-    3, 0, -1, TypeKind::Custom,
+    10, 0, -1, TypeKind::Custom,
     TypeInfo_Flags_None,
 };
 
@@ -177,38 +315,83 @@ constexpr uint32_t TypeInfoLookup[] = {
       0,   //   3
       0,   //   4
       0,   //   5
-      0,   //   6
-      1,   //   7
-      1,   //   8
-      1,   //   9
-      1,   //  10
-      1,   //  11
-      1,   //  12
-      1,   //  13
-      1,   //  14
-      1,   //  15
-      1,   //  16
-      1,   //  17
-      1,   //  18
-      1,   //  19
-      1,   //  20
-      1,   //  21
-      1,   //  22
-      1,   //  23
-      1,   //  24
-      1,   //  25
-      1,   //  26
-      3,   //  27
-      3,   //  28
-      3,   //  29
-      5,   //  30
-      5,   //  31
-      5,   //  32
-      5,   //  33
-      5,   //  34
-      5,   //  35
-      5,   //  36
-      6,   //  37
+      1,   //   6
+      3,   //   7
+      4,   //   8
+      4,   //   9
+      4,   //  10
+      4,   //  11
+      4,   //  12
+      4,   //  13
+      4,   //  14
+      4,   //  15
+      4,   //  16
+      4,   //  17
+      4,   //  18
+      4,   //  19
+      4,   //  20
+      4,   //  21
+      4,   //  22
+      4,   //  23
+      4,   //  24
+      4,   //  25
+      4,   //  26
+      6,   //  27
+      6,   //  28
+      6,   //  29
+      7,   //  30
+      7,   //  31
+      8,   //  32
+      8,   //  33
+      8,   //  34
+      9,   //  35
+      9,   //  36
+      9,   //  37
+      9,   //  38
+     10,   //  39
+     11,   //  40
+     11,   //  41
+     11,   //  42
+     11,   //  43
+     11,   //  44
+     11,   //  45
+     11,   //  46
+     11,   //  47
+     11,   //  48
+     11,   //  49
+     11,   //  50
+     11,   //  51
+     11,   //  52
+     11,   //  53
+     11,   //  54
+     11,   //  55
+     11,   //  56
+     11,   //  57
+     11,   //  58
+     11,   //  59
+     11,   //  60
+     11,   //  61
+     11,   //  62
+     11,   //  63
+     11,   //  64
+     11,   //  65
+     11,   //  66
+     11,   //  67
+     11,   //  68
+     11,   //  69
+     11,   //  70
+     11,   //  71
+     11,   //  72
+     11,   //  73
+     11,   //  74
+     11,   //  75
+     11,   //  76
+     11,   //  77
+     11,   //  78
+     11,   //  79
+     11,   //  80
+     11,   //  81
+     12,   //  82
 };
 
 struct MemberInfo 
@@ -229,21 +412,70 @@ const MemberInfo MemberInfos[] =
     L"BPropertyOnA",
     &GetReferenceTypeMember_BPropertyOnA<::winrt::LinkedMDControlsCppWinRT::A>,
     nullptr,
-    2, // LinkedMDControlsCppWinRT.B
+    5, // LinkedMDControlsCppWinRT.B
     -1,
     true,  false, false,
     //   1 - LinkedMDControlsCppWinRT.A.StringPropertyOnA
     L"StringPropertyOnA",
-    &GetReferenceTypeMember_StringPropertyOnA<::winrt::LinkedMDControlsCppWinRT::A>,
+    &GetReferenceTypeStringMember_StringPropertyOnA<::winrt::LinkedMDControlsCppWinRT::A>,
     nullptr,
-    0, // String
+    1, // String
     -1,
     true,  false, false,
     //   2 - LinkedMDControlsCppWinRT.B.StringPropertyOnB
     L"StringPropertyOnB",
-    &GetReferenceTypeMember_StringPropertyOnB<::winrt::LinkedMDControlsCppWinRT::B>,
+    &GetReferenceTypeStringMember_StringPropertyOnB<::winrt::LinkedMDControlsCppWinRT::B>,
     nullptr,
-    0, // String
+    1, // String
+    -1,
+    true,  false, false,
+    //   3 - Microsoft.UI.Xaml.Controls.TreeViewNode.IsExpanded
+    L"IsExpanded",
+    &GetValueTypeMember_IsExpanded<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
+    &SetValueTypeMember_IsExpanded<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
+    3, // Boolean
+    -1,
+    false, true,  false,
+    //   4 - Microsoft.UI.Xaml.Controls.TreeViewNode.HasUnrealizedChildren
+    L"HasUnrealizedChildren",
+    &GetValueTypeMember_HasUnrealizedChildren<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
+    &SetValueTypeMember_HasUnrealizedChildren<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
+    3, // Boolean
+    -1,
+    false, false, false,
+    //   5 - Microsoft.UI.Xaml.Controls.TreeViewNode.Content
+    L"Content",
+    &GetReferenceTypeMember_Content<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>,
+    &SetReferenceTypeMember_Content<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, ::winrt::Windows::Foundation::IInspectable>,
+    2, // Object
+    -1,
+    false, true,  false,
+    //   6 - Microsoft.UI.Xaml.Controls.TreeViewNode.Children
+    L"Children",
+    &GetReferenceTypeMember_Children<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>,
+    nullptr,
+    11, // Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
+    -1,
+    true,  false, false,
+    //   7 - Microsoft.UI.Xaml.Controls.TreeViewNode.Depth
+    L"Depth",
+    &GetValueTypeMember_Depth<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, int32_t>,
+    nullptr,
+    0, // Int32
+    -1,
+    true,  true,  false,
+    //   8 - Microsoft.UI.Xaml.Controls.TreeViewNode.HasChildren
+    L"HasChildren",
+    &GetValueTypeMember_HasChildren<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
+    nullptr,
+    3, // Boolean
+    -1,
+    true,  true,  false,
+    //   9 - Microsoft.UI.Xaml.Controls.TreeViewNode.Parent
+    L"Parent",
+    &GetReferenceTypeMember_Parent<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>,
+    nullptr,
+    10, // Microsoft.UI.Xaml.Controls.TreeViewNode
     -1,
     true,  false, false,
 };
@@ -300,10 +532,12 @@ const MemberInfo* GetMemberInfo(::winrt::hstring const& longMemberName)
     return nullptr;
 }
 
-std::vector<::winrt::Windows::UI::Xaml::Markup::IXamlMetadataProvider> const& XamlTypeInfoProvider::OtherProviders()
+std::vector<::winrt::Microsoft::UI::Xaml::Markup::IXamlMetadataProvider> const& XamlTypeInfoProvider::OtherProviders()
 {
+    std::lock_guard<std::recursive_mutex> lock(_xamlTypesCriticalSection);
     if (_otherProviders.empty())
     {
+        _otherProviders.push_back(::winrt::Microsoft::UI::Xaml::XamlTypeInfo::XamlControlsXamlMetaDataProvider());
         _otherProviders.push_back(::winrt::LinkedMDSubControlsCppWinRT::XamlMetaDataProvider());
     }
     return _otherProviders;
@@ -365,3 +599,5 @@ IXamlMember XamlTypeInfoProvider::CreateXamlMember(::winrt::hstring const& longM
     return xamlMember.as<IXamlMember>();
 }
 } // namespace
+
+

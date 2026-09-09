@@ -11,11 +11,10 @@
 namespace BindTestbed
 {
     partial class NullableTests : 
-        global::Windows.UI.Xaml.Controls.UserControl, 
-        global::Windows.UI.Xaml.Markup.IComponentConnector,
-        global::Windows.UI.Xaml.Markup.IComponentConnector2
+        global::Microsoft.UI.Xaml.Controls.UserControl, 
+        global::Microsoft.UI.Xaml.Markup.IComponentConnector
     {
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         private static class XamlBindingSetters
         {
@@ -23,7 +22,7 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::System.Double) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Double), targetNullValue);
+                    value = (global::System.Double) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Double), targetNullValue);
                 }
                 obj.NullableDoubleDP = value;
             }
@@ -31,18 +30,18 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::System.Boolean) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Boolean), targetNullValue);
+                    value = (global::System.Boolean) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Boolean), targetNullValue);
                 }
                 obj.NullableBool = value;
             }
         };
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class NullableTests_obj1_Bindings :
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class NullableTests_obj1_Bindings :
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             INullableTests_Bindings
         {
             private global::BindTestbed.NullableTests dataRoot;
@@ -54,14 +53,12 @@ namespace BindTestbed
             private global::BindTestbedModel.NullablePropertiesButton obj2;
             private global::BindTestbedModel.NullablePropertiesButton obj3;
             private global::BindTestbedModel.NullablePropertiesButton obj4;
-            private global::BindTestbedModel.NullablePropertiesButton obj5;
 
             // Static fields for each binding's enabled/disabled state
             private static bool isobj2NullableDoubleDPDisabled = false;
             private static bool isobj2NullableBoolDisabled = false;
             private static bool isobj3NullableDoubleDPDisabled = false;
             private static bool isobj4NullableDoubleDPDisabled = false;
-            private static bool isobj5NullableDoubleDPDisabled = false;
 
             private NullableTests_obj1_BindingsTracking bindingsTracking;
 
@@ -72,25 +69,21 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 30 && columnNumber == 49)
+                if (lineNumber == 31 && columnNumber == 49)
                 {
                     isobj2NullableDoubleDPDisabled = true;
                 }
-                else if (lineNumber == 30 && columnNumber == 116)
+                else if (lineNumber == 31 && columnNumber == 116)
                 {
                     isobj2NullableBoolDisabled = true;
                 }
-                else if (lineNumber == 33 && columnNumber == 49)
+                else if (lineNumber == 38 && columnNumber == 49)
                 {
                     isobj3NullableDoubleDPDisabled = true;
                 }
-                else if (lineNumber == 36 && columnNumber == 49)
+                else if (lineNumber == 41 && columnNumber == 49)
                 {
                     isobj4NullableDoubleDPDisabled = true;
-                }
-                else if (lineNumber == 39 && columnNumber == 49)
-                {
-                    isobj5NullableDoubleDPDisabled = true;
                 }
             }
 
@@ -100,23 +93,26 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 2: // NullableTests.xaml line 30
-                        this.obj2 = (global::BindTestbedModel.NullablePropertiesButton)target;
+                    case 2: // NullableTests.xaml line 31
+                        this.obj2 = global::WinRT.CastExtensions.As<global::BindTestbedModel.NullablePropertiesButton>(target);
                         break;
-                    case 3: // NullableTests.xaml line 33
-                        this.obj3 = (global::BindTestbedModel.NullablePropertiesButton)target;
+                    case 3: // NullableTests.xaml line 38
+                        this.obj3 = global::WinRT.CastExtensions.As<global::BindTestbedModel.NullablePropertiesButton>(target);
                         break;
-                    case 4: // NullableTests.xaml line 36
-                        this.obj4 = (global::BindTestbedModel.NullablePropertiesButton)target;
-                        break;
-                    case 5: // NullableTests.xaml line 39
-                        this.obj5 = (global::BindTestbedModel.NullablePropertiesButton)target;
-                        this.bindingsTracking.RegisterTwoWayListener_5(this.obj5);
+                    case 4: // NullableTests.xaml line 41
+                        this.obj4 = global::WinRT.CastExtensions.As<global::BindTestbedModel.NullablePropertiesButton>(target);
+                        this.bindingsTracking.RegisterTwoWayListener_4(this.obj4);
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
             // IDataTemplateComponent
 
@@ -162,13 +158,18 @@ namespace BindTestbed
                 this.bindingsTracking.ReleaseAllListeners();
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbed.NullableTests)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbed.NullableTests>(newDataRoot);
                     return true;
                 }
                 return false;
             }
 
-            public void Loading(global::Windows.UI.Xaml.FrameworkElement src, object data)
+            public void Activated(object obj, global::Microsoft.UI.Xaml.WindowActivatedEventArgs data)
+            {
+                this.Initialize();
+            }
+
+            public void Loading(global::Microsoft.UI.Xaml.FrameworkElement src, object data)
             {
                 this.Initialize();
             }
@@ -212,17 +213,17 @@ namespace BindTestbed
             private delegate void InvokeFunctionDelegate(int phase);
             private global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate> PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
 
-            private void Invoke_Model_M_FunctionReturningNullableDouble_1740600808(int phase)
+            private void Invoke_Model_M_FunctionReturningNullableDouble_2231344659(int phase)
             {
                 global::System.Nullable<global::System.Double> p0;
                 if (!TryGet_Model_NullableDoublePropertyDP(out p0)) { return; }
                 global::System.Nullable<global::System.Double> result = this.dataRoot.Model.FunctionReturningNullableDouble(p0);
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // NullableTests.xaml line 36
-                    if (!isobj4NullableDoubleDPDisabled)
+                    // NullableTests.xaml line 38
+                    if (!isobj3NullableDoubleDPDisabled)
                     {
-                        XamlBindingSetters.Set_BindTestbedModel_NullablePropertiesButton_NullableDoubleDP(this.obj4, result, null);
+                        XamlBindingSetters.Set_BindTestbedModel_NullablePropertiesButton_NullableDoubleDP(this.obj3, result, null);
                     }
                 }
             }
@@ -262,7 +263,7 @@ namespace BindTestbed
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
                         this.Update_Model_NullableDoublePropertyDP(obj.NullableDoublePropertyDP, phase);
-                        this.Update_Model_M_FunctionReturningNullableDouble_1740600808(phase);
+                        this.Update_Model_M_FunctionReturningNullableDouble_2231344659(phase);
                     }
                 }
             }
@@ -271,7 +272,6 @@ namespace BindTestbed
                 if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                 {
                     this.Update_Model_ExtractionPoint_Coords(obj.Coords, phase);
-                    this.Update_Model_ExtractionPoint_Altitude(obj.Altitude, phase);
                 }
             }
             private void Update_Model_ExtractionPoint_Coords(global::BindTestbedModel.Coordinates obj, int phase)
@@ -285,7 +285,7 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // NullableTests.xaml line 30
+                    // NullableTests.xaml line 31
                     if (!isobj2NullableDoubleDPDisabled)
                     {
                         XamlBindingSetters.Set_BindTestbedModel_NullablePropertiesButton_NullableDoubleDP(this.obj2, obj, null);
@@ -296,21 +296,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // NullableTests.xaml line 30
+                    // NullableTests.xaml line 31
                     if (!isobj2NullableBoolDisabled)
                     {
                         XamlBindingSetters.Set_BindTestbedModel_NullablePropertiesButton_NullableBool(this.obj2, obj, "True");
-                    }
-                }
-            }
-            private void Update_Model_ExtractionPoint_Altitude(global::System.Int32 obj, int phase)
-            {
-                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
-                {
-                    // NullableTests.xaml line 33
-                    if (!isobj3NullableDoubleDPDisabled)
-                    {
-                        XamlBindingSetters.Set_BindTestbedModel_NullablePropertiesButton_NullableDoubleDP(this.obj3, obj, null);
                     }
                 }
             }
@@ -318,28 +307,28 @@ namespace BindTestbed
             {
                 if (obj != null)
                 {
-                    this.Update_Model_M_FunctionReturningNullableDouble_1740600808(phase);
+                    this.Update_Model_M_FunctionReturningNullableDouble_2231344659(phase);
                 }
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // NullableTests.xaml line 39
-                    if (!isobj5NullableDoubleDPDisabled)
+                    // NullableTests.xaml line 41
+                    if (!isobj4NullableDoubleDPDisabled)
                     {
-                        XamlBindingSetters.Set_BindTestbedModel_NullablePropertiesButton_NullableDoubleDP(this.obj5, obj, null);
+                        XamlBindingSetters.Set_BindTestbedModel_NullablePropertiesButton_NullableDoubleDP(this.obj4, obj, null);
                     }
                 }
             }
-            private void Update_Model_M_FunctionReturningNullableDouble_1740600808(int phase)
+            private void Update_Model_M_FunctionReturningNullableDouble_2231344659(int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    if (!isobj4NullableDoubleDPDisabled)
+                    if (!isobj3NullableDoubleDPDisabled)
                     {
-                        this.PendingFunctionBindings["Model_M_FunctionReturningNullableDouble_1740600808"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionReturningNullableDouble_1740600808); 
+                        this.PendingFunctionBindings["Model_M_FunctionReturningNullableDouble_2231344659"] = new InvokeFunctionDelegate(this.Invoke_Model_M_FunctionReturningNullableDouble_2231344659); 
                     }
                 }
             }
-            private void UpdateTwoWay_5_NullableDoubleDP()
+            private void UpdateTwoWay_4_NullableDoubleDP()
             {
                 if (this.initialized)
                 {
@@ -347,13 +336,13 @@ namespace BindTestbed
                     {
                         if (this.dataRoot.Model != null)
                         {
-                            this.dataRoot.Model.NullableDoublePropertyDP = this.obj5.NullableDoubleDP;
+                            this.dataRoot.Model.NullableDoublePropertyDP = this.obj4.NullableDoubleDP;
                         }
                     }
                 }
             }
 
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             private class NullableTests_obj1_BindingsTracking
             {
@@ -396,7 +385,7 @@ namespace BindTestbed
                             if (obj != null)
                             {
                                 bindings.Update_Model_NullableDoublePropertyDP(obj.NullableDoublePropertyDP, DATA_CHANGED);
-                                bindings.Update_Model_M_FunctionReturningNullableDouble_1740600808(DATA_CHANGED);
+                                bindings.Update_Model_M_FunctionReturningNullableDouble_2231344659(DATA_CHANGED);
                             }
                         }
                         else
@@ -415,7 +404,7 @@ namespace BindTestbed
                                 {
                                     if (obj != null)
                                     {
-                                        bindings.Update_Model_M_FunctionReturningNullableDouble_1740600808(DATA_CHANGED);
+                                        bindings.Update_Model_M_FunctionReturningNullableDouble_2231344659(DATA_CHANGED);
                                     }
                                     break;
                                 }
@@ -426,7 +415,7 @@ namespace BindTestbed
                         bindings.CompleteUpdate(DATA_CHANGED);
                     }
                 }
-                public void DependencyPropertyChanged_Model_NullableDoublePropertyDP(global::Windows.UI.Xaml.DependencyObject sender, global::Windows.UI.Xaml.DependencyProperty prop)
+                public void DependencyPropertyChanged_Model_NullableDoublePropertyDP(global::Microsoft.UI.Xaml.DependencyObject sender, global::Microsoft.UI.Xaml.DependencyProperty prop)
                 {
                     NullableTests_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
@@ -459,38 +448,39 @@ namespace BindTestbed
                         }
                     }
                 }
-                public void RegisterTwoWayListener_5(global::BindTestbedModel.NullablePropertiesButton sourceObject)
+                public void RegisterTwoWayListener_4(global::BindTestbedModel.NullablePropertiesButton sourceObject)
                 {
                     sourceObject.RegisterPropertyChangedCallback(global::BindTestbedModel.NullablePropertiesButton.NullableDoubleDPProperty, (sender, prop) =>
                     {
                         var bindingObj = this.TryGetBindingObject();
                         if (bindingObj != null)
                         {
-                            bindingObj.UpdateTwoWay_5_NullableDoubleDP();
+                            bindingObj.UpdateTwoWay_4_NullableDoubleDP();
                         }
                     });
                 }
             }
         }
+
         /// <summary>
         /// Connect()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public void Connect(int connectionId, object target)
         {
             switch(connectionId)
             {
-            case 6: // NullableTests.xaml line 20
+            case 5: // NullableTests.xaml line 21
                 {
-                    global::Windows.UI.Xaml.Controls.Button element6 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element6).Click += this.UpdateValuesClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element5 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element5).Click += this.UpdateValuesClick;
                 }
                 break;
-            case 7: // NullableTests.xaml line 21
+            case 6: // NullableTests.xaml line 22
                 {
-                    global::Windows.UI.Xaml.Controls.Button element7 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element7).Click += this.ResetValuesClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element6 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element6).Click += this.ResetValuesClick;
                 }
                 break;
             default:
@@ -499,25 +489,26 @@ namespace BindTestbed
             this._contentLoaded = true;
         }
 
+
         /// <summary>
         /// GetBindingConnector(int connectionId, object target)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
+        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
         {
-            global::Windows.UI.Xaml.Markup.IComponentConnector returnValue = null;
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector returnValue = null;
             switch(connectionId)
             {
-            case 1: // NullableTests.xaml line 1
+            case 1: // NullableTests.xaml line 3
                 {                    
-                    global::Windows.UI.Xaml.Controls.UserControl element1 = (global::Windows.UI.Xaml.Controls.UserControl)target;
+                    global::Microsoft.UI.Xaml.Controls.UserControl element1 = (global::Microsoft.UI.Xaml.Controls.UserControl)target;
                     NullableTests_obj1_Bindings bindings = new NullableTests_obj1_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(this);
                     this.Bindings = bindings;
                     element1.Loading += bindings.Loading;
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
                 }
                 break;
             }

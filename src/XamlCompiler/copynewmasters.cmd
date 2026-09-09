@@ -3,89 +3,104 @@
 REM Copyright (c) Microsoft Corporation.
 REM Licensed under the MIT License. See LICENSE in the project root for license information.
 
-SETLOCAL
+REM Accepts the current XAML compiler codegen as the new baseline under TestMasters.
+REM
+REM Usage, from src\XamlCompiler, in a build window (init.cmd):
+REM
+REM   copynewmasters.cmd            Refresh every target. Refuses to do anything if any target has
+REM                                 no codegen, so a build failure cannot quietly empty a baseline.
+REM   copynewmasters.cmd /partial   Refresh only the targets that have codegen, leaving the masters
+REM                                 of the rest untouched, and list what was skipped.
+REM
+REM Which codegen directory maps to which master directory is recorded in
+REM Tests\UnitTests\CodegenTargets.txt, which CodegenTests.cs reads as well, so the copy and the
+REM diff cannot disagree about where codegen is. Build the regression projects first: this script
+REM only copies what the build produced.
+
+SETLOCAL EnableDelayedExpansion
+
+REM Work from the directory this script lives in, so it can be run from anywhere. SETLOCAL restores
+REM the caller's directory on exit.
+cd /d "%~dp0"
+
+set _targets=Tests\UnitTests\CodegenTargets.txt
+set _codegenRoot=%BuildOutputRoot%\%_BuildArch%%_BuildType%
+set _partial=0
+if /I "%~1"=="/partial" set _partial=1
+
+if not exist "%_targets%" (
+    echo ERROR: Cannot find %_targets%. Run this script from src\XamlCompiler.
+    goto :failed
+)
+
+if "%BuildOutputRoot%"=="" (
+    echo ERROR: BuildOutputRoot is not set. Run this script from a build window ^(init.cmd^).
+    goto :failed
+)
+
+REM Pass 1 - check every target before touching TestMasters, so that a failure here cannot leave
+REM the masters in the half-updated state the old version of this script warned about.
+set _missing=0
+for /f "usebackq eol=# tokens=1,2 delims=|" %%a in ("%_targets%") do CALL :checkProject "%%a" "%%b"
+
+if %_missing% GTR 0 (
+    if %_partial%==0 (
+        echo.
+        echo ERROR: %_missing% target^(s^) have no codegen. Build them, or re-run with /partial to
+        echo        refresh the rest and leave their masters alone. Nothing has been changed.
+        goto :failed
+    )
+    echo.
+    echo WARNING: skipping %_missing% target^(s^) with no codegen ^(/partial^).
+)
+
 call csc tools\fixmasters\fixmasters.cs /out:%temp%\fixmasters.exe
-if NOT %ERRORLEVEL%==0 goto failedCopy
+if NOT %ERRORLEVEL%==0 goto :failed
 
-del /q /s TestMasters
-if NOT %ERRORLEVEL%==0 goto failedCopy
-
-CALL :copyProject "RegressionProjects\Basic\CSharp\Simple\obj\x86\Debug" "RegressionProjects\Basic\CSharp\Simple" 
-CALL :copyProject "RegressionProjects\Basic\CppWinRT\Simple\Generated Files" "RegressionProjects\Basic\CppWinRT\Simple\generated"
-CALL :copyProject "RegressionProjects\Basic\CppWinRT\EventHandling_968976\Generated Files" "RegressionProjects\Basic\CppWinRT\EventHandling_968976\generated"
-CALL :copyProject "RegressionProjects\Basic\References\CSharpExe\obj\x86\Debug" "RegressionProjects\Basic\References\CSharpExe"
-CALL :copyProject "RegressionProjects\Basic\References\CSharpLib\obj\x86\Debug" "RegressionProjects\Basic\References\CSharpLib"
-CALL :copyProject "RegressionProjects\Basic\References\CSharpWinRTComponent\obj\x86\Debug" "RegressionProjects\Basic\References\CSharpWinRTComponent"
-CALL :copyProject "RegressionProjects\Basic\References\CppWinRTComponent\Generated Files" "RegressionProjects\Basic\References\CppWinRTComponent\generated"
-CALL :copyProject "RegressionProjects\Basic\References\CppWinRTExe\Generated Files" "RegressionProjects\Basic\References\CppWinRTExe\generated"
-
-CALL :copyProject "RegressionProjects\NonStandard\NonStandardCppWinRT\NonStandardCppWinRT\Generated Files" "RegressionProjects\NonStandard\NonStandardCppWinRT\NonStandardCppWinRT\generated"
-
-CALL :copyProject "RegressionProjects\Features\BindPhasingTestBedCppWinRT\BindPhasingTestBedCppWinRT\Generated Files" "RegressionProjects\Features\BindPhasingTestBedCppWinRT\BindPhasingTestBedCppWinRT\generated"
-
-
-CALL :copyProject "RegressionProjects\Features\CompiledBinding\BindTestbedCppWinRT\Generated Files" "RegressionProjects\Features\CompiledBinding\BindTestbedCppWinRT\generated"
-CALL :copyProject "RegressionProjects\Features\CompiledBinding\BindTestbedCppWinRT\Incremental\Generated Files" "RegressionProjects\Features\CompiledBinding\BindTestbedCppWinRT\BindTestbedCppWinRTIncremental\generated"
-CALL :copyProject "RegressionProjects\Features\CompiledBinding\BindTestbedModel\obj\x86\Debug" "RegressionProjects\Features\CompiledBinding\BindTestbedModel"
-CALL :copyProject "RegressionProjects\Features\CompiledBinding\BindTestbedCS\obj\x86\Debug" "RegressionProjects\Features\CompiledBinding\BindTestbedCS"
-
-
-CALL :copyProject "RegressionProjects\Features\Conditionals\ConditionalControls\obj\x86\Debug" "RegressionProjects\Features\Conditionals\ConditionalControls"
-CALL :copyProject "RegressionProjects\Features\Conditionals\ConditionalsCppWinRT\Generated Files" "RegressionProjects\Features\Conditionals\ConditionalsCppWinRT\generated"
-CALL :copyProject "RegressionProjects\Features\Conditionals\ConditionalsCS\obj\x86\Debug" "RegressionProjects\Features\Conditionals\ConditionalsCS"
-CALL :copyProject "RegressionProjects\Features\Conditionals\ConditionalsModel\obj\x86\Debug" "RegressionProjects\Features\Conditionals\ConditionalsModel"
-
-CALL :copyProject "RegressionProjects\Features\Conditionals\Platform Conditionals\PlatformConditionalsCS\obj\x86\Debug" "RegressionProjects\Features\Conditionals\Platform Conditionals\PlatformConditionalsCS"
-CALL :copyProject "RegressionProjects\Features\Conditionals\Platform Conditionals\PlatformConditionalsModel\obj\x86\Debug" "RegressionProjects\Features\Conditionals\Platform Conditionals\PlatformConditionalsModel"
-
-CALL :copyProject "RegressionProjects\Features\DeferLoadStrategy\CSharp\obj\x86\Debug" "RegressionProjects\Features\DeferLoadStrategy\CSharp"
-CALL :copyProject "RegressionProjects\Features\DeferLoadStrategy\CppWinRT\Generated Files" "RegressionProjects\Features\DeferLoadStrategy\CppWinRT\generated"
-
-CALL :copyProject "RegressionProjects\Features\LinkedMD\LinkedMDAppCppWinRT\Generated Files" "RegressionProjects\Features\LinkedMD\LinkedMDAppCppWinRT\generated"
-CALL :copyProject "RegressionProjects\Features\LinkedMD\LinkedMDAppCS\obj\x86\Debug" "RegressionProjects\Features\LinkedMD\LinkedMDAppCS"
-CALL :copyProject "RegressionProjects\Features\LinkedMD\LinkedMDControlsCppWinRT\Generated Files" "RegressionProjects\Features\LinkedMD\LinkedMDControlsCppWinRT\generated"
-CALL :copyProject "RegressionProjects\Features\LinkedMD\LinkedMDControlsCS\obj\x86\Debug" "RegressionProjects\Features\LinkedMD\LinkedMDControlsCS"
-CALL :copyProject "RegressionProjects\Features\LinkedMD\LinkedMDSubControlsCppWinRT\Generated Files" "RegressionProjects\Features\LinkedMD\LinkedMDSubControlsCppWinRT\generated"
-CALL :copyProject "RegressionProjects\Features\LinkedMD\LinkedMDSubControlsCS\obj\x86\Debug" "RegressionProjects\Features\LinkedMD\LinkedMDSubControlsCS"
-
-CALL :copyProject "RegressionProjects\Features\MarkupExtensions\MarkupExtensionsCppWinRT\Generated Files" "RegressionProjects\Features\MarkupExtensions\MarkupExtensionsCppWinRT\generated"
-CALL :copyProject "RegressionProjects\Features\MarkupExtensions\MarkupExtensionsCS\obj\x86\Debug" "RegressionProjects\Features\MarkupExtensions\MarkupExtensionsCS"
-
-CALL :copyProject "RegressionProjects\Features\Metadata\MetadataTestbedCS\obj\x86\Debug" "RegressionProjects\Features\Metadata\MetadataTestbedCS"
-CALL :copyProject "RegressionProjects\Features\Metadata\MetadataTestbedCppWinRT\Generated Files" "RegressionProjects\Features\Metadata\MetadataTestbedCppWinRT\generated"
-
-CALL :copyProject "RegressionProjects\Features\MultiXamlFiles\MultipleViewsTestbedCppWinRT\Generated Files" "RegressionProjects\Features\MultiXamlFiles\MultipleViewsTestbedCppWinRT\generated"
-CALL :copyProject "RegressionProjects\Features\MultiXamlFiles\MultipleViewsTestbed\obj\x86\Debug" "RegressionProjects\Features\MultiXamlFiles\MultipleViewsTestbed"
-
-CALL :copyProject "RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ConsumerCs\obj\x86\Debug" "RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ConsumerCs"
-CALL :copyProject "RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ProviderCs\obj\x86\Debug" "RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ProviderCs"
-CALL :copyProject "RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ConsumerCppWinRT\Generated Files" "RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ConsumerCppWinRT\generated"
-CALL :copyProject "RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ProviderCppWinRT\Generated Files" "RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ProviderCppWinRT\generated"
-
-CALL :copyProject "RegressionProjects\Features\StaticLibs\RuntimeComponentWithStaticLibInApp\Generated Files" "RegressionProjects\Features\StaticLibs\RuntimeComponentWithStaticLibInApp\generated"
-CALL :copyProject "RegressionProjects\Features\StaticLibs\StaticControlsLib\Generated Files" "RegressionProjects\Features\StaticLibs\StaticControlsLib\generated"
-CALL :copyProject "RegressionProjects\Features\StaticLibs\StaticLibInApp\Generated Files" "RegressionProjects\Features\StaticLibs\StaticLibInApp\generated"
-CALL :copyProject "RegressionProjects\Features\StaticLibs\StaticLibInRuntimeComponent\Generated Files" "RegressionProjects\Features\StaticLibs\StaticLibInRuntimeComponent\generated"
-
-CALL :copyProject "RegressionProjects\Features\CustomAppXaml\CustomAppXaml\obj\x86\Debug" "RegressionProjects\Features\CustomAppXaml\CustomAppXaml"
+REM Pass 2 - refresh each target in place. Each master directory is emptied immediately before it is
+REM repopulated, so a stale generated file cannot survive a rename, and the masters of any skipped
+REM target are left as they were.
+for /f "usebackq eol=# tokens=1,2 delims=|" %%a in ("%_targets%") do (
+    CALL :copyProject "%%a" "%%b"
+    if ERRORLEVEL 1 goto :failed
+)
 
 call %temp%\fixmasters.exe
-if NOT %ERRORLEVEL%==0 goto failedCopy
+if NOT %ERRORLEVEL%==0 goto :failed
 
 echo.
 echo Done.
 goto :EOF
 
-:failedCopy
+:failed
 echo.
-@echo ERROR: Failed to copy! You may be in a half-state if some items copied and some other didn't.
-()
-goto :EOF
+@echo ERROR: copynewmasters did not complete.
+EXIT /B 1
+
+:checkProject
+dir /s /b "%_codegenRoot%\%~2\*.g.*" >nul 2>&1
+if ERRORLEVEL 1 (
+    echo MISSING: no codegen in "%_codegenRoot%\%~2" for "%~1"
+    set /a _missing+=1
+)
+EXIT /B 0
 
 :copyProject
-echo ## Updating %~2 to %~1
-echo.
+dir /s /b "%_codegenRoot%\%~2\*.g.*" >nul 2>&1
+if ERRORLEVEL 1 EXIT /B 0
 
-robocopy "%BuildOutputRoot%\%_BuildArch%%_BuildType%\src\XamlCompiler\Tests\%~2" "TestMasters\%~1" *.g.* /XF *.g.obj /XF *.nuget.g.* /XF *.backup /s /r:0 /z /ndl
-if %ERRORLEVEL% GTR 1 goto :failedCopy
+echo ## Updating %~1 from %~2
+if exist "TestMasters\%~1" (
+    rmdir /s /q "TestMasters\%~1"
+    if exist "TestMasters\%~1" (
+        echo ERROR: Could not remove "TestMasters\%~1".
+        EXIT /B 1
+    )
+)
+
+robocopy "%_codegenRoot%\%~2" "TestMasters\%~1" *.g.* /XF *.g.obj /XF *.nuget.g.* /XF *.backup /s /r:0 /z /ndl
+if ERRORLEVEL 2 (
+    echo ERROR: Could not refresh "TestMasters\%~1".
+    EXIT /B 1
+)
 EXIT /B 0
