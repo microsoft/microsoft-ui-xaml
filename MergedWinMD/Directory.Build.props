@@ -26,11 +26,7 @@
   <PropertyGroup>
     <IgnorePrivateMUXMetadataDir>true</IgnorePrivateMUXMetadataDir>
 
-    <!--
-      TEMPORARY: explicitly hardcoded merge depths per namespace, to ensure that external refererences
-      are correctly generated for Microsoft.UI.Xaml.winmd, with the merge of Microsoft.UI.winmd.
-      Long term fix is switch IXP (Microsoft.UI) from mdmerge input to reference.
-     -->
+     <!-- Keep the XAML namespace split stable; IXP metadata is reference-only. -->
     <WinMdNamespaceOptions>-n:2 -n:Microsoft.UI.Xaml:3 -n:Microsoft.UI.Private:3</WinMdNamespaceOptions>
 
   <!--

@@ -11,6 +11,15 @@ $configuration = Get-Content (
 $folderPaths = Get-Content (
     Join-Path $PSScriptRoot "..\folderpaths.props"
 ) -Raw
+$productMetadata = Get-Content (
+    Join-Path $PSScriptRoot "..\productmetadata.props"
+) -Raw
+$midlTargets = Get-Content (
+    Join-Path $PSScriptRoot "..\midl.targets"
+) -Raw
+$generatorProject = Get-Content (
+    Join-Path $PSScriptRoot "..\gencompheadersandidl\gencompheadersandidl.vcxproj"
+) -Raw
 
 foreach ($property in @(
     "SystemComponentOsRoot",
@@ -21,7 +30,9 @@ foreach ($property in @(
     "SystemDispatcherQueueIncludePath",
     "SystemDispatcherQueueMetadataPath",
     "SystemDispatcherQueueIdlPath",
-    "SystemCoreMessagingLibPath"
+    "SystemCoreMessagingLibPath",
+    "SystemWindowsContractsIdlPath",
+    "SystemComponentGeneratedIdlPath"
 ))
 {
     if (-not $folderPaths.Contains("<$property>", [StringComparison]::Ordinal) -and
@@ -29,6 +40,26 @@ foreach ($property in @(
     {
         throw "The build path property '$property' is not wired in eng\folderpaths.props."
     }
+}
+
+if (($productMetadata | Select-String -Pattern "<IxpWinMDs " -AllMatches).Matches.Count -ne 3 -or
+    ($productMetadata | Select-String -Pattern "<Merge>false</Merge>" -AllMatches).Matches.Count -lt 3)
+{
+    throw "All three retained IXP WinMDs must be reference-only."
+}
+if (-not $midlTargets.Contains(
+    'Name="_CopyReferenceOnlyIxpMetadata"',
+    [StringComparison]::Ordinal
+))
+{
+    throw "Reference-only IXP metadata is not copied beside merged XAML outputs."
+}
+if (-not $generatorProject.Contains(
+    "Prepare-SystemComponentIdl.ps1",
+    [StringComparison]::Ordinal
+))
+{
+    throw "Generated system IDLs are not normalized for the WinUI SDK toolchain."
 }
 
 if (-not $LatestOsRoot)

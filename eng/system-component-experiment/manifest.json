@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "activeSubtrial": "A",
   "activeStage": "A1",
-  "activeCheckpoint": "system-idl-and-abi-search-paths",
+  "activeCheckpoint": "ixp-metadata-reference-only",
   "architecture": "x64",
   "branchNativeImplementation": true,
   "repositories": {

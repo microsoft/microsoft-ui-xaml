@@ -37,6 +37,23 @@
       <FileWrites Include="$(GenCompSemaphoreFile)" />
     </ItemGroup>
   </Target>
+  <Target Name="_StageSystemComponentIDLs" AfterTargets="_GenerateIxpHeadersAndIDLs">
+    <ItemGroup>
+      <_SystemComponentWinMDs Include="$(SystemCompositionMetadataPath)\windows.ui.composition*.winmd" />
+      <_SystemComponentWinMDs Include="$(SystemDispatcherQueueMetadataPath)\windows.system.dispatcherqueue.winmd" />
+    </ItemGroup>
+    <RemoveDir Directories="$(SystemComponentGeneratedIdlPath)" />
+    <MakeDir Directories="$(SystemComponentGeneratedIdlPath)" />
+    <Exec Command="$(WindowsSdkToolLocation)\winmdidl.exe /metadata_dir:$(ProjectSDKMetadataPath) /metadata_dir:$(SystemCompositionMetadataPath) /metadata_dir:$(SystemDispatcherQueueMetadataPath) /outdir:$(SystemComponentGeneratedIdlPath) %(_SystemComponentWinMDs.Identity)" />
+    <Copy SourceFiles="$(SystemWindowsContractsIdlPath)"
+          DestinationFolder="$(SystemComponentGeneratedIdlPath)" />
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(ProjectRoot)eng\system-component-experiment\Prepare-SystemComponentIdl.ps1&quot; -IdlPath &quot;$(SystemComponentGeneratedIdlPath)&quot;" />
+    <ItemGroup>
+      <_GeneratedSystemComponentIdls Include="$(SystemComponentGeneratedIdlPath)\*.idl" />
+      <FileReads Include="@(_SystemComponentWinMDs)" />
+      <FileWrites Include="@(_GeneratedSystemComponentIdls)" />
+    </ItemGroup>
+  </Target>
   <!--
     Copy the files next to where the public xaml headers are placed. Any project that needs these headers
     probably also needs the xaml ones, and they already have this include path in their project.

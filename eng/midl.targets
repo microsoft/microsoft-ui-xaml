@@ -81,6 +81,11 @@
       <_WinMdReferenceDirectories Condition="'$(XamlLightup)'=='true'" Include="$(SDKReferencesPath)"/>
       <_WinMdReferenceDirectories Include="@(_PossibleWinMdInputsForMerge->'%(RelativeDir)'->Distinct())" Condition="'$(TestCode)'=='true'"/>
     </ItemGroup>
+    <ItemGroup>
+      <_DistinctWinMdReferenceDirectories Include="@(_WinMdReferenceDirectories->Distinct())" />
+      <_WinMdReferenceDirectories Remove="@(_WinMdReferenceDirectories)" />
+      <_WinMdReferenceDirectories Include="@(_DistinctWinMdReferenceDirectories)" />
+    </ItemGroup>
   </Target>
 
   <!--
@@ -165,6 +170,18 @@
       <FileReads Include="$(WinMdMetadataDir)\*.winmd" />
       <FileReads Include="$(PrivateMUXDir)\*.winmd" Condition="'$(IgnorePrivateMUXMetadataDir)' != 'true'" />
       <FileWrites Include="$(OutputWinmds)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_CopyReferenceOnlyIxpMetadata"
+          AfterTargets="_ComposedMetadata"
+          Condition="'$(MergeWinMd)'=='true' and '@(IxpWinMDs)'!=''">
+    <Copy SourceFiles="@(IxpWinMDs)"
+          DestinationFolder="$(MergedWinmdOutputLocation)"
+          SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <FileReads Include="@(IxpWinMDs)" />
+      <FileWrites Include="@(IxpWinMDs->'$(MergedWinmdOutputLocation)%(Filename)%(Extension)')" />
     </ItemGroup>
   </Target>
 

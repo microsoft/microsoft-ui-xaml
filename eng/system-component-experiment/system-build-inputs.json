@@ -66,6 +66,11 @@
       "id": "coremessaging-import-library",
       "relativePath": "public\\amd64fre\\onecore\\external\\sdk\\lib\\coremessaging.lib",
       "sha256": "9722ddaa66839d3dff78e525731401da3ce4d0b78e84a9822157c1fafda9bf83"
+    },
+    {
+      "id": "windows-contracts-idl",
+      "relativePath": "public\\amd64fre\\onecore\\internal\\sdk\\inc\\windowscontracts.idl",
+      "sha256": "fd853fd344dc1436806c20f5c30a36e032c0835518cd4b1dea2c2dd7c36e077e"
     }
   ]
 }

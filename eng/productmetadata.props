@@ -24,15 +24,15 @@
       <ImplementationDll>Microsoft.UI.Xaml.Phone.dll</ImplementationDll>
     </MuxWinMDs>
 
-    <!--
-      Once we stop merging IXP WinMDs into ours we'll need to update how we merge
-      them in, and any projects affected by that change.
-      If you search for "IXPWinMds" and "ExternalWinMds.Merge" that should
-      bring up the places that need to be changed
-    -->
-    <IxpWinMDs Include="$(LiftedIxpWinmdPath)\Microsoft.Foundation.winmd" />
-    <IxpWinMDs Include="$(LiftedIxpWinmdPath)\Microsoft.Graphics.winmd" />
-    <IxpWinMDs Include="$(LiftedIxpWinmdPath)\Microsoft.UI.winmd" />
+    <IxpWinMDs Include="$(LiftedIxpWinmdPath)\Microsoft.Foundation.winmd">
+      <Merge>false</Merge>
+    </IxpWinMDs>
+    <IxpWinMDs Include="$(LiftedIxpWinmdPath)\Microsoft.Graphics.winmd">
+      <Merge>false</Merge>
+    </IxpWinMDs>
+    <IxpWinMDs Include="$(LiftedIxpWinmdPath)\Microsoft.UI.winmd">
+      <Merge>false</Merge>
+    </IxpWinMDs>
 
     <MRTWinMDs Include="$(LiftedMRTWinmdPath)\Microsoft.Windows.ApplicationModel.Resources.winmd">
       <ImplementationDll>Microsoft.Windows.ApplicationModel.Resources.dll</ImplementationDll>

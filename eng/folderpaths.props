@@ -215,11 +215,13 @@
     <SystemCompositionInternalIncludePath>$(SystemComponentPublicRoot)\onecoreuap\internal\sdk\inc</SystemCompositionInternalIncludePath>
     <SystemCompositionPrivateIncludePath>$(SystemComponentPublicRoot)\onecoreuap\private\sdk\inc</SystemCompositionPrivateIncludePath>
     <SystemCompositionMetadataPath>$(SystemComponentPublicRoot)\onecoreuap\internal\interimmetadata</SystemCompositionMetadataPath>
-    <SystemCompositionIdlPath>$(SystemComponentOsRoot)\src\onecoreuap\windows\published\winui\idl</SystemCompositionIdlPath>
     <SystemDispatcherQueueIncludePath>$(SystemComponentPublicRoot)\onecore\internal\sdk\inc</SystemDispatcherQueueIncludePath>
     <SystemDispatcherQueueMetadataPath>$(SystemComponentPublicRoot)\onecore\internal\interimmetadata</SystemDispatcherQueueMetadataPath>
-    <SystemDispatcherQueueIdlPath>$(SystemComponentOsRoot)\src\mincore\CoreUI\Published\idl</SystemDispatcherQueueIdlPath>
     <SystemCoreMessagingLibPath>$(SystemComponentPublicRoot)\onecore\external\sdk\lib</SystemCoreMessagingLibPath>
+    <SystemWindowsContractsIdlPath>$(SystemComponentPublicRoot)\onecore\internal\sdk\inc\windowscontracts.idl</SystemWindowsContractsIdlPath>
+    <SystemComponentGeneratedIdlPath>$(ArtifactsObjDir)system-components\generated\idl</SystemComponentGeneratedIdlPath>
+    <SystemCompositionIdlPath>$(SystemComponentGeneratedIdlPath)</SystemCompositionIdlPath>
+    <SystemDispatcherQueueIdlPath>$(SystemComponentGeneratedIdlPath)</SystemDispatcherQueueIdlPath>
     <SystemComponentIncludePaths>$(SystemCompositionPrivateIncludePath);$(SystemCompositionInternalIncludePath);$(SystemDispatcherQueueIncludePath)</SystemComponentIncludePaths>
   </PropertyGroup>
 
