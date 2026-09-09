@@ -138,9 +138,6 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ControlsCX\ControlsCX.vcxproj">
-      <Project>{1c6dac82-d6fc-41c7-881b-751845730215}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\LinkedMDControlsCppWinRT\LinkedMDControlsCppWinRT.vcxproj">
       <Project>{ecab1852-f97a-4f5b-9d20-077155b8ad06}</Project>
     </ProjectReference>

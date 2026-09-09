@@ -75,7 +75,21 @@ namespace ConditionalControls
 
         public IEmployee EmployeeOfTheMonth
         {
+#if CSWINRT_1642
+            get 
+            {
+                if (this.Employees.ItemCount > 0)
+                {
+                    return this.Employees[0] as IEmployee;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+#else
             get { return this.Employees.FirstOrDefault(); }
+#endif
         }
 
         public static bool IsNonEmpty(IObservableCollection collection)

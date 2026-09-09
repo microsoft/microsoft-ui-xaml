@@ -25,7 +25,6 @@ namespace winrt::BindTestbed::implementation
         //static BindTestbedCXModel::ModelCX ModelCX
 
         void OnLaunched(wux::LaunchActivatedEventArgs const& e);
-        void OnSuspending(IInspectable const& sender, wa::SuspendingEventArgs const& e);
         void OnNavigationFailed(IInspectable const& sender, wux::Navigation::NavigationFailedEventArgs const& e);
     };
 }

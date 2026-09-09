@@ -55,7 +55,6 @@
   </ItemGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup>
@@ -314,15 +313,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BindTestbedModel\BindTestbedModelDesktop.csproj">
-      <Project>{0748b16e-2455-494b-9d33-0231960ff58a}</Project>
-      <Name>BindTestbedModel</Name>
-      <Private>false</Private>
-      <IsWinMDFile>true</IsWinMDFile>
-      <Implementation>WinRT.Host.dll</Implementation>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Midl Include="BindTestbed.idl">
     </Midl>
   </ItemGroup>
@@ -334,7 +324,7 @@
   </ItemGroup>
   <!-- TODO:https://github.com/microsoft/CsWinRT/issues/808-->
   <!-- Temporary Workaround for CSWinRT issue -->
-    <ItemGroup>
+  <ItemGroup>
     <Reference Include="BindTestbedModel">
       <HintPath>..\..\..\..\..\..\..\BuildOutput\obj\x86chk\CompilerTests\BindTestbedModel\BindTestbedModelDesktop\BindTestbedModelDesktop\BindTestbedModel.winmd</HintPath>
       <IsWinMDFile>true</IsWinMDFile>

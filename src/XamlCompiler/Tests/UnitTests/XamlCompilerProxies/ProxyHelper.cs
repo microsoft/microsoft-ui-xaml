@@ -9,17 +9,106 @@ namespace Win8Xaml.CompilerProxies
 
     public class KnownVersions
     {
-        public const string Latest = "10.0.22621.0";
+        public const string Latest = BuildKnownVersions.WindowsSdkTargetPlatformVersion;
 
-        public const string Y19H1 = Latest;
+        public const string Y19H1 = "10.0.18362.0";
         public const string RS5 = "10.0.17763.0";
         public const string RS4 = "10.0.17134.0";
         public const string RS3 = "10.0.16299.0";
         public const string RS2 = "10.0.15063.0";
         public const string RS1 = "10.0.14393.0";
 
-        public const string FoundationContractVersion = "4.0.0.0";
-        public const string UniversalApiContractVersion = "15.0.0.0";
+        private static string _foundationContractVersion = null;
+        public static string FoundationContractVersion
+        {
+            get
+            {
+                if (_foundationContractVersion == null)
+                {
+                    _foundationContractVersion = DetectContractVersion("Windows.Foundation.FoundationContract");
+                }
+                return _foundationContractVersion;
+            }
+        }
+
+        private static string _universalApiContractVersion = null;
+        public static string UniversalApiContractVersion
+        {
+            get
+            {
+                if (_universalApiContractVersion == null)
+                {
+                    _universalApiContractVersion = DetectContractVersion("Windows.Foundation.UniversalApiContract");
+                }
+                return _universalApiContractVersion;
+            }
+        }
+
+        private static string FindSdkReferencesRoot()
+        {
+            string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+            if (!String.IsNullOrEmpty(programFilesX86))
+            {
+                string sdkRefsPath = Path.Combine(programFilesX86, @"Windows Kits\10\References");
+                if (Directory.Exists(sdkRefsPath))
+                {
+                    return sdkRefsPath;
+                }
+            }
+
+            string fallbackPath = Path.Combine(@"C:\Program Files (x86)", @"Windows Kits\10\References");
+            if (Directory.Exists(fallbackPath))
+            {
+                return fallbackPath;
+            }
+
+            throw new DirectoryNotFoundException(
+                @"Windows SDK references were not found under Program Files (x86)\Windows Kits\10\References.");
+        }
+
+        private static string DetectContractVersion(string contractName)
+        {
+            string sdkReferencesPath = Path.Combine(FindSdkReferencesRoot(), Latest);
+            if (!Directory.Exists(sdkReferencesPath))
+            {
+                throw new DirectoryNotFoundException(
+                    $"The Windows SDK targeted by this build ({Latest}) was not found at '{sdkReferencesPath}'.");
+            }
+
+            string contractPath = Path.Combine(sdkReferencesPath, contractName);
+            if (!Directory.Exists(contractPath))
+            {
+                throw new DirectoryNotFoundException(
+                    $"The contract '{contractName}' was not found in Windows SDK {Latest}.");
+            }
+
+            Version latestVersion = null;
+            string latestVersionName = null;
+            foreach (string directory in Directory.GetDirectories(contractPath))
+            {
+                string versionName = Path.GetFileName(directory);
+                Version version;
+                if (!Version.TryParse(versionName, out version))
+                {
+                    throw new InvalidDataException(
+                        $"The contract directory '{directory}' does not have a version-shaped name.");
+                }
+
+                if (latestVersion == null || version.CompareTo(latestVersion) > 0)
+                {
+                    latestVersion = version;
+                    latestVersionName = versionName;
+                }
+            }
+
+            if (latestVersionName == null)
+            {
+                throw new DirectoryNotFoundException(
+                    $"The contract '{contractName}' has no version directories in Windows SDK {Latest}.");
+            }
+
+            return latestVersionName;
+        }
     }
 
     public class ProxyHelper

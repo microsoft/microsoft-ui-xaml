@@ -2,22 +2,19 @@
 <!-- Copyright (c) Microsoft Corporation.
  Licensed under the MIT License. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+        
     <PropertyGroup>
+        <CommonFilesPath>$(MSBuildThisFileDirectory)Common\</CommonFilesPath>
         <AdHocApp>true</AdHocApp>
         <GenerateProjectSpecificOutputFolder>true</GenerateProjectSpecificOutputFolder>
-    </PropertyGroup>
-
-    <PropertyGroup>
         <UseLocalSDK>true</UseLocalSDK>
-        <AdHocApp>true</AdHocApp>
         <!-- Suppress WinMDExp warnings WME0010 since the Microsoft.UI.Xaml.Markup.IXamlMetadataProvider GetXamlType method is automatically renamed -->
         <WinMdExpNoWarn>0010;$(WinMdExpNoWarn)</WinMdExpNoWarn>
     </PropertyGroup>
     
     <PropertyGroup Condition="$(MSBuildProjectExtension)=='.csproj'">
-        <RuntimeIdentifiers>win10-x86; win10-x86-aot; win10-x64; win10-x64-aot; win10-arm64; win10-arm64-aot</RuntimeIdentifiers>
-        <EnableTypeInfoReflection>false</EnableTypeInfoReflection>
-        <GenerateProjectSpecificOutputFolder>true</GenerateProjectSpecificOutputFolder>
+        <RuntimeIdentifiers>win-x86; win-x64; win-arm64</RuntimeIdentifiers>
     </PropertyGroup>
 
     <ItemDefinitionGroup>
@@ -37,6 +34,13 @@
         </Reference>
     </ItemDefinitionGroup>
 
-    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" /> 
-    <Import Project="$(ConsumeBinariesProps)"/>
+    <PropertyGroup>
+         <!-- Our obj/bin paths get long enough to the point they break signtool.exe in the SDK ( APPX1204 file not found errors).
+              Trim some of the extraneous common path to a more managable one.
+         -->
+        <OutDir>$(OutDir.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</OutDir>        
+        <IntDir>$(IntDir.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</IntDir>
+        <BaseIntermediateOutputPath>$(BaseIntermediateOutputPath.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</BaseIntermediateOutputPath>
+        <IntermediateOutputPath>$(IntermediateOutputPath.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</IntermediateOutputPath>
+    </PropertyGroup>
 </Project>

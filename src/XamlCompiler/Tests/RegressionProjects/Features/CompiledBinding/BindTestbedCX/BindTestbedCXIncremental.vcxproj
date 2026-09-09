@@ -38,10 +38,6 @@
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
     <EnableDotNetNativeCompatibleProfile>true</EnableDotNetNativeCompatibleProfile>
     <AppxOSMinVersion>6.3.0</AppxOSMinVersion>
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
     <XamlCodeGenerationControlFlags>IncrementalTypeInfoCodeGen</XamlCodeGenerationControlFlags>
     <SuppressXamlWarnings>1004;1503</SuppressXamlWarnings>
   </PropertyGroup>
@@ -260,7 +256,7 @@
       <DependentUpon>INotifyDataErrorInfoTests.xaml</DependentUpon>
     </ClInclude>
     <ClInclude Include="NullableTests.xaml.h">
-        <DependentUpon>NullableTests.xaml</DependentUpon>
+      <DependentUpon>NullableTests.xaml</DependentUpon>
     </ClInclude>
     <ClInclude Include="ListAndTemplateTests.xaml.h">
       <DependentUpon>ListAndTemplateTests.xaml</DependentUpon>
@@ -320,7 +316,7 @@
     <Page Include="FunctionTests.xaml" />
     <Page Include="INotifyDataErrorInfoTests.xaml" />
     <Page Include="NullableTests.xaml">
-        <SubType>Designer</SubType>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="ListAndTemplateTests.xaml" />
     <Page Include="LonelyStaticBinding.xaml" />
@@ -384,7 +380,7 @@
       <DependentUpon>INotifyDataErrorInfoTests.xaml</DependentUpon>
     </ClCompile>
     <ClCompile Include="NullableTests.xaml.cpp">
-        <DependentUpon>NullableTests.xaml</DependentUpon>
+      <DependentUpon>NullableTests.xaml</DependentUpon>
     </ClCompile>
     <ClCompile Include="ListAndTemplateTests.xaml.cpp">
       <DependentUpon>ListAndTemplateTests.xaml</DependentUpon>
@@ -437,9 +433,6 @@
   <ItemGroup>
     <ProjectReference Include="..\BindTestbedCXModel\BindTestbedCXModel.vcxproj">
       <Project>{6eb67720-b6ed-486b-9bed-98a4c3696cec}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\BindTestbedModel\BindTestbedModel.csproj">
-      <Project>{0748b16e-2455-494b-9d33-0231960ff58a}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,36 +1,37 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
  Licensed under the MIT License. -->
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{F292FA71-2B98-4CCF-9F2E-5F21936D3715}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <OutputPath>$(OutputPath)\vsproject\xamlcompiler\test</OutputPath>
-    <UseVSVersion>true</UseVSVersion>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Win8Xaml.CompilerProxies</RootNamespace>
     <AssemblyName>Win8Xaml.CompilerProxies</AssemblyName>
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup>
-    <Prefer32Bit>false</Prefer32Bit>
-    <OutputPath>..\UnitTests\UnitTestingBin\</OutputPath>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
     <OutputPath>..\UnitTests\UnitTestingBin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
     <OutputPath>..\UnitTests\UnitTestingBin\</OutputPath>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -90,5 +91,28 @@
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
+  <PropertyGroup>
+    <BuildKnownVersionsSource>$(IntermediateOutputPath)BuildKnownVersions.g.cs</BuildKnownVersionsSource>
+  </PropertyGroup>
+  <Target Name="GenerateBuildKnownVersions" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <_BuildKnownVersionsLine Include="// &lt;auto-generated /&gt;" />
+      <_BuildKnownVersionsLine Include="namespace Win8Xaml.CompilerProxies" />
+      <_BuildKnownVersionsLine Include="{" />
+      <_BuildKnownVersionsLine Include="    internal static class BuildKnownVersions" />
+      <_BuildKnownVersionsLine Include="    {" />
+      <_BuildKnownVersionsLine Include="        internal const string WindowsSdkTargetPlatformVersion = &quot;$(WindowsTargetPlatformVersion)&quot;%3B" />
+      <_BuildKnownVersionsLine Include="    }" />
+      <_BuildKnownVersionsLine Include="}" />
+    </ItemGroup>
+    <WriteLinesToFile
+      File="$(BuildKnownVersionsSource)"
+      Lines="@(_BuildKnownVersionsLine)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(BuildKnownVersionsSource)" />
+    </ItemGroup>
+  </Target>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
