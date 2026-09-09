@@ -4,9 +4,11 @@
 #include "precomp.h"
 #include "LoadLibraryAbs.h"
 
-// Temporary compatibility aliases for dependencies built with /Zc:wchar_t-.
-// This repo uses /Zc:wchar_t, so legacy unsigned-short callers need to resolve
-// the native wchar_t GetModuleHandleExWAbs symbol.
+// Temporary wchar_t mangling compatibility shim for microsoft.internal.winuidetails NuGet package.
+// The NuGet was compiled with /Zc:wchar_t- (wchar_t = unsigned short).
+// This repo now uses /Zc:wchar_t (wchar_t = native type).
+// These aliases let the NuGet's InputHelpers.obj resolve GetModuleHandleExWAbs.
+// Remove once the NuGet is rebuilt with native wchar_t.
 #  if defined(_M_X64) || defined(_M_ARM64EC) || defined(_M_ARM64)
 #    pragma comment(linker, "/alternatename:?GetModuleHandleExWAbs@@YAHKPEBGPEAPEAUHINSTANCE__@@@Z=?GetModuleHandleExWAbs@@YAHKPEB_WPEAPEAUHINSTANCE__@@@Z")
 #

@@ -4,9 +4,11 @@
 #include "precomp.h"
 #include "TimeMgr.h"
 
-// Temporary compatibility aliases for dependencies built with /Zc:wchar_t-.
-// This repo uses /Zc:wchar_t, so native wchar_t callers need to resolve the
-// legacy unsigned-short ConnectAnimation symbols.
+// Temporary wchar_t mangling compatibility shim for microsoft.internal.winuidetails NuGet package.
+// The NuGet was compiled with /Zc:wchar_t- (wchar_t = unsigned short).
+// This repo now uses /Zc:wchar_t (wchar_t = native type).
+// These aliases let our code resolve ConnectAnimation from the NuGet's Internal2.lib.
+// Remove once the NuGet is rebuilt with native wchar_t.
 #  if defined(_M_X64) || defined(_M_ARM64EC) || defined(_M_ARM64)
 #    pragma comment(linker, "/alternatename:?ConnectAnimation@CompositionAnimationHelper@@QEAAJPEAUICompositionObject@Composition@UI@Microsoft@ABI@@PEB_WPEAUICompositionAnimation@3456@PEAPEAUICompositionAnimationController@@@Z=?ConnectAnimation@CompositionAnimationHelper@@QEAAJPEAUICompositionObject@Composition@UI@Microsoft@ABI@@PEBGPEAUICompositionAnimation@3456@PEAPEAUICompositionAnimationController@@@Z")
 #
