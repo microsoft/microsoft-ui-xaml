@@ -208,6 +208,19 @@
     <LiftedIXPIncludePaths>$(LiftedIXPIncludePath);$(WinUIDetailsIncludePath)\LiftedIXP;$(WinUIDetailsIncludePath)\Misc;$(FrameworkUdkPackagePath)\include\;$(LiftedIXPGeneratedIncludePath)</LiftedIXPIncludePaths>
   </PropertyGroup>
 
+  <!-- Subtrial A system Composition and DispatcherQueue inputs -->
+  <PropertyGroup>
+    <SystemComponentOsRoot Condition="'$(SystemComponentOsRoot)' == ''">C:\os</SystemComponentOsRoot>
+    <SystemComponentPublicRoot>$(SystemComponentOsRoot)\public\amd64fre</SystemComponentPublicRoot>
+    <SystemCompositionInternalIncludePath>$(SystemComponentPublicRoot)\onecoreuap\internal\sdk\inc</SystemCompositionInternalIncludePath>
+    <SystemCompositionPrivateIncludePath>$(SystemComponentPublicRoot)\onecoreuap\private\sdk\inc</SystemCompositionPrivateIncludePath>
+    <SystemCompositionMetadataPath>$(SystemComponentPublicRoot)\onecoreuap\internal\interimmetadata</SystemCompositionMetadataPath>
+    <SystemDispatcherQueueIncludePath>$(SystemComponentPublicRoot)\onecore\internal\sdk\inc</SystemDispatcherQueueIncludePath>
+    <SystemDispatcherQueueMetadataPath>$(SystemComponentPublicRoot)\onecore\internal\interimmetadata</SystemDispatcherQueueMetadataPath>
+    <SystemCoreMessagingLibPath>$(SystemComponentPublicRoot)\onecore\external\sdk\lib</SystemCoreMessagingLibPath>
+    <SystemComponentIncludePaths>$(SystemCompositionPrivateIncludePath);$(SystemCompositionInternalIncludePath);$(SystemDispatcherQueueIncludePath)</SystemComponentIncludePaths>
+  </PropertyGroup>
+
   <!-- Lifted MRT paths -->
   <PropertyGroup>
     <LiftedMRTPackagePath>$(NugetPackageDirectory)\$(ProjectReunionFoundationTransportPackageName)\$(FoundationTransportPackageVersion)</LiftedMRTPackagePath>

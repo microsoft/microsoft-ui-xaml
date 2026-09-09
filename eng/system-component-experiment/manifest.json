@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "activeSubtrial": "A",
-  "activeStage": "A0",
-  "activeCheckpoint": "system-inputs-and-runtime-topology",
+  "activeStage": "A1",
+  "activeCheckpoint": "system-build-paths-wired",
   "architecture": "x64",
   "branchNativeImplementation": true,
   "repositories": {
@@ -82,7 +82,7 @@
     "systemIdlBuild": "blocked-by-vfs-createprocess-payload-mismatch-0x95e"
   },
   "latestCheckpoint": {
-    "winuiCommit": "f4ac0e1be3288e85ee90277b9b6febd6349168ad",
+    "winuiCommit": "895a3d792a34e4050f3ab5e1b54ff87e568ac714",
     "winuiGalleryCommit": "199f63ec57ee8457fa9745b8a0d1e951111331fc",
     "winuiBuild": "passed-product-package-amd64",
     "csharpScenarioApp": "passed-debug-x64-package-build-and-launch",

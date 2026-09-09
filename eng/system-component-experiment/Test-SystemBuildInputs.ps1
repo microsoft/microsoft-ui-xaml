@@ -8,6 +8,26 @@ $ErrorActionPreference = "Stop"
 $configuration = Get-Content (
     Join-Path $PSScriptRoot "system-build-inputs.json"
 ) -Raw | ConvertFrom-Json
+$folderPaths = Get-Content (
+    Join-Path $PSScriptRoot "..\folderpaths.props"
+) -Raw
+
+foreach ($property in @(
+    "SystemComponentOsRoot",
+    "SystemCompositionInternalIncludePath",
+    "SystemCompositionPrivateIncludePath",
+    "SystemCompositionMetadataPath",
+    "SystemDispatcherQueueIncludePath",
+    "SystemDispatcherQueueMetadataPath",
+    "SystemCoreMessagingLibPath"
+))
+{
+    if (-not $folderPaths.Contains("<$property>", [StringComparison]::Ordinal) -and
+        -not $folderPaths.Contains("<$property ", [StringComparison]::Ordinal))
+    {
+        throw "The build path property '$property' is not wired in eng\folderpaths.props."
+    }
+}
 
 if (-not $LatestOsRoot)
 {
