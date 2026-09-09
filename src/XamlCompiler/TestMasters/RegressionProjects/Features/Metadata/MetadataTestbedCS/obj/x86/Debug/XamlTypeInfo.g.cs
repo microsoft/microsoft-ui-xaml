@@ -283,9 +283,6 @@ namespace MetadataTestbedCS.MetadataTestbedCS_XamlTypeInfo
 
         private object Activate_0_MainPage() { return new global::MetadataTestbedCS.MainPage(); }
         private object Activate_4_TreeViewNode() { return new global::Microsoft.UI.Xaml.Controls.TreeViewNode(); }
-        private void StaticInitializer_0_MainPage() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::MetadataTestbedCS.MainPage).TypeHandle);
-        private void StaticInitializer_4_TreeViewNode() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode).TypeHandle);
-        private void StaticInitializer_6_IList() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>).TypeHandle);
         private void VectorAdd_6_IList(object instance, object item)
         {
             var collection = (global::System.Collections.Generic.ICollection<global::Microsoft.UI.Xaml.Controls.TreeViewNode>)instance;
@@ -306,7 +303,6 @@ namespace MetadataTestbedCS.MetadataTestbedCS_XamlTypeInfo
             case 0:   //  MetadataTestbedCS.MainPage
                 userType = new global::MetadataTestbedCS.MetadataTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
                 userType.Activator = Activate_0_MainPage;
-                userType.StaticInitializer = StaticInitializer_0_MainPage;
                 userType.AddMemberName("TestProperty");
                 userType.SetIsLocalType();
                 xamlType = userType;
@@ -327,7 +323,6 @@ namespace MetadataTestbedCS.MetadataTestbedCS_XamlTypeInfo
             case 4:   //  Microsoft.UI.Xaml.Controls.TreeViewNode
                 userType = new global::MetadataTestbedCS.MetadataTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
                 userType.Activator = Activate_4_TreeViewNode;
-                userType.StaticInitializer = StaticInitializer_4_TreeViewNode;
                 userType.AddMemberName("Children");
                 userType.AddMemberName("Content");
                 userType.AddMemberName("Depth");
@@ -345,7 +340,6 @@ namespace MetadataTestbedCS.MetadataTestbedCS_XamlTypeInfo
 
             case 6:   //  System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
                 userType = new global::MetadataTestbedCS.MetadataTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, null);
-                userType.StaticInitializer = StaticInitializer_6_IList;
                 userType.CollectionAdd = VectorAdd_6_IList;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
@@ -372,6 +366,8 @@ namespace MetadataTestbedCS.MetadataTestbedCS_XamlTypeInfo
                     var otherProviders = new global::System.Collections.Generic.List<global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider>();
                     global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider provider;
                     provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
+                    otherProviders.Add(provider); 
+                    provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsChartsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
                     _otherProviders = otherProviders;
                 }
@@ -676,7 +672,7 @@ namespace MetadataTestbedCS.MetadataTestbedCS_XamlTypeInfo
 
         override public void RunInitializer() 
         {
-            StaticInitializer();
+            StaticInitializer?.Invoke();
         }
 
         override public object CreateFromString(string input)

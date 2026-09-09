@@ -75,6 +75,9 @@ void* __stdcall winrt_get_activation_factory([[maybe_unused]] std::wstring_view 
 int32_t __stdcall WINRT_CanUnloadNow() noexcept
 {
 #ifdef _WRL_MODULE_H_
+#ifdef _MSC_VER
+#pragma warning(suppress: 4324) // structure was padded due to alignment specifier
+#endif
     if (!::Microsoft::WRL::Module<::Microsoft::WRL::InProc>::GetModule().Terminate())
     {
         return 1;
@@ -95,6 +98,7 @@ int32_t __stdcall WINRT_GetActivationFactory(void* classId, void** factory) noex
     }
 
 #ifdef _WRL_MODULE_H_
+#pragma warning(suppress: 4324) // structure was padded due to alignment specifier
     return ::Microsoft::WRL::Module<::Microsoft::WRL::InProc>::GetModule().GetActivationFactory(static_cast<HSTRING>(classId), reinterpret_cast<::IActivationFactory**>(factory));
 #else
     return winrt::hresult_class_not_available(name).to_abi();

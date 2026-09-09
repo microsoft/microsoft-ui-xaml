@@ -311,18 +311,7 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
         private object Activate_14_TextBlock2() { return new global::ConditionalControls.TextBlock2(); }
         private object Activate_15_TextBlock3() { return new global::ConditionalControls.TextBlock3(); }
         private object Activate_16_TreeViewNode() { return new global::Microsoft.UI.Xaml.Controls.TreeViewNode(); }
-        private void StaticInitializer_0_Button1() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.Button1).TypeHandle);
-        private void StaticInitializer_3_TextBlock1() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.TextBlock1).TypeHandle);
-        private void StaticInitializer_4_BindTests() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Conditionals.BindTests).TypeHandle);
-        private void StaticInitializer_5_NameEventsLoad() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Conditionals.NameEventsLoad).TypeHandle);
-        private void StaticInitializer_6_MainPage() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Conditionals.MainPage).TypeHandle);
-        private void StaticInitializer_8_Button2() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.Button2).TypeHandle);
-        private void StaticInitializer_9_Button3() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.Button3).TypeHandle);
         private void StaticInitializer_10_AttachedProperties() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.AttachedProperties).TypeHandle);
-        private void StaticInitializer_14_TextBlock2() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.TextBlock2).TypeHandle);
-        private void StaticInitializer_15_TextBlock3() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.TextBlock3).TypeHandle);
-        private void StaticInitializer_16_TreeViewNode() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode).TypeHandle);
-        private void StaticInitializer_17_IList() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>).TypeHandle);
         private void VectorAdd_17_IList(object instance, object item)
         {
             var collection = (global::System.Collections.Generic.ICollection<global::Microsoft.UI.Xaml.Controls.TreeViewNode>)instance;
@@ -343,7 +332,6 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             case 0:   //  ConditionalControls.Button1
                 userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_0_Button1;
-                userType.StaticInitializer = StaticInitializer_0_Button1;
                 userType.AddMemberName("Caption");
                 userType.AddMemberName("Text");
                 userType.AddMemberName("V1Property");
@@ -363,7 +351,6 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             case 3:   //  ConditionalControls.TextBlock1
                 userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_3_TextBlock1;
-                userType.StaticInitializer = StaticInitializer_3_TextBlock1;
                 userType.AddMemberName("Text");
                 xamlType = userType;
                 break;
@@ -371,7 +358,6 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             case 4:   //  Conditionals.BindTests
                 userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_4_BindTests;
-                userType.StaticInitializer = StaticInitializer_4_BindTests;
                 userType.AddMemberName("V2Property");
                 userType.AddMemberName("V3Property");
                 userType.SetIsLocalType();
@@ -381,7 +367,6 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             case 5:   //  Conditionals.NameEventsLoad
                 userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_5_NameEventsLoad;
-                userType.StaticInitializer = StaticInitializer_5_NameEventsLoad;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
@@ -389,7 +374,6 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             case 6:   //  Conditionals.MainPage
                 userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
                 userType.Activator = Activate_6_MainPage;
-                userType.StaticInitializer = StaticInitializer_6_MainPage;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
@@ -401,7 +385,6 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             case 8:   //  ConditionalControls.Button2
                 userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_8_Button2;
-                userType.StaticInitializer = StaticInitializer_8_Button2;
                 userType.AddMemberName("Text");
                 userType.AddMemberName("Caption");
                 userType.AddMemberName("V1Property");
@@ -413,7 +396,6 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             case 9:   //  ConditionalControls.Button3
                 userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_9_Button3;
-                userType.StaticInitializer = StaticInitializer_9_Button3;
                 userType.AddMemberName("Caption");
                 userType.AddMemberName("Text");
                 userType.AddMemberName("V1Property");
@@ -444,7 +426,6 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             case 14:   //  ConditionalControls.TextBlock2
                 userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_14_TextBlock2;
-                userType.StaticInitializer = StaticInitializer_14_TextBlock2;
                 userType.AddMemberName("Text");
                 xamlType = userType;
                 break;
@@ -452,7 +433,6 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             case 15:   //  ConditionalControls.TextBlock3
                 userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_15_TextBlock3;
-                userType.StaticInitializer = StaticInitializer_15_TextBlock3;
                 userType.AddMemberName("Text");
                 xamlType = userType;
                 break;
@@ -460,7 +440,6 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             case 16:   //  Microsoft.UI.Xaml.Controls.TreeViewNode
                 userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
                 userType.Activator = Activate_16_TreeViewNode;
-                userType.StaticInitializer = StaticInitializer_16_TreeViewNode;
                 userType.AddMemberName("Children");
                 userType.AddMemberName("Content");
                 userType.AddMemberName("Depth");
@@ -474,7 +453,6 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
 
             case 17:   //  System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
                 userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, null);
-                userType.StaticInitializer = StaticInitializer_17_IList;
                 userType.CollectionAdd = VectorAdd_17_IList;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
@@ -499,6 +477,8 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
                     provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
                     provider = new global::ConditionalControls.ConditionalsModel_XamlTypeInfo.XamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
+                    otherProviders.Add(provider); 
+                    provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsChartsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
                     _otherProviders = otherProviders;
                 }
@@ -1128,7 +1108,7 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
 
         override public void RunInitializer() 
         {
-            StaticInitializer();
+            StaticInitializer?.Invoke();
         }
 
         override public object CreateFromString(string input)

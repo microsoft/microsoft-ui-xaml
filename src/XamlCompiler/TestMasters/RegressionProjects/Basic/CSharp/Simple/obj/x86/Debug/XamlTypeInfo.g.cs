@@ -296,12 +296,6 @@ namespace Simple.SimpleCS_XamlTypeInfo
         private object Activate_4_PropertyBag() { return new global::Simple.PropertyBag(); }
         private object Activate_10_MainPage() { return new global::Simple.MainPage(); }
         private object Activate_11_TreeViewNode() { return new global::Microsoft.UI.Xaml.Controls.TreeViewNode(); }
-        private void StaticInitializer_0_BlankPage() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Simple.BlankPage).TypeHandle);
-        private void StaticInitializer_3_FieldModifierTests() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Simple.FieldModifierTests).TypeHandle);
-        private void StaticInitializer_4_PropertyBag() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Simple.PropertyBag).TypeHandle);
-        private void StaticInitializer_10_MainPage() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Simple.MainPage).TypeHandle);
-        private void StaticInitializer_11_TreeViewNode() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode).TypeHandle);
-        private void StaticInitializer_13_IList() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>).TypeHandle);
         private void VectorAdd_13_IList(object instance, object item)
         {
             var collection = (global::System.Collections.Generic.ICollection<global::Microsoft.UI.Xaml.Controls.TreeViewNode>)instance;
@@ -322,7 +316,6 @@ namespace Simple.SimpleCS_XamlTypeInfo
             case 0:   //  Simple.BlankPage
                 userType = new global::Simple.SimpleCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
                 userType.Activator = Activate_0_BlankPage;
-                userType.StaticInitializer = StaticInitializer_0_BlankPage;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
@@ -338,7 +331,6 @@ namespace Simple.SimpleCS_XamlTypeInfo
             case 3:   //  Simple.FieldModifierTests
                 userType = new global::Simple.SimpleCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
                 userType.Activator = Activate_3_FieldModifierTests;
-                userType.StaticInitializer = StaticInitializer_3_FieldModifierTests;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
@@ -346,7 +338,6 @@ namespace Simple.SimpleCS_XamlTypeInfo
             case 4:   //  Simple.PropertyBag
                 userType = new global::Simple.SimpleCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
                 userType.Activator = Activate_4_PropertyBag;
-                userType.StaticInitializer = StaticInitializer_4_PropertyBag;
                 userType.AddMemberName("StringProp");
                 userType.AddMemberName("IntProp");
                 userType.AddMemberName("DoubleProp");
@@ -378,7 +369,6 @@ namespace Simple.SimpleCS_XamlTypeInfo
             case 10:   //  Simple.MainPage
                 userType = new global::Simple.SimpleCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
                 userType.Activator = Activate_10_MainPage;
-                userType.StaticInitializer = StaticInitializer_10_MainPage;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
@@ -386,7 +376,6 @@ namespace Simple.SimpleCS_XamlTypeInfo
             case 11:   //  Microsoft.UI.Xaml.Controls.TreeViewNode
                 userType = new global::Simple.SimpleCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
                 userType.Activator = Activate_11_TreeViewNode;
-                userType.StaticInitializer = StaticInitializer_11_TreeViewNode;
                 userType.AddMemberName("Children");
                 userType.AddMemberName("Content");
                 userType.AddMemberName("Depth");
@@ -404,7 +393,6 @@ namespace Simple.SimpleCS_XamlTypeInfo
 
             case 13:   //  System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
                 userType = new global::Simple.SimpleCS_XamlTypeInfo.XamlUserType(this, typeName, type, null);
-                userType.StaticInitializer = StaticInitializer_13_IList;
                 userType.CollectionAdd = VectorAdd_13_IList;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
@@ -423,6 +411,8 @@ namespace Simple.SimpleCS_XamlTypeInfo
                     var otherProviders = new global::System.Collections.Generic.List<global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider>();
                     global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider provider;
                     provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
+                    otherProviders.Add(provider); 
+                    provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsChartsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
                     _otherProviders = otherProviders;
                 }
@@ -780,7 +770,7 @@ namespace Simple.SimpleCS_XamlTypeInfo
 
         override public void RunInitializer() 
         {
-            StaticInitializer();
+            StaticInitializer?.Invoke();
         }
 
         override public object CreateFromString(string input)
