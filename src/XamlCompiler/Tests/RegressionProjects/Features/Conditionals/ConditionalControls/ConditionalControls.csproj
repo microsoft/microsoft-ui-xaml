@@ -4,5 +4,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
   <Import Project="$(CommonFilesPath)RuntimeComponentPreamble.csproj" />
-  
+
+  <!--
+    This project builds to assembly identity 'ConditionalControls' (taken from the project name).
+    The sibling project Features\Conditionals\ConditionalsModel overrides its AssemblyName to that
+    *same* identity - see the note there for why. Nothing references both, so nothing mis-resolves,
+    but two files named ConditionalControls.winmd exist under BuildOutput and it is easy to inspect
+    the wrong one.
+
+    Nothing has a ProjectReference to this project, so a reference search alone makes it look unused.
+    It is not: it is a codegen baseline target. See Tests\UnitTests\CodegenTargets.txt and
+    CodegenTests.Codegen_ConditionalControls, with masters under
+    TestMasters\RegressionProjects\Features\Conditionals\ConditionalControls. Its XamlTypeInfo.g.cs
+    baseline differs from ConditionalsModel's, so the two cover different generated output.
+  -->
+
 </Project>
