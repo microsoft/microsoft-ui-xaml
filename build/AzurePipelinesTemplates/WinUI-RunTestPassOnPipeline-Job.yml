@@ -133,7 +133,7 @@ jobs:
 
           $packagesConfigPath = "$(Build.SourcesDirectory)\build\packages.webview2.config"
           [xml]$packagesConfig = Get-Content -LiteralPath $packagesConfigPath -Raw
-          $runtimePackages = @($packagesConfig.packages.package | Where-Object { $_.id -eq 'Microsoft.UI.Dependencies.WebView2.EvergreenStandalone' })
+          $runtimePackages = @($packagesConfig.packages.package | Where-Object { $_.id -eq 'Microsoft.UI.DCPP.Dependencies.Edge' })
           if ($runtimePackages.Count -ne 1) {
             throw "Expected exactly one Evergreen WebView2 Standalone package in '$packagesConfigPath', found $($runtimePackages.Count)."
           }

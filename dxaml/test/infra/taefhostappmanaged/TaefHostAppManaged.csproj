@@ -263,13 +263,13 @@
       </BinplaceItem>
     </ItemGroup>
     <!-- This package is restored only in pipelines. Read its version from the restore config to keep one version reference. -->
-    <XmlPeek XmlInputPath="$(ProjectRoot)build\packages.webview2.config" Query="/packages/package[@id='Microsoft.UI.Dependencies.WebView2.EvergreenStandalone']/@version">
+    <XmlPeek XmlInputPath="$(ProjectRoot)build\packages.webview2.config" Query="/packages/package[@id='Microsoft.UI.DCPP.Dependencies.Edge']/@version">
       <Output TaskParameter="Result" PropertyName="WebView2EvergreenStandalonePackageVersion" />
     </XmlPeek>
     <ItemGroup Condition="'$(arch)'=='x86' or '$(arch)'=='amd64'">
       <BinplaceItem
-          Include="$(NugetPackageDirectory)\Microsoft.UI.Dependencies.WebView2.EvergreenStandalone.$(WebView2EvergreenStandalonePackageVersion)\tools\x64\MicrosoftEdgeWebView2RuntimeInstallerX64.exe"
-          Condition="Exists('$(NugetPackageDirectory)\Microsoft.UI.Dependencies.WebView2.EvergreenStandalone.$(WebView2EvergreenStandalonePackageVersion)\tools\x64\MicrosoftEdgeWebView2RuntimeInstallerX64.exe')">
+          Include="$(NugetPackageDirectory)\Microsoft.UI.DCPP.Dependencies.Edge.$(WebView2EvergreenStandalonePackageVersion)\tools\x64\MicrosoftEdgeWebView2RuntimeInstallerX64.exe"
+          Condition="Exists('$(NugetPackageDirectory)\Microsoft.UI.DCPP.Dependencies.Edge.$(WebView2EvergreenStandalonePackageVersion)\tools\x64\MicrosoftEdgeWebView2RuntimeInstallerX64.exe')">
         <Destination>$(TestDependenciesResourcesDestinationPath)\tools\x64</Destination>
       </BinplaceItem>
     </ItemGroup>
