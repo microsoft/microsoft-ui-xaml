@@ -1,0 +1,48 @@
+<Window
+    x:Class="SystemComponentExperiment.Cpp.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SystemComponentExperiment.Cpp"
+    Title="System Component Experiment - C++/WinRT">
+    <Grid ColumnSpacing="16" Padding="16">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="320" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Spacing="8">
+            <TextBlock
+                Text="System component scenarios"
+                Style="{StaticResource TitleTextBlockStyle}"
+                AutomationProperties.HeadingLevel="Level1" />
+            <TextBlock Text="Subtrial A - baseline harness" />
+            <ListView
+                x:Name="ScenarioList"
+                SelectionChanged="ScenarioList_SelectionChanged"
+                AutomationProperties.Name="Scenario index">
+                <ListViewItem Content="Environment and module inventory" Tag="environment.startup" />
+                <ListViewItem Content="Compositor and visual creation" Tag="composition.basics" />
+                <ListViewItem Content="DispatcherQueue enqueue" Tag="dispatching.basics" />
+            </ListView>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Padding="16" Spacing="12">
+            <TextBlock
+                x:Name="ScenarioTitle"
+                Style="{StaticResource TitleTextBlockStyle}"
+                AutomationProperties.HeadingLevel="Level1" />
+            <Button
+                Content="Run scenario"
+                Click="RunScenario_Click"
+                AutomationProperties.Name="Run selected scenario" />
+            <Border x:Name="VisualHost" Width="160" Height="160" Background="Gray" />
+            <TextBox
+                x:Name="ResultText"
+                IsReadOnly="True"
+                AcceptsReturn="True"
+                TextWrapping="Wrap"
+                MinHeight="240"
+                AutomationProperties.Name="Scenario result" />
+        </StackPanel>
+    </Grid>
+</Window>

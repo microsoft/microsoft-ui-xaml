@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "activeSubtrial": "A",
   "activeStage": "S1",
-  "activeCheckpoint": "csharp-scenario-app",
+  "activeCheckpoint": "paired-scenario-apps",
   "architecture": "x64",
   "branchNativeImplementation": true,
   "repositories": {
@@ -70,16 +70,16 @@
   "validation": {
     "scenarioResultSchema": "result.schema.json",
     "csharpScenarioApp": "Samples\\SystemComponentExperiment\\SystemComponentExperiment.CSharp",
-    "cppWinrtScenarioApp": null,
+    "cppWinrtScenarioApp": "Samples\\SystemComponentExperiment\\SystemComponentExperiment.Cpp",
     "winuiGalleryBranch": "experiment/delift-a-wuc"
   },
   "latestCheckpoint": {
-    "winuiCommit": "5d43319c71ea35bf634dd6bbfc5055502e79238d",
+    "winuiCommit": "74570cdf585e39ae8f6149ada13bfd577918c937",
     "winuiGalleryCommit": null,
     "winuiBuild": "passed-mux-amd64chk",
     "csharpScenarioApp": "passed-debug-x64-build",
-    "cppWinrtScenarioApp": "not-created",
+    "cppWinrtScenarioApp": "passed-debug-x64-build",
     "winuiGallery": "not-run",
-    "notes": "Inventory and source-IDL comparison tooling passed. The packaged C# scenario app builds with baseline startup, Composition, and DispatcherQueue pages."
+    "notes": "Inventory and source-IDL comparison tooling passed. Both packaged scenario apps build with baseline startup, Composition, and DispatcherQueue scenarios."
   }
 }
