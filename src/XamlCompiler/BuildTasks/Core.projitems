@@ -136,7 +136,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\ReflectionAdds\ITypeSpec.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\ReflectionAdds\ITypeUniverse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\ReflectionAdds\ExtraAPIs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\ReflectionAdds\DebugHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\ReflectionAdds\SimpleUniverse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\ReflectionAdds\Tokens.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\ReflectionAdds\TypeNameParser.cs" />
