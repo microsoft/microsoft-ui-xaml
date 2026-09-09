@@ -33,13 +33,13 @@ HRESULT DirectUI::WindowGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ 
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IWindow*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop)))
-    {
-        *ppObject = static_cast<ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop*>(this);
-    }
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IWindowPrivate)))
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IWindowPrivate*>(this);
+    }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop)))
+    {
+        *ppObject = static_cast<ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop*>(this);
     }
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IWindow2)))
     {
@@ -81,7 +81,7 @@ IFACEMETHODIMP DirectUI::WindowGenerated::get_Bounds(_Out_ ABI::Windows::Foundat
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::WindowGenerated::get_Compositor(_Outptr_result_maybenull_ ABI::Microsoft::UI::Composition::ICompositor** ppValue)
+IFACEMETHODIMP DirectUI::WindowGenerated::get_Compositor(_Outptr_result_maybenull_ ABI::Windows::UI::Composition::ICompositor** ppValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
@@ -131,7 +131,7 @@ IFACEMETHODIMP DirectUI::WindowGenerated::get_Dispatcher(_Outptr_result_maybenul
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::WindowGenerated::get_DispatcherQueue(_Outptr_result_maybenull_ ABI::Microsoft::UI::Dispatching::IDispatcherQueue** ppValue)
+IFACEMETHODIMP DirectUI::WindowGenerated::get_DispatcherQueue(_Outptr_result_maybenull_ ABI::Windows::System::IDispatcherQueue** ppValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);

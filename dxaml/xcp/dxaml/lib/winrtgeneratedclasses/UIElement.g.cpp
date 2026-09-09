@@ -60,21 +60,21 @@ HRESULT DirectUI::UIElementGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outpt
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IUIElementOverrides*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Composition::IAnimationObject)))
-    {
-        *ppObject = static_cast<ABI::Microsoft::UI::Composition::IAnimationObject*>(this);
-    }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Composition::IVisualElement)))
-    {
-        *ppObject = static_cast<ABI::Microsoft::UI::Composition::IVisualElement*>(this);
-    }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Composition::IVisualElement2)))
-    {
-        *ppObject = static_cast<ABI::Microsoft::UI::Composition::IVisualElement2*>(this);
-    }
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IUIElementPrivate)))
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IUIElementPrivate*>(this);
+    }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::UI::Composition::IAnimationObject)))
+    {
+        *ppObject = static_cast<ABI::Windows::UI::Composition::IAnimationObject*>(this);
+    }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::UI::Composition::IVisualElement)))
+    {
+        *ppObject = static_cast<ABI::Windows::UI::Composition::IVisualElement*>(this);
+    }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::UI::Composition::IVisualElement2)))
+    {
+        *ppObject = static_cast<ABI::Windows::UI::Composition::IVisualElement2*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_Xaml2018)
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IUIElementFeature_Xaml2018)) && Feature_Xaml2018::IsEnabled())
@@ -4644,7 +4644,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+IFACEMETHODIMP DirectUI::UIElementGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -4664,7 +4664,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DirectUI::UIElementGenerated::PopulatePropertyInfoOverrideProtected(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::PopulatePropertyInfoOverrideProtected(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::IUIElementOverrides* pVirtuals = NULL;
@@ -4811,7 +4811,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::StartAnimation(_In_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation)
+IFACEMETHODIMP DirectUI::UIElementGenerated::StartAnimation(_In_ ABI::Windows::UI::Composition::ICompositionAnimationBase* pAnimation)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -4885,7 +4885,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::StopAnimation(_In_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation)
+IFACEMETHODIMP DirectUI::UIElementGenerated::StopAnimation(_In_ ABI::Windows::UI::Composition::ICompositionAnimationBase* pAnimation)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

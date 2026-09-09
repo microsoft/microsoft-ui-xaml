@@ -396,9 +396,9 @@ namespace Microsoft.UI.Xaml.Controls
         }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        public Microsoft.UI.Composition.CompositionBrush GetAlphaMask()
+        public Windows.UI.Composition.CompositionBrush GetAlphaMask()
         {
-            return default(Microsoft.UI.Composition.CompositionBrush);
+            return default(Windows.UI.Composition.CompositionBrush);
         }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]

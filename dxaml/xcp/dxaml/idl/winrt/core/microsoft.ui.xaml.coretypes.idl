@@ -18,15 +18,15 @@
 import "oaidl.idl";
 import "eventtoken.idl";
 import "inspectable.idl";
-import "microsoft.ui.composition.idl";
 import "microsoft.ui.composition.SystemBackdrops.idl";
 import "microsoft.ui.content.idl";
-import "microsoft.UI.Dispatching.idl";
 import "microsoft.ui.input.idl";
 import "Microsoft.Windows.ApplicationModel.Resources.idl";
 import "windows.applicationmodel.core.idl";
 import "windows.foundation.idl";
 import "windows.foundation.numerics.idl";
+import "windows.system.idl";
+import "windows.ui.composition.idl";
 import "windows.ui.idl";
 
 import "windows.applicationModel.datatransfer.dragdrop.idl";
@@ -1660,7 +1660,7 @@ namespace Microsoft.UI.Xaml
         void UnregisterPropertyChangedCallback(Microsoft.UI.Xaml.DependencyProperty dp, Int64 token);
         [deprecated("The Dispatcher property is deprecated, Use DispatcherQueue and TryEnqueue for UI thread work. For more info, visit https://aka.ms/DispatcherQueue.Property", deprecate, Microsoft.UI.Xaml.WinUIContract, 1)]
         Windows.UI.Core.CoreDispatcher Dispatcher{ get; };
-        Microsoft.UI.Dispatching.DispatcherQueue DispatcherQueue{ get; };
+        Windows.System.DispatcherQueue DispatcherQueue{ get; };
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
@@ -2119,11 +2119,11 @@ namespace Microsoft.UI.Xaml
     unsealed runtimeclass UIElement
         : Microsoft.UI.Xaml.DependencyObject
         , [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-        Microsoft.UI.Composition.IAnimationObject
+        Windows.UI.Composition.IAnimationObject
         , [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-        Microsoft.UI.Composition.IVisualElement
+        Windows.UI.Composition.IVisualElement
         , [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-        Microsoft.UI.Composition.IVisualElement2
+        Windows.UI.Composition.IVisualElement2
     {
         Windows.Foundation.Size DesiredSize{ get; };
         Boolean AllowDrop;
@@ -2248,8 +2248,8 @@ namespace Microsoft.UI.Xaml
         [method_name("StartBringIntoViewWithOptions")] void StartBringIntoView(Microsoft.UI.Xaml.BringIntoViewOptions options);
         void TryInvokeKeyboardAccelerator(Microsoft.UI.Xaml.Input.ProcessKeyboardAcceleratorEventArgs args);
         Boolean Focus(Microsoft.UI.Xaml.FocusState value);
-        void StartAnimation(Microsoft.UI.Composition.ICompositionAnimationBase animation);
-        void StopAnimation(Microsoft.UI.Composition.ICompositionAnimationBase animation);
+        void StartAnimation(Windows.UI.Composition.ICompositionAnimationBase animation);
+        void StopAnimation(Windows.UI.Composition.ICompositionAnimationBase animation);
         static Microsoft.UI.Xaml.RoutedEvent KeyDownEvent{ get; };
         static Microsoft.UI.Xaml.RoutedEvent KeyUpEvent{ get; };
         static Microsoft.UI.Xaml.RoutedEvent PointerEnteredEvent{ get; };
@@ -2345,7 +2345,7 @@ namespace Microsoft.UI.Xaml
         overridable void OnKeyboardAcceleratorInvoked(Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args);
         overridable void OnProcessKeyboardAccelerators(Microsoft.UI.Xaml.Input.ProcessKeyboardAcceleratorEventArgs args);
         overridable void OnBringIntoViewRequested(Microsoft.UI.Xaml.BringIntoViewRequestedEventArgs e);
-        overridable void PopulatePropertyInfoOverride(String propertyName, Microsoft.UI.Composition.AnimationPropertyInfo animationPropertyInfo);
+        overridable void PopulatePropertyInfoOverride(String propertyName, Windows.UI.Composition.AnimationPropertyInfo animationPropertyInfo);
     
         [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
         [feature(Feature_Xaml2018)]
@@ -2680,7 +2680,7 @@ namespace Microsoft.UI.Xaml.Media
         static event Windows.Foundation.EventHandler<Object> Rendering;
         static event Windows.Foundation.EventHandler<Microsoft.UI.Xaml.Media.RenderedEventArgs> Rendered;
         static event Windows.Foundation.EventHandler<Object> SurfaceContentsLost;
-        static Microsoft.UI.Composition.Compositor GetCompositorForCurrentThread();
+        static Windows.UI.Composition.Compositor GetCompositorForCurrentThread();
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
@@ -2744,7 +2744,7 @@ namespace Microsoft.UI.Xaml.Media
     unsealed runtimeclass Brush
         : Microsoft.UI.Xaml.DependencyObject
         , [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-        Microsoft.UI.Composition.IAnimationObject
+        Windows.UI.Composition.IAnimationObject
     {
         [method_name("CreateInstance")] protected Brush();
         Double Opacity;
@@ -2753,14 +2753,14 @@ namespace Microsoft.UI.Xaml.Media
         static Microsoft.UI.Xaml.DependencyProperty OpacityProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty TransformProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty RelativeTransformProperty{ get; };
-        overridable void PopulatePropertyInfoOverride(String propertyName, Microsoft.UI.Composition.AnimationPropertyInfo animationPropertyInfo);
+        overridable void PopulatePropertyInfoOverride(String propertyName, Windows.UI.Composition.AnimationPropertyInfo animationPropertyInfo);
     
         [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
         [feature(Feature_XamlMotionSystemHoldbacks)]
         [interface_name("Microsoft.UI.Xaml.Media.IBrushFeature_XamlMotionSystemHoldbacks")]
         {
-            void StartAnimation(Microsoft.UI.Composition.ICompositionAnimationBase animation);
-            void StopAnimation(Microsoft.UI.Composition.ICompositionAnimationBase animation);
+            void StartAnimation(Windows.UI.Composition.ICompositionAnimationBase animation);
+            void StopAnimation(Windows.UI.Composition.ICompositionAnimationBase animation);
         }
     };
 
@@ -2848,10 +2848,10 @@ namespace Microsoft.UI.Xaml.Media
         : Microsoft.UI.Xaml.DependencyObject
     {
         [method_name("CreateInstance")] protected SystemBackdrop();
-        Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration GetDefaultSystemBackdropConfiguration(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop target, Microsoft.UI.Xaml.XamlRoot xamlRoot);
-        overridable void OnTargetConnected(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop connectedTarget, Microsoft.UI.Xaml.XamlRoot xamlRoot);
-        overridable void OnTargetDisconnected(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop disconnectedTarget);
-        overridable void OnDefaultSystemBackdropConfigurationChanged(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop target, Microsoft.UI.Xaml.XamlRoot xamlRoot);
+        Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration GetDefaultSystemBackdropConfiguration(Windows.UI.Composition.ICompositionSupportsSystemBackdrop target, Microsoft.UI.Xaml.XamlRoot xamlRoot);
+        overridable void OnTargetConnected(Windows.UI.Composition.ICompositionSupportsSystemBackdrop connectedTarget, Microsoft.UI.Xaml.XamlRoot xamlRoot);
+        overridable void OnTargetDisconnected(Windows.UI.Composition.ICompositionSupportsSystemBackdrop disconnectedTarget);
+        overridable void OnDefaultSystemBackdropConfigurationChanged(Windows.UI.Composition.ICompositionSupportsSystemBackdrop target, Microsoft.UI.Xaml.XamlRoot xamlRoot);
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
@@ -2865,7 +2865,7 @@ namespace Microsoft.UI.Xaml.Media
         static void RemoveTargetElement(String lightId, Microsoft.UI.Xaml.UIElement element);
         static void AddTargetBrush(String lightId, Microsoft.UI.Xaml.Media.Brush brush);
         static void RemoveTargetBrush(String lightId, Microsoft.UI.Xaml.Media.Brush brush);
-        protected Microsoft.UI.Composition.CompositionLight CompositionLight;
+        protected Windows.UI.Composition.CompositionLight CompositionLight;
         overridable String GetId();
         overridable void OnConnected(Microsoft.UI.Xaml.UIElement newElement);
         overridable void OnDisconnected(Microsoft.UI.Xaml.UIElement oldElement);

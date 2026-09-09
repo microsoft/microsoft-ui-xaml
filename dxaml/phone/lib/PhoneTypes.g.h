@@ -594,8 +594,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnProcessKeyboardAcceleratorsImpl(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs);
         IFACEMETHOD(OnBringIntoViewRequested)(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
         virtual _Check_return_ HRESULT OnBringIntoViewRequestedImpl(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
-        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
-        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
 
     private:
         // Private Setters
@@ -973,8 +973,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnProcessKeyboardAcceleratorsImpl(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs);
         IFACEMETHOD(OnBringIntoViewRequested)(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
         virtual _Check_return_ HRESULT OnBringIntoViewRequestedImpl(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
-        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
-        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
 
     private:
         // Private Setters
@@ -1255,8 +1255,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnProcessKeyboardAcceleratorsImpl(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs);
         IFACEMETHOD(OnBringIntoViewRequested)(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
         virtual _Check_return_ HRESULT OnBringIntoViewRequestedImpl(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
-        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
-        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
 
     private:
         // Private Setters
@@ -1522,8 +1522,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnProcessKeyboardAcceleratorsImpl(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs);
         IFACEMETHOD(OnBringIntoViewRequested)(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
         virtual _Check_return_ HRESULT OnBringIntoViewRequestedImpl(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
-        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
-        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
 
     private:
         // Private Setters
@@ -1702,8 +1702,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnProcessKeyboardAcceleratorsImpl(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs);
         IFACEMETHOD(OnBringIntoViewRequested)(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
         virtual _Check_return_ HRESULT OnBringIntoViewRequestedImpl(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
-        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
-        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
 
     private:
         // Private Setters
@@ -2052,8 +2052,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnProcessKeyboardAcceleratorsImpl(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs);
         IFACEMETHOD(OnBringIntoViewRequested)(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
         virtual _Check_return_ HRESULT OnBringIntoViewRequestedImpl(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
-        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
-        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
 
     private:
         // Private Setters
@@ -2506,8 +2506,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnProcessKeyboardAcceleratorsImpl(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs);
         IFACEMETHOD(OnBringIntoViewRequested)(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
         virtual _Check_return_ HRESULT OnBringIntoViewRequestedImpl(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
-        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
-        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
 
     private:
         // Private Setters
@@ -2645,8 +2645,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnProcessKeyboardAcceleratorsImpl(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs);
         IFACEMETHOD(OnBringIntoViewRequested)(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
         virtual _Check_return_ HRESULT OnBringIntoViewRequestedImpl(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
-        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
-        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
 
     private:
         // Private Setters
@@ -2725,8 +2725,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnProcessKeyboardAcceleratorsImpl(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs);
         IFACEMETHOD(OnBringIntoViewRequested)(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
         virtual _Check_return_ HRESULT OnBringIntoViewRequestedImpl(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
-        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
-        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
 
     private:
         // Private Setters
@@ -2991,8 +2991,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnProcessKeyboardAcceleratorsImpl(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs);
         IFACEMETHOD(OnBringIntoViewRequested)(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
         virtual _Check_return_ HRESULT OnBringIntoViewRequestedImpl(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
-        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
-        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
 
     private:
         // Private Setters
@@ -3063,8 +3063,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnProcessKeyboardAcceleratorsImpl(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs);
         IFACEMETHOD(OnBringIntoViewRequested)(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
         virtual _Check_return_ HRESULT OnBringIntoViewRequestedImpl(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
-        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
-        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
 
     private:
         // Private Setters
@@ -3143,8 +3143,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnProcessKeyboardAcceleratorsImpl(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs);
         IFACEMETHOD(OnBringIntoViewRequested)(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
         virtual _Check_return_ HRESULT OnBringIntoViewRequestedImpl(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
-        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
-        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        virtual _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
 
     private:
         // Private Setters

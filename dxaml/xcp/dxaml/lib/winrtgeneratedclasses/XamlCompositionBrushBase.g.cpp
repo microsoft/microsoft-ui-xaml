@@ -53,7 +53,7 @@ HRESULT DirectUI::XamlCompositionBrushBaseGenerated::QueryInterfaceImpl(_In_ REF
 }
 
 // Properties.
-IFACEMETHODIMP DirectUI::XamlCompositionBrushBaseGenerated::get_CompositionBrush(_Outptr_result_maybenull_ ABI::Microsoft::UI::Composition::ICompositionBrush** ppValue)
+IFACEMETHODIMP DirectUI::XamlCompositionBrushBaseGenerated::get_CompositionBrush(_Outptr_result_maybenull_ ABI::Windows::UI::Composition::ICompositionBrush** ppValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::XamlCompositionBrushBaseGenerated::get_CompositionBrush
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlCompositionBrushBaseGenerated::put_CompositionBrush(_In_opt_ ABI::Microsoft::UI::Composition::ICompositionBrush* pValue)
+IFACEMETHODIMP DirectUI::XamlCompositionBrushBaseGenerated::put_CompositionBrush(_In_opt_ ABI::Windows::UI::Composition::ICompositionBrush* pValue)
 {
     HRESULT hr = S_OK;
     
@@ -86,7 +86,7 @@ IFACEMETHODIMP DirectUI::XamlCompositionBrushBaseGenerated::put_FallbackColor(AB
 // Events.
 
 // Methods.
-IFACEMETHODIMP DirectUI::XamlCompositionBrushBaseGenerated::ClearBrushForXamlRoot(_In_ IInspectable* pXamlRoot, _In_ ABI::Microsoft::UI::Composition::ICompositionBrush* pBrush)
+IFACEMETHODIMP DirectUI::XamlCompositionBrushBaseGenerated::ClearBrushForXamlRoot(_In_ IInspectable* pXamlRoot, _In_ ABI::Windows::UI::Composition::ICompositionBrush* pBrush)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -123,7 +123,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlCompositionBrushBaseGenerated::GetBrushForXamlRoot(_In_ IInspectable* pXamlRoot, _Outptr_ ABI::Microsoft::UI::Composition::ICompositionBrush** ppResult)
+IFACEMETHODIMP DirectUI::XamlCompositionBrushBaseGenerated::GetBrushForXamlRoot(_In_ IInspectable* pXamlRoot, _Outptr_ ABI::Windows::UI::Composition::ICompositionBrush** ppResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -223,7 +223,7 @@ Cleanup:
     ReleaseInterfaceNoNULL(pVirtuals);
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlCompositionBrushBaseGenerated::SetBrushForXamlRoot(_In_ IInspectable* pXamlRoot, _In_ ABI::Microsoft::UI::Composition::ICompositionBrush* pBrush)
+IFACEMETHODIMP DirectUI::XamlCompositionBrushBaseGenerated::SetBrushForXamlRoot(_In_ IInspectable* pXamlRoot, _In_ ABI::Windows::UI::Composition::ICompositionBrush* pBrush)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

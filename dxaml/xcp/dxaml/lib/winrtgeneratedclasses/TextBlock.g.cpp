@@ -530,7 +530,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::GetAlphaMask(_Outptr_ ABI::Microsoft::UI::Composition::ICompositionBrush** ppReturnValue)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::GetAlphaMask(_Outptr_ ABI::Windows::UI::Composition::ICompositionBrush** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

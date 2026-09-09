@@ -68,7 +68,7 @@ namespace DirectUI
         IFACEMETHOD(remove_ImageOpened)(EventRegistrationToken token) override;
 
         // Methods.
-        IFACEMETHOD(GetAlphaMask)(_Outptr_ ABI::Microsoft::UI::Composition::ICompositionBrush** ppReturnValue) override;
+        IFACEMETHOD(GetAlphaMask)(_Outptr_ ABI::Windows::UI::Composition::ICompositionBrush** ppReturnValue) override;
         IFACEMETHOD(GetAsCastingSource)(_Outptr_ ABI::Windows::Media::Casting::ICastingSource** ppReturnValue) override;
 
 

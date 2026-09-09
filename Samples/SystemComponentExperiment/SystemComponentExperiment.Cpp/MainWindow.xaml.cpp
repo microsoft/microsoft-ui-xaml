@@ -12,19 +12,19 @@ using namespace Microsoft::UI::Xaml::Controls;
 using namespace Microsoft::UI::Xaml::Hosting;
 
 using PublicXamlCompositionTypes = std::tuple<
-    Microsoft::UI::Composition::AnimationPropertyInfo,
-    Microsoft::UI::Composition::CompositionBrush,
-    Microsoft::UI::Composition::CompositionEasingFunction,
-    Microsoft::UI::Composition::CompositionLight,
-    Microsoft::UI::Composition::CompositionPropertySet,
-    Microsoft::UI::Composition::Compositor,
-    Microsoft::UI::Composition::IAnimationObject,
-    Microsoft::UI::Composition::ICompositionAnimationBase,
-    Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop,
-    Microsoft::UI::Composition::ICompositionSurface,
-    Microsoft::UI::Composition::IVisualElement,
-    Microsoft::UI::Composition::IVisualElement2,
-    Microsoft::UI::Composition::Visual,
+    Windows::UI::Composition::AnimationPropertyInfo,
+    Windows::UI::Composition::CompositionBrush,
+    Windows::UI::Composition::CompositionEasingFunction,
+    Windows::UI::Composition::CompositionLight,
+    Windows::UI::Composition::CompositionPropertySet,
+    Windows::UI::Composition::Compositor,
+    Windows::UI::Composition::IAnimationObject,
+    Windows::UI::Composition::ICompositionAnimationBase,
+    Windows::UI::Composition::ICompositionSupportsSystemBackdrop,
+    Windows::UI::Composition::ICompositionSurface,
+    Windows::UI::Composition::IVisualElement,
+    Windows::UI::Composition::IVisualElement2,
+    Windows::UI::Composition::Visual,
     Microsoft::UI::Composition::SystemBackdrops::SystemBackdropConfiguration>;
 
 static_assert(std::tuple_size_v<PublicXamlCompositionTypes> == 14);
@@ -152,10 +152,10 @@ namespace winrt::SystemComponentExperiment::Cpp::implementation
     {
         try
         {
-            Microsoft::UI::Composition::Visual visual =
+            Windows::UI::Composition::Visual visual =
                 ElementCompositionPreview::GetElementVisual(VisualHost());
-            Microsoft::UI::Composition::Compositor compositor = visual.Compositor();
-            Microsoft::UI::Composition::SpriteVisual child = compositor.CreateSpriteVisual();
+            Windows::UI::Composition::Compositor compositor = visual.Compositor();
+            Windows::UI::Composition::SpriteVisual child = compositor.CreateSpriteVisual();
             child.Size({ 120.0f, 120.0f });
             child.Offset({ 20.0f, 20.0f, 0.0f });
             child.Brush(compositor.CreateColorBrush(Microsoft::UI::Colors::CornflowerBlue()));
@@ -170,8 +170,8 @@ namespace winrt::SystemComponentExperiment::Cpp::implementation
 
     void MainWindow::RunDispatcherQueueScenario()
     {
-        Microsoft::UI::Dispatching::DispatcherQueue queue =
-            Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
+        Windows::System::DispatcherQueue queue =
+            Windows::System::DispatcherQueue::GetForCurrentThread();
         if (!queue)
         {
             ResultText().Text(L"Failed: no DispatcherQueue for the UI thread.");
@@ -261,9 +261,16 @@ namespace winrt::SystemComponentExperiment::Cpp::implementation
             : L"System DispatcherQueue current thread: absent\r\n");
         if (queue)
         {
+            constexpr GUID liftedDispatcherQueue3 =
+            {
+                0x14a7a175,
+                0x5c27,
+                0x5a35,
+                { 0xb0, 0x79, 0x21, 0x96, 0x0c, 0xf7, 0x64, 0xa8 }
+            };
             void* liftedQueue3{};
             HRESULT queryResult = queue.as<::IUnknown>()->QueryInterface(
-                guid_of<Microsoft::UI::Dispatching::IDispatcherQueue3>(),
+                liftedDispatcherQueue3,
                 &liftedQueue3);
             if (liftedQueue3)
             {

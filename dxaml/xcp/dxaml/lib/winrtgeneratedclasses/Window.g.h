@@ -61,8 +61,8 @@ namespace DirectUI
     class __declspec(novtable) WindowGenerated:
         public DirectUI::DependencyObject
         , public ABI::Microsoft::UI::Xaml::IWindow
-        , public ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop
         , public ABI::Microsoft::UI::Xaml::IWindowPrivate
+        , public ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IWindow2, WindowGenerated >
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IWindowFeature_ExperimentalApi, WindowGenerated >
@@ -74,8 +74,8 @@ namespace DirectUI
 
         BEGIN_INTERFACE_MAP(WindowGenerated, DirectUI::DependencyObject)
             INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Xaml::IWindow)
-            INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop)
             INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Xaml::IWindowPrivate)
+            INTERFACE_ENTRY(WindowGenerated, ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop)
             INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Xaml::IWindow2)
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
             INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Xaml::IWindowFeature_ExperimentalApi)
@@ -101,12 +101,12 @@ namespace DirectUI
         // Properties.
         _Check_return_ HRESULT STDMETHODCALLTYPE get_AppWindow(_Outptr_result_maybenull_ ABI::Microsoft::UI::Windowing::IAppWindow** ppValue);
         IFACEMETHOD(get_Bounds)(_Out_ ABI::Windows::Foundation::Rect* pValue) override;
-        IFACEMETHOD(get_Compositor)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Composition::ICompositor** ppValue) override;
+        IFACEMETHOD(get_Compositor)(_Outptr_result_maybenull_ ABI::Windows::UI::Composition::ICompositor** ppValue) override;
         IFACEMETHOD(get_Content)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue) override;
         IFACEMETHOD(put_Content)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue) override;
         IFACEMETHOD(get_CoreWindow)(_Outptr_result_maybenull_ ABI::Windows::UI::Core::ICoreWindow** ppValue) override;
         IFACEMETHOD(get_Dispatcher)(_Outptr_result_maybenull_ ABI::Windows::UI::Core::ICoreDispatcher** ppValue) override;
-        IFACEMETHOD(get_DispatcherQueue)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Dispatching::IDispatcherQueue** ppValue) override;
+        IFACEMETHOD(get_DispatcherQueue)(_Outptr_result_maybenull_ ABI::Windows::System::IDispatcherQueue** ppValue) override;
         IFACEMETHOD(get_ExtendsContentIntoTitleBar)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(put_ExtendsContentIntoTitleBar)(BOOLEAN value) override;
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Height(_Out_ DOUBLE* pValue);

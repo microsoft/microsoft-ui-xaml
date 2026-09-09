@@ -77,7 +77,7 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(GetAlphaMask)(_Outptr_ ABI::Microsoft::UI::Composition::ICompositionBrush** ppReturnValue) override;
+        IFACEMETHOD(GetAlphaMask)(_Outptr_ ABI::Windows::UI::Composition::ICompositionBrush** ppReturnValue) override;
 
 
     protected:
@@ -87,7 +87,7 @@ namespace DirectUI
         // Customized properties.
 
         // Customized methods.
-         _Check_return_ HRESULT GetAlphaMaskImpl(_Outptr_ ABI::Microsoft::UI::Composition::ICompositionBrush** ppReturnValue); 
+         _Check_return_ HRESULT GetAlphaMaskImpl(_Outptr_ ABI::Windows::UI::Composition::ICompositionBrush** ppReturnValue);
 
         // Fields.
     };
@@ -130,7 +130,7 @@ namespace DirectUI
         IFACEMETHOD(get_StrokeDashCapProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(get_StrokeDashArrayProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(get_StretchProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
-        
+
 
         // Attached properties.
 

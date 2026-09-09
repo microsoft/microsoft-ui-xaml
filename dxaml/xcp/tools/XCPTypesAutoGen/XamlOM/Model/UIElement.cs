@@ -565,17 +565,17 @@ namespace Microsoft.UI.Xaml
         }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        public void StartAnimation(Microsoft.UI.Composition.ICompositionAnimationBase animation)
+        public void StartAnimation(Windows.UI.Composition.ICompositionAnimationBase animation)
         {
         }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        public void StopAnimation(Microsoft.UI.Composition.ICompositionAnimationBase animation)
+        public void StopAnimation(Windows.UI.Composition.ICompositionAnimationBase animation)
         {
         }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        protected virtual void PopulatePropertyInfoOverride(Windows.Foundation.String propertyName, Microsoft.UI.Composition.AnimationPropertyInfo animationPropertyInfo)
+        protected virtual void PopulatePropertyInfoOverride(Windows.Foundation.String propertyName, Windows.UI.Composition.AnimationPropertyInfo animationPropertyInfo)
         {
         }
 

@@ -53,8 +53,8 @@ namespace DirectUI
     class __declspec(novtable) XamlIslandGenerated:
         public ctl::WeakReferenceSource
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IXamlIsland, XamlIslandGenerated >
-        , public ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop
         , public ABI::Windows::Foundation::IClosable
+        , public ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IXamlIslandFeature_ExperimentalApi, XamlIslandGenerated >
 #endif
@@ -65,8 +65,8 @@ namespace DirectUI
 
         BEGIN_INTERFACE_MAP(XamlIslandGenerated, ctl::WeakReferenceSource)
             INTERFACE_ENTRY(XamlIslandGenerated, ABI::Microsoft::UI::Xaml::IXamlIsland)
-            INTERFACE_ENTRY(XamlIslandGenerated, ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop)
             INTERFACE_ENTRY(XamlIslandGenerated, ABI::Windows::Foundation::IClosable)
+            INTERFACE_ENTRY(XamlIslandGenerated, ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop)
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
             INTERFACE_ENTRY(XamlIslandGenerated, ABI::Microsoft::UI::Xaml::IXamlIslandFeature_ExperimentalApi)
 #endif

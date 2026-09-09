@@ -33,13 +33,13 @@ HRESULT DirectUI::XamlIslandGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outp
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IXamlIsland>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop)))
-    {
-        *ppObject = static_cast<ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop*>(this);
-    }
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::IClosable)))
     {
         *ppObject = static_cast<ABI::Windows::Foundation::IClosable*>(this);
+    }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop)))
+    {
+        *ppObject = static_cast<ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlIslandFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())

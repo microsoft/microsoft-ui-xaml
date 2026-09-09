@@ -58,37 +58,37 @@ namespace Microsoft.UI.Xaml.Hosting
     {
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [ReturnTypeParameterName("result")]
-        public static Microsoft.UI.Composition.Visual GetElementVisual(Microsoft.UI.Xaml.UIElement element)
+        public static Windows.UI.Composition.Visual GetElementVisual(Microsoft.UI.Xaml.UIElement element)
         {
-            return default(Microsoft.UI.Composition.Visual);
+            return default(Windows.UI.Composition.Visual);
         }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [ReturnTypeParameterName("result")]
-        public static Microsoft.UI.Composition.Visual GetElementChildVisual(Microsoft.UI.Xaml.UIElement element)
+        public static Windows.UI.Composition.Visual GetElementChildVisual(Microsoft.UI.Xaml.UIElement element)
         {
-            return default(Microsoft.UI.Composition.Visual);
+            return default(Windows.UI.Composition.Visual);
         }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        public static void SetElementChildVisual(Microsoft.UI.Xaml.UIElement element, [Optional] Microsoft.UI.Composition.Visual visual)
+        public static void SetElementChildVisual(Microsoft.UI.Xaml.UIElement element, [Optional] Windows.UI.Composition.Visual visual)
         {
         }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [ReturnTypeParameterName("result")]
-        public static Microsoft.UI.Composition.CompositionPropertySet GetScrollViewerManipulationPropertySet(Microsoft.UI.Xaml.Controls.ScrollViewer scrollViewer)
+        public static Windows.UI.Composition.CompositionPropertySet GetScrollViewerManipulationPropertySet(Microsoft.UI.Xaml.Controls.ScrollViewer scrollViewer)
         {
-            return default(Microsoft.UI.Composition.CompositionPropertySet);
+            return default(Windows.UI.Composition.CompositionPropertySet);
         }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        public static void SetImplicitShowAnimation(Microsoft.UI.Xaml.UIElement element, [Optional] Microsoft.UI.Composition.ICompositionAnimationBase animation)
+        public static void SetImplicitShowAnimation(Microsoft.UI.Xaml.UIElement element, [Optional] Windows.UI.Composition.ICompositionAnimationBase animation)
         {
         }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        public static void SetImplicitHideAnimation(Microsoft.UI.Xaml.UIElement element, [Optional] Microsoft.UI.Composition.ICompositionAnimationBase animation)
+        public static void SetImplicitHideAnimation(Microsoft.UI.Xaml.UIElement element, [Optional] Windows.UI.Composition.ICompositionAnimationBase animation)
         {
         }
 
@@ -99,9 +99,9 @@ namespace Microsoft.UI.Xaml.Hosting
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [ReturnTypeParameterName("result")]
-        public static Microsoft.UI.Composition.CompositionPropertySet GetPointerPositionPropertySet(UIElement targetElement)
+        public static Windows.UI.Composition.CompositionPropertySet GetPointerPositionPropertySet(UIElement targetElement)
         {
-            return default(Microsoft.UI.Composition.CompositionPropertySet);
+            return default(Windows.UI.Composition.CompositionPropertySet);
         }
     }
 
@@ -254,7 +254,7 @@ namespace Microsoft.UI.Xaml.Hosting
     [Guids(ClassGuid = "e6336955-51ed-4e64-9067-506501e80451")]
     [ThreadingModel(ThreadingModel.Both)]
     [Implements(typeof(Windows.Foundation.IClosable))]
-    [Implements(typeof(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop), Version = 1)]
+    [Implements(typeof(Windows.UI.Composition.ICompositionSupportsSystemBackdrop), Version = 1)]
     public class DesktopWindowXamlSource
     {
         public DesktopWindowXamlSource()

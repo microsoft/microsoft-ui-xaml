@@ -50,7 +50,7 @@ HRESULT DirectUI::SystemBackdropGenerated::QueryInterfaceImpl(_In_ REFIID iid, _
 // Events.
 
 // Methods.
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SystemBackdropGenerated::GetDefaultSystemBackdropConfiguration(_In_ ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop* pTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot, _Outptr_ ABI::Microsoft::UI::Composition::SystemBackdrops::ISystemBackdropConfiguration** ppResult)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SystemBackdropGenerated::GetDefaultSystemBackdropConfiguration(_In_ ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop* pTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot, _Outptr_ ABI::Microsoft::UI::Composition::SystemBackdrops::ISystemBackdropConfiguration** ppResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -71,7 +71,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SystemBackdropGenerated::OnDefaultSystemBackdropConfigurationChanged(_In_ ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop* pTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SystemBackdropGenerated::OnDefaultSystemBackdropConfigurationChanged(_In_ ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop* pTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -91,7 +91,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DirectUI::SystemBackdropGenerated::OnDefaultSystemBackdropConfigurationChangedProtected(_In_ ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop* pTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot)
+_Check_return_ HRESULT DirectUI::SystemBackdropGenerated::OnDefaultSystemBackdropConfigurationChangedProtected(_In_ ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop* pTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::Media::ISystemBackdropOverrides* pVirtuals = NULL;
@@ -112,7 +112,7 @@ Cleanup:
     ReleaseInterfaceNoNULL(pVirtuals);
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SystemBackdropGenerated::OnTargetConnected(_In_ ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop* pConnectedTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SystemBackdropGenerated::OnTargetConnected(_In_ ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop* pConnectedTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -132,7 +132,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DirectUI::SystemBackdropGenerated::OnTargetConnectedProtected(_In_ ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop* pConnectedTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot)
+_Check_return_ HRESULT DirectUI::SystemBackdropGenerated::OnTargetConnectedProtected(_In_ ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop* pConnectedTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::Media::ISystemBackdropOverrides* pVirtuals = NULL;
@@ -153,7 +153,7 @@ Cleanup:
     ReleaseInterfaceNoNULL(pVirtuals);
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SystemBackdropGenerated::OnTargetDisconnected(_In_ ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop* pDisconnectedTarget)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SystemBackdropGenerated::OnTargetDisconnected(_In_ ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop* pDisconnectedTarget)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -172,7 +172,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DirectUI::SystemBackdropGenerated::OnTargetDisconnectedProtected(_In_ ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop* pDisconnectedTarget)
+_Check_return_ HRESULT DirectUI::SystemBackdropGenerated::OnTargetDisconnectedProtected(_In_ ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop* pDisconnectedTarget)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::Media::ISystemBackdropOverrides* pVirtuals = NULL;

@@ -51,8 +51,8 @@ namespace DirectUI
         // Properties.
         IFACEMETHOD(get_DefaultDuration)(_Out_ ABI::Windows::Foundation::TimeSpan* pValue) override;
         IFACEMETHOD(put_DefaultDuration)(ABI::Windows::Foundation::TimeSpan value) override;
-        IFACEMETHOD(get_DefaultEasingFunction)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Composition::ICompositionEasingFunction** ppValue) override;
-        IFACEMETHOD(put_DefaultEasingFunction)(_In_opt_ ABI::Microsoft::UI::Composition::ICompositionEasingFunction* pValue) override;
+        IFACEMETHOD(get_DefaultEasingFunction)(_Outptr_result_maybenull_ ABI::Windows::UI::Composition::ICompositionEasingFunction** ppValue) override;
+        IFACEMETHOD(put_DefaultEasingFunction)(_In_opt_ ABI::Windows::UI::Composition::ICompositionEasingFunction* pValue) override;
 
         // Events.
 

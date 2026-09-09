@@ -132,7 +132,7 @@ namespace DirectUI
 
         // Methods.
         IFACEMETHOD(CopySelectionToClipboard)() override;
-        IFACEMETHOD(GetAlphaMask)(_Outptr_ ABI::Microsoft::UI::Composition::ICompositionBrush** ppReturnValue) override;
+        IFACEMETHOD(GetAlphaMask)(_Outptr_ ABI::Windows::UI::Composition::ICompositionBrush** ppReturnValue) override;
         IFACEMETHOD(Select)(_In_ ABI::Microsoft::UI::Xaml::Documents::ITextPointer* pStart, _In_ ABI::Microsoft::UI::Xaml::Documents::ITextPointer* pEnd) override;
         IFACEMETHOD(SelectAll)() override;
 

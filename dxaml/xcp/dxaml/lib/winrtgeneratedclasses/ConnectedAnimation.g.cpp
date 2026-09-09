@@ -160,7 +160,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ConnectedAnimationGenerated::SetAnimationComponent(ABI::Microsoft::UI::Xaml::Media::Animation::ConnectedAnimationComponent component, _In_opt_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation)
+IFACEMETHODIMP DirectUI::ConnectedAnimationGenerated::SetAnimationComponent(ABI::Microsoft::UI::Xaml::Media::Animation::ConnectedAnimationComponent component, _In_opt_ ABI::Windows::UI::Composition::ICompositionAnimationBase* pAnimation)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

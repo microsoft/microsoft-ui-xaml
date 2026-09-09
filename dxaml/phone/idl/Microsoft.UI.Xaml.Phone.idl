@@ -17,14 +17,14 @@
 import "oaidl.idl";
 import "eventtoken.idl";
 import "inspectable.idl";
-import "microsoft.ui.composition.idl";
 import "microsoft.ui.composition.SystemBackdrops.idl";
 import "microsoft.ui.content.idl";
-import "microsoft.UI.Dispatching.idl";
 import "microsoft.ui.input.idl";
 import "microsoft.ui.xaml.idl";
 import "windows.foundation.idl";
 import "windows.foundation.numerics.idl";
+import "windows.system.idl";
+import "windows.ui.composition.idl";
 
 import "windows.applicationModel.datatransfer.dragdrop.idl";
 import "windows.applicationModel.datatransfer.dragdrop.core.idl";

@@ -62,7 +62,7 @@ namespace DirectUI
 
         // Methods.
         IFACEMETHOD(Cancel)() override;
-        IFACEMETHOD(SetAnimationComponent)(ABI::Microsoft::UI::Xaml::Media::Animation::ConnectedAnimationComponent component, _In_opt_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation) override;
+        IFACEMETHOD(SetAnimationComponent)(ABI::Microsoft::UI::Xaml::Media::Animation::ConnectedAnimationComponent component, _In_opt_ ABI::Windows::UI::Composition::ICompositionAnimationBase* pAnimation) override;
         IFACEMETHOD(TryStart)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pDestination, _Out_ BOOLEAN* pReturnValue) override;
         IFACEMETHOD(TryStartWithCoordinatedElements)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pDestination, _In_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::UIElement*>* pCoordinatedElements, _Out_ BOOLEAN* pReturnValue) override;
 

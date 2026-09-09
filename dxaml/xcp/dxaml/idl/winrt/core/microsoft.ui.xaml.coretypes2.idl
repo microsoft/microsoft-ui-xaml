@@ -18,10 +18,8 @@
 import "oaidl.idl";
 import "eventtoken.idl";
 import "inspectable.idl";
-import "microsoft.ui.composition.idl";
 import "microsoft.ui.composition.SystemBackdrops.idl";
 import "microsoft.ui.content.idl";
-import "microsoft.UI.Dispatching.idl";
 import "microsoft.ui.idl";
 import "microsoft.ui.input.idl";
 import "microsoft.ui.windowing.idl";
@@ -29,6 +27,8 @@ import "microsoft.ui.xaml.coretypes.idl";
 import "windows.applicationmodel.core.idl";
 import "windows.foundation.idl";
 import "windows.foundation.numerics.idl";
+import "windows.system.idl";
+import "windows.ui.composition.idl";
 import "windows.ui.idl";
 
 import "windows.applicationModel.datatransfer.dragdrop.idl";
@@ -832,10 +832,10 @@ namespace Microsoft.UI.Xaml
         Microsoft.UI.Xaml.UIElement Content;
         [deprecated("The CoreWindow property is deprecated and always returns null", deprecate, Microsoft.UI.Xaml.WinUIContract, 1)]
         Windows.UI.Core.CoreWindow CoreWindow{ get; };
-        Microsoft.UI.Composition.Compositor Compositor{ get; };
+        Windows.UI.Composition.Compositor Compositor{ get; };
         [deprecated("The Dispatcher property is deprecated and always returns null", deprecate, Microsoft.UI.Xaml.WinUIContract, 1)]
         Windows.UI.Core.CoreDispatcher Dispatcher{ get; };
-        Microsoft.UI.Dispatching.DispatcherQueue DispatcherQueue{ get; };
+        Windows.System.DispatcherQueue DispatcherQueue{ get; };
         String Title;
         Boolean ExtendsContentIntoTitleBar;
         event Windows.Foundation.TypedEventHandler<Object,Microsoft.UI.Xaml.WindowActivatedEventArgs> Activated;
@@ -975,7 +975,7 @@ namespace Microsoft.UI.Xaml.Media
         : [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
         Windows.Foundation.IClosable
         , [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-        Microsoft.UI.Composition.ICompositionSurface
+        Windows.UI.Composition.ICompositionSurface
     {
         Windows.Foundation.Size DecodedPhysicalSize{ get; };
         Windows.Foundation.Size DecodedSize{ get; };
@@ -1214,7 +1214,7 @@ namespace Microsoft.UI.Xaml.Media
         [method_name("CreateInstance")] protected XamlCompositionBrushBase();
         Windows.UI.Color FallbackColor;
         static Microsoft.UI.Xaml.DependencyProperty FallbackColorProperty{ get; };
-        protected Microsoft.UI.Composition.CompositionBrush CompositionBrush;
+        protected Windows.UI.Composition.CompositionBrush CompositionBrush;
         overridable void OnConnected();
         overridable void OnDisconnected();
     };
@@ -1281,7 +1281,7 @@ namespace Microsoft.UI.Xaml.Media.Animation
         [method_name("TryStart")] Boolean TryStart(Microsoft.UI.Xaml.UIElement destination);
         [method_name("TryStartWithCoordinatedElements")] Boolean TryStart(Microsoft.UI.Xaml.UIElement destination, Windows.Foundation.Collections.IIterable<Microsoft.UI.Xaml.UIElement> coordinatedElements);
         void Cancel();
-        void SetAnimationComponent(Microsoft.UI.Xaml.Media.Animation.ConnectedAnimationComponent component, Microsoft.UI.Composition.ICompositionAnimationBase animation);
+        void SetAnimationComponent(Microsoft.UI.Xaml.Media.Animation.ConnectedAnimationComponent component, Windows.UI.Composition.ICompositionAnimationBase animation);
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
@@ -1296,7 +1296,7 @@ namespace Microsoft.UI.Xaml.Media.Animation
     runtimeclass ConnectedAnimationService
     {
         Windows.Foundation.TimeSpan DefaultDuration;
-        Microsoft.UI.Composition.CompositionEasingFunction DefaultEasingFunction;
+        Windows.UI.Composition.CompositionEasingFunction DefaultEasingFunction;
         Microsoft.UI.Xaml.Media.Animation.ConnectedAnimation PrepareToAnimate(String key, Microsoft.UI.Xaml.UIElement source);
         Microsoft.UI.Xaml.Media.Animation.ConnectedAnimation GetAnimation(String key);
         static Microsoft.UI.Xaml.Media.Animation.ConnectedAnimationService GetForCurrentView();
@@ -1779,7 +1779,7 @@ namespace Microsoft.UI.Xaml.Shapes
         Microsoft.UI.Xaml.Media.DoubleCollection StrokeDashArray;
         Microsoft.UI.Xaml.Media.Stretch Stretch;
         Microsoft.UI.Xaml.Media.Transform GeometryTransform{ get; };
-        Microsoft.UI.Composition.CompositionBrush GetAlphaMask();
+        Windows.UI.Composition.CompositionBrush GetAlphaMask();
         static Microsoft.UI.Xaml.DependencyProperty FillProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty StrokeProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty StrokeMiterLimitProperty{ get; };

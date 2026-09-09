@@ -108,9 +108,9 @@ namespace Microsoft.UI.Xaml.Media
         public static event Microsoft.UI.Xaml.EventHandler SurfaceContentsLost;
 
         [ReturnTypeParameterName("result")]
-        public static Microsoft.UI.Composition.Compositor GetCompositorForCurrentThread()
+        public static Windows.UI.Composition.Compositor GetCompositorForCurrentThread()
         {
-            return default(Microsoft.UI.Composition.Compositor);
+            return default(Windows.UI.Composition.Compositor);
         }
     }
 
@@ -227,7 +227,7 @@ namespace Microsoft.UI.Xaml.Media
     [Guids(ClassGuid = "b42803d2-98fd-4ade-adc0-427c144a79e7")]
     [Platform("Feature_XamlMotionSystemHoldbacks", typeof(Microsoft.UI.Xaml.WinUIContract), 1)]
     [Velocity(Feature = "Feature_XamlMotionSystemHoldbacks")]
-    [Implements(typeof(Microsoft.UI.Composition.IAnimationObject), Version = 1)]
+    [Implements(typeof(Windows.UI.Composition.IAnimationObject), Version = 1)]
     public abstract class Brush
      : Microsoft.UI.Xaml.DependencyObject
     {
@@ -265,14 +265,14 @@ namespace Microsoft.UI.Xaml.Media
         [Strictness(Strictness.StrictOnly)]
         [VelocityFeature("Feature_XamlMotionSystemHoldbacks")]
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        public void StartAnimation(Microsoft.UI.Composition.ICompositionAnimationBase animation)
+        public void StartAnimation(Windows.UI.Composition.ICompositionAnimationBase animation)
         {
         }
 
         [Strictness(Strictness.StrictOnly)]
         [VelocityFeature("Feature_XamlMotionSystemHoldbacks")]
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        public void StopAnimation(Microsoft.UI.Composition.ICompositionAnimationBase animation)
+        public void StopAnimation(Windows.UI.Composition.ICompositionAnimationBase animation)
         {
         }
 
@@ -280,7 +280,7 @@ namespace Microsoft.UI.Xaml.Media
 
         [Strictness(Strictness.StrictOnly)]
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        protected virtual void PopulatePropertyInfoOverride(Windows.Foundation.String propertyName, Microsoft.UI.Composition.AnimationPropertyInfo animationPropertyInfo)
+        protected virtual void PopulatePropertyInfoOverride(Windows.Foundation.String propertyName, Windows.UI.Composition.AnimationPropertyInfo animationPropertyInfo)
         {
         }
 
@@ -340,13 +340,13 @@ namespace Microsoft.UI.Xaml.Media
     public interface IXamlCompositionBrushBasePrivates
     {
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        void SetBrushForXamlRoot(Windows.Foundation.Object xamlRoot, Microsoft.UI.Composition.CompositionBrush brush);
+        void SetBrushForXamlRoot(Windows.Foundation.Object xamlRoot, Windows.UI.Composition.CompositionBrush brush);
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        Microsoft.UI.Composition.CompositionBrush GetBrushForXamlRoot(Windows.Foundation.Object xamlRoot);
+        Windows.UI.Composition.CompositionBrush GetBrushForXamlRoot(Windows.Foundation.Object xamlRoot);
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        void ClearBrushForXamlRoot(Windows.Foundation.Object xamlRoot, Microsoft.UI.Composition.CompositionBrush brush);
+        void ClearBrushForXamlRoot(Windows.Foundation.Object xamlRoot, Windows.UI.Composition.CompositionBrush brush);
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         void ClearCompositionBrushMap();
@@ -375,7 +375,7 @@ namespace Microsoft.UI.Xaml.Media
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [PropertyKind(PropertyKind.PropertyOnly)]
         [TypeTable(IsExcludedFromCore = true)]
-        protected Microsoft.UI.Composition.CompositionBrush CompositionBrush
+        protected Windows.UI.Composition.CompositionBrush CompositionBrush
         {
             get;
             set;
@@ -420,7 +420,7 @@ namespace Microsoft.UI.Xaml.Media
         [NativeStorageType(ValueType.valueObject)]
         [PropertyKind(PropertyKind.PropertyOnly)]
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        protected Microsoft.UI.Composition.CompositionLight CompositionLight
+        protected Windows.UI.Composition.CompositionLight CompositionLight
         {
             get;
             set;
@@ -2731,7 +2731,7 @@ namespace Microsoft.UI.Xaml.Media
     [NativeName("CLoadedImageSurface")]
     [Guids(ClassGuid = "8bea419f-558b-4bb7-8471-9ec1e89a267d")]
     [Implements(typeof(Windows.Foundation.IClosable))]
-    [Implements(typeof(Microsoft.UI.Composition.ICompositionSurface))]
+    [Implements(typeof(Windows.UI.Composition.ICompositionSurface))]
     [ClassFlags(HasBaseTypeInDXamlInterface = false)]
     public sealed class LoadedImageSurface
         : Microsoft.UI.Xaml.DependencyObject
@@ -2840,7 +2840,7 @@ namespace Microsoft.UI.Xaml.Media
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [PropertyKind(PropertyKind.PropertyOnly)]
         [TypeTable(IsExcludedFromCore = true)]
-        internal Microsoft.UI.Composition.CompositionBrush Mask
+        internal Windows.UI.Composition.CompositionBrush Mask
         {
             get;
             set;
@@ -2866,24 +2866,24 @@ namespace Microsoft.UI.Xaml.Media
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [TypeTable(IsExcludedFromCore = true)]
-        protected virtual void OnTargetConnected(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop connectedTarget, Microsoft.UI.Xaml.XamlRoot xamlRoot)
+        protected virtual void OnTargetConnected(Windows.UI.Composition.ICompositionSupportsSystemBackdrop connectedTarget, Microsoft.UI.Xaml.XamlRoot xamlRoot)
         {
         }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [TypeTable(IsExcludedFromCore = true)]
-        protected virtual void OnTargetDisconnected(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop disconnectedTarget)
+        protected virtual void OnTargetDisconnected(Windows.UI.Composition.ICompositionSupportsSystemBackdrop disconnectedTarget)
         {
         }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [TypeTable(IsExcludedFromCore = true)]
-        protected virtual void OnDefaultSystemBackdropConfigurationChanged(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop target, Microsoft.UI.Xaml.XamlRoot xamlRoot)
+        protected virtual void OnDefaultSystemBackdropConfigurationChanged(Windows.UI.Composition.ICompositionSupportsSystemBackdrop target, Microsoft.UI.Xaml.XamlRoot xamlRoot)
         {
         }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        public Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration GetDefaultSystemBackdropConfiguration(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop target, Microsoft.UI.Xaml.XamlRoot xamlRoot)
+        public Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration GetDefaultSystemBackdropConfiguration(Windows.UI.Composition.ICompositionSupportsSystemBackdrop target, Microsoft.UI.Xaml.XamlRoot xamlRoot)
         {
             return default(Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration);
         }

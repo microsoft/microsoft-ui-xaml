@@ -3,13 +3,12 @@
 using XamlOM;
 using XamlOM.NewBuilders;
 
-namespace Microsoft.UI.Dispatching
+namespace Windows.System
 {
-    [ExternalIdl("microsoft.UI.Dispatching.idl")]
+    [ExternalIdl("windows.system.idl")]
     [WindowsTypePattern]
     public sealed class DispatcherQueue
     {
     }
 
 }
-

@@ -90,10 +90,10 @@ namespace DirectUI
         , public ABI::Microsoft::UI::Xaml::IUIElement
         , public ABI::Microsoft::UI::Xaml::IUIElementProtected
         , public ABI::Microsoft::UI::Xaml::IUIElementOverrides
-        , public ABI::Microsoft::UI::Composition::IAnimationObject
-        , public ABI::Microsoft::UI::Composition::IVisualElement
-        , public ABI::Microsoft::UI::Composition::IVisualElement2
         , public ABI::Microsoft::UI::Xaml::IUIElementPrivate
+        , public ABI::Windows::UI::Composition::IAnimationObject
+        , public ABI::Windows::UI::Composition::IVisualElement
+        , public ABI::Windows::UI::Composition::IVisualElement2
 #if WI_IS_FEATURE_PRESENT(Feature_Xaml2018)
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IUIElementFeature_Xaml2018, UIElementGenerated >
 #endif
@@ -109,10 +109,10 @@ namespace DirectUI
             INTERFACE_ENTRY(UIElementGenerated, ABI::Microsoft::UI::Xaml::IUIElement)
             INTERFACE_ENTRY(UIElementGenerated, ABI::Microsoft::UI::Xaml::IUIElementProtected)
             INTERFACE_ENTRY(UIElementGenerated, ABI::Microsoft::UI::Xaml::IUIElementOverrides)
-            INTERFACE_ENTRY(UIElementGenerated, ABI::Microsoft::UI::Composition::IAnimationObject)
-            INTERFACE_ENTRY(UIElementGenerated, ABI::Microsoft::UI::Composition::IVisualElement)
-            INTERFACE_ENTRY(UIElementGenerated, ABI::Microsoft::UI::Composition::IVisualElement2)
             INTERFACE_ENTRY(UIElementGenerated, ABI::Microsoft::UI::Xaml::IUIElementPrivate)
+            INTERFACE_ENTRY(UIElementGenerated, ABI::Windows::UI::Composition::IAnimationObject)
+            INTERFACE_ENTRY(UIElementGenerated, ABI::Windows::UI::Composition::IVisualElement)
+            INTERFACE_ENTRY(UIElementGenerated, ABI::Windows::UI::Composition::IVisualElement2)
 #if WI_IS_FEATURE_PRESENT(Feature_Xaml2018)
             INTERFACE_ENTRY(UIElementGenerated, ABI::Microsoft::UI::Xaml::IUIElementFeature_Xaml2018)
 #endif
@@ -586,19 +586,19 @@ namespace DirectUI
         IFACEMETHOD(OnProcessKeyboardAccelerators)(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs) override;
         _Check_return_ HRESULT OnProcessKeyboardAcceleratorsProtected(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs);
         IFACEMETHOD(PauseNewDispatchIfAvailable)() override;
-        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo) override;
-        _Check_return_ HRESULT PopulatePropertyInfoOverrideProtected(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo) override;
+        _Check_return_ HRESULT PopulatePropertyInfoOverrideProtected(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
         _Check_return_ HRESULT ReleaseMouseCapture();
         IFACEMETHOD(ReleasePointerCapture)(_In_ ABI::Microsoft::UI::Xaml::Input::IPointer* pValue) override;
         IFACEMETHOD(ReleasePointerCaptures)() override;
         IFACEMETHOD(RemoveHandler)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEvent* pRoutedEvent, _In_ IInspectable* pHandler) override;
         _Check_return_ HRESULT ResetGlobalScaleFactor();
         IFACEMETHOD(ResumeNewDispatchIfAvailable)() override;
-        IFACEMETHOD(StartAnimation)(_In_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation) override;
+        IFACEMETHOD(StartAnimation)(_In_ ABI::Windows::UI::Composition::ICompositionAnimationBase* pAnimation) override;
         IFACEMETHOD(StartBringIntoView)() override;
         IFACEMETHOD(StartBringIntoViewWithOptions)(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewOptions* pOptions) override;
         IFACEMETHOD(StartDragAsync)(_In_ ABI::Microsoft::UI::Input::IPointerPoint* pPointerPoint, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation>** ppReturnValue) override;
-        IFACEMETHOD(StopAnimation)(_In_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation) override;
+        IFACEMETHOD(StopAnimation)(_In_ ABI::Windows::UI::Composition::ICompositionAnimationBase* pAnimation) override;
         IFACEMETHOD(TransformToVisual)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, _Outptr_ ABI::Microsoft::UI::Xaml::Media::IGeneralTransform** ppReturnValue) override;
         IFACEMETHOD(TryInvokeKeyboardAccelerator)(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs) override;
         IFACEMETHOD(UpdateLayout)() override;

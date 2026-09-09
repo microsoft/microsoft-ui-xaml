@@ -781,7 +781,7 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
     [NativeName("CPopup")]
     [ContentProperty("Child")]
     [Implements(typeof(Microsoft.Internal.FrameworkUdk.IBackButtonPressedListener))]
-    [Implements(typeof(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop), Version = 3)]
+    [Implements(typeof(Windows.UI.Composition.ICompositionSupportsSystemBackdrop), Version = 3)]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 2)]
     [Platform(3, typeof(Microsoft.UI.Xaml.WinUIContract), 5)]
     [Guids(ClassGuid = "ab84a122-f289-4c08-9c1b-6589d5189a29")]

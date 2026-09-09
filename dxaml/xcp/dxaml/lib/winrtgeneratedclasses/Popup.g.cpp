@@ -47,9 +47,9 @@ HRESULT DirectUI::PopupGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ v
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopup3>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop)))
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop)))
     {
-        *ppObject = static_cast<ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop*>(this);
+        *ppObject = static_cast<ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop*>(this);
     }
     else
     {

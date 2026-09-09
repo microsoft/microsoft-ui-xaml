@@ -129,9 +129,9 @@ namespace Microsoft.UI.Xaml.Shapes
         }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        public Microsoft.UI.Composition.CompositionBrush GetAlphaMask()
+        public Windows.UI.Composition.CompositionBrush GetAlphaMask()
         {
-            return default(Microsoft.UI.Composition.CompositionBrush);
+            return default(Windows.UI.Composition.CompositionBrush);
         }
 
         protected Shape() { }

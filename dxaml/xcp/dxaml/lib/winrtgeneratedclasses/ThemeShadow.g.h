@@ -49,8 +49,8 @@ namespace DirectUI
         }
 
         // Properties.
-        _Check_return_ HRESULT get_Mask(_Outptr_result_maybenull_ ABI::Microsoft::UI::Composition::ICompositionBrush** ppValue);
-        _Check_return_ HRESULT put_Mask(_In_opt_ ABI::Microsoft::UI::Composition::ICompositionBrush* pValue);
+        _Check_return_ HRESULT get_Mask(_Outptr_result_maybenull_ ABI::Windows::UI::Composition::ICompositionBrush** ppValue);
+        _Check_return_ HRESULT put_Mask(_In_opt_ ABI::Windows::UI::Composition::ICompositionBrush* pValue);
         IFACEMETHOD(get_Receivers)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::UIElement*>** ppValue) override;
 
         // Events.

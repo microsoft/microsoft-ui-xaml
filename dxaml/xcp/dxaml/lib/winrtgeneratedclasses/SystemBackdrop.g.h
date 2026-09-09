@@ -22,16 +22,16 @@ namespace ctl
         : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop, impl_type>
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
-        IFACEMETHOD(GetDefaultSystemBackdropConfiguration)(_In_ ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop* pTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot, _Outptr_ ABI::Microsoft::UI::Composition::SystemBackdrops::ISystemBackdropConfiguration** ppResult) override { return This()->GetDefaultSystemBackdropConfiguration(pTarget, pXamlRoot, ppResult); }
+        IFACEMETHOD(GetDefaultSystemBackdropConfiguration)(_In_ ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop* pTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot, _Outptr_ ABI::Microsoft::UI::Composition::SystemBackdrops::ISystemBackdropConfiguration** ppResult) override { return This()->GetDefaultSystemBackdropConfiguration(pTarget, pXamlRoot, ppResult); }
     };
     template<typename impl_type>
     class interface_forwarder< ABI::Microsoft::UI::Xaml::Media::ISystemBackdropOverrides, impl_type> final
         : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::Media::ISystemBackdropOverrides, impl_type>
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
-        IFACEMETHOD(OnDefaultSystemBackdropConfigurationChanged)(_In_ ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop* pTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot) override { return This()->OnDefaultSystemBackdropConfigurationChanged(pTarget, pXamlRoot); }
-        IFACEMETHOD(OnTargetConnected)(_In_ ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop* pConnectedTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot) override { return This()->OnTargetConnected(pConnectedTarget, pXamlRoot); }
-        IFACEMETHOD(OnTargetDisconnected)(_In_ ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop* pDisconnectedTarget) override { return This()->OnTargetDisconnected(pDisconnectedTarget); }
+        IFACEMETHOD(OnDefaultSystemBackdropConfigurationChanged)(_In_ ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop* pTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot) override { return This()->OnDefaultSystemBackdropConfigurationChanged(pTarget, pXamlRoot); }
+        IFACEMETHOD(OnTargetConnected)(_In_ ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop* pConnectedTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot) override { return This()->OnTargetConnected(pConnectedTarget, pXamlRoot); }
+        IFACEMETHOD(OnTargetDisconnected)(_In_ ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop* pDisconnectedTarget) override { return This()->OnTargetDisconnected(pDisconnectedTarget); }
     };
 }
 #pragma endregion
@@ -76,13 +76,13 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        _Check_return_ HRESULT STDMETHODCALLTYPE GetDefaultSystemBackdropConfiguration(_In_ ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop* pTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot, _Outptr_ ABI::Microsoft::UI::Composition::SystemBackdrops::ISystemBackdropConfiguration** ppResult);
-        _Check_return_ HRESULT STDMETHODCALLTYPE OnDefaultSystemBackdropConfigurationChanged(_In_ ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop* pTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot);
-        _Check_return_ HRESULT OnDefaultSystemBackdropConfigurationChangedProtected(_In_ ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop* pTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot);
-        _Check_return_ HRESULT STDMETHODCALLTYPE OnTargetConnected(_In_ ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop* pConnectedTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot);
-        _Check_return_ HRESULT OnTargetConnectedProtected(_In_ ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop* pConnectedTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot);
-        _Check_return_ HRESULT STDMETHODCALLTYPE OnTargetDisconnected(_In_ ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop* pDisconnectedTarget);
-        _Check_return_ HRESULT OnTargetDisconnectedProtected(_In_ ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop* pDisconnectedTarget);
+        _Check_return_ HRESULT STDMETHODCALLTYPE GetDefaultSystemBackdropConfiguration(_In_ ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop* pTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot, _Outptr_ ABI::Microsoft::UI::Composition::SystemBackdrops::ISystemBackdropConfiguration** ppResult);
+        _Check_return_ HRESULT STDMETHODCALLTYPE OnDefaultSystemBackdropConfigurationChanged(_In_ ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop* pTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot);
+        _Check_return_ HRESULT OnDefaultSystemBackdropConfigurationChangedProtected(_In_ ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop* pTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot);
+        _Check_return_ HRESULT STDMETHODCALLTYPE OnTargetConnected(_In_ ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop* pConnectedTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot);
+        _Check_return_ HRESULT OnTargetConnectedProtected(_In_ ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop* pConnectedTarget, _In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot);
+        _Check_return_ HRESULT STDMETHODCALLTYPE OnTargetDisconnected(_In_ ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop* pDisconnectedTarget);
+        _Check_return_ HRESULT OnTargetDisconnectedProtected(_In_ ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop* pDisconnectedTarget);
 
 
     protected:

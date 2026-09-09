@@ -56,7 +56,7 @@ namespace DirectUI
         , public ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopup2, PopupGenerated >
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopup3, PopupGenerated >
-        , public ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop
+        , public ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop
     {
         friend class DirectUI::Popup;
 
@@ -67,7 +67,7 @@ namespace DirectUI
             INTERFACE_ENTRY(PopupGenerated, ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener)
             INTERFACE_ENTRY(PopupGenerated, ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopup2)
             INTERFACE_ENTRY(PopupGenerated, ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopup3)
-            INTERFACE_ENTRY(PopupGenerated, ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop)
+            INTERFACE_ENTRY(PopupGenerated, ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop)
         END_INTERFACE_MAP(PopupGenerated, DirectUI::FrameworkElement)
 
     public:

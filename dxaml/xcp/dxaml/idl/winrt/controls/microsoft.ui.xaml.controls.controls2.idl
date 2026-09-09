@@ -18,10 +18,8 @@
 import "oaidl.idl";
 import "eventtoken.idl";
 import "inspectable.idl";
-import "microsoft.ui.composition.idl";
 import "microsoft.ui.composition.SystemBackdrops.idl";
 import "microsoft.ui.content.idl";
-import "microsoft.UI.Dispatching.idl";
 import "microsoft.ui.input.idl";
 import "microsoft.ui.text.idl";
 import "microsoft.ui.xaml.controls.controls.idl";
@@ -30,6 +28,8 @@ import "windows.foundation.numerics.idl";
 import "windows.globalization.idl";
 import "windows.media.idl";
 import "windows.media.playback.idl";
+import "windows.system.idl";
+import "windows.ui.composition.idl";
 import "windows.ui.idl";
 
 import "windows.applicationModel.datatransfer.dragdrop.idl";
@@ -2901,14 +2901,14 @@ namespace Microsoft.UI.Xaml.Hosting
     [default_interface]
     runtimeclass ElementCompositionPreview
     {
-        static Microsoft.UI.Composition.Visual GetElementVisual(Microsoft.UI.Xaml.UIElement element);
-        static Microsoft.UI.Composition.Visual GetElementChildVisual(Microsoft.UI.Xaml.UIElement element);
-        static void SetElementChildVisual(Microsoft.UI.Xaml.UIElement element, Microsoft.UI.Composition.Visual visual);
-        static Microsoft.UI.Composition.CompositionPropertySet GetScrollViewerManipulationPropertySet(Microsoft.UI.Xaml.Controls.ScrollViewer scrollViewer);
-        static void SetImplicitShowAnimation(Microsoft.UI.Xaml.UIElement element, Microsoft.UI.Composition.ICompositionAnimationBase animation);
-        static void SetImplicitHideAnimation(Microsoft.UI.Xaml.UIElement element, Microsoft.UI.Composition.ICompositionAnimationBase animation);
+        static Windows.UI.Composition.Visual GetElementVisual(Microsoft.UI.Xaml.UIElement element);
+        static Windows.UI.Composition.Visual GetElementChildVisual(Microsoft.UI.Xaml.UIElement element);
+        static void SetElementChildVisual(Microsoft.UI.Xaml.UIElement element, Windows.UI.Composition.Visual visual);
+        static Windows.UI.Composition.CompositionPropertySet GetScrollViewerManipulationPropertySet(Microsoft.UI.Xaml.Controls.ScrollViewer scrollViewer);
+        static void SetImplicitShowAnimation(Microsoft.UI.Xaml.UIElement element, Windows.UI.Composition.ICompositionAnimationBase animation);
+        static void SetImplicitHideAnimation(Microsoft.UI.Xaml.UIElement element, Windows.UI.Composition.ICompositionAnimationBase animation);
         static void SetIsTranslationEnabled(Microsoft.UI.Xaml.UIElement element, Boolean value);
-        static Microsoft.UI.Composition.CompositionPropertySet GetPointerPositionPropertySet(Microsoft.UI.Xaml.UIElement targetElement);
+        static Windows.UI.Composition.CompositionPropertySet GetPointerPositionPropertySet(Microsoft.UI.Xaml.UIElement targetElement);
     };
 
 }

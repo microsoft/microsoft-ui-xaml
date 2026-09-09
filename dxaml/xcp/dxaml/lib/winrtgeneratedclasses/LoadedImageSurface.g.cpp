@@ -31,13 +31,13 @@ HRESULT DirectUI::LoadedImageSurfaceGenerated::QueryInterfaceImpl(_In_ REFIID ii
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Composition::ICompositionSurface)))
-    {
-        *ppObject = static_cast<ABI::Microsoft::UI::Composition::ICompositionSurface*>(this);
-    }
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::IClosable)))
     {
         *ppObject = static_cast<ABI::Windows::Foundation::IClosable*>(this);
+    }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::UI::Composition::ICompositionSurface)))
+    {
+        *ppObject = static_cast<ABI::Windows::UI::Composition::ICompositionSurface*>(this);
     }
     else
     {

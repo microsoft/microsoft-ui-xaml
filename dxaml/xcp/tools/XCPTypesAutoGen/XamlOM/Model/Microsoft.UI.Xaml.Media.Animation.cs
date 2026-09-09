@@ -2269,7 +2269,7 @@ namespace Microsoft.UI.Xaml.Media.Animation
         public void Cancel() { }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        public void SetAnimationComponent(ConnectedAnimationComponent component, [Optional] Microsoft.UI.Composition.ICompositionAnimationBase animation) { }
+        public void SetAnimationComponent(ConnectedAnimationComponent component, [Optional] Windows.UI.Composition.ICompositionAnimationBase animation) { }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [PropertyKind(PropertyKind.PropertyOnly)]
@@ -2331,7 +2331,7 @@ namespace Microsoft.UI.Xaml.Media.Animation
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [PropertyKind(PropertyKind.PropertyOnly)]
         [NativeStorageType(OM.ValueType.valueObject)]
-        public Microsoft.UI.Composition.CompositionEasingFunction DefaultEasingFunction
+        public Windows.UI.Composition.CompositionEasingFunction DefaultEasingFunction
         {
             get;
             set;
@@ -2348,9 +2348,9 @@ namespace Microsoft.UI.Xaml.Media.Animation
         [CodeGen(CodeGenLevel.Idl)]
         [TypeTable(IsExcludedFromCore = true)]
         [ReturnTypeParameterName("effectPropertySet")]
-        internal virtual Microsoft.UI.Composition.CompositionPropertySet GetEffectPropertySet( Windows.Foundation.Numerics.Vector3 scaleFactors)
+        internal virtual Windows.UI.Composition.CompositionPropertySet GetEffectPropertySet( Windows.Foundation.Numerics.Vector3 scaleFactors)
         {
-            return default(Microsoft.UI.Composition.CompositionPropertySet);
+            return default(Windows.UI.Composition.CompositionPropertySet);
         }
 
     }

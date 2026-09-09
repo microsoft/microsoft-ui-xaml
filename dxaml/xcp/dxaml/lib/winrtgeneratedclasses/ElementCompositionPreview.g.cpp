@@ -40,7 +40,7 @@ HRESULT DirectUI::ElementCompositionPreviewFactory::QueryInterfaceImpl(_In_ REFI
 // Static properties.
 
 // Static methods.
-IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::GetElementVisual(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Outptr_ ABI::Microsoft::UI::Composition::IVisual** ppResult)
+IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::GetElementVisual(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Outptr_ ABI::Windows::UI::Composition::IVisual** ppResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -59,7 +59,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::GetElementChildVisual(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Outptr_ ABI::Microsoft::UI::Composition::IVisual** ppResult)
+IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::GetElementChildVisual(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Outptr_ ABI::Windows::UI::Composition::IVisual** ppResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -78,7 +78,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::SetElementChildVisual(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_opt_ ABI::Microsoft::UI::Composition::IVisual* pVisual)
+IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::SetElementChildVisual(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_opt_ ABI::Windows::UI::Composition::IVisual* pVisual)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -95,7 +95,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::GetScrollViewerManipulationPropertySet(_In_ ABI::Microsoft::UI::Xaml::Controls::IScrollViewer* pScrollViewer, _Outptr_ ABI::Microsoft::UI::Composition::ICompositionPropertySet** ppResult)
+IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::GetScrollViewerManipulationPropertySet(_In_ ABI::Microsoft::UI::Xaml::Controls::IScrollViewer* pScrollViewer, _Outptr_ ABI::Windows::UI::Composition::ICompositionPropertySet** ppResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -114,7 +114,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::SetImplicitShowAnimation(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_opt_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation)
+IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::SetImplicitShowAnimation(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_opt_ ABI::Windows::UI::Composition::ICompositionAnimationBase* pAnimation)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -131,7 +131,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::SetImplicitHideAnimation(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_opt_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation)
+IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::SetImplicitHideAnimation(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_opt_ ABI::Windows::UI::Composition::ICompositionAnimationBase* pAnimation)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -165,7 +165,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::GetPointerPositionPropertySet(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pTargetElement, _Outptr_ ABI::Microsoft::UI::Composition::ICompositionPropertySet** ppResult)
+IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::GetPointerPositionPropertySet(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pTargetElement, _Outptr_ ABI::Windows::UI::Composition::ICompositionPropertySet** ppResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

@@ -54,22 +54,22 @@ namespace DirectUI
         }
 
         // Properties.
-        IFACEMETHOD(get_CompositionBrush)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Composition::ICompositionBrush** ppValue) override;
-        IFACEMETHOD(put_CompositionBrush)(_In_opt_ ABI::Microsoft::UI::Composition::ICompositionBrush* pValue) override;
+        IFACEMETHOD(get_CompositionBrush)(_Outptr_result_maybenull_ ABI::Windows::UI::Composition::ICompositionBrush** ppValue) override;
+        IFACEMETHOD(put_CompositionBrush)(_In_opt_ ABI::Windows::UI::Composition::ICompositionBrush* pValue) override;
         IFACEMETHOD(get_FallbackColor)(_Out_ ABI::Windows::UI::Color* pValue) override;
         IFACEMETHOD(put_FallbackColor)(ABI::Windows::UI::Color value) override;
 
         // Events.
 
         // Methods.
-        IFACEMETHOD(ClearBrushForXamlRoot)(_In_ IInspectable* pXamlRoot, _In_ ABI::Microsoft::UI::Composition::ICompositionBrush* pBrush) override;
+        IFACEMETHOD(ClearBrushForXamlRoot)(_In_ IInspectable* pXamlRoot, _In_ ABI::Windows::UI::Composition::ICompositionBrush* pBrush) override;
         IFACEMETHOD(ClearCompositionBrushMap)() override;
-        IFACEMETHOD(GetBrushForXamlRoot)(_In_ IInspectable* pXamlRoot, _Outptr_ ABI::Microsoft::UI::Composition::ICompositionBrush** ppResult) override;
+        IFACEMETHOD(GetBrushForXamlRoot)(_In_ IInspectable* pXamlRoot, _Outptr_ ABI::Windows::UI::Composition::ICompositionBrush** ppResult) override;
         IFACEMETHOD(OnConnected)() override;
         _Check_return_ HRESULT OnConnectedProtected();
         IFACEMETHOD(OnDisconnected)() override;
         _Check_return_ HRESULT OnDisconnectedProtected();
-        IFACEMETHOD(SetBrushForXamlRoot)(_In_ IInspectable* pXamlRoot, _In_ ABI::Microsoft::UI::Composition::ICompositionBrush* pBrush) override;
+        IFACEMETHOD(SetBrushForXamlRoot)(_In_ IInspectable* pXamlRoot, _In_ ABI::Windows::UI::Composition::ICompositionBrush* pBrush) override;
 
 
     protected:

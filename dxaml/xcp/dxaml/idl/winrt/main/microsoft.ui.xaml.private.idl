@@ -18,14 +18,14 @@
 import "oaidl.idl";
 import "eventtoken.idl";
 import "inspectable.idl";
-import "microsoft.ui.composition.idl";
 import "microsoft.ui.composition.SystemBackdrops.idl";
 import "microsoft.ui.content.idl";
-import "microsoft.UI.Dispatching.idl";
 import "microsoft.ui.input.idl";
 import "microsoft.ui.xaml.idl";
 import "windows.foundation.idl";
 import "windows.foundation.numerics.idl";
+import "windows.system.idl";
+import "windows.ui.composition.idl";
 import "windows.ui.idl";
 
 import "windows.applicationModel.datatransfer.dragdrop.idl";
@@ -383,9 +383,9 @@ namespace Microsoft.UI.Xaml.Media
     [webhosthidden]
     interface IXamlCompositionBrushBasePrivates 
     {
-        void SetBrushForXamlRoot(Object xamlRoot, Microsoft.UI.Composition.CompositionBrush brush);
-        Microsoft.UI.Composition.CompositionBrush GetBrushForXamlRoot(Object xamlRoot);
-        void ClearBrushForXamlRoot(Object xamlRoot, Microsoft.UI.Composition.CompositionBrush brush);
+        void SetBrushForXamlRoot(Object xamlRoot, Windows.UI.Composition.CompositionBrush brush);
+        Windows.UI.Composition.CompositionBrush GetBrushForXamlRoot(Object xamlRoot);
+        void ClearBrushForXamlRoot(Object xamlRoot, Windows.UI.Composition.CompositionBrush brush);
         void ClearCompositionBrushMap();
     };
 

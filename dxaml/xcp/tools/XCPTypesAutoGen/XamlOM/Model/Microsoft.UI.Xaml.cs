@@ -369,11 +369,11 @@ namespace Microsoft.UI.Xaml
         [OrderHint(1)]
         [ReadOnly]
         [PropertyKind(PropertyKind.PropertyOnly)]
-        public Microsoft.UI.Dispatching.DispatcherQueue DispatcherQueue
+        public Windows.System.DispatcherQueue DispatcherQueue
         {
             get
             {
-                return default(Microsoft.UI.Dispatching.DispatcherQueue);
+                return default(Windows.System.DispatcherQueue);
             }
         }
 
@@ -597,9 +597,9 @@ namespace Microsoft.UI.Xaml
     [Platform("Feature_Xaml2018", typeof(Microsoft.UI.Xaml.WinUIContract), 1)]
     [Guids(ClassGuid = "c47ebf2e-f068-42c2-996a-be695fa71839")]
     [Velocity(Feature = "Feature_Xaml2018")]
-    [Implements(typeof(Microsoft.UI.Composition.IAnimationObject), Version = 1)]
-    [Implements(typeof(Microsoft.UI.Composition.IVisualElement), Version = 1)]
-    [Implements(typeof(Microsoft.UI.Composition.IVisualElement2), Version = 1)]
+    [Implements(typeof(Windows.UI.Composition.IAnimationObject), Version = 1)]
+    [Implements(typeof(Windows.UI.Composition.IVisualElement), Version = 1)]
+    [Implements(typeof(Windows.UI.Composition.IVisualElement2), Version = 1)]
     public abstract partial class UIElement
      : Microsoft.UI.Xaml.DependencyObject
     {
@@ -3335,7 +3335,7 @@ namespace Microsoft.UI.Xaml
     [TypeTable(IsExcludedFromCore = true)]
     [ClassFlags(HasBaseTypeInDXamlInterface = false)]
     [Implements(typeof(Microsoft.UI.Xaml.IWindowPrivate))]
-    [Implements(typeof(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop), Version = 1)]
+    [Implements(typeof(Windows.UI.Composition.ICompositionSupportsSystemBackdrop), Version = 1)]
     [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), 1, ForcePrimaryInterfaceGeneration = true)]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 4)]
     [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
@@ -3390,7 +3390,7 @@ namespace Microsoft.UI.Xaml
         [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromNewTypeTable = true)]
         [PropertyKind(PropertyKind.PropertyOnly)]
         [ReadOnly]
-        public Microsoft.UI.Composition.Compositor Compositor
+        public Windows.UI.Composition.Compositor Compositor
         {
             get;
             private set;
@@ -3412,7 +3412,7 @@ namespace Microsoft.UI.Xaml
         [AllowCrossThreadAccess]
         [PropertyKind(PropertyKind.PropertyOnly)]
         [ReadOnly]
-        public new Microsoft.UI.Dispatching.DispatcherQueue DispatcherQueue
+        public new Windows.System.DispatcherQueue DispatcherQueue
         {
             get;
             private set;
@@ -6037,7 +6037,7 @@ namespace Microsoft.UI.Xaml
     [Guids(ClassGuid = "0eb21081-a1b7-4942-925d-23cf4bafd8e1")]
     [ThreadingModel(ThreadingModel.Both)]
     [Implements(typeof(Windows.Foundation.IClosable))]
-    [Implements(typeof(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop), Version = 1)]
+    [Implements(typeof(Windows.UI.Composition.ICompositionSupportsSystemBackdrop), Version = 1)]
     public class XamlIsland
     {
         public XamlIsland()

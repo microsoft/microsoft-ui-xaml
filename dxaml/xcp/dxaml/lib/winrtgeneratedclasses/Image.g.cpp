@@ -183,7 +183,7 @@ Cleanup:
 }
 
 // Methods.
-IFACEMETHODIMP DirectUI::ImageGenerated::GetAlphaMask(_Outptr_ ABI::Microsoft::UI::Composition::ICompositionBrush** ppReturnValue)
+IFACEMETHODIMP DirectUI::ImageGenerated::GetAlphaMask(_Outptr_ ABI::Windows::UI::Composition::ICompositionBrush** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

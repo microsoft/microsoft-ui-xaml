@@ -36,9 +36,9 @@ HRESULT DirectUI::BrushGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ v
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IBrushOverrides*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Composition::IAnimationObject)))
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::UI::Composition::IAnimationObject)))
     {
-        *ppObject = static_cast<ABI::Microsoft::UI::Composition::IAnimationObject*>(this);
+        *ppObject = static_cast<ABI::Windows::UI::Composition::IAnimationObject*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IBrushFeature_XamlMotionSystemHoldbacks)) && Feature_XamlMotionSystemHoldbacks::IsEnabled())
@@ -87,7 +87,7 @@ IFACEMETHODIMP DirectUI::BrushGenerated::put_Transform(_In_opt_ ABI::Microsoft::
 // Events.
 
 // Methods.
-IFACEMETHODIMP DirectUI::BrushGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+IFACEMETHODIMP DirectUI::BrushGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -107,7 +107,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DirectUI::BrushGenerated::PopulatePropertyInfoOverrideProtected(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+_Check_return_ HRESULT DirectUI::BrushGenerated::PopulatePropertyInfoOverrideProtected(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::Media::IBrushOverrides* pVirtuals = NULL;
@@ -129,7 +129,7 @@ Cleanup:
     RRETURN(hr);
 }
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::BrushGenerated::StartAnimation(_In_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::BrushGenerated::StartAnimation(_In_ ABI::Windows::UI::Composition::ICompositionAnimationBase* pAnimation)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -149,7 +149,7 @@ Cleanup:
 }
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::BrushGenerated::StopAnimation(_In_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::BrushGenerated::StopAnimation(_In_ ABI::Windows::UI::Composition::ICompositionAnimationBase* pAnimation)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

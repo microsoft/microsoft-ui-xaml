@@ -55,6 +55,8 @@ extern const MetaDataNamespace c_aNamespaces[KnownNamespaceCount] =
     { KnownNamespaceIndex::MS_Internal_Automation, XSTRING_PTR_STORAGE(L"MS.Internal.Automation") },
     // Windows.Media.Playback
     { KnownNamespaceIndex::Windows_Media_Playback, XSTRING_PTR_STORAGE(L"Windows.Media.Playback") },
+    // Windows.UI.Composition
+    { KnownNamespaceIndex::Windows_UI_Composition, XSTRING_PTR_STORAGE(L"Windows.UI.Composition") },
     // Microsoft.UI.Xaml.Core
     { KnownNamespaceIndex::Microsoft_UI_Xaml_Core, XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Core") },
     // Microsoft.UI.Windowing
@@ -75,10 +77,6 @@ extern const MetaDataNamespace c_aNamespaces[KnownNamespaceCount] =
     { KnownNamespaceIndex::Microsoft_UI_Xaml_Shapes, XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Shapes") },
     // Microsoft.UI.Xaml.Markup
     { KnownNamespaceIndex::Microsoft_UI_Xaml_Markup, XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Markup") },
-    // Microsoft.UI.Composition
-    { KnownNamespaceIndex::Microsoft_UI_Composition, XSTRING_PTR_STORAGE(L"Microsoft.UI.Composition") },
-    // Microsoft.UI.Dispatching
-    { KnownNamespaceIndex::Microsoft_UI_Dispatching, XSTRING_PTR_STORAGE(L"Microsoft.UI.Dispatching") },
     // Windows.Graphics.Printing
     { KnownNamespaceIndex::Windows_Graphics_Printing, XSTRING_PTR_STORAGE(L"Windows.Graphics.Printing") },
     // Microsoft.UI.Xaml.Interop

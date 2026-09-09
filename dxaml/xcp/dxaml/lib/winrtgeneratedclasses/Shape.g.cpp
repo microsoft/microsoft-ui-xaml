@@ -151,7 +151,7 @@ IFACEMETHODIMP DirectUI::Shape::put_StrokeThickness(DOUBLE value)
 // Events.
 
 // Methods.
-IFACEMETHODIMP DirectUI::Shape::GetAlphaMask(_Outptr_ ABI::Microsoft::UI::Composition::ICompositionBrush** ppReturnValue)
+IFACEMETHODIMP DirectUI::Shape::GetAlphaMask(_Outptr_ ABI::Windows::UI::Composition::ICompositionBrush** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

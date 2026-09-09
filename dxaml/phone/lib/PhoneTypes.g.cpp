@@ -2412,7 +2412,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DatePickerFlyoutPresenterGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+IFACEMETHODIMP DatePickerFlyoutPresenterGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
     
@@ -2426,7 +2426,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DatePickerFlyoutPresenterGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+_Check_return_ HRESULT DatePickerFlyoutPresenterGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
 
@@ -4558,7 +4558,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP ListPickerFlyoutPresenterGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+IFACEMETHODIMP ListPickerFlyoutPresenterGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
     
@@ -4572,7 +4572,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT ListPickerFlyoutPresenterGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+_Check_return_ HRESULT ListPickerFlyoutPresenterGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
 
@@ -6033,7 +6033,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PickerFlyoutPresenterGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+IFACEMETHODIMP PickerFlyoutPresenterGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
     
@@ -6047,7 +6047,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PickerFlyoutPresenterGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+_Check_return_ HRESULT PickerFlyoutPresenterGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
 
@@ -7806,7 +7806,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+IFACEMETHODIMP PivotGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
     
@@ -7820,7 +7820,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+_Check_return_ HRESULT PivotGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
 
@@ -9540,7 +9540,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotItemGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+IFACEMETHODIMP PivotItemGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
     
@@ -9554,7 +9554,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotItemGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+_Check_return_ HRESULT PivotItemGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
 
@@ -11265,7 +11265,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP TimePickerFlyoutPresenterGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+IFACEMETHODIMP TimePickerFlyoutPresenterGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
     
@@ -11279,7 +11279,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT TimePickerFlyoutPresenterGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+_Check_return_ HRESULT TimePickerFlyoutPresenterGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
 
@@ -13142,7 +13142,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+IFACEMETHODIMP LoopingSelectorGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
     
@@ -13156,7 +13156,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+_Check_return_ HRESULT LoopingSelectorGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
 
@@ -14483,7 +14483,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorItemGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+IFACEMETHODIMP LoopingSelectorItemGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
     
@@ -14497,7 +14497,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorItemGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+_Check_return_ HRESULT LoopingSelectorItemGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
 
@@ -14873,7 +14873,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorPanelGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+IFACEMETHODIMP LoopingSelectorPanelGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
     
@@ -14887,7 +14887,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorPanelGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+_Check_return_ HRESULT LoopingSelectorPanelGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
 
@@ -16184,7 +16184,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotHeaderItemGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+IFACEMETHODIMP PivotHeaderItemGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
     
@@ -16198,7 +16198,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotHeaderItemGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+_Check_return_ HRESULT PivotHeaderItemGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
 
@@ -16539,7 +16539,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotHeaderPanelGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+IFACEMETHODIMP PivotHeaderPanelGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
     
@@ -16553,7 +16553,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotHeaderPanelGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+_Check_return_ HRESULT PivotHeaderPanelGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
 
@@ -16929,7 +16929,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotPanelGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+IFACEMETHODIMP PivotPanelGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
     
@@ -16943,7 +16943,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotPanelGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
+_Check_return_ HRESULT PivotPanelGenerated::PopulatePropertyInfoOverrideImpl(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
 

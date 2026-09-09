@@ -18,10 +18,8 @@
 import "oaidl.idl";
 import "eventtoken.idl";
 import "inspectable.idl";
-import "microsoft.ui.composition.idl";
 import "microsoft.ui.composition.SystemBackdrops.idl";
 import "microsoft.ui.content.idl";
-import "microsoft.UI.Dispatching.idl";
 import "microsoft.ui.input.idl";
 import "microsoft.ui.windowing.idl";
 import "microsoft.ui.xaml.coretypes2.idl";
@@ -29,6 +27,8 @@ import "windows.foundation.idl";
 import "windows.foundation.numerics.idl";
 import "windows.graphics.printing.idl";
 import "windows.media.casting.idl";
+import "windows.system.idl";
+import "windows.ui.composition.idl";
 import "windows.ui.idl";
 
 import "windows.applicationModel.datatransfer.dragdrop.idl";
@@ -1519,7 +1519,7 @@ namespace Microsoft.UI.Xaml.Controls
         event Microsoft.UI.Xaml.ExceptionRoutedEventHandler ImageFailed;
         event Microsoft.UI.Xaml.RoutedEventHandler ImageOpened;
         Windows.Media.Casting.CastingSource GetAsCastingSource();
-        Microsoft.UI.Composition.CompositionBrush GetAlphaMask();
+        Windows.UI.Composition.CompositionBrush GetAlphaMask();
         static Microsoft.UI.Xaml.DependencyProperty SourceProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty StretchProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty NineGridProperty{ get; };
@@ -1727,7 +1727,7 @@ namespace Microsoft.UI.Xaml.Controls
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.TextBlock,Microsoft.UI.Xaml.Controls.IsTextTrimmedChangedEventArgs> IsTextTrimmedChanged;
         void SelectAll();
         void Select(Microsoft.UI.Xaml.Documents.TextPointer start, Microsoft.UI.Xaml.Documents.TextPointer end);
-        Microsoft.UI.Composition.CompositionBrush GetAlphaMask();
+        Windows.UI.Composition.CompositionBrush GetAlphaMask();
         void CopySelectionToClipboard();
         static Microsoft.UI.Xaml.DependencyProperty FontSizeProperty{ get; };
         static Microsoft.UI.Xaml.DependencyProperty FontFamilyProperty{ get; };

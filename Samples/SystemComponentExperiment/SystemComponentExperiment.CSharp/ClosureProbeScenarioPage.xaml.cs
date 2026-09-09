@@ -1,6 +1,6 @@
 using System.Text;
 using Windows.Foundation.Metadata;
-using Muc = Microsoft.UI.Composition;
+using Wuc = Windows.UI.Composition;
 using MucBackdrops = Microsoft.UI.Composition.SystemBackdrops;
 using Mux = Microsoft.UI.Xaml;
 
@@ -10,19 +10,19 @@ public sealed partial class ClosureProbeScenarioPage : Mux.Controls.Page
 {
     private static readonly Type[] PublicXamlCompositionTypes =
     [
-        typeof(Muc.AnimationPropertyInfo),
-        typeof(Muc.CompositionBrush),
-        typeof(Muc.CompositionEasingFunction),
-        typeof(Muc.CompositionLight),
-        typeof(Muc.CompositionPropertySet),
-        typeof(Muc.Compositor),
-        typeof(Muc.IAnimationObject),
-        typeof(Muc.ICompositionAnimationBase),
-        typeof(Muc.ICompositionSupportsSystemBackdrop),
-        typeof(Muc.ICompositionSurface),
-        typeof(Muc.IVisualElement),
-        typeof(Muc.IVisualElement2),
-        typeof(Muc.Visual),
+        typeof(Wuc.AnimationPropertyInfo),
+        typeof(Wuc.CompositionBrush),
+        typeof(Wuc.CompositionEasingFunction),
+        typeof(Wuc.CompositionLight),
+        typeof(Wuc.CompositionPropertySet),
+        typeof(Wuc.Compositor),
+        typeof(Wuc.IAnimationObject),
+        typeof(Wuc.ICompositionAnimationBase),
+        typeof(Wuc.ICompositionSupportsSystemBackdrop),
+        typeof(Wuc.ICompositionSurface),
+        typeof(Wuc.IVisualElement),
+        typeof(Wuc.IVisualElement2),
+        typeof(Wuc.Visual),
         typeof(MucBackdrops.SystemBackdropConfiguration)
     ];
 
@@ -52,7 +52,7 @@ public sealed partial class ClosureProbeScenarioPage : Mux.Controls.Page
     private void RunProbes_Click(object sender, Mux.RoutedEventArgs args)
     {
         StringBuilder result = new();
-        result.AppendLine($"Compile-probed lifted XAML types: {PublicXamlCompositionTypes.Length}");
+        result.AppendLine($"Compile-probed XAML Composition types: {PublicXamlCompositionTypes.Length}");
 
         foreach (string typeName in CandidateSystemTypes)
         {

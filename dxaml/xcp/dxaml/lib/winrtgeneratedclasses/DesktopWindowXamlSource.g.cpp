@@ -34,13 +34,13 @@ HRESULT DirectUI::DesktopWindowXamlSourceGenerated::QueryInterfaceImpl(_In_ REFI
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop)))
-    {
-        *ppObject = static_cast<ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop*>(this);
-    }
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::IClosable)))
     {
         *ppObject = static_cast<ABI::Windows::Foundation::IClosable*>(this);
+    }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop)))
+    {
+        *ppObject = static_cast<ABI::Windows::UI::Composition::ICompositionSupportsSystemBackdrop*>(this);
     }
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource2)))
     {

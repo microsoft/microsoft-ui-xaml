@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "activeSubtrial": "A",
-  "activeStage": "A2",
-  "activeCheckpoint": "public-contract-migration",
+  "activeStage": "A3",
+  "activeCheckpoint": "native-composition-interface-migration",
   "architecture": "x64",
   "branchNativeImplementation": true,
   "repositories": {
@@ -83,12 +83,12 @@
     "systemIdlBuild": "blocked-by-vfs-createprocess-payload-mismatch-0x95e"
   },
   "latestCheckpoint": {
-    "winuiCommit": "93daa410f",
+    "winuiCommit": "579b9657c",
     "winuiGalleryCommit": "199f63ec57ee8457fa9745b8a0d1e951111331fc",
-    "winuiBuild": "passed-product-package-amd64-with-clean-winui-payload-and-registration",
-    "csharpScenarioApp": "passed-debug-x64-package-build-launches-with-forbidden-dependent-payload",
-    "cppWinrtScenarioApp": "passed-debug-x64-package-build-launches-with-forbidden-dependent-payload",
+    "winuiBuild": "a2-metadata-merges-pass-native-build-blocked-at-a3-interface-implementation",
+    "csharpScenarioApp": "source-updated-to-system-composition-and-dispatcherqueue-awaiting-a3-product-build",
+    "cppWinrtScenarioApp": "source-updated-to-system-composition-and-dispatcherqueue-awaiting-a3-product-build",
     "winuiGallery": "passed-debug-x64-build",
-    "notes": "A1 metadata, WinUI package payload, and activation registration filtering pass. System OS headers remain isolated from native compilation until those sources migrate, preventing incomplete OS header sets from shadowing Windows SDK headers. Both scenario apps now fail their startup canary when forbidden modules load. Their self-contained MSIX payloads currently reintroduce all seven forbidden DLLs from Interactive Experiences, and CoreMessagingXP.dll, dcompi.dll, Microsoft.UI.Composition.OSSupport.dll, marshal.dll, and dwmcorei.dll load at startup. Clearing that canary depends on the A3-A5 native closure rebuild; it is not hidden or treated as an A1 payload success."
+    "notes": "A2 changes XamlOM, generated IDL, generated ABI stubs, and scenario source to Windows.UI.Composition and Windows.System.DispatcherQueue. Public and private metadata merges pass using current SDK system metadata; Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration remains explicitly retained because no system counterpart exists. The full native build now reaches A3 failures where DependencyObject, UIElement, and related native classes still implement lifted DispatcherQueue and private Composition interfaces. A1 runtime canaries remain red until the A3-A5 native closure is rebuilt."
   }
 }

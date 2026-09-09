@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::ConnectedAnimationServiceGenerated::put_DefaultDuration
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ConnectedAnimationServiceGenerated::get_DefaultEasingFunction(_Outptr_result_maybenull_ ABI::Microsoft::UI::Composition::ICompositionEasingFunction** ppValue)
+IFACEMETHODIMP DirectUI::ConnectedAnimationServiceGenerated::get_DefaultEasingFunction(_Outptr_result_maybenull_ ABI::Windows::UI::Composition::ICompositionEasingFunction** ppValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
@@ -73,7 +73,7 @@ IFACEMETHODIMP DirectUI::ConnectedAnimationServiceGenerated::get_DefaultEasingFu
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ConnectedAnimationServiceGenerated::put_DefaultEasingFunction(_In_opt_ ABI::Microsoft::UI::Composition::ICompositionEasingFunction* pValue)
+IFACEMETHODIMP DirectUI::ConnectedAnimationServiceGenerated::put_DefaultEasingFunction(_In_opt_ ABI::Windows::UI::Composition::ICompositionEasingFunction* pValue)
 {
     HRESULT hr = S_OK;
     

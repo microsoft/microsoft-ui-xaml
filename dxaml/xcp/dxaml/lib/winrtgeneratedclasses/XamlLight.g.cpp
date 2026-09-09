@@ -51,7 +51,7 @@ HRESULT DirectUI::XamlLight::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void**
 }
 
 // Properties.
-IFACEMETHODIMP DirectUI::XamlLight::get_CompositionLight(_Outptr_result_maybenull_ ABI::Microsoft::UI::Composition::ICompositionLight** ppValue)
+IFACEMETHODIMP DirectUI::XamlLight::get_CompositionLight(_Outptr_result_maybenull_ ABI::Windows::UI::Composition::ICompositionLight** ppValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
@@ -61,7 +61,7 @@ IFACEMETHODIMP DirectUI::XamlLight::get_CompositionLight(_Outptr_result_maybenul
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlLight::put_CompositionLight(_In_opt_ ABI::Microsoft::UI::Composition::ICompositionLight* pValue)
+IFACEMETHODIMP DirectUI::XamlLight::put_CompositionLight(_In_opt_ ABI::Windows::UI::Composition::ICompositionLight* pValue)
 {
     HRESULT hr = S_OK;
     

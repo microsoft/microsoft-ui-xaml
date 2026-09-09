@@ -27,8 +27,8 @@ namespace ctl
         : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::Media::IBrushFeature_XamlMotionSystemHoldbacks, impl_type>
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
-        IFACEMETHOD(StartAnimation)(_In_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation) override { return This()->StartAnimation(pAnimation); }
-        IFACEMETHOD(StopAnimation)(_In_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation) override { return This()->StopAnimation(pAnimation); }
+        IFACEMETHOD(StartAnimation)(_In_ ABI::Windows::UI::Composition::ICompositionAnimationBase* pAnimation) override { return This()->StartAnimation(pAnimation); }
+        IFACEMETHOD(StopAnimation)(_In_ ABI::Windows::UI::Composition::ICompositionAnimationBase* pAnimation) override { return This()->StopAnimation(pAnimation); }
     };
 }
 #pragma endregion
@@ -42,7 +42,7 @@ namespace DirectUI
         public DirectUI::DependencyObject
         , public ABI::Microsoft::UI::Xaml::Media::IBrush
         , public ABI::Microsoft::UI::Xaml::Media::IBrushOverrides
-        , public ABI::Microsoft::UI::Composition::IAnimationObject
+        , public ABI::Windows::UI::Composition::IAnimationObject
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Media::IBrushFeature_XamlMotionSystemHoldbacks, BrushGenerated >
 #endif
@@ -54,7 +54,7 @@ namespace DirectUI
         BEGIN_INTERFACE_MAP(BrushGenerated, DirectUI::DependencyObject)
             INTERFACE_ENTRY(BrushGenerated, ABI::Microsoft::UI::Xaml::Media::IBrush)
             INTERFACE_ENTRY(BrushGenerated, ABI::Microsoft::UI::Xaml::Media::IBrushOverrides)
-            INTERFACE_ENTRY(BrushGenerated, ABI::Microsoft::UI::Composition::IAnimationObject)
+            INTERFACE_ENTRY(BrushGenerated, ABI::Windows::UI::Composition::IAnimationObject)
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
             INTERFACE_ENTRY(BrushGenerated, ABI::Microsoft::UI::Xaml::Media::IBrushFeature_XamlMotionSystemHoldbacks)
 #endif
@@ -87,13 +87,13 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo) override;
-        _Check_return_ HRESULT PopulatePropertyInfoOverrideProtected(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
+        IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo) override;
+        _Check_return_ HRESULT PopulatePropertyInfoOverrideProtected(_In_ HSTRING propertyName, _In_ ABI::Windows::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
-        _Check_return_ HRESULT STDMETHODCALLTYPE StartAnimation(_In_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation);
+        _Check_return_ HRESULT STDMETHODCALLTYPE StartAnimation(_In_ ABI::Windows::UI::Composition::ICompositionAnimationBase* pAnimation);
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
-        _Check_return_ HRESULT STDMETHODCALLTYPE StopAnimation(_In_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation);
+        _Check_return_ HRESULT STDMETHODCALLTYPE StopAnimation(_In_ ABI::Windows::UI::Composition::ICompositionAnimationBase* pAnimation);
 #endif
 
 

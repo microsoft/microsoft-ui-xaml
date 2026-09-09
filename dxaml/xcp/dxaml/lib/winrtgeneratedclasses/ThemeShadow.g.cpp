@@ -42,7 +42,7 @@ HRESULT DirectUI::ThemeShadowGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Out
 }
 
 // Properties.
-_Check_return_ HRESULT DirectUI::ThemeShadowGenerated::get_Mask(_Outptr_result_maybenull_ ABI::Microsoft::UI::Composition::ICompositionBrush** ppValue)
+_Check_return_ HRESULT DirectUI::ThemeShadowGenerated::get_Mask(_Outptr_result_maybenull_ ABI::Windows::UI::Composition::ICompositionBrush** ppValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
@@ -52,7 +52,7 @@ _Check_return_ HRESULT DirectUI::ThemeShadowGenerated::get_Mask(_Outptr_result_m
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ThemeShadowGenerated::put_Mask(_In_opt_ ABI::Microsoft::UI::Composition::ICompositionBrush* pValue)
+_Check_return_ HRESULT DirectUI::ThemeShadowGenerated::put_Mask(_In_opt_ ABI::Windows::UI::Composition::ICompositionBrush* pValue)
 {
     HRESULT hr = S_OK;
     

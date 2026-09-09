@@ -21,8 +21,8 @@ namespace DirectUI
     class __declspec(novtable) LoadedImageSurfaceGenerated:
         public DirectUI::DependencyObject
         , public ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface
-        , public ABI::Microsoft::UI::Composition::ICompositionSurface
         , public ABI::Windows::Foundation::IClosable
+        , public ABI::Windows::UI::Composition::ICompositionSurface
     {
         friend class DirectUI::LoadedImageSurface;
 
@@ -30,8 +30,8 @@ namespace DirectUI
 
         BEGIN_INTERFACE_MAP(LoadedImageSurfaceGenerated, DirectUI::DependencyObject)
             INTERFACE_ENTRY(LoadedImageSurfaceGenerated, ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface)
-            INTERFACE_ENTRY(LoadedImageSurfaceGenerated, ABI::Microsoft::UI::Composition::ICompositionSurface)
             INTERFACE_ENTRY(LoadedImageSurfaceGenerated, ABI::Windows::Foundation::IClosable)
+            INTERFACE_ENTRY(LoadedImageSurfaceGenerated, ABI::Windows::UI::Composition::ICompositionSurface)
         END_INTERFACE_MAP(LoadedImageSurfaceGenerated, DirectUI::DependencyObject)
 
     public:

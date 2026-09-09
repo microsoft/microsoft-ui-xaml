@@ -52,8 +52,8 @@ namespace DirectUI
         }
 
         // Properties.
-        IFACEMETHOD(get_CompositionLight)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Composition::ICompositionLight** ppValue) override;
-        IFACEMETHOD(put_CompositionLight)(_In_opt_ ABI::Microsoft::UI::Composition::ICompositionLight* pValue) override;
+        IFACEMETHOD(get_CompositionLight)(_Outptr_result_maybenull_ ABI::Windows::UI::Composition::ICompositionLight** ppValue) override;
+        IFACEMETHOD(put_CompositionLight)(_In_opt_ ABI::Windows::UI::Composition::ICompositionLight* pValue) override;
 
         // Events.
 
@@ -71,13 +71,13 @@ namespace DirectUI
 
     private:
         // Customized properties.
-         _Check_return_ HRESULT get_CompositionLightImpl(_Outptr_result_maybenull_ ABI::Microsoft::UI::Composition::ICompositionLight** ppValue); 
-         _Check_return_ HRESULT put_CompositionLightImpl(_In_opt_ ABI::Microsoft::UI::Composition::ICompositionLight* pValue); 
+         _Check_return_ HRESULT get_CompositionLightImpl(_Outptr_result_maybenull_ ABI::Windows::UI::Composition::ICompositionLight** ppValue);
+         _Check_return_ HRESULT put_CompositionLightImpl(_In_opt_ ABI::Windows::UI::Composition::ICompositionLight* pValue);
 
         // Customized methods.
-         _Check_return_ HRESULT GetIdImpl(_Out_ HSTRING* pReturnValue); 
-         _Check_return_ HRESULT OnConnectedImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pNewElement); 
-         _Check_return_ HRESULT OnDisconnectedImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pOldElement); 
+         _Check_return_ HRESULT GetIdImpl(_Out_ HSTRING* pReturnValue);
+         _Check_return_ HRESULT OnConnectedImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pNewElement);
+         _Check_return_ HRESULT OnDisconnectedImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pOldElement);
 
         // Fields.
     };
@@ -134,9 +134,9 @@ namespace DirectUI
         // Customized static properties.
 
         // Customized static  methods.
-         _Check_return_ HRESULT AddTargetElementImpl(_In_ HSTRING lightId, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement); 
-         _Check_return_ HRESULT RemoveTargetElementImpl(_In_ HSTRING lightId, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement); 
-         _Check_return_ HRESULT AddTargetBrushImpl(_In_ HSTRING lightId, _In_ ABI::Microsoft::UI::Xaml::Media::IBrush* pBrush); 
-         _Check_return_ HRESULT RemoveTargetBrushImpl(_In_ HSTRING lightId, _In_ ABI::Microsoft::UI::Xaml::Media::IBrush* pBrush); 
+         _Check_return_ HRESULT AddTargetElementImpl(_In_ HSTRING lightId, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement);
+         _Check_return_ HRESULT RemoveTargetElementImpl(_In_ HSTRING lightId, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement);
+         _Check_return_ HRESULT AddTargetBrushImpl(_In_ HSTRING lightId, _In_ ABI::Microsoft::UI::Xaml::Media::IBrush* pBrush);
+         _Check_return_ HRESULT RemoveTargetBrushImpl(_In_ HSTRING lightId, _In_ ABI::Microsoft::UI::Xaml::Media::IBrush* pBrush);
     };
 }
