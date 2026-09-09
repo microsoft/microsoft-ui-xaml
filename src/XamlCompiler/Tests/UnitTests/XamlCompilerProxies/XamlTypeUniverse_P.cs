@@ -10,6 +10,7 @@ namespace Win8Xaml.CompilerProxies
         static ProxyHelper _xamlTypeUniverseType;
         static MethodInfo _loadAssemblyFromFile;
         static MethodInfo _getSystemAssembly;
+        static MethodInfo _dispose;
         static PropertyInfo _isSystemAssemblyLoaded;
         static EventInfo _OnResolveEvent;
 
@@ -20,6 +21,7 @@ namespace Win8Xaml.CompilerProxies
             _xamlTypeUniverseType = new ProxyHelper("Microsoft.UI.Xaml.Markup.Compiler.Lmr.XamlTypeUniverse");
             _loadAssemblyFromFile = _xamlTypeUniverseType.GetMethod("LoadAssemblyFromFile");
             _getSystemAssembly = _xamlTypeUniverseType.GetMethod("GetSystemAssembly");
+            _dispose = _xamlTypeUniverseType.GetMethod("Dispose");
 
             _isSystemAssemblyLoaded = _xamlTypeUniverseType.GetProperty("IsSystemAssemblyLoaded");
 
@@ -53,6 +55,16 @@ namespace Win8Xaml.CompilerProxies
         {
             Object result = _getSystemAssembly.Invoke(_instance, null);
             return (Assembly)result;
+        }
+
+        /// <summary>
+        /// Releases the native metadata objects held by this universe's assemblies and modules.
+        /// The universe must not be used afterwards. CompileXamlInternal.UnloadReferences does the
+        /// same when it retires its cached universe.
+        /// </summary>
+        public void Dispose()
+        {
+            _dispose.Invoke(_instance, null);
         }
 
 

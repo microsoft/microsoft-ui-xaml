@@ -56,6 +56,7 @@
     <Compile Include="MultipleViewTests.cs" />
     <Compile Include="StaticResourceTests.cs" />
     <Compile Include="TestHelper.cs" />
+    <Compile Include="TestRunSetup.cs" />
     <Compile Include="SchemaTests.cs" />
     <Compile Include="TypeCollectorTests.cs" />
     <Compile Include="UnitTests.cs" />
@@ -174,5 +175,39 @@
     <Copy SourceFiles="$(ProductDir)Microsoft.UI.winmd" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(ProductDir)Microsoft.UI.winmd')" />
     <Copy SourceFiles="$(ProductDir)Microsoft.UI.dll" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(ProductDir)Microsoft.UI.dll')" />
     <Copy SourceFiles="$(ProductDir)Microsoft.ui.xaml.dll" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(ProductDir)Microsoft.ui.xaml.dll')" />
+
+    <!-- LibManagedDll is an SDK-style net8.0/WinAppSDK assembly, so the "user types" the tests
+         feed to the compiler now reference the C#/WinRT projection closure - Microsoft.WinUI,
+         Microsoft.Windows.SDK.NET, WinRT.Runtime and Microsoft.InteractiveExperiences.Projection -
+         rather than raw winmds, and its BCL closure is .NET 8 rather than .NET Framework. The
+         compiler's type universe can only resolve assemblies it has been handed, so both sets are
+         staged here and loaded by TestHelper. This mirrors what MSBuild hands the real CompileXaml
+         task on @(ReferencePath): CompileXamlInternal.SortReferenceAssemblies already treats
+         microsoft.winui.dll as a load-by-default reference alongside the winmds.
+         Nothing is hard-coded: every path below is derived from the repo's own version properties. -->
+    <PropertyGroup>
+      <ProjectionReferencesDir>$(OutDir)ProjectionReferences\</ProjectionReferencesDir>
+      <FrameworkReferencesDir>$(OutDir)FrameworkReferences\</FrameworkReferencesDir>
+      <!-- Same expression eng\sdkconfig.targets uses to pin the SDK.NET targeting pack. -->
+      <_SdkNetRefPackVersion>$(WindowsTargetPlatformVersion.TrimEnd('0'))$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)</_SdkNetRefPackVersion>
+      <_SdkNetRefPackDir>$(NugetPackageDirectory)\microsoft.windows.sdk.net.ref\$(_SdkNetRefPackVersion)\lib\net6.0\</_SdkNetRefPackDir>
+      <!-- Same expression LibManagedDll.csproj uses for its own IXP reference. -->
+      <_IxpProjectionDir>$(LiftedIXPPackagePath)\lib\net6.0-windows$(CurrentLiftedIXPTargetPlatformVersion)\</_IxpProjectionDir>
+      <!-- $(Net8TargetingPackVersion) is the same pin eng\sdkconfig.targets applies to every .NET 8 pack. -->
+      <_NetCoreRefPackDir>$(NugetPackageDirectory)\microsoft.netcore.app.ref\$(Net8TargetingPackVersion)\ref\net8.0\</_NetCoreRefPackDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <_ManagedProjectionReference Include="$(ProductDir)Microsoft.WinUI.dll" />
+      <_ManagedProjectionReference Include="$(_SdkNetRefPackDir)Microsoft.Windows.SDK.NET.dll" />
+      <_ManagedProjectionReference Include="$(_SdkNetRefPackDir)WinRT.Runtime.dll" />
+      <_ManagedProjectionReference Include="$(_IxpProjectionDir)Microsoft.InteractiveExperiences.Projection.dll" />
+      <_NetCoreFrameworkReference Include="$(_NetCoreRefPackDir)*.dll" />
+    </ItemGroup>
+    <Error Condition="!Exists('%(_ManagedProjectionReference.FullPath)')"
+           Text="Managed projection reference not found: %(_ManagedProjectionReference.FullPath). The unit tests cannot resolve LibManagedDll's type closure without it." />
+    <Error Condition="'@(_NetCoreFrameworkReference)' == ''"
+           Text="No .NET 8 reference assemblies found under '$(_NetCoreRefPackDir)'. The unit tests cannot resolve a net8.0 user assembly's type closure without them." />
+    <Copy SourceFiles="@(_ManagedProjectionReference)" DestinationFolder="$(ProjectionReferencesDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_NetCoreFrameworkReference)" DestinationFolder="$(FrameworkReferencesDir)" SkipUnchangedFiles="true" />
   </Target>
 </Project>
