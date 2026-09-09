@@ -1,0 +1,9 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+namespace Simple
+{
+    runtimeclass FieldModifierTests : Microsoft.UI.Xaml.Controls.Page
+    {
+        FieldModifierTests();
+    };
+}

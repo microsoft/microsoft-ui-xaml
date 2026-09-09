@@ -1,0 +1,19 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+//
+// MainPage.xaml.c++WinRT
+// Implementation of the MainPage class.
+//
+// The file extension is deliberately non-standard - see BlankPage.h++WinRT.
+//
+
+#include "pch.h"
+#include "MainPage.xaml.h++WinRT"
+
+namespace winrt::NonStandardCppWinRT::implementation
+{
+    MainPage::MainPage()
+    {
+        InitializeComponent();
+    }
+}

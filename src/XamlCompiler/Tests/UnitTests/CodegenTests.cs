@@ -199,6 +199,20 @@ namespace UnitTests
 
         [TestMethod]
         [Ignore]
+        public void Codegen_EventHandlingCppWinRT()
+        {
+            DiffCodegen(@"RegressionProjects\Basic\CppWinRT\EventHandling_968976\Generated Files");
+        }
+
+        [TestMethod]
+        [Ignore]
+        public void Codegen_NonStandardCppWinRT()
+        {
+            DiffCodegen(@"RegressionProjects\NonStandard\NonStandardCppWinRT\NonStandardCppWinRT\Generated Files");
+        }
+
+        [TestMethod]
+        [Ignore]
         public void Codegen_EventHandlingCX()
         {
             DiffCodegen(@"RegressionProjects\Basic\VC\EventHandling_968976\Generated Files");
@@ -271,6 +285,13 @@ namespace UnitTests
             DiffCodegen(@"RegressionProjects\Basic\References\VCWinrtComponent\Generated Files");
         }
 
+        [TestMethod]
+        [Ignore]
+        public void Codegen_References_CppWinRTExe()
+        {
+            DiffCodegen(@"RegressionProjects\Basic\References\CppWinRTExe\Generated Files");
+        }
+
         //
         // BindTestbed Tests
         //
@@ -324,6 +345,13 @@ namespace UnitTests
             DiffCodegen(@"RegressionProjects\Features\BindPhasingTestBedCpp\BindPhasingTestBedCpp\Generated Files");
         }
 
+        [TestMethod]
+        [Ignore]
+        public void Codegen_BindPhasingTestbedCppWinRT()
+        {
+            DiffCodegen(@"RegressionProjects\Features\BindPhasingTestBedCppWinRT\BindPhasingTestBedCppWinRT\Generated Files");
+        }
+
         //
         // BindTestbed backcompat RS1 tests
         //
@@ -375,6 +403,20 @@ namespace UnitTests
 
         [TestMethod]
         [Ignore]
+        public void Codegen_DeferLoadStrategyCppWinRT()
+        {
+            DiffCodegen(@"RegressionProjects\Features\DeferLoadStrategy\CppWinRT\Generated Files");
+        }
+
+        [TestMethod]
+        [Ignore]
+        public void Codegen_MetadataTestbedCppWinRT()
+        {
+            DiffCodegen(@"RegressionProjects\Features\Metadata\MetadataTestbedCppWinRT\Generated Files");
+        }
+
+        [TestMethod]
+        [Ignore]
         public void Codegen_ReduceProviderLoading_ConsumerCS()
         {
             DiffCodegen(@"RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ConsumerCs\obj\x86\Debug");
@@ -413,6 +455,20 @@ namespace UnitTests
         public void Codegen_ReduceProviderLoading_ProviderCX()
         {
             DiffCodegen(@"RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ProviderCs\obj\x86\Debug");
+        }
+
+        [TestMethod]
+        [Ignore]
+        public void Codegen_ReduceProviderLoading_ProviderCppWinRT()
+        {
+            DiffCodegen(@"RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ProviderCppWinRT\Generated Files");
+        }
+
+        [TestMethod]
+        [Ignore]
+        public void Codegen_ReduceProviderLoading_ConsumerCppWinRT()
+        {
+            DiffCodegen(@"RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ConsumerCppWinRT\Generated Files");
         }
 
         [TestMethod]
