@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+using Microsoft.UI;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 using Windows.UI;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 
 namespace LibManagedDll
 {
@@ -86,7 +87,7 @@ namespace LibManagedDll
 
         public static explicit operator Thickness(BindPathParserClass instance)
         {
-            return ThicknessHelper.FromUniformLength(20);
+            return new Thickness(20);
         }
 
         public Button SomeButton { get; }

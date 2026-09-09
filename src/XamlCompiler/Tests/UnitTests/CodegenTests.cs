@@ -217,14 +217,6 @@ namespace UnitTests
 
         [TestMethod]
         [Ignore]
-        // Behaviors SDK no longer ships with VS 2017
-        public void Codegen_VC_Old_Behaviors_SDK()
-        {
-            DiffCodegen(@"RegressionProjects\Basic\OldPlatformsReferences\VC_Old_Behaviors_SDK\VC_Exe\Generated Files");
-        }
-
-        [TestMethod]
-        [Ignore]
         public void Codegen_References_CSExe()
         {
             DiffCodegen(@"RegressionProjects\Basic\References\CSharpExe\obj\x86\Debug");
