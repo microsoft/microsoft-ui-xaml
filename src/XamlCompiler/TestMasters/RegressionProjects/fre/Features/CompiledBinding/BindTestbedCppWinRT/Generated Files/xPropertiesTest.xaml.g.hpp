@@ -114,13 +114,13 @@ namespace winrt::BindTestbed::implementation
         {
             switch(connectionId)
             {
-            case 2: // xPropertiesTest.xaml line 48
+            case 2: // xPropertiesTest.xaml line 50
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
                     obj2 = targetElement;
                 }
                 break;
-            case 3: // xPropertiesTest.xaml line 51
+            case 3: // xPropertiesTest.xaml line 53
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
                     obj3 = targetElement;
@@ -158,7 +158,7 @@ namespace winrt::BindTestbed::implementation
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
-                // xPropertiesTest.xaml line 48
+                // xPropertiesTest.xaml line 50
                 Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj2, obj);
             }
         }
@@ -178,7 +178,7 @@ namespace winrt::BindTestbed::implementation
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
-                // xPropertiesTest.xaml line 51
+                // xPropertiesTest.xaml line 53
                 Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj3, ::winrt::to_hstring(obj));
             }
         }
