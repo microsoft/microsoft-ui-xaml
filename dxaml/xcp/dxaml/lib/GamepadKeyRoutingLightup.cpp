@@ -12,17 +12,13 @@
 #include "GamepadKeyRoutingLightup.h"
 
 // Windows.UI.Input.GamepadKeyRoutingConfiguration was introduced in UniversalApiContract 19
-// (Windows 11, version 24H2).  That is newer than the Windows SDK package this repo builds against,
-// so the type is not declared in the SDK headers at all and the calls below cannot be compiled yet.
-//
-// Gating on the contract version that the SDK headers themselves declare -- rather than on the
-// value forced by the build (see WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION in
-// dxaml\Xaml.Cpp.Targets), which the #undef above clears -- means this file compiles to a no-op
-// today and begins enabling gamepad key routing as soon as the SDK package is updated to one that
-// carries the type.  No source change is needed at that point.
+// (Windows 11, version 24H2). Gate on the contract version declared by the SDK headers rather than
+// the value forced by the build (see WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION in
+// dxaml\Xaml.Cpp.Targets), which the #undef above clears.
 #define GAMEPAD_KEY_ROUTING_CONTRACT_VERSION 0x130000   // UniversalApiContract 19.0
 
 #if WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION >= GAMEPAD_KEY_ROUTING_CONTRACT_VERSION
+#include <windows.foundation.metadata.h>
 #include <windows.ui.input.h>
 #endif
 
