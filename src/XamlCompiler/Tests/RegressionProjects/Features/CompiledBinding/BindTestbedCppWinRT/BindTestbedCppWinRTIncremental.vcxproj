@@ -27,6 +27,13 @@
     <DesktopCompatible>true</DesktopCompatible>
     <ApplicationType>Windows Store</ApplicationType>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+
+    <!--
+      Must match BindTestbedCppWinRT.vcxproj: this project compiles the same sources, and those
+      sources include the C++/WinRT component headers by their directory-form names
+      ("subfolder/SubDictionary.g.h"). See the longer explanation in that project.
+    -->
+    <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

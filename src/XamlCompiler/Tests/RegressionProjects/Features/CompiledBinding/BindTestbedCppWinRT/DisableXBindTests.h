@@ -16,6 +16,10 @@ namespace winrt::BindTestbed::implementation
         BindTestbedModel::DOModel DOModel() { return domodel; }
         void DOModel(BindTestbedModel::DOModel value) { domodel = value; }
 
+        // See the note in BindTestbed.idl: the binding on this uses TargetNullValue, which
+        // requires a nullable type, and hstring is not one.
+        IInspectable FunctionReturningNull() { return nullptr; }
+
         void Click_RegularArgs(IInspectable const& sender, wux::RoutedEventArgs const& e);
         void Click_NoArgs();
         void On_Loaded(IInspectable const& sender, wux::RoutedEventArgs const& e);
