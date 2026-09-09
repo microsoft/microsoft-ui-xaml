@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "activeSubtrial": "A",
+  "activeStage": "S0",
+  "activeCheckpoint": "baseline-branches-created",
+  "architecture": "x64",
+  "branchNativeImplementation": true,
+  "repositories": {
+    "winui": {
+      "path": "C:\\microsoft-ui-xaml",
+      "baselineBranch": "main",
+      "baselineCommit": "d0c6705ec46dbddb853cdfdb2eb3b42849cf304e",
+      "subtrialABranch": "experiment/delift-a-wuc",
+      "subtrialBBranch": "experiment/delift-b-max-system"
+    },
+    "winuiGallery": {
+      "path": "C:\\WinUI-Gallery",
+      "baselineBranch": "main",
+      "baselineCommit": "b1730cb60a36014b1715df6b797e79a3f7c414ce",
+      "subtrialABranch": "experiment/delift-a-wuc",
+      "subtrialBBranch": "experiment/delift-b-max-system"
+    },
+    "latestOs": {
+      "path": "C:\\os\\src",
+      "branch": "official/ge_current",
+      "commit": "1d1a5f3aafdb63cdfa5ce1b45e2625159a39ae92"
+    },
+    "windows10Os": {
+      "path": "C:\\os1VB\\src",
+      "branch": "official/vb_release_svc_prod3",
+      "commit": "cdd3a928ca34679ac6615a5b228f5cd411c8f1c3"
+    }
+  },
+  "liftedDependencies": {
+    "frameworkUdk": {
+      "version": "3.0.0-experimental-27300.1905.260822-1925.0",
+      "commit": "3fe865e9c77580e74858a5064b1f079a8cd3b8b5"
+    },
+    "foundationTransport": {
+      "version": "3.0.0-20260802.0.nightly.internal",
+      "commit": "ee3c507894501a659d859d09bb017b761ed0a7e3"
+    },
+    "interactiveExperiencesTransport": {
+      "version": "3.0.0-experimental-27300.1905.260822-1925.0",
+      "commit": "3fe865e9c77580e74858a5064b1f079a8cd3b8b5"
+    }
+  },
+  "osCheckpoints": [
+    {
+      "id": "windows-10-1809",
+      "servicing": "latest",
+      "build": null
+    },
+    {
+      "id": "windows-10-22h2",
+      "servicing": "latest",
+      "build": null
+    },
+    {
+      "id": "windows-11-21h2",
+      "build": "22000"
+    },
+    {
+      "id": "windows-11-ge",
+      "servicing": "latest-available",
+      "build": null,
+      "sourceBranch": "official/ge_current"
+    }
+  ],
+  "validation": {
+    "scenarioResultSchema": "result.schema.json",
+    "csharpScenarioApp": null,
+    "cppWinrtScenarioApp": null,
+    "winuiGalleryBranch": "experiment/delift-a-wuc"
+  },
+  "latestCheckpoint": {
+    "winuiCommit": null,
+    "winuiGalleryCommit": null,
+    "winuiBuild": "not-run",
+    "csharpScenarioApp": "not-created",
+    "cppWinrtScenarioApp": "not-created",
+    "winuiGallery": "not-run",
+    "notes": "Subtrial A and B branches were created from the recorded baselines."
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://microsoft-ui-xaml/system-component-experiment/result.schema.json",
+  "title": "WinUI system component experiment result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "scenarioId",
+    "subtrial",
+    "stage",
+    "os",
+    "architecture",
+    "packageIdentity",
+    "result",
+    "loadedModules"
+  ],
+  "properties": {
+    "scenarioId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "subtrial": {
+      "enum": [
+        "baseline",
+        "A",
+        "B"
+      ]
+    },
+    "stage": {
+      "type": "string",
+      "minLength": 1
+    },
+    "os": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "build"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "build": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "architecture": {
+      "const": "x64"
+    },
+    "packageIdentity": {
+      "type": "boolean"
+    },
+    "result": {
+      "enum": [
+        "passed",
+        "failed",
+        "unsupported",
+        "blocked",
+        "not-run"
+      ]
+    },
+    "hresult": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "exception": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "loadedModules": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}
