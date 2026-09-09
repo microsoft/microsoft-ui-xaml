@@ -264,7 +264,7 @@
     },
     {
       "id": "direct-manipulation",
-      "kind": "runtime-closure",
+      "kind": "runtime-replacement-required",
       "liftedIdl": null,
       "systemIdl": null,
       "latestSystemAvailable": null,
@@ -276,7 +276,7 @@
     },
     {
       "id": "content-hosting",
-      "kind": "object-compatibility-boundary",
+      "kind": "runtime-replacement-required",
       "liftedIdl": null,
       "systemIdl": null,
       "latestSystemAvailable": null,
@@ -284,11 +284,11 @@
       "winuiEvidence": [
         "Microsoft.UI.Content"
       ],
-      "decision": "Not a direct system-WUC metadata dependency. Retain initially, then prove its visual/site bridge accepts system Composition objects before A5."
+      "decision": "Microsoft.UI.Content is hosted by Microsoft.UI.Input.dll. That binary imports lifted Composition support and CoreMessagingXP, so Content/hosting must move with the strict no-lifted-module closure."
     },
     {
       "id": "input",
-      "kind": "object-compatibility-boundary",
+      "kind": "runtime-replacement-required",
       "liftedIdl": null,
       "systemIdl": null,
       "latestSystemAvailable": null,
@@ -296,7 +296,32 @@
       "winuiEvidence": [
         "Microsoft.UI.Input.dll"
       ],
-      "decision": "Not required by system Composition metadata. Retain initially, but validate pointer/focus/DirectManipulation ownership across the system compositor boundary before A5."
+      "decision": "Microsoft.UI.Input.dll imports CoreMessagingXP.dll and lifted Composition support binaries. Input must move or be rebuilt before those forbidden modules can be removed."
+    },
+    {
+      "id": "windowing-core",
+      "kind": "runtime-replacement-required",
+      "liftedIdl": null,
+      "systemIdl": null,
+      "latestSystemAvailable": null,
+      "windows10SystemAvailable": null,
+      "winuiEvidence": [
+        "Microsoft.UI.Windowing"
+      ],
+      "decision": "Microsoft.UI.Windowing.Core.dll imports CoreMessagingXP.dll. Microsoft.UI.Windowing.dll, Microsoft.UI.dll, and Microsoft.Graphics.Display.dll depend on Windowing Core, so their used surfaces must move or be rebuilt."
+    },
+    {
+      "id": "microsoft-ui-common",
+      "kind": "runtime-replacement-required",
+      "liftedIdl": null,
+      "systemIdl": null,
+      "latestSystemAvailable": null,
+      "windows10SystemAvailable": null,
+      "winuiEvidence": [
+        "Microsoft.UI.WindowId",
+        "Microsoft.UI.Colors"
+      ],
+      "decision": "Microsoft.UI.dll imports Microsoft.UI.Windowing.Core.dll, which imports CoreMessagingXP.dll. Common Microsoft.UI values used by XAML are therefore in the strict runtime closure."
     }
   ],
   "edges": [
@@ -329,6 +354,25 @@
       "from": "composition-interactions",
       "to": "input",
       "reason": "Pointer, focus, and manipulation paths cross the Composition interaction boundary."
+    },
+    {
+      "from": "dispatching",
+      "to": "windowing-core",
+      "reason": "Microsoft.UI.Windowing.Core.dll directly imports CoreMessagingXP.dll."
+    },
+    {
+      "from": "windowing-core",
+      "to": "microsoft-ui-common",
+      "reason": "Microsoft.UI.dll directly imports Microsoft.UI.Windowing.Core.dll."
     }
+  ],
+  "forbiddenRuntimeModules": [
+    "CoreMessagingXP.dll",
+    "dcompi.dll",
+    "DwmSceneI.dll",
+    "dwmcorei.dll",
+    "marshal.dll",
+    "Microsoft.UI.Composition.OSSupport.dll",
+    "wuceffectsi.dll"
   ]
 }

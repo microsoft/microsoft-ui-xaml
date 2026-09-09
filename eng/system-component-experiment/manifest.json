@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "activeSubtrial": "A",
   "activeStage": "A0",
-  "activeCheckpoint": "wuc-closure-and-probes-validated",
+  "activeCheckpoint": "native-runtime-closure-reopened",
   "architecture": "x64",
   "branchNativeImplementation": true,
   "repositories": {
@@ -80,6 +80,6 @@
     "csharpScenarioApp": "passed-debug-x64-package-build-and-launch",
     "cppWinrtScenarioApp": "passed-debug-x64-package-build-and-launch",
     "winuiGallery": "passed-debug-x64-build",
-    "notes": "A0 complete. The closure maps 54 WinUI-used Composition symbols and all 14 public XAML Composition types. GE has no system counterpart for the lifted experimental property-change interfaces or SystemBackdropConfiguration; Windows 10 additionally lacks ICompositionSupportsSystemBackdrop, IVisualElement2, and CompositionEasingFunctionMode. Both scenario packages launched through the supported unsigned developer-package path."
+    "notes": "A0 reopened during A1 payload tracing. The API closure maps 54 WinUI-used Composition symbols and all 14 public XAML Composition types, but native imports expand the strict no-lifted-module closure into Input/Content, DirectManipulation, Windowing Core, and common Microsoft.UI surfaces. Both scenario packages launched through the supported unsigned developer-package path."
   }
 }
