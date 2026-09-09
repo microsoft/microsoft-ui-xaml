@@ -11,6 +11,24 @@ using namespace Microsoft::UI::Xaml;
 using namespace Microsoft::UI::Xaml::Controls;
 using namespace Microsoft::UI::Xaml::Hosting;
 
+using PublicXamlCompositionTypes = std::tuple<
+    Microsoft::UI::Composition::AnimationPropertyInfo,
+    Microsoft::UI::Composition::CompositionBrush,
+    Microsoft::UI::Composition::CompositionEasingFunction,
+    Microsoft::UI::Composition::CompositionLight,
+    Microsoft::UI::Composition::CompositionPropertySet,
+    Microsoft::UI::Composition::Compositor,
+    Microsoft::UI::Composition::IAnimationObject,
+    Microsoft::UI::Composition::ICompositionAnimationBase,
+    Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop,
+    Microsoft::UI::Composition::ICompositionSurface,
+    Microsoft::UI::Composition::IVisualElement,
+    Microsoft::UI::Composition::IVisualElement2,
+    Microsoft::UI::Composition::Visual,
+    Microsoft::UI::Composition::SystemBackdrops::SystemBackdropConfiguration>;
+
+static_assert(std::tuple_size_v<PublicXamlCompositionTypes> == 14);
+
 namespace winrt::SystemComponentExperiment::Cpp::implementation
 {
     MainWindow::MainWindow()
@@ -54,6 +72,10 @@ namespace winrt::SystemComponentExperiment::Cpp::implementation
         else if (id == L"dispatching.basics")
         {
             RunDispatcherQueueScenario();
+        }
+        else if (id == L"closure.probes")
+        {
+            RunClosureProbeScenario();
         }
     }
 
@@ -127,5 +149,99 @@ namespace winrt::SystemComponentExperiment::Cpp::implementation
         {
             ResultText().Text(L"Failed: TryEnqueue returned false.");
         }
+    }
+
+    void MainWindow::RunClosureProbeScenario()
+    {
+        using Windows::Foundation::Metadata::ApiInformation;
+
+        static constexpr std::array systemTypeNames
+        {
+            L"Windows.UI.Composition.AnimationPropertyInfo",
+            L"Windows.UI.Composition.CompositionBrush",
+            L"Windows.UI.Composition.CompositionEasingFunction",
+            L"Windows.UI.Composition.CompositionLight",
+            L"Windows.UI.Composition.CompositionPropertySet",
+            L"Windows.UI.Composition.Compositor",
+            L"Windows.UI.Composition.IAnimationObject",
+            L"Windows.UI.Composition.ICompositionAnimationBase",
+            L"Windows.UI.Composition.ICompositionSupportsSystemBackdrop",
+            L"Windows.UI.Composition.ICompositionSurface",
+            L"Windows.UI.Composition.IVisualElement",
+            L"Windows.UI.Composition.IVisualElement2",
+            L"Windows.UI.Composition.Visual",
+            L"Windows.System.DispatcherQueue",
+        };
+
+        std::wstring result = L"Compile-probed system projection types: Compositor, Visual, DispatcherQueue\r\n";
+        for (auto const* typeName : systemTypeNames)
+        {
+            result.append(typeName);
+            result.append(ApiInformation::IsTypePresent(typeName) ? L": present\r\n" : L": absent\r\n");
+        }
+
+        try
+        {
+            Windows::UI::Composition::Compositor systemCompositor;
+            auto systemVisual = systemCompositor.CreateSpriteVisual();
+
+            constexpr GUID experimentalPropertyChanged =
+            {
+                0x12b579a9,
+                0x6a27,
+                0x5cde,
+                { 0xa2, 0xa1, 0xc5, 0x57, 0xbb, 0x7d, 0xfd, 0xb3 }
+            };
+            void* experimentalInterface{};
+            HRESULT queryResult = systemVisual.as<::IUnknown>()->QueryInterface(
+                experimentalPropertyChanged,
+                &experimentalInterface);
+            if (experimentalInterface)
+            {
+                static_cast<::IUnknown*>(experimentalInterface)->Release();
+            }
+
+            wchar_t queryText[96]{};
+            swprintf_s(
+                queryText,
+                L"System visual lifted property-change QI: 0x%08X\r\n",
+                static_cast<unsigned int>(queryResult));
+            result.append(queryText);
+            result.append(L"System Compositor activation: passed\r\n");
+        }
+        catch (hresult_error const& error)
+        {
+            wchar_t activationText[96]{};
+            swprintf_s(
+                activationText,
+                L"System Compositor activation: failed (0x%08X)\r\n",
+                static_cast<unsigned int>(error.code().value));
+            result.append(activationText);
+        }
+
+        auto queue = Windows::System::DispatcherQueue::GetForCurrentThread();
+        result.append(queue
+            ? L"System DispatcherQueue current thread: present\r\n"
+            : L"System DispatcherQueue current thread: absent\r\n");
+        if (queue)
+        {
+            void* liftedQueue3{};
+            HRESULT queryResult = queue.as<::IUnknown>()->QueryInterface(
+                guid_of<Microsoft::UI::Dispatching::IDispatcherQueue3>(),
+                &liftedQueue3);
+            if (liftedQueue3)
+            {
+                static_cast<::IUnknown*>(liftedQueue3)->Release();
+            }
+
+            wchar_t queryText[96]{};
+            swprintf_s(
+                queryText,
+                L"System queue lifted IDispatcherQueue3 QI: 0x%08X\r\n",
+                static_cast<unsigned int>(queryResult));
+            result.append(queryText);
+        }
+
+        ResultText().Text(result);
     }
 }

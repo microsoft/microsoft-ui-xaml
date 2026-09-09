@@ -337,6 +337,47 @@ $usedCompositionSymbols = foreach ($symbolName in $usedCompositionSymbolNames)
     }
 }
 
+$publicXamlCompositionTypes = foreach ($type in $configuration.publicXamlCompositionTypes)
+{
+    $systemSymbol = if ($type.system)
+    {
+        $type.system.Split(".")[-1]
+    }
+    else
+    {
+        $null
+    }
+    $latestSystemAvailable = if ($systemSymbol)
+    {
+        $systemSymbol -in $latestSystemSymbolNames
+    }
+    else
+    {
+        $false
+    }
+    $windows10SystemAvailable = if ($systemSymbol)
+    {
+        $systemSymbol -in $windows10SystemSymbolNames
+    }
+    else
+    {
+        $false
+    }
+
+    if ($latestSystemAvailable -ne $type.latestSystemAvailable -or
+        $windows10SystemAvailable -ne $type.windows10SystemAvailable)
+    {
+        throw "Public XAML Composition availability drifted for '$($type.lifted)'."
+    }
+
+    [ordered]@{
+        lifted = $type.lifted
+        system = $type.system
+        latestSystemAvailable = $latestSystemAvailable
+        windows10SystemAvailable = $windows10SystemAvailable
+    }
+}
+
 $result = [ordered]@{
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
     subtrial = $manifest.activeSubtrial
@@ -349,6 +390,7 @@ $result = [ordered]@{
     roots = @($configuration.roots)
     nodes = @($nodes)
     edges = @($configuration.edges)
+    publicXamlCompositionTypes = @($publicXamlCompositionTypes)
     compositionSymbolClosure = [ordered]@{
         usedSymbolCount = @($usedCompositionSymbols).Count
         latestSystemGapCount = @(

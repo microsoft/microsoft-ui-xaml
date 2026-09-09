@@ -23,6 +23,7 @@
                 <ListViewItem Content="Environment and module inventory" Tag="environment.startup" />
                 <ListViewItem Content="Compositor and visual creation" Tag="composition.basics" />
                 <ListViewItem Content="DispatcherQueue enqueue" Tag="dispatching.basics" />
+                <ListViewItem Content="WUC closure metadata and activation probes" Tag="closure.probes" />
             </ListView>
         </StackPanel>
 

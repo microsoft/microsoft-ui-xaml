@@ -21,6 +21,12 @@ public static class ScenarioCatalog
             "DispatcherQueue enqueue",
             "Dispatching",
             "Windows 10 1809",
-            typeof(DispatcherQueueScenarioPage))
+            typeof(DispatcherQueueScenarioPage)),
+        new(
+            "closure.probes",
+            "WUC closure metadata and activation probes",
+            "Composition / Dispatching",
+            "Windows 10 1809",
+            typeof(ClosureProbeScenarioPage))
     ];
 }

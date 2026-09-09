@@ -70,6 +70,20 @@ try
         throw "The lifted-only experimental Composition symbol gap was not preserved."
     }
 
+    if ($closure.publicXamlCompositionTypes.Count -ne 14)
+    {
+        throw "The public XAML Composition type matrix is incomplete."
+    }
+
+    $downlevelPublicGaps = @(
+        $closure.publicXamlCompositionTypes |
+            Where-Object { -not $_.windows10SystemAvailable }
+    )
+    if ($downlevelPublicGaps.Count -ne 3)
+    {
+        throw "The Windows 10 public XAML Composition gap count changed."
+    }
+
     Write-Output "WUC dependency closure tests passed."
 }
 finally

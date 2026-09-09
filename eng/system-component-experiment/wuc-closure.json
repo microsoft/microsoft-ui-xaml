@@ -9,6 +9,92 @@
     "IWindowContextPartner",
     "PointerPoint"
   ],
+  "publicXamlCompositionTypes": [
+    {
+      "lifted": "Microsoft.UI.Composition.AnimationPropertyInfo",
+      "system": "Windows.UI.Composition.AnimationPropertyInfo",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true
+    },
+    {
+      "lifted": "Microsoft.UI.Composition.CompositionBrush",
+      "system": "Windows.UI.Composition.CompositionBrush",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true
+    },
+    {
+      "lifted": "Microsoft.UI.Composition.CompositionEasingFunction",
+      "system": "Windows.UI.Composition.CompositionEasingFunction",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true
+    },
+    {
+      "lifted": "Microsoft.UI.Composition.CompositionLight",
+      "system": "Windows.UI.Composition.CompositionLight",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true
+    },
+    {
+      "lifted": "Microsoft.UI.Composition.CompositionPropertySet",
+      "system": "Windows.UI.Composition.CompositionPropertySet",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true
+    },
+    {
+      "lifted": "Microsoft.UI.Composition.Compositor",
+      "system": "Windows.UI.Composition.Compositor",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true
+    },
+    {
+      "lifted": "Microsoft.UI.Composition.IAnimationObject",
+      "system": "Windows.UI.Composition.IAnimationObject",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true
+    },
+    {
+      "lifted": "Microsoft.UI.Composition.ICompositionAnimationBase",
+      "system": "Windows.UI.Composition.ICompositionAnimationBase",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true
+    },
+    {
+      "lifted": "Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop",
+      "system": "Windows.UI.Composition.ICompositionSupportsSystemBackdrop",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": false
+    },
+    {
+      "lifted": "Microsoft.UI.Composition.ICompositionSurface",
+      "system": "Windows.UI.Composition.ICompositionSurface",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true
+    },
+    {
+      "lifted": "Microsoft.UI.Composition.IVisualElement",
+      "system": "Windows.UI.Composition.IVisualElement",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true
+    },
+    {
+      "lifted": "Microsoft.UI.Composition.IVisualElement2",
+      "system": "Windows.UI.Composition.IVisualElement2",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": false
+    },
+    {
+      "lifted": "Microsoft.UI.Composition.Visual",
+      "system": "Windows.UI.Composition.Visual",
+      "latestSystemAvailable": true,
+      "windows10SystemAvailable": true
+    },
+    {
+      "lifted": "Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration",
+      "system": null,
+      "latestSystemAvailable": false,
+      "windows10SystemAvailable": false
+    }
+  ],
   "nodes": [
     {
       "id": "composition",

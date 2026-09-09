@@ -20,6 +20,7 @@ namespace winrt::SystemComponentExperiment::Cpp::implementation
         void RunEnvironmentScenario();
         void RunCompositionScenario();
         void RunDispatcherQueueScenario();
+        void RunClosureProbeScenario();
     };
 }
 
