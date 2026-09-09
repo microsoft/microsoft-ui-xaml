@@ -82,12 +82,12 @@
     "systemIdlBuild": "blocked-by-vfs-createprocess-payload-mismatch-0x95e"
   },
   "latestCheckpoint": {
-    "winuiCommit": "50d0ad286f7dc86c66eafafed894ab537e9ef220",
+    "winuiCommit": "34a579f8d3de49ff32e225002d85fe9f84cab848",
     "winuiGalleryCommit": "199f63ec57ee8457fa9745b8a0d1e951111331fc",
     "winuiBuild": "passed-product-package-amd64",
     "csharpScenarioApp": "passed-debug-x64-package-build-and-launch",
     "cppWinrtScenarioApp": "passed-debug-x64-package-build-and-launch",
     "winuiGallery": "passed-debug-x64-build",
-    "notes": "The API closure maps 54 WinUI-used Composition symbols and all 14 public XAML Composition types. The seven retained DLLs reaching forbidden modules now have explicit replace, rebuild, or retain-after-rebuild actions. Branch-aligned GE Composition/DispatcherQueue headers, metadata, and CoreMessaging library are available from C:\\os\\public\\amd64fre and are pinned by SHA-256. Rebuilding the source IDL directory is blocked before MIDL execution by a VFS CreateProcess payload-size mismatch (0x95e)."
+    "notes": "A0 is complete: the seven retained DLLs reaching forbidden modules have explicit replace, rebuild, or retain-after-rebuild actions. A1 now resolves branch-aligned GE Composition/DispatcherQueue IDL and ABI directories before lifted generated inputs; the component header/IDL generation project builds successfully. The system inputs are pinned by SHA-256. Rebuilding the OS source IDL directory remains blocked before MIDL execution by a VFS CreateProcess payload-size mismatch (0x95e), so A1 consumes the matching public outputs."
   }
 }
