@@ -1,72 +1,79 @@
-﻿// WARNING: Please don't edit this file...
+// WARNING: Please don't edit this file...
 
 #include "pch.h"
-#include "BindTests.h"
-#include "MainPage.h"
-#include "NameEventsLoad.h"
-#include "XamlMetaDataProvider.h"
+#include "winrt/base.h"
+void* winrt_make_ConditionalsCppWinRT_BindTests();
+void* winrt_make_ConditionalsCppWinRT_MainPage();
+void* winrt_make_ConditionalsCppWinRT_NameEventsLoad();
+void* winrt_make_ConditionalsCppWinRT_XamlMetaDataProvider();
 
-int32_t WINRT_CALL WINRT_CanUnloadNow() noexcept
+bool __stdcall winrt_can_unload_now() noexcept
+{
+    if (winrt::get_module_lock())
+    {
+        return false;
+    }
+
+    winrt::clear_factory_cache();
+    return true;
+}
+
+void* __stdcall winrt_get_activation_factory([[maybe_unused]] std::wstring_view const& name)
+{
+    auto requal = [](std::wstring_view const& left, std::wstring_view const& right) noexcept
+    {
+        return std::equal(left.rbegin(), left.rend(), right.rbegin(), right.rend());
+    };
+
+    if (requal(name, L"ConditionalsCppWinRT.BindTests"))
+    {
+        return winrt_make_ConditionalsCppWinRT_BindTests();
+    }
+
+    if (requal(name, L"ConditionalsCppWinRT.MainPage"))
+    {
+        return winrt_make_ConditionalsCppWinRT_MainPage();
+    }
+
+    if (requal(name, L"ConditionalsCppWinRT.NameEventsLoad"))
+    {
+        return winrt_make_ConditionalsCppWinRT_NameEventsLoad();
+    }
+
+    if (requal(name, L"ConditionalsCppWinRT.XamlMetaDataProvider"))
+    {
+        return winrt_make_ConditionalsCppWinRT_XamlMetaDataProvider();
+    }
+
+    return nullptr;
+}
+
+int32_t __stdcall WINRT_CanUnloadNow() noexcept
 {
 #ifdef _WRL_MODULE_H_
     if (!::Microsoft::WRL::Module<::Microsoft::WRL::InProc>::GetModule().Terminate())
     {
-        return 1; // S_FALSE
+        return 1;
     }
 #endif
 
-    if (winrt::get_module_lock())
-    {
-        return 1; // S_FALSE
-    }
-
-    winrt::clear_factory_cache();
-    return 0; // S_OK
+    return winrt_can_unload_now() ? 0 : 1;
 }
 
-int32_t WINRT_CALL WINRT_GetActivationFactory(void* classId, void** factory) noexcept
+int32_t __stdcall WINRT_GetActivationFactory(void* classId, void** factory) noexcept try
 {
-    try
+    std::wstring_view const name{ *reinterpret_cast<winrt::hstring*>(&classId) };
+    *factory = winrt_get_activation_factory(name);
+
+    if (*factory)
     {
-        *factory = nullptr;
-        uint32_t length{};
-        wchar_t const* const buffer = WINRT_WindowsGetStringRawBuffer(classId, &length);
-        std::wstring_view const name{ buffer, length };
-
-        auto requal = [](std::wstring_view const& left, std::wstring_view const& right) noexcept
-        {
-            return std::equal(left.rbegin(), left.rend(), right.rbegin(), right.rend());
-        };
-
-        if (requal(name, L"ConditionalsCppWinRT.BindTests"))
-        {
-            *factory = winrt::detach_abi(winrt::make<winrt::ConditionalsCppWinRT::factory_implementation::BindTests>());
-            return 0;
-        }
-
-        if (requal(name, L"ConditionalsCppWinRT.MainPage"))
-        {
-            *factory = winrt::detach_abi(winrt::make<winrt::ConditionalsCppWinRT::factory_implementation::MainPage>());
-            return 0;
-        }
-
-        if (requal(name, L"ConditionalsCppWinRT.NameEventsLoad"))
-        {
-            *factory = winrt::detach_abi(winrt::make<winrt::ConditionalsCppWinRT::factory_implementation::NameEventsLoad>());
-            return 0;
-        }
-
-        if (requal(name, L"ConditionalsCppWinRT.XamlMetaDataProvider"))
-        {
-            *factory = winrt::detach_abi(winrt::make<winrt::ConditionalsCppWinRT::factory_implementation::XamlMetaDataProvider>());
-            return 0;
-        }
+        return 0;
+    }
 
 #ifdef _WRL_MODULE_H_
-        return ::Microsoft::WRL::Module<::Microsoft::WRL::InProc>::GetModule().GetActivationFactory(static_cast<HSTRING>(classId), reinterpret_cast<::IActivationFactory**>(factory));
+    return ::Microsoft::WRL::Module<::Microsoft::WRL::InProc>::GetModule().GetActivationFactory(static_cast<HSTRING>(classId), reinterpret_cast<::IActivationFactory**>(factory));
 #else
-        return winrt::hresult_class_not_available(name).to_abi();
+    return winrt::hresult_class_not_available(name).to_abi();
 #endif
-    }
-    catch (...) { return winrt::to_hresult(); }
 }
+catch (...) { return winrt::to_hresult(); }

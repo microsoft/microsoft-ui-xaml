@@ -1,4 +1,4 @@
-﻿// WARNING: Please don't edit this file...
+// WARNING: Please don't edit this file...
 
 #include "pch.h"
 #include "winrt/base.h"
@@ -6,6 +6,7 @@ void* winrt_make_BindTestbed_BasicTests();
 void* winrt_make_BindTestbed_CastingModel();
 void* winrt_make_BindTestbed_CastingTests();
 void* winrt_make_BindTestbed_DetectLeaksPage();
+void* winrt_make_BindTestbed_DisableXBindTests();
 void* winrt_make_BindTestbed_EventTests();
 void* winrt_make_BindTestbed_ExtraInfo();
 void* winrt_make_BindTestbed_FunctionTests();
@@ -24,6 +25,8 @@ void* winrt_make_BindTestbed_Templates();
 void* winrt_make_BindTestbed_TestsPage2();
 void* winrt_make_BindTestbed_TwoWayTests();
 void* winrt_make_BindTestbed_XamlMetaDataProvider();
+void* winrt_make_BindTestbed_xPropertiesTest();
+void* winrt_make_BindTestbed_NamedRootsPage_NamedPageRootWithCompiledBindingUserChild();
 void* winrt_make_BindTestbed_subfolder_SubDictionary();
 
 bool __stdcall winrt_can_unload_now() noexcept
@@ -62,6 +65,11 @@ void* __stdcall winrt_get_activation_factory([[maybe_unused]] std::wstring_view 
     if (requal(name, L"BindTestbed.DetectLeaksPage"))
     {
         return winrt_make_BindTestbed_DetectLeaksPage();
+    }
+
+    if (requal(name, L"BindTestbed.DisableXBindTests"))
+    {
+        return winrt_make_BindTestbed_DisableXBindTests();
     }
 
     if (requal(name, L"BindTestbed.EventTests"))
@@ -154,6 +162,16 @@ void* __stdcall winrt_get_activation_factory([[maybe_unused]] std::wstring_view 
         return winrt_make_BindTestbed_XamlMetaDataProvider();
     }
 
+    if (requal(name, L"BindTestbed.xPropertiesTest"))
+    {
+        return winrt_make_BindTestbed_xPropertiesTest();
+    }
+
+    if (requal(name, L"BindTestbed.NamedRootsPage.NamedPageRootWithCompiledBindingUserChild"))
+    {
+        return winrt_make_BindTestbed_NamedRootsPage_NamedPageRootWithCompiledBindingUserChild();
+    }
+
     if (requal(name, L"BindTestbed.subfolder.SubDictionary"))
     {
         return winrt_make_BindTestbed_subfolder_SubDictionary();
@@ -176,9 +194,7 @@ int32_t __stdcall WINRT_CanUnloadNow() noexcept
 
 int32_t __stdcall WINRT_GetActivationFactory(void* classId, void** factory) noexcept try
 {
-    uint32_t length{};
-    wchar_t const* const buffer = WINRT_WindowsGetStringRawBuffer(classId, &length);
-    std::wstring_view const name{ buffer, length };
+    std::wstring_view const name{ *reinterpret_cast<winrt::hstring*>(&classId) };
     *factory = winrt_get_activation_factory(name);
 
     if (*factory)

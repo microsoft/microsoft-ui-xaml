@@ -39,9 +39,17 @@
       with a differently named precompiled header is the whole point of that project.
     -->
     <TestPchName Condition="'$(TestPchName)' == ''">pch</TestPchName>
-    <!-- These are compile-only regression projects; nothing needs to be deployed. -->
-    <AppxPackage>false</AppxPackage>
-    <AppxBundle>Never</AppxBundle>
+    <!--
+      These are compile-only regression projects; nothing needs to be deployed. A project that
+      does need to produce an MSIX - BindTestbedCppWinRT, which uses Single-project MSIX
+      Packaging - overrides these, so they are defaults rather than assignments. Setting them
+      unconditionally here would silently win over the consuming project's Globals group, which
+      is evaluated before this file is imported, and the app would then package an empty
+      payload: MakeAppx still runs if GenerateAppxPackageOnBuild is set, but AppxPackage=false
+      means none of the project's own outputs are harvested into it.
+    -->
+    <AppxPackage Condition="'$(AppxPackage)' == ''">false</AppxPackage>
+    <AppxBundle Condition="'$(AppxBundle)' == ''">Never</AppxBundle>
   </PropertyGroup>
 
 

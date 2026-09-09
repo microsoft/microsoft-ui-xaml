@@ -1,11 +1,11 @@
-﻿// WARNING: Please don't edit this file...
+// WARNING: Please don't edit this file...
 
 #pragma once
 #include "winrt/BindTestbed.h"
 namespace winrt::BindTestbed::implementation
 {
     template <typename D, typename... I>
-    struct __declspec(empty_bases) ExtraInfo_base : implements<D, BindTestbed::ExtraInfo, I...>
+    struct WINRT_IMPL_EMPTY_BASES ExtraInfo_base : implements<D, BindTestbed::ExtraInfo, I...>
     {
         using base_type = ExtraInfo_base;
         using class_type = BindTestbed::ExtraInfo;
@@ -21,7 +21,7 @@ namespace winrt::BindTestbed::implementation
 namespace winrt::BindTestbed::factory_implementation
 {
     template <typename D, typename T, typename... I>
-    struct __declspec(empty_bases) ExtraInfoT : implements<D, ::Windows::Foundation::IActivationFactory, I...>
+    struct WINRT_IMPL_EMPTY_BASES ExtraInfoT : implements<D, winrt::Windows::Foundation::IActivationFactory, I...>
     {
         using instance_type = BindTestbed::ExtraInfo;
 
@@ -37,7 +37,9 @@ namespace winrt::BindTestbed::factory_implementation
 }
 
 #if defined(WINRT_FORCE_INCLUDE_EXTRAINFO_XAML_G_H) || __has_include("ExtraInfo.xaml.g.h")
+
 #include "ExtraInfo.xaml.g.h"
+
 #else
 
 namespace winrt::BindTestbed::implementation
