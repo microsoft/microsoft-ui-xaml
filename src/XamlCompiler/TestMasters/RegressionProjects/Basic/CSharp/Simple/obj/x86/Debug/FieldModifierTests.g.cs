@@ -11,77 +11,77 @@
 namespace Simple
 {
     partial class FieldModifierTests : 
-        global::Windows.UI.Xaml.Controls.Page, 
-        global::Windows.UI.Xaml.Markup.IComponentConnector,
-        global::Windows.UI.Xaml.Markup.IComponentConnector2
+        global::Microsoft.UI.Xaml.Controls.Page, 
+        global::Microsoft.UI.Xaml.Markup.IComponentConnector
     {
+
         /// <summary>
         /// Connect()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public void Connect(int connectionId, object target)
         {
             switch(connectionId)
             {
-            case 2: // FieldModifierTests.xaml line 11
+            case 2: // FieldModifierTests.xaml line 13
                 {
-                    this.Private1 = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.Private1 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 3: // FieldModifierTests.xaml line 12
+            case 3: // FieldModifierTests.xaml line 14
                 {
-                    this.Private2 = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.Private2 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 4: // FieldModifierTests.xaml line 13
+            case 4: // FieldModifierTests.xaml line 15
                 {
-                    this.Private3 = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.Private3 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 5: // FieldModifierTests.xaml line 14
+            case 5: // FieldModifierTests.xaml line 16
                 {
-                    this.Public1 = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.Public1 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 6: // FieldModifierTests.xaml line 15
+            case 6: // FieldModifierTests.xaml line 17
                 {
-                    this.Public2 = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.Public2 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 7: // FieldModifierTests.xaml line 16
+            case 7: // FieldModifierTests.xaml line 18
                 {
-                    this.Public3 = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.Public3 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 8: // FieldModifierTests.xaml line 17
+            case 8: // FieldModifierTests.xaml line 19
                 {
-                    this.Protected1 = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.Protected1 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 9: // FieldModifierTests.xaml line 18
+            case 9: // FieldModifierTests.xaml line 20
                 {
-                    this.Protected2 = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.Protected2 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 10: // FieldModifierTests.xaml line 19
+            case 10: // FieldModifierTests.xaml line 21
                 {
-                    this.Protected3 = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.Protected3 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 11: // FieldModifierTests.xaml line 20
+            case 11: // FieldModifierTests.xaml line 22
                 {
-                    this.Internal1 = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.Internal1 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 12: // FieldModifierTests.xaml line 21
+            case 12: // FieldModifierTests.xaml line 23
                 {
-                    this.Internal2 = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.Internal2 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 13: // FieldModifierTests.xaml line 22
+            case 13: // FieldModifierTests.xaml line 24
                 {
-                    this.Internal3 = (global::Windows.UI.Xaml.Controls.TextBlock)(target);
+                    this.Internal3 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
             default:
@@ -90,14 +90,15 @@ namespace Simple
             this._contentLoaded = true;
         }
 
+
         /// <summary>
         /// GetBindingConnector(int connectionId, object target)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
+        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
         {
-            global::Windows.UI.Xaml.Markup.IComponentConnector returnValue = null;
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector returnValue = null;
             return returnValue;
         }
     }

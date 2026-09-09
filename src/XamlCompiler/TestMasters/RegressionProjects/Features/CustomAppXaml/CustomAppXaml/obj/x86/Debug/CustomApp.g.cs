@@ -10,8 +10,16 @@
 
 namespace CustomAppXaml
 {
-    partial class CustomApp : global::Windows.UI.Xaml.Application
+    partial class CustomApp : global::Microsoft.UI.Xaml.Application
     {
+#if DISABLE_XAML_GENERATED_MAIN
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        static partial void _XamlGeneratedCreateApplicationInstance()
+        {
+            new CustomApp();
+        }
+#endif
     }
 }
 

@@ -6,8 +6,15 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 
-#include "winrt/Windows.UI.Xaml.h"
-#include "winrt/Windows.UI.Xaml.Markup.h"
+#include <unknwn.h>
+
+// Undefine GetCurrentTime macro to prevent
+// conflict with Storyboard::GetCurrentTime
+#undef GetCurrentTime
+
+#include "winrt/Microsoft.UI.Xaml.h"
+#include "winrt/Microsoft.UI.Xaml.Markup.h"
+#include "winrt/Microsoft.UI.Xaml.Interop.h"
 #include "winrt/Windows.UI.Xaml.Interop.h"
 
 #include "XamlTypeInfo.xaml.g.h"
@@ -16,12 +23,21 @@
 namespace winrt::StaticLibInApp::implementation
 {
     template <typename D, typename ... Interfaces>
-    struct AppT: public ::winrt::Windows::UI::Xaml::ApplicationT<D, ::winrt::Windows::UI::Xaml::Markup::IXamlMetadataProvider, Interfaces...>
+    struct AppT: public ::winrt::Microsoft::UI::Xaml::ApplicationT<D, ::winrt::Microsoft::UI::Xaml::Markup::IXamlMetadataProvider, Interfaces...>
     {
-        using IXamlType = ::winrt::Windows::UI::Xaml::Markup::IXamlType;
+        using IXamlType = ::winrt::Microsoft::UI::Xaml::Markup::IXamlType;
 
         void InitializeComponent()
-        {}
+        {
+            if (_contentLoaded)
+                return;
+           
+            _contentLoaded = true;
+
+            ::winrt::Windows::Foundation::Uri resourceLocator{ L"ms-appx:///App.xaml" };
+            ::winrt::Microsoft::UI::Xaml::Application::LoadComponent(*this, resourceLocator);
+        }
+
 
         IXamlType GetXamlType(::winrt::Windows::UI::Xaml::Interop::TypeName const& type)
         {
@@ -33,19 +49,19 @@ namespace winrt::StaticLibInApp::implementation
             return AppProvider()->GetXamlType(fullName);
         }
 
-        ::winrt::com_array<::winrt::Windows::UI::Xaml::Markup::XmlnsDefinition> GetXmlnsDefinitions()
+        ::winrt::com_array<::winrt::Microsoft::UI::Xaml::Markup::XmlnsDefinition> GetXmlnsDefinitions()
         {
             return AppProvider()->GetXmlnsDefinitions();
         }
 
     private:
         bool _contentLoaded{false};
-        std::shared_ptr<XamlMetaDataProvider> _appProvider;
-        std::shared_ptr<XamlMetaDataProvider> AppProvider()
+        winrt::com_ptr<XamlMetaDataProvider> _appProvider;
+        winrt::com_ptr<XamlMetaDataProvider> AppProvider()
         {
             if (!_appProvider)
             {
-                _appProvider = std::make_shared<XamlMetaDataProvider>();
+                _appProvider = winrt::make_self<XamlMetaDataProvider>();
             }
             return _appProvider;
         }

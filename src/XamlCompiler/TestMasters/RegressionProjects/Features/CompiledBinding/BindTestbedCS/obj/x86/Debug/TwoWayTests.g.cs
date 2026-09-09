@@ -11,19 +11,18 @@
 namespace BindTestbed
 {
     partial class TwoWayTests : 
-        global::Windows.UI.Xaml.Controls.UserControl, 
-        global::Windows.UI.Xaml.Markup.IComponentConnector,
-        global::Windows.UI.Xaml.Markup.IComponentConnector2
+        global::Microsoft.UI.Xaml.Controls.UserControl, 
+        global::Microsoft.UI.Xaml.Markup.IComponentConnector
     {
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         private static class XamlBindingSetters
         {
-            public static void Set_Windows_UI_Xaml_FrameworkElement_Tag(global::Windows.UI.Xaml.FrameworkElement obj, global::System.Object value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_FrameworkElement_Tag(global::Microsoft.UI.Xaml.FrameworkElement obj, global::System.Object value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::System.Object) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
+                    value = (global::System.Object) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
                 }
                 obj.Tag = value;
             }
@@ -31,11 +30,11 @@ namespace BindTestbed
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::BindTestbedModel.IEmployee) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.IEmployee), targetNullValue);
+                    value = (global::BindTestbedModel.IEmployee) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::BindTestbedModel.IEmployee), targetNullValue);
                 }
                 obj.Employee = value;
             }
-            public static void Set_Windows_UI_Xaml_Controls_TextBox_Text(global::Windows.UI.Xaml.Controls.TextBox obj, global::System.String value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_TextBox_Text(global::Microsoft.UI.Xaml.Controls.TextBox obj, global::System.String value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
@@ -43,7 +42,7 @@ namespace BindTestbed
                 }
                 obj.Text = value ?? global::System.String.Empty;
             }
-            public static void Set_Windows_UI_Xaml_Controls_TextBlock_Text(global::Windows.UI.Xaml.Controls.TextBlock obj, global::System.String value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(global::Microsoft.UI.Xaml.Controls.TextBlock obj, global::System.String value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
@@ -51,49 +50,49 @@ namespace BindTestbed
                 }
                 obj.Text = value ?? global::System.String.Empty;
             }
-            public static void Set_Windows_UI_Xaml_Controls_Primitives_RangeBase_Value(global::Windows.UI.Xaml.Controls.Primitives.RangeBase obj, global::System.Double value)
+            public static void Set_Microsoft_UI_Xaml_Controls_Primitives_RangeBase_Value(global::Microsoft.UI.Xaml.Controls.Primitives.RangeBase obj, global::System.Double value)
             {
                 obj.Value = value;
             }
-            public static void Set_Windows_UI_Xaml_Media_SolidColorBrush_Color(global::Windows.UI.Xaml.Media.SolidColorBrush obj, global::Windows.UI.Color value)
+            public static void Set_Microsoft_UI_Xaml_Media_SolidColorBrush_Color(global::Microsoft.UI.Xaml.Media.SolidColorBrush obj, global::Windows.UI.Color value)
             {
                 obj.Color = value;
             }
-            public static void Set_Windows_UI_Xaml_FrameworkElement_Width(global::Windows.UI.Xaml.FrameworkElement obj, global::System.Double value)
+            public static void Set_Microsoft_UI_Xaml_FrameworkElement_Width(global::Microsoft.UI.Xaml.FrameworkElement obj, global::System.Double value)
             {
                 obj.Width = value;
             }
-            public static void Set_Windows_UI_Xaml_Controls_ItemsControl_ItemsSource(global::Windows.UI.Xaml.Controls.ItemsControl obj, global::System.Object value, string targetNullValue)
+            public static void Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(global::Microsoft.UI.Xaml.Controls.ItemsControl obj, global::System.Object value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
                 {
-                    value = (global::System.Object) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
+                    value = (global::System.Object) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
                 }
                 obj.ItemsSource = value;
             }
         };
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class TwoWayTests_obj3_Bindings :
-            global::Windows.UI.Xaml.IDataTemplateExtension,
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class TwoWayTests_obj3_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             ITwoWayTests_Bindings
         {
             private global::BindTestbedModel.IManager dataRoot;
             private bool initialized = false;
             private const int NOT_PHASED = (1 << 31);
             private const int DATA_CHANGED = (1 << 30);
-            private global::Windows.UI.Xaml.ResourceDictionary localResources;
-            private global::System.WeakReference<global::Windows.UI.Xaml.FrameworkElement> converterLookupRoot;
+            private global::Microsoft.UI.Xaml.ResourceDictionary localResources;
+            private global::System.WeakReference<global::Microsoft.UI.Xaml.FrameworkElement> converterLookupRoot;
             private bool removedDataContextHandler = false;
 
             // Fields for each control that has bindings.
             private global::System.WeakReference obj3;
-            private global::Windows.UI.Xaml.Controls.TextBox obj4;
-            private global::Windows.UI.Xaml.Controls.TextBox obj5;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj4;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj5;
 
             // Static fields for each binding's enabled/disabled state
             private static bool isobj4TextDisabled = false;
@@ -108,11 +107,11 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 25 && columnNumber == 46)
+                if (lineNumber == 27 && columnNumber == 46)
                 {
                     isobj4TextDisabled = true;
                 }
-                else if (lineNumber == 26 && columnNumber == 46)
+                else if (lineNumber == 28 && columnNumber == 46)
                 {
                     isobj5TextDisabled = true;
                 }
@@ -124,22 +123,28 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 3: // TwoWayTests.xaml line 20
-                        this.obj3 = new global::System.WeakReference((global::Windows.UI.Xaml.Controls.Grid)target);
+                    case 3: // TwoWayTests.xaml line 22
+                        this.obj3 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Grid>(target));
                         break;
-                    case 4: // TwoWayTests.xaml line 25
-                        this.obj4 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                    case 4: // TwoWayTests.xaml line 27
+                        this.obj4 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                         this.bindingsTracking.RegisterTwoWayListener_4(this.obj4);
                         break;
-                    case 5: // TwoWayTests.xaml line 26
-                        this.obj5 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                    case 5: // TwoWayTests.xaml line 28
+                        this.obj5 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
-            public void DataContextChangedHandler(global::Windows.UI.Xaml.FrameworkElement sender, global::Windows.UI.Xaml.DataContextChangedEventArgs args)
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
             {
                  if (this.SetDataRoot(args.NewValue))
                  {
@@ -154,7 +159,7 @@ namespace BindTestbed
                 throw new global::System.NotImplementedException();
             }
 
-            public int ProcessBindings(global::Windows.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
             {
                 int nextPhase = -1;
                 ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
@@ -179,12 +184,16 @@ namespace BindTestbed
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            (this.obj3.Target as global::Windows.UI.Xaml.Controls.Grid).DataContextChanged -= this.DataContextChangedHandler;
+                            var rootElement = (this.obj3.Target as global::Microsoft.UI.Xaml.Controls.Grid);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
                         }
                         this.initialized = true;
                         break;
                 }
-                this.Update_((global::BindTestbedModel.IManager) item, 1 << phase);
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbedModel.IManager>(item), 1 << phase);
             }
 
             public void Recycle()
@@ -224,26 +233,26 @@ namespace BindTestbed
                 this.bindingsTracking.ReleaseAllListeners();
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbedModel.IManager)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbedModel.IManager>(newDataRoot);
                     return true;
                 }
                 return false;
             }
-            public void SetConverterLookupRoot(global::Windows.UI.Xaml.FrameworkElement rootElement)
+            public void SetConverterLookupRoot(global::Microsoft.UI.Xaml.FrameworkElement rootElement)
             {
-                this.converterLookupRoot = new global::System.WeakReference<global::Windows.UI.Xaml.FrameworkElement>(rootElement);
+                this.converterLookupRoot = new global::System.WeakReference<global::Microsoft.UI.Xaml.FrameworkElement>(rootElement);
             }
 
-            public global::Windows.UI.Xaml.Data.IValueConverter LookupConverter(string key)
+            public global::Microsoft.UI.Xaml.Data.IValueConverter LookupConverter(string key)
             {
                 if (this.localResources == null)
                 {
-                    global::Windows.UI.Xaml.FrameworkElement rootElement;
+                    global::Microsoft.UI.Xaml.FrameworkElement rootElement;
                     this.converterLookupRoot.TryGetTarget(out rootElement);
                     this.localResources = rootElement.Resources;
                     this.converterLookupRoot = null;
                 }
-                return (global::Windows.UI.Xaml.Data.IValueConverter) (this.localResources.ContainsKey(key) ? this.localResources[key] : global::Windows.UI.Xaml.Application.Current.Resources[key]);
+                return (global::Microsoft.UI.Xaml.Data.IValueConverter) (this.localResources.ContainsKey(key) ? this.localResources[key] : global::Microsoft.UI.Xaml.Application.Current.Resources[key]);
             }
 
             // Update methods for each path node used in binding steps.
@@ -263,10 +272,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TwoWayTests.xaml line 25
+                    // TwoWayTests.xaml line 27
                     if (!isobj4TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj4, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj4, obj, null);
                     }
                 }
             }
@@ -274,10 +283,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TwoWayTests.xaml line 26
+                    // TwoWayTests.xaml line 28
                     if (!isobj5TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj5, (global::System.String)this.LookupConverter("ColorToStringConverter").Convert(obj, typeof(global::System.String), null, null), null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj5, (global::System.String)this.LookupConverter("ColorToStringConverter").Convert(obj, typeof(global::System.String), null, null), null);
                     }
                 }
             }
@@ -292,7 +301,7 @@ namespace BindTestbed
                 }
             }
 
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             private class TwoWayTests_obj3_BindingsTracking
             {
@@ -380,7 +389,7 @@ namespace BindTestbed
                         }
                     }
                 }
-                public void RegisterTwoWayListener_4(global::Windows.UI.Xaml.Controls.TextBox sourceObject)
+                public void RegisterTwoWayListener_4(global::Microsoft.UI.Xaml.Controls.TextBox sourceObject)
                 {
                     sourceObject.LostFocus += (sender, e) =>
                     {
@@ -394,43 +403,43 @@ namespace BindTestbed
             }
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private class TwoWayTests_obj1_Bindings :
-            global::Windows.UI.Xaml.Markup.IDataTemplateComponent,
-            global::Windows.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
-            global::Windows.UI.Xaml.Markup.IComponentConnector,
+        private partial class TwoWayTests_obj1_Bindings :
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             ITwoWayTests_Bindings
         {
             private global::BindTestbed.TwoWayTests dataRoot;
             private bool initialized = false;
             private const int NOT_PHASED = (1 << 31);
             private const int DATA_CHANGED = (1 << 30);
-            private global::Windows.UI.Xaml.ResourceDictionary localResources;
-            private global::System.WeakReference<global::Windows.UI.Xaml.FrameworkElement> converterLookupRoot;
+            private global::Microsoft.UI.Xaml.ResourceDictionary localResources;
+            private global::System.WeakReference<global::Microsoft.UI.Xaml.FrameworkElement> converterLookupRoot;
 
             // Fields for each control that has bindings.
             private global::System.WeakReference obj1;
-            private global::Windows.UI.Xaml.Controls.TextBox obj6;
-            private global::Windows.UI.Xaml.Controls.TextBox obj7;
-            private global::Windows.UI.Xaml.Controls.TextBox obj8;
-            private global::Windows.UI.Xaml.Controls.TextBox obj9;
-            private global::Windows.UI.Xaml.Controls.TextBlock obj10;
-            private global::Windows.UI.Xaml.Controls.Slider obj11;
-            private global::Windows.UI.Xaml.Controls.Slider obj12;
-            private global::Windows.UI.Xaml.Controls.TextBox obj13;
-            private global::Windows.UI.Xaml.Controls.TextBox obj14;
-            private global::Windows.UI.Xaml.Shapes.Rectangle obj15;
-            private global::Windows.UI.Xaml.Controls.TextBox obj16;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj6;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj7;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj8;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj9;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj10;
+            private global::Microsoft.UI.Xaml.Controls.Slider obj11;
+            private global::Microsoft.UI.Xaml.Controls.Slider obj12;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj13;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj14;
+            private global::Microsoft.UI.Xaml.Shapes.Rectangle obj15;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj16;
             private global::BindTestbedModel.EmployeeTextBlock obj17;
-            private global::Windows.UI.Xaml.Controls.TextBox obj18;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj18;
             private global::BindTestbedModel.EmployeeTextBlock obj19;
-            private global::Windows.UI.Xaml.Controls.TextBox obj20;
-            private global::Windows.UI.Xaml.Controls.TextBox obj21;
-            private global::Windows.UI.Xaml.Controls.TextBox obj22;
-            private global::Windows.UI.Xaml.Controls.ListView obj25;
-            private global::Windows.UI.Xaml.Controls.ListView obj26;
-            private global::Windows.UI.Xaml.Media.SolidColorBrush obj27;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj20;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj21;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj22;
+            private global::Microsoft.UI.Xaml.Controls.ListView obj25;
+            private global::Microsoft.UI.Xaml.Controls.ListView obj26;
+            private global::Microsoft.UI.Xaml.Media.SolidColorBrush obj27;
 
             // Static fields for each binding's enabled/disabled state
             private static bool isobj1TagDisabled = false;
@@ -464,87 +473,87 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 10 && columnNumber == 5)
+                if (lineNumber == 12 && columnNumber == 5)
                 {
                     isobj1TagDisabled = true;
                 }
-                else if (lineNumber == 44 && columnNumber == 40)
+                else if (lineNumber == 46 && columnNumber == 40)
                 {
                     isobj6TextDisabled = true;
                 }
-                else if (lineNumber == 46 && columnNumber == 41)
+                else if (lineNumber == 48 && columnNumber == 41)
                 {
                     isobj7TextDisabled = true;
                 }
-                else if (lineNumber == 48 && columnNumber == 41)
+                else if (lineNumber == 50 && columnNumber == 41)
                 {
                     isobj8TextDisabled = true;
                 }
-                else if (lineNumber == 50 && columnNumber == 41)
+                else if (lineNumber == 52 && columnNumber == 41)
                 {
                     isobj9TextDisabled = true;
                 }
-                else if (lineNumber == 51 && columnNumber == 28)
+                else if (lineNumber == 53 && columnNumber == 28)
                 {
                     isobj10TextDisabled = true;
                 }
-                else if (lineNumber == 54 && columnNumber == 66)
+                else if (lineNumber == 56 && columnNumber == 66)
                 {
                     isobj11ValueDisabled = true;
                 }
-                else if (lineNumber == 55 && columnNumber == 66)
+                else if (lineNumber == 57 && columnNumber == 66)
                 {
                     isobj12ValueDisabled = true;
                 }
-                else if (lineNumber == 58 && columnNumber == 39)
+                else if (lineNumber == 60 && columnNumber == 39)
                 {
                     isobj13TextDisabled = true;
                 }
-                else if (lineNumber == 62 && columnNumber == 39)
+                else if (lineNumber == 64 && columnNumber == 39)
                 {
                     isobj14TextDisabled = true;
                 }
-                else if (lineNumber == 65 && columnNumber == 28)
+                else if (lineNumber == 67 && columnNumber == 28)
                 {
                     isobj15WidthDisabled = true;
                 }
-                else if (lineNumber == 72 && columnNumber == 26)
+                else if (lineNumber == 74 && columnNumber == 26)
                 {
                     isobj16TextDisabled = true;
                 }
-                else if (lineNumber == 78 && columnNumber == 28)
+                else if (lineNumber == 80 && columnNumber == 28)
                 {
                     isobj17EmployeeDisabled = true;
                 }
-                else if (lineNumber == 79 && columnNumber == 26)
+                else if (lineNumber == 81 && columnNumber == 26)
                 {
                     isobj18TextDisabled = true;
                 }
-                else if (lineNumber == 85 && columnNumber == 28)
+                else if (lineNumber == 87 && columnNumber == 28)
                 {
                     isobj19EmployeeDisabled = true;
                 }
-                else if (lineNumber == 86 && columnNumber == 26)
+                else if (lineNumber == 88 && columnNumber == 26)
                 {
                     isobj20TextDisabled = true;
                 }
-                else if (lineNumber == 89 && columnNumber == 26)
+                else if (lineNumber == 91 && columnNumber == 26)
                 {
                     isobj21TextDisabled = true;
                 }
-                else if (lineNumber == 105 && columnNumber == 26)
+                else if (lineNumber == 107 && columnNumber == 26)
                 {
                     isobj22TextDisabled = true;
                 }
-                else if (lineNumber == 99 && columnNumber == 64)
+                else if (lineNumber == 101 && columnNumber == 64)
                 {
                     isobj25ItemsSourceDisabled = true;
                 }
-                else if (lineNumber == 100 && columnNumber == 79)
+                else if (lineNumber == 102 && columnNumber == 79)
                 {
                     isobj26ItemsSourceDisabled = true;
                 }
-                else if (lineNumber == 67 && columnNumber == 42)
+                else if (lineNumber == 69 && columnNumber == 42)
                 {
                     isobj27ColorDisabled = true;
                 }
@@ -556,88 +565,94 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 1: // TwoWayTests.xaml line 1
-                        this.obj1 = new global::System.WeakReference((global::Windows.UI.Xaml.Controls.UserControl)target);
+                    case 1: // TwoWayTests.xaml line 3
+                        this.obj1 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.UserControl>(target));
                         break;
-                    case 6: // TwoWayTests.xaml line 44
-                        this.obj6 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                    case 6: // TwoWayTests.xaml line 46
+                        this.obj6 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                         this.bindingsTracking.RegisterTwoWayListener_6(this.obj6);
                         break;
-                    case 7: // TwoWayTests.xaml line 46
-                        this.obj7 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                    case 7: // TwoWayTests.xaml line 48
+                        this.obj7 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                         this.bindingsTracking.RegisterTwoWayListener_7(this.obj7);
                         break;
-                    case 8: // TwoWayTests.xaml line 48
-                        this.obj8 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                    case 8: // TwoWayTests.xaml line 50
+                        this.obj8 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                         this.bindingsTracking.RegisterTwoWayListener_8(this.obj8);
                         break;
-                    case 9: // TwoWayTests.xaml line 50
-                        this.obj9 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                    case 9: // TwoWayTests.xaml line 52
+                        this.obj9 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                         this.bindingsTracking.RegisterTwoWayListener_9(this.obj9);
                         break;
-                    case 10: // TwoWayTests.xaml line 51
-                        this.obj10 = (global::Windows.UI.Xaml.Controls.TextBlock)target;
+                    case 10: // TwoWayTests.xaml line 53
+                        this.obj10 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 11: // TwoWayTests.xaml line 54
-                        this.obj11 = (global::Windows.UI.Xaml.Controls.Slider)target;
+                    case 11: // TwoWayTests.xaml line 56
+                        this.obj11 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Slider>(target);
                         this.bindingsTracking.RegisterTwoWayListener_11(this.obj11);
                         break;
-                    case 12: // TwoWayTests.xaml line 55
-                        this.obj12 = (global::Windows.UI.Xaml.Controls.Slider)target;
+                    case 12: // TwoWayTests.xaml line 57
+                        this.obj12 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Slider>(target);
                         this.bindingsTracking.RegisterTwoWayListener_12(this.obj12);
                         break;
-                    case 13: // TwoWayTests.xaml line 58
-                        this.obj13 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                    case 13: // TwoWayTests.xaml line 60
+                        this.obj13 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                         this.bindingsTracking.RegisterTwoWayListener_13(this.obj13);
                         break;
-                    case 14: // TwoWayTests.xaml line 62
-                        this.obj14 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                    case 14: // TwoWayTests.xaml line 64
+                        this.obj14 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                         this.bindingsTracking.RegisterTwoWayListener_14(this.obj14);
                         break;
-                    case 15: // TwoWayTests.xaml line 65
-                        this.obj15 = (global::Windows.UI.Xaml.Shapes.Rectangle)target;
+                    case 15: // TwoWayTests.xaml line 67
+                        this.obj15 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Shapes.Rectangle>(target);
                         this.bindingsTracking.RegisterTwoWayListener_15(this.obj15);
                         break;
-                    case 16: // TwoWayTests.xaml line 72
-                        this.obj16 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                    case 16: // TwoWayTests.xaml line 74
+                        this.obj16 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                         this.bindingsTracking.RegisterTwoWayListener_16(this.obj16);
                         break;
-                    case 17: // TwoWayTests.xaml line 77
-                        this.obj17 = (global::BindTestbedModel.EmployeeTextBlock)target;
+                    case 17: // TwoWayTests.xaml line 79
+                        this.obj17 = global::WinRT.CastExtensions.As<global::BindTestbedModel.EmployeeTextBlock>(target);
                         this.bindingsTracking.RegisterTwoWayListener_17(this.obj17);
                         break;
-                    case 18: // TwoWayTests.xaml line 79
-                        this.obj18 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                    case 18: // TwoWayTests.xaml line 81
+                        this.obj18 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                         break;
-                    case 19: // TwoWayTests.xaml line 84
-                        this.obj19 = (global::BindTestbedModel.EmployeeTextBlock)target;
+                    case 19: // TwoWayTests.xaml line 86
+                        this.obj19 = global::WinRT.CastExtensions.As<global::BindTestbedModel.EmployeeTextBlock>(target);
                         this.bindingsTracking.RegisterTwoWayListener_19(this.obj19);
                         break;
-                    case 20: // TwoWayTests.xaml line 86
-                        this.obj20 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                    case 20: // TwoWayTests.xaml line 88
+                        this.obj20 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                         break;
-                    case 21: // TwoWayTests.xaml line 89
-                        this.obj21 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                    case 21: // TwoWayTests.xaml line 91
+                        this.obj21 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                         this.bindingsTracking.RegisterTwoWayListener_21(this.obj21);
                         break;
-                    case 22: // TwoWayTests.xaml line 105
-                        this.obj22 = (global::Windows.UI.Xaml.Controls.TextBox)target;
+                    case 22: // TwoWayTests.xaml line 107
+                        this.obj22 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                         this.bindingsTracking.RegisterTwoWayListener_22(this.obj22);
                         break;
-                    case 25: // TwoWayTests.xaml line 99
-                        this.obj25 = (global::Windows.UI.Xaml.Controls.ListView)target;
+                    case 25: // TwoWayTests.xaml line 101
+                        this.obj25 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
                         break;
-                    case 26: // TwoWayTests.xaml line 100
-                        this.obj26 = (global::Windows.UI.Xaml.Controls.ListView)target;
+                    case 26: // TwoWayTests.xaml line 102
+                        this.obj26 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
                         break;
-                    case 27: // TwoWayTests.xaml line 67
-                        this.obj27 = (global::Windows.UI.Xaml.Media.SolidColorBrush)target;
+                    case 27: // TwoWayTests.xaml line 69
+                        this.obj27 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Media.SolidColorBrush>(target);
                         this.bindingsTracking.RegisterTwoWayListener_27(this.obj27);
                         break;
                     default:
                         break;
                 }
             }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
 
             // IDataTemplateComponent
 
@@ -683,31 +698,36 @@ namespace BindTestbed
                 this.bindingsTracking.ReleaseAllListeners();
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = (global::BindTestbed.TwoWayTests)newDataRoot;
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbed.TwoWayTests>(newDataRoot);
                     return true;
                 }
                 return false;
             }
 
-            public void Loading(global::Windows.UI.Xaml.FrameworkElement src, object data)
+            public void Activated(object obj, global::Microsoft.UI.Xaml.WindowActivatedEventArgs data)
             {
                 this.Initialize();
             }
-            public void SetConverterLookupRoot(global::Windows.UI.Xaml.FrameworkElement rootElement)
+
+            public void Loading(global::Microsoft.UI.Xaml.FrameworkElement src, object data)
             {
-                this.converterLookupRoot = new global::System.WeakReference<global::Windows.UI.Xaml.FrameworkElement>(rootElement);
+                this.Initialize();
+            }
+            public void SetConverterLookupRoot(global::Microsoft.UI.Xaml.FrameworkElement rootElement)
+            {
+                this.converterLookupRoot = new global::System.WeakReference<global::Microsoft.UI.Xaml.FrameworkElement>(rootElement);
             }
 
-            public global::Windows.UI.Xaml.Data.IValueConverter LookupConverter(string key)
+            public global::Microsoft.UI.Xaml.Data.IValueConverter LookupConverter(string key)
             {
                 if (this.localResources == null)
                 {
-                    global::Windows.UI.Xaml.FrameworkElement rootElement;
+                    global::Microsoft.UI.Xaml.FrameworkElement rootElement;
                     this.converterLookupRoot.TryGetTarget(out rootElement);
                     this.localResources = rootElement.Resources;
                     this.converterLookupRoot = null;
                 }
-                return (global::Windows.UI.Xaml.Data.IValueConverter) (this.localResources.ContainsKey(key) ? this.localResources[key] : global::Windows.UI.Xaml.Application.Current.Resources[key]);
+                return (global::Microsoft.UI.Xaml.Data.IValueConverter) (this.localResources.ContainsKey(key) ? this.localResources[key] : global::Microsoft.UI.Xaml.Application.Current.Resources[key]);
             }
 
             // Update methods for each path node used in binding steps.
@@ -760,7 +780,7 @@ namespace BindTestbed
                 this.bindingsTracking.UpdateChildListeners_Model_Employees_I0(obj);
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TwoWayTests.xaml line 77
+                    // TwoWayTests.xaml line 79
                     if (!isobj17EmployeeDisabled)
                     {
                         XamlBindingSetters.Set_BindTestbedModel_EmployeeTextBlock_Employee(this.obj17, obj, null);
@@ -768,12 +788,12 @@ namespace BindTestbed
                 }
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // TwoWayTests.xaml line 1
+                    // TwoWayTests.xaml line 3
                     if (!isobj1TagDisabled)
                     {
-                        if ((this.obj1.Target as global::Windows.UI.Xaml.Controls.UserControl) != null)
+                        if ((this.obj1.Target as global::Microsoft.UI.Xaml.Controls.UserControl) != null)
                         {
-                            XamlBindingSetters.Set_Windows_UI_Xaml_FrameworkElement_Tag((this.obj1.Target as global::Windows.UI.Xaml.Controls.UserControl), obj, null);
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_FrameworkElement_Tag((this.obj1.Target as global::Microsoft.UI.Xaml.Controls.UserControl), obj, null);
                         }
                     }
                 }
@@ -793,30 +813,30 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TwoWayTests.xaml line 44
+                    // TwoWayTests.xaml line 46
                     if (!isobj6TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj6, obj, null);
-                    }
-                    // TwoWayTests.xaml line 48
-                    if (!isobj8TextDisabled)
-                    {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj8, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj6, obj, null);
                     }
                     // TwoWayTests.xaml line 50
+                    if (!isobj8TextDisabled)
+                    {
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj8, obj, null);
+                    }
+                    // TwoWayTests.xaml line 52
                     if (!isobj9TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj9, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj9, obj, null);
                     }
-                    // TwoWayTests.xaml line 51
+                    // TwoWayTests.xaml line 53
                     if (!isobj10TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBlock_Text(this.obj10, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj10, obj, null);
                     }
-                    // TwoWayTests.xaml line 105
+                    // TwoWayTests.xaml line 107
                     if (!isobj22TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj22, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj22, obj, null);
                     }
                 }
             }
@@ -835,10 +855,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TwoWayTests.xaml line 46
+                    // TwoWayTests.xaml line 48
                     if (!isobj7TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj7, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj7, obj, null);
                     }
                 }
             }
@@ -859,10 +879,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TwoWayTests.xaml line 54
+                    // TwoWayTests.xaml line 56
                     if (!isobj11ValueDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_Primitives_RangeBase_Value(this.obj11, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_Primitives_RangeBase_Value(this.obj11, obj);
                     }
                 }
             }
@@ -881,10 +901,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TwoWayTests.xaml line 55
+                    // TwoWayTests.xaml line 57
                     if (!isobj12ValueDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_Primitives_RangeBase_Value(this.obj12, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_Primitives_RangeBase_Value(this.obj12, obj);
                     }
                 }
             }
@@ -892,10 +912,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TwoWayTests.xaml line 58
+                    // TwoWayTests.xaml line 60
                     if (!isobj13TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj13, obj.ToString(), null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj13, obj.ToString(), null);
                     }
                 }
             }
@@ -903,15 +923,15 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TwoWayTests.xaml line 62
+                    // TwoWayTests.xaml line 64
                     if (!isobj14TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj14, (global::System.String)this.LookupConverter("ColorToStringConverter").Convert(obj, typeof(global::System.String), null, null), null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj14, (global::System.String)this.LookupConverter("ColorToStringConverter").Convert(obj, typeof(global::System.String), null, null), null);
                     }
-                    // TwoWayTests.xaml line 67
+                    // TwoWayTests.xaml line 69
                     if (!isobj27ColorDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Media_SolidColorBrush_Color(this.obj27, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Media_SolidColorBrush_Color(this.obj27, obj);
                     }
                 }
             }
@@ -919,10 +939,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TwoWayTests.xaml line 65
+                    // TwoWayTests.xaml line 67
                     if (!isobj15WidthDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_FrameworkElement_Width(this.obj15, (global::System.Double) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Double), obj));
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_FrameworkElement_Width(this.obj15, (global::System.Double) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Double), obj));
                     }
                 }
             }
@@ -951,10 +971,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TwoWayTests.xaml line 72
+                    // TwoWayTests.xaml line 74
                     if (!isobj16TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj16, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj16, obj, null);
                     }
                 }
             }
@@ -984,10 +1004,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TwoWayTests.xaml line 79
+                    // TwoWayTests.xaml line 81
                     if (!isobj18TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj18, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj18, obj, null);
                     }
                 }
             }
@@ -998,16 +1018,16 @@ namespace BindTestbed
                 {
                     if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                     {
-                        this.Update_Model_ThatOneGuy_K3738876834(obj["You Know"], phase);
+                        this.Update_Model_ThatOneGuy_K3734755244(obj["You Know"], phase);
                     }
                 }
             }
-            private void Update_Model_ThatOneGuy_K3738876834(global::BindTestbedModel.IEmployee obj, int phase)
+            private void Update_Model_ThatOneGuy_K3734755244(global::BindTestbedModel.IEmployee obj, int phase)
             {
-                this.bindingsTracking.UpdateChildListeners_Model_ThatOneGuy_K3738876834(obj);
+                this.bindingsTracking.UpdateChildListeners_Model_ThatOneGuy_K3734755244(obj);
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TwoWayTests.xaml line 84
+                    // TwoWayTests.xaml line 86
                     if (!isobj19EmployeeDisabled)
                     {
                         XamlBindingSetters.Set_BindTestbedModel_EmployeeTextBlock_Employee(this.obj19, obj, null);
@@ -1040,10 +1060,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TwoWayTests.xaml line 86
+                    // TwoWayTests.xaml line 88
                     if (!isobj20TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj20, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj20, obj, null);
                     }
                 }
             }
@@ -1051,10 +1071,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TwoWayTests.xaml line 89
+                    // TwoWayTests.xaml line 91
                     if (!isobj21TextDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_TextBox_Text(this.obj21, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj21, obj, null);
                     }
                 }
             }
@@ -1062,15 +1082,15 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // TwoWayTests.xaml line 99
+                    // TwoWayTests.xaml line 101
                     if (!isobj25ItemsSourceDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj25, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj25, obj, null);
                     }
-                    // TwoWayTests.xaml line 100
+                    // TwoWayTests.xaml line 102
                     if (!isobj26ItemsSourceDisabled)
                     {
-                        XamlBindingSetters.Set_Windows_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj26, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj26, obj, null);
                     }
                 }
             }
@@ -1175,7 +1195,7 @@ namespace BindTestbed
                     {
                         if (this.dataRoot.Model != null)
                         {
-                            this.dataRoot.Model.IntPropWithINPC = (global::System.Int32) global::Windows.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Int32), this.obj13.Text);
+                            this.dataRoot.Model.IntPropWithINPC = (global::System.Int32) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Int32), this.obj13.Text);
                         }
                     }
                 }
@@ -1297,7 +1317,7 @@ namespace BindTestbed
                 }
             }
 
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             private class TwoWayTests_obj1_BindingsTracking
             {
@@ -1337,12 +1357,12 @@ namespace BindTestbed
                     UpdateChildListeners_twowayToArrayElem(null);
                     UpdateChildListeners_twowayToArrayElem_Employee(null);
                     UpdateChildListeners_Model_ThatOneGuy(null);
-                    UpdateChildListeners_Model_ThatOneGuy_K3738876834(null);
+                    UpdateChildListeners_Model_ThatOneGuy_K3734755244(null);
                     UpdateChildListeners_twowayToMapElem(null);
                     UpdateChildListeners_twowayToMapElem_Employee(null);
                 }
 
-                public void DependencyPropertyChanged_Tag(global::Windows.UI.Xaml.DependencyObject sender, global::Windows.UI.Xaml.DependencyProperty prop)
+                public void DependencyPropertyChanged_Tag(global::Microsoft.UI.Xaml.DependencyObject sender, global::Microsoft.UI.Xaml.DependencyProperty prop)
                 {
                     TwoWayTests_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
@@ -1362,12 +1382,12 @@ namespace BindTestbed
                     {
                         if (bindings.dataRoot != null)
                         {
-                            bindings.dataRoot.UnregisterPropertyChangedCallback(global::Windows.UI.Xaml.FrameworkElement.TagProperty, tokenDPC_Tag);
+                            bindings.dataRoot.UnregisterPropertyChangedCallback(global::Microsoft.UI.Xaml.FrameworkElement.TagProperty, tokenDPC_Tag);
                         }
                         if (obj != null)
                         {
                             bindings.dataRoot = obj;
-                            tokenDPC_Tag = obj.RegisterPropertyChangedCallback(global::Windows.UI.Xaml.FrameworkElement.TagProperty, DependencyPropertyChanged_Tag);
+                            tokenDPC_Tag = obj.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.FrameworkElement.TagProperty, DependencyPropertyChanged_Tag);
                         }
                     }
                 }
@@ -1647,7 +1667,7 @@ namespace BindTestbed
                         }
                     }
                 }
-                public void DependencyPropertyChanged_DOModel_YinPropertyDP(global::Windows.UI.Xaml.DependencyObject sender, global::Windows.UI.Xaml.DependencyProperty prop)
+                public void DependencyPropertyChanged_DOModel_YinPropertyDP(global::Microsoft.UI.Xaml.DependencyObject sender, global::Microsoft.UI.Xaml.DependencyProperty prop)
                 {
                     TwoWayTests_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
@@ -1659,7 +1679,7 @@ namespace BindTestbed
                         }
                     }
                 }
-                public void DependencyPropertyChanged_DOModel_A_BindTestbedModel_AttachedProperties_AttachedString(global::Windows.UI.Xaml.DependencyObject sender, global::Windows.UI.Xaml.DependencyProperty prop)
+                public void DependencyPropertyChanged_DOModel_A_BindTestbedModel_AttachedProperties_AttachedString(global::Microsoft.UI.Xaml.DependencyObject sender, global::Microsoft.UI.Xaml.DependencyProperty prop)
                 {
                     TwoWayTests_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
@@ -1790,7 +1810,7 @@ namespace BindTestbed
                         }
                     }
                 }
-                public void DependencyPropertyChanged_twowayToArrayElem_Employee(global::Windows.UI.Xaml.DependencyObject sender, global::Windows.UI.Xaml.DependencyProperty prop)
+                public void DependencyPropertyChanged_twowayToArrayElem_Employee(global::Microsoft.UI.Xaml.DependencyObject sender, global::Microsoft.UI.Xaml.DependencyProperty prop)
                 {
                     TwoWayTests_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
@@ -1877,7 +1897,7 @@ namespace BindTestbed
                         global::Windows.Foundation.Collections.IObservableMap<global::System.String, global::BindTestbedModel.IEmployee> obj = sender as global::Windows.Foundation.Collections.IObservableMap<global::System.String, global::BindTestbedModel.IEmployee>;
                 if (obj != null)
                 {
-                    bindings.Update_Model_ThatOneGuy_K3738876834(obj["You Know"], DATA_CHANGED);
+                    bindings.Update_Model_ThatOneGuy_K3734755244(obj["You Know"], DATA_CHANGED);
                 }
                     }
                 }
@@ -1898,7 +1918,7 @@ namespace BindTestbed
                         }
                     }
                 }
-                public void PropertyChanged_Model_ThatOneGuy_K3738876834(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
+                public void PropertyChanged_Model_ThatOneGuy_K3734755244(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
                 {
                     TwoWayTests_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
@@ -1918,24 +1938,24 @@ namespace BindTestbed
                         }
                     }
                 }
-                private global::BindTestbedModel.IEmployee cache_Model_ThatOneGuy_K3738876834 = null;
-                public void UpdateChildListeners_Model_ThatOneGuy_K3738876834(global::BindTestbedModel.IEmployee obj)
+                private global::BindTestbedModel.IEmployee cache_Model_ThatOneGuy_K3734755244 = null;
+                public void UpdateChildListeners_Model_ThatOneGuy_K3734755244(global::BindTestbedModel.IEmployee obj)
                 {
-                    if (obj != cache_Model_ThatOneGuy_K3738876834)
+                    if (obj != cache_Model_ThatOneGuy_K3734755244)
                     {
-                        if (cache_Model_ThatOneGuy_K3738876834 != null)
+                        if (cache_Model_ThatOneGuy_K3734755244 != null)
                         {
-                            ((global::System.ComponentModel.INotifyPropertyChanged)cache_Model_ThatOneGuy_K3738876834).PropertyChanged -= PropertyChanged_Model_ThatOneGuy_K3738876834;
-                            cache_Model_ThatOneGuy_K3738876834 = null;
+                            ((global::System.ComponentModel.INotifyPropertyChanged)cache_Model_ThatOneGuy_K3734755244).PropertyChanged -= PropertyChanged_Model_ThatOneGuy_K3734755244;
+                            cache_Model_ThatOneGuy_K3734755244 = null;
                         }
                         if (obj != null)
                         {
-                            cache_Model_ThatOneGuy_K3738876834 = obj;
-                            ((global::System.ComponentModel.INotifyPropertyChanged)obj).PropertyChanged += PropertyChanged_Model_ThatOneGuy_K3738876834;
+                            cache_Model_ThatOneGuy_K3734755244 = obj;
+                            ((global::System.ComponentModel.INotifyPropertyChanged)obj).PropertyChanged += PropertyChanged_Model_ThatOneGuy_K3734755244;
                         }
                     }
                 }
-                public void DependencyPropertyChanged_twowayToMapElem_Employee(global::Windows.UI.Xaml.DependencyObject sender, global::Windows.UI.Xaml.DependencyProperty prop)
+                public void DependencyPropertyChanged_twowayToMapElem_Employee(global::Microsoft.UI.Xaml.DependencyObject sender, global::Microsoft.UI.Xaml.DependencyProperty prop)
                 {
                     TwoWayTests_obj1_Bindings bindings = TryGetBindingObject();
                     if (bindings != null)
@@ -2014,7 +2034,7 @@ namespace BindTestbed
                         }
                     }
                 }
-                public void RegisterTwoWayListener_6(global::Windows.UI.Xaml.Controls.TextBox sourceObject)
+                public void RegisterTwoWayListener_6(global::Microsoft.UI.Xaml.Controls.TextBox sourceObject)
                 {
                     sourceObject.LostFocus += (sender, e) =>
                     {
@@ -2025,7 +2045,7 @@ namespace BindTestbed
                         }
                     };
                 }
-                public void RegisterTwoWayListener_7(global::Windows.UI.Xaml.Controls.TextBox sourceObject)
+                public void RegisterTwoWayListener_7(global::Microsoft.UI.Xaml.Controls.TextBox sourceObject)
                 {
                     sourceObject.LostFocus += (sender, e) =>
                     {
@@ -2036,7 +2056,7 @@ namespace BindTestbed
                         }
                     };
                 }
-                public void RegisterTwoWayListener_8(global::Windows.UI.Xaml.Controls.TextBox sourceObject)
+                public void RegisterTwoWayListener_8(global::Microsoft.UI.Xaml.Controls.TextBox sourceObject)
                 {
                     sourceObject.LostFocus += (sender, e) =>
                     {
@@ -2047,9 +2067,9 @@ namespace BindTestbed
                         }
                     };
                 }
-                public void RegisterTwoWayListener_9(global::Windows.UI.Xaml.Controls.TextBox sourceObject)
+                public void RegisterTwoWayListener_9(global::Microsoft.UI.Xaml.Controls.TextBox sourceObject)
                 {
-                    sourceObject.RegisterPropertyChangedCallback(global::Windows.UI.Xaml.Controls.TextBox.TextProperty, (sender, prop) =>
+                    sourceObject.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Controls.TextBox.TextProperty, (sender, prop) =>
                     {
                         var bindingObj = this.TryGetBindingObject();
                         if (bindingObj != null)
@@ -2058,9 +2078,9 @@ namespace BindTestbed
                         }
                     });
                 }
-                public void RegisterTwoWayListener_11(global::Windows.UI.Xaml.Controls.Slider sourceObject)
+                public void RegisterTwoWayListener_11(global::Microsoft.UI.Xaml.Controls.Slider sourceObject)
                 {
-                    sourceObject.RegisterPropertyChangedCallback(global::Windows.UI.Xaml.Controls.Primitives.RangeBase.ValueProperty, (sender, prop) =>
+                    sourceObject.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Controls.Primitives.RangeBase.ValueProperty, (sender, prop) =>
                     {
                         var bindingObj = this.TryGetBindingObject();
                         if (bindingObj != null)
@@ -2069,9 +2089,9 @@ namespace BindTestbed
                         }
                     });
                 }
-                public void RegisterTwoWayListener_12(global::Windows.UI.Xaml.Controls.Slider sourceObject)
+                public void RegisterTwoWayListener_12(global::Microsoft.UI.Xaml.Controls.Slider sourceObject)
                 {
-                    sourceObject.RegisterPropertyChangedCallback(global::Windows.UI.Xaml.Controls.Primitives.RangeBase.ValueProperty, (sender, prop) =>
+                    sourceObject.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Controls.Primitives.RangeBase.ValueProperty, (sender, prop) =>
                     {
                         var bindingObj = this.TryGetBindingObject();
                         if (bindingObj != null)
@@ -2080,7 +2100,7 @@ namespace BindTestbed
                         }
                     });
                 }
-                public void RegisterTwoWayListener_13(global::Windows.UI.Xaml.Controls.TextBox sourceObject)
+                public void RegisterTwoWayListener_13(global::Microsoft.UI.Xaml.Controls.TextBox sourceObject)
                 {
                     sourceObject.LostFocus += (sender, e) =>
                     {
@@ -2091,7 +2111,7 @@ namespace BindTestbed
                         }
                     };
                 }
-                public void RegisterTwoWayListener_14(global::Windows.UI.Xaml.Controls.TextBox sourceObject)
+                public void RegisterTwoWayListener_14(global::Microsoft.UI.Xaml.Controls.TextBox sourceObject)
                 {
                     sourceObject.LostFocus += (sender, e) =>
                     {
@@ -2102,9 +2122,9 @@ namespace BindTestbed
                         }
                     };
                 }
-                public void RegisterTwoWayListener_15(global::Windows.UI.Xaml.Shapes.Rectangle sourceObject)
+                public void RegisterTwoWayListener_15(global::Microsoft.UI.Xaml.Shapes.Rectangle sourceObject)
                 {
-                    sourceObject.RegisterPropertyChangedCallback(global::Windows.UI.Xaml.FrameworkElement.WidthProperty, (sender, prop) =>
+                    sourceObject.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.FrameworkElement.WidthProperty, (sender, prop) =>
                     {
                         var bindingObj = this.TryGetBindingObject();
                         if (bindingObj != null)
@@ -2113,7 +2133,7 @@ namespace BindTestbed
                         }
                     });
                 }
-                public void RegisterTwoWayListener_16(global::Windows.UI.Xaml.Controls.TextBox sourceObject)
+                public void RegisterTwoWayListener_16(global::Microsoft.UI.Xaml.Controls.TextBox sourceObject)
                 {
                     sourceObject.LostFocus += (sender, e) =>
                     {
@@ -2146,7 +2166,7 @@ namespace BindTestbed
                         }
                     });
                 }
-                public void RegisterTwoWayListener_21(global::Windows.UI.Xaml.Controls.TextBox sourceObject)
+                public void RegisterTwoWayListener_21(global::Microsoft.UI.Xaml.Controls.TextBox sourceObject)
                 {
                     sourceObject.LostFocus += (sender, e) =>
                     {
@@ -2157,7 +2177,7 @@ namespace BindTestbed
                         }
                     };
                 }
-                public void RegisterTwoWayListener_22(global::Windows.UI.Xaml.Controls.TextBox sourceObject)
+                public void RegisterTwoWayListener_22(global::Microsoft.UI.Xaml.Controls.TextBox sourceObject)
                 {
                     sourceObject.LostFocus += (sender, e) =>
                     {
@@ -2168,9 +2188,9 @@ namespace BindTestbed
                         }
                     };
                 }
-                public void RegisterTwoWayListener_27(global::Windows.UI.Xaml.Media.SolidColorBrush sourceObject)
+                public void RegisterTwoWayListener_27(global::Microsoft.UI.Xaml.Media.SolidColorBrush sourceObject)
                 {
-                    sourceObject.RegisterPropertyChangedCallback(global::Windows.UI.Xaml.Media.SolidColorBrush.ColorProperty, (sender, prop) =>
+                    sourceObject.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Media.SolidColorBrush.ColorProperty, (sender, prop) =>
                     {
                         var bindingObj = this.TryGetBindingObject();
                         if (bindingObj != null)
@@ -2181,87 +2201,88 @@ namespace BindTestbed
                 }
             }
         }
+
         /// <summary>
         /// Connect()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public void Connect(int connectionId, object target)
         {
             switch(connectionId)
             {
-            case 6: // TwoWayTests.xaml line 44
+            case 6: // TwoWayTests.xaml line 46
                 {
-                    this.TB1D = (global::Windows.UI.Xaml.Controls.TextBox)(target);
+                    this.TB1D = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                 }
                 break;
-            case 7: // TwoWayTests.xaml line 46
+            case 7: // TwoWayTests.xaml line 48
                 {
-                    this.TB1D2 = (global::Windows.UI.Xaml.Controls.TextBox)(target);
+                    this.TB1D2 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                 }
                 break;
-            case 8: // TwoWayTests.xaml line 48
+            case 8: // TwoWayTests.xaml line 50
                 {
-                    this.TB1LF = (global::Windows.UI.Xaml.Controls.TextBox)(target);
+                    this.TB1LF = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                 }
                 break;
-            case 9: // TwoWayTests.xaml line 50
+            case 9: // TwoWayTests.xaml line 52
                 {
-                    this.TB1PC = (global::Windows.UI.Xaml.Controls.TextBox)(target);
+                    this.TB1PC = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                 }
                 break;
-            case 11: // TwoWayTests.xaml line 54
+            case 11: // TwoWayTests.xaml line 56
                 {
-                    this.Yin = (global::Windows.UI.Xaml.Controls.Slider)(target);
+                    this.Yin = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Slider>(target);
                 }
                 break;
-            case 12: // TwoWayTests.xaml line 55
+            case 12: // TwoWayTests.xaml line 57
                 {
-                    this.Yang = (global::Windows.UI.Xaml.Controls.Slider)(target);
+                    this.Yang = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Slider>(target);
                 }
                 break;
-            case 13: // TwoWayTests.xaml line 58
+            case 13: // TwoWayTests.xaml line 60
                 {
-                    this.TB2 = (global::Windows.UI.Xaml.Controls.TextBox)(target);
+                    this.TB2 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                 }
                 break;
-            case 14: // TwoWayTests.xaml line 62
+            case 14: // TwoWayTests.xaml line 64
                 {
-                    this.TB3 = (global::Windows.UI.Xaml.Controls.TextBox)(target);
+                    this.TB3 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
                 }
                 break;
-            case 17: // TwoWayTests.xaml line 77
+            case 17: // TwoWayTests.xaml line 79
                 {
-                    this.twowayToArrayElem = (global::BindTestbedModel.EmployeeTextBlock)(target);
+                    this.twowayToArrayElem = global::WinRT.CastExtensions.As<global::BindTestbedModel.EmployeeTextBlock>(target);
                 }
                 break;
-            case 19: // TwoWayTests.xaml line 84
+            case 19: // TwoWayTests.xaml line 86
                 {
-                    this.twowayToMapElem = (global::BindTestbedModel.EmployeeTextBlock)(target);
+                    this.twowayToMapElem = global::WinRT.CastExtensions.As<global::BindTestbedModel.EmployeeTextBlock>(target);
                 }
                 break;
-            case 23: // TwoWayTests.xaml line 108
+            case 23: // TwoWayTests.xaml line 110
                 {
-                    global::Windows.UI.Xaml.Controls.Button element23 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element23).Click += this.UpdateValuesClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element23 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element23).Click += this.UpdateValuesClick;
                 }
                 break;
-            case 24: // TwoWayTests.xaml line 109
+            case 24: // TwoWayTests.xaml line 111
                 {
-                    global::Windows.UI.Xaml.Controls.Button element24 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element24).Click += this.ResetValuesClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element24 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element24).Click += this.ResetValuesClick;
                 }
                 break;
-            case 28: // TwoWayTests.xaml line 37
+            case 28: // TwoWayTests.xaml line 39
                 {
-                    this.UpdateValuesButton = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)this.UpdateValuesButton).Click += this.UpdateValuesClick;
+                    this.UpdateValuesButton = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)this.UpdateValuesButton).Click += this.UpdateValuesClick;
                 }
                 break;
-            case 29: // TwoWayTests.xaml line 38
+            case 29: // TwoWayTests.xaml line 40
                 {
-                    global::Windows.UI.Xaml.Controls.Button element29 = (global::Windows.UI.Xaml.Controls.Button)(target);
-                    ((global::Windows.UI.Xaml.Controls.Button)element29).Click += this.ResetValuesClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element29 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element29).Click += this.ResetValuesClick;
                 }
                 break;
             default:
@@ -2270,38 +2291,39 @@ namespace BindTestbed
             this._contentLoaded = true;
         }
 
+
         /// <summary>
         /// GetBindingConnector(int connectionId, object target)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
+        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target)
         {
-            global::Windows.UI.Xaml.Markup.IComponentConnector returnValue = null;
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector returnValue = null;
             switch(connectionId)
             {
-            case 1: // TwoWayTests.xaml line 1
+            case 1: // TwoWayTests.xaml line 3
                 {                    
-                    global::Windows.UI.Xaml.Controls.UserControl element1 = (global::Windows.UI.Xaml.Controls.UserControl)target;
+                    global::Microsoft.UI.Xaml.Controls.UserControl element1 = (global::Microsoft.UI.Xaml.Controls.UserControl)target;
                     TwoWayTests_obj1_Bindings bindings = new TwoWayTests_obj1_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(this);
                     bindings.SetConverterLookupRoot(this);
                     this.Bindings = bindings;
                     element1.Loading += bindings.Loading;
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
                 }
                 break;
-            case 3: // TwoWayTests.xaml line 20
+            case 3: // TwoWayTests.xaml line 22
                 {                    
-                    global::Windows.UI.Xaml.Controls.Grid element3 = (global::Windows.UI.Xaml.Controls.Grid)target;
+                    global::Microsoft.UI.Xaml.Controls.Grid element3 = (global::Microsoft.UI.Xaml.Controls.Grid)target;
                     TwoWayTests_obj3_Bindings bindings = new TwoWayTests_obj3_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(element3.DataContext);
                     bindings.SetConverterLookupRoot(this);
                     element3.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Windows.UI.Xaml.DataTemplate.SetExtensionInstance(element3, bindings);
-                    global::Windows.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element3, bindings);
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element3, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element3, bindings);
                 }
                 break;
             }

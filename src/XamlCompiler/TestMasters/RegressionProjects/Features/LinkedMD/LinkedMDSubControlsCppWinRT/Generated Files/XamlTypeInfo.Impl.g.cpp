@@ -12,15 +12,21 @@
 #include <string>
 #include <regex>
 #include <unknwn.h>
+#include <mutex>
+
+// Undefine GetCurrentTime macro to prevent
+// conflict with Storyboard::GetCurrentTime
+#undef GetCurrentTime
+
 #include "winrt/windows.foundation.h"
-#include "winrt/windows.ui.xaml.markup.h"
 #include "winrt/windows.ui.xaml.interop.h"
+#include "winrt/microsoft.ui.xaml.markup.h"
 #include "XamlTypeInfo.xaml.g.h"
 #include "XamlMetaDataProvider.h"
 
 namespace winrt::LinkedMDSubControlsCppWinRT::implementation
 {
-    using namespace ::winrt::Windows::UI::Xaml::Markup;
+    using namespace ::winrt::Microsoft::UI::Xaml::Markup;
     using namespace ::winrt::Windows::UI::Xaml::Interop;
 
     // XamlMetaDataProvider
@@ -77,6 +83,7 @@ namespace winrt::LinkedMDSubControlsCppWinRT::implementation
             return nullptr;
         }
 
+        std::lock_guard<std::recursive_mutex> lock(_xamlTypesCriticalSection);
         auto val = _xamlTypes.find(typeName.data());
         if (val != _xamlTypes.end())
         {
@@ -115,6 +122,7 @@ namespace winrt::LinkedMDSubControlsCppWinRT::implementation
             return nullptr;
         }
 
+        std::lock_guard<std::recursive_mutex> lock(_xamlMembersCriticalSection);
         auto val = _xamlMembers.find(longMemberName.data());
         if (val != _xamlMembers.end())
         {
@@ -133,6 +141,7 @@ namespace winrt::LinkedMDSubControlsCppWinRT::implementation
     IXamlType XamlTypeInfoProvider::CheckOtherMetadataProvidersForName(::winrt::hstring const& typeName)
     {
         IXamlType foundXamlType;
+        std::lock_guard<std::recursive_mutex> lock(_xamlTypesCriticalSection);
         for (auto const& provider : OtherProviders())
         {
             auto xamlType = provider.GetXamlType(typeName);
@@ -151,6 +160,7 @@ namespace winrt::LinkedMDSubControlsCppWinRT::implementation
     IXamlType XamlTypeInfoProvider::CheckOtherMetadataProvidersForType(TypeName const& t)
     {
         IXamlType foundXamlType;
+        std::lock_guard<std::recursive_mutex> lock(_xamlTypesCriticalSection);
         for (auto const& provider : OtherProviders())
         {
             auto xamlType = provider.GetXamlType(t);
@@ -248,6 +258,11 @@ namespace winrt::LinkedMDSubControlsCppWinRT::implementation
         throw ::winrt::hresult_not_implemented {};
     }
 
+    IXamlType XamlSystemBaseType::BoxedType() const
+    {
+        throw ::winrt::hresult_not_implemented {};
+    }
+
     TypeName XamlSystemBaseType::UnderlyingType() const
     {
         return { _fullName, TypeKind::Primitive };
@@ -297,7 +312,7 @@ namespace winrt::LinkedMDSubControlsCppWinRT::implementation
 
     ::winrt::hstring XamlUserType::GetRuntimeClassName() const
     {
-        static ::winrt::hstring name{ ::winrt::name_of<::winrt::Windows::UI::Xaml::Markup::IXamlType>() };
+        static ::winrt::hstring name{ ::winrt::name_of<::winrt::Microsoft::UI::Xaml::Markup::IXamlType>() };
         return name;
     }
 

@@ -131,41 +131,150 @@ namespace UnitTests
 
         private static void DiffCodegen(string targetDir, List<string> forbiddenLines = null)
         {
-            /* This method is passed in a subdirectory to diff all codegenned files against (including its own children directories).
-             * The path is relative to XAMLCompiler\Tests.  E.g. to diff BindTestbedCS's Debug x86 build, targetDir would be
-             * "RegressionProjects\Features\CompiledBinding\BindTestbedCS\obj\x86\Debug".  This method would then check the generated files there against
-             * the corresponding masters in XAMLCompiler\TestMasters\RegressionProjects\Features\CompiledBinding\BindTestbedCS\obj\x86\Debug.
+            /* targetDir names a master directory, relative to XAMLCompiler\TestMasters - the same key
+             * copynewmasters.cmd uses. Tests\UnitTests\CodegenTargets.txt maps that key to the
+             * directory the XAML compiler actually wrote the codegen to. The two are not derivable
+             * from one another - master directory names are historical, while codegen goes wherever
+             * $(GeneratedFilesDir) points - so this test and copynewmasters.cmd both read the
+             * mapping from that one file rather than each keeping their own copy of it.
              */
+            string masterDir = NormalizePath(targetDir);
 
-            //Get the directory where the solution is located (XAMLCompiler).  Tests are run from XAMLCompiler\Tests\UnitTests\UnitTestingBin,
-            //so we need to get the great-grandparent of the current directory to get there.
-            var solutionDir = FindSolutionDir(new DirectoryInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)));
-            Assert.AreEqual(solutionDir.Name, "XAMLCompiler", true);
+            string codegenDir;
+            Assert.IsTrue(CodegenTargets.Value.TryGetValue(masterDir, out codegenDir),
+                $"'{masterDir}' is not listed in {CodegenTargetsFileName}. Add it there, so that this " +
+                "test and copynewmasters.cmd agree on where its codegen is written.");
 
-            string codegenDir = Path.Combine(solutionDir.FullName, "Tests", targetDir);
-            string mastersDir = Path.Combine(solutionDir.FullName, "TestMasters", targetDir);
+            string codegenPath = Path.Combine(CodegenRoot.Value, codegenDir);
+            string mastersPath = Path.Combine(MastersRoot.Value, masterDir);
 
-            DiffCodegenDirs(codegenDir, mastersDir, forbiddenLines);
+            // Require codegen to actually be there. Without this, a project that failed to build
+            // leaves an empty directory behind and the diff below passes over nothing at all,
+            // turning a broken build into a green test. copynewmasters.cmd makes the same check
+            // before it accepts a target.
+            Assert.IsTrue(Directory.Exists(codegenPath) && Directory.EnumerateFiles(codegenPath, "*.g.*", SearchOption.AllDirectories).Any(),
+                $"No codegen in '{codegenPath}'. Build the project behind '{masterDir}' before running this test.");
+
+            DiffCodegenDirs(codegenPath, mastersPath, forbiddenLines);
         }
 
-        private static DirectoryInfo FindSolutionDir(DirectoryInfo currentDirectory)
+        private const string CodegenTargetsFileName = "CodegenTargets.txt";
+
+        private static readonly Lazy<Dictionary<string, string>> CodegenTargets =
+            new Lazy<Dictionary<string, string>>(LoadCodegenTargets);
+
+        /// <summary>
+        /// Where the regression projects' codegen is, for the flavor this test assembly belongs to.
+        /// It is derived from the test assembly's own path rather than from the build environment,
+        /// which is not set under every test runner. Codegen always lives under BuildOutput\obj, even
+        /// when the test assembly itself was binplaced to BuildOutput\bin.
+        /// </summary>
+        private static readonly Lazy<string> CodegenRoot = new Lazy<string>(() =>
         {
-            if (currentDirectory == null)
+            BuildOutputLocation location = FindBuildOutput();
+            Assert.IsNotNull(location,
+                $"Cannot locate BuildOutput above '{TestBinDir}'; the codegen tests need a built enlistment.");
+            return Path.Combine(location.BuildOutputDir, "obj", location.Flavor);
+        });
+
+        /// <summary>
+        /// The masters in the enlistment are preferred, so that a copynewmasters.cmd run takes effect
+        /// without rebuilding this project. The copy staged next to the test assembly is the fallback,
+        /// and is what a test payload on another machine has.
+        /// </summary>
+        private static readonly Lazy<string> MastersRoot = new Lazy<string>(() =>
+            FindInEnlistmentOrNextToTests(@"src\XamlCompiler\TestMasters", "TestMasters", Directory.Exists));
+
+        private static Dictionary<string, string> LoadCodegenTargets()
+        {
+            string targetsFile = FindInEnlistmentOrNextToTests(
+                @"src\XamlCompiler\Tests\UnitTests\" + CodegenTargetsFileName, CodegenTargetsFileName, File.Exists);
+
+            var targets = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (string rawLine in File.ReadAllLines(targetsFile))
             {
-                throw new ArgumentNullException("Cannot find the XamlCompiler sollution directory");
+                string line = rawLine.Trim();
+                if (line.Length == 0 || line.StartsWith("#"))
+                {
+                    continue;
+                }
+
+                int separator = line.IndexOf('|');
+                Assert.AreNotEqual(-1, separator, $"Malformed line in '{targetsFile}': '{rawLine}'");
+                targets[NormalizePath(line.Substring(0, separator))] = NormalizePath(line.Substring(separator + 1));
             }
-            if (currentDirectory.GetFiles("XamlCompiler.sln").Length > 0)
+
+            return targets;
+        }
+
+        private static string FindInEnlistmentOrNextToTests(string enlistmentRelativePath, string localName, Func<string, bool> exists)
+        {
+            BuildOutputLocation location = FindBuildOutput();
+            if (location != null)
             {
-                return currentDirectory;
+                string enlisted = Path.Combine(location.EnlistmentRoot, enlistmentRelativePath);
+                if (exists(enlisted))
+                {
+                    return enlisted;
+                }
             }
-            return FindSolutionDir(currentDirectory.Parent);
+
+            string staged = Path.Combine(TestBinDir, localName);
+            Assert.IsTrue(exists(staged),
+                $"Cannot find '{enlistmentRelativePath}' in the enlistment, nor '{localName}' next to the test assembly.");
+            return staged;
+        }
+
+        private sealed class BuildOutputLocation
+        {
+            public string EnlistmentRoot { get; set; }
+            public string BuildOutputDir { get; set; }
+            public string Flavor { get; set; }
+        }
+
+        private static BuildOutputLocation FindBuildOutput()
+        {
+            var directory = new DirectoryInfo(TestBinDir);
+            while (directory != null)
+            {
+                DirectoryInfo parent = directory.Parent;
+                if (parent != null && parent.Parent != null &&
+                    string.Equals(parent.Parent.Name, "BuildOutput", StringComparison.OrdinalIgnoreCase) &&
+                    (string.Equals(parent.Name, "obj", StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(parent.Name, "bin", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return new BuildOutputLocation
+                    {
+                        EnlistmentRoot = parent.Parent.Parent.FullName,
+                        BuildOutputDir = parent.Parent.FullName,
+                        Flavor = directory.Name,
+                    };
+                }
+
+                directory = parent;
+            }
+
+            return null;
+        }
+
+        private static string TestBinDir
+        {
+            get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
+        }
+
+        private static string NormalizePath(string path)
+        {
+            return path.Trim().Replace('/', '\\').Trim('\\');
         }
 
         private static bool IsException(string line)
         {
-            // This line contains a path which is ok to be different.
+            // Lines that legitimately differ from their master, because they carry a checksum or a
+            // tool version. tools\fixmasters\fixmasters.cs truncates the same set when a master is
+            // taken, so the two must be kept in agreement.
             if (line.StartsWith("#pragma checksum \"") ||
-                line.StartsWith("#ExternalChecksum(\""))
+                line.StartsWith("#ExternalChecksum(\"") ||
+                line.StartsWith("// WARNING: Please don't edit this file"))
             {
                 return true;
             }

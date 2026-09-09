@@ -37,6 +37,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <!-- The codegen-to-masters mapping CodegenTests reads. Staged next to the test assembly so the
+         codegen tests also work from a test payload, where there is no enlistment to read it from. -->
+    <None Include="CodegenTargets.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="XbfGeneratorTests.cs" />

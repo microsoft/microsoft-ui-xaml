@@ -10,23 +10,23 @@
 
 namespace BindTestbed
 {
-    partial class xPropertiesTest : global::Windows.UI.Xaml.Controls.UserControl
+    partial class xPropertiesTest : global::Microsoft.UI.Xaml.Controls.UserControl
     {
 
         partial void InitializeXProperties();
 
-        // xPropertiesTest.xaml, line 14
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        // xPropertiesTest.xaml, line 16
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private global::System.String _TestStr;
         /// <summary>
         /// TestStrChanged - changed handler for TestStr
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        public event global::System.ComponentModel.PropertyChangedEventHandler TestStrChanged;
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        public event System.ComponentModel.PropertyChangedEventHandler TestStrChanged;
         /// <summary>
         /// TestStr
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public global::System.String TestStr
         {
@@ -39,36 +39,37 @@ namespace BindTestbed
                     if (TestStrChanged != null)
                     {
                         TestStrChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs("TestStr"));
+                       
                     }
                 }
             }
         }
 
-        // xPropertiesTest.xaml, line 15
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        // xPropertiesTest.xaml, line 17
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private global::System.Int32 _TestInt;
         /// <summary>
         /// TestInt
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public global::System.Int32 TestInt
         {
             get { return _TestInt; }
         }
 
-        // xPropertiesTest.xaml, line 16
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        // xPropertiesTest.xaml, line 18
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private global::BindTestbedModel.Circle _TestComplexDefaultValue;
         /// <summary>
         /// TestComplexDefaultValueChanged - changed handler for TestComplexDefaultValue
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        public event global::System.ComponentModel.PropertyChangedEventHandler TestComplexDefaultValueChanged;
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        public event System.ComponentModel.PropertyChangedEventHandler TestComplexDefaultValueChanged;
         /// <summary>
         /// TestComplexDefaultValue
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public global::BindTestbedModel.Circle TestComplexDefaultValue
         {
@@ -81,25 +82,26 @@ namespace BindTestbed
                     if (TestComplexDefaultValueChanged != null)
                     {
                         TestComplexDefaultValueChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs("TestComplexDefaultValue"));
+                       
                     }
                 }
             }
         }
 
-        // xPropertiesTest.xaml, line 19
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.Button _TestMultilineDefaultValue;
+        // xPropertiesTest.xaml, line 21
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.Button _TestMultilineDefaultValue;
         /// <summary>
         /// TestMultilineDefaultValueChanged - changed handler for TestMultilineDefaultValue
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        public event global::System.ComponentModel.PropertyChangedEventHandler TestMultilineDefaultValueChanged;
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        public event System.ComponentModel.PropertyChangedEventHandler TestMultilineDefaultValueChanged;
         /// <summary>
         /// TestMultilineDefaultValue
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Controls.Button TestMultilineDefaultValue
+        public global::Microsoft.UI.Xaml.Controls.Button TestMultilineDefaultValue
         {
             get { return _TestMultilineDefaultValue; }
             set
@@ -110,23 +112,24 @@ namespace BindTestbed
                     if (TestMultilineDefaultValueChanged != null)
                     {
                         TestMultilineDefaultValueChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs("TestMultilineDefaultValue"));
+                       
                     }
                 }
             }
         }
 
-        // xPropertiesTest.xaml, line 24
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        // xPropertiesTest.xaml, line 26
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private global::BindTestbedModel.Diameter _TestCreateFromString;
         /// <summary>
         /// TestCreateFromStringChanged - changed handler for TestCreateFromString
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        public event global::System.ComponentModel.PropertyChangedEventHandler TestCreateFromStringChanged;
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        public event System.ComponentModel.PropertyChangedEventHandler TestCreateFromStringChanged;
         /// <summary>
         /// TestCreateFromString
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public global::BindTestbedModel.Diameter TestCreateFromString
         {
@@ -139,25 +142,30 @@ namespace BindTestbed
                     if (TestCreateFromStringChanged != null)
                     {
                         TestCreateFromStringChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs("TestCreateFromString"));
+                       
                     }
                 }
             }
         }
 
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock testText1; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock testText2; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
-        private global::Windows.UI.Xaml.Controls.TextBlock testText3; 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+#pragma warning disable 0169    //  Proactively suppress unused/uninitialized field warning in case they aren't used, for things like x:Name
+#pragma warning disable 0649
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock testText1; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock testText2; 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        private global::Microsoft.UI.Xaml.Controls.TextBlock testText3; 
+#pragma warning restore 0649
+#pragma warning restore 0169
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private bool _contentLoaded;
 
         /// <summary>
         /// InitializeComponent()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public void InitializeComponent()
         {
@@ -168,12 +176,12 @@ namespace BindTestbed
 
         InitializeXProperties();
             global::System.Uri resourceLocator = new global::System.Uri("ms-appx:///xPropertiesTest.xaml");
-            global::Windows.UI.Xaml.Application.LoadComponent(this, resourceLocator, global::Windows.UI.Xaml.Controls.Primitives.ComponentResourceLocation.Application);
+            global::Microsoft.UI.Xaml.Application.LoadComponent(this, resourceLocator, global::Microsoft.UI.Xaml.Controls.Primitives.ComponentResourceLocation.Application);
         }
 
-        partial void UnloadObject(global::Windows.UI.Xaml.DependencyObject unloadableObject);
+        partial void UnloadObject(global::Microsoft.UI.Xaml.DependencyObject unloadableObject);
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private interface IxPropertiesTest_Bindings
         {
             void Initialize();
@@ -186,11 +194,11 @@ namespace BindTestbed
         {
             global::System.WeakReference Parent { get; set; }
             bool ContainsElement(int connectionId);
-            void RegisterForElementConnection(int connectionId, global::Windows.UI.Xaml.Markup.IComponentConnector connector);
+            void RegisterForElementConnection(int connectionId, global::Microsoft.UI.Xaml.Markup.IComponentConnector connector);
         }
 #pragma warning disable 0169    //  Proactively suppress unused field warning in case Bindings is not used.
 #pragma warning disable 0649
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private IxPropertiesTest_Bindings Bindings;
 #pragma warning restore 0649
 #pragma warning restore 0169

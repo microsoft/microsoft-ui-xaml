@@ -7,15 +7,17 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Diagnostics.CodeAnalysis;
+
 
 namespace Conditionals
 {
-    public partial class App : global::Windows.UI.Xaml.Markup.IXamlMetadataProvider
+    public partial class App : global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider
     {
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         private global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMetaDataProvider __appProvider;
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         private global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMetaDataProvider _AppProvider
         {
@@ -32,9 +34,9 @@ namespace Conditionals
         /// <summary>
         /// GetXamlType(Type)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.IXamlType GetXamlType(global::System.Type type)
+        public global::Microsoft.UI.Xaml.Markup.IXamlType GetXamlType(global::System.Type type)
         {
             return _AppProvider.GetXamlType(type);
         }
@@ -42,9 +44,9 @@ namespace Conditionals
         /// <summary>
         /// GetXamlType(String)
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.IXamlType GetXamlType(string fullName)
+        public global::Microsoft.UI.Xaml.Markup.IXamlType GetXamlType(string fullName)
         {
             return _AppProvider.GetXamlType(fullName);
         }
@@ -52,9 +54,9 @@ namespace Conditionals
         /// <summary>
         /// GetXmlnsDefinitions()
         /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::Windows.UI.Xaml.Markup.XmlnsDefinition[] GetXmlnsDefinitions()
+        public global::Microsoft.UI.Xaml.Markup.XmlnsDefinition[] GetXmlnsDefinitions()
         {
             return _AppProvider.GetXmlnsDefinitions();
         }
@@ -66,9 +68,9 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
     /// <summary>
     /// Main class for providing metadata for the app or library
     /// </summary>
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    public sealed class XamlMetaDataProvider : global::Windows.UI.Xaml.Markup.IXamlMetadataProvider
+    public sealed partial class XamlMetaDataProvider : global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider
     {
         private global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlTypeInfoProvider _provider = null;
 
@@ -87,7 +89,8 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
         /// <summary>
         /// GetXamlType(Type)
         /// </summary>
-        public global::Windows.UI.Xaml.Markup.IXamlType GetXamlType(global::System.Type type)
+        [global::Windows.Foundation.Metadata.DefaultOverload]
+        public global::Microsoft.UI.Xaml.Markup.IXamlType GetXamlType(global::System.Type type)
         {
             return Provider.GetXamlTypeByType(type);
         }
@@ -95,7 +98,7 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
         /// <summary>
         /// GetXamlType(String)
         /// </summary>
-        public global::Windows.UI.Xaml.Markup.IXamlType GetXamlType(string fullName)
+        public global::Microsoft.UI.Xaml.Markup.IXamlType GetXamlType(string fullName)
         {
             return Provider.GetXamlTypeByName(fullName);
         }
@@ -103,19 +106,19 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
         /// <summary>
         /// GetXmlnsDefinitions()
         /// </summary>
-        public global::Windows.UI.Xaml.Markup.XmlnsDefinition[] GetXmlnsDefinitions()
+        public global::Microsoft.UI.Xaml.Markup.XmlnsDefinition[] GetXmlnsDefinitions()
         {
-            return new global::Windows.UI.Xaml.Markup.XmlnsDefinition[0];
+            return new global::Microsoft.UI.Xaml.Markup.XmlnsDefinition[0];
         }
     }
 
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     internal partial class XamlTypeInfoProvider
     {
-        public global::Windows.UI.Xaml.Markup.IXamlType GetXamlTypeByType(global::System.Type type)
+        public global::Microsoft.UI.Xaml.Markup.IXamlType GetXamlTypeByType(global::System.Type type)
         {
-            global::Windows.UI.Xaml.Markup.IXamlType xamlType;
+            global::Microsoft.UI.Xaml.Markup.IXamlType xamlType;
             lock (_xamlTypeCacheByType) 
             { 
                 if (_xamlTypeCacheByType.TryGetValue(type, out xamlType))
@@ -130,7 +133,7 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
                 var userXamlType = xamlType as global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType;
                 if(xamlType == null || (userXamlType != null && userXamlType.IsReturnTypeStub && !userXamlType.IsLocalType))
                 {
-                    global::Windows.UI.Xaml.Markup.IXamlType libXamlType = CheckOtherMetadataProvidersForType(type);
+                    global::Microsoft.UI.Xaml.Markup.IXamlType libXamlType = CheckOtherMetadataProvidersForType(type);
                     if (libXamlType != null)
                     {
                         if(libXamlType.IsConstructible || xamlType == null)
@@ -148,13 +151,13 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             return xamlType;
         }
 
-        public global::Windows.UI.Xaml.Markup.IXamlType GetXamlTypeByName(string typeName)
+        public global::Microsoft.UI.Xaml.Markup.IXamlType GetXamlTypeByName(string typeName)
         {
             if (string.IsNullOrEmpty(typeName))
             {
                 return null;
             }
-            global::Windows.UI.Xaml.Markup.IXamlType xamlType;
+            global::Microsoft.UI.Xaml.Markup.IXamlType xamlType;
             lock (_xamlTypeCacheByType)
             {
                 if (_xamlTypeCacheByName.TryGetValue(typeName, out xamlType))
@@ -169,7 +172,7 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
                 var userXamlType = xamlType as global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType;
                 if(xamlType == null || (userXamlType != null && userXamlType.IsReturnTypeStub && !userXamlType.IsLocalType))
                 {
-                    global::Windows.UI.Xaml.Markup.IXamlType libXamlType = CheckOtherMetadataProvidersForName(typeName);
+                    global::Microsoft.UI.Xaml.Markup.IXamlType libXamlType = CheckOtherMetadataProvidersForName(typeName);
                     if (libXamlType != null)
                     {
                         if(libXamlType.IsConstructible || xamlType == null)
@@ -187,13 +190,13 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             return xamlType;
         }
 
-        public global::Windows.UI.Xaml.Markup.IXamlMember GetMemberByLongName(string longMemberName)
+        public global::Microsoft.UI.Xaml.Markup.IXamlMember GetMemberByLongName(string longMemberName)
         {
             if (string.IsNullOrEmpty(longMemberName))
             {
                 return null;
             }
-            global::Windows.UI.Xaml.Markup.IXamlMember xamlMember;
+            global::Microsoft.UI.Xaml.Markup.IXamlMember xamlMember;
             lock (_xamlMembers)
             {
                 if (_xamlMembers.TryGetValue(longMemberName, out xamlMember))
@@ -209,55 +212,61 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             return xamlMember;
         }
 
-        global::System.Collections.Generic.Dictionary<string, global::Windows.UI.Xaml.Markup.IXamlType>
-                _xamlTypeCacheByName = new global::System.Collections.Generic.Dictionary<string, global::Windows.UI.Xaml.Markup.IXamlType>();
+        global::System.Collections.Generic.Dictionary<string, global::Microsoft.UI.Xaml.Markup.IXamlType>
+                _xamlTypeCacheByName = new global::System.Collections.Generic.Dictionary<string, global::Microsoft.UI.Xaml.Markup.IXamlType>();
 
-        global::System.Collections.Generic.Dictionary<global::System.Type, global::Windows.UI.Xaml.Markup.IXamlType>
-                _xamlTypeCacheByType = new global::System.Collections.Generic.Dictionary<global::System.Type, global::Windows.UI.Xaml.Markup.IXamlType>();
+        global::System.Collections.Generic.Dictionary<global::System.Type, global::Microsoft.UI.Xaml.Markup.IXamlType>
+                _xamlTypeCacheByType = new global::System.Collections.Generic.Dictionary<global::System.Type, global::Microsoft.UI.Xaml.Markup.IXamlType>();
 
-        global::System.Collections.Generic.Dictionary<string, global::Windows.UI.Xaml.Markup.IXamlMember>
-                _xamlMembers = new global::System.Collections.Generic.Dictionary<string, global::Windows.UI.Xaml.Markup.IXamlMember>();
+        global::System.Collections.Generic.Dictionary<string, global::Microsoft.UI.Xaml.Markup.IXamlMember>
+                _xamlMembers = new global::System.Collections.Generic.Dictionary<string, global::Microsoft.UI.Xaml.Markup.IXamlMember>();
 
         string[] _typeNameTable = null;
         global::System.Type[] _typeTable = null;
-
+        
         private void InitTypeTables()
         {
-            _typeNameTable = new string[16];
-            _typeNameTable[0] = "Conditionals.BindTests";
-            _typeNameTable[1] = "Windows.UI.Xaml.Controls.UserControl";
+            _typeNameTable = new string[19];
+            _typeNameTable[0] = "ConditionalControls.Button1";
+            _typeNameTable[1] = "Microsoft.UI.Xaml.Controls.UserControl";
             _typeNameTable[2] = "String";
-            _typeNameTable[3] = "Conditionals.NameEventsLoad";
-            _typeNameTable[4] = "Conditionals.MainPage";
-            _typeNameTable[5] = "Windows.UI.Xaml.Controls.Page";
-            _typeNameTable[6] = "ConditionalControls.Button1";
-            _typeNameTable[7] = "ConditionalControls.TextBlock1";
+            _typeNameTable[3] = "ConditionalControls.TextBlock1";
+            _typeNameTable[4] = "Conditionals.BindTests";
+            _typeNameTable[5] = "Conditionals.NameEventsLoad";
+            _typeNameTable[6] = "Conditionals.MainPage";
+            _typeNameTable[7] = "Microsoft.UI.Xaml.Controls.Page";
             _typeNameTable[8] = "ConditionalControls.Button2";
             _typeNameTable[9] = "ConditionalControls.Button3";
             _typeNameTable[10] = "ConditionalControls.AttachedProperties";
             _typeNameTable[11] = "Object";
             _typeNameTable[12] = "Boolean";
-            _typeNameTable[13] = "Windows.UI.Xaml.DependencyObject";
+            _typeNameTable[13] = "Microsoft.UI.Xaml.DependencyObject";
             _typeNameTable[14] = "ConditionalControls.TextBlock2";
             _typeNameTable[15] = "ConditionalControls.TextBlock3";
+            _typeNameTable[16] = "Microsoft.UI.Xaml.Controls.TreeViewNode";
+            _typeNameTable[17] = "System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>";
+            _typeNameTable[18] = "Int32";
 
-            _typeTable = new global::System.Type[16];
-            _typeTable[0] = typeof(global::Conditionals.BindTests);
-            _typeTable[1] = typeof(global::Windows.UI.Xaml.Controls.UserControl);
+            _typeTable = new global::System.Type[19];
+            _typeTable[0] = typeof(global::ConditionalControls.Button1);
+            _typeTable[1] = typeof(global::Microsoft.UI.Xaml.Controls.UserControl);
             _typeTable[2] = typeof(global::System.String);
-            _typeTable[3] = typeof(global::Conditionals.NameEventsLoad);
-            _typeTable[4] = typeof(global::Conditionals.MainPage);
-            _typeTable[5] = typeof(global::Windows.UI.Xaml.Controls.Page);
-            _typeTable[6] = typeof(global::ConditionalControls.Button1);
-            _typeTable[7] = typeof(global::ConditionalControls.TextBlock1);
+            _typeTable[3] = typeof(global::ConditionalControls.TextBlock1);
+            _typeTable[4] = typeof(global::Conditionals.BindTests);
+            _typeTable[5] = typeof(global::Conditionals.NameEventsLoad);
+            _typeTable[6] = typeof(global::Conditionals.MainPage);
+            _typeTable[7] = typeof(global::Microsoft.UI.Xaml.Controls.Page);
             _typeTable[8] = typeof(global::ConditionalControls.Button2);
             _typeTable[9] = typeof(global::ConditionalControls.Button3);
             _typeTable[10] = typeof(global::ConditionalControls.AttachedProperties);
             _typeTable[11] = typeof(global::System.Object);
             _typeTable[12] = typeof(global::System.Boolean);
-            _typeTable[13] = typeof(global::Windows.UI.Xaml.DependencyObject);
+            _typeTable[13] = typeof(global::Microsoft.UI.Xaml.DependencyObject);
             _typeTable[14] = typeof(global::ConditionalControls.TextBlock2);
             _typeTable[15] = typeof(global::ConditionalControls.TextBlock3);
+            _typeTable[16] = typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode);
+            _typeTable[17] = typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>);
+            _typeTable[18] = typeof(global::System.Int32);
         }
 
         private int LookupTypeIndexByName(string typeName)
@@ -292,17 +301,36 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             return -1;
         }
 
-        private object Activate_0_BindTests() { return new global::Conditionals.BindTests(); }
-        private object Activate_3_NameEventsLoad() { return new global::Conditionals.NameEventsLoad(); }
-        private object Activate_4_MainPage() { return new global::Conditionals.MainPage(); }
-        private object Activate_6_Button1() { return new global::ConditionalControls.Button1(); }
-        private object Activate_7_TextBlock1() { return new global::ConditionalControls.TextBlock1(); }
+        private object Activate_0_Button1() { return new global::ConditionalControls.Button1(); }
+        private object Activate_3_TextBlock1() { return new global::ConditionalControls.TextBlock1(); }
+        private object Activate_4_BindTests() { return new global::Conditionals.BindTests(); }
+        private object Activate_5_NameEventsLoad() { return new global::Conditionals.NameEventsLoad(); }
+        private object Activate_6_MainPage() { return new global::Conditionals.MainPage(); }
         private object Activate_8_Button2() { return new global::ConditionalControls.Button2(); }
         private object Activate_9_Button3() { return new global::ConditionalControls.Button3(); }
         private object Activate_14_TextBlock2() { return new global::ConditionalControls.TextBlock2(); }
         private object Activate_15_TextBlock3() { return new global::ConditionalControls.TextBlock3(); }
+        private object Activate_16_TreeViewNode() { return new global::Microsoft.UI.Xaml.Controls.TreeViewNode(); }
+        private void StaticInitializer_0_Button1() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.Button1).TypeHandle);
+        private void StaticInitializer_3_TextBlock1() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.TextBlock1).TypeHandle);
+        private void StaticInitializer_4_BindTests() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Conditionals.BindTests).TypeHandle);
+        private void StaticInitializer_5_NameEventsLoad() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Conditionals.NameEventsLoad).TypeHandle);
+        private void StaticInitializer_6_MainPage() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Conditionals.MainPage).TypeHandle);
+        private void StaticInitializer_8_Button2() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.Button2).TypeHandle);
+        private void StaticInitializer_9_Button3() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.Button3).TypeHandle);
+        private void StaticInitializer_10_AttachedProperties() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.AttachedProperties).TypeHandle);
+        private void StaticInitializer_14_TextBlock2() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.TextBlock2).TypeHandle);
+        private void StaticInitializer_15_TextBlock3() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::ConditionalControls.TextBlock3).TypeHandle);
+        private void StaticInitializer_16_TreeViewNode() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode).TypeHandle);
+        private void StaticInitializer_17_IList() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>).TypeHandle);
+        private void VectorAdd_17_IList(object instance, object item)
+        {
+            var collection = (global::System.Collections.Generic.ICollection<global::Microsoft.UI.Xaml.Controls.TreeViewNode>)instance;
+            var newItem = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)item;
+            collection.Add(newItem);
+        }
 
-        private global::Windows.UI.Xaml.Markup.IXamlType CreateXamlType(int typeIndex)
+        private global::Microsoft.UI.Xaml.Markup.IXamlType CreateXamlType(int typeIndex)
         {
             global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlSystemBaseType xamlType = null;
             global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType userType;
@@ -312,44 +340,10 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             switch (typeIndex)
             {
 
-            case 0:   //  Conditionals.BindTests
-                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.UserControl"));
-                userType.Activator = Activate_0_BindTests;
-                userType.AddMemberName("V2Property");
-                userType.AddMemberName("V3Property");
-                userType.SetIsLocalType();
-                xamlType = userType;
-                break;
-
-            case 1:   //  Windows.UI.Xaml.Controls.UserControl
-                xamlType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
-                break;
-
-            case 2:   //  String
-                xamlType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
-                break;
-
-            case 3:   //  Conditionals.NameEventsLoad
-                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.UserControl"));
-                userType.Activator = Activate_3_NameEventsLoad;
-                userType.SetIsLocalType();
-                xamlType = userType;
-                break;
-
-            case 4:   //  Conditionals.MainPage
-                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
-                userType.Activator = Activate_4_MainPage;
-                userType.SetIsLocalType();
-                xamlType = userType;
-                break;
-
-            case 5:   //  Windows.UI.Xaml.Controls.Page
-                xamlType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
-                break;
-
-            case 6:   //  ConditionalControls.Button1
-                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.UserControl"));
-                userType.Activator = Activate_6_Button1;
+            case 0:   //  ConditionalControls.Button1
+                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
+                userType.Activator = Activate_0_Button1;
+                userType.StaticInitializer = StaticInitializer_0_Button1;
                 userType.AddMemberName("Caption");
                 userType.AddMemberName("Text");
                 userType.AddMemberName("V1Property");
@@ -358,16 +352,56 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 7:   //  ConditionalControls.TextBlock1
-                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.UserControl"));
-                userType.Activator = Activate_7_TextBlock1;
+            case 1:   //  Microsoft.UI.Xaml.Controls.UserControl
+                xamlType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 2:   //  String
+                xamlType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 3:   //  ConditionalControls.TextBlock1
+                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
+                userType.Activator = Activate_3_TextBlock1;
+                userType.StaticInitializer = StaticInitializer_3_TextBlock1;
                 userType.AddMemberName("Text");
                 xamlType = userType;
                 break;
 
+            case 4:   //  Conditionals.BindTests
+                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
+                userType.Activator = Activate_4_BindTests;
+                userType.StaticInitializer = StaticInitializer_4_BindTests;
+                userType.AddMemberName("V2Property");
+                userType.AddMemberName("V3Property");
+                userType.SetIsLocalType();
+                xamlType = userType;
+                break;
+
+            case 5:   //  Conditionals.NameEventsLoad
+                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
+                userType.Activator = Activate_5_NameEventsLoad;
+                userType.StaticInitializer = StaticInitializer_5_NameEventsLoad;
+                userType.SetIsLocalType();
+                xamlType = userType;
+                break;
+
+            case 6:   //  Conditionals.MainPage
+                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
+                userType.Activator = Activate_6_MainPage;
+                userType.StaticInitializer = StaticInitializer_6_MainPage;
+                userType.SetIsLocalType();
+                xamlType = userType;
+                break;
+
+            case 7:   //  Microsoft.UI.Xaml.Controls.Page
+                xamlType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
             case 8:   //  ConditionalControls.Button2
-                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.UserControl"));
+                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_8_Button2;
+                userType.StaticInitializer = StaticInitializer_8_Button2;
                 userType.AddMemberName("Text");
                 userType.AddMemberName("Caption");
                 userType.AddMemberName("V1Property");
@@ -377,8 +411,9 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
                 break;
 
             case 9:   //  ConditionalControls.Button3
-                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.UserControl"));
+                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_9_Button3;
+                userType.StaticInitializer = StaticInitializer_9_Button3;
                 userType.AddMemberName("Caption");
                 userType.AddMemberName("Text");
                 userType.AddMemberName("V1Property");
@@ -389,6 +424,7 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
 
             case 10:   //  ConditionalControls.AttachedProperties
                 userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
+                userType.StaticInitializer = StaticInitializer_10_AttachedProperties;
                 userType.AddMemberName("AttachedBool");
                 xamlType = userType;
                 break;
@@ -401,37 +437,68 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
                 xamlType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 13:   //  Windows.UI.Xaml.DependencyObject
+            case 13:   //  Microsoft.UI.Xaml.DependencyObject
                 xamlType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
             case 14:   //  ConditionalControls.TextBlock2
-                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.UserControl"));
+                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_14_TextBlock2;
+                userType.StaticInitializer = StaticInitializer_14_TextBlock2;
                 userType.AddMemberName("Text");
                 xamlType = userType;
                 break;
 
             case 15:   //  ConditionalControls.TextBlock3
-                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.UserControl"));
+                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
                 userType.Activator = Activate_15_TextBlock3;
+                userType.StaticInitializer = StaticInitializer_15_TextBlock3;
                 userType.AddMemberName("Text");
                 xamlType = userType;
+                break;
+
+            case 16:   //  Microsoft.UI.Xaml.Controls.TreeViewNode
+                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
+                userType.Activator = Activate_16_TreeViewNode;
+                userType.StaticInitializer = StaticInitializer_16_TreeViewNode;
+                userType.AddMemberName("Children");
+                userType.AddMemberName("Content");
+                userType.AddMemberName("Depth");
+                userType.AddMemberName("HasChildren");
+                userType.AddMemberName("HasUnrealizedChildren");
+                userType.AddMemberName("IsExpanded");
+                userType.AddMemberName("Parent");
+                userType.SetIsBindable();
+                xamlType = userType;
+                break;
+
+            case 17:   //  System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
+                userType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType(this, typeName, type, null);
+                userType.StaticInitializer = StaticInitializer_17_IList;
+                userType.CollectionAdd = VectorAdd_17_IList;
+                userType.SetIsReturnTypeStub();
+                xamlType = userType;
+                break;
+
+            case 18:   //  Int32
+                xamlType = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
             }
             return xamlType;
         }
 
-        private global::System.Collections.Generic.List<global::Windows.UI.Xaml.Markup.IXamlMetadataProvider> _otherProviders;
-        private global::System.Collections.Generic.List<global::Windows.UI.Xaml.Markup.IXamlMetadataProvider> OtherProviders
+        private global::System.Collections.Generic.List<global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider> _otherProviders;
+        private global::System.Collections.Generic.List<global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider> OtherProviders
         {
             get
             {
                 if(_otherProviders == null)
                 {
-                    var otherProviders = new global::System.Collections.Generic.List<global::Windows.UI.Xaml.Markup.IXamlMetadataProvider>();
-                    global::Windows.UI.Xaml.Markup.IXamlMetadataProvider provider;
-                    provider = new global::ConditionalControls.ConditionalsModel_XamlTypeInfo.XamlMetaDataProvider() as global::Windows.UI.Xaml.Markup.IXamlMetadataProvider;
+                    var otherProviders = new global::System.Collections.Generic.List<global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider>();
+                    global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider provider;
+                    provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
+                    otherProviders.Add(provider); 
+                    provider = new global::ConditionalControls.ConditionalsModel_XamlTypeInfo.XamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
                     _otherProviders = otherProviders;
                 }
@@ -439,11 +506,11 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             }
         }
 
-        private global::Windows.UI.Xaml.Markup.IXamlType CheckOtherMetadataProvidersForName(string typeName)
+        private global::Microsoft.UI.Xaml.Markup.IXamlType CheckOtherMetadataProvidersForName(string typeName)
         {
-            global::Windows.UI.Xaml.Markup.IXamlType xamlType = null;
-            global::Windows.UI.Xaml.Markup.IXamlType foundXamlType = null;
-            foreach(global::Windows.UI.Xaml.Markup.IXamlMetadataProvider xmp in OtherProviders)
+            global::Microsoft.UI.Xaml.Markup.IXamlType xamlType = null;
+            global::Microsoft.UI.Xaml.Markup.IXamlType foundXamlType = null;
+            foreach(global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider xmp in OtherProviders)
             {
                 xamlType = xmp.GetXamlType(typeName);
                 if(xamlType != null)
@@ -458,11 +525,11 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             return foundXamlType;
         }
 
-        private global::Windows.UI.Xaml.Markup.IXamlType CheckOtherMetadataProvidersForType(global::System.Type type)
+        private global::Microsoft.UI.Xaml.Markup.IXamlType CheckOtherMetadataProvidersForType(global::System.Type type)
         {
-            global::Windows.UI.Xaml.Markup.IXamlType xamlType = null;
-            global::Windows.UI.Xaml.Markup.IXamlType foundXamlType = null;
-            foreach(global::Windows.UI.Xaml.Markup.IXamlMetadataProvider xmp in OtherProviders)
+            global::Microsoft.UI.Xaml.Markup.IXamlType xamlType = null;
+            global::Microsoft.UI.Xaml.Markup.IXamlType foundXamlType = null;
+            foreach(global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider xmp in OtherProviders)
             {
                 xamlType = xmp.GetXamlType(type);
                 if(xamlType != null)
@@ -477,85 +544,85 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             return foundXamlType;
         }
 
-        private object get_0_BindTests_V2Property(object instance)
-        {
-            var that = (global::Conditionals.BindTests)instance;
-            return that.V2Property;
-        }
-        private void set_0_BindTests_V2Property(object instance, object Value)
-        {
-            var that = (global::Conditionals.BindTests)instance;
-            that.V2Property = (global::System.String)Value;
-        }
-        private object get_1_BindTests_V3Property(object instance)
-        {
-            var that = (global::Conditionals.BindTests)instance;
-            return that.V3Property;
-        }
-        private void set_1_BindTests_V3Property(object instance, object Value)
-        {
-            var that = (global::Conditionals.BindTests)instance;
-            that.V3Property = (global::System.String)Value;
-        }
-        private object get_2_Button1_Caption(object instance)
+        private object get_0_Button1_Caption(object instance)
         {
             var that = (global::ConditionalControls.Button1)instance;
             return that.Caption;
         }
-        private void set_2_Button1_Caption(object instance, object Value)
+        private void set_0_Button1_Caption(object instance, object Value)
         {
             var that = (global::ConditionalControls.Button1)instance;
             that.Caption = (global::System.String)Value;
         }
-        private object get_3_Button1_Text(object instance)
+        private object get_1_Button1_Text(object instance)
         {
             var that = (global::ConditionalControls.Button1)instance;
             return that.Text;
         }
-        private void set_3_Button1_Text(object instance, object Value)
+        private void set_1_Button1_Text(object instance, object Value)
         {
             var that = (global::ConditionalControls.Button1)instance;
             that.Text = (global::System.String)Value;
         }
-        private object get_4_Button1_V1Property(object instance)
+        private object get_2_Button1_V1Property(object instance)
         {
             var that = (global::ConditionalControls.Button1)instance;
             return that.V1Property;
         }
-        private void set_4_Button1_V1Property(object instance, object Value)
+        private void set_2_Button1_V1Property(object instance, object Value)
         {
             var that = (global::ConditionalControls.Button1)instance;
             that.V1Property = (global::System.String)Value;
         }
-        private object get_5_Button1_V2Property(object instance)
+        private object get_3_Button1_V2Property(object instance)
         {
             var that = (global::ConditionalControls.Button1)instance;
             return that.V2Property;
         }
-        private void set_5_Button1_V2Property(object instance, object Value)
+        private void set_3_Button1_V2Property(object instance, object Value)
         {
             var that = (global::ConditionalControls.Button1)instance;
             that.V2Property = (global::System.String)Value;
         }
-        private object get_6_Button1_V3Property(object instance)
+        private object get_4_Button1_V3Property(object instance)
         {
             var that = (global::ConditionalControls.Button1)instance;
             return that.V3Property;
         }
-        private void set_6_Button1_V3Property(object instance, object Value)
+        private void set_4_Button1_V3Property(object instance, object Value)
         {
             var that = (global::ConditionalControls.Button1)instance;
             that.V3Property = (global::System.String)Value;
         }
-        private object get_7_TextBlock1_Text(object instance)
+        private object get_5_TextBlock1_Text(object instance)
         {
             var that = (global::ConditionalControls.TextBlock1)instance;
             return that.Text;
         }
-        private void set_7_TextBlock1_Text(object instance, object Value)
+        private void set_5_TextBlock1_Text(object instance, object Value)
         {
             var that = (global::ConditionalControls.TextBlock1)instance;
             that.Text = (global::System.String)Value;
+        }
+        private object get_6_BindTests_V2Property(object instance)
+        {
+            var that = (global::Conditionals.BindTests)instance;
+            return that.V2Property;
+        }
+        private void set_6_BindTests_V2Property(object instance, object Value)
+        {
+            var that = (global::Conditionals.BindTests)instance;
+            that.V2Property = (global::System.String)Value;
+        }
+        private object get_7_BindTests_V3Property(object instance)
+        {
+            var that = (global::Conditionals.BindTests)instance;
+            return that.V3Property;
+        }
+        private void set_7_BindTests_V3Property(object instance, object Value)
+        {
+            var that = (global::Conditionals.BindTests)instance;
+            that.V3Property = (global::System.String)Value;
         }
         private object get_8_Button2_Text(object instance)
         {
@@ -659,11 +726,11 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
         }
         private object get_18_AttachedProperties_AttachedBool(object instance)
         {
-            return global::ConditionalControls.AttachedProperties.GetAttachedBool((global::Windows.UI.Xaml.DependencyObject)instance);
+            return global::ConditionalControls.AttachedProperties.GetAttachedBool((global::Microsoft.UI.Xaml.DependencyObject)instance);
         }
         private void set_18_AttachedProperties_AttachedBool(object instance, object Value)
         {
-            global::ConditionalControls.AttachedProperties.SetAttachedBool((global::Windows.UI.Xaml.DependencyObject)instance, (global::System.Boolean)Value);
+            global::ConditionalControls.AttachedProperties.SetAttachedBool((global::Microsoft.UI.Xaml.DependencyObject)instance, (global::System.Boolean)Value);
         }
         private object get_19_TextBlock2_Text(object instance)
         {
@@ -685,61 +752,111 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             var that = (global::ConditionalControls.TextBlock3)instance;
             that.Text = (global::System.String)Value;
         }
+        private object get_21_TreeViewNode_Children(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            return that.Children;
+        }
+        private object get_22_TreeViewNode_Content(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            return that.Content;
+        }
+        private void set_22_TreeViewNode_Content(object instance, object Value)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            that.Content = (global::System.Object)Value;
+        }
+        private object get_23_TreeViewNode_Depth(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            return that.Depth;
+        }
+        private object get_24_TreeViewNode_HasChildren(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            return that.HasChildren;
+        }
+        private object get_25_TreeViewNode_HasUnrealizedChildren(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            return that.HasUnrealizedChildren;
+        }
+        private void set_25_TreeViewNode_HasUnrealizedChildren(object instance, object Value)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            that.HasUnrealizedChildren = (global::System.Boolean)Value;
+        }
+        private object get_26_TreeViewNode_IsExpanded(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            return that.IsExpanded;
+        }
+        private void set_26_TreeViewNode_IsExpanded(object instance, object Value)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            that.IsExpanded = (global::System.Boolean)Value;
+        }
+        private object get_27_TreeViewNode_Parent(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
+            return that.Parent;
+        }
 
-        private global::Windows.UI.Xaml.Markup.IXamlMember CreateXamlMember(string longMemberName)
+        private global::Microsoft.UI.Xaml.Markup.IXamlMember CreateXamlMember(string longMemberName)
         {
             global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember xamlMember = null;
             global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType userType;
 
             switch (longMemberName)
             {
-            case "Conditionals.BindTests.V2Property":
-                userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Conditionals.BindTests");
-                xamlMember = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember(this, "V2Property", "String");
-                xamlMember.Getter = get_0_BindTests_V2Property;
-                xamlMember.Setter = set_0_BindTests_V2Property;
-                break;
-            case "Conditionals.BindTests.V3Property":
-                userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Conditionals.BindTests");
-                xamlMember = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember(this, "V3Property", "String");
-                xamlMember.Getter = get_1_BindTests_V3Property;
-                xamlMember.Setter = set_1_BindTests_V3Property;
-                break;
             case "ConditionalControls.Button1.Caption":
                 userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button1");
                 xamlMember = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember(this, "Caption", "String");
-                xamlMember.Getter = get_2_Button1_Caption;
-                xamlMember.Setter = set_2_Button1_Caption;
+                xamlMember.Getter = get_0_Button1_Caption;
+                xamlMember.Setter = set_0_Button1_Caption;
                 break;
             case "ConditionalControls.Button1.Text":
                 userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button1");
                 xamlMember = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember(this, "Text", "String");
-                xamlMember.Getter = get_3_Button1_Text;
-                xamlMember.Setter = set_3_Button1_Text;
+                xamlMember.Getter = get_1_Button1_Text;
+                xamlMember.Setter = set_1_Button1_Text;
                 break;
             case "ConditionalControls.Button1.V1Property":
                 userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button1");
                 xamlMember = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember(this, "V1Property", "String");
-                xamlMember.Getter = get_4_Button1_V1Property;
-                xamlMember.Setter = set_4_Button1_V1Property;
+                xamlMember.Getter = get_2_Button1_V1Property;
+                xamlMember.Setter = set_2_Button1_V1Property;
                 break;
             case "ConditionalControls.Button1.V2Property":
                 userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button1");
                 xamlMember = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember(this, "V2Property", "String");
-                xamlMember.Getter = get_5_Button1_V2Property;
-                xamlMember.Setter = set_5_Button1_V2Property;
+                xamlMember.Getter = get_3_Button1_V2Property;
+                xamlMember.Setter = set_3_Button1_V2Property;
                 break;
             case "ConditionalControls.Button1.V3Property":
                 userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button1");
                 xamlMember = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember(this, "V3Property", "String");
-                xamlMember.Getter = get_6_Button1_V3Property;
-                xamlMember.Setter = set_6_Button1_V3Property;
+                xamlMember.Getter = get_4_Button1_V3Property;
+                xamlMember.Setter = set_4_Button1_V3Property;
                 break;
             case "ConditionalControls.TextBlock1.Text":
                 userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.TextBlock1");
                 xamlMember = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember(this, "Text", "String");
-                xamlMember.Getter = get_7_TextBlock1_Text;
-                xamlMember.Setter = set_7_TextBlock1_Text;
+                xamlMember.Getter = get_5_TextBlock1_Text;
+                xamlMember.Setter = set_5_TextBlock1_Text;
+                break;
+            case "Conditionals.BindTests.V2Property":
+                userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Conditionals.BindTests");
+                xamlMember = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember(this, "V2Property", "String");
+                xamlMember.Getter = get_6_BindTests_V2Property;
+                xamlMember.Setter = set_6_BindTests_V2Property;
+                break;
+            case "Conditionals.BindTests.V3Property":
+                userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Conditionals.BindTests");
+                xamlMember = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember(this, "V3Property", "String");
+                xamlMember.Getter = get_7_BindTests_V3Property;
+                xamlMember.Setter = set_7_BindTests_V3Property;
                 break;
             case "ConditionalControls.Button2.Text":
                 userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.Button2");
@@ -804,7 +921,7 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             case "ConditionalControls.AttachedProperties.AttachedBool":
                 userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("ConditionalControls.AttachedProperties");
                 xamlMember = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember(this, "AttachedBool", "Boolean");
-                xamlMember.SetTargetTypeName("Windows.UI.Xaml.DependencyObject");
+                xamlMember.SetTargetTypeName("Microsoft.UI.Xaml.DependencyObject");
                 xamlMember.SetIsAttachable();
                 xamlMember.Getter = get_18_AttachedProperties_AttachedBool;
                 xamlMember.Setter = set_18_AttachedProperties_AttachedBool;
@@ -821,19 +938,66 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
                 xamlMember.Getter = get_20_TextBlock3_Text;
                 xamlMember.Setter = set_20_TextBlock3_Text;
                 break;
+            case "Microsoft.UI.Xaml.Controls.TreeViewNode.Children":
+                userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember(this, "Children", "System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>");
+                xamlMember.Getter = get_21_TreeViewNode_Children;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "Microsoft.UI.Xaml.Controls.TreeViewNode.Content":
+                userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember(this, "Content", "Object");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_22_TreeViewNode_Content;
+                xamlMember.Setter = set_22_TreeViewNode_Content;
+                break;
+            case "Microsoft.UI.Xaml.Controls.TreeViewNode.Depth":
+                userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember(this, "Depth", "Int32");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_23_TreeViewNode_Depth;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "Microsoft.UI.Xaml.Controls.TreeViewNode.HasChildren":
+                userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember(this, "HasChildren", "Boolean");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_24_TreeViewNode_HasChildren;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "Microsoft.UI.Xaml.Controls.TreeViewNode.HasUnrealizedChildren":
+                userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember(this, "HasUnrealizedChildren", "Boolean");
+                xamlMember.Getter = get_25_TreeViewNode_HasUnrealizedChildren;
+                xamlMember.Setter = set_25_TreeViewNode_HasUnrealizedChildren;
+                break;
+            case "Microsoft.UI.Xaml.Controls.TreeViewNode.IsExpanded":
+                userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember(this, "IsExpanded", "Boolean");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_26_TreeViewNode_IsExpanded;
+                xamlMember.Setter = set_26_TreeViewNode_IsExpanded;
+                break;
+            case "Microsoft.UI.Xaml.Controls.TreeViewNode.Parent":
+                userType = (global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember = new global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlMember(this, "Parent", "Microsoft.UI.Xaml.Controls.TreeViewNode");
+                xamlMember.Getter = get_27_TreeViewNode_Parent;
+                xamlMember.SetIsReadOnly();
+                break;
             }
             return xamlMember;
         }
     }
 
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    internal class XamlSystemBaseType : global::Windows.UI.Xaml.Markup.IXamlType
+    internal partial class XamlSystemBaseType : global::Microsoft.UI.Xaml.Markup.IXamlType
     {
         string _fullName;
         global::System.Type _underlyingType;
 
-        public XamlSystemBaseType(string fullName, global::System.Type underlyingType)
+        public XamlSystemBaseType(string fullName, 
+            global::System.Type underlyingType)
         {
             _fullName = fullName;
             _underlyingType = underlyingType;
@@ -849,9 +1013,9 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             }
         }
 
-        virtual public global::Windows.UI.Xaml.Markup.IXamlType BaseType { get { throw new global::System.NotImplementedException(); } }
-        virtual public global::Windows.UI.Xaml.Markup.IXamlMember ContentProperty { get { throw new global::System.NotImplementedException(); } }
-        virtual public global::Windows.UI.Xaml.Markup.IXamlMember GetMember(string name) { throw new global::System.NotImplementedException(); }
+        virtual public global::Microsoft.UI.Xaml.Markup.IXamlType BaseType { get { throw new global::System.NotImplementedException(); } }
+        virtual public global::Microsoft.UI.Xaml.Markup.IXamlMember ContentProperty { get { throw new global::System.NotImplementedException(); } }
+        virtual public global::Microsoft.UI.Xaml.Markup.IXamlMember GetMember(string name) { throw new global::System.NotImplementedException(); }
         virtual public bool IsArray { get { throw new global::System.NotImplementedException(); } }
         virtual public bool IsCollection { get { throw new global::System.NotImplementedException(); } }
         virtual public bool IsConstructible { get { throw new global::System.NotImplementedException(); } }
@@ -860,8 +1024,9 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
         virtual public bool IsBindable { get { throw new global::System.NotImplementedException(); } }
         virtual public bool IsReturnTypeStub { get { throw new global::System.NotImplementedException(); } }
         virtual public bool IsLocalType { get { throw new global::System.NotImplementedException(); } }
-        virtual public global::Windows.UI.Xaml.Markup.IXamlType ItemType { get { throw new global::System.NotImplementedException(); } }
-        virtual public global::Windows.UI.Xaml.Markup.IXamlType KeyType { get { throw new global::System.NotImplementedException(); } }
+        virtual public global::Microsoft.UI.Xaml.Markup.IXamlType ItemType { get { throw new global::System.NotImplementedException(); } }
+        virtual public global::Microsoft.UI.Xaml.Markup.IXamlType KeyType { get { throw new global::System.NotImplementedException(); } }
+        virtual public global::Microsoft.UI.Xaml.Markup.IXamlType BoxedType { get { throw new global::System.NotImplementedException(); } }
         virtual public object ActivateInstance() { throw new global::System.NotImplementedException(); }
         virtual public void AddToMap(object instance, object key, object item)  { throw new global::System.NotImplementedException(); }
         virtual public void AddToVector(object instance, object item)  { throw new global::System.NotImplementedException(); }
@@ -870,24 +1035,25 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
     }
     
     internal delegate object Activator();
+    internal delegate void StaticInitializer();
     internal delegate void AddToCollection(object instance, object item);
     internal delegate void AddToDictionary(object instance, object key, object item);
     internal delegate object CreateFromStringMethod(string args);
     internal delegate object BoxInstanceMethod(object instance);
 
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    internal class XamlUserType : global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlSystemBaseType
-        , global::Windows.UI.Xaml.Markup.IXamlType2
+    internal partial class XamlUserType : global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlSystemBaseType
+        , global::Microsoft.UI.Xaml.Markup.IXamlType
     {
         global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlTypeInfoProvider _provider;
-        global::Windows.UI.Xaml.Markup.IXamlType _baseType;
+        global::Microsoft.UI.Xaml.Markup.IXamlType _baseType;
+        global::Microsoft.UI.Xaml.Markup.IXamlType _boxedType;
         bool _isArray;
         bool _isMarkupExtension;
         bool _isBindable;
         bool _isReturnTypeStub;
         bool _isLocalType;
-        global::Windows.UI.Xaml.Markup.IXamlType _boxedType;
 
         string _contentPropertyName;
         string _itemTypeName;
@@ -895,7 +1061,8 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
         global::System.Collections.Generic.Dictionary<string, string> _memberNames;
         global::System.Collections.Generic.Dictionary<string, object> _enumValues;
 
-        public XamlUserType(global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlTypeInfoProvider provider, string fullName, global::System.Type fullType, global::Windows.UI.Xaml.Markup.IXamlType baseType)
+        public XamlUserType(global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlTypeInfoProvider provider, string fullName, 
+            global::System.Type fullType, global::Microsoft.UI.Xaml.Markup.IXamlType baseType)
             :base(fullName, fullType)
         {
             _provider = provider;
@@ -904,7 +1071,7 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
 
         // --- Interface methods ----
 
-        override public global::Windows.UI.Xaml.Markup.IXamlType BaseType { get { return _baseType; } }
+        override public global::Microsoft.UI.Xaml.Markup.IXamlType BaseType { get { return _baseType; } }
         override public bool IsArray { get { return _isArray; } }
         override public bool IsCollection { get { return (CollectionAdd != null); } }
         override public bool IsConstructible { get { return (Activator != null); } }
@@ -913,24 +1080,24 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
         override public bool IsBindable { get { return _isBindable; } }
         override public bool IsReturnTypeStub { get { return _isReturnTypeStub; } }
         override public bool IsLocalType { get { return _isLocalType; } }
-        public global::Windows.UI.Xaml.Markup.IXamlType BoxedType { get { return _boxedType; } }
+        override public global::Microsoft.UI.Xaml.Markup.IXamlType BoxedType { get { return _boxedType; } }
 
-        override public global::Windows.UI.Xaml.Markup.IXamlMember ContentProperty
+        override public global::Microsoft.UI.Xaml.Markup.IXamlMember ContentProperty
         {
             get { return _provider.GetMemberByLongName(_contentPropertyName); }
         }
 
-        override public global::Windows.UI.Xaml.Markup.IXamlType ItemType
+        override public global::Microsoft.UI.Xaml.Markup.IXamlType ItemType
         {
             get { return _provider.GetXamlTypeByName(_itemTypeName); }
         }
 
-        override public global::Windows.UI.Xaml.Markup.IXamlType KeyType
+        override public global::Microsoft.UI.Xaml.Markup.IXamlType KeyType
         {
             get { return _provider.GetXamlTypeByName(_keyTypeName); }
         }
 
-        override public global::Windows.UI.Xaml.Markup.IXamlMember GetMember(string name)
+        override public global::Microsoft.UI.Xaml.Markup.IXamlMember GetMember(string name)
         {
             if (_memberNames == null)
             {
@@ -961,7 +1128,7 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
 
         override public void RunInitializer() 
         {
-            global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(UnderlyingType.TypeHandle);
+            StaticInitializer();
         }
 
         override public object CreateFromString(string input)
@@ -977,25 +1144,25 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             }
             else if (_enumValues != null)
             {
-                int value = 0;
+                long value = 0;
 
                 string[] valueParts = input.Split(',');
 
                 foreach (string valuePart in valueParts) 
                 {
                     object partValue;
-                    int enumFieldValue = 0;
+                    long enumFieldValue = 0;
                     try
                     {
                         if (_enumValues.TryGetValue(valuePart.Trim(), out partValue))
                         {
-                            enumFieldValue = global::System.Convert.ToInt32(partValue);
+                            enumFieldValue = global::System.Convert.ToInt64(partValue);
                         }
                         else
                         {
                             try
                             {
-                                enumFieldValue = global::System.Convert.ToInt32(valuePart.Trim());
+                                enumFieldValue = global::System.Convert.ToInt64(valuePart.Trim());
                             }
                             catch( global::System.FormatException )
                             {
@@ -1005,7 +1172,7 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
                                     {
                                         if( _enumValues.TryGetValue(key.Trim(), out partValue) )
                                         {
-                                            enumFieldValue = global::System.Convert.ToInt32(partValue);
+                                            enumFieldValue = global::System.Convert.ToInt64(partValue);
                                             break;
                                         }
                                     }
@@ -1020,7 +1187,7 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
                     }
                 }
 
-                return value; 
+                return global::System.Convert.ChangeType(value, global::System.Enum.GetUnderlyingType(this.UnderlyingType));
             }
             throw new global::System.ArgumentException(input, FullName);
         }
@@ -1028,6 +1195,7 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
         // --- End of Interface methods
 
         public Activator Activator { get; set; }
+        public StaticInitializer StaticInitializer { get; set; }
         public AddToCollection CollectionAdd { get; set; }
         public AddToDictionary DictionaryAdd { get; set; }
         public CreateFromStringMethod CreateFromStringMethod {get; set; }
@@ -1073,7 +1241,7 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
             _keyTypeName = keyTypeName;
         }
 
-        public void SetBoxedType(global::Windows.UI.Xaml.Markup.IXamlType boxedType)
+        public void SetBoxedType(global::Microsoft.UI.Xaml.Markup.IXamlType boxedType)
         {
             _boxedType = boxedType;
         }
@@ -1106,9 +1274,9 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
     internal delegate object Getter(object instance);
     internal delegate void Setter(object instance, object value);
 
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Windows.UI.Xaml.Build.Tasks"," 0.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    internal class XamlMember : global::Windows.UI.Xaml.Markup.IXamlMember
+    internal partial class XamlMember : global::Microsoft.UI.Xaml.Markup.IXamlMember
     {
         global::Conditionals.ConditionalsCS_XamlTypeInfo.XamlTypeInfoProvider _provider;
         string _name;
@@ -1128,7 +1296,7 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
 
         public string Name { get { return _name; } }
 
-        public global::Windows.UI.Xaml.Markup.IXamlType Type
+        public global::Microsoft.UI.Xaml.Markup.IXamlType Type
         {
             get { return _provider.GetXamlTypeByName(_typeName); }
         }
@@ -1137,7 +1305,7 @@ namespace Conditionals.ConditionalsCS_XamlTypeInfo
         {
             _targetTypeName = targetTypeName;
         }
-        public global::Windows.UI.Xaml.Markup.IXamlType TargetType
+        public global::Microsoft.UI.Xaml.Markup.IXamlType TargetType
         {
             get { return _provider.GetXamlTypeByName(_targetTypeName); }
         }
