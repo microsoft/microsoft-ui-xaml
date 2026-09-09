@@ -82,6 +82,9 @@
     <ClInclude Include="MainPage.h">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </ClInclude>
+    <ClInclude Include="Namespace.CustomControl.h">
+      <DependentUpon>Namespace.CustomControl.xaml</DependentUpon>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -91,6 +94,12 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="MainPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Namespace.CustomControl.Portrait.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Namespace.CustomControl.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
@@ -120,6 +129,9 @@
     <ClCompile Include="MainPage.cpp">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </ClCompile>
+    <ClCompile Include="Namespace.CustomControl.cpp">
+      <DependentUpon>Namespace.CustomControl.xaml</DependentUpon>
+    </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -128,6 +140,9 @@
     </Midl>
     <Midl Include="MainPage.idl">
       <DependentUpon>MainPage.xaml</DependentUpon>
+    </Midl>
+    <Midl Include="Namespace.idl">
+      <DependentUpon>Namespace.CustomControl.xaml</DependentUpon>
     </Midl>
   </ItemGroup>
   <ItemGroup>

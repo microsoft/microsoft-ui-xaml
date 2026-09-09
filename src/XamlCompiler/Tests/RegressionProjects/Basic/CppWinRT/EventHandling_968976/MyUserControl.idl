@@ -1,0 +1,27 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+//
+// Regression coverage for bug 968976: code generation for XAML-attached handlers of
+// events whose delegates take array and out parameters.  The C++/CX original used
+// const Platform::Array<unsigned int>^, Platform::WriteOnlyArray<unsigned int>^,
+// Platform::Array<unsigned int>^* and Platform::String^*; the MIDL 3 equivalents are
+// a pass array, a fill array (ref), a receive array (out) and an out string.
+//
+namespace EventHandling_968976
+{
+    delegate void MyFirstEvent(UInt32[] args);
+    delegate void MySecondEvent(ref UInt32[] args);
+    delegate void MyThirdEvent(out UInt32[] args);
+    delegate void MyFourthEvent(out String args);
+
+    [Windows.Foundation.Metadata.WebHostHidden]
+    runtimeclass MyUserControl : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        MyUserControl();
+
+        event MyFirstEvent TheFirstEvent;
+        event MySecondEvent TheSecondEvent;
+        event MyThirdEvent TheThirdEvent;
+        event MyFourthEvent TheFourthEvent;
+    }
+}

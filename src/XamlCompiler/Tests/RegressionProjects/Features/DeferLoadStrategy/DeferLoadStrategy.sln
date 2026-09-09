@@ -9,6 +9,8 @@ Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "VisualBasic", "VisualBasic\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VC", "VC\VC.vcxproj", "{7974C35F-CC66-40B0-8413-C70BB70F2F6B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CppWinRT", "CppWinRT\CppWinRT.vcxproj", "{bea63bcb-ef6c-491e-99ec-d9252b8cc282}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -113,6 +115,26 @@ Global
 		{7974C35F-CC66-40B0-8413-C70BB70F2F6B}.Release|x86.ActiveCfg = Release|Win32
 		{7974C35F-CC66-40B0-8413-C70BB70F2F6B}.Release|x86.Build.0 = Release|Win32
 		{7974C35F-CC66-40B0-8413-C70BB70F2F6B}.Release|x86.Deploy.0 = Release|Win32
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Debug|ARM64.Build.0 = Debug|ARM64
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Debug|Win32.ActiveCfg = Debug|Win32
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Debug|Win32.Build.0 = Debug|Win32
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Debug|x64.ActiveCfg = Debug|x64
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Debug|x64.Build.0 = Debug|x64
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Debug|x86.ActiveCfg = Debug|Win32
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Debug|x86.Build.0 = Debug|Win32
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Release|ARM64.ActiveCfg = Release|ARM64
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Release|ARM64.Build.0 = Release|ARM64
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Release|Win32.ActiveCfg = Release|Win32
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Release|Win32.Build.0 = Release|Win32
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Release|x64.ActiveCfg = Release|x64
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Release|x64.Build.0 = Release|x64
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Release|x86.ActiveCfg = Release|Win32
+		{bea63bcb-ef6c-491e-99ec-d9252b8cc282}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

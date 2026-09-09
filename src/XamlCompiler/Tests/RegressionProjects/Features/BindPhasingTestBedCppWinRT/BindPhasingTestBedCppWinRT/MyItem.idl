@@ -1,0 +1,32 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+namespace BindPhasingTestBedCppWinRT
+{
+    runtimeclass ExtraInfo
+    {
+        ExtraInfo(String caption);
+        String Caption;
+    }
+
+    runtimeclass MyInfo
+    {
+        MyInfo(String imageUrl, String caption);
+        String ImageUrl;
+        String Caption;
+    }
+
+    [default_interface]
+    runtimeclass MyItem : Microsoft.UI.Xaml.DependencyObject, Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+    {
+        MyItem(String title, String subtitle, String description, MyInfo info, ExtraInfo otherInfo, String dp);
+
+        String Title;
+        String Subtitle;
+        String Description;
+        MyInfo Info;
+        ExtraInfo OtherInfo;
+
+        String DPOnMyItem;
+        static Microsoft.UI.Xaml.DependencyProperty DPOnMyItemProperty{ get; };
+    }
+}

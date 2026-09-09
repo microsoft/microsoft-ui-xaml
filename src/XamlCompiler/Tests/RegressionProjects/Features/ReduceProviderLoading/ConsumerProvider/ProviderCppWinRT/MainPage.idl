@@ -1,0 +1,12 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+namespace ProviderCppWinRT
+{
+    runtimeclass MainPage : Microsoft.UI.Xaml.Controls.Page
+    {
+        MainPage();
+
+        static void DoSomething();
+        static String GetTextToShow();
+    }
+}
