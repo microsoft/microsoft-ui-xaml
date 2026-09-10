@@ -187,7 +187,9 @@ REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Controls::VirtualizationMo
 REFERENCE_ELEMENT_NAME_IMPL(ABI::Windows::System::VirtualKey, L"Windows.System.VirtualKey");
 REFERENCE_ELEMENT_NAME_IMPL(ABI::Windows::System::VirtualKeyModifiers, L"Windows.System.VirtualKeyModifiers");
 REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Visibility, L"Microsoft.UI.Xaml.Visibility");
+REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::WindowActivationBehavior, L"Microsoft.UI.Xaml.WindowActivationBehavior");
 REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Automation::WindowInteractionState, L"Microsoft.UI.Xaml.Automation.WindowInteractionState");
+REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::WindowShowReason, L"Microsoft.UI.Xaml.WindowShowReason");
 REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Automation::WindowVisualState, L"Microsoft.UI.Xaml.Automation.WindowVisualState");
 REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Input::XYFocusKeyboardNavigationMode, L"Microsoft.UI.Xaml.Input.XYFocusKeyboardNavigationMode");
 REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy, L"Microsoft.UI.Xaml.Input.XYFocusNavigationStrategy");
@@ -2490,12 +2492,38 @@ Cleanup:
     return hr;
 }
 
+__declspec(noinline) HRESULT GetValueFor_KnownTypeIndex_WindowActivationBehavior(_In_ IInspectable* pBox, REFIID guid, _Out_ UINT* pnValue)
+{
+    HRESULT hr = S_OK;
+    ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::WindowActivationBehavior>* ptr = nullptr;
+    IFC(pBox->QueryInterface(guid, reinterpret_cast<void**>(&ptr)));
+    ABI::Microsoft::UI::Xaml::WindowActivationBehavior value;
+    IFC(ptr->get_Value(&value));
+    *pnValue = static_cast<uint32_t>(value);
+Cleanup:
+    ReleaseInterfaceNoNULL(ptr);
+    return hr;
+}
+
 __declspec(noinline) HRESULT GetValueFor_KnownTypeIndex_WindowInteractionState(_In_ IInspectable* pBox, REFIID guid, _Out_ UINT* pnValue)
 {
     HRESULT hr = S_OK;
     ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Automation::WindowInteractionState>* ptr = nullptr;
     IFC(pBox->QueryInterface(guid, reinterpret_cast<void**>(&ptr)));
     ABI::Microsoft::UI::Xaml::Automation::WindowInteractionState value;
+    IFC(ptr->get_Value(&value));
+    *pnValue = static_cast<uint32_t>(value);
+Cleanup:
+    ReleaseInterfaceNoNULL(ptr);
+    return hr;
+}
+
+__declspec(noinline) HRESULT GetValueFor_KnownTypeIndex_WindowShowReason(_In_ IInspectable* pBox, REFIID guid, _Out_ UINT* pnValue)
+{
+    HRESULT hr = S_OK;
+    ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::WindowShowReason>* ptr = nullptr;
+    IFC(pBox->QueryInterface(guid, reinterpret_cast<void**>(&ptr)));
+    ABI::Microsoft::UI::Xaml::WindowShowReason value;
     IFC(ptr->get_Value(&value));
     *pnValue = static_cast<uint32_t>(value);
 Cleanup:
@@ -2940,8 +2968,12 @@ _Check_return_ HRESULT GetEnumValueFromKnownWinRTBox(_In_ IInspectable* pBox, _I
             return GetValueFor_KnownTypeIndex_VirtualKeyModifiers(pBox, typeGuid, pnValue);
         case KnownTypeIndex::Visibility:
             return GetValueFor_KnownTypeIndex_Visibility(pBox, typeGuid, pnValue);
+        case KnownTypeIndex::WindowActivationBehavior:
+            return GetValueFor_KnownTypeIndex_WindowActivationBehavior(pBox, typeGuid, pnValue);
         case KnownTypeIndex::WindowInteractionState:
             return GetValueFor_KnownTypeIndex_WindowInteractionState(pBox, typeGuid, pnValue);
+        case KnownTypeIndex::WindowShowReason:
+            return GetValueFor_KnownTypeIndex_WindowShowReason(pBox, typeGuid, pnValue);
         case KnownTypeIndex::WindowVisualState:
             return GetValueFor_KnownTypeIndex_WindowVisualState(pBox, typeGuid, pnValue);
         case KnownTypeIndex::XYFocusKeyboardNavigationMode:
@@ -3319,8 +3351,12 @@ _Check_return_ HRESULT GetKnownWinRTBoxFromEnumValue(_In_ UINT nValue, _In_ cons
             return DirectUI::PropertyValue::CreateEnumReference<ABI::Windows::System::VirtualKeyModifiers>(static_cast<ABI::Windows::System::VirtualKeyModifiers>(nValue), ppBox);
         case KnownTypeIndex::Visibility:
             return DirectUI::PropertyValue::CreateEnumReference<ABI::Microsoft::UI::Xaml::Visibility>(static_cast<ABI::Microsoft::UI::Xaml::Visibility>(nValue), ppBox);
+        case KnownTypeIndex::WindowActivationBehavior:
+            return DirectUI::PropertyValue::CreateEnumReference<ABI::Microsoft::UI::Xaml::WindowActivationBehavior>(static_cast<ABI::Microsoft::UI::Xaml::WindowActivationBehavior>(nValue), ppBox);
         case KnownTypeIndex::WindowInteractionState:
             return DirectUI::PropertyValue::CreateEnumReference<ABI::Microsoft::UI::Xaml::Automation::WindowInteractionState>(static_cast<ABI::Microsoft::UI::Xaml::Automation::WindowInteractionState>(nValue), ppBox);
+        case KnownTypeIndex::WindowShowReason:
+            return DirectUI::PropertyValue::CreateEnumReference<ABI::Microsoft::UI::Xaml::WindowShowReason>(static_cast<ABI::Microsoft::UI::Xaml::WindowShowReason>(nValue), ppBox);
         case KnownTypeIndex::WindowVisualState:
             return DirectUI::PropertyValue::CreateEnumReference<ABI::Microsoft::UI::Xaml::Automation::WindowVisualState>(static_cast<ABI::Microsoft::UI::Xaml::Automation::WindowVisualState>(nValue), ppBox);
         case KnownTypeIndex::XYFocusKeyboardNavigationMode:

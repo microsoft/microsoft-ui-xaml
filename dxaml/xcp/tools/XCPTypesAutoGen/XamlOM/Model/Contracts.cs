@@ -45,6 +45,10 @@ namespace Microsoft.UI.Xaml
         public const int WinAppSDK_2_2 = 11;
 
         public const int WinAppSDK_3_0 = 12;
+
+        // Highest declared contract version. Keep in sync with the last ContractVersion
+        // attribute above.
+        public const int LatestVersion = 12;
     };
 
     [ContractVersion(1)]

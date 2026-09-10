@@ -119,6 +119,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IWindowChrome IWindowChrome;
     typedef ABI::Microsoft::UI::Xaml::IWindowCreatedEventArgs IWindowCreatedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::IWindowEventArgs IWindowEventArgs;
+    typedef ABI::Microsoft::UI::Xaml::IWindowInitialShowOptions IWindowInitialShowOptions;
     typedef ABI::Microsoft::UI::Xaml::IWindowSizeChangedEventArgs IWindowSizeChangedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::IWindowVisibilityChangedEventArgs IWindowVisibilityChangedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::IXamlIsland IXamlIsland;

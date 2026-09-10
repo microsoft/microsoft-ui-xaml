@@ -540,6 +540,12 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
         KnownTypeIndex::Object, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter)), // Type flags
     },
+    // Microsoft.UI.Xaml.WindowInitialShowOptions
+    {
+        KnownTypeIndex::WindowInitialShowOptions, // Index name
+        KnownTypeIndex::Object, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor)), // Type flags
+    },
     // Microsoft.UI.Xaml.Markup.XamlBindingHelper
     {
         KnownTypeIndex::XamlBindingHelper, // Index name
@@ -6066,9 +6072,21 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
         KnownTypeIndex::UnknownType, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::IsValueType) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter) | static_cast<UINT>(MetaDataTypeInfoFlags::IsEnum) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCompactEnum)), // Type flags
     },
+    // Microsoft.UI.Xaml.WindowActivationBehavior
+    {
+        KnownTypeIndex::WindowActivationBehavior, // Index name
+        KnownTypeIndex::UnknownType, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::IsValueType) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter) | static_cast<UINT>(MetaDataTypeInfoFlags::IsEnum) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCompactEnum)), // Type flags
+    },
     // Microsoft.UI.Xaml.Automation.WindowInteractionState
     {
         KnownTypeIndex::WindowInteractionState, // Index name
+        KnownTypeIndex::UnknownType, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::IsValueType) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter) | static_cast<UINT>(MetaDataTypeInfoFlags::IsEnum) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCompactEnum)), // Type flags
+    },
+    // Microsoft.UI.Xaml.WindowShowReason
+    {
+        KnownTypeIndex::WindowShowReason, // Index name
         KnownTypeIndex::UnknownType, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::IsValueType) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter) | static_cast<UINT>(MetaDataTypeInfoFlags::IsEnum) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCompactEnum)), // Type flags
     },
@@ -6520,6 +6538,12 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         XSTRING_PTR_STORAGE(L"Uri"), // Name
         XSTRING_PTR_STORAGE(L"Windows.Foundation.Uri"), // Full name
         KnownNamespaceIndex::Windows_Foundation, // Declaring namespace index
+    },
+    // Microsoft.UI.Xaml.WindowInitialShowOptions
+    {
+        XSTRING_PTR_STORAGE(L"WindowInitialShowOptions"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.WindowInitialShowOptions"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml, // Declaring namespace index
     },
     // Microsoft.UI.Xaml.Markup.XamlBindingHelper
     {
@@ -12047,11 +12071,23 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Visibility"), // Full name
         KnownNamespaceIndex::Microsoft_UI_Xaml, // Declaring namespace index
     },
+    // Microsoft.UI.Xaml.WindowActivationBehavior
+    {
+        XSTRING_PTR_STORAGE(L"WindowActivationBehavior"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.WindowActivationBehavior"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml, // Declaring namespace index
+    },
     // Microsoft.UI.Xaml.Automation.WindowInteractionState
     {
         XSTRING_PTR_STORAGE(L"WindowInteractionState"), // Name
         XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Automation.WindowInteractionState"), // Full name
         KnownNamespaceIndex::Microsoft_UI_Xaml_Automation, // Declaring namespace index
+    },
+    // Microsoft.UI.Xaml.WindowShowReason
+    {
+        XSTRING_PTR_STORAGE(L"WindowShowReason"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.WindowShowReason"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml, // Declaring namespace index
     },
     // Microsoft.UI.Xaml.Automation.WindowVisualState
     {
@@ -12698,6 +12734,15 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // Property slot count
     },
     // Windows.Foundation.Uri
+    {
+        KnownPropertyIndex::UnknownType_UnknownProperty, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property = UnknownObject.UnknownProperty
+        0, // First render property = UnknownObject.UnknownProperty
+        0, // First object property = UnknownObject.UnknownProperty
+        0, // Property slot count
+    },
+    // Microsoft.UI.Xaml.WindowInitialShowOptions
     {
         KnownPropertyIndex::UnknownType_UnknownProperty, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
@@ -14639,7 +14684,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First enter property = UnknownObject.UnknownProperty
         0, // First render property = UnknownObject.UnknownProperty
         0, // First object property = UnknownObject.UnknownProperty
-        18, // Property slot count
+        20, // Property slot count
     },
     // Microsoft.UI.Xaml.WindowCreatedEventArgs
     {
@@ -20819,7 +20864,23 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First object property
         0, // Property slot count
     },
+    // Microsoft.UI.Xaml.WindowActivationBehavior
+    {
+        KnownPropertyIndex::UnknownType_UnknownProperty, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property
+        0, // First object property
+        0, // Property slot count
+    },
     // Microsoft.UI.Xaml.Automation.WindowInteractionState
+    {
+        KnownPropertyIndex::UnknownType_UnknownProperty, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property
+        0, // First object property
+        0, // Property slot count
+    },
+    // Microsoft.UI.Xaml.WindowShowReason
     {
         KnownPropertyIndex::UnknownType_UnknownProperty, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
@@ -20948,6 +21009,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IToolTipService),
     __uuidof(ABI::Microsoft::UI::Xaml::Documents::ITypography),
     __uuidof(ABI::Windows::Foundation::IUriRuntimeClass),
+    __uuidof(ABI::Microsoft::UI::Xaml::IWindowInitialShowOptions),
     __uuidof(ABI::Microsoft::UI::Xaml::Markup::IXamlBindingHelper),
     __uuidof(ABI::Microsoft::UI::Xaml::Markup::IXamlMarkupHelper),
     __uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::IXamlRenderingBackgroundTask),
@@ -21869,7 +21931,9 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Windows::System::VirtualKey>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Windows::System::VirtualKeyModifiers>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Visibility>),
+    __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::WindowActivationBehavior>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Automation::WindowInteractionState>),
+    __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::WindowShowReason>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Automation::WindowVisualState>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Input::XYFocusKeyboardNavigationMode>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy>),
@@ -21879,7 +21943,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
 };
 
 // Types that can be referenced from XAML.
-extern const MetaDataTypeName c_aTypeNames[942] =
+extern const MetaDataTypeName c_aTypeNames[945] =
 {
     { KnownTypeIndex::UnknownType },
     { KnownTypeIndex::Hub },
@@ -22263,6 +22327,7 @@ extern const MetaDataTypeName c_aTypeNames[942] =
     { KnownTypeIndex::TransitionTarget },
     { KnownTypeIndex::VisualStateGroup },
     { KnownTypeIndex::VisualTransition },
+    { KnownTypeIndex::WindowShowReason },
     { KnownTypeIndex::XamlMarkupHelper },
     { KnownTypeIndex::AccessibilityView },
     { KnownTypeIndex::AddPagesEventArgs },
@@ -22594,6 +22659,8 @@ extern const MetaDataTypeName c_aTypeNames[942] =
     { KnownTypeIndex::SwapChainBackgroundPanel },
     { KnownTypeIndex::TimePickerAutomationPeer },
     { KnownTypeIndex::VectorViewCollectionView },
+    { KnownTypeIndex::WindowActivationBehavior },
+    { KnownTypeIndex::WindowInitialShowOptions },
     { KnownTypeIndex::XamlCompositionBrushBase },
     { KnownTypeIndex::XamlIslandRootCollection },
     { KnownTypeIndex::XamlRootChangedEventArgs },
@@ -26548,6 +26615,14 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::Window, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
     },
+    // Microsoft.UI.Xaml.Window.InitialShowOptions
+    {
+        KnownPropertyIndex::Window_InitialShowOptions, // Index name
+        KnownTypeIndex::WindowInitialShowOptions, // Property type
+        KnownTypeIndex::Window, // Declaring type
+        KnownTypeIndex::Window, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
     // Microsoft.UI.Xaml.Window.MaxHeight
     {
         KnownPropertyIndex::Window_MaxHeight, // Index name
@@ -26576,6 +26651,14 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
     {
         KnownPropertyIndex::Window_MinWidth, // Index name
         KnownTypeIndex::Double, // Property type
+        KnownTypeIndex::Window, // Declaring type
+        KnownTypeIndex::Window, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Window.PersistPlacementId
+    {
+        KnownPropertyIndex::Window_PersistPlacementId, // Index name
+        KnownTypeIndex::String, // Property type
         KnownTypeIndex::Window, // Declaring type
         KnownTypeIndex::Window, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
@@ -38937,11 +39020,13 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::VisualTransition_To, // VisualTransition_Storyboard
     KnownPropertyIndex::DependencyObject_Column, // VisualTransition_To
     KnownPropertyIndex::Window_Height, // Window_Content
-    KnownPropertyIndex::Window_MaxHeight, // Window_Height
+    KnownPropertyIndex::Window_InitialShowOptions, // Window_Height
+    KnownPropertyIndex::Window_MaxHeight, // Window_InitialShowOptions
     KnownPropertyIndex::Window_MaxWidth, // Window_MaxHeight
     KnownPropertyIndex::Window_MinHeight, // Window_MaxWidth
     KnownPropertyIndex::Window_MinWidth, // Window_MinHeight
-    KnownPropertyIndex::Window_SystemBackdrop, // Window_MinWidth
+    KnownPropertyIndex::Window_PersistPlacementId, // Window_MinWidth
+    KnownPropertyIndex::Window_SystemBackdrop, // Window_PersistPlacementId
     KnownPropertyIndex::Window_Title, // Window_SystemBackdrop
     KnownPropertyIndex::Window_TransparentBackground, // Window_Title
     KnownPropertyIndex::Window_Width, // Window_TransparentBackground
@@ -40898,14 +40983,16 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     12, // VisualTransition_To
     8, // Window_Content
     9, // Window_Height
-    10, // Window_MaxHeight
-    11, // Window_MaxWidth
-    12, // Window_MinHeight
-    13, // Window_MinWidth
-    14, // Window_SystemBackdrop
-    15, // Window_Title
-    16, // Window_TransparentBackground
-    17, // Window_Width
+    10, // Window_InitialShowOptions
+    11, // Window_MaxHeight
+    12, // Window_MaxWidth
+    13, // Window_MinHeight
+    14, // Window_MinWidth
+    15, // Window_PersistPlacementId
+    16, // Window_SystemBackdrop
+    17, // Window_Title
+    18, // Window_TransparentBackground
+    19, // Window_Width
     8, // XamlUICommand_AccessKey
     9, // XamlUICommand_Command
     10, // XamlUICommand_Description
@@ -42858,10 +42945,12 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"To"),
     XSTRING_PTR_STORAGE(L"Content"),
     XSTRING_PTR_STORAGE(L"Height"),
+    XSTRING_PTR_STORAGE(L"InitialShowOptions"),
     XSTRING_PTR_STORAGE(L"MaxHeight"),
     XSTRING_PTR_STORAGE(L"MaxWidth"),
     XSTRING_PTR_STORAGE(L"MinHeight"),
     XSTRING_PTR_STORAGE(L"MinWidth"),
+    XSTRING_PTR_STORAGE(L"PersistPlacementId"),
     XSTRING_PTR_STORAGE(L"SystemBackdrop"),
     XSTRING_PTR_STORAGE(L"Title"),
     XSTRING_PTR_STORAGE(L"TransparentBackground"),
@@ -44395,95 +44484,95 @@ UINT MapTypeNameLengthToSearchRange(_In_ UINT nLength, _Out_ UINT* pnEndIndex)
             *pnEndIndex = 345;
             return 299;
         case 16:
-            *pnEndIndex = 383;
+            *pnEndIndex = 384;
             return 345;
         case 17:
-            *pnEndIndex = 417;
-            return 383;
+            *pnEndIndex = 418;
+            return 384;
         case 18:
-            *pnEndIndex = 457;
-            return 417;
+            *pnEndIndex = 458;
+            return 418;
         case 19:
-            *pnEndIndex = 510;
-            return 457;
+            *pnEndIndex = 511;
+            return 458;
         case 20:
-            *pnEndIndex = 558;
-            return 510;
+            *pnEndIndex = 559;
+            return 511;
         case 21:
-            *pnEndIndex = 592;
-            return 558;
+            *pnEndIndex = 593;
+            return 559;
         case 22:
-            *pnEndIndex = 643;
-            return 592;
+            *pnEndIndex = 644;
+            return 593;
         case 23:
-            *pnEndIndex = 683;
-            return 643;
+            *pnEndIndex = 684;
+            return 644;
         case 24:
-            *pnEndIndex = 716;
-            return 683;
+            *pnEndIndex = 719;
+            return 684;
         case 25:
-            *pnEndIndex = 751;
-            return 716;
+            *pnEndIndex = 754;
+            return 719;
         case 26:
-            *pnEndIndex = 779;
-            return 751;
+            *pnEndIndex = 782;
+            return 754;
         case 27:
-            *pnEndIndex = 793;
-            return 779;
+            *pnEndIndex = 796;
+            return 782;
         case 28:
-            *pnEndIndex = 814;
-            return 793;
+            *pnEndIndex = 817;
+            return 796;
         case 29:
-            *pnEndIndex = 834;
-            return 814;
+            *pnEndIndex = 837;
+            return 817;
         case 30:
-            *pnEndIndex = 855;
-            return 834;
+            *pnEndIndex = 858;
+            return 837;
         case 31:
-            *pnEndIndex = 867;
-            return 855;
+            *pnEndIndex = 870;
+            return 858;
         case 32:
-            *pnEndIndex = 884;
-            return 867;
+            *pnEndIndex = 887;
+            return 870;
         case 33:
-            *pnEndIndex = 898;
-            return 884;
+            *pnEndIndex = 901;
+            return 887;
         case 34:
-            *pnEndIndex = 911;
-            return 898;
+            *pnEndIndex = 914;
+            return 901;
         case 35:
-            *pnEndIndex = 917;
-            return 911;
+            *pnEndIndex = 920;
+            return 914;
         case 36:
-            *pnEndIndex = 923;
-            return 917;
+            *pnEndIndex = 926;
+            return 920;
         case 37:
-            *pnEndIndex = 928;
-            return 923;
-        case 38:
             *pnEndIndex = 931;
-            return 928;
-        case 39:
-            *pnEndIndex = 936;
+            return 926;
+        case 38:
+            *pnEndIndex = 934;
             return 931;
-        case 40:
-            *pnEndIndex = 937;
-            return 936;
-        case 41:
-            *pnEndIndex = 938;
-            return 937;
-        case 42:
+        case 39:
             *pnEndIndex = 939;
-            return 938;
-        case 43:
+            return 934;
+        case 40:
             *pnEndIndex = 940;
             return 939;
-        case 49:
+        case 41:
             *pnEndIndex = 941;
             return 940;
-        case 50:
+        case 42:
             *pnEndIndex = 942;
             return 941;
+        case 43:
+            *pnEndIndex = 943;
+            return 942;
+        case 49:
+            *pnEndIndex = 944;
+            return 943;
+        case 50:
+            *pnEndIndex = 945;
+            return 944;
         default:
             *pnEndIndex = 0;
             return 0;
@@ -45199,9 +45288,17 @@ _Check_return_ HRESULT GetEnumValueTable(_In_ KnownTypeIndex nTypeIndex, _Out_ U
             *pnCount = ARRAY_SIZE(satVisibility);
             *ppTable = satVisibility;
             return S_OK;
+        case KnownTypeIndex::WindowActivationBehavior:
+            *pnCount = ARRAY_SIZE(satWindowActivationBehavior);
+            *ppTable = satWindowActivationBehavior;
+            return S_OK;
         case KnownTypeIndex::WindowInteractionState:
             *pnCount = ARRAY_SIZE(satWindowInteractionState);
             *ppTable = satWindowInteractionState;
+            return S_OK;
+        case KnownTypeIndex::WindowShowReason:
+            *pnCount = ARRAY_SIZE(satWindowShowReason);
+            *ppTable = satWindowShowReason;
             return S_OK;
         case KnownTypeIndex::WindowVisualState:
             *pnCount = ARRAY_SIZE(satWindowVisualState);

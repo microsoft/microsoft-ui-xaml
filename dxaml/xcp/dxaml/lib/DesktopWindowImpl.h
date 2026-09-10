@@ -51,6 +51,13 @@ namespace DirectUI
         _Check_return_ HRESULT get_HeightImpl(_Out_ DOUBLE* pValue) override;
         _Check_return_ HRESULT put_HeightImpl(DOUBLE value) override;
 
+        // Experimental window placement persistence.
+        _Check_return_ HRESULT get_PersistPlacementIdImpl(_Out_ HSTRING* pValue) override;
+        _Check_return_ HRESULT put_PersistPlacementIdImpl(_In_opt_ HSTRING value) override;
+        _Check_return_ HRESULT get_InitialShowOptionsImpl(_Outptr_result_maybenull_ xaml::IWindowInitialShowOptions** ppValue) override;
+        _Check_return_ HRESULT put_InitialShowOptionsImpl(_In_opt_ xaml::IWindowInitialShowOptions* pValue) override;
+        _Check_return_ HRESULT ShowDefaultImpl() override;
+
         _Check_return_ HRESULT get_ExtendsContentIntoTitleBarImpl(_Out_ BOOLEAN* pValue) final;
         _Check_return_ HRESULT put_ExtendsContentIntoTitleBarImpl(_In_ BOOLEAN value) final;
         _Check_return_ HRESULT SetTitleBarImpl(_In_ xaml::IUIElement* pTitleBar) final;
@@ -279,6 +286,75 @@ namespace DirectUI
         // AppWindow so we can unsubscribe in Shutdown; m_appWindowChangedToken (declared above) is shared
         // with the Width/Height feature, which watches the same event.
         ctl::ComPtr<ixp::IAppWindow> m_appWindowForChangedEvent;
+
+        // Window placement persistence (experimental).
+        //
+        // m_persistPlacementId is the app-chosen stable identity for this window's saved placement.
+        // Empty or unset means the window opts out of persistence entirely.
+        //
+        // m_initialShowOptions is the app-supplied options object. We hold the live object rather than
+        // a copy of its values because the app may keep mutating it up until the first show; the values
+        // are snapshotted at the moment the placement attempt is consumed.
+        wrl_wrappers::HString m_persistPlacementId;
+        ctl::ComPtr<xaml::IWindowInitialShowOptions> m_initialShowOptions;
+
+        // Where this window is in its one-time initial placement attempt. The first Show() or
+        // Activate() consumes the attempt; the state never returns to NotAttempted. A window that
+        // reaches AttemptedWithoutPlacement opted out, had nothing saved, or failed to apply -
+        // all of which are normal and leave the window on its default placement.
+        enum class PlacementAttemptState
+        {
+            NotAttempted,
+            InProgress,
+            Applied,
+            AttemptedWithoutPlacement,
+        };
+        PlacementAttemptState m_placementAttemptState = PlacementAttemptState::NotAttempted;
+
+        // The InitialShowOptions values read when the attempt was consumed. The app may keep
+        // mutating its options object afterwards; a window that already consumed its attempt
+        // ignores those changes.
+        struct PlacementOptionsSnapshot
+        {
+            xaml::WindowShowReason reason = xaml::WindowShowReason_Default;
+            xaml::WindowActivationBehavior activationBehavior = xaml::WindowActivationBehavior_Activate;
+            bool keepHidden = false;
+        };
+
+        // Set once the window has been asked to display, by Show/Activate or by a direct
+        // AppWindow.Show that bypassed us. Guards against a constructed-but-never-shown window
+        // overwriting good saved data with default HWND geometry.
+        bool m_hwndEverDisplayed = false;
+
+        // Latch so the WM_DESTROY backstop does not repeat a save the normal close path already
+        // did. Deliberately does not suppress the WM_ENDSESSION save, which may be the only one
+        // that runs if the session ends before teardown.
+        bool m_placementSavedOnClosePath = false;
+
+        // Last show command seen while the window was not hidden. We never persist SW_HIDE, so a
+        // window closed while hidden saves this instead.
+        UINT m_lastNonHiddenShowCmd = SW_NORMAL;
+
+        // Reads InitialShowOptions into a snapshot, validating app-supplied values. Returns
+        // E_INVALIDARG for an out-of-range enum without touching window state, so the app can
+        // correct the value and show again. forceActivate is set by Activate(), which overrides
+        // ActivationBehavior and KeepHidden but still honors Reason.
+        _Check_return_ HRESULT SnapshotInitialShowOptions(bool forceActivate, _Out_ PlacementOptionsSnapshot* snapshot);
+
+        // Runs the one-time initial placement attempt and reports the options it snapshotted, so
+        // the caller can honor KeepHidden and ActivationBehavior. Consumes the attempt even when
+        // there is no id, no saved placement, or the apply fails; only an invalid app-supplied
+        // option value fails, and that leaves the attempt unconsumed.
+        _Check_return_ HRESULT RunInitialPlacementAttempt(bool forceActivate, _Out_ PlacementOptionsSnapshot* snapshot);
+
+        // Shared body of Activate() and Show(). forceActivate is Activate()'s override of the
+        // app's ActivationBehavior and KeepHidden.
+        _Check_return_ HRESULT ShowOrActivate(bool forceActivate);
+
+        // Captures and writes this window's placement. Fail-safe: a window must still close when
+        // its placement cannot be saved. skipVirtualDesktopQuery avoids the cross-apartment COM
+        // call when we are on an input-synchronous message path.
+        void SavePlacement(bool skipVirtualDesktopQuery);
 
         // We use ::GetClientRect to report the window bounds, but that returns 0x0 if the window is minimized. In
         // that case we'll cache the most recently reported bounds and return that.

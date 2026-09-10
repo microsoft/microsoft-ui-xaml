@@ -243,6 +243,7 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_ExceptionRoutedEventArgs();
     _Check_return_ IActivationFactory* CreateActivationFactory_LaunchActivatedEventArgs();
     _Check_return_ IActivationFactory* CreateActivationFactory_WindowActivatedEventArgs();
+    _Check_return_ IActivationFactory* CreateActivationFactory_WindowInitialShowOptions();
     _Check_return_ IActivationFactory* CreateActivationFactory_XamlRootChangedEventArgs();
     _Check_return_ IActivationFactory* CreateActivationFactory_CompositeTransform();
     _Check_return_ IActivationFactory* CreateActivationFactory_GeometryCollection();
@@ -900,6 +901,7 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.ExceptionRoutedEventArgs"), &DirectUI::CreateActivationFactory_ExceptionRoutedEventArgs)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.LaunchActivatedEventArgs"), &DirectUI::CreateActivationFactory_LaunchActivatedEventArgs)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.WindowActivatedEventArgs"), &DirectUI::CreateActivationFactory_WindowActivatedEventArgs)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.WindowInitialShowOptions"), &DirectUI::CreateActivationFactory_WindowInitialShowOptions)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.XamlRootChangedEventArgs"), &DirectUI::CreateActivationFactory_XamlRootChangedEventArgs)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.CompositeTransform"), &DirectUI::CreateActivationFactory_CompositeTransform)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.GeometryCollection"), &DirectUI::CreateActivationFactory_GeometryCollection)

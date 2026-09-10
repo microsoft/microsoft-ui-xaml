@@ -152,6 +152,8 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     { 0, 0 },
     // Windows.Foundation.Uri
     { 140737488355329, 140737488355329 },
+    // Microsoft.UI.Xaml.WindowInitialShowOptions
+    { 140737488355329, 140737488355329 },
     // Microsoft.UI.Xaml.Markup.XamlBindingHelper
     { 0, 0 },
     // Microsoft.UI.Xaml.Markup.XamlMarkupHelper
@@ -1994,7 +1996,11 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     { 0, 0 },
     // Microsoft.UI.Xaml.Visibility
     { 0, 0 },
+    // Microsoft.UI.Xaml.WindowActivationBehavior
+    { 0, 0 },
     // Microsoft.UI.Xaml.Automation.WindowInteractionState
+    { 0, 0 },
+    // Microsoft.UI.Xaml.WindowShowReason
     { 0, 0 },
     // Microsoft.UI.Xaml.Automation.WindowVisualState
     { 0, 0 },

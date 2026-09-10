@@ -387,6 +387,43 @@ _Check_return_ HRESULT UWPWindowImpl::put_HeightImpl(DOUBLE value)
     return S_OK;
 }
 
+_Check_return_ HRESULT UWPWindowImpl::get_PersistPlacementIdImpl(_Out_ HSTRING* pValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    *pValue = nullptr;
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::put_PersistPlacementIdImpl(_In_opt_ HSTRING value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::get_InitialShowOptionsImpl(_Outptr_result_maybenull_ xaml::IWindowInitialShowOptions** ppValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    *ppValue = nullptr;
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::put_InitialShowOptionsImpl(_In_opt_ xaml::IWindowInitialShowOptions* pValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::ShowDefaultImpl()
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
 _Check_return_ HRESULT UWPWindowImpl::get_TitleImpl(_Out_ HSTRING* pValue)
 {
     ctl::ComPtr<wuv::IApplicationViewStatics2> applicationViewStatics;

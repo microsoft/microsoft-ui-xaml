@@ -960,3 +960,60 @@ _Check_return_ HRESULT Window::put_HeightImpl(DOUBLE value)
     return S_OK;
 }
 
+_Check_return_ HRESULT Window::get_PersistPlacementIdImpl(_Out_ HSTRING* pValue)
+{
+    // Contained off: the feature isn't present, so the API is not implemented.
+    if (!WindowImpl::AreNewWindowingApisEnabled())
+    {
+        *pValue = nullptr;
+        return E_NOTIMPL;
+    }
+    IFC_RETURN(m_spWindowImpl->get_PersistPlacementIdImpl(pValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::put_PersistPlacementIdImpl(_In_opt_ HSTRING value)
+{
+    // Contained off: the feature isn't present, so the API is not implemented.
+    if (!WindowImpl::AreNewWindowingApisEnabled())
+    {
+        return E_NOTIMPL;
+    }
+    IFC_RETURN(m_spWindowImpl->put_PersistPlacementIdImpl(value));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::get_InitialShowOptionsImpl(_Outptr_result_maybenull_ xaml::IWindowInitialShowOptions** ppValue)
+{
+    // Contained off: the feature isn't present, so the API is not implemented.
+    if (!WindowImpl::AreNewWindowingApisEnabled())
+    {
+        *ppValue = nullptr;
+        return E_NOTIMPL;
+    }
+    IFC_RETURN(m_spWindowImpl->get_InitialShowOptionsImpl(ppValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::put_InitialShowOptionsImpl(_In_opt_ xaml::IWindowInitialShowOptions* pValue)
+{
+    // Contained off: the feature isn't present, so the API is not implemented.
+    if (!WindowImpl::AreNewWindowingApisEnabled())
+    {
+        return E_NOTIMPL;
+    }
+    IFC_RETURN(m_spWindowImpl->put_InitialShowOptionsImpl(pValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::ShowDefaultImpl()
+{
+    // Contained off: the feature isn't present, so the API is not implemented.
+    if (!WindowImpl::AreNewWindowingApisEnabled())
+    {
+        return E_NOTIMPL;
+    }
+    IFC_RETURN(m_spWindowImpl->ShowDefaultImpl());
+    return S_OK;
+}
+

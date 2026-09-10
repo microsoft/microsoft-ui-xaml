@@ -1002,6 +1002,9 @@ namespace Parser
         KnownTypeIndex::SeekSliderAutomationPeer,
         KnownTypeIndex::SplitMenuFlyoutItemAutomationPeer,
         KnownTypeIndex::SplitMenuFlyoutItem,
+        KnownTypeIndex::WindowInitialShowOptions,
+        KnownTypeIndex::WindowActivationBehavior,
+        KnownTypeIndex::WindowShowReason,
     };
 
     // Map known type indexes to stable Xbf type indexes
@@ -1075,6 +1078,7 @@ namespace Parser
         StableXbfTypeIndex::ToolTipService,
         StableXbfTypeIndex::Typography,
         StableXbfTypeIndex::Uri,
+        StableXbfTypeIndex::WindowInitialShowOptions,
         StableXbfTypeIndex::XamlBindingHelper,
         StableXbfTypeIndex::XamlMarkupHelper,
         StableXbfTypeIndex::XamlRenderingBackgroundTask,
@@ -1996,7 +2000,9 @@ namespace Parser
         StableXbfTypeIndex::VirtualKey,
         StableXbfTypeIndex::VirtualKeyModifiers,
         StableXbfTypeIndex::Visibility,
+        StableXbfTypeIndex::WindowActivationBehavior,
         StableXbfTypeIndex::WindowInteractionState,
+        StableXbfTypeIndex::WindowShowReason,
         StableXbfTypeIndex::WindowVisualState,
         StableXbfTypeIndex::XYFocusKeyboardNavigationMode,
         StableXbfTypeIndex::XYFocusNavigationStrategy,
@@ -4483,6 +4489,8 @@ namespace Parser
         KnownPropertyIndex::Window_MaxWidth,
         KnownPropertyIndex::Window_MinHeight,
         KnownPropertyIndex::Window_MinWidth,
+        KnownPropertyIndex::Window_InitialShowOptions,
+        KnownPropertyIndex::Window_PersistPlacementId,
     };
 
     // Map known property indexes to stable Xbf property indexes
@@ -4953,10 +4961,12 @@ namespace Parser
         StableXbfPropertyIndex::VisualTransition_To,
         StableXbfPropertyIndex::Window_Content,
         StableXbfPropertyIndex::Window_Height,
+        StableXbfPropertyIndex::Window_InitialShowOptions,
         StableXbfPropertyIndex::Window_MaxHeight,
         StableXbfPropertyIndex::Window_MaxWidth,
         StableXbfPropertyIndex::Window_MinHeight,
         StableXbfPropertyIndex::Window_MinWidth,
+        StableXbfPropertyIndex::Window_PersistPlacementId,
         StableXbfPropertyIndex::Window_SystemBackdrop,
         StableXbfPropertyIndex::Window_Title,
         StableXbfPropertyIndex::Window_TransparentBackground,

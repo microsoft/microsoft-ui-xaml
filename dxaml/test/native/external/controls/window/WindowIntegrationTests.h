@@ -188,6 +188,45 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that Window Min/Max size constraints re-apply when ExtendsContentIntoTitleBar toggles, so they track the changed chrome instead of drifting by the caption height.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
+
+        // Window placement persistence (issue #2680) is experimental, so prerelease only.
+        BEGIN_TEST_METHOD(PersistPlacementIdRoundTrips)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that Window.PersistPlacementId defaults to empty and can be set and cleared.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(InitialShowOptionsRoundTrips)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates WindowInitialShowOptions defaults and that Window.InitialShowOptions round-trips.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(InitialShowOptionsRejectsInvalidValues)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that Show() rejects out-of-range InitialShowOptions enums without consuming the placement attempt.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        // These exercise the real save/restore path, which needs
+        // Microsoft.Windows.Storage.ApplicationData. Desktop Windows only work in the WPF
+        // host, so these stay WPF and detect an unavailable store at runtime instead.
+        BEGIN_TEST_METHOD(PlacementRoundTripsAcrossWindows)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a window closed at a given position is restored there by the next window with the same PersistPlacementId.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MaximizedStateRoundTripsAcrossWindows)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a window closed while maximized comes back maximized, so the restore path does not fall back to a plain SW_SHOW.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(NoPersistPlacementIdDoesNotRestore)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that placement is not saved or restored when PersistPlacementId is not set.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ShowWithKeepHiddenLeavesWindowHidden)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that Show() with KeepHidden leaves the window hidden, and that Activate() still shows it.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
 #endif // MUX_PRERELEASE
 
         BEGIN_TEST_METHOD(ContentSetInMarkupIsReleasedWhenCleared)

@@ -38,6 +38,8 @@ namespace ctl
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(get_Height)(_Out_ DOUBLE* pValue) override { return This()->get_Height(pValue); }
         IFACEMETHOD(put_Height)(DOUBLE value) override { return This()->put_Height(value); }
+        IFACEMETHOD(get_InitialShowOptions)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IWindowInitialShowOptions** ppValue) override { return This()->get_InitialShowOptions(ppValue); }
+        IFACEMETHOD(put_InitialShowOptions)(_In_opt_ ABI::Microsoft::UI::Xaml::IWindowInitialShowOptions* pValue) override { return This()->put_InitialShowOptions(pValue); }
         IFACEMETHOD(get_MaxHeight)(_Out_ DOUBLE* pValue) override { return This()->get_MaxHeight(pValue); }
         IFACEMETHOD(put_MaxHeight)(DOUBLE value) override { return This()->put_MaxHeight(value); }
         IFACEMETHOD(get_MaxWidth)(_Out_ DOUBLE* pValue) override { return This()->get_MaxWidth(pValue); }
@@ -46,8 +48,11 @@ namespace ctl
         IFACEMETHOD(put_MinHeight)(DOUBLE value) override { return This()->put_MinHeight(value); }
         IFACEMETHOD(get_MinWidth)(_Out_ DOUBLE* pValue) override { return This()->get_MinWidth(pValue); }
         IFACEMETHOD(put_MinWidth)(DOUBLE value) override { return This()->put_MinWidth(value); }
+        IFACEMETHOD(get_PersistPlacementId)(_Out_ HSTRING* pValue) override { return This()->get_PersistPlacementId(pValue); }
+        IFACEMETHOD(put_PersistPlacementId)(_In_opt_ HSTRING value) override { return This()->put_PersistPlacementId(value); }
         IFACEMETHOD(get_Width)(_Out_ DOUBLE* pValue) override { return This()->get_Width(pValue); }
         IFACEMETHOD(put_Width)(DOUBLE value) override { return This()->put_Width(value); }
+        IFACEMETHOD(ShowDefault)() override { return This()->ShowDefault(); }
     };
 }
 #pragma endregion
@@ -57,6 +62,7 @@ namespace DirectUI
     class Window;
     class SystemBackdrop;
     class UIElement;
+    class WindowInitialShowOptions;
 
     class __declspec(novtable) WindowGenerated:
         public DirectUI::DependencyObject
@@ -111,6 +117,8 @@ namespace DirectUI
         IFACEMETHOD(put_ExtendsContentIntoTitleBar)(BOOLEAN value) override;
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Height(_Out_ DOUBLE* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_Height(DOUBLE value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_InitialShowOptions(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IWindowInitialShowOptions** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_InitialShowOptions(_In_opt_ ABI::Microsoft::UI::Xaml::IWindowInitialShowOptions* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_MaxHeight(_Out_ DOUBLE* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_MaxHeight(DOUBLE value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_MaxWidth(_Out_ DOUBLE* pValue);
@@ -119,6 +127,8 @@ namespace DirectUI
         _Check_return_ HRESULT STDMETHODCALLTYPE put_MinHeight(DOUBLE value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_MinWidth(_Out_ DOUBLE* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_MinWidth(DOUBLE value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_PersistPlacementId(_Out_ HSTRING* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_PersistPlacementId(_In_opt_ HSTRING value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_SystemBackdrop(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop* pValue);
         IFACEMETHOD(get_Title)(_Out_ HSTRING* pValue) override;
@@ -150,6 +160,9 @@ namespace DirectUI
         IFACEMETHOD(SetAtlasSizeHint)(UINT width, UINT height) override;
         IFACEMETHOD(SetTitleBar)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pTitleBar) override;
         IFACEMETHOD(Show)() override;
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        _Check_return_ HRESULT STDMETHODCALLTYPE ShowDefault();
+#endif
 
 
     protected:
@@ -189,6 +202,8 @@ namespace DirectUI
         IFACEMETHOD(get_Current)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IWindow** ppValue) override;
 
         // Dependency properties.
+        
+        
         
         
         

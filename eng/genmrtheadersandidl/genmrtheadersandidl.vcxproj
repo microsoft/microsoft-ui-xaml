@@ -21,14 +21,21 @@
   <PropertyGroup>
     <GenMRTSemaphoreFile>$(LiftedMRTIncludePaths)\HeadersAndIDLsGenerated.txt</GenMRTSemaphoreFile>
   </PropertyGroup>
-  <Target Name="_GenerateMRTHeadersAndIDLs" AfterTargets="Build" Inputs="@(MRTWinMDs)" Outputs="$(GenMRTSemaphoreFile)">
+  <Target Name="_GenerateMRTHeadersAndIDLs" AfterTargets="Build" Inputs="@(MRTWinMDs);@(HeaderOnlyWinMDs)" Outputs="$(GenMRTSemaphoreFile)">
+    <!--
+      MRTWinMDs also feeds metadata merging and class registration. HeaderOnlyWinMDs are
+      Windows App SDK winmds we only call from C++, so they take part here and nowhere else.
+    -->
+    <ItemGroup>
+      <_WinMDsToGenerate Include="@(MRTWinMDs);@(HeaderOnlyWinMDs)" />
+    </ItemGroup>
     <MakeDir Directories="$(LiftedMRTGeneratedIdlPath)" />
-    <Exec Command="$(WindowsSdkToolLocation)\winmdidl.exe /metadata_dir:$(ProjectSDKMetadataPath) /outdir:$(LiftedMRTGeneratedIdlPath) %(MRTWinMDs.Identity)" />
+    <Exec Command="$(WindowsSdkToolLocation)\winmdidl.exe /metadata_dir:$(ProjectSDKMetadataPath) /outdir:$(LiftedMRTGeneratedIdlPath) %(_WinMDsToGenerate.Identity)" />
     <MakeDir Directories="$(LiftedMRTIncludePaths)" />
     <ItemGroup>
       <_GeneratedIdlFiles Include="$(LiftedMRTGeneratedIdlPath)\*.idl" />
     </ItemGroup>
-    <Exec Command="$(AbiWinRtExePath) -ref $(ProjectSDKMetadataPath)\windows.winmd -out $(LiftedMRTIncludePaths) -in %(MRTWinMDs.Identity) -ns-prefix always" />
+    <Exec Command="$(AbiWinRtExePath) -ref $(ProjectSDKMetadataPath)\windows.winmd -out $(LiftedMRTIncludePaths) -in %(_WinMDsToGenerate.Identity) -ns-prefix always" />
     <!-- Write the semaphore file to indicate we have generated the headers and idls -->
     <WriteLinesToFile File="$(GenMRTSemaphoreFile)" Lines="Headers and Idls Generated: $([System.DateTime]::Now)" Overwrite="true" Encoding="Unicode" />
     <ItemGroup>

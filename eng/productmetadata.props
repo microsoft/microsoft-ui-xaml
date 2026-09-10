@@ -40,6 +40,16 @@
       <Merge>false</Merge>
     </MRTWinMDs>
 
+    <!--
+      Windows App SDK winmds that we only need generated ABI headers for. Unlike MRTWinMDs
+      these are NOT added to ExternalWinMDs or WinUIWinMDReferences: we call the types from
+      C++ but never reference them from our own IDL, and adding them would hand mdmerge a
+      duplicate -metadata_dir. Consumed by eng/genmrtheadersandidl.
+      Microsoft.Windows.Storage supplies ApplicationData, which Window placement
+      persistence uses to read and write its LocalSettings container.
+    -->
+    <HeaderOnlyWinMDs Include="$(LiftedMRTWinmdPath)\Microsoft.Windows.Storage.winmd" />
+
     <MuxControlsWinMD Include="$(XamlBuildOutputRoot)\controls\idl\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd">
       <ImplementationDll>Microsoft.UI.Xaml.Controls.dll</ImplementationDll>
     </MuxControlsWinMD>

@@ -416,7 +416,31 @@ IFACEMETHODIMP DesktopWindowImpl::remove_VisibilityChanged(EventRegistrationToke
 
 _Check_return_ HRESULT DesktopWindowImpl::ActivateImpl()
 {
+    // Activate() is an explicit request to show and focus, so it overrides InitialShowOptions'
+    // ActivationBehavior and KeepHidden. It still honors Reason.
+    return ShowOrActivate(true /* forceActivate */);
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::ShowOrActivate(bool forceActivate)
+{
     IFC_RETURN(CheckIsWindowClosed());
+
+    // The first Show() or Activate() consumes this window's one-time placement attempt. It
+    // runs before ShowWindow so a restored window is placed before it is ever painted.
+    const bool runningPlacementAttempt =
+        AreNewWindowingApisEnabled() &&
+        m_placementAttemptState == PlacementAttemptState::NotAttempted;
+
+    PlacementOptionsSnapshot snapshot;
+    if (runningPlacementAttempt)
+    {
+        // An invalid InitialShowOptions value fails here without consuming the attempt or
+        // changing window state, so the app can fix it and show again.
+        IFC_RETURN(RunInitialPlacementAttempt(forceActivate, &snapshot));
+    }
+
+    const bool placementApplied =
+        runningPlacementAttempt && m_placementAttemptState == PlacementAttemptState::Applied;
 
     // Show the top-level win32 window
     auto nCmdShow = SW_SHOW;
@@ -429,7 +453,9 @@ _Check_return_ HRESULT DesktopWindowImpl::ActivateImpl()
         nCmdShow = SW_RESTORE;
     }
 
-    if (m_bInitialWindowActivation)
+    // RunInitialPlacementAttempt already applied pending Width/Height, so only the
+    // non-placement path needs to do it here.
+    if (m_bInitialWindowActivation && !runningPlacementAttempt)
     {
         // Apply any Width/Height that were requested before the window was first shown
         // (e.g. from XAML markup). Skipped when the feature is contained off.
@@ -439,8 +465,30 @@ _Check_return_ HRESULT DesktopWindowImpl::ActivateImpl()
         }
     }
 
-    ::ShowWindow(m_hwnd.get(), nCmdShow);
+    if (snapshot.keepHidden)
+    {
+        // The app asked for a placed but still hidden window. PlacementEx has positioned it;
+        // stop before visibility and activation. A later Show() or Activate() reveals it
+        // through the normal path, because the attempt has already been consumed.
+        m_hwndEverDisplayed = true;
+        return S_OK;
+    }
+
+    if (!placementApplied)
+    {
+        // A restored placement already put the window in its saved show state (normal,
+        // maximized, minimized, or snapped). Overriding that with a plain SW_SHOW would
+        // discard it, so we only call ShowWindow when we did not place the window.
+        ::ShowWindow(m_hwnd.get(), nCmdShow);
+    }
+
+    m_hwndEverDisplayed = true;
     ::UpdateWindow(m_hwnd.get());
+
+    if (snapshot.activationBehavior == xaml::WindowActivationBehavior_DoNotActivate)
+    {
+        return S_OK;
+    }
 
     // It is necessary to set the top-level win32 window as the active window after
     // attaching DesktopWindowXamlSource.
@@ -478,6 +526,17 @@ _Check_return_ HRESULT DesktopWindowImpl::CloseImpl()
             // m_bIsClosing will get reset to false
             return S_OK;
         }
+
+        // The close is going ahead, so capture placement now: the app's Closed handler has had
+        // its say, and everything below tears down the state PlacementEx needs to read. Changes
+        // the handler made to placement or PersistPlacementId intentionally win. We are not on
+        // an input-synchronous message path here, so the virtual desktop query is safe.
+        if (AreNewWindowingApisEnabled())
+        {
+            SavePlacement(false /* skipVirtualDesktopQuery */);
+            m_placementSavedOnClosePath = true;
+        }
+
         m_desktopWindowXamlSource->PrepareToClose();
 
         // set these to null before marking window as closed as they fail if called after m_bIsClosed is set
@@ -643,8 +702,58 @@ _Check_return_ HRESULT DesktopWindowImpl::put_HeightImpl(DOUBLE value)
     return ApplyOrDeferClientSizeInDips(std::nullopt, value);
 }
 
-_Check_return_ HRESULT DesktopWindowImpl::ApplyOrDeferClientSizeInDips(std::optional<double> width, std::optional<double> height)
+_Check_return_ HRESULT DesktopWindowImpl::get_PersistPlacementIdImpl(_Out_ HSTRING* pValue)
 {
+    ASSERT(AreNewWindowingApisEnabled());
+
+    *pValue = nullptr;
+    IFC_RETURN(m_persistPlacementId.CopyTo(pValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::put_PersistPlacementIdImpl(_In_opt_ HSTRING value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    IFC_RETURN(CheckIsWindowClosed());
+
+    // Setting the id after the window has already been shown is allowed: the id is read when the
+    // placement attempt is consumed, and again when the placement is saved on close. A late set
+    // therefore still takes effect for saving, it just misses the restore.
+    m_persistPlacementId.Set(value);
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::get_InitialShowOptionsImpl(_Outptr_result_maybenull_ xaml::IWindowInitialShowOptions** ppValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    *ppValue = nullptr;
+    IFC_RETURN(m_initialShowOptions.CopyTo(ppValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::put_InitialShowOptionsImpl(_In_opt_ xaml::IWindowInitialShowOptions* pValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    IFC_RETURN(CheckIsWindowClosed());
+
+    m_initialShowOptions = pValue;
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::ShowDefaultImpl()
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    // Show and Activate share the same display path. They differ only in the options that are
+    // snapshotted when the placement attempt is consumed: Activate forces ActivationBehavior to
+    // Activate and KeepHidden to false, while Show honors whatever the app set.
+    return ShowOrActivate(false /* forceActivate */);
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::ApplyOrDeferClientSizeInDips(std::optional<double> width, std::optional<double> height){
     ASSERT(AreNewWindowingApisEnabled());
 
     // Setting either property opts the window into the Width/Height resize behaviors (see
@@ -1216,6 +1325,30 @@ LRESULT DesktopWindowImpl::OnMessage(
     WPARAM wParam,
     LPARAM lParam) noexcept
 {
+    if (AreNewWindowingApisEnabled())
+    {
+        // Placement save backstops. Both run before any other handling, because the WM_DESTROY
+        // early return below can exit this function entirely.
+        if (WM_DESTROY == uMsg)
+        {
+            // AppWindow.Destroy(), an external DestroyWindow, or destructor teardown can all
+            // reach here without going through CloseImpl. The latch keeps a normal close from
+            // saving twice.
+            if (!m_placementSavedOnClosePath)
+            {
+                SavePlacement(true /* skipVirtualDesktopQuery */);
+                m_placementSavedOnClosePath = true;
+            }
+        }
+        else if (WM_ENDSESSION == uMsg && wParam == TRUE)
+        {
+            // Logoff or shutdown is going ahead. Deliberately not deduplicated against the
+            // close-path save: the process may be terminated before it reaches teardown, so one
+            // redundant small settings write is safer than relying on the later message.
+            SavePlacement(true /* skipVirtualDesktopQuery */);
+        }
+    }
+
     // When DispatcherShutdownMode is OnLastWindowClose, exit FrameworkApplication::ProcessMessage when the last WinUI
     // Desktop Window is destroyed.
     auto dxamlCore = DirectUI::DXamlCore::GetCurrent();
@@ -1253,6 +1386,19 @@ LRESULT DesktopWindowImpl::OnMessage(
         case WM_MOVE:
             return LResultFromHResult(OnMoved(wParam, lParam));
         case WM_SIZE:
+            // Remember the last show state the window was actually displayed in, so a save that
+            // happens while it is hidden persists something sensible instead of SW_HIDE
+            // (design 3.3 step 6). SIZE_MINIMIZED is deliberately not recorded here: PlacementEx
+            // reports minimized windows correctly on its own, and a window that is merely
+            // minimized at save time keeps its restore geometry.
+            if (wParam == SIZE_MAXIMIZED)
+            {
+                m_lastNonHiddenShowCmd = SW_SHOWMAXIMIZED;
+            }
+            else if (wParam == SIZE_RESTORED)
+            {
+                m_lastNonHiddenShowCmd = SW_NORMAL;
+            }
             return LResultFromHResult(OnSizeChanged(wParam, lParam));
         case WM_ACTIVATE:
             return LResultFromHResult(OnActivate(wParam, lParam));

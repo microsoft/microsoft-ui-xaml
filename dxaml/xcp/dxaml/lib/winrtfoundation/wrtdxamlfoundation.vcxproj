@@ -30,6 +30,7 @@
             $(XcpPath)\components\transforms\inc;
             $(XcpPath)\components\KeyboardAccelerator\inc;
             $(XcpPath)\components\WindowChrome\inc;
+            $(XcpPath)\components\windowplacement\inc;
             $(FrameworkUdkIncPath);
             $(LiftedIXPGeneratedIncludePath);
         </ProjectIncludeDirectories>
@@ -105,6 +106,9 @@
         <ClCompile Include="..\StateTriggerBase_Partial.cpp"/>
         <ClCompile Include="..\Window_Partial.cpp"/>
         <ClCompile Include="..\WindowChrome_Partial.cpp"/>
+        <ClCompile Include="..\WindowInitialShowOptions_Partial.cpp"/>
+        <ClCompile Include="..\WindowPlacementStore.cpp"/>
+        <ClCompile Include="..\DesktopWindowImpl_Placement.cpp" />
         <ClCompile Include="..\UWPWindowImpl.cpp"/>
         <ClCompile Include="..\DesktopWindowImpl.cpp"/>
         <ClCompile Include="..\FrameworkViewSource_Partial.cpp"/>

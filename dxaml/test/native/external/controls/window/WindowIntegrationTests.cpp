@@ -13,6 +13,9 @@
 #include <ControlHelper.h>
 #include <WindowAutoCloser.h>
 #include <microsoft.ui.xaml.window.h> // for IWindowNative
+#include <roapi.h>                    // for RoGetActivationFactory
+#include <wrl/client.h>
+#include <wrl/wrappers/corewrappers.h>
 
 #include <memory>
 #include <string>
@@ -2389,6 +2392,412 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_LESS_THAN(minHeightExtendedChrome, minHeightStandardChrome);
         });
         TestServices::WindowHelper->WaitForIdle();
+    }
+
+    //
+    // Window placement persistence (issue #2680).
+    //
+    // These exercise the API surface and the save/restore round trip. Persistence is
+    // process-wide (ApplicationData LocalSettings), so a second Window created with the
+    // same PersistPlacementId in the same test run sees what the first one saved.
+    //
+
+    // Creates a Window whose placement is persisted under the given id.
+    static xaml::Window^ LoadPlacementWindow(Platform::String^ persistPlacementId)
+    {
+        auto window = safe_cast<xaml::Window^>(xaml_markup::XamlReader::Load(
+            L"<Window xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+            L"  <StackPanel x:Name='rootPanel'/>"
+            L"</Window>"));
+        window->PersistPlacementId = persistPlacementId;
+        return window;
+    }
+
+    // True when Microsoft.Windows.Storage.ApplicationData can be activated. The placement
+    // store is built on it, so when this is false nothing is ever saved and the restore
+    // tests cannot run. The TAEF WPF host is unpackaged and does not carry the
+    // WindowsAppSDK activation context, so report Blocked rather than failing on geometry.
+    static bool IsPlacementStoreAvailable()
+    {
+        Microsoft::WRL::ComPtr<IInspectable> factory;
+        const HRESULT hr = ::RoGetActivationFactory(
+            Microsoft::WRL::Wrappers::HStringReference(L"Microsoft.Windows.Storage.ApplicationData").Get(),
+            IID_PPV_ARGS(&factory));
+
+        if (FAILED(hr))
+        {
+            WEX::Logging::Log::Result(
+                WEX::Logging::TestResults::Blocked,
+                WEX::Common::String().Format(
+                    L"Cannot run placement persistence tests because "
+                    L"Microsoft.Windows.Storage.ApplicationData is not activatable in this test host (hr=0x%08X). "
+                    L"This host has no package identity and no WindowsAppSDK activation context.",
+                    hr));
+            return false;
+        }
+
+        return true;
+    }
+
+    static HWND GetWindowHandle(xaml::Window^ window)
+    {
+        IWindowNative* windowNative = nullptr;
+        VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window)->QueryInterface(__uuidof(IWindowNative), (void**)&windowNative));
+        VERIFY_IS_NOT_NULL(windowNative);
+        HWND windowHandle = nullptr;
+        VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+        windowNative->Release();
+        VERIFY_IS_TRUE(windowHandle != nullptr);
+        return windowHandle;
+    }
+
+    void WindowIntegrationTests::PersistPlacementIdRoundTrips()
+    {
+        TestCleanupWrapper cleanup;
+
+        WindowAutoCloser window1;
+
+        RunOnUIThread([&]()
+        {
+            window1.Attach(safe_cast<xaml::Window^>(xaml_markup::XamlReader::Load(
+                L"<Window xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <StackPanel x:Name='rootPanel'/>"
+                L"</Window>")));
+
+            // Placement persistence is opt-in, so the default must be empty.
+            VERIFY_IS_TRUE(window1->PersistPlacementId == nullptr || window1->PersistPlacementId->IsEmpty(),
+                L"PersistPlacementId should default to empty");
+
+            window1->PersistPlacementId = L"round-trip-id";
+            VERIFY_IS_TRUE(Platform::String::CompareOrdinal(
+                ref new Platform::String(L"round-trip-id"), window1->PersistPlacementId) == 0,
+                L"PersistPlacementId should return what was set");
+
+            // Clearing it turns persistence back off.
+            window1->PersistPlacementId = L"";
+            VERIFY_IS_TRUE(window1->PersistPlacementId->IsEmpty(), L"PersistPlacementId should be clearable");
+        });
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    void WindowIntegrationTests::InitialShowOptionsRoundTrips()
+    {
+        TestCleanupWrapper cleanup;
+
+        WindowAutoCloser window1;
+
+        RunOnUIThread([&]()
+        {
+            window1.Attach(safe_cast<xaml::Window^>(xaml_markup::XamlReader::Load(
+                L"<Window xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <StackPanel x:Name='rootPanel'/>"
+                L"</Window>")));
+
+            VERIFY_IS_NULL(window1->InitialShowOptions, L"InitialShowOptions should default to null");
+
+            auto options = ref new xaml::WindowInitialShowOptions();
+
+            // Defaults are the plain Show() behavior: no launch hint, activate, stay visible.
+            VERIFY_ARE_EQUAL(xaml::WindowShowReason::Default, options->Reason);
+            VERIFY_ARE_EQUAL(xaml::WindowActivationBehavior::Activate, options->ActivationBehavior);
+            VERIFY_IS_FALSE(options->KeepHidden);
+
+            options->Reason = xaml::WindowShowReason::ApplicationRestart;
+            options->ActivationBehavior = xaml::WindowActivationBehavior::DoNotActivate;
+            options->KeepHidden = true;
+
+            VERIFY_ARE_EQUAL(xaml::WindowShowReason::ApplicationRestart, options->Reason);
+            VERIFY_ARE_EQUAL(xaml::WindowActivationBehavior::DoNotActivate, options->ActivationBehavior);
+            VERIFY_IS_TRUE(options->KeepHidden);
+
+            window1->InitialShowOptions = options;
+            VERIFY_IS_NOT_NULL(window1->InitialShowOptions);
+            VERIFY_ARE_EQUAL(xaml::WindowShowReason::ApplicationRestart, window1->InitialShowOptions->Reason);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    void WindowIntegrationTests::InitialShowOptionsRejectsInvalidValues()
+    {
+        TestCleanupWrapper cleanup;
+
+        WindowAutoCloser window1;
+
+        RunOnUIThread([&]()
+        {
+            window1.Attach(safe_cast<xaml::Window^>(xaml_markup::XamlReader::Load(
+                L"<Window xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <StackPanel x:Name='rootPanel'/>"
+                L"</Window>")));
+
+            auto options = ref new xaml::WindowInitialShowOptions();
+
+            // An out-of-range enum is a programming error, not a persistence failure, so it
+            // must be reported rather than silently ignored.
+            options->Reason = static_cast<xaml::WindowShowReason>(99);
+            window1->InitialShowOptions = options;
+
+            LOG_OUTPUT(L"Show() should reject an out-of-range WindowShowReason");
+            VERIFY_THROWS_WINRT(window1->Show(), Platform::InvalidArgumentException^);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto options = ref new xaml::WindowInitialShowOptions();
+            options->ActivationBehavior = static_cast<xaml::WindowActivationBehavior>(42);
+            window1->InitialShowOptions = options;
+
+            LOG_OUTPUT(L"Show() should reject an out-of-range WindowActivationBehavior");
+            VERIFY_THROWS_WINRT(window1->Show(), Platform::InvalidArgumentException^);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // A rejected Show() must not consume the one placement attempt, so a valid Show()
+        // afterwards still works.
+        RunOnUIThread([&]()
+        {
+            window1->InitialShowOptions = ref new xaml::WindowInitialShowOptions();
+            window1->Show();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(!!::IsWindowVisible(GetWindowHandle(window1.get())),
+                L"Window should be visible after a valid Show()");
+        });
+    }
+
+    void WindowIntegrationTests::PlacementRoundTripsAcrossWindows()
+    {
+        TestCleanupWrapper cleanup;
+
+        if (!IsPlacementStoreAvailable())
+        {
+            return;
+        }
+
+        Platform::String^ placementId = L"WindowIntegrationTests.PlacementRoundTrip";
+
+        const int movedX = 240;
+        const int movedY = 180;
+        const int movedWidth = 700;
+        const int movedHeight = 520;
+
+        RECT savedRect{};
+
+        // Window 1: move it somewhere specific, then close. Close is a save trigger.
+        {
+            WindowAutoCloser window1;
+
+            RunOnUIThread([&]()
+            {
+                window1.Attach(LoadPlacementWindow(placementId));
+                window1->Show();
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                HWND windowHandle = GetWindowHandle(window1.get());
+                VERIFY_IS_TRUE(!!::SetWindowPos(windowHandle, nullptr, movedX, movedY, movedWidth, movedHeight,
+                    SWP_NOZORDER | SWP_NOACTIVATE));
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                HWND windowHandle = GetWindowHandle(window1.get());
+                VERIFY_IS_TRUE(!!::GetWindowRect(windowHandle, &savedRect));
+                LogWindowGeometry(L"window1 before close", windowHandle, window1.get());
+            });
+
+            window1.Close();
+        }
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Window 2: same id, so Show() should restore where window 1 was.
+        {
+            WindowAutoCloser window2;
+
+            RunOnUIThread([&]()
+            {
+                window2.Attach(LoadPlacementWindow(placementId));
+                window2->Show();
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                HWND windowHandle = GetWindowHandle(window2.get());
+                LogWindowGeometry(L"window2 after restore", windowHandle, window2.get());
+
+                RECT restoredRect{};
+                VERIFY_IS_TRUE(!!::GetWindowRect(windowHandle, &restoredRect));
+
+                LOG_OUTPUT(L"saved=(%ld,%ld,%ld,%ld) restored=(%ld,%ld,%ld,%ld)",
+                    savedRect.left, savedRect.top, savedRect.right, savedRect.bottom,
+                    restoredRect.left, restoredRect.top, restoredRect.right, restoredRect.bottom);
+
+                // PlacementEx may nudge the window to keep it on a monitor and to respect the
+                // work area, so allow a small tolerance rather than demanding an exact match.
+                const long tolerance = 8;
+                VERIFY_IS_LESS_THAN(std::abs(restoredRect.left - savedRect.left), tolerance, L"restored left");
+                VERIFY_IS_LESS_THAN(std::abs(restoredRect.top - savedRect.top), tolerance, L"restored top");
+                VERIFY_IS_LESS_THAN(std::abs((restoredRect.right - restoredRect.left) - (savedRect.right - savedRect.left)), tolerance, L"restored width");
+                VERIFY_IS_LESS_THAN(std::abs((restoredRect.bottom - restoredRect.top) - (savedRect.bottom - savedRect.top)), tolerance, L"restored height");
+            });
+        }
+    }
+
+    void WindowIntegrationTests::MaximizedStateRoundTripsAcrossWindows()
+    {
+        TestCleanupWrapper cleanup;
+
+        if (!IsPlacementStoreAvailable())
+        {
+            return;
+        }
+
+        Platform::String^ placementId = L"WindowIntegrationTests.MaximizedRoundTrip";
+
+        {
+            WindowAutoCloser window1;
+
+            RunOnUIThread([&]()
+            {
+                window1.Attach(LoadPlacementWindow(placementId));
+                window1->Show();
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                HWND windowHandle = GetWindowHandle(window1.get());
+                ::ShowWindow(windowHandle, SW_SHOWMAXIMIZED);
+                VERIFY_IS_TRUE(!!::IsZoomed(windowHandle), L"Window should be maximized before close");
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            window1.Close();
+        }
+        TestServices::WindowHelper->WaitForIdle();
+
+        {
+            WindowAutoCloser window2;
+
+            RunOnUIThread([&]()
+            {
+                window2.Attach(LoadPlacementWindow(placementId));
+                window2->Show();
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                // A plain SW_SHOW would have discarded the maximized state, so this also covers
+                // the "skip ShowWindow when placement was applied" path.
+                VERIFY_IS_TRUE(!!::IsZoomed(GetWindowHandle(window2.get())),
+                    L"Window should come back maximized");
+            });
+        }
+    }
+
+    void WindowIntegrationTests::NoPersistPlacementIdDoesNotRestore()
+    {
+        TestCleanupWrapper cleanup;
+
+        // Control case for PlacementRoundTripsAcrossWindows: without an id nothing is saved,
+        // so a second window must not pick up the moved geometry.
+        const int movedX = 300;
+        const int movedY = 260;
+
+        {
+            WindowAutoCloser window1;
+
+            RunOnUIThread([&]()
+            {
+                window1.Attach(safe_cast<xaml::Window^>(xaml_markup::XamlReader::Load(
+                    L"<Window xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                    L"  <StackPanel x:Name='rootPanel'/>"
+                    L"</Window>")));
+                window1->Show();
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                VERIFY_IS_TRUE(!!::SetWindowPos(GetWindowHandle(window1.get()), nullptr, movedX, movedY, 660, 500,
+                    SWP_NOZORDER | SWP_NOACTIVATE));
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            window1.Close();
+        }
+        TestServices::WindowHelper->WaitForIdle();
+
+        {
+            WindowAutoCloser window2;
+
+            RunOnUIThread([&]()
+            {
+                window2.Attach(safe_cast<xaml::Window^>(xaml_markup::XamlReader::Load(
+                    L"<Window xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                    L"  <StackPanel x:Name='rootPanel'/>"
+                    L"</Window>")));
+                window2->Show();
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                RECT rect{};
+                VERIFY_IS_TRUE(!!::GetWindowRect(GetWindowHandle(window2.get()), &rect));
+                LOG_OUTPUT(L"window2 without id: (%ld,%ld,%ld,%ld)", rect.left, rect.top, rect.right, rect.bottom);
+
+                const bool matchedMovedPosition = (std::abs(rect.left - movedX) < 8) && (std::abs(rect.top - movedY) < 8);
+                VERIFY_IS_FALSE(matchedMovedPosition, L"A window without PersistPlacementId must not restore placement");
+            });
+        }
+    }
+
+    void WindowIntegrationTests::ShowWithKeepHiddenLeavesWindowHidden()
+    {
+        TestCleanupWrapper cleanup;
+
+        WindowAutoCloser window1;
+
+        RunOnUIThread([&]()
+        {
+            window1.Attach(LoadPlacementWindow(L"WindowIntegrationTests.KeepHidden"));
+
+            auto options = ref new xaml::WindowInitialShowOptions();
+            options->KeepHidden = true;
+            window1->InitialShowOptions = options;
+
+            window1->Show();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_FALSE(!!::IsWindowVisible(GetWindowHandle(window1.get())),
+                L"KeepHidden should leave the window hidden after Show()");
+        });
+
+        // Activate() always shows, even when the options asked to keep the window hidden.
+        RunOnUIThread([&]()
+        {
+            window1->Activate();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(!!::IsWindowVisible(GetWindowHandle(window1.get())),
+                L"Activate() should show the window regardless of KeepHidden");
+        });
     }
 
 #endif // MUX_PRERELEASE

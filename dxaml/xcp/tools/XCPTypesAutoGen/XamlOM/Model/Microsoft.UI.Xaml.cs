@@ -3571,10 +3571,112 @@ namespace Microsoft.UI.Xaml
             set;
         }
 
+        // Opts the window into placement persistence and names the saved placement.
+        // An empty or unset id means the window does not participate.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [DependencyPropertyModifier(Modifier.Private)]
+        public Windows.Foundation.String PersistPlacementId
+        {
+            get;
+            set;
+        }
+
+        // Options consumed by the window's first Show or Activate call.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [DependencyPropertyModifier(Modifier.Private)]
+        public Microsoft.UI.Xaml.WindowInitialShowOptions InitialShowOptions
+        {
+            get;
+            set;
+        }
+
+        // Displays the window according to its InitialShowOptions. Named ShowDefault in
+        // C++ because Window already has a private IWindowPrivate::Show.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [DXamlName("ShowDefault")]
+        [DXamlOverloadName("Show")]
+        public void Show()
+        {
+        }
+
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
 
         public void SetTitleBar([Optional] Microsoft.UI.Xaml.UIElement titleBar)
         {
+        }
+    }
+
+    // Specifies why a window is being shown for the first time. Selects which
+    // placement policy WinUI applies to the saved placement.
+    [DXamlIdlGroup("coretypes2")]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    public enum WindowShowReason
+    {
+        // Ordinary display.
+        Default = 0,
+
+        // This window is being shown as part of app launch.
+        Launch = 1,
+
+        // The app is reconstructing the window after application restart.
+        ApplicationRestart = 2,
+    }
+
+    // Specifies Window.Show activation policy.
+    [DXamlIdlGroup("coretypes2")]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    public enum WindowActivationBehavior
+    {
+        // Use activating placement policy and request activation unless KeepHidden.
+        Activate = 0,
+
+        // Use non-activating placement policy and do not request activation.
+        DoNotActivate = 1,
+    }
+
+    // Provides one-time options for a window's initial display. The first Show or
+    // Activate call that reaches an open placement attempt snapshots and consumes these.
+    [DXamlIdlGroup("coretypes2")]
+    [Guids(ClassGuid = "6d4a0e51-3b7c-4f28-9a15-c0e2b8d71f43")]
+    [TypeFlags(IsCreateableFromXAML = false)]
+    [TypeTable(IsExcludedFromCore = true)]
+    [CodeGen(partial: true)]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    public sealed class WindowInitialShowOptions
+    {
+        public WindowInitialShowOptions() { }
+
+        // Selects the initial placement policy.
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Microsoft.UI.Xaml.WindowShowReason Reason
+        {
+            get;
+            set;
+        }
+
+        // Selects Window.Show activation policy.
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Microsoft.UI.Xaml.WindowActivationBehavior ActivationBehavior
+        {
+            get;
+            set;
+        }
+
+        // When Show consumes the options, applies placement while leaving the window hidden.
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Windows.Foundation.Boolean KeepHidden
+        {
+            get;
+            set;
         }
     }
 

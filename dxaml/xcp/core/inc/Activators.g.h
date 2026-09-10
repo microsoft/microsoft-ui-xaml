@@ -733,7 +733,9 @@ HRESULT OnCoreCreateVirtualizationMode(_Outptr_ CDependencyObject **ppObject, _I
 HRESULT OnCoreCreateVirtualKey(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateVirtualKeyModifiers(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateVisibility(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
+HRESULT OnCoreCreateWindowActivationBehavior(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateWindowInteractionState(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
+HRESULT OnCoreCreateWindowShowReason(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateWindowVisualState(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateXYFocusKeyboardNavigationMode(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateXYFocusNavigationStrategy(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);

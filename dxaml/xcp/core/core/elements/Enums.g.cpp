@@ -892,9 +892,19 @@ _Check_return_ HRESULT CVisibility::Create(_Outptr_ CDependencyObject** ppObject
     return CreateEnumerateHelper(ppObject, pCreate, ARRAY_SIZE(satVisibility), satVisibility, KnownTypeIndex::Visibility, /* IsFlagsEnumeration */ false);
 }
 
+_Check_return_ HRESULT CWindowActivationBehavior::Create(_Outptr_ CDependencyObject** ppObject, _In_ CREATEPARAMETERS* pCreate)
+{
+    return CreateEnumerateHelper(ppObject, pCreate, ARRAY_SIZE(satWindowActivationBehavior), satWindowActivationBehavior, KnownTypeIndex::WindowActivationBehavior, /* IsFlagsEnumeration */ false);
+}
+
 _Check_return_ HRESULT CWindowInteractionState::Create(_Outptr_ CDependencyObject** ppObject, _In_ CREATEPARAMETERS* pCreate)
 {
     return CreateEnumerateHelper(ppObject, pCreate, ARRAY_SIZE(satWindowInteractionState), satWindowInteractionState, KnownTypeIndex::WindowInteractionState, /* IsFlagsEnumeration */ false);
+}
+
+_Check_return_ HRESULT CWindowShowReason::Create(_Outptr_ CDependencyObject** ppObject, _In_ CREATEPARAMETERS* pCreate)
+{
+    return CreateEnumerateHelper(ppObject, pCreate, ARRAY_SIZE(satWindowShowReason), satWindowShowReason, KnownTypeIndex::WindowShowReason, /* IsFlagsEnumeration */ false);
 }
 
 _Check_return_ HRESULT CWindowVisualState::Create(_Outptr_ CDependencyObject** ppObject, _In_ CREATEPARAMETERS* pCreate)

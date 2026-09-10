@@ -316,7 +316,9 @@ function Deploy-TestPayload {
     # We track which files (path -> size+mtime) we last copied to this VM.
     # Only files whose signature changed get re-copied.
     $safeVMName = $VMName -replace '[^a-zA-Z0-9]', '_'
-    $manifestFile = Join-Path $RepoRoot "TestPayload" ".deploy-manifest-$safeVMName-$Flavor.json"
+    # Note: the 3-argument form of Join-Path needs PowerShell 7+. Nest the calls so
+    # this also works under Windows PowerShell 5.1.
+    $manifestFile = Join-Path (Join-Path $RepoRoot "TestPayload") ".deploy-manifest-$safeVMName-$Flavor.json"
 
     $oldManifest = @{}
     if (-not $FullCopy -and (Test-Path $manifestFile)) {
@@ -361,6 +363,10 @@ function Deploy-TestPayload {
         }
 
         # --- Package into zip ---
+        # ZipFile/ZipFileExtensions live in System.IO.Compression.FileSystem, but
+        # ZipArchiveMode lives in System.IO.Compression. Windows PowerShell 5.1 auto-loads
+        # neither, so load both or the script fails on the ZipArchiveMode reference below.
+        Add-Type -AssemblyName System.IO.Compression
         Add-Type -AssemblyName System.IO.Compression.FileSystem
         $zipPath = Join-Path ([System.IO.Path]::GetTempPath()) "winui-deploy-$safeVMName-$Flavor-$(Get-Date -Format 'yyyyMMddHHmmssfff').zip"
         Remove-Item $zipPath -Force -ErrorAction SilentlyContinue

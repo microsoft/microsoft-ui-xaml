@@ -190,5 +190,6 @@
         <ProjectReference Include="$(XcpPath)\components\flyweight\lib\Microsoft.UI.Xaml.Flyweight.vcxproj" Project="{88536608-bab9-49f1-9cc6-36b7f8e73d8a}"/>
         <ProjectReference Include="$(XcpPath)\components\simple\lib\Microsoft.UI.Xaml.Framework.SimpleProperties.vcxproj" Project="{4a1f0ce8-0b6e-4d29-9799-a629c067543a}"/>
         <ProjectReference Include="$(XcpPath)\components\WindowChrome\Microsoft.UI.Xaml.WindowChrome.vcxproj" Project="{950ff51a-b772-4185-bc1c-0065fdd2cefd}"/>
+        <ProjectReference Include="$(XcpPath)\components\windowplacement\serialization\lib\WindowPlacement.Serialization.vcxproj" Project="{92a5fcb0-91f7-4cb0-a79e-ad295a6e8970}"/>
     </ItemGroup>
 </Project>

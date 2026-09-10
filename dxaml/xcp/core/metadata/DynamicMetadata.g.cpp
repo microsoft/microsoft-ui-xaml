@@ -808,6 +808,7 @@ static_assert(sizeof(CXamlCompositionBrush::m_fallbackColor) == sizeof(uint32_t)
 #include "TextOptions.g.h"
 #include "ToolTipService_Partial.h"
 #include "Typography.g.h"
+#include "WindowInitialShowOptions_Partial.h"
 #include "XamlBindingHelper.g.h"
 #include "XamlMarkupHelper.g.h"
 #include "XamlRenderingBackgroundTask_Partial.h"
@@ -1828,6 +1829,11 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
     // Windows.Foundation.Uri
     {
         &OnCoreCreateUri, // Core constructor
+        nullptr, // Framework constructor
+    },
+    // Microsoft.UI.Xaml.WindowInitialShowOptions
+    {
+        nullptr, // Core constructor
         nullptr, // Framework constructor
     },
     // Microsoft.UI.Xaml.Markup.XamlBindingHelper
@@ -6435,9 +6441,19 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
         &OnCoreCreateVisibility, // Core constructor
         nullptr, // Framework constructor
     },
+    // Microsoft.UI.Xaml.WindowActivationBehavior
+    {
+        &OnCoreCreateWindowActivationBehavior, // Core constructor
+        nullptr, // Framework constructor
+    },
     // Microsoft.UI.Xaml.Automation.WindowInteractionState
     {
         &OnCoreCreateWindowInteractionState, // Core constructor
+        nullptr, // Framework constructor
+    },
+    // Microsoft.UI.Xaml.WindowShowReason
+    {
+        &OnCoreCreateWindowShowReason, // Core constructor
         nullptr, // Framework constructor
     },
     // Microsoft.UI.Xaml.Automation.WindowVisualState
@@ -9730,6 +9746,13 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
         nullptr, // Storage ensure method
         0 // Storage offset
     },
+    // Microsoft.UI.Xaml.Window.InitialShowOptions
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
     // Microsoft.UI.Xaml.Window.MaxHeight
     {
         (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
@@ -9752,6 +9775,13 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Window.MinWidth
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Window.PersistPlacementId
     {
         (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback

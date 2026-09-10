@@ -61,6 +61,13 @@ namespace DirectUI
         _Check_return_ HRESULT get_HeightImpl(_Out_ DOUBLE* pValue);
         _Check_return_ HRESULT put_HeightImpl(DOUBLE value);
 
+        // Experimental window placement persistence.
+        _Check_return_ HRESULT get_PersistPlacementIdImpl(_Out_ HSTRING* pValue);
+        _Check_return_ HRESULT put_PersistPlacementIdImpl(_In_opt_ HSTRING value);
+        _Check_return_ HRESULT get_InitialShowOptionsImpl(_Outptr_result_maybenull_ xaml::IWindowInitialShowOptions** ppValue);
+        _Check_return_ HRESULT put_InitialShowOptionsImpl(_In_opt_ xaml::IWindowInitialShowOptions* pValue);
+        _Check_return_ HRESULT ShowDefaultImpl();
+
         _Check_return_ HRESULT get_SystemBackdropImpl(_Outptr_result_maybenull_ xaml::Media::ISystemBackdrop** iSystemBackdrop);
         _Check_return_ HRESULT put_SystemBackdropImpl(_In_opt_ xaml::Media::ISystemBackdrop* iSystemBackdrop);
 

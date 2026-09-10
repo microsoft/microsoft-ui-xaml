@@ -12,6 +12,7 @@
 #include "Window.g.h"
 #include "SystemBackdrop.g.h"
 #include "UIElement.g.h"
+#include "WindowInitialShowOptions.g.h"
 #include "XamlTelemetry.h"
 
 // Constructors/destructors.
@@ -181,6 +182,26 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::put_Height(D
 Cleanup:
     RRETURN(hr);
 }
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::get_InitialShowOptions(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IWindowInitialShowOptions** ppValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
+    IFC(CheckThread());
+    IFC(static_cast<Window*>(this)->get_InitialShowOptionsImpl(ppValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::put_InitialShowOptions(_In_opt_ ABI::Microsoft::UI::Xaml::IWindowInitialShowOptions* pValue)
+{
+    HRESULT hr = S_OK;
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->put_InitialShowOptionsImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::get_MaxHeight(_Out_ DOUBLE* pValue)
 {
     HRESULT hr = S_OK;
@@ -258,6 +279,26 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::put_MinWidth
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Window*>(this)->put_MinWidthImpl(value));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::get_PersistPlacementId(_Out_ HSTRING* pValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
+    IFC(CheckThread());
+    IFC(static_cast<Window*>(this)->get_PersistPlacementIdImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::put_PersistPlacementId(_In_opt_ HSTRING value)
+{
+    HRESULT hr = S_OK;
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->put_PersistPlacementIdImpl(value));
 Cleanup:
     RRETURN(hr);
 }
@@ -537,6 +578,26 @@ Cleanup:
     }
     RRETURN(hr);
 }
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::ShowDefault()
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Window_ShowDefault", 0);
+    }
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->ShowDefaultImpl());
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "Window_ShowDefault", hr);
+    }
+    RRETURN(hr);
+}
+#endif
 
 HRESULT DirectUI::WindowFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
@@ -584,6 +645,8 @@ IFACEMETHODIMP DirectUI::WindowFactory::CreateInstance(_In_opt_ IInspectable* pO
 }
 
 // Dependency properties.
+
+
 
 
 

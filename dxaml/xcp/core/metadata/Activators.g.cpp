@@ -2102,9 +2102,17 @@ HRESULT OnCoreCreateVisibility(_Outptr_ CDependencyObject **ppObject, _In_ CREAT
 {
     RRETURN(CVisibility::Create(ppObject, pCreate));
 }
+HRESULT OnCoreCreateWindowActivationBehavior(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
+{
+    RRETURN(CWindowActivationBehavior::Create(ppObject, pCreate));
+}
 HRESULT OnCoreCreateWindowInteractionState(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
 {
     RRETURN(CWindowInteractionState::Create(ppObject, pCreate));
+}
+HRESULT OnCoreCreateWindowShowReason(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
+{
+    RRETURN(CWindowShowReason::Create(ppObject, pCreate));
 }
 HRESULT OnCoreCreateWindowVisualState(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
 {
