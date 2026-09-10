@@ -180,6 +180,15 @@ steps:
       }
     displayName: Build WinUI component package
 
+  # Expose the just-produced component version under the same variable name the
+  # BuildScenarioApps stage uses (winUIPackageVersion), so sample/test apps built in THIS
+  # job (buildScenarioApps=true) consume the exact version that was just packed. Within a
+  # single job versionFinal does not drift (no per-stage re-evaluation), so it equals the
+  # packed version here.
+  - powershell: |
+      Write-Host "##vso[task.setvariable variable=winUIPackageVersion]$(versionFinal)"
+    displayName: Set winUIPackageVersion for in-job sample build
+
   # Copy the Microsoft.WindowsAppSDK.WinUI component package to the output directory so the
   # BuildScenarioApps stage can download and install it for the sample/test apps.
   - task: CopyFiles@2
