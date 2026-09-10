@@ -258,7 +258,7 @@
                                     <!-- The Translation and Render transform are mutually exclusive properties. We need
                                          The translation property on contract 14+ for the drop shadow to work.  We need
                                          The TranslationTransform is needed before-->
-                                    <Grid x:Name="OuterOverflowContentRootV2" RequestedTheme="{TemplateBinding ActualTheme}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}" Translation="0,0,32">
+                                    <Grid x:Name="OuterOverflowContentRootV2" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ExpandedWidth}" Translation="0,0,32">
                                         <Grid x:Name="OverflowPopupSystemBackdropRoot" />
                                         <Grid x:Name="OverflowContentRoot" HorizontalAlignment="Stretch" Background="{TemplateBinding Background}">
                                             <Grid.RowDefinitions>
