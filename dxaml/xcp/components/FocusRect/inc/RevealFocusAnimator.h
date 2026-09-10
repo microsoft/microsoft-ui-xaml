@@ -22,7 +22,7 @@ class RevealFocusAnimator final
 public:
 
     RevealFocusAnimator(
-        _In_ ixp::ICompositionEasingFunctionStatics* easingFunctionStatics,
+        _In_ WUComp::ICompositionEasingFunctionStatics* easingFunctionStatics,
         _In_ WUComp::ICompositor* compositor)
         : m_easingFunctionStatics(easingFunctionStatics)
         , m_compositor(compositor)
@@ -56,7 +56,7 @@ public:
     HRESULT OnPowerStatusChanged(_In_ IInspectable* sender, _In_ IInspectable* args);
 
 private:
-    wrl::ComPtr<ixp::ICompositionEasingFunctionStatics> m_easingFunctionStatics;
+    wrl::ComPtr<WUComp::ICompositionEasingFunctionStatics> m_easingFunctionStatics;
     Microsoft::WRL::ComPtr<WUComp::ICompositor>                   m_compositor;
     Microsoft::WRL::ComPtr<WUComp::ICompositionEasingFunction>    m_easingFunction;
     Microsoft::WRL::ComPtr<WUComp::IAmbientLight>                 m_pulsingLight;
@@ -96,8 +96,8 @@ private:
         _In_ const xstring_ptr_view& scalarModifier = XSTRING_PTR_EPHEMERAL(L" + "));
 
     static Microsoft::WRL::ComPtr<WUComp::ICompositionEasingFunction> GetDefaultEasingFunction(
-        _In_ ixp::ICompositionEasingFunctionStatics* easingFunctionStatics,
-        _In_ ixp::ICompositor* compositor);
+        _In_ WUComp::ICompositionEasingFunctionStatics* easingFunctionStatics,
+        _In_ WUComp::ICompositor* compositor);
 
     template <typename Type>
     struct KeyFrame

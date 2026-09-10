@@ -40,7 +40,7 @@ public:
     //  Object initialization variants
     //
     //  IFrameworkApplicationPrivate::CreateIslandRootWithContentBridge():
-    _Check_return_ HRESULT Initialize(_In_ WUComp::Desktop::IDesktopWindowContentBridgeInterop* contentBridge);
+    _Check_return_ HRESULT Initialize(_In_ ixp::Desktop::IDesktopWindowContentBridgeInterop* contentBridge);
 
     void OnPostDesktopWindowContentBridgeInitialized(_In_ IUnknown* contentBridge);
     void InitializeNonClientPointerSource(ABI::Microsoft::UI::WindowId windowId);
@@ -385,4 +385,3 @@ private:
 
     _Check_return_ HRESULT EnsurePartnerPointerPointStatics();
 };
-

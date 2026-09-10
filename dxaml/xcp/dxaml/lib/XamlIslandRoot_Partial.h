@@ -58,7 +58,7 @@ namespace DirectUI
         ~XamlIslandRoot() override;
 
         _Check_return_ HRESULT Initialize(_In_ std::nullptr_t);
-        _Check_return_ HRESULT Initialize(_In_ WUComp::Desktop::IDesktopWindowContentBridgeInterop* contentBridge);
+        _Check_return_ HRESULT Initialize(_In_ ixp::Desktop::IDesktopWindowContentBridgeInterop* contentBridge);
 
         // IXamlIslandRoot
         _Check_return_ HRESULT get_FocusControllerImpl(_Outptr_ IInspectable** value);

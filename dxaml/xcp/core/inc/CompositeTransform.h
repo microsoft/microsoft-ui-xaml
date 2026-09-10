@@ -93,7 +93,7 @@ public:
 
     void MakeWinRTExpression(
         _Inout_ WinRTExpressionConversionContext* pWinRTContext,
-        _Inout_opt_ ixp::ICompositionPropertySet* pTransformGroupPS = nullptr
+        _Inout_opt_ WUComp::ICompositionPropertySet* pTransformGroupPS = nullptr
         ) override;
 
     void ClearWUCExpression() override;

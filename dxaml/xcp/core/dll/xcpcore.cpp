@@ -577,15 +577,15 @@ HRESULT ActivationFactoryCache::GetDragDropManagerStatics(_Outptr_ mui::DragDrop
     return S_OK;
 }
 
-ixp::ICompositionEasingFunctionStatics* ActivationFactoryCache::GetCompositionEasingFunctionStatics()
+WUComp::ICompositionEasingFunctionStatics* ActivationFactoryCache::GetCompositionEasingFunctionStatics()
 {
     wil::cs_leave_scope_exit guard = m_lock.lock();
 
     if (!m_compositionEasingFunctionStatics)
     {
-        IFCFAILFAST(MuxGetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionEasingFunction).Get(),
-            &m_compositionEasingFunctionStatics));
+        IFCFAILFAST(RoGetActivationFactory(
+            wrl_wrappers::HStringReference(L"Windows.UI.Composition.CompositionEasingFunction").Get(),
+            IID_PPV_ARGS(&m_compositionEasingFunctionStatics)));
     }
 
     return m_compositionEasingFunctionStatics.Get();

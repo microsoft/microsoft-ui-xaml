@@ -83,12 +83,12 @@
     "systemIdlBuild": "blocked-by-vfs-createprocess-payload-mismatch-0x95e"
   },
   "latestCheckpoint": {
-    "winuiCommit": "71be07802",
+    "winuiCommit": "a68f3d761",
     "winuiGalleryCommit": "199f63ec57ee8457fa9745b8a0d1e951111331fc",
-    "winuiBuild": "a2-metadata-merges-pass-native-build-blocked-at-a3-interface-implementation",
+    "winuiBuild": "a3-system-composition-abi-and-compositor-wired-build-blocked-at-lifted-only-listener-content-and-dispatcher-lifecycle",
     "csharpScenarioApp": "source-updated-to-system-composition-and-dispatcherqueue-awaiting-a3-product-build",
     "cppWinrtScenarioApp": "source-updated-to-system-composition-and-dispatcherqueue-awaiting-a3-product-build",
     "winuiGallery": "passed-debug-x64-build",
-    "notes": "A2 changes XamlOM, generated IDL, generated ABI stubs, and scenario source to Windows.UI.Composition and Windows.System.DispatcherQueue. Public and private metadata merges pass using current SDK system metadata; Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration remains explicitly retained because no system counterpart exists. A3 has rebound the native msy DispatcherQueue alias to Windows.System, removing the DependencyObject DispatcherQueue override mismatch. The remaining native build boundary is system Composition private ABI availability and conversion of lifted ixp objects to system interfaces. A1 runtime canaries remain red until the A3-A5 native closure is rebuilt."
+    "notes": "A2 changes XamlOM, generated IDL, generated ABI stubs, and scenario source to Windows.UI.Composition and Windows.System.DispatcherQueue. A3 now binds native Composition aliases and the compositor host to Windows.UI.Composition, activates the system compositor directly, and exposes the current SDK Composition ABI under a scoped override while retaining the RS5 contract fence for other APIs. The build has advanced to explicit redesign boundaries: lifted-only IExpCompositionPropertyChanged facade notifications, lifted Microsoft.UI.Content hosting APIs that accept lifted compositor objects, SwapChainPanel interop, and lifted-only IDispatcherQueue3 lifecycle. A1 runtime canaries remain red until the A3-A5 native closure is rebuilt."
   }
 }

@@ -288,7 +288,7 @@ void RevealFocusAnimator::StopLightAnimation(
 }
 
 Microsoft::WRL::ComPtr<WUComp::ICompositionEasingFunction> RevealFocusAnimator::GetDefaultEasingFunction(
-    _In_ ixp::ICompositionEasingFunctionStatics* easingFunctionStatics,
+    _In_ WUComp::ICompositionEasingFunctionStatics* easingFunctionStatics,
     _In_ WUComp::ICompositor* compositor)
 {
     wrl::ComPtr<WUComp::ILinearEasingFunction> defaultFunction;
@@ -589,4 +589,3 @@ void RevealFocusAnimator::AnimatePressLight(_In_ const Microsoft::WRL::ComPtr<WU
         intensityAnimation.Get(),
         XSTRING_PTR_EPHEMERAL(L"Intensity"));
  }
-

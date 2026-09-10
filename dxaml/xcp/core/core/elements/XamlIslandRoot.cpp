@@ -148,7 +148,7 @@ void CXamlIslandRoot::Dispose()
     m_contentBridgeDW = nullptr;
 }
 
-_Check_return_ HRESULT CXamlIslandRoot::Initialize(_In_ WUComp::Desktop::IDesktopWindowContentBridgeInterop* /*contentBridge*/)
+_Check_return_ HRESULT CXamlIslandRoot::Initialize(_In_ ixp::Desktop::IDesktopWindowContentBridgeInterop* /*contentBridge*/)
 {
     m_contentRoot->SetXamlIslandType(CContentRoot::IslandType::DesktopWindowContentBridge);
     IFC_RETURN(InitializeCommon());
@@ -2091,4 +2091,3 @@ void CXamlIslandRoot::UpdateLastPointerPointForReplay(const UINT uMsg, _In_ ixp:
         popupRoot->ClearLastPointerPointForReplay();
     }
 }
-

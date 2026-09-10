@@ -4,6 +4,7 @@
 #pragma once
 
 #include <abi/xaml_abi.h>
+#include <SystemCompositionPrivateInterfaces.h>
 
 namespace Jupiter { namespace Components { } }
 namespace jc                    = Jupiter::Components;
@@ -69,6 +70,8 @@ namespace Windows { namespace System { namespace Power {} } }
 namespace Windows { namespace System { namespace Threading {} } }
 namespace Microsoft { namespace UI { namespace Composition { namespace Experimental {} } } }
 namespace Microsoft { namespace UI { namespace Composition { namespace Internal {} } } }
+namespace Microsoft { namespace UI { namespace Composition { namespace Desktop {} } } }
+namespace Microsoft { namespace UI { namespace Composition { namespace SystemBackdrops {} } } }
 namespace Microsoft { namespace UI { namespace Content {} } }
 namespace Microsoft { namespace UI { namespace Content { namespace Partner {} } } }
 namespace Windows { namespace UI { } }
@@ -141,7 +144,7 @@ namespace wsy                   = XAML_ABI_PARAMETER(Windows::System);
 namespace msy                   = XAML_ABI_PARAMETER(Windows::System);
 namespace wsyp                  = XAML_ABI_PARAMETER(Windows::System::Power);
 namespace wsyt                  = XAML_ABI_PARAMETER(Windows::System::Threading);
-namespace WUComp                = XAML_ABI_PARAMETER(Microsoft::UI::Composition);   // todo - delete and replace users with "ixp"
+namespace WUComp                = XAML_ABI_PARAMETER(Windows::UI::Composition);
 namespace RealWUComp            = XAML_ABI_PARAMETER(Windows::UI::Composition);
 namespace wu                    = XAML_ABI_PARAMETER(Windows::UI);
 namespace mu                    = XAML_ABI_PARAMETER(Microsoft::UI);
@@ -180,7 +183,9 @@ namespace udk_                  = XAML_ABI_PARAMETER(Microsoft::Internal::Framew
 
 namespace ixp
 {
-    using namespace XAML_ABI_PARAMETER(Microsoft::UI::Composition);
+    using namespace XAML_ABI_PARAMETER(Windows::UI::Composition);
+    namespace Desktop = XAML_ABI_PARAMETER(Microsoft::UI::Composition::Desktop);
+    namespace SystemBackdrops = XAML_ABI_PARAMETER(Microsoft::UI::Composition::SystemBackdrops);
     using namespace XAML_ABI_PARAMETER(Microsoft::UI::Composition::Internal);
     using namespace XAML_ABI_PARAMETER(Microsoft::UI::Composition::Experimental);
     using namespace XAML_ABI_PARAMETER(Microsoft::UI::Content);

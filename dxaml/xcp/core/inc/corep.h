@@ -564,7 +564,7 @@ public:
     HRESULT GetDesktopPopupSiteBridgeStatics(_Outptr_ ixp::IDesktopPopupSiteBridgeStatics** statics);
     HRESULT GetDragDropManagerStatics(_Outptr_ mui::DragDrop::IDragDropManagerStatics** statics);
 
-    ixp::ICompositionEasingFunctionStatics* GetCompositionEasingFunctionStatics();
+    WUComp::ICompositionEasingFunctionStatics* GetCompositionEasingFunctionStatics();
     ixp::ICompositionPathFactory* GetPathFactory();
     ixp::IInputSystemCursorStatics* GetInputSystemCursorStatics();
     ixp::IContentIslandStatics* GetContentIslandStatics();
@@ -616,7 +616,7 @@ private:
     wrl::ComPtr<mui::DragDrop::IDragDropManagerStatics> m_dragDropManagerStatics;
     wrl::ComPtr<ixp::IDesktopChildSiteBridgeStatics> m_desktopChildSiteBridgeStatics;
     wrl::ComPtr<ixp::IDesktopPopupSiteBridgeStatics> m_desktopPopupSiteBridgeStatics;
-    wrl::ComPtr<ixp::ICompositionEasingFunctionStatics> m_compositionEasingFunctionStatics;
+    wrl::ComPtr<WUComp::ICompositionEasingFunctionStatics> m_compositionEasingFunctionStatics;
     wrl::ComPtr<ixp::ICompositionPathFactory> m_compositionPathFactory;
     wrl::ComPtr<ixp::IInputSystemCursorStatics> m_inputSystemCursorStatics;
     wrl::ComPtr<ixp::IContentIslandStatics> m_contentIslandStatics;

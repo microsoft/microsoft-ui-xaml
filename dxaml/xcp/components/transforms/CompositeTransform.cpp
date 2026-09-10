@@ -106,7 +106,7 @@ void CCompositeTransform::ReleaseDCompResources()
 
 void CCompositeTransform::MakeWinRTExpression(
     _Inout_ WinRTExpressionConversionContext* pWinRTContext,
-    _Inout_opt_ ixp::ICompositionPropertySet* pTransformGroupPS
+    _Inout_opt_ WUComp::ICompositionPropertySet* pTransformGroupPS
     )
 {
     // Even a transform that is clean might need to create an expression, if it's part of a transform group where some other

@@ -51,6 +51,9 @@
     <!-- It can also interfere with our efforts to grab stack traces for various data.                             -->
 
     <ItemDefinitionGroup>
+        <ClCompile>
+            <ForcedIncludeFiles>SystemCompositionPrivateInterfaces.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+        </ClCompile>
         <Link Condition="'$(Configuration)'=='Debug'">
             <EnableCOMDATfolding>false</EnableCOMDATfolding>
         </Link>

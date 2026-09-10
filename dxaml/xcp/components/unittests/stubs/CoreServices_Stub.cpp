@@ -208,7 +208,7 @@ Diagnostics::ResourceLookupLogger* CCoreServices::GetResourceLookupLogger()
     return nullptr;
 }
 
-ixp::ICompositionEasingFunctionStatics* ActivationFactoryCache::GetCompositionEasingFunctionStatics()
+WUComp::ICompositionEasingFunctionStatics* ActivationFactoryCache::GetCompositionEasingFunctionStatics()
 {
     return nullptr;
 }

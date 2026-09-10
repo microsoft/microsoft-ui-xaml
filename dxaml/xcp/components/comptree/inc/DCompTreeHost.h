@@ -177,14 +177,14 @@ public:
 
     CD3D11Device * GetGraphicsDevice() const;
 
-    ixp::ICompositionEasingFunctionStatics* GetEasingFunctionStatics() { return m_easingFunctionStatics.Get(); }
+    WUComp::ICompositionEasingFunctionStatics* GetEasingFunctionStatics() { return m_easingFunctionStatics.Get(); }
 
     WUComp::ICompositor* GetCompositor() const
     {
         return m_spCompositor.Get();
     }
 
-    ixp::ICompositor2* GetCompositor2() const
+    WUComp::ICompositor2* GetCompositor2() const
     {
         return m_spCompositor2.Get();
     }
@@ -440,14 +440,14 @@ private:
 #pragma region ::Windows::UI::Composition
 
     // WinRT composition objects
-    _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor> m_spCompositor;
-    _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor2> m_spCompositor2;
-    _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor5> m_spCompositor5;
-    _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor6> m_spCompositor6;
-    _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositorSwapChainInterop> m_spCompositorInterop;
+    _Maybenull_ Microsoft::WRL::ComPtr<WUComp::ICompositor> m_spCompositor;
+    _Maybenull_ Microsoft::WRL::ComPtr<WUComp::ICompositor2> m_spCompositor2;
+    _Maybenull_ Microsoft::WRL::ComPtr<WUComp::ICompositor5> m_spCompositor5;
+    _Maybenull_ Microsoft::WRL::ComPtr<WUComp::ICompositor6> m_spCompositor6;
+    _Maybenull_ Microsoft::WRL::ComPtr<WUComp::ICompositorInterop> m_spCompositorInterop;
     _Maybenull_ Microsoft::WRL::ComPtr<ABI::Windows::UI::Composition::ICompositionBrush> m_systemBackdropBrush; // Note: This is a system compositor brush!
-    wrl::ComPtr<ixp::ICompositionGraphicsDevice> m_compositionGraphicsDevice;
-    wrl::ComPtr<ixp::ICompositionEasingFunctionStatics> m_easingFunctionStatics;
+    wrl::ComPtr<WUComp::ICompositionGraphicsDevice> m_compositionGraphicsDevice;
+    wrl::ComPtr<WUComp::ICompositionEasingFunctionStatics> m_easingFunctionStatics;
 
     // For updating the refresh rate with GetFrameStatistics
     wrl::ComPtr<IDCompositionDevice> m_dcompDevice;

@@ -32,7 +32,7 @@ _Check_return_ HRESULT DirectUI::XamlIslandRoot::Initialize(_In_ std::nullptr_t)
     return S_OK;
 }
 
-_Check_return_ HRESULT DirectUI::XamlIslandRoot::Initialize(_In_ WUComp::Desktop::IDesktopWindowContentBridgeInterop* contentBridge)
+_Check_return_ HRESULT DirectUI::XamlIslandRoot::Initialize(_In_ ixp::Desktop::IDesktopWindowContentBridgeInterop* contentBridge)
 {
     CXamlIslandRoot* xamlIslandRoot = static_cast<CXamlIslandRoot*>(GetHandle());
     IFC_RETURN(xamlIslandRoot->Initialize(contentBridge));
@@ -157,5 +157,4 @@ _Success_(return != false) bool DirectUI::XamlIslandRoot::TryGetOwner(_COM_Outpt
     }
     return false;
 }
-
 
