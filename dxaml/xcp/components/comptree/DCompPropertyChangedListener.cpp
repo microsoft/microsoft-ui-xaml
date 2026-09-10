@@ -150,7 +150,7 @@ void DCompPropertyChangedListener::DetachFromWUCClip()
 }
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifySinglePropertyChanged(
-    ixp::ICompositionObject* target,
+    MUXComp::ICompositionObject* target,
     ExpComp::ExpExpressionNotificationProperty propertyId,
     float value)
 {
@@ -199,7 +199,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifySinglePropertyChanged(
 }
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector2PropertyChanged(
-    ixp::ICompositionObject* pTarget,
+    MUXComp::ICompositionObject* pTarget,
     ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Vector2 value)
 {
@@ -229,7 +229,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector2PropertyChanged(
 }
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector3PropertyChanged(
-    ixp::ICompositionObject* pTarget,
+    MUXComp::ICompositionObject* pTarget,
     ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Vector3 value)
 {
@@ -277,7 +277,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector3PropertyChanged(
 }
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector4PropertyChanged(
-    ixp::ICompositionObject* pTarget,
+    MUXComp::ICompositionObject* pTarget,
     ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Vector4 value)
 {
@@ -285,7 +285,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector4PropertyChanged(
 }
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyColorPropertyChanged(
-    ixp::ICompositionObject* pTarget,
+    MUXComp::ICompositionObject* pTarget,
     ExpComp::ExpExpressionNotificationProperty propertyId,
     wu::Color value)
 {
@@ -293,7 +293,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyColorPropertyChanged(
 }
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyMatrix3x2PropertyChanged(
-    ixp::ICompositionObject* target,
+    MUXComp::ICompositionObject* target,
     ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Matrix3x2 value)
 {
@@ -316,7 +316,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyMatrix3x2PropertyChanged(
 }
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyMatrix4x4PropertyChanged(
-    ixp::ICompositionObject *pTarget,
+    MUXComp::ICompositionObject *pTarget,
     ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Matrix4x4 value)
 {
@@ -335,7 +335,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyMatrix4x4PropertyChanged(
 }
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyBooleanPropertyChanged(
-    ixp::ICompositionObject *pTarget,
+    MUXComp::ICompositionObject *pTarget,
     ExpComp::ExpExpressionNotificationProperty propertyId,
     boolean value)
 {
@@ -343,7 +343,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyBooleanPropertyChanged(
 }
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyReferencePropertyChanged(
-    ixp::ICompositionObject* pTarget,
+    MUXComp::ICompositionObject* pTarget,
     ExpComp::ExpExpressionNotificationProperty propertyId)
 {
     const auto& uiElement = m_uiElementWeakRef.lock();
@@ -497,4 +497,3 @@ static_assert(ExpComp::ExpExpressionNotificationProperty_Clip == ixp::ExpExpress
 static_assert(ExpComp::ExpExpressionNotificationProperty_TopRightRadiusY == ixp::ExpExpressionNotificationProperty_TopRightRadiusY, "ExpExpressionNotificationProperty_TopRightRadiusY value changed!");
 #endif // #if __has_include("microsoft.ui.composition.experimental.h")
 //--------------------------------------------------------------------
-

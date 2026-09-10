@@ -146,7 +146,7 @@ void PropertySetListener::PopulateAnimatedPropertyWithCurrentValue(KnownProperty
 }
 
 IFACEMETHODIMP PropertySetListener::NotifySinglePropertyChanged(
-    ixp::ICompositionObject* target,
+    MUXComp::ICompositionObject* target,
     ExpComp::ExpExpressionNotificationProperty propertyId,
     float value)
 {
@@ -168,7 +168,7 @@ IFACEMETHODIMP PropertySetListener::NotifySinglePropertyChanged(
 }
 
 IFACEMETHODIMP PropertySetListener::NotifyVector2PropertyChanged(
-    ixp::ICompositionObject* pTarget,
+    MUXComp::ICompositionObject* pTarget,
     ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Vector2 value)
 {
@@ -176,7 +176,7 @@ IFACEMETHODIMP PropertySetListener::NotifyVector2PropertyChanged(
 }
 
 IFACEMETHODIMP PropertySetListener::NotifyVector3PropertyChanged(
-    ixp::ICompositionObject* pTarget,
+    MUXComp::ICompositionObject* pTarget,
     ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Vector3 value)
 {
@@ -207,7 +207,7 @@ IFACEMETHODIMP PropertySetListener::NotifyVector3PropertyChanged(
 }
 
 IFACEMETHODIMP PropertySetListener::NotifyVector4PropertyChanged(
-    ixp::ICompositionObject* pTarget,
+    MUXComp::ICompositionObject* pTarget,
     ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Vector4 value)
 {
@@ -215,7 +215,7 @@ IFACEMETHODIMP PropertySetListener::NotifyVector4PropertyChanged(
 }
 
 IFACEMETHODIMP PropertySetListener::NotifyColorPropertyChanged(
-    ixp::ICompositionObject* pTarget,
+    MUXComp::ICompositionObject* pTarget,
     ExpComp::ExpExpressionNotificationProperty propertyId,
     wu::Color value)
 {
@@ -223,7 +223,7 @@ IFACEMETHODIMP PropertySetListener::NotifyColorPropertyChanged(
 }
 
 IFACEMETHODIMP PropertySetListener::NotifyMatrix3x2PropertyChanged(
-    ixp::ICompositionObject* target,
+    MUXComp::ICompositionObject* target,
     ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Matrix3x2 value)
 {
@@ -231,7 +231,7 @@ IFACEMETHODIMP PropertySetListener::NotifyMatrix3x2PropertyChanged(
 }
 
 IFACEMETHODIMP PropertySetListener::NotifyMatrix4x4PropertyChanged(
-    ixp::ICompositionObject *pTarget,
+    MUXComp::ICompositionObject *pTarget,
     ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Matrix4x4 value)
 {
@@ -255,7 +255,7 @@ IFACEMETHODIMP PropertySetListener::NotifyMatrix4x4PropertyChanged(
 }
 
 IFACEMETHODIMP PropertySetListener::NotifyBooleanPropertyChanged(
-    ixp::ICompositionObject* target,
+    MUXComp::ICompositionObject* target,
     ExpComp::ExpExpressionNotificationProperty propertyId,
     boolean value)
 {
@@ -263,7 +263,7 @@ IFACEMETHODIMP PropertySetListener::NotifyBooleanPropertyChanged(
 }
 
 IFACEMETHODIMP PropertySetListener::NotifyReferencePropertyChanged(
-    ixp::ICompositionObject* pTarget,
+    MUXComp::ICompositionObject* pTarget,
     ExpComp::ExpExpressionNotificationProperty propertyId)
 {
     return S_OK;

@@ -145,6 +145,7 @@ namespace msy                   = XAML_ABI_PARAMETER(Windows::System);
 namespace wsyp                  = XAML_ABI_PARAMETER(Windows::System::Power);
 namespace wsyt                  = XAML_ABI_PARAMETER(Windows::System::Threading);
 namespace WUComp                = XAML_ABI_PARAMETER(Windows::UI::Composition);
+namespace MUXComp               = XAML_ABI_PARAMETER(Microsoft::UI::Composition);
 namespace RealWUComp            = XAML_ABI_PARAMETER(Windows::UI::Composition);
 namespace wu                    = XAML_ABI_PARAMETER(Windows::UI);
 namespace mu                    = XAML_ABI_PARAMETER(Microsoft::UI);
