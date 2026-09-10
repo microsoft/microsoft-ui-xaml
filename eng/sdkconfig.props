@@ -26,7 +26,11 @@
     <UseWindowsSdk Condition="'$(UseWindowsSdk)'=='' and '$(UsingMicrosoftNetSdk)'=='true'">false</UseWindowsSdk>
     <!-- Default projects to using the Windows SDK nuget packages -->
     <UseWindowsSdk Condition="'$(UseWindowsSdk)'==''">true</UseWindowsSdk>
-    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+    <!-- Run the native 64-bit host toolchain (VC cl/link + Windows SDK tools such
+         as midlrt/mc/rc) instead of an emulated one: arm64-hosted tools on an arm64
+         host, otherwise x64 (also covers x86 hosts and future arches). -->
+    <PreferredToolArchitecture Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' != 'Arm64'">x64</PreferredToolArchitecture>
+    <PreferredToolArchitecture Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64'">arm64</PreferredToolArchitecture>
 
     <SdkCppArchitectureNeutralPropsFile>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\build\native\$(WindowsSdkNugetPackageName).cpp.props</SdkCppArchitectureNeutralPropsFile>
     <SdkCppArchitectureSpecificPropsFile>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).cpp.$(WindowsSdkArch).$(MicrosoftWindowsSDKCppNugetPackageVersion)\build\native\$(WindowsSdkNugetPackageName).cpp.$(WindowsSdkArch).props</SdkCppArchitectureSpecificPropsFile>
