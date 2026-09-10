@@ -534,10 +534,27 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
     IFC(m_spDispatcherImpl->Connect(this));
     initDxamlCoreTest.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::initialized_dispatcher));
 
-    // Disable the legacy IME since the legacy IMEs aren't designed for the immersive environment.
+    // Historically we unconditionally disabled legacy (IMM/CUAS) IMEs here because they weren't designed
+    // for the Windows 8 "immersive" environment. That call also suppresses IMM's fallback to the CUAS
+    // default input context, which regressed the status-bar / language-switch UI of several legacy CJK/JP/KR
+    // IMEs (Baidu, Sogou, Palm, ...) in XAML apps such as Start, the WinUI Gallery, and File Explorer
+    // (bug 62702548). Simply removing the call re-enables that fallback and lets IMEs consume keys / open
+    // composition UI over non-text UI ("ambiguated text-input focus").
     //
-    // We only want to do this when not in design mode, since the design-mode process should use the legacy IMEs.
-    ImmDisableLegacyIME();
+    // Option A: a per-app opt-in (default off) instead keeps the legacy IMM path enabled AND installs the
+    // ImeFocusPark, which parks TSF focus on a keyboard-disabled document whenever no text-editable control
+    // is focused - so the status bar returns while editing without the focus-ambiguity regression. When the
+    // opt-in is off we preserve the historical behavior and disable the legacy IME immersive fallback.
+    if (RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector()->IsFeatureEnabled(
+            RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableLegacyImeAuxiliaryUi))
+    {
+        m_hCore->SetShouldInstallImeFocusPark(true);
+    }
+    else
+    {
+        // We only want to do this when not in design mode, since the design-mode process should use the legacy IMEs.
+        ImmDisableLegacyIME();
+    }
 
     m_hCore->SetInitializationType(initializationType);
 
