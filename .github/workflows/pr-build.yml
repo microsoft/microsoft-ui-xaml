@@ -79,7 +79,7 @@ jobs:
 
       - name: Checkout
         if: env.DISABLE_PR_BUILD_MATRIX_VALIDATION != 'true'
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 1
           show-progress: false
@@ -95,7 +95,7 @@ jobs:
 
       - name: Upload MSBuild binlogs
         if: failure() && env.DISABLE_PR_BUILD_MATRIX_VALIDATION != 'true'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: binlogs-${{ matrix.flavor }}
           path: BuildOutput/**/*.binlog
@@ -104,7 +104,7 @@ jobs:
 
       - name: Upload product runtime payload
         if: env.DISABLE_PR_BUILD_MATRIX_VALIDATION != 'true'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: winui-product-${{ matrix.flavor }}
           path: |
