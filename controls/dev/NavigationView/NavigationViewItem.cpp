@@ -771,6 +771,14 @@ bool NavigationViewItem::IsOnTopPrimary() const
     return Position() == NavigationViewRepeaterPosition::TopPrimary && isPaneDisplayModeTop;
 }
 
+// Only top-level footer items carry a footer position - children of a footer item are positioned
+// as regular nav items, so this is true exactly for the items directly in FooterMenuItems.
+bool NavigationViewItem::IsOnFooter() const
+{
+    auto const position = Position();
+    return position == NavigationViewRepeaterPosition::LeftFooter || position == NavigationViewRepeaterPosition::TopFooter;
+}
+
 winrt::UIElement const NavigationViewItem::GetPresenterOrItem() const
 {
     if (auto const presenter = m_navigationViewItemPresenter.get())
@@ -896,7 +904,9 @@ void NavigationViewItem::ReparentRepeater()
 
 bool NavigationViewItem::ShouldRepeaterShowInFlyout() const
 {
-    return (m_isClosedCompact && IsTopLevelItem()) || IsOnTopPrimary();
+    // Footer items always use the flyout. The footer only gets a slice of the pane's height, so
+    // expanding inline squashes the items below it and makes the footer scroll instead of growing.
+    return (m_isClosedCompact && IsTopLevelItem()) || IsOnTopPrimary() || IsOnFooter();
 }
 
 bool NavigationViewItem::IsRepeaterVisible() const
