@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "activeSubtrial": "A",
-  "activeStage": "A3",
-  "activeCheckpoint": "native-composition-interface-migration",
+  "activeStage": "A5",
+  "activeCheckpoint": "content-input-hosting-closure",
   "architecture": "x64",
   "branchNativeImplementation": true,
   "repositories": {
@@ -83,12 +83,12 @@
     "systemIdlBuild": "blocked-by-vfs-createprocess-payload-mismatch-0x95e"
   },
   "latestCheckpoint": {
-    "winuiCommit": "a68f3d761",
+    "winuiCommit": "5ed34d36e",
     "winuiGalleryCommit": "199f63ec57ee8457fa9745b8a0d1e951111331fc",
-    "winuiBuild": "a3-system-composition-abi-and-compositor-wired-build-blocked-at-lifted-only-listener-content-and-dispatcher-lifecycle",
-    "csharpScenarioApp": "source-updated-to-system-composition-and-dispatcherqueue-awaiting-a3-product-build",
-    "cppWinrtScenarioApp": "source-updated-to-system-composition-and-dispatcherqueue-awaiting-a3-product-build",
+    "winuiBuild": "a4-system-dispatcherqueue-lifecycle-compiles-build-blocked-at-a5-lifted-content-and-input-composition-abi",
+    "csharpScenarioApp": "source-updated-to-system-composition-and-dispatcherqueue-awaiting-a5-product-closure",
+    "cppWinrtScenarioApp": "source-updated-to-system-composition-and-dispatcherqueue-awaiting-a5-product-closure",
     "winuiGallery": "passed-debug-x64-build",
-    "notes": "A2 changes XamlOM, generated IDL, generated ABI stubs, and scenario source to Windows.UI.Composition and Windows.System.DispatcherQueue. A3 now binds native Composition aliases and the compositor host to Windows.UI.Composition, activates the system compositor directly, and exposes the current SDK Composition ABI under a scoped override while retaining the RS5 contract fence for other APIs. The build has advanced to explicit redesign boundaries: lifted-only IExpCompositionPropertyChanged facade notifications, lifted Microsoft.UI.Content hosting APIs that accept lifted compositor objects, SwapChainPanel interop, and lifted-only IDispatcherQueue3 lifecycle. A1 runtime canaries remain red until the A3-A5 native closure is rebuilt."
+    "notes": "A2 changes XamlOM, generated IDL, generated ABI stubs, and scenario source to Windows.UI.Composition and Windows.System.DispatcherQueue. A3 binds native Composition aliases and the compositor host to Windows.UI.Composition, activates the system compositor directly, and exposes the current SDK Composition ABI under a scoped override while retaining the RS5 contract fence for other APIs. A4 now activates Windows.System.DispatcherQueue, creates current-thread controllers through CreateDispatcherQueueController, handles ShutdownStarting on the system queue, and pumps messages through asynchronous queue shutdown. The product build has no remaining A4 compiler failures and now stops at A5 crossings where lifted Microsoft.UI.Content and Microsoft.UI.Input APIs require lifted Composition objects. Lifted-only IExpCompositionPropertyChanged callbacks remain an explicit Windows 11 parity redesign item. A1 runtime canaries remain red until the A5 native closure is rebuilt."
   }
 }
