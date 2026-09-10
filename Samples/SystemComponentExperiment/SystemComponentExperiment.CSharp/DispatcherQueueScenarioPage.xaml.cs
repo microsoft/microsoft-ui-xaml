@@ -13,7 +13,8 @@ public sealed partial class DispatcherQueueScenarioPage : Page
 
     private void RunScenario_Click(object sender, RoutedEventArgs args)
     {
-        DispatcherQueue? queue = DispatcherQueue.GetForCurrentThread();
+        Windows.System.DispatcherQueue? queue =
+            Windows.System.DispatcherQueue.GetForCurrentThread();
 
         if (queue is null)
         {

@@ -2,7 +2,7 @@
   <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>$(SamplesTargetFrameworkMoniker)</TargetFramework>
+    <TargetFramework>net8.0-windows$(WindowsSdkTargetPlatformVersion)</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>SystemComponentExperiment.CSharp</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>

@@ -20,14 +20,11 @@ using PublicXamlCompositionTypes = std::tuple<
     Windows::UI::Composition::Compositor,
     Windows::UI::Composition::IAnimationObject,
     Windows::UI::Composition::ICompositionAnimationBase,
-    Windows::UI::Composition::ICompositionSupportsSystemBackdrop,
     Windows::UI::Composition::ICompositionSurface,
-    Windows::UI::Composition::IVisualElement,
-    Windows::UI::Composition::IVisualElement2,
     Windows::UI::Composition::Visual,
     Microsoft::UI::Composition::SystemBackdrops::SystemBackdropConfiguration>;
 
-static_assert(std::tuple_size_v<PublicXamlCompositionTypes> == 14);
+static_assert(std::tuple_size_v<PublicXamlCompositionTypes> == 11);
 
 namespace winrt::SystemComponentExperiment::Cpp::implementation
 {
@@ -153,13 +150,16 @@ namespace winrt::SystemComponentExperiment::Cpp::implementation
         try
         {
             Windows::UI::Composition::Visual visual =
-                ElementCompositionPreview::GetElementVisual(VisualHost());
+                ElementCompositionPreview::GetElementVisual(VisualHost())
+                    .as<Windows::UI::Composition::Visual>();
             Windows::UI::Composition::Compositor compositor = visual.Compositor();
             Windows::UI::Composition::SpriteVisual child = compositor.CreateSpriteVisual();
             child.Size({ 120.0f, 120.0f });
             child.Offset({ 20.0f, 20.0f, 0.0f });
             child.Brush(compositor.CreateColorBrush(Microsoft::UI::Colors::CornflowerBlue()));
-            ElementCompositionPreview::SetElementChildVisual(VisualHost(), child);
+            ElementCompositionPreview::SetElementChildVisual(
+                VisualHost(),
+                child.as<Microsoft::UI::Composition::Visual>());
             ResultText().Text(L"Passed");
         }
         catch (hresult_error const& error)
