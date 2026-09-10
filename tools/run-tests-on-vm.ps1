@@ -668,7 +668,7 @@ if (-not $Configuration) {
 $Flavor = "$Platform$Configuration"
 $repoRoot = $env:reporoot
 if (-not $repoRoot -or -not (Test-Path $repoRoot)) {
-    Write-Host "Error: reporoot env var is not set. Run from a WinUI dev prompt." -ForegroundColor Red
+    Write-Host "Error: reporoot env var is not set. Run via initrun.ps1 or from a WinUI dev prompt." -ForegroundColor Red
     exit 1
 }
 
