@@ -11,34 +11,9 @@
     mc:Ignorable="d">
 
     <Grid Loaded="OnRootLoaded">
-        <StackPanel
-            Width="360"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Orientation="Vertical"
-            Spacing="12">
+        <StackPanel Orientation="Vertical">
             <TextBlock AutomationProperties.Name="MainWindowTextBlock" Text="MainWindow" />
             <TextBlock x:Name="entryPointTextBlock" AutomationProperties.Name="EntryPointTextBlock" />
-            <TextBlock
-                Text="Use arrow keys or the gamepad D-pad to move focus, then press Enter, Space, or gamepad A."
-                TextWrapping="Wrap" />
-            <Button
-                x:Name="firstButton"
-                HorizontalAlignment="Stretch"
-                Click="OnTestButtonClick"
-                Content="First button" />
-            <Button
-                HorizontalAlignment="Stretch"
-                Click="OnTestButtonClick"
-                Content="Second button" />
-            <Button
-                HorizontalAlignment="Stretch"
-                Click="OnTestButtonClick"
-                Content="Third button" />
-            <TextBlock
-                x:Name="invocationStatusTextBlock"
-                AutomationProperties.Name="InvocationStatusTextBlock"
-                Text="No button invoked yet." />
             <helpers:TestAutomationHelpersPanel/>
         </StackPanel>
     </Grid>

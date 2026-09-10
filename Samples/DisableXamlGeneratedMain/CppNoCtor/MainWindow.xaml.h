@@ -15,10 +15,6 @@ namespace winrt::DisableXamlGeneratedMainNoCtorCpp::implementation
         void OnRootLoaded(
             winrt::Windows::Foundation::IInspectable const& sender,
             winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
-
-        void OnTestButtonClick(
-            winrt::Windows::Foundation::IInspectable const& sender,
-            winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
     };
 }
 
