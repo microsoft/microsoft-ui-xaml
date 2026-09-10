@@ -34,7 +34,14 @@ Source: [`controls/test/MUXControlsTestApp/LifetimeStressTests.cs`](../../contro
 Because each test carries `[TestProperty("TestSuite", "LifetimeStressTestSuite")]`, the existing Helix work-item
 generation (`Helix/common/pipeline/GenerateHelixWorkItems.ps1`) automatically produces an isolated work item for
 the suite on **every** DevTestSuite test pass (PR and Nightly). With the default (gate) iteration counts each
-scenario runs quickly, so this is a real regression gate — no pipeline changes are required for that.
+scenario runs quickly.
+
+**Reporting vs. gating.** These scenarios are intentionally **non-gating for soft signals**: a residual
+(uncollected) reference is logged as a **warning** (`Log.Warning`, prefixed `[LifetimeStress] REPORT:`) rather than
+recorded as a failed test result, so a soft/flaky leak signal does not fail the Run Tests stage's *Publish Test
+Results* step and block the shared pipeline. The real pass/fail signal is a **crash**: if a lifetime bug faults the
+test host, that work item fails and gates as usual. In short — crashes gate, leaks report. To make leak detection
+fail locally while iterating, flip the scenario's `failOnLeak` argument to `true`.
 
 For the long **soak**, the scheduled pipeline
 [`build/WinUI-LifetimeStress.yml`](../../build/WinUI-LifetimeStress.yml) builds WinUI and runs the test pass with
