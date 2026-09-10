@@ -57,6 +57,8 @@ public:
 #define SR_NavigationButtonToggleName L"NavigationButtonToggleName"
 #define SR_NavigationButtonClosedName L"NavigationButtonClosedName"
 #define SR_NavigationButtonOpenName L"NavigationButtonOpenName"
+#define SR_NavigationViewPaneOpenedNotification L"NavigationViewPaneOpenedNotification"
+#define SR_NavigationViewPaneClosedNotification L"NavigationViewPaneClosedNotification"
 #define SR_NavigationViewItemDefaultControlName L"NavigationViewItemDefaultControlName"
 #define SR_NavigationBackButtonName L"NavigationBackButtonName"
 #define SR_NavigationBackButtonToolTip L"NavigationBackButtonToolTip"
