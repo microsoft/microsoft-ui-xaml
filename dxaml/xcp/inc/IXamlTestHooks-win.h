@@ -364,4 +364,10 @@ DECLARE_INTERFACE_IID_(IXamlTestHooks, IXamlLoggerTestHooks, "43d4bcbd-4f02-4651
     IFACEMETHOD_(size_t, GetAllocationCount)() = 0;
     IFACEMETHOD_(size_t, GetAllocationSize)() = 0;
     IFACEMETHOD_(size_t, GetDeallocationCount)() = 0;
+
+    // Reports whether the given Window's top-level island currently holds the window placeholder
+    // visual that is installed before the first rendered frame. A null window resolves to the
+    // app's first window. Fails if the window or its island render data cannot be resolved, so
+    // missing state is never reported as FALSE.
+    IFACEMETHOD(HasWindowPlaceholder)(_In_opt_ xaml::IWindow* window, _Out_ BOOLEAN* hasPlaceholder) = 0;
 };

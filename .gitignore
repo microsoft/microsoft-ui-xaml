@@ -30,6 +30,9 @@ bld/
 # Visual Studio Code cache/options directory
 .vscode/.BROWSE*
 
+# Local Git worktrees
+.worktrees/
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*

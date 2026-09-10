@@ -298,6 +298,7 @@ public:
     {
         xref_ptr<WindowsPresentTarget> windowsPresentTarget;
         bool contentConnected = false;
+        wrl::ComPtr<WUComp::IVisual> windowPlaceholderVisual;
         // For testing - normally we can get the visual out of the Composition island, but for tests this returns a
         // real visual when we want the mock. So track the root visual separately.
         wrl::ComPtr<ixp::IVisual> m_islandRootVisual;
@@ -322,6 +323,13 @@ public:
     XamlLightTargetMap& GetXamlLightTargetMap();
 
     void AddXamlIslandTarget(_In_ CXamlIslandRoot* xamlIslandRoot);
+    _Check_return_ HRESULT PrepareXamlIslandForWindowShow(
+        _In_ CXamlIslandRoot* xamlIslandRoot,
+        _In_ UINT32 backgroundColor);
+    // Fails if the island has no render data entry, so missing state is never reported as false.
+    _Check_return_ HRESULT HasXamlIslandWindowPlaceholder(
+        _In_ CXamlIslandRoot* xamlIslandRoot,
+        _Out_ bool* hasPlaceholder) const;
     void UpdateXamlIslandTargetSize(_In_ CXamlIslandRoot* xamlIslandRoot);
     void RemoveXamlIslandTarget(_In_ CXamlIslandRoot* xamlIslandRoot);
     _Check_return_ HRESULT ConnectXamlIslandTargetRoots();
