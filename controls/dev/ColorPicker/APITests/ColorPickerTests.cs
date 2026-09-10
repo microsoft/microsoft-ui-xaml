@@ -24,6 +24,7 @@ using WEX.Logging.Interop;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
+    // This is a dummy comment for testing purposes.  Please ignore it.
     [TestClass]
     public class ColorPickerTests : ApiTestBase
     {
