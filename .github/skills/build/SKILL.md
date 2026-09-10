@@ -150,7 +150,7 @@ path; do not silently substitute a narrower target.
 |---------|--------|
 | Missing packages or downloaded tools | Run full init only for first use or updated dependencies/tools. If it already succeeded for the current commit, investigate the build failure |
 | `C3859` / `C1076` (PCH memory pressure) | Retry with `.\initrun.ps1 .\Build.cmd /q /b`, preserving any explicit flavor or target |
-| `C1853` (PCH from a different compiler) | Stale compiler outputs may need cleaning; follow Clean-Build Safety rather than automatically using `/c` |
+| `C1853` (PCH from a different compiler) | Clean and rebuild using the precautions in Clean-Build Safety |
 | Missing Spectre mitigation libraries | Have the user import the root `.vsconfig` through Visual Studio Installer and install the missing components |
 | `DevEnvDir environment variable not set or msbuild unavailable` | This starts `DevCmd.cmd` setup; only treat it as informational if that setup succeeds |
 | A called `.cmd` script is "not recognized" even though it exists | Check command lookup. With `NoDefaultCurrentDirectoryInExePath` set, the repository root must be explicitly available on `PATH` in the build process |
@@ -164,9 +164,24 @@ in commands to work around restore errors.
 ## Clean-Build Safety
 
 `Build.cmd /c` invokes `tools\clean.cmd /all`. It kills all `MSBuild.exe` and
-`VBCSCompiler.exe` processes and removes outputs for every architecture/flavor,
-including `TestPayload`. This can interrupt other sessions' builds.
+`VBCSCompiler.exe` processes and removes this worktree's outputs for every
+architecture/flavor, including `TestPayload`. This can interrupt other sessions'
+builds.
 
+After a substantial pull or rebase since the last successful build, prefer a
+clean build, especially when code generation, project structure, or compiler
+settings changed. Several days of accumulated development is a useful signal,
+not a fixed time cutoff. Base the decision on the scope and type of changes.
+
+The agent may also clean and rebuild when unexpected errors are consistent with
+stale generated files, PCH files, or other build outputs. In either case, the
+agent may perform the clean itself, preserving the requested flavor and target.
+
+Before cleaning, check for other active builds or compiler work on the machine,
+including other sessions and worktrees. If any are active, wait or coordinate
+before cleaning; do not interrupt them.
+
+A large sync requires another full init only if dependencies or tools changed.
 Do not use `/c` as routine first-build, missing-package, or flavor-switch
-recovery. If cleaning is necessary, stop and have the user perform it after
-confirming no other builds are running.
+recovery. If the same error persists after a clean rebuild, investigate it
+rather than repeating the clean.
