@@ -275,25 +275,61 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return reference;
         }
 
-        // Build a fresh instance of every control we want to torture. Each entry is a distinct control type so a
-        // single iteration covers a broad surface. Keep this list to controls that are cheap to construct and known
-        // to be constructible without a live window/parent.
+        // Build a fresh instance of every WinUI control we want to torture. Each entry is a distinct control type so
+        // a single iteration covers essentially the whole WinUI control surface.
+        //
+        // This aims to cover *all* of the WinUI (Microsoft.UI.Xaml.Controls) controls, since a lifetime bug can live
+        // in any control's peer creation / enter-leave / teardown path. It is deliberately kept to controls that are
+        // cheap to construct and constructible without a live window / parent / external service. The handful that
+        // are intentionally NOT swept here need special hosting and would add flakiness rather than lifetime signal:
+        //   * WebView2         - needs the WebView2 runtime / a core environment.
+        //   * MapControl       - needs a map service token and network.
+        //   * InkToolbar       - requires a target InkCanvas to be attached.
+        //   * CommandBarFlyout / RadioMenuFlyoutItem - flyout-only types, not standalone tree content.
+        // ItemsRepeater is covered by its own dedicated realization/recycling scenario above.
         private static Dictionary<string, UIElement> CreateControlSet()
         {
             return new Dictionary<string, UIElement>
             {
-                ["RatingControl"] = new RatingControl(),
+                ["AnimatedIcon"] = new AnimatedIcon(),
+                ["AnimatedVisualPlayer"] = new AnimatedVisualPlayer(),
+                ["AnnotatedScrollBar"] = new AnnotatedScrollBar(),
+                ["AutoSuggestBox"] = new AutoSuggestBox(),
+                ["BreadcrumbBar"] = new BreadcrumbBar(),
                 ["ColorPicker"] = new ColorPicker(),
+                ["ComboBox"] = new ComboBox() { ItemsSource = Enumerable.Range(0, 50) },
+                ["DropDownButton"] = new DropDownButton() { Content = "menu" },
+                ["Expander"] = new Expander() { Content = new TextBlock() { Text = "content" } },
+                ["ImageIcon"] = new ImageIcon(),
+                ["InfoBadge"] = new InfoBadge(),
+                ["InfoBar"] = new InfoBar() { Title = "title", Message = "message", IsOpen = true },
+                ["ItemContainer"] = new ItemContainer() { Child = new TextBlock() { Text = "item" } },
+                ["ItemsView"] = new ItemsView(),
+                ["ListView"] = new ListView() { ItemsSource = Enumerable.Range(0, 50) },
+                ["MenuBar"] = new MenuBar(),
+                ["MonochromaticOverlayPresenter"] = new MonochromaticOverlayPresenter(),
                 ["NavigationView"] = new NavigationView(),
+                ["NumberBox"] = new NumberBox(),
+                ["PagerControl"] = new PagerControl() { NumberOfPages = 10 },
                 ["ParallaxView"] = new ParallaxView(),
+                ["PersonPicture"] = new PersonPicture() { DisplayName = "Lifetime Test" },
+                ["PipsPager"] = new PipsPager() { NumberOfPages = 10 },
+                ["ProgressBar"] = new ProgressBar() { Value = 50 },
+                ["ProgressRing"] = new ProgressRing() { IsActive = true },
+                ["RadioButtons"] = new RadioButtons() { ItemsSource = Enumerable.Range(0, 5) },
+                ["RatingControl"] = new RatingControl(),
+                ["RefreshContainer"] = new RefreshContainer() { Content = new TextBlock() { Text = "pull" } },
                 ["ScrollPresenter"] = new ScrollPresenter(),
                 ["ScrollView"] = new ScrollView(),
-                ["TreeView"] = new TreeView() { ItemsSource = Enumerable.Range(0, 50) },
-                ["ListView"] = new ListView() { ItemsSource = Enumerable.Range(0, 50) },
-                ["ItemsView"] = new ItemsView(),
+                ["SelectorBar"] = new SelectorBar(),
+                ["SplitButton"] = new SplitButton() { Content = "split" },
+                ["SplitView"] = new SplitView() { Content = new TextBlock() { Text = "content" }, Pane = new TextBlock() { Text = "pane" } },
+                ["SwipeControl"] = new SwipeControl() { Content = new TextBlock() { Text = "swipe" } },
                 ["TabView"] = new TabView(),
-                ["Expander"] = new Expander() { Content = new TextBlock() { Text = "content" } },
-                ["NumberBox"] = new NumberBox(),
+                ["TeachingTip"] = new TeachingTip() { Title = "tip", Subtitle = "subtitle" },
+                ["TitleBar"] = new TitleBar() { Title = "title" },
+                ["TreeView"] = new TreeView() { ItemsSource = Enumerable.Range(0, 50) },
+                ["TwoPaneView"] = new TwoPaneView(),
             };
         }
 
