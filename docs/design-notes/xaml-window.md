@@ -4,6 +4,7 @@
 
 - [Overview](#overview)
 - [How Window works](#how-window-works)
+- [The window's redirection surface](#the-windows-redirection-surface)
 - [What is AppWindow and how does it relate to Xaml Window?](#what-is-appwindow-and-how-does-it-relate-to-xaml-window)
 
 ## Overview
@@ -59,8 +60,36 @@ Microsoft_UI_Xaml!BaseWindow<DirectUI::DesktopWindowImpl>::WndProc
 Microsoft_UI_Xaml!directui::DesktopWindowImpl::OnMessage
 ```
 
-## What is AppWindow and how does it relate to Xaml Window?
+## The window's redirection surface
 
+By default every top-level window gets a GDI redirection surface: a full-window bitmap that GDI painting on the
+HWND lands in, which the compositor then composes as part of the window. A Xaml `Window` barely uses it. The
+content island covers the whole client area and renders through the compositor, so the only thing the surface
+really shows is the themed background painted on `WM_ERASEBKGND`, which exists to stop the window flashing
+unpainted content before the island's first frame.
+
+That surface is not free. It costs one 32-bit bitmap the size of the window, and the compositor blends it on
+every frame even though it contributes nothing once the island is up. The memory is charged to the compositor
+process rather than to the app, so it doesn't show up in the app's own memory counters.
+
+`WS_EX_NOREDIRECTIONBITMAP` tells the system not to create the surface at all. Xaml passes it when
+`XamlChangeId.SkipWindowRedirectionSurface` is enabled:
+
+``` cpp
+// DesktopWindowImpl.cpp
+const DWORD extendedStyle = OptionalChangeState::IsSkipWindowRedirectionSurfaceEnabled() ? WS_EX_NOREDIRECTIONBITMAP : 0;
+```
+
+Two things make this opt-in rather than the default:
+
+* **The window can no longer paint with GDI.** The `WM_ERASEBKGND` themed fill stops having any effect, as does
+  any GDI painting an app does on the Xaml HWND. That is a behavior change as much as an optimization, so it is
+  a `XamlChangeId` and is deliberately not folded into the general perf opt-in.
+* **It has to be decided when the window is created.** The style is only honored when passed to
+  `CreateWindowEx`; adding it afterwards through `SetWindowLongPtr` is silently dropped, and the style bit
+  doesn't even read back as set. So it cannot be turned on later in response to anything the app does.
+
+## What is AppWindow and how does it relate to Xaml Window?
 Microsoft.UI.Windowing.AppWindow is an interesting type.  You can create one to create a standalone top-level window
 (similar to Xaml Window).  OR, you can use it to wrap an _existing_ HWND.
 
