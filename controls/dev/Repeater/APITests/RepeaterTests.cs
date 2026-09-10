@@ -962,6 +962,87 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        [TestMethod]
+        public void ValidateCodeAuthoredDataTemplateSupportsCompiledBinding()
+        {
+            var items = new[]
+            {
+                new DisplayNameViewModel("Item 1"),
+                new DisplayNameViewModel("Item 2"),
+                new DisplayNameViewModel("Item 3"),
+            };
+            var twoWayItems = new[]
+            {
+                new DisplayNameViewModel("TwoWay Item 1"),
+                new DisplayNameViewModel("TwoWay Item 2"),
+                new DisplayNameViewModel("TwoWay Item 3"),
+            };
+
+            RunOnUIThread.Execute(() =>
+            {
+                var oneWayTemplate = new DataTemplate(() =>
+                {
+                    var textBlock = new TextBlock();
+                    textBlock.SetCompiledBinding(
+                        TextBlock.TextProperty,
+                        source => ((DisplayNameViewModel)source).DisplayName);
+                    return textBlock;
+                });
+
+                var repeater = new ItemsRepeater()
+                {
+                    ItemsSource = items,
+                    ItemTemplate = oneWayTemplate,
+                };
+
+                var twoWayTemplate = new DataTemplate(() =>
+                {
+                    var textBlock = new TextBlock();
+                    textBlock.SetCompiledBinding(
+                        TextBlock.TextProperty,
+                        source => ((DisplayNameViewModel)source).DisplayName,
+                        (source, value) => ((DisplayNameViewModel)source).DisplayName = (string)value);
+                    return textBlock;
+                });
+
+                var twoWayRepeater = new ItemsRepeater()
+                {
+                    ItemsSource = twoWayItems,
+                    ItemTemplate = twoWayTemplate,
+                };
+
+                var root = new StackPanel();
+                root.Children.Add(repeater);
+                root.Children.Add(twoWayRepeater);
+                Content = root;
+
+                Content.UpdateLayout();
+
+                for (int i = 0; i < items.Length; i++)
+                {
+                    var element = repeater.TryGetElement(i) as TextBlock;
+                    Verify.IsNotNull(element, $"Element {i} should be realized from the code-authored template.");
+                    Verify.AreSame(items[i], element.DataContext);
+                    Verify.AreEqual(items[i].DisplayName, element.Text);
+                }
+
+                for (int i = 0; i < twoWayItems.Length; i++)
+                {
+                    var element = twoWayRepeater.TryGetElement(i) as TextBlock;
+                    Verify.IsNotNull(element, $"TwoWay element {i} should be realized from the code-authored template.");
+                    Verify.AreSame(twoWayItems[i], element.DataContext);
+                    Verify.AreEqual(twoWayItems[i].DisplayName, element.Text);
+
+                    var updatedDisplayName = $"Updated item {i + 1}";
+                    element.Text = updatedDisplayName;
+                    Verify.AreEqual(
+                        updatedDisplayName,
+                        twoWayItems[i].DisplayName,
+                        $"Changing TwoWay element {i} should write back to its data source.");
+                }
+            });
+        }
+
         // Asserts each realized ItemsRepeater element reflects its item via DataContext, a {Binding} on Text,
         // and DataContextChanged, and that every element is a distinct instance the callback produced.
         private static void VerifyRealizedElements(ItemsRepeater repeater, IList<string> items, List<UIElement> created, Dictionary<TextBlock, object> changedContexts)
@@ -982,6 +1063,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             // Each item maps to a distinct element instance.
             Verify.AreEqual(items.Count, realized.Distinct().Count());
+        }
+
+        private class DisplayNameViewModel
+        {
+            public DisplayNameViewModel(string displayName)
+            {
+                DisplayName = displayName;
+            }
+
+            public string DisplayName { get; set; }
         }
 
     }
