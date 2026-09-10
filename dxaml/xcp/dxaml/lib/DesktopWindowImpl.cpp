@@ -478,6 +478,15 @@ _Check_return_ HRESULT DesktopWindowImpl::CloseImpl()
             // m_bIsClosing will get reset to false
             return S_OK;
         }
+
+        if (AreNewWindowingApisEnabled())
+        {
+            // Freeze the getters after Closed handlers finish, before teardown changes the
+            // client area. Read through the getters to include any pending size requests.
+            IFC_RETURN(get_WidthImpl(&m_closedClientWidthDips));
+            IFC_RETURN(get_HeightImpl(&m_closedClientHeightDips));
+        }
+
         m_desktopWindowXamlSource->PrepareToClose();
 
         // set these to null before marking window as closed as they fail if called after m_bIsClosed is set
@@ -593,7 +602,11 @@ _Check_return_ HRESULT DesktopWindowImpl::get_WidthImpl(_Out_ DOUBLE* pValue)
 {
     ASSERT(AreNewWindowingApisEnabled());
 
-    IFC_RETURN(CheckIsWindowClosed());
+    if (m_bIsClosed)
+    {
+        *pValue = m_closedClientWidthDips;
+        return S_OK;
+    }
 
     if (m_pendingClientWidthDips)
     {
@@ -611,8 +624,11 @@ _Check_return_ HRESULT DesktopWindowImpl::put_WidthImpl(DOUBLE value)
 {
     ASSERT(AreNewWindowingApisEnabled());
 
-    IFC_RETURN(CheckIsWindowClosed());
     IFC_RETURN(ValidateWidthHeightValue(value));
+    if (m_bIsClosed)
+    {
+        return S_OK;
+    }
     return ApplyOrDeferClientSizeInDips(value, std::nullopt);
 }
 
@@ -620,7 +636,11 @@ _Check_return_ HRESULT DesktopWindowImpl::get_HeightImpl(_Out_ DOUBLE* pValue)
 {
     ASSERT(AreNewWindowingApisEnabled());
 
-    IFC_RETURN(CheckIsWindowClosed());
+    if (m_bIsClosed)
+    {
+        *pValue = m_closedClientHeightDips;
+        return S_OK;
+    }
 
     if (m_pendingClientHeightDips)
     {
@@ -638,8 +658,11 @@ _Check_return_ HRESULT DesktopWindowImpl::put_HeightImpl(DOUBLE value)
 {
     ASSERT(AreNewWindowingApisEnabled());
 
-    IFC_RETURN(CheckIsWindowClosed());
     IFC_RETURN(ValidateWidthHeightValue(value));
+    if (m_bIsClosed)
+    {
+        return S_OK;
+    }
     return ApplyOrDeferClientSizeInDips(std::nullopt, value);
 }
 

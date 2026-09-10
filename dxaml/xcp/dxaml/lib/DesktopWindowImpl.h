@@ -227,6 +227,10 @@ namespace DirectUI
         std::optional<double> m_pendingClientWidthDips;
         std::optional<double> m_pendingClientHeightDips;
 
+        // Getter values frozen at close. Keep double precision for unapplied requests.
+        double m_closedClientWidthDips = 0.0;
+        double m_closedClientHeightDips = 0.0;
+
         // The window's last known restored size in DIPs - the client-area size and its non-client
         // chrome (outer window rect minus client rect) the window has, or returns to, when it isn't
         // maximized, minimized, or in a non-sizing presenter. Client and chrome are always tracked

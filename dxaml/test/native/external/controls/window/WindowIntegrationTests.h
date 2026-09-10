@@ -73,6 +73,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(WindowWidthHeightAfterClose)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates frozen Width/Height and ignored assignments after close across activation, restored, minimized, maximized, and non-default presenter states.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowWidthHeightAfterCloseValidatesArguments)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that invalid Width/Height assignments still fail after close without changing the preserved values.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowWidthHeightAfterCloseChecksThread)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that Width/Height getters and setters still enforce thread affinity after close.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowWidthHeightDuringClose)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates open-window sizing during Closed handlers, canceled close, and preservation of the final handler values.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(WindowWidthHeightRejectsBindingInMarkup)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that a classic {Binding} on Window.Width/Height fails to parse with a helpful error, rather than silently collapsing the window to 0.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
