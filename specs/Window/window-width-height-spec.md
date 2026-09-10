@@ -10,6 +10,7 @@ Table of Contents
   - [2.1. Three sets of APIs size the same window: `Window`, `AppWindow`, and Win32](#21-three-sets-of-apis-size-the-same-window-window-appwindow-and-win32)
   - [2.2. How Window sizing works with Window.ExtendsContentIntoTitleBar](#22-how-window-sizing-works-with-windowextendscontentintotitlebar)
   - [2.3. WPF Comparison](#23-wpf-comparison)
+  - [2.4. Sizing properties after the window closes](#24-sizing-properties-after-the-window-closes)
 - [3. Examples](#3-examples)
   - [3.1. Set Initial Window Size in XAML Markup](#31-set-initial-window-size-in-xaml-markup)
   - [3.2. Set Initial Window Size with x:Bind](#32-set-initial-window-size-with-xbind)
@@ -71,11 +72,13 @@ The **restored size** is conceptually the size the window is (or will be) when i
 AppWindow is using the default presenter, and it's not minimized or maximized. For the default WinUI `Window`,
 the `AppWindow.Presenter` is `Overlapped`. That's the "normal" desktop window mode.
 
-Setting `Width` or `Height` updates the restored size. If the Window currently has the default `Overlapped` presenter
-and is in the restored state, the runtime resizes the window immediately.
+While the window is open, setting `Width` or `Height` updates the restored size. After first activation,
+if the window has the default `Overlapped` presenter and is restored, it resizes immediately.
 
 Otherwise, the resize is deferred:
 
+- Before first activation, the runtime stores the request and applies it on activation if the
+  presenter supports sizing.
 - If `Window.AppWindow.Presenter` is `FullScreen` or `CompactOverlay`, the runtime remembers the
   restored size and reapplies it when the presenter switches back to `Overlapped`.
 - If the Win32 window is minimized or maximized, the runtime updates the Win32 restored size.
@@ -93,8 +96,12 @@ window to a new size, the user's size is the one that sticks. For example:
 The window comes back at width **600**, not 500. The WinUI runtime tracks the restored size from the window's last
 size in the overlapped, restored state, no matter how it got there, so the user's resize in step 2 is what gets restored.
 
-Given that the `Width` and `Height` getters don't always return the current client size, use `Bounds` when you
-need the current client-area size for layout. `Bounds` reflects the live size except when the window is minimized.
+Given that the `Width` and `Height` getters don't always return the current client size, use `Bounds`
+while the window is open when you need the current client-area size for layout. `Bounds` reflects the
+live size except when the window is minimized.
+
+After the window closes, valid assignments to `Width` and `Height` have no effect. Their getters return
+the values preserved at close. See [Sizing properties after the window closes](#24-sizing-properties-after-the-window-closes).
 
 You can set the `Width` and `Height` properties in XAML markup and in code-behind. You can use
 `x:Bind` (`{x:Bind ...}`) bindings to set the `Width` and `Height` properties, but you can't use classic
@@ -163,30 +170,34 @@ with the XAML window means you must handle the logical/physical pixel conversion
 ## 2.2. How Window sizing works with Window.ExtendsContentIntoTitleBar
 
 Setting `Window.ExtendsContentIntoTitleBar` to `true` tells the window you want to draw its title bar
-yourself.  This shifts the client area ~30 logical pixels upward (depending on system settings).
+yourself. The area occupied by the standard title bar becomes part of the client area.
 
-If you set `Window.Height` and then toggle `ExtendsContentIntoTitleBar`, the runtime keeps the
-`Height` value you set.  The physical window shrinks slightly to account for the missing title bar
-area.  If you _didn't_ set `Height`, the window size does not change when you toggle it.
+While the window is in the overlapped, restored state, if your app has explicitly set `Window.Height`,
+toggling `ExtendsContentIntoTitleBar` preserves the current client height. The outer window height
+adjusts to account for the change in non-client area. This preserves a subsequent user resize, not
+necessarily the last height assigned by your app.
 
-Setting them in either order works -- either way, the window's height comes out the same:
+If your app has not set `Height`, toggling `ExtendsContentIntoTitleBar` leaves the outer window size
+unchanged, so the client height changes instead. Setting `Width` alone does not opt into client-height
+preservation.
+
+Both examples assume the window is already displayed in its normal desktop state, not minimized,
+maximized, full screen, or compact overlay. They show that you can set these properties in either order.
+In each example, the app has not previously set `Height`. Either order produces the same client height:
 
 ```cs
-window.Height = 300;                      // Changes physical window height to ~330px 
-                                          // (depending on OS settings)
-window.ExtendsContentIntoTitleBar = true; // Changes physical window height to 300px
+window.Height = 300;                      // Requests a client height of 300 logical pixels.
+window.ExtendsContentIntoTitleBar = true; // Preserves that client height; reduces the outer height.
 ```
 versus:
 ```cs
-window.ExtendsContentIntoTitleBar = true; // Reduce physical window height by ~30px
-                                          // (depending on OS settings)
-window.Height = 300;                      // Changes physical window height to approx 300px
+window.ExtendsContentIntoTitleBar = true; // Changes the client area without resizing the outer window.
+window.Height = 300;                      // Requests a client height of 300 logical pixels.
 ```
 
-This behavior only kicks in when you've set `Width` or `Height`. If your app never sets them,
-toggling `ExtendsContentIntoTitleBar` works exactly as it always has -- the window size stays the
-same.  Setting `Width` or `Height` opts the window into keeping the client area stable across
-title bar changes.
+Before first activation, a pending `Height` request uses the title-bar configuration in effect when
+the request is applied. Toggling `ExtendsContentIntoTitleBar` while minimized, maximized, or using a non-default
+presenter does not itself preserve the restored client height.
 
 ## 2.3. WPF Comparison
 
@@ -216,6 +227,40 @@ Here is a side-by-side breakdown of more WPF vs WinUI behavior:
 | Dependency property       | Yes; bindable                                        | Plain WinRT property; bindable only with x:Bind |
 
 In .NET an `E_INVALIDARG` error is thrown as an `ArgumentException`.
+
+## 2.4. Sizing properties after the window closes
+
+Closing a window freezes its `Width` and `Height` values. Valid assignments after close are ignored:
+they do not change the preserved values, create a pending resize, raise `SizeChanged`, or reopen the
+window. The getters remain available on the owning thread.
+
+Each preserved value is the value its getter would have returned after the `Closed` handlers complete
+without canceling and immediately before native teardown, not necessarily the last value assigned by your app:
+
+- If the user resized the restored window, preserve the resulting client size.
+- If the window is minimized or maximized, preserve the restored size, not the live size.
+- If a request is still pending, such as before first activation or while using a non-default
+  presenter, preserve that request.
+
+For example, this code runs on the owning thread and assumes no `Closed` handler cancels closing:
+
+```csharp
+window.Close();
+double closedWidth = window.Width;
+double closedHeight = window.Height;
+
+window.Width = 800;  // Ignored. Width still returns closedWidth.
+window.Height = 600; // Ignored. Height still returns closedHeight.
+```
+
+The `Closed` event is raised before native teardown, and a handler can cancel closing by setting
+`Handled` to `true`. During those handlers, the sizing properties retain their normal open-window
+behavior. A canceled close does not freeze them.
+
+Closing alone is not an error for these properties. Argument validation and thread affinity still
+apply: invalid sizes return `E_INVALIDARG`, and access from another thread returns
+`RPC_E_WRONG_THREAD`. A valid post-close assignment succeeds without changing either preserved value.
+This behavior does not change the closed-state contract of other members, such as `Bounds`.
 
 # 3. Examples
 
@@ -334,9 +379,11 @@ Gets or sets the width of the Window's **client area** in logical pixels.
 public double Width { get; set; }
 ```
 
-**Getter**: returns the client-area width in logical pixels.
+**Getter**: returns the restored client-area width in logical pixels.
 
-- In the **Restored** state this equals `Window.Bounds.Width`.
+- Before first activation, a pending `Width` request is returned as supplied. Without a pending
+  request, the getter uses the current presenter's restored-width behavior described below.
+- In the **Restored** state after activation this equals `Window.Bounds.Width`.
 - In the **Maximized** or **Minimized** state it returns the *restored* width -- the
   width the window will have when it returns to the restored state. The OS tracks this
   restored size, so it works even if you never set `Width`.
@@ -344,11 +391,13 @@ public double Width { get; set; }
   it returns the restored width -- the last width the window had in the restored state
   (whether set by your code or by the user resizing), or a value you set on
   `Width` while in the non-default presenter.
+- After the window closes, it returns the width preserved immediately before native teardown.
+  Subsequent assignments do not change this value.
 
-**Setter**: changes the window so its client area is `value` logical pixels wide. The
-window's non-client chrome (caption, borders, and so on) gets added on top of
+**Setter**: while the window is open, requests a client width of `value` logical pixels.
+The window's non-client chrome (caption, borders, and so on) gets added on top of
 `value` to work out the window rect, using the current per-monitor
-DPI. Height is left unchanged.
+DPI. Height is left unchanged. After close, a valid assignment has no effect.
 
 Returns `E_INVALIDARG` for negative, `NaN`, or `Infinity` values.
 In .NET an `E_INVALIDARG` error is thrown as an `ArgumentException`.
@@ -361,7 +410,9 @@ The non-default presenters, `FullScreen` and `CompactOverlay`, remember the
 requested size and apply it when the window returns to `Overlapped`, without
 affecting the live window in the meantime.
 
-- **Restored**: the window resizes right away to the requested client width.
+- **Before first activation**: the requested width is stored and returned by the getter. It is
+  applied on activation if the presenter supports sizing, or when it subsequently does.
+- **Restored, after activation**: the window resizes right away to the requested client width.
   Position is preserved.
 - **Maximized**: the live (maximized) window does not resize. The *restored*
   bounds (the size the window snaps to when un-maximized) get updated. The other
@@ -375,6 +426,8 @@ affecting the live window in the meantime.
 - **CompactOverlay** (picture-in-picture, via
   `AppWindowPresenterKind.CompactOverlay`): same as Fullscreen. The live window is
   unchanged; the restored size is updated and applied on return to `Overlapped`.
+- **Closed**: valid assignments are ignored. The getter returns its preserved pre-teardown value.
+  No pending resize or size-change event is created. A canceled close leaves normal behavior intact.
 
 ### 4.1.2. Remarks
 
@@ -394,12 +447,10 @@ with a different scale factor after you call the setter, the OS re-scales the
 window per its normal rules. The client-area size in logical pixels is preserved across
 the move.
 
-**Interaction with ExtendsContentIntoTitleBar.** Because `Width`/`Height` measure
-the client area, toggling `Window.ExtendsContentIntoTitleBar` changes what counts
-as client area. If you previously set `Width` or `Height`, the runtime honors
-that value and holds it unchanged when you toggle `ExtendsContentIntoTitleBar`.
-If you didn't set `Width`/`Height`, the window size does not change when you
-toggle it.
+**Interaction with ExtendsContentIntoTitleBar.** Setting `Width` alone does not opt into preserving
+client height when the title-bar configuration changes. Only an explicit assignment to `Height`
+enables that behavior while the window is overlapped and restored. See
+[How Window sizing works with Window.ExtendsContentIntoTitleBar](#22-how-window-sizing-works-with-windowextendscontentintotitlebar).
 
 **XAML markup.** Width and Height are settable from code-behind AND from XAML on the `<Window>` object.
 
@@ -408,13 +459,16 @@ take part in data binding and do not raise change notifications. (This matches t
 rest of `Window`'s API surface).  You can, however, use `x:Bind` to set them
 in XAML markup.
 
-**Threading.** You must set these properties on the thread that owns the Window
-(the dispatcher thread). Calls from other threads return the standard
+**Threading.** You must read and write this property on the thread that owns the Window
+(the dispatcher thread), including after close. Calls from other threads return the standard
 `RPC_E_WRONG_THREAD` error from the XAML framework.
 
 ### 4.1.3. Errors
 
 For all errors the runtime calls RoOriginateError with a specific error message to help the app developer diagnose the problem.
+
+Argument validation applies both before and after close. Closing alone does not cause an error.
+The resizing effects below apply only while the window is open; valid post-close assignments are ignored.
 
 | Input                         | Result                              |
 | ----------------------------- | ----------------------------------- |
@@ -435,9 +489,11 @@ Gets or sets the height of the Window's **client area** in logical pixels.
 public double Height { get; set; }
 ```
 
-**Getter**: returns the client-area height in logical pixels.
+**Getter**: returns the restored client-area height in logical pixels.
 
-- In the **Restored** state this equals `Window.Bounds.Height`.
+- Before first activation, a pending `Height` request is returned as supplied. Without a pending
+  request, the getter uses the current presenter's restored-height behavior described below.
+- In the **Restored** state after activation this equals `Window.Bounds.Height`.
 - In the **Maximized** or **Minimized** state it returns the *restored* height -- the
   height the window will have when it returns to the restored state. The OS tracks this
   restored size, so it works even if you never set `Height`.
@@ -445,11 +501,13 @@ public double Height { get; set; }
   it returns the restored height -- the last height the window had in the restored state
   (whether set by your code or by the user resizing), or a value you set on
   `Height` while in the non-default presenter.
+- After the window closes, it returns the height preserved immediately before native teardown.
+  Subsequent assignments do not change this value.
 
-**Setter**: changes the window so its client area is `value` logical pixels tall. The
-window's non-client chrome (caption, borders, and so on) gets added on top of
+**Setter**: while the window is open, requests a client height of `value` logical pixels.
+The window's non-client chrome (caption, borders, and so on) gets added on top of
 `value` to work out the window rect, using the current per-monitor DPI. Width is
-left unchanged.
+left unchanged. After close, a valid assignment has no effect.
 
 Returns `E_INVALIDARG` for negative, `NaN`, or `Infinity` values.
 In .NET an `E_INVALIDARG` error is thrown as an `ArgumentException`.
@@ -462,7 +520,9 @@ The non-default presenters, `FullScreen` and `CompactOverlay`, remember the
 requested size and apply it when the window returns to `Overlapped`, without
 affecting the live window in the meantime.
 
-- **Restored**: the window resizes right away to the requested client height.
+- **Before first activation**: the requested height is stored and returned by the getter. It is
+  applied on activation if the presenter supports sizing, or when it subsequently does.
+- **Restored, after activation**: the window resizes right away to the requested client height.
   Position is preserved.
 - **Maximized**: the live (maximized) window does not resize. The *restored*
   bounds (the size the window snaps to when un-maximized) get updated. The other
@@ -476,6 +536,8 @@ affecting the live window in the meantime.
 - **CompactOverlay** (picture-in-picture, via
   `AppWindowPresenterKind.CompactOverlay`): same as Fullscreen. The live window is
   unchanged; the restored size is updated and applied on return to `Overlapped`.
+- **Closed**: valid assignments are ignored. The getter returns its preserved pre-teardown value.
+  No pending resize or size-change event is created. A canceled close leaves normal behavior intact.
 
 ### 4.2.2. Remarks
 
@@ -495,12 +557,12 @@ with a different scale factor after you call the setter, the OS re-scales the
 window per its normal rules. The client-area size in logical pixels is preserved across
 the move.
 
-**Interaction with ExtendsContentIntoTitleBar.** Because `Width`/`Height` measure
-the client area, toggling `Window.ExtendsContentIntoTitleBar` changes what counts
-as client area. If you previously set `Width` or `Height`, the runtime honors
-that value and holds it unchanged when you toggle `ExtendsContentIntoTitleBar`.
-If you didn't set `Width`/`Height`, the window size does not change when you
-toggle it.
+**Interaction with ExtendsContentIntoTitleBar.** If your app has explicitly set `Height`, toggling
+`Window.ExtendsContentIntoTitleBar` while the window is overlapped and restored preserves its current
+client height, including subsequent user resizes. If your app has set only `Width`, or neither
+property, the outer window size stays unchanged and the client height changes instead. See
+[How Window sizing works with Window.ExtendsContentIntoTitleBar](#22-how-window-sizing-works-with-windowextendscontentintotitlebar)
+for behavior before activation and in other window states.
 
 **XAML markup.** Width and Height are settable from code-behind
 AND from XAML on the `<Window>` object.
@@ -510,8 +572,8 @@ take part in data binding and do not raise change notifications. (This matches t
 rest of `Window`'s API surface).  You can, however, use `x:Bind` to set them
 in XAML markup.
 
-**Threading.** You must set these properties on the thread that owns the Window
-(the dispatcher thread). Calls from other threads return the standard
+**Threading.** You must read and write this property on the thread that owns the Window
+(the dispatcher thread), including after close. Calls from other threads return the standard
 `RPC_E_WRONG_THREAD` error from the XAML framework.
 
 ### 4.2.3. Errors
@@ -571,7 +633,8 @@ here for posterity, not for the public docs.
 window's non-client chrome to the requested client size. How it applies depends on
 state:
 
-- **Restored**: `SetWindowPos` on the live window.
+- **Before first activation**: retain the request until activation with a sizing-capable presenter.
+- **Restored, after activation**: `SetWindowPos` on the live window.
 - **Maximized / Minimized**: updates `rcNormalPosition` via `SetWindowPlacement`, so
   the window snaps to the new size when it is restored.
 - **FullScreen / CompactOverlay** (presenters that don't support sizing): the value
@@ -579,6 +642,8 @@ state:
   `AppWindow.Changed`; when the presenter changes back to one that supports sizing,
   it applies the pending value through the restored-state path above. If no value was
   ever set there is nothing pending, so a presenter change does nothing.
+- **Closed**: validate the argument and return success without changing sizing state or accessing
+  native window resources.
 
 **User resize clears pending state.** A value set via `Width`/`Height` in the
 restored state is applied immediately and has no further effect.  If the user then
@@ -598,7 +663,8 @@ or minimized, the live rects do not represent normal chrome, so the style-based
 calculation is used instead, with a correction that zeros out the top chrome when
 `ExtendsContentIntoTitleBar` is active.
 
-**Reading the size back.** The getter always returns the restored client-area size in logical pixels.
+**Reading the size back.** While the window is open, the getter returns the restored client-area
+size in logical pixels. After close, it returns the preserved pre-teardown value.
 
 - In the pre-activated state, before ShowWindow is called, the getters return the
   restored size (same as `Window.Bounds` at that point, unless the app set a new value).
@@ -653,7 +719,8 @@ by calling win32 functions that are virtualized for DPI mode for the underlying 
 honor the DPI mode just as those functions do.
 
 **If I set `Width` and then `Height`, will the window flicker between the two sizes?**
-In practice, no. Each setter resizes the window right away, so setting both is technically two
+For an open, activated window in the restored state, each setter resizes the window right away,
+so setting both is technically two
 resizes: one frame at the new width with the old height, then the final size. But both calls run in
 the same synchronous turn, before the next frame is drawn, so that in-between size doesn't actually
 show up on screen. This matches WPF, which also resizes immediately on each setter and has worked
