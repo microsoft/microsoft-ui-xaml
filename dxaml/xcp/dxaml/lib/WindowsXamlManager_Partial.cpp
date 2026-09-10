@@ -231,7 +231,6 @@ _Check_return_ HRESULT WindowsXamlManagerFactory::GetForCurrentThreadImpl(_Outpt
 _Check_return_ HRESULT WindowsXamlManager::XamlCore::Initialize(msy::IDispatcherQueue* dq)
 {
     m_dispatcherQueue = dq;
-    IFCFAILFAST(m_dispatcherQueue.As(&m_dispatcherQueue3));
 
     //
     // Deal with Application.Current. There are a few cases here:
@@ -295,7 +294,7 @@ _Check_return_ HRESULT WindowsXamlManager::XamlCore::Initialize(msy::IDispatcher
         return S_OK;
     });
 
-    IFCFAILFAST(m_dispatcherQueue3->add_FrameworkShutdownStarting(
+    IFCFAILFAST(m_dispatcherQueue->add_ShutdownStarting(
         shutdownStartingCallback.Get(),
         &m_frameworkShutdownStartingToken));
 
@@ -425,7 +424,7 @@ _Check_return_ HRESULT WindowsXamlManager::XamlCore::Close()
 
     if (m_dispatcherQueue && m_frameworkShutdownStartingToken.value)
     {
-        IFCFAILFAST(m_dispatcherQueue3->remove_FrameworkShutdownStarting(m_frameworkShutdownStartingToken));
+        IFCFAILFAST(m_dispatcherQueue->remove_ShutdownStarting(m_frameworkShutdownStartingToken));
         m_frameworkShutdownStartingToken = {};
     }
 

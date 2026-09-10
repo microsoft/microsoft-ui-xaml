@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <DispatcherQueue.h>
 #include <CoreWindow.h>
 #ifdef XAMLPROFILER_ENABLED
 #include <XamlProfilerTracing.h>
@@ -488,12 +489,13 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
         // When running in UWP, we must make sure there's a DispatcherQueueController on the thread, since XAML
         // requires one to be running.  Since we don't support UWP, we don't bother to shutdown the DQC, this is
         // just to keep XAML tests running.
-        wrl::ComPtr<msy::IDispatcherQueueControllerStatics> dispatcherQueueControllerStatics;
-
-        IFCFAILFAST(wf::GetActivationFactory(
-            wrl::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueueController).Get(),
-            &dispatcherQueueControllerStatics));
-        IFCFAILFAST(dispatcherQueueControllerStatics->CreateOnCurrentThread(&m_dispatcherQueueController));
+        DispatcherQueueOptions options
+        {
+            sizeof(DispatcherQueueOptions),
+            DQTYPE_THREAD_CURRENT,
+            DQTAT_COM_STA
+        };
+        IFCFAILFAST(CreateDispatcherQueueController(options, &m_dispatcherQueueController));
     }
 
     if (initializationType == InitializationType::MainView)

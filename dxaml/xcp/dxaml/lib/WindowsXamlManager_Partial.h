@@ -75,7 +75,6 @@ namespace DirectUI
 
         private:
             wrl::ComPtr<msy::IDispatcherQueue> m_dispatcherQueue;
-            wrl::ComPtr<msy::IDispatcherQueue3> m_dispatcherQueue3;
             EventRegistrationToken m_frameworkShutdownStartingToken {};
             State m_state {State::Normal};
 
@@ -98,4 +97,3 @@ namespace DirectUI
         inline static thread_local std::shared_ptr<WindowsXamlManager::XamlCore> tls_xamlCore;
     };
 }
-

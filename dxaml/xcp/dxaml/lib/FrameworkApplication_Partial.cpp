@@ -24,6 +24,7 @@
 #include <WindowsXamlManager_Partial.h>
 #include <DesktopWindowXamlSource.g.h>
 #include <DesktopWindowImpl.h>
+#include <DispatcherQueue.h>
 #include <Microsoft.UI.Dispatching.Interop.h>
 #include <Microsoft.Windows.ApplicationModel.Resources.h>
 
@@ -196,15 +197,15 @@ _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IAp
     ctl::ComPtr<xaml::Hosting::IWindowsXamlManagerStatics> windowsXamlManagerFactory;
     ctl::ComPtr<xaml::Hosting::IWindowsXamlManager> windowsXamlManager;
 
-    wrl::ComPtr<msy::IDispatcherQueueControllerStatics> dispatcherQueueControllerStatics;
     wrl::ComPtr<msy::IDispatcherQueueController> dispatcherQueueController;
-    wrl::ComPtr<msy::IDispatcherQueueController2> dispatcherQueueController2;
 
-    IFCFAILFAST(MuxGetActivationFactory(
-        wrl::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueueController).Get(),
-        &dispatcherQueueControllerStatics));
-    IFCFAILFAST(dispatcherQueueControllerStatics->CreateOnCurrentThread(&dispatcherQueueController));
-    IFCFAILFAST(dispatcherQueueController.As(&dispatcherQueueController2));
+    DispatcherQueueOptions options
+    {
+        sizeof(DispatcherQueueOptions),
+        DQTYPE_THREAD_CURRENT,
+        DQTAT_COM_STA
+    };
+    IFCFAILFAST(CreateDispatcherQueueController(options, &dispatcherQueueController));
 
     // init Jupiter for this thread
     IFC_RETURN(DXamlCore::Initialize(InitializationType::IslandsOnly));
@@ -240,9 +241,38 @@ _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IAp
     //  Start the main WinUI Desktop message loop
     FrameworkApplication::RunDesktopWindowMessageLoop();
 
-    // During this call, Xaml will synchronously shutdown on the thread in the
-    // DispatcherQueue.FrameworkShutdownStarting event handler.
-    IFCFAILFAST(dispatcherQueueController2->ShutdownQueue());
+    wrl::ComPtr<wf::IAsyncAction> shutdownAction;
+    IFCFAILFAST(dispatcherQueueController->ShutdownQueueAsync(&shutdownAction));
+
+    wil::unique_event_nothrow shutdownCompleted;
+    IFCFAILFAST(shutdownCompleted.create(wil::EventOptions::None));
+    auto shutdownCompletedHandler = wrl::Callback<wf::IAsyncActionCompletedHandler>(
+        [&shutdownCompleted](wf::IAsyncAction*, wf::AsyncStatus)
+        {
+            shutdownCompleted.SetEvent();
+            return S_OK;
+        });
+    IFCFAILFAST(shutdownAction->put_Completed(shutdownCompletedHandler.Get()));
+
+    HANDLE shutdownHandles[] = { shutdownCompleted.get() };
+    while (WaitForSingleObject(shutdownCompleted.get(), 0) != WAIT_OBJECT_0)
+    {
+        const DWORD waitResult = MsgWaitForMultipleObjectsEx(
+            1,
+            shutdownHandles,
+            INFINITE,
+            QS_ALLINPUT,
+            MWMO_INPUTAVAILABLE);
+        IFCEXPECT_RETURN(waitResult != WAIT_FAILED);
+
+        MSG message{};
+        while (PeekMessage(&message, nullptr, 0, 0, PM_REMOVE))
+        {
+            TranslateMessage(&message);
+            DispatchMessage(&message);
+        }
+    }
+    IFC_RETURN(shutdownAction->GetResults());
 
     return S_OK;
 }

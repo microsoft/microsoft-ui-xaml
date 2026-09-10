@@ -352,8 +352,12 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyReferencePropertyChanged(
         switch (propertyId)
         {
             case ExpComp::ExpExpressionNotificationProperty_Clip:
-                OnVisualClipChanged(pTarget, uiElement);
+            {
+                wrl::ComPtr<WUComp::ICompositionObject> systemTarget;
+                IFC_RETURN(pTarget->QueryInterface(IID_PPV_ARGS(&systemTarget)));
+                OnVisualClipChanged(systemTarget.Get(), uiElement);
                 break;
+            }
         }
     }
 

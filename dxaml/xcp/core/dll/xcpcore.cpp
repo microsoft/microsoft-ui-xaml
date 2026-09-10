@@ -524,7 +524,7 @@ HRESULT ActivationFactoryCache::GetDispatcherQueueStatics(_Outptr_ msy::IDispatc
     if (!m_dispatcherQueueStatics)
     {
         IFC_RETURN(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
+            wrl_wrappers::HStringReference(RuntimeClass_Windows_System_DispatcherQueue).Get(),
             &m_dispatcherQueueStatics));
     }
 
