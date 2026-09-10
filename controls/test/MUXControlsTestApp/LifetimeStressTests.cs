@@ -285,6 +285,235 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return reference;
         }
 
+        // ListView / GridView container generation and recycling lifetime stress.
+        //
+        // The templated ItemsControl virtualization path (ModernCollectionBasePanel + the container recycling queue)
+        // is the single largest home of lifetime bugs in WinUI after ItemsRepeater: item containers are generated,
+        // recycled and cleared as the ItemsSource and viewport change, and a mistake in when a container's native
+        // peer is released (relative to its managed container / content) shows up as a use-after-free. This churns
+        // the source and scrolls the viewport to force generate/recycle, then tears the whole thing down and collects.
+        [TestMethod]
+        public void StressListViewContainerRecycling()
+        {
+            RunStress("StressListViewContainerRecycling", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    // A constrained viewport is required for the list to actually virtualize (and therefore recycle)
+                    // rather than realize every item up front.
+                    var listView = new ListView()
+                    {
+                        Width = 300,
+                        Height = 400,
+                        ItemsSource = Enumerable.Range(0, 200).Select(i => string.Format("Item #{0}", i)).ToList(),
+                    };
+                    objects["ListView"] = new WeakReference(listView);
+
+                    Content = listView;
+                    Content.UpdateLayout();
+
+                    // Swap the source and scroll the viewport to opposite ends so containers are generated, recycled
+                    // and cleared repeatedly - the classic churn that surfaces container-lifetime bugs.
+                    for (int churn = 0; churn < 5; churn++)
+                    {
+                        listView.ItemsSource = Enumerable.Range(churn * 50, 150).Select(i => string.Format("Item #{0}", i)).ToList();
+                        Content.UpdateLayout();
+
+                        if (listView.Items.Count > 0)
+                        {
+                            listView.ScrollIntoView(listView.Items[listView.Items.Count - 1]);
+                            Content.UpdateLayout();
+                            listView.ScrollIntoView(listView.Items[0]);
+                            Content.UpdateLayout();
+                        }
+                    }
+
+                    // Tear down mid-flight: drop the source and detach the list while containers may still be realized.
+                    listView.ItemsSource = null;
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                RunOnUIThread.Execute(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // Popup open/close lifetime stress.
+        //
+        // Opening a Popup spins up a separate popup root / overlay and a native peer for the hosted content; closing
+        // it tears that back down. Repeated open/close (a historically crash-prone path for light-dismiss overlays
+        // and popup-hosted content) followed by dropping the tree and collecting exercises that create/destroy cycle.
+        [TestMethod]
+        public void StressPopupOpenClose()
+        {
+            RunStress("StressPopupOpenClose", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var root = new Grid();
+                    var popup = new Popup();
+                    var popupChild = new Border()
+                    {
+                        Width = 120,
+                        Height = 80,
+                        Child = new TextBlock() { Text = "popup" },
+                    };
+                    popup.Child = popupChild;
+
+                    // Rooting the Popup in the tree gives it a XamlRoot so it can be opened without a live window ctor.
+                    root.Children.Add(popup);
+                    objects["Popup"] = new WeakReference(popup);
+                    objects["PopupChild"] = new WeakReference(popupChild);
+
+                    Content = root;
+                    Content.UpdateLayout();
+
+                    for (int open = 0; open < 10; open++)
+                    {
+                        popup.IsOpen = true;
+                        Content.UpdateLayout();
+
+                        popup.IsOpen = false;
+                        Content.UpdateLayout();
+                    }
+
+                    popup.Child = null;
+                    root.Children.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                RunOnUIThread.Execute(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // NavigationView menu-item churn lifetime stress.
+        //
+        // NavigationView builds a comparatively large control graph (pane, item containers, selection/repeater
+        // plumbing) and mutates it as menu items are added/removed, the pane is toggled and selection changes. Each
+        // of those paths creates and releases peers, so churning them and then tearing the whole thing down is a good
+        // way to catch a peer that outlives (or is released before) the element it belongs to.
+        [TestMethod]
+        public void StressNavigationViewMenuChurn()
+        {
+            RunStress("StressNavigationViewMenuChurn", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var navView = new NavigationView()
+                    {
+                        Width = 400,
+                        Height = 500,
+                        Content = new TextBlock() { Text = "content" },
+                    };
+                    objects["NavigationView"] = new WeakReference(navView);
+
+                    for (int m = 0; m < 8; m++)
+                    {
+                        var item = new NavigationViewItem() { Content = string.Format("Item {0}", m) };
+                        if (m == 0)
+                        {
+                            objects["FirstItem"] = new WeakReference(item);
+                        }
+                        navView.MenuItems.Add(item);
+                    }
+
+                    Content = navView;
+                    Content.UpdateLayout();
+
+                    for (int churn = 0; churn < 5; churn++)
+                    {
+                        navView.IsPaneOpen = !navView.IsPaneOpen;
+                        Content.UpdateLayout();
+
+                        if (navView.MenuItems.Count > 0)
+                        {
+                            navView.SelectedItem = navView.MenuItems[churn % navView.MenuItems.Count];
+                            Content.UpdateLayout();
+                        }
+
+                        // Add then remove an item so the menu-item container generation/recycling path runs.
+                        navView.MenuItems.Add(new NavigationViewItem() { Content = string.Format("Extra {0}", churn) });
+                        Content.UpdateLayout();
+                        navView.MenuItems.RemoveAt(navView.MenuItems.Count - 1);
+                        Content.UpdateLayout();
+                    }
+
+                    navView.SelectedItem = null;
+                    navView.MenuItems.Clear();
+                    navView.Content = null;
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                RunOnUIThread.Execute(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // TabView add/remove lifetime stress.
+        //
+        // TabView creates a tab strip container plus per-tab content and mutates that collection as tabs are added
+        // and removed. Adding a full set of tabs (each with its own content element) and then removing them one by
+        // one exercises the tab-item container and content create/teardown path before the tree is dropped.
+        [TestMethod]
+        public void StressTabViewAddRemove()
+        {
+            RunStress("StressTabViewAddRemove", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var tabView = new TabView()
+                    {
+                        Width = 500,
+                        Height = 400,
+                    };
+                    objects["TabView"] = new WeakReference(tabView);
+
+                    Content = tabView;
+                    Content.UpdateLayout();
+
+                    for (int t = 0; t < 8; t++)
+                    {
+                        var tab = new TabViewItem()
+                        {
+                            Header = string.Format("Tab {0}", t),
+                            Content = new TextBlock() { Text = string.Format("content {0}", t) },
+                        };
+                        if (t == 0)
+                        {
+                            objects["FirstTab"] = new WeakReference(tab);
+                        }
+                        tabView.TabItems.Add(tab);
+                        Content.UpdateLayout();
+                    }
+
+                    // Remove the tabs one at a time (mid-flight teardown of each tab's container + content).
+                    while (tabView.TabItems.Count > 0)
+                    {
+                        tabView.TabItems.RemoveAt(tabView.TabItems.Count - 1);
+                        Content.UpdateLayout();
+                    }
+
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                RunOnUIThread.Execute(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
         // Build a fresh instance of every WinUI control we want to torture. Each entry is a distinct control type so
         // a single iteration covers essentially the whole WinUI control surface.
         //

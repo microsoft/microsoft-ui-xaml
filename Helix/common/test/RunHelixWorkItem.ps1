@@ -100,7 +100,24 @@ function Run-Taef
     .\TestPass-EnsureMachineStateCore.ps1
     Wiggle-Mouse
 
-    $teCommand = "te.exe $testBinaries /enablewttlogging /enableEtwLogging /unicodeOutput:false /testtimeout:0:05 /p:DisableErrorHandling /screenCaptureOnError $taefParameters $taefAdditionalParams"
+    # Per-test TAEF timeout. Normal test passes use a fixed 5-minute per-test budget. When the lifetime stress
+    # suite is put into soak mode (WINUI_LIFETIME_STRESS_MINUTES > 0, set by build/WinUI-LifetimeStress.yml), each
+    # lifetime scenario loops on a wall-clock budget of that many minutes, so a single scenario runs well past the
+    # default 5-minute per-test timeout. TAEF would treat that as a hung test and fail it - which is why the
+    # *runner* (per-test) timeout, not just the outer job timeout, has to be aligned with the soak budget. When
+    # soak mode is on, give each scenario its full budget plus headroom for the per-iteration settle/GC and final
+    # teardown; otherwise keep the original 5-minute default so unrelated test passes are unaffected.
+    $testTimeout = "0:05"
+    [double]$soakMinutes = 0
+    if ($env:WINUI_LIFETIME_STRESS_MINUTES -and [double]::TryParse($env:WINUI_LIFETIME_STRESS_MINUTES, [ref]$soakMinutes) -and ($soakMinutes -gt 0))
+    {
+        $headroomMinutes = [math]::Max(5, [math]::Ceiling($soakMinutes / 2))
+        $timeoutMinutes = [math]::Ceiling($soakMinutes) + $headroomMinutes
+        $testTimeout = ([TimeSpan]::FromMinutes($timeoutMinutes)).ToString("hh\:mm\:ss")
+        Write-Host "Lifetime stress soak mode detected (WINUI_LIFETIME_STRESS_MINUTES=$($env:WINUI_LIFETIME_STRESS_MINUTES)); using per-test TAEF timeout $testTimeout."
+    }
+
+    $teCommand = "te.exe $testBinaries /enablewttlogging /enableEtwLogging /unicodeOutput:false /testtimeout:$testTimeout /p:DisableErrorHandling /screenCaptureOnError $taefParameters $taefAdditionalParams"
     Write-Host $teCommand
 
     # Ideally, we would just use '&' or 'Invoke-Expression' here to execute taef. However, powershell unhelpfully modifies the string to add 
