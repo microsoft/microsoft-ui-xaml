@@ -307,19 +307,24 @@ public:
         Lock lock(m_csRaise);
         XUINT32 size;
         THANDLER* pHandler = NULL;
+        CGITCookieList<THANDLER>* pHandlers = NULL;
+        bool wasInRaise = false;
 
         IFCEXPECT(m_fInitialized);
 
         {
             Lock lock2(m_csAddRemove);
+            // Close can clear the source synchronously from a handler.
+            IFC(CGITCookieList<THANDLER>::Copy(m_pHandlers, &pHandlers));
+            wasInRaise = m_fInRaise;
             m_fInRaise = TRUE;
         }
 
-        size = m_pHandlers->GetSize();
+        size = pHandlers->GetSize();
 
         for (XUINT32 i = 0; i < size; i++)
         {
-            CGITCookie<THANDLER>* pGITCookie = m_pHandlers->Get(i);
+            CGITCookie<THANDLER>* pGITCookie = pHandlers->Get(i);
             if (pGITCookie)
             {
                 IFC(pGITCookie->GetInterface(&pHandler));
@@ -332,10 +337,14 @@ public:
             }
         }
 
+    Cleanup:
+        ReleaseInterface(pHandler);
+
+        if (pHandlers)
         {
             Lock lock2(m_csAddRemove);
 
-            if (m_pHandlersCopy)
+            if (!wasInRaise && m_pHandlersCopy)
             {
                 CGITCookieList<THANDLER>* pTempList = m_pHandlers;
                 m_pHandlers = m_pHandlersCopy;
@@ -343,11 +352,9 @@ public:
                 delete pTempList;
             }
 
-            m_fInRaise = FALSE;
+            m_fInRaise = wasInRaise;
         }
-
-    Cleanup:
-        ReleaseInterface(pHandler);
+        delete pHandlers;
 
         RRETURN(hr);
     }
