@@ -5,6 +5,8 @@
 
 #include <abi/xaml_abi.h>
 #include <SystemCompositionPrivateInterfaces.h>
+#include <SystemContentInterfaces.h>
+#include <SystemInputInterfaces.h>
 
 namespace Jupiter { namespace Components { } }
 namespace jc                    = Jupiter::Components;

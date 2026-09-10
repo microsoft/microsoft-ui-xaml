@@ -560,14 +560,14 @@ public:
     void ResetCache();
 
     HRESULT GetDispatcherQueueStatics(_Outptr_ msy::IDispatcherQueueStatics** statics);
-    HRESULT GetDesktopChildSiteBridgeStatics(_Outptr_ ixp::IDesktopChildSiteBridgeStatics** statics);
+    HRESULT GetDesktopChildSiteBridgeStatics(_Outptr_ SystemContentAbi::IDesktopChildSiteBridgeStatics** statics);
     HRESULT GetDesktopPopupSiteBridgeStatics(_Outptr_ ixp::IDesktopPopupSiteBridgeStatics** statics);
     HRESULT GetDragDropManagerStatics(_Outptr_ mui::DragDrop::IDragDropManagerStatics** statics);
 
     WUComp::ICompositionEasingFunctionStatics* GetCompositionEasingFunctionStatics();
     ixp::ICompositionPathFactory* GetPathFactory();
     ixp::IInputSystemCursorStatics* GetInputSystemCursorStatics();
-    ixp::IContentIslandStatics* GetContentIslandStatics();
+    SystemContentAbi::IContentIslandStatics* GetContentIslandStatics();
     ixp::IInputFocusControllerStatics* GetInputFocusControllerStatics();
 
     ixp::IInputKeyboardSourceStatics* GetInputKeyboardSourceStatics();
@@ -614,12 +614,12 @@ private:
     // For simplicity we only cache in-proc factories.
     wrl::ComPtr<msy::IDispatcherQueueStatics> m_dispatcherQueueStatics;
     wrl::ComPtr<mui::DragDrop::IDragDropManagerStatics> m_dragDropManagerStatics;
-    wrl::ComPtr<ixp::IDesktopChildSiteBridgeStatics> m_desktopChildSiteBridgeStatics;
+    wrl::ComPtr<SystemContentAbi::IDesktopChildSiteBridgeStatics> m_desktopChildSiteBridgeStatics;
     wrl::ComPtr<ixp::IDesktopPopupSiteBridgeStatics> m_desktopPopupSiteBridgeStatics;
     wrl::ComPtr<WUComp::ICompositionEasingFunctionStatics> m_compositionEasingFunctionStatics;
     wrl::ComPtr<ixp::ICompositionPathFactory> m_compositionPathFactory;
     wrl::ComPtr<ixp::IInputSystemCursorStatics> m_inputSystemCursorStatics;
-    wrl::ComPtr<ixp::IContentIslandStatics> m_contentIslandStatics;
+    wrl::ComPtr<SystemContentAbi::IContentIslandStatics> m_contentIslandStatics;
     wrl::ComPtr<ixp::IInputFocusControllerStatics> m_inputFocusControllerStatics;
 
     wrl::ComPtr<ixp::IInputKeyboardSourceStatics> m_inputKeyboardSourceStatics;

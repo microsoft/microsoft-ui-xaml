@@ -1304,7 +1304,7 @@ _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
 
     if ((m_desktopPopupSiteBridge || m_popupWindowBridge) && !m_contentIsland)
     {
-        wrl::ComPtr<ixp::IContentIslandStatics> contentStatics;
+        wrl::ComPtr<SystemContentAbi::IContentIslandStatics> contentStatics;
         IFC_RETURN(wf::GetActivationFactory(wrl::Wrappers::HStringReference(
             RuntimeClass_Microsoft_UI_Content_ContentIsland).Get(), &contentStatics));
 
@@ -1317,6 +1317,13 @@ _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
         IFC_RETURN(compositorNoRef->CreateContainerVisual(&containerVisual));
         wrl::ComPtr<ixp::IVisual> visual;
         IFC_RETURN(containerVisual.As(&visual));
+
+        wrl::ComPtr<msy::IDispatcherQueueStatics> dispatcherQueueStatics;
+        IFC_RETURN(ActivationFactoryCache::GetActivationFactoryCache()->GetDispatcherQueueStatics(&dispatcherQueueStatics));
+
+        wrl::ComPtr<msy::IDispatcherQueue> dispatcherQueue;
+        IFC_RETURN(dispatcherQueueStatics->GetForCurrentThread(&dispatcherQueue));
+        FAIL_FAST_ASSERT(dispatcherQueue);
 
         {
             // Creating the content island and connecting it to the bridge (and initializing the input
@@ -1331,7 +1338,10 @@ _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
             // remainder of this scope.
             PauseNewDispatch deferReentrancy(core);
 
-            IFC_RETURN(contentStatics->Create(visual.Get(), &m_contentIsland));
+            IFC_RETURN(contentStatics->CreateForSystemVisual(
+                dispatcherQueue.Get(),
+                visual.Get(),
+                &m_contentIsland));
 
             IFC_RETURN(m_contentIsland->add_AutomationProviderRequested(WRLHelper::MakeAgileCallback<wf::ITypedEventHandler<
                 ixp::ContentIsland*,
@@ -1367,31 +1377,8 @@ _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
 
 void CPopup::EnsureContentExternalBackdropLink()
 {
-    if (!m_backdropLink)
-    {
-        DCompTreeHost* dcompTreeHostNoRef = GetDCompTreeHost();
-        ixp::ICompositor* compositorNoRef = dcompTreeHostNoRef->GetCompositor();
-
-        IFCFAILFAST(ContentExternalBackdropLinkHelper::Create(compositorNoRef, m_backdropLink));
-
-        IFCFAILFAST(m_backdropLink->SetExternalBackdropBorderMode(ixp::CompositionBorderMode::CompositionBorderMode_Soft));
-
-        IFCFAILFAST(m_backdropLink->GetPlacementVisual(m_systemBackdropPlacementVisual.ReleaseAndGetAddressOf()));
-        DCompTreeHost::SetTagIfEnabled(m_systemBackdropPlacementVisual.Get(), VisualDebugTags::WindowedPopup_SystemBackdropPlacementVisual);
-
-        // If there's already an animation root visual, then the windowed popup is already open. Add the system backdrop
-        // placement Visual to the tree of Visuals at the root of the popup.
-        if (m_animationRootVisual)
-        {
-            wrl::ComPtr<ixp::IContainerVisual> animationCV;
-            IFCFAILFAST(m_animationRootVisual.As(&animationCV));
-
-            wrl::ComPtr<ixp::IVisualCollection> visualChildren;
-            IFCFAILFAST(animationCV->get_Children(&visualChildren))
-
-            IFCFAILFAST(visualChildren->InsertAtBottom(m_systemBackdropPlacementVisual.Get()));
-        }
-    }
+    // ContentExternalBackdropLink has no system-Compositor factory. Windowed
+    // popup backdrops are disabled for this de-lifting experiment.
 }
 
 void CPopup::DiscardContentExternalBackdropLink()
@@ -1458,9 +1445,9 @@ void CPopup::ReleaseDCompResourcesForWindowedPopup()
 
     if (m_contentIsland)
     {
-        wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
-        IFCFAILFAST(m_contentIsland.As(&contentIslandExperimental));
-        contentIslandExperimental->put_Root(nullptr);
+        wrl::ComPtr<SystemContentAbi::IContentIslandRoot> contentIslandRoot;
+        IFCFAILFAST(m_contentIsland.As(&contentIslandRoot));
+        IFCFAILFAST(contentIslandRoot->SetSystemVisualRoot(nullptr));
 #ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
@@ -2435,9 +2422,9 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
             visualChildren->InsertAtBottom(m_windowedPopupDebugVisual.Get());
         }
 
-        wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
-        IFCFAILFAST(m_contentIsland.As(&contentIslandExperimental));
-        contentIslandExperimental->put_Root(m_contentIslandRootVisual.Get());
+        wrl::ComPtr<SystemContentAbi::IContentIslandRoot> contentIslandRoot;
+        IFCFAILFAST(m_contentIsland.As(&contentIslandRoot));
+        IFCFAILFAST(contentIslandRoot->SetSystemVisualRoot(m_contentIslandRootVisual.Get()));
 #ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
@@ -4106,16 +4093,7 @@ CDependencyObject* CPopup::GetCachedStandardNamescopeOwnerNoRef()
 // Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop implementation
 _Check_return_ HRESULT CPopup::GetSystemBackdrop(_Outptr_result_maybenull_ RealWUComp::ICompositionBrush** systemBackdropBrush)
 {
-    if (m_backdropLink)
-    {
-        wrl::ComPtr<ixp::ICompositionSupportsSystemBackdrop> icssb;
-        IFC_RETURN(m_backdropLink->AsSystemBackdropTarget(&icssb));
-        IFC_RETURN(icssb->get_SystemBackdrop(systemBackdropBrush));
-    }
-    else
-    {
-        *systemBackdropBrush = nullptr;
-    }
+    *systemBackdropBrush = nullptr;
 
     return S_OK;
 }
@@ -4124,11 +4102,7 @@ _Check_return_ HRESULT CPopup::SetSystemBackdrop(_In_opt_ RealWUComp::ICompositi
 {
     if (systemBackdropBrush)
     {
-        EnsureContentExternalBackdropLink();
-
-        wrl::ComPtr<ixp::ICompositionSupportsSystemBackdrop> icssb;
-        IFC_RETURN(m_backdropLink->AsSystemBackdropTarget(&icssb));
-        IFC_RETURN(icssb->put_SystemBackdrop(systemBackdropBrush));
+        return E_NOTIMPL;
     }
     else
     {

@@ -532,7 +532,7 @@ HRESULT ActivationFactoryCache::GetDispatcherQueueStatics(_Outptr_ msy::IDispatc
     return S_OK;
 }
 
-HRESULT ActivationFactoryCache::GetDesktopChildSiteBridgeStatics(_Outptr_ ixp::IDesktopChildSiteBridgeStatics** statics)
+HRESULT ActivationFactoryCache::GetDesktopChildSiteBridgeStatics(_Outptr_ SystemContentAbi::IDesktopChildSiteBridgeStatics** statics)
 {
     wil::cs_leave_scope_exit guard = m_lock.lock();
 
@@ -620,7 +620,7 @@ ixp::IInputSystemCursorStatics* ActivationFactoryCache::GetInputSystemCursorStat
     return m_inputSystemCursorStatics.Get();
 }
 
-ixp::IContentIslandStatics* ActivationFactoryCache::GetContentIslandStatics()
+SystemContentAbi::IContentIslandStatics* ActivationFactoryCache::GetContentIslandStatics()
 {
     wil::cs_leave_scope_exit guard = m_lock.lock();
 

@@ -472,18 +472,21 @@ _Check_return_ HRESULT DesktopWindowXamlSource::ConnectToHwndIslandSite(_In_ HWN
     // Get the XamlIslandRoot
     CXamlIslandRoot* pXamlIslandCore = static_cast<CXamlIslandRoot*>(xamlIslandRoot->GetHandle());
 
-    ctl::ComPtr<ixp::IDesktopChildSiteBridgeStatics> bridgeStatics;
+    ctl::ComPtr<SystemContentAbi::IDesktopChildSiteBridgeStatics> bridgeStatics;
     IFC_RETURN(ActivationFactoryCache::GetActivationFactoryCache()->GetDesktopChildSiteBridgeStatics(&bridgeStatics));
 
-    DCompTreeHost* dcompTreeHost = pXamlIslandCore->GetDCompTreeHost();
-    WUComp::ICompositor* compositor = dcompTreeHost->GetCompositor();
-    FAIL_FAST_ASSERT(compositor);
+    ctl::ComPtr<msy::IDispatcherQueueStatics> dispatcherQueueStatics;
+    IFC_RETURN(ActivationFactoryCache::GetActivationFactoryCache()->GetDispatcherQueueStatics(&dispatcherQueueStatics));
+
+    ctl::ComPtr<msy::IDispatcherQueue> dispatcherQueue;
+    IFC_RETURN(dispatcherQueueStatics->GetForCurrentThread(&dispatcherQueue));
+    FAIL_FAST_ASSERT(dispatcherQueue);
 
     // Create DesktopChildSiteBridgeFactory
     ABI::Microsoft::UI::WindowId parentWindowId;
     IFC_RETURN(Windowing_GetWindowIdFromWindow(parentHwnd, &parentWindowId));
-    IFC_RETURN(bridgeStatics->Create(
-        compositor,
+    IFC_RETURN(bridgeStatics->CreateWithDispatcherQueue(
+        dispatcherQueue.Get(),
         parentWindowId,
         m_contentBridgeDW.ReleaseAndGetAddressOf()));
 

@@ -209,7 +209,17 @@ _Check_return_ HRESULT CXamlIslandRoot::InitializeCommon()
     ctl::ComPtr<ixp::IVisual> rootVisual;
     IFCFAILFAST(containerRootVisual.As(&rootVisual));
 
-    IFCFAILFAST(ActivationFactoryCache::GetActivationFactoryCache()->GetContentIslandStatics()->Create(rootVisual.Get(), &compositionContent));
+    ctl::ComPtr<msy::IDispatcherQueueStatics> dispatcherQueueStatics;
+    IFCFAILFAST(ActivationFactoryCache::GetActivationFactoryCache()->GetDispatcherQueueStatics(&dispatcherQueueStatics));
+
+    ctl::ComPtr<msy::IDispatcherQueue> dispatcherQueue;
+    IFCFAILFAST(dispatcherQueueStatics->GetForCurrentThread(&dispatcherQueue));
+    FAIL_FAST_ASSERT(dispatcherQueue);
+
+    IFCFAILFAST(ActivationFactoryCache::GetActivationFactoryCache()->GetContentIslandStatics()->CreateForSystemVisual(
+        dispatcherQueue.Get(),
+        rootVisual.Get(),
+        &compositionContent));
 
     IFC_RETURN(m_contentRoot->SetContentIsland(compositionContent.Get()));
 

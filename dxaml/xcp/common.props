@@ -7,6 +7,8 @@
     <!-- other sources files that use them.                                           -->
     <PropertyGroup>
         <ObjTargetDir>sl</ObjTargetDir>
+        <WinUIDetailsInternal2Lib Condition="'$(SystemWinUIDetailsLibPath)' == ''">$(WinUIDetailsRuntimesPath)\Microsoft.UI.Xaml.Internal2.lib</WinUIDetailsInternal2Lib>
+        <WinUIDetailsInternal2Lib Condition="'$(SystemWinUIDetailsLibPath)' != ''">$(SystemWinUIDetailsLibPath)</WinUIDetailsInternal2Lib>
     </PropertyGroup>
 
     <!-- As we move things to the components folder there will often be    -->
@@ -60,7 +62,7 @@
         <Link>
           <AdditionalDependencies>
             %(AdditionalDependencies);
-            $(WinUIDetailsRuntimesPath)\Microsoft.UI.Xaml.Internal2.lib;
+            $(WinUIDetailsInternal2Lib);
           </AdditionalDependencies>
         </Link>
     </ItemDefinitionGroup>

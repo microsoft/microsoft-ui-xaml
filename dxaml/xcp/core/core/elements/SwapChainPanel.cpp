@@ -610,7 +610,7 @@ _Check_return_ HRESULT CSwapChainPanel::CreateInputPointerSource(
     PFN_GetActivationFactory pfnGetActivationFactory = (PFN_GetActivationFactory)GetProcAddress(inputModule.get(), "DllGetActivationFactory");
     ASSERT(pfnGetActivationFactory != nullptr, L"error: nullptr to pfnGetActivationFactory!");
 
-    wrl::ComPtr<ixp::IInputPointerSourceStatics2> inputPointerSourceStatics;
+    wrl::ComPtr<SystemInputAbi::IInputPointerSourceStatics> inputPointerSourceStatics;
     {
         wrl::ComPtr<IActivationFactory> factory;
         pfnGetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputPointerSource).Get(), &factory);
@@ -620,13 +620,10 @@ _Check_return_ HRESULT CSwapChainPanel::CreateInputPointerSource(
         wrl::ComPtr<ixp::IVisual> visual;
         IFCFAILFAST(spriteVisual.As(&visual));
 
-        // Ensure any previously configured input pointer sources on this visual are cleared out.
-        // This is important if we previously created an input pointer source on this visual for 
-        // a different thread. If one exists, this will dispose it.
-        IFCFAILFAST(inputPointerSourceStatics->RemoveForVisual(visual.Get()));
-
-        // Create a new input pointer source for this visual on the current thread.
-        IFCFAILFAST(inputPointerSourceStatics->GetForVisual(visual.Get(), ppInputPointerSource));
+        // Dispose any source previously associated with this visual, then create
+        // its replacement on the current independent-input thread.
+        IFCFAILFAST(inputPointerSourceStatics->RemoveForSystemVisual(visual.Get()));
+        IFCFAILFAST(inputPointerSourceStatics->GetForSystemVisual(visual.Get(), ppInputPointerSource));
 
         // Set the device kinds.
         wrl::ComPtr<ixp::IInputPointerSource2> inputPointerSource2;

@@ -733,75 +733,12 @@ void DCompTreeHost::ComputeAndCachePrimaryMonitorSize()
 _Check_return_ HRESULT
 DCompTreeHost::SetTargetWindowUWP(HWND targetHwnd)
 {
-    ASSERT(m_spMainDevice != nullptr);
+    UNREFERENCED_PARAMETER(targetHwnd);
 
-    if (targetHwnd != nullptr)
-    {
-        if (m_targetHwnd == nullptr)
-        {
-            // Create a composition target object that is bound to the window that is represented by the specified window handle.
-            m_targetHwnd = targetHwnd;
-            ASSERT(m_spMainDevice);
-
-            if (!DesignerInterop::GetDesignerMode(DesignerMode::V2Only))
-            {
-                wrl::ComPtr<ixp::ICoreWindowSiteBridgeStatics> bridgeStatics;
-                IFCFAILFAST(wf::GetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(
-                    RuntimeClass_Microsoft_UI_Content_CoreWindowSiteBridge).Get(), &bridgeStatics));
-
-                wuc::ICoreWindow* coreWindow = DirectUI::DXamlServices::GetCurrentCoreWindowNoRef();
-                IFCEXPECT_ASSERT_RETURN(coreWindow);
-                // Create ICoreWindowSiteBridge
-                IFC_RETURN(bridgeStatics->Create(
-                    m_spCompositor.Get(),
-                    coreWindow,
-                    m_contentBridgeCW.ReleaseAndGetAddressOf()));
-
-                IFCFAILFAST(m_contentBridgeCW.As(&m_contentBridge));
-
-                wrl::ComPtr<IInspectable> islandAsInspectable;
-
-                // Create a new island
-                wrl::ComPtr<ixp::IContentIslandStatics> contentStatics;
-                IFCFAILFAST(wf::GetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(
-                    RuntimeClass_Microsoft_UI_Content_ContentIsland).Get(), &contentStatics));
-
-                wrl::ComPtr<ixp::IContainerVisual> containerRootVisual;
-                IFCFAILFAST(m_spCompositor->CreateContainerVisual(&containerRootVisual));
-
-                wrl::ComPtr<ixp::IVisual> rootVisual;
-                IFCFAILFAST(containerRootVisual.As(&rootVisual));
-
-                IFCFAILFAST(contentStatics->Create(rootVisual.Get(), &m_coreWindowContentIsland));
-
-                if (auto contentRoot =
-                        DXamlServices::GetHandle()->GetContentRootCoordinator()->Unsafe_IslandsIncompatible_CoreWindowContentRoot())
-                {
-                    IFCFAILFAST(contentRoot->SetContentIsland(m_coreWindowContentIsland.Get()));
-                }
-
-                // Connect DWLiftedDB with Island and input
-                IFC_RETURN(m_contentBridgeCW->Connect(m_coreWindowContentIsland.Get()));
-            }
-
-            // Initialize the root DComp visual, and attach it to the hwnd target, or shared target in the
-            // DesignModeV2 case.
-            ASSERT(m_hwndVisual == nullptr);
-            IFC_RETURN(SetTargetHelper());
-
-            if (m_systemBackdropBrush != nullptr)
-            {
-                // Use the backdrop brush that was previously set while m_contentBridge was still null.
-                IFC_RETURN(SetSystemBackdropBrush(m_systemBackdropBrush.Get()));
-
-                m_systemBackdropBrush = nullptr;
-            }
-        }
-
-        IFC_RETURN(UpdateAtlasHint());
-    }
-
-    return S_OK;
+    // WinUI 3 production apps use the islands hosting path. The legacy UWP
+    // CoreWindow bridge has no system-Compositor factory and cannot host the
+    // system visual tree without reintroducing lifted Composition.
+    return E_NOTIMPL;
 }
 
 _Check_return_ HRESULT
@@ -914,9 +851,9 @@ _Check_return_ HRESULT DCompTreeHost::SetRootForCorrectContext(_In_ WUComp::IVis
         // exit its message loop and tear down the tree. Since CompositionContent already closed everything,
         // Xaml will get lots of RO_E_CLOSED errors. These are all safe to ignore. So tolerate RO_E_CLOSED if
         // we're also in the middle of tearing down the tree.
-        ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
-        IFCFAILFAST(compositionContent->QueryInterface(IID_PPV_ARGS(&contentIslandExperimental)));
-        HRESULT hr = contentIslandExperimental->put_Root(visual);
+        ComPtr<SystemContentAbi::IContentIslandRoot> contentIslandRoot;
+        IFCFAILFAST(compositionContent->QueryInterface(IID_PPV_ARGS(&contentIslandRoot)));
+        HRESULT hr = contentIslandRoot->SetSystemVisualRoot(visual);
         if (FAILED(hr))
         {
             if ( hr != RO_E_CLOSED)
@@ -1009,9 +946,9 @@ _Check_return_ HRESULT DCompTreeHost::ConnectXamlIslandTargetRoots()
                 // Note: This assumes that only one Visual would be connected into the
                 // Content.  If Xaml needs multiple Visuals, it would need to create its own
                 // ContainerVisual.
-                ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
-                IFCFAILFAST(content->QueryInterface(IID_PPV_ARGS(&contentIslandExperimental)));
-                IFC_RETURN(contentIslandExperimental->put_Root(wucVisual));
+                ComPtr<SystemContentAbi::IContentIslandRoot> contentIslandRoot;
+                IFCFAILFAST(content->QueryInterface(IID_PPV_ARGS(&contentIslandRoot)));
+                IFC_RETURN(contentIslandRoot->SetSystemVisualRoot(wucVisual));
 
                 xamlIslandRoot->SetRootVisual(wucVisual);
 
@@ -1659,9 +1596,9 @@ void DCompTreeHost::ShowUIThreadCounters()
             if (!hostVisual)
             {
                 // We don't have the host visual so create one.
-                ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
-                IFCFAILFAST(iter->first->GetContentIsland()->QueryInterface(IID_PPV_ARGS(&contentIslandExperimental)));
-                IFCFAILFAST(contentIslandExperimental->put_Root(nullptr));
+                ComPtr<SystemContentAbi::IContentIslandRoot> contentIslandRoot;
+                IFCFAILFAST(iter->first->GetContentIsland()->QueryInterface(IID_PPV_ARGS(&contentIslandRoot)));
+                IFCFAILFAST(contentIslandRoot->SetSystemVisualRoot(nullptr));
                 IFCFAILFAST(GetCompositor()->CreateContainerVisual(hostVisual.ReleaseAndGetAddressOf()));
 
                 // mark this as our FrameCount/Root host.
@@ -1678,7 +1615,7 @@ void DCompTreeHost::ShowUIThreadCounters()
 
                 rootVisual.Reset();
                 IFCFAILFAST(hostVisual.As(&rootVisual))
-                IFCFAILFAST(contentIslandExperimental->put_Root(rootVisual.Get()));
+                IFCFAILFAST(contentIslandRoot->SetSystemVisualRoot(rootVisual.Get()));
             }
         }
     }

@@ -37,6 +37,7 @@
       _WIN32_WINNT=_WIN32_WINNT_WIN10;
       _WIN32_IE=_WIN32_IE_IE100;
     </TargetPlatformDefinitions>
+    <MidlTargetPlatformDefinitions>WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION=0xf0000;NTDDI_VERSION=NTDDI_WIN10_RS5;WINVER=_WIN32_WINNT_WIN10;_WIN32_WINNT=_WIN32_WINNT_WIN10;_WIN32_IE=_WIN32_IE_IE100;</MidlTargetPlatformDefinitions>
   </PropertyGroup>
 
   <!-- Since we aren't using the standard include mechanism for the sdks (INCLUDE environment variable) -->
@@ -135,7 +136,7 @@
       <PreprocessorDefinitions Condition="'$(_MSDeployUserAgent)'!=''">%(PreprocessorDefinitions) IS_LAB_BUILD;</PreprocessorDefinitions>
       <PreprocessorDefinitions>
         %(PreprocessorDefinitions) 
-        $(TargetPlatformDefinitions)
+        $(MidlTargetPlatformDefinitions)
         $(XamlCommonPreprocessorDefinitions)
         $(XamlMidlPreprocessorDefinitions) 
         $(ProjectPreprocessorDefinitions) 
