@@ -39,9 +39,9 @@ cpp_quote("#undef GetCurrentTime")
 
 namespace Microsoft.UI.Xaml
 {
-    [contractversion(12)]
+    [contractversion(13)]
     apicontract WinUIContract{};
-    [contractversion(12)]
+    [contractversion(13)]
     apicontract XamlContract{};
 }
 
@@ -884,7 +884,7 @@ namespace Microsoft.UI.Xaml.Automation.Peers
         TextEditTextChanged,
         LayoutInvalidated,
         [feature(Feature_ExperimentalApi)]
-        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 13)]
         Notification,
     };
 
@@ -1908,7 +1908,7 @@ namespace Microsoft.UI.Xaml
         Microsoft.UI.Content.ContentIsland ContentIsland{ get; };
         Microsoft.UI.Xaml.Media.SystemBackdrop SystemBackdrop;
     
-        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 13)]
         [feature(Feature_ExperimentalApi)]
         [interface_name("Microsoft.UI.Xaml.IXamlIslandFeature_ExperimentalApi")]
         {
@@ -2551,7 +2551,7 @@ namespace Microsoft.UI.Xaml
         overridable void OnApplyTemplate();
         overridable Boolean GoToElementStateCore(String stateName, Boolean useTransitions);
     
-        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 13)]
         [feature(Feature_ExperimentalApi)]
         [interface_name("Microsoft.UI.Xaml.IFrameworkElementFeature_ExperimentalApi")]
         {
