@@ -260,6 +260,91 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
+    void AutoSuggestBoxAutomationPeerIntegrationTests::VerifyTextBoxAccessKeyScopeCycleDoesNotRecurse()
+    {
+        TestCleanupWrapper cleanup;
+
+        auto autoSuggestBox = SetupTest(
+            L"TestAutoSuggestBox",
+            nullptr /* AutomationName */,
+            nullptr /* AutomationId */,
+            L"A");
+
+        RunOnUIThread([&]()
+        {
+            auto altA = ref new Platform::String(L"Alt, A");
+
+            auto textBox = TreeHelper::GetVisualChildByType<xaml_controls::TextBox>(autoSuggestBox);
+            VERIFY_IS_NOT_NULL(textBox);
+
+            auto textBoxPeer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(textBox);
+            VERIFY_IS_NOT_NULL(textBoxPeer);
+
+            // Baseline: the parent's access key propagates to the editable TextBox.
+            VERIFY_ARE_EQUAL(altA, textBoxPeer->GetAccessKey());
+
+            // Create a cycle: make the AutoSuggestBox's access-key scope owner the very
+            // TextBox whose peer forwards its access key back to the AutoSuggestBox peer.
+            // Without a reentrancy guard, resolving the access key recurses until the
+            // stack overflows.
+            textBox->IsAccessKeyScope = true;
+            autoSuggestBox->AccessKeyScopeOwner = textBox;
+
+            // The query must return rather than recurse indefinitely. Reaching the next
+            // line at all is the core assertion. Querying twice confirms the guard is
+            // reset after each call and does not leave the peer in a dirty state.
+            auto firstResult = textBoxPeer->GetAccessKey();
+            VERIFY_IS_NOT_NULL(firstResult);
+            auto secondResult = textBoxPeer->GetAccessKey();
+            VERIFY_ARE_EQUAL(firstResult, secondResult);
+
+            // Breaking the cycle must restore normal parent propagation, proving the
+            // reentrancy guard was correctly cleared after each query.
+            autoSuggestBox->AccessKeyScopeOwner = nullptr;
+            textBox->IsAccessKeyScope = false;
+            VERIFY_ARE_EQUAL(altA, textBoxPeer->GetAccessKey());
+        });
+    }
+
+    void AutoSuggestBoxAutomationPeerIntegrationTests::VerifyAccessKeyNotForwardedToNonAutoSuggestBoxTextBox()
+    {
+        TestCleanupWrapper cleanup;
+
+        // The forwarding logic lives in the shared TextBoxAutomationPeer, which every
+        // TextBox uses - including the editable TextBox inside a ComboBox. Verify that a
+        // TextBox whose templated parent is not an AutoSuggestBox never inherits the
+        // parent's access key, so the behavior stays scoped to AutoSuggestBox.
+        xaml_controls::ComboBox^ comboBox = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            comboBox = ref new xaml_controls::ComboBox();
+            comboBox->IsEditable = true;
+            comboBox->AccessKey = L"A";
+            comboBox->Items->Append(ref new Platform::String(L"Item 1"));
+            comboBox->Items->Append(ref new Platform::String(L"Item 2"));
+
+            TestServices::WindowHelper->WindowContent = comboBox;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto emptyAccessKey = ref new Platform::String(L"");
+
+            auto textBox = TreeHelper::GetVisualChildByType<xaml_controls::TextBox>(comboBox);
+            VERIFY_IS_NOT_NULL(textBox);
+
+            auto textBoxPeer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(textBox);
+            VERIFY_IS_NOT_NULL(textBoxPeer);
+
+            // The ComboBox's access key must not leak into its editable TextBox peer:
+            // the shared peer only forwards for an AutoSuggestBox's own template part.
+            VERIFY_ARE_EQUAL(emptyAccessKey, xaml_automation::AutomationProperties::GetAccessKey(textBox));
+            VERIFY_ARE_EQUAL(emptyAccessKey, textBoxPeer->GetAccessKey());
+        });
+    }
+
 
     void AutoSuggestBoxAutomationPeerIntegrationTests::VerifyDefaultAutomationName()
     {

@@ -78,32 +78,42 @@ IFACEMETHODIMP TextBoxAutomationPeer::GetAutomationControlTypeCore(_Out_ xaml_au
 
 IFACEMETHODIMP TextBoxAutomationPeer::GetAccessKeyCore(_Out_ HSTRING* returnValue)
 {
-    ctl::ComPtr<IUIElement> owner;
-    IFC_RETURN(get_Owner(owner.GetAddressOf()));
-
-    auto textBox = owner.Cast<TextBox>();
-    const auto automationAccessKeyProperty =
-        MetadataAPI::GetDependencyPropertyByIndex(KnownPropertyIndex::AutomationProperties_AccessKey);
-    const auto accessKeyProperty =
-        MetadataAPI::GetDependencyPropertyByIndex(KnownPropertyIndex::UIElement_AccessKey);
-
-    if (textBox->GetHandle()->IsPropertyDefault(automationAccessKeyProperty) &&
-        textBox->GetHandle()->IsPropertyDefault(accessKeyProperty))
+    // If the owning AutoSuggestBox's AccessKeyScopeOwner chain leads back to this
+    // TextBox, asking the parent peer for its access key re-enters this method and
+    // would recurse indefinitely. When already resolving, break the cycle by falling
+    // back to the default implementation instead of delegating to the parent again.
+    if (!m_isResolvingAccessKey)
     {
-        ctl::ComPtr<DependencyObject> templatedParent;
-        IFC_RETURN(textBox->get_TemplatedParent(&templatedParent));
+        ctl::ComPtr<IUIElement> owner;
+        IFC_RETURN(get_Owner(owner.GetAddressOf()));
 
-        auto autoSuggestBox = templatedParent.AsOrNull<xaml_controls::IAutoSuggestBox>();
-        if (autoSuggestBox)
+        auto textBox = owner.Cast<TextBox>();
+        const auto automationAccessKeyProperty =
+            MetadataAPI::GetDependencyPropertyByIndex(KnownPropertyIndex::AutomationProperties_AccessKey);
+        const auto accessKeyProperty =
+            MetadataAPI::GetDependencyPropertyByIndex(KnownPropertyIndex::UIElement_AccessKey);
+
+        if (textBox->GetHandle()->IsPropertyDefault(automationAccessKeyProperty) &&
+            textBox->GetHandle()->IsPropertyDefault(accessKeyProperty))
         {
-            auto autoSuggestBoxImpl = autoSuggestBox.Cast<AutoSuggestBox>();
-            if (autoSuggestBoxImpl->IsTextBoxPart(textBox))
+            ctl::ComPtr<DependencyObject> templatedParent;
+            IFC_RETURN(textBox->get_TemplatedParent(&templatedParent));
+
+            auto autoSuggestBox = templatedParent.AsOrNull<xaml_controls::IAutoSuggestBox>();
+            if (autoSuggestBox)
             {
-                ctl::ComPtr<xaml_automation_peers::IAutomationPeer> autoSuggestBoxPeer;
-                IFC_RETURN(autoSuggestBoxImpl->GetOrCreateAutomationPeer(&autoSuggestBoxPeer));
-                if (autoSuggestBoxPeer)
+                auto autoSuggestBoxImpl = autoSuggestBox.Cast<AutoSuggestBox>();
+                if (autoSuggestBoxImpl->IsTextBoxPart(textBox))
                 {
-                    return autoSuggestBoxPeer.Cast<AutomationPeer>()->GetAccessKey(returnValue);
+                    ctl::ComPtr<xaml_automation_peers::IAutomationPeer> autoSuggestBoxPeer;
+                    IFC_RETURN(autoSuggestBoxImpl->GetOrCreateAutomationPeer(&autoSuggestBoxPeer));
+                    if (autoSuggestBoxPeer)
+                    {
+                        m_isResolvingAccessKey = true;
+                        auto resetGuard = wil::scope_exit([this]() { m_isResolvingAccessKey = false; });
+
+                        return autoSuggestBoxPeer.Cast<AutomationPeer>()->GetAccessKey(returnValue);
+                    }
                 }
             }
         }
