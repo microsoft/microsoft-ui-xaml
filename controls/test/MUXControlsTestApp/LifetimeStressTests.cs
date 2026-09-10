@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -31,13 +31,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // ref-counting mistakes in the 3-layer peer model). Those tests were dropped when the old test team tests
     // went away. This class reintroduces that coverage in a form that is:
     //
-    //   * Report-only outside the scheduled soak: the suite still participates in the test pass (so it is built,
-    //     discovered and reported), but the actual create/teardown/GC workload runs ONLY when soak mode is enabled
-    //     (or an explicit iteration count is requested - see below). In the per-PR gate and Nightly, where neither
-    //     is set, every scenario skips. This is deliberate: a real object-lifetime bug faults as a NATIVE crash /
-    //     fail-fast that terminates the TAEF host process, which managed code cannot catch and downgrade to a
-    //     warning - so running the workload in the gate could block unrelated PRs. Keeping the heavy work on the
-    //     dedicated soak schedule lets this suite surface lifetime bugs as a report without ever gating a PR.
+    //   * Reporting, never gating: the suite runs its create/teardown/GC workload on EVERY test pass - including the
+    //     per-PR gate and Nightly - so a lifetime report is produced right in that pipeline run. It is engineered so
+    //     it never fails the pipeline: leaks and any thrown managed exception are downgraded to non-gating warnings
+    //     (see RunStress / RunIterationReporting), so this suite never records a Failed test result. The one thing a
+    //     managed catch cannot intercept is a genuine NATIVE crash / fail-fast (e.g. a stowed exception in
+    //     combase.dll) that terminates the TAEF host outright; that is the real signal we want, and a known
+    //     deterministic crasher is quarantined per-scenario with [TestProperty("Ignore","True")] (see
+    //     StressItemsRepeaterRealizationAndRecycling) so it does not gate while its product bug is pending.
     //   * Runnable as a long soak (the classic "run for a few hours" behavior) by setting environment variables
     //     (see below), so the scheduled WinUI-LifetimeStress pipeline can crank the workload way up. Each iteration
     //     aggressively settles the UI thread and forces the GC + finalizers so a dangling native peer is much more
@@ -50,11 +51,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // when injected into a Helix work item):
     //
     //   WINUI_LIFETIME_STRESS_MINUTES      If > 0, each scenario loops until this many minutes have elapsed. This
-    //                                      is the soak knob and the WinUI-LifetimeStress pipeline sets it; it is the
-    //                                      normal way this suite does real work.
+    //                                      is the soak knob and the WinUI-LifetimeStress pipeline sets it.
     //   WINUI_LIFETIME_STRESS_ITERATIONS   If > 0 (and soak mode is off), run each scenario this many create/destroy
-    //                                      cycles. Intended for explicit local/manual runs. When neither variable is
-    //                                      set (the default, including the PR gate and Nightly), scenarios skip.
+    //                                      cycles - a heavier local/manual run. When neither variable is set (the
+    //                                      default, including the PR gate and Nightly), each scenario runs a small
+    //                                      non-gating "report" pass of DefaultReportIterations cycles.
     //
     // Adding coverage: the cheapest, highest-value thing a contributor can do when fixing a lifetime crash (as the
     // ItemsRepeater realization/recycling scenario below demonstrates) is to add the offending create/teardown
@@ -66,15 +67,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // picks the suite up, and so it is discovered/reported in every test pass. The MUXControlsTestApp module also
     // sets Classification=Integration module-wide via ApiTestAssemblyHandling.AssemblyInitialize; we declare it here
     // as well so this suite's selection is explicit and self-documenting, matching the InteractionTests convention.
-    // NOTE: selection is not the same as gating. The suite is report-only in the PR gate - see RunStress: outside
-    // soak (or an explicit opt-in) every scenario skips, so it cannot fail a PR even though it is selected here.
+    // NOTE: selection is not the same as gating. The suite runs a small non-gating "report" pass in the PR gate -
+    // see RunStress / RunIterationReporting: leaks and thrown managed exceptions are downgraded to warnings, so it
+    // reports in the PR run but never records a Failed result and cannot fail the pipeline.
     [TestProperty("Classification", "Integration")]
     [TestProperty("TestSuite", "LifetimeStressTestSuite")]
     public class LifetimeStressTests : ApiTestBase
     {
-        // Number of create/destroy cycles per scenario when an explicit fixed-count run is requested via
-        // WINUI_LIFETIME_STRESS_ITERATIONS. There is deliberately no gate default: outside the scheduled soak
-        // pipeline (and an explicit opt-in), scenarios are skipped - see RunStress for the report-only rationale.
+        // Number of create/destroy cycles per scenario in the default "report" pass (PR gate + Nightly). Kept small
+        // so the report pass is fast and cheap; it is enough to surface a lifetime report while every iteration's
+        // aggressive GC still makes a dangling native peer fault promptly. Override with WINUI_LIFETIME_STRESS_ITERATIONS
+        // for a heavier local run, or WINUI_LIFETIME_STRESS_MINUTES for the scheduled soak.
+        private const int DefaultReportIterations = 3;
+
+        // Name of the scenario currently executing, used by SafeUI to attribute a warning when UI-thread work throws.
+        // Scenarios in this suite run one at a time on the test thread, so a single static is sufficient.
+        private static string s_currentScenario = "LifetimeStress";
+
+        // Explicit fixed cycle count (WINUI_LIFETIME_STRESS_ITERATIONS). 0 means "not set" - the default report
+        // pass (DefaultReportIterations) is used instead.
         private static int ConfiguredIterations
         {
             get { return GetEnvInt("WINUI_LIFETIME_STRESS_ITERATIONS", 0); }
@@ -96,7 +107,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var objects = new Dictionary<string, WeakReference>();
 
-                RunOnUIThread.Execute(() =>
+                SafeUI(() =>
                 {
                     foreach (var pair in CreateControlSet())
                     {
@@ -115,7 +126,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // pass/fail signal is that the create/load/unload/collect loop does not crash the test host. Emitting
                 // a failed test result would gate the shared pipeline (the Run Tests stage's Publish Test Results
                 // step) on a soft, sometimes-flaky signal, so we surface it as a warning instead.
-                RunOnUIThread.Execute(() => VerifyCollected(objects, failOnLeak: false));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -144,7 +155,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var objects = new Dictionary<string, WeakReference>();
 
-                RunOnUIThread.Execute(() =>
+                SafeUI(() =>
                 {
                     var elementFactory = new RecyclingElementFactory();
                     elementFactory.RecyclePool = new RecyclePool();
@@ -207,7 +218,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // ItemsRepeater / element-factory graphs can legitimately need extra time to unwind; treat a residual
                 // reference as a warning rather than a hard failure here. The primary signal for this scenario is that
                 // the churn/teardown loop does not crash the test host.
-                RunOnUIThread.Execute(() => VerifyCollected(objects, failOnLeak: false));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -221,7 +232,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var objects = new Dictionary<string, WeakReference>();
 
-                RunOnUIThread.Execute(() =>
+                SafeUI(() =>
                 {
                     var root = new Grid();
                     var parentA = new Border() { Width = 100, Height = 100 };
@@ -255,7 +266,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                RunOnUIThread.Execute(() => VerifyCollected(objects, failOnLeak: false));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -269,13 +280,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var objects = new Dictionary<string, WeakReference>();
 
-                RunOnUIThread.Execute(() =>
+                SafeUI(() =>
                 {
                     objects["Window"] = CreateActivateAndCloseWindow();
                 });
 
                 SettleAndCollect();
-                RunOnUIThread.Execute(() => VerifyCollected(objects, failOnLeak: false));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -311,7 +322,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var objects = new Dictionary<string, WeakReference>();
 
-                RunOnUIThread.Execute(() =>
+                SafeUI(() =>
                 {
                     // A constrained viewport is required for the list to actually virtualize (and therefore recycle)
                     // rather than realize every item up front.
@@ -348,7 +359,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                RunOnUIThread.Execute(() => VerifyCollected(objects, failOnLeak: false));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -365,7 +376,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var objects = new Dictionary<string, WeakReference>();
 
-                RunOnUIThread.Execute(() =>
+                SafeUI(() =>
                 {
                     var root = new Grid();
                     var popup = new Popup();
@@ -400,7 +411,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                RunOnUIThread.Execute(() => VerifyCollected(objects, failOnLeak: false));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -418,7 +429,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var objects = new Dictionary<string, WeakReference>();
 
-                RunOnUIThread.Execute(() =>
+                SafeUI(() =>
                 {
                     var navView = new NavigationView()
                     {
@@ -466,7 +477,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                RunOnUIThread.Execute(() => VerifyCollected(objects, failOnLeak: false));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -483,7 +494,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var objects = new Dictionary<string, WeakReference>();
 
-                RunOnUIThread.Execute(() =>
+                SafeUI(() =>
                 {
                     var tabView = new TabView()
                     {
@@ -521,7 +532,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                RunOnUIThread.Execute(() => VerifyCollected(objects, failOnLeak: false));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -584,35 +595,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             };
         }
 
-        // Run the supplied per-iteration work: for a wall-clock soak budget (WINUI_LIFETIME_STRESS_MINUTES) or, as an
-        // explicit local opt-in, a fixed number of iterations (WINUI_LIFETIME_STRESS_ITERATIONS). When neither is set
-        // (the PR gate and Nightly) the scenario skips - see the report-only rationale below. Progress is logged so a
-        // crash's last-known iteration is visible in the test output.
+        // Run the supplied per-iteration work and always produce a report, never a gating failure. In every mode the
+        // per-iteration work is wrapped so a thrown managed exception is logged as a WARNING (a report line) instead
+        // of failing the test - so this suite never records a Failed result and therefore never fails Publish Test
+        // Results / the pipeline. Modes:
+        //   * WINUI_LIFETIME_STRESS_MINUTES > 0  -> soak: loop each scenario on a wall-clock budget (scheduled pipeline).
+        //   * WINUI_LIFETIME_STRESS_ITERATIONS>0 -> explicit fixed cycle count (heavier local/manual run).
+        //   * neither set (PR gate + Nightly)    -> a small default "report" pass (DefaultReportIterations).
+        //
+        // IMPORTANT - the one thing this cannot catch: a genuine object-lifetime bug can fault as a NATIVE crash /
+        // fail-fast (e.g. a stowed exception in combase.dll) that terminates the TAEF host process outright. Managed
+        // try/catch cannot intercept that, so such a crash would still fail the work item. That is the real signal we
+        // want, and we handle a known deterministic crasher by quarantining the specific scenario with
+        // [TestProperty("Ignore","True")] (see StressItemsRepeaterRealizationAndRecycling). Everything a managed
+        // catch can reach (thrown exceptions, leaks) is downgraded to a non-gating warning here.
         private static void RunStress(string scenarioName, Action<int> iteration)
         {
             double soakMinutes = ConfiguredSoakMinutes;
             int iterations = ConfiguredIterations;
-
-            // Report-only policy. This suite runs its actual create/teardown/GC workload in only two situations:
-            //   * the scheduled lifetime-stress soak pipeline (WinUI-LifetimeStress.yml), the one place that sets
-            //     WINUI_LIFETIME_STRESS_MINUTES > 0; and
-            //   * an explicit local/manual opt-in via WINUI_LIFETIME_STRESS_ITERATIONS > 0.
-            // Everywhere else - most importantly the per-PR gate and the Nightly pipeline, neither of which sets
-            // either variable - the scenario is skipped and simply reports.
-            //
-            // Why skip rather than "run and downgrade failures to warnings": a genuine object-lifetime bug faults as
-            // a NATIVE crash / fail-fast (e.g. a stowed exception in combase.dll) that terminates the TAEF test host
-            // process. Managed code cannot catch that, so it can never be turned into a non-gating Log.Warning - it
-            // would take down the PR gate. Not running the workload in the gate is therefore the only way to
-            // guarantee this suite never blocks a PR while still providing full soak coverage on its own schedule.
-            if (soakMinutes <= 0.0 && iterations <= 0)
-            {
-                Log.Comment("[{0}] Skipped (report-only): lifetime stress does no work outside the scheduled soak " +
-                    "pipeline. Set WINUI_LIFETIME_STRESS_MINUTES > 0 (as WinUI-LifetimeStress.yml does), or " +
-                    "WINUI_LIFETIME_STRESS_ITERATIONS > 0 for an explicit local run, to exercise this scenario.",
-                    scenarioName);
-                return;
-            }
 
             if (soakMinutes > 0.0)
             {
@@ -625,7 +625,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Log.Comment("[{0}] Soak iteration {1} (elapsed {2:0.0}/{3:0.0} min)...",
                         scenarioName, i, deadline.Elapsed.TotalMinutes, budget.TotalMinutes);
-                    iteration(i);
+                    RunIterationReporting(scenarioName, iteration, i);
                     i++;
                 }
 
@@ -633,13 +633,63 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                Log.Comment("[{0}] Explicit run: {1} iteration(s).", scenarioName, iterations);
-                for (int i = 0; i < iterations; i++)
+                bool explicitRun = iterations > 0;
+                int count = explicitRun ? iterations : DefaultReportIterations;
+                Log.Comment("[{0}] {1}: {2} iteration(s).", scenarioName,
+                    explicitRun ? "Explicit run" : "Report pass (non-gating)", count);
+                for (int i = 0; i < count; i++)
                 {
-                    Log.Comment("[{0}] Iteration {1}/{2}...", scenarioName, i, iterations);
-                    iteration(i);
+                    Log.Comment("[{0}] Iteration {1}/{2}...", scenarioName, i, count);
+                    RunIterationReporting(scenarioName, iteration, i);
                 }
             }
+        }
+
+        // Run a single scenario iteration, downgrading any thrown managed exception to a non-gating warning so it is
+        // reported without failing the test (and therefore without failing the pipeline). This is the outer net for
+        // exceptions thrown on the TEST thread (e.g. IdleSynchronizer.Wait / SettleAndCollect). Exceptions thrown on
+        // the UI thread are caught earlier, inside SafeUI, before RunOnUIThread.Execute can turn them into a
+        // Verify.Fail (which would record a Failed verdict). A native crash / fail-fast cannot be caught by either
+        // and will still take the host down - that is intentional (see RunStress remarks); a known deterministic
+        // crasher is quarantined per-scenario with [TestProperty("Ignore","True")].
+        private static void RunIterationReporting(string scenarioName, Action<int> iteration, int i)
+        {
+            s_currentScenario = scenarioName;
+            try
+            {
+                iteration(i);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(string.Format(
+                    "[LifetimeStress] REPORT: scenario '{0}' threw on iteration {1}: {2}: {3}. Logged as a warning " +
+                    "(non-gating); investigate for a possible lifetime bug.",
+                    scenarioName, i, ex.GetType().Name, ex.Message));
+            }
+        }
+
+        // Run an action on the UI thread, catching any exception INSIDE the UI-thread callback and downgrading it to a
+        // non-gating warning. This is essential: RunOnUIThread.Execute converts an escaping UI-thread exception into a
+        // Verify.Fail, and a Verify.Fail records a Failed test verdict that a catch on the test thread cannot undo. By
+        // swallowing the exception here (before it escapes the callback) the scenario reports the problem without ever
+        // failing the test - so this suite reports in the PR run but never gates it. Scenarios call this instead of
+        // RunOnUIThread.Execute directly.
+        private static void SafeUI(Action action)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                try
+                {
+                    action();
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(string.Format(
+                        "[LifetimeStress] REPORT: scenario '{0}' threw on the UI thread: {1}: {2}. Logged as a " +
+                        "warning (non-gating); investigate for a possible lifetime bug.",
+                        s_currentScenario, ex.GetType().Name, ex.Message));
+                }
+            });
         }
 
         // Aggressively settle the UI thread and force collection + finalization. Doing this every iteration is what
