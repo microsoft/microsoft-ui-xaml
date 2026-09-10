@@ -321,6 +321,7 @@
     <Setter Property="Width" Value="NaN" />
     <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
     <Setter Property="AllowFocusOnInteraction" Value="False" />
+    <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
     <Setter Property="primitives:CommandBarFlyoutCommandBarAutomationProperties.ControlType" Value="MenuItem" />
     <Setter Property="Template">
       <Setter.Value>
