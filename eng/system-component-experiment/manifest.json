@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "activeSubtrial": "A",
-  "activeStage": "A5",
-  "activeCheckpoint": "content-input-hosting-closure",
+  "activeStage": "A6",
+  "activeCheckpoint": "runtime-parity-validation",
   "architecture": "x64",
   "branchNativeImplementation": true,
   "repositories": {
@@ -83,12 +83,22 @@
     "systemIdlBuild": "blocked-by-vfs-createprocess-payload-mismatch-0x95e"
   },
   "latestCheckpoint": {
-    "winuiCommit": "5ed34d36e",
+    "winuiCommit": "cf8ff280e",
+    "winuiDetailsCommits": [
+      "88d7a084c8f056e5f7541ce31590faf13ff19285",
+      "0bde1a21ac8badfa1841fb04184bf1cc6c952563"
+    ],
+    "latestOsCommits": [
+      "211f481610b26807e4df84cbeba2eb999646e2f9",
+      "c08e0423cf0f4bde52934a3a22ae4d1ae62ad3f3",
+      "fe64688a193cda2df1a9d9a1250ea3bf68f39b3b"
+    ],
     "winuiGalleryCommit": "199f63ec57ee8457fa9745b8a0d1e951111331fc",
-    "winuiBuild": "a4-system-dispatcherqueue-lifecycle-compiles-build-blocked-at-a5-lifted-content-and-input-composition-abi",
-    "csharpScenarioApp": "source-updated-to-system-composition-and-dispatcherqueue-awaiting-a5-product-closure",
-    "cppWinrtScenarioApp": "source-updated-to-system-composition-and-dispatcherqueue-awaiting-a5-product-closure",
+    "winuiBuild": "a5-native-target-build-passed-with-system-content-input-and-winuidetails-abi; full-orchestrated-retry-blocked-by-midl-error-80-stale-intermediate-collision",
+    "inputHostRuntime": "substitution-ready-microsoft-ui-input-dll-winmd-import-lib-and-activation-manifest",
+    "csharpScenarioApp": "ready-for-a6-runtime-payload-substitution",
+    "cppWinrtScenarioApp": "ready-for-a6-runtime-payload-substitution",
     "winuiGallery": "passed-debug-x64-build",
-    "notes": "A2 changes XamlOM, generated IDL, generated ABI stubs, and scenario source to Windows.UI.Composition and Windows.System.DispatcherQueue. A3 binds native Composition aliases and the compositor host to Windows.UI.Composition, activates the system compositor directly, and exposes the current SDK Composition ABI under a scoped override while retaining the RS5 contract fence for other APIs. A4 now activates Windows.System.DispatcherQueue, creates current-thread controllers through CreateDispatcherQueueController, handles ShutdownStarting on the system queue, and pumps messages through asynchronous queue shutdown. The product build has no remaining A4 compiler failures and now stops at A5 crossings where lifted Microsoft.UI.Content and Microsoft.UI.Input APIs require lifted Composition objects. Lifted-only IExpCompositionPropertyChanged callbacks remain an explicit Windows 11 parity redesign item. A1 runtime canaries remain red until the A5 native closure is rebuilt."
+    "notes": "A5 adds system-backed ContentIsland creation and root mutation, DispatcherQueue-backed DesktopChildSiteBridge creation, and system-visual InputPointerSource creation/removal. WinUI uses those APIs without requiring a worker-thread DispatcherQueue or temporary ContentIsland for SwapChainPanel independent input. A private package-compatible Microsoft.UI.Xaml.Internal2 replacement binds Composition helpers to Windows.UI.Composition. Explicit functionality gaps are legacy UWP CoreWindow hosting, windowed-popup ContentExternalBackdropLink, and DirectManipulation SetInteraction for system visuals. The rebuilt Microsoft.UI.Input runtime payload is ready for substitution. A6 must validate activation, loaded modules, DesktopWindowXamlSource, popup root replacement, SwapChainPanel repeated independent-input creation, and Windows 10/11 parity."
   }
 }
