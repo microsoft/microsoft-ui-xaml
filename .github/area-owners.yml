@@ -1,0 +1,325 @@
+# Area ownership map for automatic *optional* reviewer suggestions.
+#
+# Consumed by .github/workflows/area-reviewers.yml. Every area whose globs match a
+# changed file contributes its reviewers (union, not first-match). Reviewers are
+# only *requested* - they never block a merge. The `* @microsoft/tm-winui` entry in
+# .github/CODEOWNERS remains the authoritative safety net.
+#
+# `reviewers` are GitHub handles. A handle that is not a repository collaborator
+# is skipped by the workflow rather than failing the run.
+#
+# Source of truth for the area breakdown: WinUI-Area-Ownership spreadsheet.
+
+areas:
+  # ---------------------------------------------------------------- Tier 1
+  - id: P1
+    name: XAML Core - Object Model, Parser & Metadata
+    tier: Tier 1 - Platform / Framework core
+    reviewers: [godlytalias, Hemantxk, akanpatel2206]
+    paths:
+      - dxaml/xcp/components/**
+      - dxaml/xcp/core/core/**
+      - dxaml/xcp/core/Parser/**
+      - dxaml/xcp/core/metadata/**
+      - dxaml/xcp/core/native/**
+      - dxaml/xcp/core/dll/**
+      - dxaml/xcp/core/dethunk/**
+      - dxaml/xcp/core/error/**
+      - dxaml/xcp/core/common/**
+      - dxaml/xcp/common/**
+      - dxaml/xcp/inc/**
+      - dxaml/xcp/core/*.props
+      - dxaml/xcp/core/*.vcxproj
+      - dxaml/xcp/core/*.h
+
+  - id: P2
+    name: XAML Core - Render, Layout, Input & Text
+    tier: Tier 1 - Platform / Framework core
+    reviewers: [godlytalias, Hemantxk, subhajitm]
+    paths:
+      - dxaml/xcp/core/text/**
+      - dxaml/xcp/core/inc/**
+      - dxaml/xcp/core/hw/**
+      - dxaml/xcp/core/sw/**
+      - dxaml/xcp/core/compositor/**
+      - dxaml/xcp/core/input/**
+      - dxaml/xcp/core/animation/**
+      - dxaml/xcp/core/imaging/**
+      - dxaml/xcp/core/layout/**
+      - dxaml/xcp/core/controls/**
+      - dxaml/xcp/core/networking/**
+      - dxaml/xcp/core/optional/**
+      - dxaml/xcp/pal/**
+      - dxaml/xcp/plat/**
+      - dxaml/xcp/win/**
+      - dxaml/xcp/control/**
+      - dxaml/xcp/host/**
+      - dxaml/xcp/hostpalplatmisc.vcxproj
+
+  - id: P3
+    name: XAML Framework Layer (DXaml lib)
+    tier: Tier 1 - Platform / Framework core
+    reviewers: [godlytalias, Hemantxk]
+    paths:
+      - dxaml/xcp/dxaml/lib/**
+      - dxaml/xcp/dxaml/idl/**
+      - dxaml/xcp/dxaml/dllsrv/**
+      - dxaml/xcp/dxaml/themes/**
+      - dxaml/xcp/dxaml/manifest/**
+      - dxaml/xcp/dxaml/images/**
+      - dxaml/xcp/dxaml/sounds/**
+      - dxaml/phone/**
+
+  - id: P4
+    name: Codegen & Metadata Tooling
+    tier: Tier 1 - Platform / Framework core
+    reviewers: [protikbiswas100, godlytalias]
+    paths:
+      - dxaml/xcp/tools/**
+      - dxaml/xcp/dxaml/tools/**
+      - dxaml/msbuild/**
+      - eng/**
+      - controls/dev/Generated/**
+      - controls/tools/**
+      - MergedWinMD/**
+      - dxaml/xcp/core/packaging/**
+      - dxaml/xcp/*.props
+      - dxaml/xcp/*.h
+      - dxaml/xcp/runcodegen.cmd
+
+  - id: P5
+    name: XAML Compiler
+    tier: Tier 1 - Platform / Framework core
+    reviewers: [SatwikKrSharma, Hemantxk, akanpatel2206]
+    paths:
+      - src/XamlCompiler/**
+      - src/projection/**
+
+  # ---------------------------------------------------------------- Tier 2
+  - id: C1
+    name: Lists & Repeater
+    tier: Tier 2 - WinUI Controls
+    reviewers: [hiteshkrmsft, iamAbhi-916]
+    paths:
+      - controls/dev/Repeater/**
+      - controls/dev/Collections/**
+      - controls/dev/CommonManaged/**
+      - controls/dev/LayoutPanel/**
+      - controls/dev/WrapPanel/**
+
+  - id: C2
+    name: Items & Selection
+    tier: Tier 2 - WinUI Controls
+    reviewers: [protikbiswas100, iamAbhi-916]
+    paths:
+      - controls/dev/ItemsView/**
+      - controls/dev/TreeView/**
+      - controls/dev/SelectorBar/**
+      - controls/dev/ItemContainer/**
+      - controls/dev/RadioButtons/**
+      - controls/dev/PipsPager/**
+      - controls/dev/PagerControl/**
+      - controls/dev/SortIndicator/**
+
+  - id: C3
+    name: Scrolling
+    tier: Tier 2 - WinUI Controls
+    reviewers: [godlytalias, Saharsh979]
+    paths:
+      - controls/dev/ScrollPresenter/**
+      - controls/dev/ScrollView/**
+
+  - id: C4
+    name: Navigation & Panes
+    tier: Tier 2 - WinUI Controls
+    reviewers: [ayushjai19, iamAbhi-916]
+    paths:
+      - controls/dev/NavigationView/**
+      - controls/dev/TabView/**
+      - controls/dev/Breadcrumb/**
+      - controls/dev/MenuBar/**
+      - controls/dev/TwoPaneView/**
+      - controls/dev/SplitView/**
+
+  - id: C5
+    name: Styles & Chrome
+    tier: Tier 2 - WinUI Controls
+    reviewers: [vinnarayana-msft]
+    paths:
+      - controls/dev/CommonStyles/**
+      - controls/dev/Common/**
+      - controls/dev/ResourceHelper/**
+      - controls/dev/TitleBar/**
+      - controls/dev/inc/**
+
+  # C6 was unassigned in the spreadsheet. Assigned to the least-loaded owner
+  # (vinnarayana-msft, 1 area) - also adjacent to the C5 styling/chrome surface.
+  - id: C6
+    name: Media & Visuals
+    tier: Tier 2 - WinUI Controls
+    reviewers: [vinnarayana-msft]
+    paths:
+      - controls/dev/Materials/**
+      - controls/dev/AnimatedIcon/**
+      - controls/dev/AnimatedVisualPlayer/**
+      - controls/dev/Lights/**
+      - controls/dev/Effects/**
+      - controls/dev/IconSource/**
+      - controls/dev/ImageIcon/**
+      - controls/dev/MapControl/**
+      - controls/dev/InkCanvas/**
+      - controls/dev/InkToolBar/**
+      - controls/dev/RadialGradientBrush/**
+      - controls/dev/MonochromaticOverlayPresenter/**
+      - controls/dev/SystemBackdropElement/**
+
+  # C7 was unassigned in the spreadsheet. Assigned to the least-loaded owner
+  # (HariniMalothu17, 1 area).
+  - id: C7
+    name: Interactions & Flyouts
+    tier: Tier 2 - WinUI Controls
+    reviewers: [HariniMalothu17]
+    paths:
+      - controls/dev/CommandBarFlyout/**
+      - controls/dev/TeachingTip/**
+      - controls/dev/ParallaxView/**
+      - controls/dev/SwipeControl/**
+      - controls/dev/PullToRefresh/**
+      - controls/dev/AnnotatedScrollBar/**
+      - controls/dev/Interactions/**
+      - controls/dev/RadioMenuFlyoutItem/**
+
+  - id: C8
+    name: Input, Pickers & Simple
+    tier: Tier 2 - WinUI Controls
+    reviewers: [SatwikKrSharma]
+    paths:
+      - controls/dev/WebView2/**
+      - controls/dev/ColorPicker/**
+      - controls/dev/RatingControl/**
+      - controls/dev/NumberBox/**
+      - controls/dev/ComboBox/**
+      - controls/dev/AutoSuggestBox/**
+      - controls/dev/PersonPicture/**
+      - controls/dev/SplitButton/**
+      - controls/dev/DropDownButton/**
+      - controls/dev/Expander/**
+      - controls/dev/InfoBar/**
+      - controls/dev/InfoBadge/**
+      - controls/dev/ProgressRing/**
+      - controls/dev/ProgressBar/**
+
+  - id: C9
+    name: Controls DLL & Shared Infra
+    tier: Tier 2 - WinUI Controls
+    reviewers: [hiteshkrmsft, Saharsh979]
+    paths:
+      - controls/dev/dll/**
+      - controls/dev/DllHost/**
+      - controls/dev/Telemetry/**
+      - controls/dev/TestHooks/**
+      - controls/dev/Lightup/**
+      - controls/dev/Microsoft.UI.Xaml.Design/**
+      - controls/dev/Microsoft.UI.Xaml.FrameworkPackagePRI/**
+      - controls/idl/**
+
+  # ---------------------------------------------------------------- Tier 3
+  - id: T1
+    name: Test Infrastructure & Tests
+    tier: Tier 3 - Test / Perf / Engineering
+    reviewers: [harshit7962, ayushjai19]
+    paths:
+      - dxaml/test/**
+      - controls/test/**
+      - test/**
+
+  # T2 was unassigned in the spreadsheet. Assigned to harshit7962 - tied on load
+  # with the other 2-area owners, broken toward the Tier 3 test-infrastructure owner.
+  - id: T2
+    name: Performance
+    tier: Tier 3 - Test / Perf / Engineering
+    reviewers: [harshit7962]
+    paths:
+      - perf/**
+
+  - id: T3
+    name: Build, CI & Packaging
+    tier: Tier 3 - Test / Perf / Engineering
+    reviewers: [subhajitm]
+    paths:
+      - build/**
+      - Helix/**
+      - packaging/**
+      - scripts/**
+      - tools/**
+      - PackageStore/**
+      - Directory.Build.*
+      - dirs.targets
+      - global.json
+      - NuGet.config
+      - Packages.props
+      - packages*.config
+      - '*.sln'
+      - '*.cmd'
+      - '*.ps1'
+      - .vsconfig*
+      - controls/*.props
+      - controls/*.targets
+      - controls/*.sln
+      - controls/*.cmd
+      - controls/*.csproj
+      - controls/.editorconfig
+      - controls/app.config
+      - dxaml/*.props
+      - dxaml/*.targets
+      - dxaml/*.sln
+      - dxaml/cspell.json
+      - src/*.sln
+      - '**/dirs.proj'
+
+  - id: T4
+    name: Debugger Extensions
+    tier: Tier 3 - Test / Perf / Engineering
+    reviewers: [godlytalias]
+    paths:
+      - dbgext/**
+
+  - id: T5
+    name: Samples & External
+    tier: Tier 3 - Test / Perf / Engineering
+    reviewers: [harshit7962]
+    paths:
+      - Samples/**
+      - external/**
+
+  # ---------------------------------------------------------------- Tier 4
+  - id: M1
+    name: Documentation
+    tier: Tier 4 - Docs / Repo Meta
+    reviewers: [HariniMalothu17]
+    paths:
+      - docs/**
+      - specs/**
+      - README.md
+      - CONTRIBUTING.md
+      - CONTRIBUTING_feedback_and_requests.md
+      - CONTRIBUTION_HANDLING.md
+      - CODE_OF_CONDUCT.md
+      - GettingStarted.md
+      - SECURITY.md
+      - NOTICE.md
+      - privacy.md
+      - controls/privacy.md
+      - LICENSE
+
+  - id: M2
+    name: Repo Meta / DevOps
+    tier: Tier 4 - Docs / Repo Meta
+    reviewers: [Saharsh979]
+    paths:
+      - .github/**
+      - src/.github/**
+      - .gitattributes
+      - .gitignore
+      - .gitmodules
+      - controls/.GitHubCommitSyncedTo

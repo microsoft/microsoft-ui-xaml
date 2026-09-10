@@ -1,0 +1,43 @@
+# Suggests optional area reviewers on a PR. Never blocks a merge - CODEOWNERS
+# (`* @microsoft/tm-winui`) remains the authoritative reviewer requirement.
+#
+# Runs as `pull_request_target` so the workflow, script and area map are always
+# read from the default branch and fork PRs still get a writable token.
+
+name: Area Reviewers
+
+on:
+  pull_request_target:
+    types: [opened, ready_for_review, reopened]
+
+concurrency:
+  group: area-reviewers-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  suggest:
+    name: Suggest area reviewers
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event.pull_request.draft != true
+    steps:
+      # pull_request_target checks out the base branch, never the PR head.
+      - name: Checkout base
+        uses: actions/checkout@v5
+        with:
+          sparse-checkout: .github
+          fetch-depth: 1
+          show-progress: false
+
+      - name: Install parser
+        run: npm install js-yaml@4 --no-save --no-audit --no-fund --loglevel=error
+
+      - name: Suggest reviewers
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AREA_REVIEWERS_DRY_RUN: ${{ vars.AREA_REVIEWERS_DRY_RUN || 'true' }}
+        run: node .github/scripts/area-reviewers.mjs
