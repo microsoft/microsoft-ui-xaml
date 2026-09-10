@@ -25,12 +25,17 @@ Also verify:
 - The caller is a local admin or a member of **Hyper-V Administrators**.
 - The command uses `initial_wait` of at least **180 seconds**.
 
-If Hyper-V permissions are missing, **do not add the user to the group**. Tell
-the user to open an administrator PowerShell window and run this command
-themselves:
+If Hyper-V permissions are missing, **stop and ask the user to make the change
+themselves. Never run `Add-LocalGroupMember` or open an elevated shell on their
+behalf, even with their approval.**
+
+Tell the user to run `whoami` in their original, non-elevated PowerShell window
+and copy the account name. Then have them open a **separate PowerShell (`pwsh`)
+window using Run as administrator** and run this command, replacing
+`<account-from-whoami>` with the copied name:
 
 ```powershell
-Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member (whoami)
+Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member '<account-from-whoami>'
 ```
 
 Tell the user to sign out and back in afterward. Wait for them to confirm they
@@ -86,7 +91,7 @@ files incrementally.
 |---------|-------|-----|
 | `Could not launch app`, foreground-window errors, or an empty UIA tree | VM desktop is locked or not visible | Keep the VM desktop unlocked and active |
 | `Failed to connect to VM` | VM not running or wrong credentials | Start the VM; use `-ResetCredential` to re-enter credentials |
-| Permission error | Need Hyper-V Administrators membership | Have the user follow the permission steps above |
+| Permission error | Need Hyper-V Administrators membership | Stop and have the user follow the permission steps above |
 | Incomplete payload or prerun failure | Stale payload or partial deployment | Omit `-SkipPayload`; retry with `-FullCopy` if needed |
 
 ## Crash Dumps
