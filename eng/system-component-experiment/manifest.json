@@ -95,10 +95,10 @@
     ],
     "winuiGalleryCommit": "199f63ec57ee8457fa9745b8a0d1e951111331fc",
     "winuiBuild": "a5-native-target-build-passed-with-system-content-input-and-winuidetails-abi; full-orchestrated-retry-blocked-by-midl-error-80-stale-intermediate-collision",
-    "inputHostRuntime": "substitution-ready-microsoft-ui-input-dll-winmd-import-lib-and-activation-manifest",
-    "csharpScenarioApp": "ready-for-a6-runtime-payload-substitution",
-    "cppWinrtScenarioApp": "ready-for-a6-runtime-payload-substitution",
+    "inputHostRuntime": "rebuilt-but-not-substitution-ready-directly-imports-coremessagingxp-marshal-and-composition-ossupport",
+    "csharpScenarioApp": "passed-debug-x64-package-build-awaiting-clean-runtime-payload",
+    "cppWinrtScenarioApp": "passed-debug-x64-package-build-awaiting-clean-runtime-payload",
     "winuiGallery": "passed-debug-x64-build",
-    "notes": "A5 adds system-backed ContentIsland creation and root mutation, DispatcherQueue-backed DesktopChildSiteBridge creation, and system-visual InputPointerSource creation/removal. WinUI uses those APIs without requiring a worker-thread DispatcherQueue or temporary ContentIsland for SwapChainPanel independent input. A private package-compatible Microsoft.UI.Xaml.Internal2 replacement binds Composition helpers to Windows.UI.Composition. Explicit functionality gaps are legacy UWP CoreWindow hosting, windowed-popup ContentExternalBackdropLink, and DirectManipulation SetInteraction for system visuals. The rebuilt Microsoft.UI.Input runtime payload is ready for substitution. A6 must validate activation, loaded modules, DesktopWindowXamlSource, popup root replacement, SwapChainPanel repeated independent-input creation, and Windows 10/11 parity."
+    "notes": "A5 adds system-backed ContentIsland creation and root mutation, DispatcherQueue-backed DesktopChildSiteBridge creation, and system-visual InputPointerSource creation/removal. WinUI uses those APIs without requiring a worker-thread DispatcherQueue or temporary ContentIsland for SwapChainPanel independent input. A private package-compatible Microsoft.UI.Xaml.Internal2 replacement binds Composition helpers to Windows.UI.Composition. Explicit functionality gaps are legacy UWP CoreWindow hosting, windowed-popup ContentExternalBackdropLink, and DirectManipulation SetInteraction for system visuals. A6 direct-import verification found that the rebuilt Microsoft.UI.Input.dll still imports CoreMessagingXP.dll, marshal.dll, and Microsoft.UI.Composition.OSSupport.dll, so strict runtime closure is reopened and payload substitution is blocked. Both packaged scenario apps now build and await a clean runtime payload."
   }
 }
