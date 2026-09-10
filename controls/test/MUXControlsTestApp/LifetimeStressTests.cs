@@ -31,11 +31,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // ref-counting mistakes in the 3-layer peer model). Those tests were dropped when the old test team tests
     // went away. This class reintroduces that coverage in a form that is:
     //
-    //   * Deterministic and fast enough to run as a gate on every test pass (default iteration counts), rather
-    //     than only as a multi-hour soak. Each iteration aggressively settles the UI thread and forces the GC +
-    //     finalizers so a dangling native peer is much more likely to fault *immediately* instead of "eventually".
-    //   * Still able to run as a long soak (the classic "run for a few hours" behavior) by setting environment
-    //     variables (see below), so a scheduled pipeline can crank the workload way up.
+    //   * Report-only outside the scheduled soak: the suite still participates in the test pass (so it is built,
+    //     discovered and reported), but the actual create/teardown/GC workload runs ONLY when soak mode is enabled
+    //     (or an explicit iteration count is requested - see below). In the per-PR gate and Nightly, where neither
+    //     is set, every scenario skips. This is deliberate: a real object-lifetime bug faults as a NATIVE crash /
+    //     fail-fast that terminates the TAEF host process, which managed code cannot catch and downgrade to a
+    //     warning - so running the workload in the gate could block unrelated PRs. Keeping the heavy work on the
+    //     dedicated soak schedule lets this suite surface lifetime bugs as a report without ever gating a PR.
+    //   * Runnable as a long soak (the classic "run for a few hours" behavior) by setting environment variables
+    //     (see below), so the scheduled WinUI-LifetimeStress pipeline can crank the workload way up. Each iteration
+    //     aggressively settles the UI thread and forces the GC + finalizers so a dangling native peer is much more
+    //     likely to fault *immediately* instead of "eventually".
     //   * Isolated into its own TAEF test suite (see the TestSuite TestProperty). The Helix work-item generator
     //     produces a dedicated work item for this suite, so if a lifetime bug does crash the test host it does
     //     not take down unrelated tests, and the soak can be scheduled independently.
@@ -43,29 +49,35 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // Configuration (all optional, read from environment variables so they work locally, on pipeline agents, and
     // when injected into a Helix work item):
     //
-    //   WINUI_LIFETIME_STRESS_ITERATIONS   Number of create/destroy cycles per scenario. Default: 50.
-    //   WINUI_LIFETIME_STRESS_MINUTES      If > 0, each scenario loops until this many minutes have elapsed
-    //                                      instead of using a fixed iteration count. Use this for the soak.
+    //   WINUI_LIFETIME_STRESS_MINUTES      If > 0, each scenario loops until this many minutes have elapsed. This
+    //                                      is the soak knob and the WinUI-LifetimeStress pipeline sets it; it is the
+    //                                      normal way this suite does real work.
+    //   WINUI_LIFETIME_STRESS_ITERATIONS   If > 0 (and soak mode is off), run each scenario this many create/destroy
+    //                                      cycles. Intended for explicit local/manual runs. When neither variable is
+    //                                      set (the default, including the PR gate and Nightly), scenarios skip.
     //
     // Adding coverage: the cheapest, highest-value thing a contributor can do when fixing a lifetime crash (as the
     // ItemsRepeater realization/recycling scenario below demonstrates) is to add the offending create/teardown
     // sequence here so the fix is protected against regression.
     [TestClass]
-    // Classification=Integration makes this class an explicit member of the DevTestSuite PR gate
-    // (WinUI-GitHub-PR). The MUXControlsTestApp module sets Classification=Integration module-wide via
-    // ApiTestAssemblyHandling.AssemblyInitialize, but we declare it here as well so this suite's
-    // participation in the per-PR test pass is explicit and self-documenting, matching the convention
-    // used by the InteractionTests classes. The Helix work-item generator emits a dedicated
-    // "*-LifetimeStressTestSuite" work item for it, so it runs isolated from unrelated tests.
+    // Classification=Integration keeps this class selected by the DevTestSuite Helix work-item generator, which
+    // filters on @Classification='Integration'. That is what makes the generator emit the dedicated
+    // "*-LifetimeStressTestSuite" work item - required so the scheduled soak pipeline (WinUI-LifetimeStress.yml)
+    // picks the suite up, and so it is discovered/reported in every test pass. The MUXControlsTestApp module also
+    // sets Classification=Integration module-wide via ApiTestAssemblyHandling.AssemblyInitialize; we declare it here
+    // as well so this suite's selection is explicit and self-documenting, matching the InteractionTests convention.
+    // NOTE: selection is not the same as gating. The suite is report-only in the PR gate - see RunStress: outside
+    // soak (or an explicit opt-in) every scenario skips, so it cannot fail a PR even though it is selected here.
     [TestProperty("Classification", "Integration")]
     [TestProperty("TestSuite", "LifetimeStressTestSuite")]
     public class LifetimeStressTests : ApiTestBase
     {
-        private const int DefaultIterations = 50;
-
+        // Number of create/destroy cycles per scenario when an explicit fixed-count run is requested via
+        // WINUI_LIFETIME_STRESS_ITERATIONS. There is deliberately no gate default: outside the scheduled soak
+        // pipeline (and an explicit opt-in), scenarios are skipped - see RunStress for the report-only rationale.
         private static int ConfiguredIterations
         {
-            get { return GetEnvInt("WINUI_LIFETIME_STRESS_ITERATIONS", DefaultIterations); }
+            get { return GetEnvInt("WINUI_LIFETIME_STRESS_ITERATIONS", 0); }
         }
 
         private static double ConfiguredSoakMinutes
@@ -572,13 +584,35 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             };
         }
 
-        // Loop the supplied per-iteration work either a fixed number of times (default / gate) or until a wall-clock
-        // soak budget elapses (WINUI_LIFETIME_STRESS_MINUTES). Progress is logged so a crash's last-known iteration is
-        // visible in the test output.
+        // Run the supplied per-iteration work: for a wall-clock soak budget (WINUI_LIFETIME_STRESS_MINUTES) or, as an
+        // explicit local opt-in, a fixed number of iterations (WINUI_LIFETIME_STRESS_ITERATIONS). When neither is set
+        // (the PR gate and Nightly) the scenario skips - see the report-only rationale below. Progress is logged so a
+        // crash's last-known iteration is visible in the test output.
         private static void RunStress(string scenarioName, Action<int> iteration)
         {
-            int iterations = ConfiguredIterations;
             double soakMinutes = ConfiguredSoakMinutes;
+            int iterations = ConfiguredIterations;
+
+            // Report-only policy. This suite runs its actual create/teardown/GC workload in only two situations:
+            //   * the scheduled lifetime-stress soak pipeline (WinUI-LifetimeStress.yml), the one place that sets
+            //     WINUI_LIFETIME_STRESS_MINUTES > 0; and
+            //   * an explicit local/manual opt-in via WINUI_LIFETIME_STRESS_ITERATIONS > 0.
+            // Everywhere else - most importantly the per-PR gate and the Nightly pipeline, neither of which sets
+            // either variable - the scenario is skipped and simply reports.
+            //
+            // Why skip rather than "run and downgrade failures to warnings": a genuine object-lifetime bug faults as
+            // a NATIVE crash / fail-fast (e.g. a stowed exception in combase.dll) that terminates the TAEF test host
+            // process. Managed code cannot catch that, so it can never be turned into a non-gating Log.Warning - it
+            // would take down the PR gate. Not running the workload in the gate is therefore the only way to
+            // guarantee this suite never blocks a PR while still providing full soak coverage on its own schedule.
+            if (soakMinutes <= 0.0 && iterations <= 0)
+            {
+                Log.Comment("[{0}] Skipped (report-only): lifetime stress does no work outside the scheduled soak " +
+                    "pipeline. Set WINUI_LIFETIME_STRESS_MINUTES > 0 (as WinUI-LifetimeStress.yml does), or " +
+                    "WINUI_LIFETIME_STRESS_ITERATIONS > 0 for an explicit local run, to exercise this scenario.",
+                    scenarioName);
+                return;
+            }
 
             if (soakMinutes > 0.0)
             {
@@ -599,7 +633,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                Log.Comment("[{0}] Running {1} iteration(s).", scenarioName, iterations);
+                Log.Comment("[{0}] Explicit run: {1} iteration(s).", scenarioName, iterations);
                 for (int i = 0; i < iterations; i++)
                 {
                     Log.Comment("[{0}] Iteration {1}/{2}...", scenarioName, i, iterations);
