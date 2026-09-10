@@ -98,6 +98,14 @@ The **Filter / sort / group** page exercises the data-shaping surface:
 - `TableView.CanUserSortColumns`, `SortByColumn`, `ClearSort`, `Sorting` / `Sorted`
 - `GroupHeaderTemplate` (custom vs. built-in), `ExpandAllGroups` / `CollapseAllGroups`
 
+The **Context menus** page shows how an app adds context menus, which `TableView` has no API for:
+
+- One `ContextRequested` handler on the table — the hit column comes from the cell/header `Tag`,
+  the row item from the row's `DataContext`; covers Shift+F10 and the Menu key as well as
+  right-click
+- A `ContextFlyout` declared on the cell content in a template column, which takes precedence over
+  the table-wide handler for that column
+
 ## More detail
 
 See [AGENTS.md](AGENTS.md).
