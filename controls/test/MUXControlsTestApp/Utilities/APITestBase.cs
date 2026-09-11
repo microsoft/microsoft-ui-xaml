@@ -64,6 +64,7 @@ namespace MUXControlsTestApp.Utilities
             Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.OptimizeApplyStyles));
             Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.DefaultStyleOptimizations));
             Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.DeferContextFlyoutInit));
+            Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.GamepadKeyRouting));
         }
 
         public void UpdateXamlOptionalChanges()
@@ -169,6 +170,10 @@ namespace MUXControlsTestApp.Utilities
                         else if (string.Equals(name, "DeferContextFlyoutInit", StringComparison.OrdinalIgnoreCase))
                         {
                             changeId = XamlChangeId.DeferContextFlyoutInit;
+                        }
+                        else if (string.Equals(name, "GamepadKeyRouting", StringComparison.OrdinalIgnoreCase))
+                        {
+                            changeId = XamlChangeId.GamepadKeyRouting;
                         }
 
                         Verify.AreNotEqual(changeId, XamlChangeId._Reserved, "Unknown XamlChangeId: " + name);
