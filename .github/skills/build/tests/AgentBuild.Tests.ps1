@@ -219,6 +219,35 @@ Test-Case 'A crash that produces no binary log is reported as a failure' {
     finally { Remove-StubRepo $root }
 }
 
+Test-Case 'A missing package error tells the caller to initialize instead of changing code' {
+    Reset-StubBehavior
+    $env:AGENTBUILD_TEST_OUTPUT = 'foo.vcxproj : error : This project references NuGet package(s) that are missing on this computer. The missing file is packages\Microsoft.Foo\build\Microsoft.Foo.props'
+    $env:AGENTBUILD_TEST_EXIT = '0'
+    $root = New-StubRepo -Initialized
+    try {
+        $result = Invoke-Wrapper -Root $root
+        Assert-Equal 1 $result.ExitCode 'A missing package error was reported as success.'
+        Assert-True ($result.Output -match 'init\.cmd') 'The failure did not tell the caller to initialize.'
+        Assert-True ($result.Output -match 'rather than a code error') 'The failure did not distinguish missing packages from a code error.'
+    }
+    finally { Remove-StubRepo $root }
+}
+
+Test-Case 'The build runs in a fresh process with no inherited build environment' {
+    # An agent runs each command in a new process, so nothing set by a previous init
+    # survives. The wrapper must work when launched with no build environment at all.
+    Reset-StubBehavior
+    $root = New-StubRepo -Initialized
+    try {
+        $powershell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+        $output = & $powershell -NoProfile -ExecutionPolicy Bypass -File $wrapper -RepoRoot $root 2>&1 | Out-String
+        $exit = $LASTEXITCODE
+        Assert-Equal 0 $exit "A build in a fresh process failed. Output: $output"
+        Assert-True ($output -match 'BUILD SUCCEEDED') 'A build in a fresh process did not report success.'
+    }
+    finally { Remove-StubRepo $root }
+}
+
 Test-Case 'A /fake build succeeds without producing a binary log' {
     Reset-StubBehavior
     $env:AGENTBUILD_TEST_BINLOG = '0'

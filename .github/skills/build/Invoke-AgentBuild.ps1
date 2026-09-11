@@ -91,6 +91,30 @@ $script:FailureMarkers = @(
 # Compiler, linker and MSBuild diagnostics, e.g. "error MSB4217:" or "error C3859:".
 $script:ErrorPattern = '\berror\s+(MSB|C|LNK|CS|CVT|RC|AL)\d+\b'
 
+# A build can fail for missing packages or tools even though the initialization check
+# passed, because that check only confirms the two directories exist and not that their
+# contents are complete or current. These patterns identify that case so the caller is
+# told to initialize again rather than treating it as a code error.
+$script:NeedsInitPatterns = @(
+    'references NuGet package\(s\) that are missing',
+    'The missing file is packages\\',
+    'Unable to find package',
+    '\berror\s+NU\d{4}\b',
+    "Could not find .*\\\.tools\\",
+    'is not recognized as an internal or external command'
+)
+
+function Test-NeedsInit {
+    param([string[]]$Lines)
+
+    foreach ($line in $Lines) {
+        foreach ($pattern in $script:NeedsInitPatterns) {
+            if ($line -match $pattern) { return $true }
+        }
+    }
+    return $false
+}
+
 function Get-BinaryLog {
     param([string]$Root, [datetime]$Since)
 
@@ -222,9 +246,17 @@ $isFake = $buildArgs -contains '/fake'
 $failed = $false
 $reason = $null
 
+# A restore problem is reported without an MSBuild error code, so it has to be checked
+# separately or a build that exits 0 after failing to find its packages looks successful.
+$needsInit = Test-NeedsInit -Lines $buildOutput
+
 if (Test-FailureInOutput -Lines $buildOutput) {
     $failed = $true
     $reason = 'the build reported errors'
+}
+elseif ($needsInit) {
+    $failed = $true
+    $reason = 'the build could not find restored packages or tools'
 }
 elseif ($reportedExit -ne 0) {
     $failed = $true
@@ -248,6 +280,15 @@ elseif (-not $isFake) {
 
 if ($failed) {
     Write-Host "BUILD FAILED: $reason." -ForegroundColor Red
+
+    if ($needsInit) {
+        Write-Host ''
+        Write-Host 'This looks like missing packages or tools rather than a code error.' -ForegroundColor Yellow
+        Write-Host 'The initialization check only confirms that packages\ and .tools\ exist, so a' -ForegroundColor Yellow
+        Write-Host 'partial or out-of-date restore passes it. Initialize again before changing code:' -ForegroundColor Yellow
+        Write-Host "    $initCmd $Flavor" -ForegroundColor Yellow
+    }
+
     exit 1
 }
 

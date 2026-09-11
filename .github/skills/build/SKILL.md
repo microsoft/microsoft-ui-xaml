@@ -23,7 +23,13 @@ errors only.
 
 ## Use the wrapper for unattended builds
 
-The underlying command is the one to give a person:
+A person normally runs `.\init.cmd` once and then `.\build.cmd /q` repeatedly in that same
+shell, because `init` sets environment variables and `PATH` for the session.
+
+That does not work for an agent, which runs each command in a fresh process, so the
+environment from `init` is gone by the next command. `initrun.ps1` exists for this: it
+re-establishes the environment in-process and then runs the command, so each invocation is
+self-contained:
 
 ```powershell
 .\initrun.ps1 .\build.cmd /q
@@ -34,7 +40,10 @@ changes none of them, but it adds three things an agent needs:
 
 - **First-time initialization.** A full `init.cmd` must have run at least once, or the
   build fails in a way that looks like a code error. The wrapper detects this and
-  initializes first.
+  initializes first. The detection is deliberately simple: it checks that `packages\` and
+  `.tools\` exist, the same signal `init.cmd /envcheck` uses. It cannot tell that a restore
+  was partial or is out of date, so see
+  [missing packages or tools](#missing-packages-or-tools) if the build fails that way.
 - **A trustworthy exit code.** `build.cmd` can exit `0` after a failed build, because the
   failing exit code is not preserved on the way out of the script. The wrapper derives the
   real result from the build output and the binary log.
@@ -135,6 +144,24 @@ or NuGet dependencies changed, when WinRT runtime classes were added or removed,
 packaging or signing is needed, on a first build, or when unsure.
 
 ## Troubleshooting
+
+### Missing packages or tools
+
+Errors such as `NU1101`, `MSB3644`, "references NuGet package(s) that are missing", or a
+tool that is "not recognized as an internal or external command" mean the repository is not
+fully initialized. They are not code errors, so do not try to fix them by changing source.
+
+This can happen even though the wrapper ran without initializing, because its check only
+confirms that `packages\` and `.tools\` exist. A restore that was interrupted, or that
+predates a change to the dependencies, leaves those directories in place but incomplete.
+The wrapper prints this advice when it detects the case.
+
+Initialize directly, then build again:
+
+```powershell
+.\init.cmd amd64chk
+.\.github\skills\build\Invoke-AgentBuild.ps1
+```
 
 ### `error C3859` or `error C1076`, precompiled header memory
 
