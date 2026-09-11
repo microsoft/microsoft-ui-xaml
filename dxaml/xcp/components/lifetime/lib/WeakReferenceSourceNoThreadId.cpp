@@ -168,11 +168,20 @@ WeakReferenceSourceNoThreadId::GetReferenceTrackerManager( _Out_ ::IReferenceTra
 _Check_return_ HRESULT
 WeakReferenceSourceNoThreadId::ConnectFromTrackerSource()
 {
+#if DBG
+    const PeerLifetimeState fromState = GetPeerLifetimeState();
+#endif
+
     InterlockedIncrement( &m_ulRefCountFromTrackerSource );
 
     // Once a tracker source is referencing (and protecting) this object, it no longer need protection
     // from Reference Tracking.
     ClearReferenceTrackerPeg();
+
+#if DBG
+    // Pillar A: a tracker source now roots this peer (Detached -> Tracked, or Pegged stays Pegged).
+    IGNOREHR(TransitionPeerState(fromState, GetPeerLifetimeState()));
+#endif
 
     RRETURN(S_OK);
 }
@@ -188,6 +197,10 @@ WeakReferenceSourceNoThreadId::ConnectFromTrackerSource()
 _Check_return_ HRESULT
 WeakReferenceSourceNoThreadId::DisconnectFromTrackerSource()
 {
+#if DBG
+    const PeerLifetimeState fromState = GetPeerLifetimeState();
+#endif
+
     LONG refCount = InterlockedDecrement( &m_ulRefCountFromTrackerSource );
 
     if (refCount == 0)
@@ -195,6 +208,12 @@ WeakReferenceSourceNoThreadId::DisconnectFromTrackerSource()
         // Once the tracker source has disconnected, reset the find walked state.
         m_referenceTrackerBitFields.bFindWalked = false;
     }
+
+#if DBG
+    // Pillar A: a tracker source dropped its reference (Tracked -> Detached once the last one goes away,
+    // unless the peer is still explicitly pegged).
+    IGNOREHR(TransitionPeerState(fromState, GetPeerLifetimeState()));
+#endif
 
     RRETURN(S_OK);
 }
@@ -584,6 +603,10 @@ WeakReferenceSourceNoThreadId::ClearReferenceTrackerPeg()
 void
 WeakReferenceSourceNoThreadId::SetRefCountPeg()
 {
+#if DBG
+    const PeerLifetimeState fromState = GetPeerLifetimeState();
+#endif
+
     m_referenceTrackerBitFields.bRefCountPeg = true;
 
     #if DBG_LIFETIME
@@ -594,11 +617,20 @@ WeakReferenceSourceNoThreadId::SetRefCountPeg()
         Trace(szValue2);
     }
     #endif
+
+#if DBG
+    // Pillar A: implicit GC-walk root applied (-> Pegged).
+    IGNOREHR(TransitionPeerState(fromState, GetPeerLifetimeState()));
+#endif
 }
 
 void
 WeakReferenceSourceNoThreadId::ClearRefCountPeg()
 {
+#if DBG
+    const PeerLifetimeState fromState = GetPeerLifetimeState();
+#endif
+
     #if DBG_LIFETIME
     if (m_referenceTrackerBitFields.bRefCountPeg)
     {
@@ -609,6 +641,11 @@ WeakReferenceSourceNoThreadId::ClearRefCountPeg()
     #endif
 
     m_referenceTrackerBitFields.bRefCountPeg = false;
+
+#if DBG
+    // Pillar A: implicit GC-walk root removed (Pegged -> Tracked/Detached unless still explicitly pegged).
+    IGNOREHR(TransitionPeerState(fromState, GetPeerLifetimeState()));
+#endif
 }
 
 void WeakReferenceSourceNoThreadId::UpdatePeg(bool peg)
