@@ -138,7 +138,11 @@ void ScrollPresenterAutomationPeer::SetScrollPercent(double horizontalPercent, d
     if ((scrollHorizontally && (horizontalPercent < s_minimumPercent || horizontalPercent > s_maximumPercent)) ||
         (scrollVertically && (verticalPercent < s_minimumPercent || verticalPercent > s_maximumPercent)))
     {
-        throw winrt::hresult_error(E_INVALIDARG);
+        throw winrt::hresult_invalid_argument(
+            StringUtil::FormatString(
+                L"Scroll percent is out of range: horizontal=%1!s!, vertical=%2!s!; expected -1 or 0..100.",
+                winrt::to_hstring(horizontalPercent).c_str(),
+                winrt::to_hstring(verticalPercent).c_str()));
     }
 
     auto scrollPresenter = winrt::get_self<ScrollPresenter>(GetScrollPresenter());

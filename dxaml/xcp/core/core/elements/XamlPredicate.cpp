@@ -55,7 +55,10 @@ bool IsApiContractPresent_Evaluate(std::vector<xstring_ptr> args)
     }
     else
     {
-        THROW_HR(E_INVALIDARG);
+        THROW_HR_MSG(
+            E_INVALIDARG,
+            "IsApiContractPresent received %zu arguments; expected 2 or 3.",
+            args.size());
     }
 
     return !!isPresent;
@@ -85,7 +88,10 @@ bool IsPropertyPresent_Evaluate(std::vector<xstring_ptr> args)
     }
     else
     {
-        THROW_HR(E_INVALIDARG);
+        THROW_HR_MSG(
+            E_INVALIDARG,
+            "IsPropertyPresent received %zu arguments; expected 2.",
+            args.size());
     }
 
     return !!isPresent;
@@ -114,7 +120,10 @@ bool IsTypePresent_Evaluate(std::vector<xstring_ptr> args)
     }
     else
     {
-        THROW_HR(E_INVALIDARG);
+        THROW_HR_MSG(
+            E_INVALIDARG,
+            "IsTypePresent received %zu arguments; expected 1.",
+            args.size());
     }
 
     return !!isPresent;
