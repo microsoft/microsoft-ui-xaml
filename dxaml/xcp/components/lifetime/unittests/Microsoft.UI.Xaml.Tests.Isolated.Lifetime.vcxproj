@@ -28,11 +28,13 @@
         <ClInclude Include="LifetimeUnitTests.h"/>
         <ClInclude Include="TestTrackers.h"/>
         <ClInclude Include="WeakReferenceUnitTests.h"/>
+        <ClInclude Include="TeardownPhaseUnitTests.h"/>
 
         <ClCompile Include="FakeDXamlCore.cpp"/>
         <ClCompile Include="Stubs.cpp"/>
         <ClCompile Include="LifetimeUnitTests.cpp"/>
         <ClCompile Include="WeakReferenceUnitTests.cpp"/>
+        <ClCompile Include="TeardownPhaseUnitTests.cpp"/>
     </ItemGroup>
 
     <ItemDefinitionGroup>
