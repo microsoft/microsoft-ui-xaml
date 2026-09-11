@@ -19,14 +19,12 @@ public:
     winrt::AutomationControlType GetAutomationControlTypeCore();
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
 
-    // A TableViewRow is a Control with no content of its own, so the base peer computes no name and
-    // assistive technology announces a bare "data item". Compose the visible cell texts instead.
+    // A TableViewRow is a Control with no content of its own, so the base peer computes no name
+    // and AT announces a bare "data item". Compose the visible cell texts instead.
     hstring GetNameCore();
 
-    // Rows are virtualized, so the UIA parent only ever exposes the realized window and a client
-    // cannot infer "row i of n" from the children collection - the control has to supply it. Same
-    // contract ListViewItemAutomationPeer satisfies. Under grouping these are group-relative,
-    // matching ItemsControlAutomationPeer / NavigationView / TreeView.
+    // Rows are virtualized: UIA only ever sees the realized window, so the control has to supply
+    // "row i of n". Group-relative when the source is grouped.
     int32_t GetPositionInSetCore();
     int32_t GetSizeOfSetCore();
 
@@ -41,11 +39,9 @@ public:
     void RemoveFromSelection();
     void Select();
 
-    // Internal: hands back the peer this row has already published for a cell. Every path that
-    // yields a cell provider (this peer's GetChildrenCore and TableViewAutomationPeer::GetItem)
-    // must route through here - UIA compares providers by identity, so minting a fresh peer per
-    // query makes grid addressing and tree navigation disagree about the same cell, and drops
-    // Narrator focus whenever the tree is re-queried.
+    // Single source of cell-peer identity: GetChildrenCore and TableViewAutomationPeer::GetItem
+    // both route through here. UIA compares providers by identity, so a fresh peer per query makes
+    // grid addressing and tree navigation disagree and drops Narrator focus on every re-query.
     winrt::AutomationPeer GetOrCreateCellPeer(
         winrt::FrameworkElement const& cell,
         winrt::TableViewColumn const& column,
@@ -59,12 +55,8 @@ private:
     // 1-based position within the owning group and that group's item count; false when ungrouped.
     bool TryGetGroupPosition(int32_t rowIndex, int32_t& positionInGroup, int32_t& sizeOfGroup);
 
-    // One peer per realized cell, keyed weakly so a cell dropped by a rebuild or a recycle releases
-    // immediately. Rebuilt wholesale from the live cell list on every GetChildrenCore.
-    //
-    // The peer is held in a tracker_ref, the repo convention for a strong WinRT reference owned by
-    // a ReferenceTracker type, so the reference tracker can walk this edge and collect cycles
-    // rather than the peer being an opaque strong ref inside a tracked object.
+    // One peer per realized cell, keyed weakly so a recycled or rebuilt cell releases immediately.
+    // tracker_ref is the convention for a strong WinRT ref owned by a ReferenceTracker type.
     struct CellPeerCacheEntry
     {
         CellPeerCacheEntry(

@@ -24,8 +24,7 @@ public:
     hstring GetNameCore();
     hstring GetHelpTextCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
-    // DataItem alone makes Narrator announce every cell as "data item"; UIA expects a control to
-    // localize the term a user actually hears.
+    // Without this every cell announces as the generic "data item".
     hstring GetLocalizedControlTypeCore();
 
     // IGridItemProvider — per-cell coordinates in the owning TableView.

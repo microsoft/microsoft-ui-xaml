@@ -1553,10 +1553,9 @@ void TableView::RebuildHeaders()
             // focusing it can actually do something -- otherwise every column costs a Tab press for
             // nothing.
             //
-            // "Actually do something" is resize OR sort. Gating on resize alone left the very common
-            // CanUserSortColumns=true / CanUserResizeColumns=false configuration with a header that
-            // is clickable-to-sort but unreachable by keyboard, so a keyboard-only user could never
-            // sort -- and TableViewColumnHeaderAutomationPeer::Invoke was never reachable by focus.
+            // Actionable is resize OR sort: gating on resize alone left the common
+            // CanUserSortColumns=true / CanUserResizeColumns=false case with a header that sorts on
+            // click but has no tab stop, so a keyboard-only user could never sort it.
             const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
             const bool headerIsActionable = headerIsResizable || headerIsSortable;

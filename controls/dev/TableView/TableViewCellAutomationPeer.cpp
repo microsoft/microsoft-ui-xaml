@@ -70,8 +70,8 @@ winrt::AutomationControlType TableViewCellAutomationPeer::GetAutomationControlTy
 
 hstring TableViewCellAutomationPeer::GetLocalizedControlTypeCore()
 {
-    // Shared helper: the host app may not merge the control's PRI, so a missing resource degrades
-    // to the framework default ("data item") rather than throwing into UIA.
+    // A host app may not merge the control's PRI; degrade to the framework default rather than
+    // throwing into UIA.
     if (auto const localized = TryGetLocalizedString(SR_TableViewCellLocalizedControlType); !localized.empty())
     {
         return localized;
@@ -112,7 +112,6 @@ winrt::hstring TableViewCellAutomationPeer::GetColumnHeaderText()
 
 winrt::hstring TableViewCellAutomationPeer::GetCellValueText()
 {
-    // Shared with the row peer's composed name, so the two never disagree.
     return GetCellDisplayText(Owner().try_as<winrt::FrameworkElement>());
 }
 
@@ -165,9 +164,8 @@ int32_t TableViewCellAutomationPeer::Row()
 
 int32_t TableViewCellAutomationPeer::Column()
 {
-    // Computed live, mirroring Row(): a cached index goes stale the moment a column is hidden or
-    // shown underneath a client that is holding this provider, and UIA clients do hold them.
-    // Falls back to the index the row supplied at construction when the row is unresolvable.
+    // Computed live, mirroring Row(): a cached index goes stale as soon as a column is hidden or
+    // shown underneath a client holding this provider.
     if (auto const row = m_row.get())
     {
         if (auto const rowImpl = winrt::get_self<TableViewRow>(row))
@@ -179,8 +177,8 @@ int32_t TableViewCellAutomationPeer::Column()
                 const auto count = cellChildren.Size();
                 int32_t visibleColumnIndex = 0;
 
-                // Same walk, same predicate, as TableViewAutomationPeer::VisibleColumnToChildIndex
-                // and the row peer's GetChildrenCore, so all three agree on the coordinate.
+                // Same walk and predicate as TableViewAutomationPeer::VisibleColumnToChildIndex and
+                // the row peer's GetChildrenCore, so all three agree on the coordinate.
                 for (uint32_t i = 0; i < count; ++i)
                 {
                     auto const child = cellChildren.GetAt(i).try_as<winrt::UIElement>();
@@ -247,10 +245,9 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewCellAutomationPeer::
         {
             if (auto const owner = winrt::get_self<TableViewRow>(row)->GetOwningTableView())
             {
-                // Routed through the TableView's peer so this cell's header reference resolves to
-                // the SAME provider the table's ITableProvider::GetColumnHeaders enumeration hands
-                // out. Minting a peer here instead made the two disagree about the header's
-                // identity, which is how a client correlates a cell with its column.
+                // Through the TableView's peer so this cell's header reference and the table's own
+                // header peer are one provider; a client correlates a cell to its column by that
+                // identity.
                 winrt::AutomationPeer headerPeer{ nullptr };
                 if (auto const ownerPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(owner)
                         .try_as<winrt::TableViewAutomationPeer>())

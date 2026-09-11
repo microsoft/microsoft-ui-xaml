@@ -50,9 +50,8 @@ public:
     // of the TableView peer may be stale.
     void RaiseStructureChangedForGroupExpansion();
 
-    // Internal — the single source of column-header peer identity. Also called by
-    // TableViewCellAutomationPeer::GetColumnHeaderItems so a cell's header reference and the
-    // table's header enumeration resolve to the same provider.
+    // Internal — the single source of column-header peer identity, shared with
+    // TableViewCellAutomationPeer::GetColumnHeaderItems.
     winrt::AutomationPeer GetOrCreateColumnHeaderPeer(
         winrt::TableView const& tableView,
         winrt::TableViewColumn const& column);
@@ -63,8 +62,7 @@ private:
     // peer per call yields unstable provider identity and leaves the returned providers with no
     // owner keeping them alive.
     //
-    // The peer is held in a tracker_ref, the repo convention for a strong WinRT reference owned by
-    // a ReferenceTracker type, so the reference tracker can walk this edge and collect cycles.
+    // tracker_ref is the convention for a strong WinRT ref owned by a ReferenceTracker type.
     struct ColumnHeaderPeerCacheEntry
     {
         ColumnHeaderPeerCacheEntry(

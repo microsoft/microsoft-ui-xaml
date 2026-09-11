@@ -80,15 +80,13 @@ winrt::hstring TableViewGroupHeaderAutomationPeer::GetNameCore()
 
 int32_t TableViewGroupHeaderAutomationPeer::GetLevelCore()
 {
-    // An app-set AutomationProperties.Level wins, matching how the dxaml peers that compute this
-    // property defer to the container value first.
+    // An app-set AutomationProperties.Level wins, as in the dxaml peers that compute this.
     if (const auto provided = __super::GetLevelCore(); provided > 0)
     {
         return provided;
     }
 
-    // 1-based, matching UIA's Level convention; 0 means "unknown", which is the honest answer for a
-    // band whose projection info is gone.
+    // 1-based per UIA; 0 means "unknown", the honest answer once the projection info is gone.
     if (auto const header = GetHeader())
     {
         if (auto const info = header.Content().try_as<winrt::TableViewGroupInfo>())
