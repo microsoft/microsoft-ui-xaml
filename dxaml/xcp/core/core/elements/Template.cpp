@@ -15,40 +15,6 @@
 #include "DXamlServices.h"
 #include "CValueBoxer.h"
 
-namespace
-{
-    void LogTitleTemplateLoadTiming(
-        _In_z_ const wchar_t* eventName,
-        _In_ CFrameworkTemplate* frameworkTemplate,
-        _In_opt_ CDependencyObject* templatedParent,
-        _In_opt_ CDependencyObject* result)
-    {
-        auto frameworkElement = do_pointer_cast<CFrameworkElement>(templatedParent);
-        if (!frameworkElement || !frameworkElement->m_strName.Equals(XSTRING_PTR_EPHEMERAL(L"Title")))
-        {
-            return;
-        }
-
-        LARGE_INTEGER timestamp;
-        QueryPerformanceCounter(&timestamp);
-
-        wchar_t message[512];
-        swprintf_s(
-            message,
-            L"[ContentDialogStyleTiming] qpc=%lld tid=%lu event=%s template=%p templatedParent=%p active=%d collapsed=%d existingChild=%p result=%p\n",
-            timestamp.QuadPart,
-            GetCurrentThreadId(),
-            eventName,
-            frameworkTemplate,
-            templatedParent,
-            frameworkElement->IsActive(),
-            frameworkElement->IsCollapsed(),
-            frameworkElement->GetFirstChildNoAddRef(),
-            result);
-        OutputDebugStringW(message);
-    }
-}
-
 CFrameworkTemplate::~CFrameworkTemplate()
 {
     ReleaseInterface(m_pTemplateContent);
@@ -71,8 +37,6 @@ CFrameworkTemplate::LoadContent(_Outptr_result_maybenull_ CDependencyObject** pp
     xref_ptr<CDependencyObject> pEventRoot;
     CDependencyObject *pResult = nullptr;
     xref_ptr<INameScope> spNameScope;
-
-    LogTitleTemplateLoadTiming(L"FrameworkTemplate.LoadContent.begin", this, pTemplatedParent, nullptr);
 
     // If asked to register names in template namescope, a templatedParent should be provided.
     ASSERT(bRegisterNamesInTemplateNamescope && pTemplatedParent || !bRegisterNamesInTemplateNamescope);
@@ -281,8 +245,6 @@ CItemsPanelTemplate::LoadContent(_Outptr_result_maybenull_ CDependencyObject** p
     pResult = NULL;
 
 Cleanup:
-    LogTitleTemplateLoadTiming(L"FrameworkTemplate.LoadContent.end", this, pTemplatedParent, pResult);
-
     ReleaseInterface(pResult);
     RRETURN(hr);
 }

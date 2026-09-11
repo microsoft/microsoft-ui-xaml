@@ -388,44 +388,13 @@ CControl::EnsureBuiltInStyleApplied()
 //              CreationComplete so the correct template is expanded now.
 //
 //-------------------------------------------------------------------------
-namespace
-{
-    void LogContentDialogTemplateTiming(_In_z_ const wchar_t* eventName, _In_ CFrameworkElement* element)
-    {
-        if (!element->OfTypeByIndex<KnownTypeIndex::ContentDialog>() &&
-            !element->m_strName.Equals(XSTRING_PTR_EPHEMERAL(L"Title")))
-        {
-            return;
-        }
-
-        LARGE_INTEGER timestamp;
-        QueryPerformanceCounter(&timestamp);
-
-        wchar_t message[512];
-        swprintf_s(
-            message,
-            L"[ContentDialogStyleTiming] qpc=%lld tid=%lu event=%s element=%p type=%d name=%s active=%d parsing=%d collapsed=%d template=%p child=%p\n",
-            timestamp.QuadPart,
-            GetCurrentThreadId(),
-            eventName,
-            element,
-            static_cast<int>(element->GetTypeIndex()),
-            element->m_strName.IsNullOrEmpty() ? L"(unnamed)" : element->m_strName.GetBuffer(),
-            element->IsActive(),
-            element->IsParsing(),
-            element->IsCollapsed(),
-            element->GetTemplate().get(),
-            element->GetFirstChildNoAddRef());
-        OutputDebugStringW(message);
-        __debugbreak();
-    }
-}
 _Check_return_ HRESULT
 CControl::ApplyTemplate(_Out_ bool& fAddedVisuals)
 {
-    LogContentDialogTemplateTiming(L"Control.ApplyTemplate.begin", this);
-    
-    if (OptionalChangeState::IsOptimizeApplyStylesEnabled())
+    // Only force style application when CreationComplete deferred it. Controls
+    // created in code do not run CreationComplete and retain their existing
+    // ApplyTemplate fallback behavior.
+    if (OptionalChangeState::IsOptimizeApplyStylesEnabled() && m_fCreationCompleteCalled)
     {
         IFC_RETURN(EnsureInitialStyleApplied());
         IFC_RETURN(EnsureBuiltInStyleApplied());
@@ -433,7 +402,6 @@ CControl::ApplyTemplate(_Out_ bool& fAddedVisuals)
 
     IFC_RETURN(CFrameworkElement::ApplyTemplate(fAddedVisuals));
 
-    LogContentDialogTemplateTiming(L"Control.ApplyTemplate.end", this);
     return S_OK;
 }
 
@@ -1104,6 +1072,8 @@ CControl::CreationComplete()
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
     });
 #endif
+
+    m_fCreationCompleteCalled = true;
 
     // Call base implementation. This will apply any explicit styles.
     IFC_RETURN(CFrameworkElement::CreationComplete());

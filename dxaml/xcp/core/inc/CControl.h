@@ -209,6 +209,7 @@ protected:
         , m_fSuppressIsEnabled(FALSE)
         , m_fRequestTemplateBindingRefresh(FALSE)
         , m_fIsDefaultStyleApplying(FALSE)
+        , m_fCreationCompleteCalled(FALSE)
     {
         m_isTabStop = true;
     }
@@ -291,6 +292,7 @@ private:
     bool   m_fSuppressIsEnabled             : 1;
     bool   m_fRequestTemplateBindingRefresh : 1;   // Flag used by deferred element to signal that template bindings should be reevaluated after an element was realized in control template.
     bool   m_fIsDefaultStyleApplying        : 1;
+    bool   m_fCreationCompleteCalled        : 1;
 
 private:
     // Number of preallocated subscriptions in the vector.
