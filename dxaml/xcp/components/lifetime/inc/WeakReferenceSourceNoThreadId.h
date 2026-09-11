@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <ComBase.h>
 #include "ReferenceTrackerInterfaces.h"
 #include "ReferenceTrackerExtension.h"
@@ -200,6 +201,41 @@ namespace ctl
         void UpdatePeg(bool peg);
         void PegNoRef();
         void UnpegNoRef( bool suppressClearReferenceTrackerPeg = false );
+
+        // Peer-lifetime state machine (Pillar A).
+        //
+        // Historically the answer to "what lifetime state is this peer in?" was implicit and scattered across
+        // several independent fields (m_ulPegRefCount, m_bIsPeggedNoRef, m_bReferenceTrackerPeg, bRefCountPeg,
+        // m_ulExpectedRefCount, m_bIsDisconnected). Every peer-lifetime defect is ultimately a place where those
+        // bits disagree. This exposes a single, explicit lifetime state plus one transition choke point so that
+        // the disagreement becomes observable (and, in debug, asserted).
+        //
+        // NOTE (migration/compat-shim phase): PeerLifetimeState is *derived* from the existing bookkeeping rather
+        // than stored, so it can never drift out of sync with the fields the rest of the framework still mutates
+        // directly. TransitionPeerState is an assertion + tracing gate that the peg primitives announce through;
+        // it does not itself mutate the peg fields yet. Once every peg/unpeg call site funnels through the
+        // transition API the derived getter can be promoted to a stored authority and the scattered fields retired.
+        enum class PeerLifetimeState : std::uint8_t
+        {
+            Detached,   // No strong root and not held by a tracker source (collectible / not yet rooted).
+            Pegged,     // Strongly rooted by the native side (ref-count peg, no-ref peg, or expected reference).
+            Tracked,    // GC-visible via the reference tracker; steady state (held by a tracker source, not pegged).
+            Releasing,  // Final release in progress (see OnFinalReleaseOffThread).
+            TornDown     // Terminal; peer disconnected. All further access must no-op.
+        };
+
+        PeerLifetimeState GetPeerLifetimeState() const;
+
+        // Single choke point that replaces ad-hoc Peg/Unpeg reasoning. Validates that 'expectedFrom' -> 'to' is a
+        // legal edge of the lifetime state machine and (in debug) that 'expectedFrom' matches the currently derived
+        // state, then records the transition for diagnostics. Non-fatal: it never destabilizes retail, so it can be
+        // safely woven into existing peg paths during migration.
+        _Check_return_ HRESULT TransitionPeerState(PeerLifetimeState expectedFrom, PeerLifetimeState to);
+
+        static bool IsLegalPeerStateTransition(PeerLifetimeState from, PeerLifetimeState to);
+#if DBG
+        static const wchar_t* PeerLifetimeStateToString(PeerLifetimeState state);
+#endif
 
         //Check Thread (No affinity)
         virtual _Check_return_ HRESULT CheckThread() const { RRETURN(S_OK); }
