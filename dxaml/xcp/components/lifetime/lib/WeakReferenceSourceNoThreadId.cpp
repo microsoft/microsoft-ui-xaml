@@ -168,11 +168,20 @@ WeakReferenceSourceNoThreadId::GetReferenceTrackerManager( _Out_ ::IReferenceTra
 _Check_return_ HRESULT
 WeakReferenceSourceNoThreadId::ConnectFromTrackerSource()
 {
+#if DBG
+    const PeerLifetimeState fromState = GetPeerLifetimeState();
+#endif
+
     InterlockedIncrement( &m_ulRefCountFromTrackerSource );
 
     // Once a tracker source is referencing (and protecting) this object, it no longer need protection
     // from Reference Tracking.
     ClearReferenceTrackerPeg();
+
+#if DBG
+    // Pillar A: a tracker source now roots this peer (Detached -> Tracked, or Pegged stays Pegged).
+    IGNOREHR(TransitionPeerState(fromState, GetPeerLifetimeState()));
+#endif
 
     RRETURN(S_OK);
 }
@@ -188,6 +197,10 @@ WeakReferenceSourceNoThreadId::ConnectFromTrackerSource()
 _Check_return_ HRESULT
 WeakReferenceSourceNoThreadId::DisconnectFromTrackerSource()
 {
+#if DBG
+    const PeerLifetimeState fromState = GetPeerLifetimeState();
+#endif
+
     LONG refCount = InterlockedDecrement( &m_ulRefCountFromTrackerSource );
 
     if (refCount == 0)
@@ -195,6 +208,12 @@ WeakReferenceSourceNoThreadId::DisconnectFromTrackerSource()
         // Once the tracker source has disconnected, reset the find walked state.
         m_referenceTrackerBitFields.bFindWalked = false;
     }
+
+#if DBG
+    // Pillar A: a tracker source dropped its reference (Tracked -> Detached once the last one goes away,
+    // unless the peer is still explicitly pegged).
+    IGNOREHR(TransitionPeerState(fromState, GetPeerLifetimeState()));
+#endif
 
     RRETURN(S_OK);
 }
@@ -584,6 +603,10 @@ WeakReferenceSourceNoThreadId::ClearReferenceTrackerPeg()
 void
 WeakReferenceSourceNoThreadId::SetRefCountPeg()
 {
+#if DBG
+    const PeerLifetimeState fromState = GetPeerLifetimeState();
+#endif
+
     m_referenceTrackerBitFields.bRefCountPeg = true;
 
     #if DBG_LIFETIME
@@ -594,11 +617,20 @@ WeakReferenceSourceNoThreadId::SetRefCountPeg()
         Trace(szValue2);
     }
     #endif
+
+#if DBG
+    // Pillar A: implicit GC-walk root applied (-> Pegged).
+    IGNOREHR(TransitionPeerState(fromState, GetPeerLifetimeState()));
+#endif
 }
 
 void
 WeakReferenceSourceNoThreadId::ClearRefCountPeg()
 {
+#if DBG
+    const PeerLifetimeState fromState = GetPeerLifetimeState();
+#endif
+
     #if DBG_LIFETIME
     if (m_referenceTrackerBitFields.bRefCountPeg)
     {
@@ -609,6 +641,11 @@ WeakReferenceSourceNoThreadId::ClearRefCountPeg()
     #endif
 
     m_referenceTrackerBitFields.bRefCountPeg = false;
+
+#if DBG
+    // Pillar A: implicit GC-walk root removed (Pegged -> Tracked/Detached unless still explicitly pegged).
+    IGNOREHR(TransitionPeerState(fromState, GetPeerLifetimeState()));
+#endif
 }
 
 void WeakReferenceSourceNoThreadId::UpdatePeg(bool peg)
@@ -923,6 +960,19 @@ WeakReferenceSourceNoThreadId::OnFinalReleaseOffThread(_In_ bool allowOffThreadD
     // do the FinalRelease there
     if (FAILED(CheckThread()))
     {
+        // Pillar C - thread-affine release funnel. This is the single choke point that guarantees a peer's final
+        // release is completed on its owning (UI) thread: an off-thread release is either re-queued to the owning
+        // thread's UIAffinityReleaseQueue, or (only when no owning core is still registered, i.e. shutdown) deleted
+        // inline. Announce the move into the Releasing state so this off-thread funnel participates in the Pillar A
+        // peer-lifetime state machine. Non-fatal (compat-shim): validates the edge and records it for diagnostics.
+        // A peer that has already been disconnected derives to the terminal TornDown state (which has no legal edge
+        // to Releasing); skip the announcement in that case rather than assert on an illegal terminal transition.
+        const PeerLifetimeState currentPeerState = GetPeerLifetimeState();
+        if (currentPeerState != PeerLifetimeState::TornDown)
+        {
+            IGNOREHR(TransitionPeerState(currentPeerState, PeerLifetimeState::Releasing));
+        }
+
         // If we have an m_compositionWrapper, it's now a dangling pointer.  Clear it
         // so that we don't accidentally try to use it (such as in the AddRef that happens
         // during RTW_Peg walks).
@@ -940,6 +990,10 @@ WeakReferenceSourceNoThreadId::OnFinalReleaseOffThread(_In_ bool allowOffThreadD
         }
         else if (allowOffThreadDelete)
         {
+            // No owning core is still registered to marshal to (process/island shutdown). This is the only path
+            // that destroys a peer inline off its owning thread; the paired native destructor emits the
+            // DependencyObject_OffThreadDestruction telemetry (and, when enabled, fail-fasts) so this residual
+            // off-thread teardown remains observable.
             CStaticLock lock;
             // attempt an off thread release
             delete this;

@@ -1,0 +1,17 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="MetadataCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#pragma once
+
+#include "TrackerTargetTraits.h"
+
+<# foreach (var type in Model.GetAllTypeTableTypes().OfType<ClassDefinition>().Where(c => c.IsTrackerTarget && c.IsADependencyObject && !c.IsGenericType)) { #>
+class <#= type.CoreName #>;
+template<>
+struct is_tracker_target<<#= type.CoreName #>> : std::true_type {};
+<# } #>

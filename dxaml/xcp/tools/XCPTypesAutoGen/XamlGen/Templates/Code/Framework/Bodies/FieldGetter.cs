@@ -51,6 +51,14 @@ namespace XamlGen.Templates.Code.Framework.Bodies
             this.Write(", ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Model.PropertyType.AbiReturnParameterName));
             this.Write("));\r\n");
+ } else if (Model.XamlPropertyFlags.WeakRef) { 
+            this.Write("    {\r\n        ctl::ComPtr<");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Model.PropertyType.AbiFullName));
+            this.Write("> spResolved;\r\n        IFC(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Model.FrameworkFieldName));
+            this.Write(".As(&spResolved));\r\n        IFC(spResolved.CopyTo(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Model.PropertyType.AbiReturnParameterName));
+            this.Write("));\r\n    }\r\n");
  } else if (Model.XamlPropertyFlags.UseComPtr) { 
             this.Write("    IFC(");
             this.Write(this.ToStringHelper.ToStringWithCulture(Model.FrameworkFieldName));
