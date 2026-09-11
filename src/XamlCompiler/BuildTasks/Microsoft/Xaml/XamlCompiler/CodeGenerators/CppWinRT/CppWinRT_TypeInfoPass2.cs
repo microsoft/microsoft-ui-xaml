@@ -40,8 +40,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write(this.ToStringHelper.ToStringWithCulture(ProjectInfo.PrecompiledHeaderFile));
             this.Write("\"\r\n");
   }
-            this.Write("#include <memory>\r\n#include <unknwn.h>\r\n\r\n// Undefine GetCurrentTime macro to pre" +
-                    "vent\r\n// conflict with Storyboard::GetCurrentTime\r\n#undef GetCurrentTime\r\n\r\n");
+            this.Write("#include <unknwn.h>\r\n#include <memory>\r\n#include <cstdint>\r\n\r\n// Undefine GetCurr" +
+                    "entTime macro to prevent\r\n// conflict with Storyboard::GetCurrentTime\r\n#undef Ge" +
+                    "tCurrentTime\r\n\r\n");
   foreach (var includeFile in Model.NeededCppWinRTProjectionHeaderFiles) { 
             this.Write("#if __has_include(<");
             this.Write(this.ToStringHelper.ToStringWithCulture(includeFile));

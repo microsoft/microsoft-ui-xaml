@@ -11,6 +11,9 @@
 <#  if(!String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { #>
 #include "<#=ProjectInfo.PrecompiledHeaderFile#>"
 <#  }#>
+
+#include <cstdint>
+
 #include "XamlBindingInfo.xaml.g.h"
 
 namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation

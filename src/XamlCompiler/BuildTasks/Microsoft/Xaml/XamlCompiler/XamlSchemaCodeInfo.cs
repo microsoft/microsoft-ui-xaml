@@ -615,23 +615,23 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 {
                     _winRtPrimitiveTypeList = new Dictionary<string, ProjectionDefinition>();
 
-                    _winRtPrimitiveTypeList.Add("System.Byte", new ProjectionDefinition("default::uint8", "uint8_t"));
-                    _winRtPrimitiveTypeList.Add("System.UInt8", new ProjectionDefinition("default::uint8", "uint8_t"));
+                    _winRtPrimitiveTypeList.Add("System.Byte", new ProjectionDefinition("default::uint8", "std::uint8_t"));
+                    _winRtPrimitiveTypeList.Add("System.UInt8", new ProjectionDefinition("default::uint8", "std::uint8_t"));
 
-                    _winRtPrimitiveTypeList.Add("System.SByte", new ProjectionDefinition("default::int8", "int8_t"));  // signed byte is illegal in WinRT
-                    _winRtPrimitiveTypeList.Add("System.Int8", new ProjectionDefinition("default::int8", "int8_t"));  // signed byte is illegal in WinRT
+                    _winRtPrimitiveTypeList.Add("System.SByte", new ProjectionDefinition("default::int8", "std::int8_t"));  // signed byte is illegal in WinRT
+                    _winRtPrimitiveTypeList.Add("System.Int8", new ProjectionDefinition("default::int8", "std::int8_t"));  // signed byte is illegal in WinRT
 
                     _winRtPrimitiveTypeList.Add("System.Char", new ProjectionDefinition("default::char16", "wchar_t"));
                     _winRtPrimitiveTypeList.Add("System.Char16", new ProjectionDefinition("default::char16", "wchar_t"));
 
                     _winRtPrimitiveTypeList.Add("System.Single", new ProjectionDefinition("default::float32", "float"));
                     _winRtPrimitiveTypeList.Add("System.Double", new ProjectionDefinition("default::float64", "double"));
-                    _winRtPrimitiveTypeList.Add("System.Int16", new ProjectionDefinition("default::int16", "int16_t"));
-                    _winRtPrimitiveTypeList.Add("System.Int32", new ProjectionDefinition("default::int32", "int32_t"));
-                    _winRtPrimitiveTypeList.Add("System.Int64", new ProjectionDefinition("default::int64", "int64_t"));
-                    _winRtPrimitiveTypeList.Add("System.UInt16", new ProjectionDefinition("default::uint16", "uint16_t"));
-                    _winRtPrimitiveTypeList.Add("System.UInt32", new ProjectionDefinition("default::uint32", "uint32_t"));
-                    _winRtPrimitiveTypeList.Add("System.UInt64", new ProjectionDefinition("default::uint64", "uint64_t"));
+                    _winRtPrimitiveTypeList.Add("System.Int16", new ProjectionDefinition("default::int16", "std::int16_t"));
+                    _winRtPrimitiveTypeList.Add("System.Int32", new ProjectionDefinition("default::int32", "std::int32_t"));
+                    _winRtPrimitiveTypeList.Add("System.Int64", new ProjectionDefinition("default::int64", "std::int64_t"));
+                    _winRtPrimitiveTypeList.Add("System.UInt16", new ProjectionDefinition("default::uint16", "std::uint16_t"));
+                    _winRtPrimitiveTypeList.Add("System.UInt32", new ProjectionDefinition("default::uint32", "std::uint32_t"));
+                    _winRtPrimitiveTypeList.Add("System.UInt64", new ProjectionDefinition("default::uint64", "std::uint64_t"));
 
                     _winRtPrimitiveTypeList.Add("System.Boolean", new ProjectionDefinition("Platform::Boolean", "bool"));
                     _winRtPrimitiveTypeList.Add("System.String", new ProjectionDefinition("Platform::String", "::winrt::hstring"));

@@ -38,6 +38,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
 
+#include <cstdint>
+
 #include ""winrt/windows.foundation.h""
 #include ""winrt/windows.ui.xaml.interop.h""
 #include ""winrt/microsoft.ui.xaml.controls.h""
