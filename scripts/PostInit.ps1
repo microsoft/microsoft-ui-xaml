@@ -76,7 +76,8 @@ $projectPackages = @(
     'XamlCompilerPrerequisites.sln',
     'dxaml\Microsoft.UI.Xaml.sln',
     'dxaml\xcp\tools\XbfParser\XbfParser.sln',
-    'src\XamlCompiler\XamlCompiler.sln'
+    'src\XamlCompiler\XamlCompiler.sln',
+    'src\XamlCompiler\Tests\packages.config'
 )
 
 # Check if this is an OSS build. init.cmd sets the IsInternalWinUIBuild environment
