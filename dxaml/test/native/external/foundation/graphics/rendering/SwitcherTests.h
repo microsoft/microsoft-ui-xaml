@@ -30,6 +30,29 @@ public:
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
+    // Additional CompNode render coverage under switcher. Each mirrors the CompNode1 flow with a
+    // different markup file; MockDComp yields a backend-independent tree, so the master is byte-identical
+    // to the non-switcher CompNodeTests master for the same markup.
+    BEGIN_TEST_METHOD(CompNode2WUCFullSwitcherWithMockDComp)
+        TEST_METHOD_PROPERTY(L"Description", L"Switcher + MockDComp render coverage for CompNode2.xaml.")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(CompNode3WUCFullSwitcherWithMockDComp)
+        TEST_METHOD_PROPERTY(L"Description", L"Switcher + MockDComp render coverage for CompNode3.xaml.")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(CompNode4WUCFullSwitcherWithMockDComp)
+        TEST_METHOD_PROPERTY(L"Description", L"Switcher + MockDComp render coverage for CompNode4.xaml.")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(CompNode5WUCFullSwitcherWithMockDComp)
+        TEST_METHOD_PROPERTY(L"Description", L"Switcher + MockDComp render coverage for CompNode5.xaml.")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+    END_TEST_METHOD()
+
     BEGIN_TEST_METHOD(VerifyLiftedSystemCompositionPath)
         TEST_METHOD_PROPERTY(L"Description", L"Engagement certifier: uses CompositionEngine::GetForSystemEngine to verify the lifted compositor's system-engine equivalent is Windows.UI.Composition.Compositor (proves lifted->system routing, not a silent no-op). Because the backend flip is process-wide, this one proof certifies the whole SwitcherMode run.")
     END_TEST_METHOD()
