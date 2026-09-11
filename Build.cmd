@@ -166,20 +166,18 @@ if "%_targetMux%" == "1" (
    call :buildSolution %reporoot%\controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj
    if ERRORLEVEL 1 goto:showDurationAndExit
    if not "%_nomock%"=="1" call :buildMockPackage
-   if ERRORLEVEL 1 goto:showDurationAndExit
-   call :buildXamlCompilerAndTests
 ) else if "%_targetProdTest%" == "1" (
    call :buildSolution %reporoot%\dxaml\Microsoft.UI.Xaml.sln
    if ERRORLEVEL 1 goto:showDurationAndExit
    if not "%_nomock%"=="1" call :buildMockPackage
    call :buildSolution %reporoot%\controls\MUXControls.sln /restore
    if ERRORLEVEL 1 goto:showDurationAndExit
-   call :buildXamlCompilerAndTests
+   call :buildSolution %reporoot%\src\XamlCompiler\XamlCompilerTests.sln /restore
 ) else if "%_targetTest%" == "1" (
    if not "%_nomock%"=="1" call :buildMockPackage
    call :buildSolution %reporoot%\controls\MUXControls.sln /restore
    if ERRORLEVEL 1 goto:showDurationAndExit
-   call :buildXamlCompilerTests
+   call :buildSolution %reporoot%\src\XamlCompiler\XamlCompilerTests.sln /restore
 )
 if ERRORLEVEL 1 goto:showDurationAndExit
 
@@ -317,18 +315,6 @@ if ERRORLEVEL 1 goto :showDurationAndExit
 goto :eof
 
 
-:buildXamlCompilerTests
-call :buildSolution %reporoot%\src\XamlCompiler\XamlCompilerTests.sln /restore
-goto :eof
-
-
-:buildXamlCompilerAndTests
-call :buildSolution %reporoot%\src\XamlCompiler\XamlCompiler.sln /restore
-if ERRORLEVEL 1 goto :eof
-call :buildXamlCompilerTests
-goto :eof
-
-
 :showDurationAndExit
 set BUILDCMDENDTIME=%time%
 :: Note: The '1's in this line are to convert a value like "08" to "108", since numbers which
@@ -374,7 +360,7 @@ echo     build.cmd [targets] [options]
 echo.
 echo    Available targets:
 echo        prodtest ^(default^)  Builds product code and tests ^(no samples^)
-echo        product             Builds product code and XamlCompiler validation ^(no broader tests or samples^)
+echo        product             Builds product code only ^(no tests or samples, subset of prodtest^)
 echo        mux                 Builds Microsoft.UI.Xaml.dll ^(subset of product^)
 echo        test                Builds tests only ^(subset of prodtest^)
 echo        samples             Builds sample apps
