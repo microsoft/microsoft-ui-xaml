@@ -11,6 +11,7 @@
 
 #include "WucVisualTreeProfiler.h"
 #include <Windows.UI.Composition.h>
+#include "XcpAllocation.h"
 #include "XamlProfilerTracing.h"
 #include <unordered_set>
 
@@ -150,9 +151,15 @@ namespace
     // torn state if a tracing callback ever runs off-thread.
     SRWLOCK g_suppressedCompNodesLock = SRWLOCK_INIT;
 
-    std::unordered_set<uint64_t>& SuppressedCompNodes()
+    using SuppressedCompNodeSet = std::unordered_set<
+        uint64_t,
+        std::hash<uint64_t>,
+        std::equal_to<uint64_t>,
+        XcpAllocation::LeakIgnoringAllocator<uint64_t>>;
+
+    SuppressedCompNodeSet& SuppressedCompNodes()
     {
-        static std::unordered_set<uint64_t> set;
+        static SuppressedCompNodeSet set;
         return set;
     }
 
