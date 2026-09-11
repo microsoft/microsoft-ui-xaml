@@ -136,6 +136,54 @@ void SwitcherTests::CompNode5WUCFullSwitcherWithMockDComp()
     LoadAndVerifySwitcherWithMockDComp(L"CompNode5.xaml");
 }
 
+void SwitcherTests::CompNode6WUCFullSwitcherWithMockDComp()
+{
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+    LoadAndVerifySwitcherWithMockDComp(L"CompNode6.xaml");
+}
+
+void SwitcherTests::CompNode7WUCFullSwitcherWithMockDComp()
+{
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+    LoadAndVerifySwitcherWithMockDComp(L"CompNode7.xaml");
+}
+
+void SwitcherTests::CompNode8WUCFullSwitcherWithMockDComp()
+{
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+    LoadAndVerifySwitcherWithMockDComp(L"CompNode8.xaml");
+}
+
+void SwitcherTests::CompNode9WUCFullSwitcherWithMockDComp()
+{
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+    LoadAndVerifySwitcherWithMockDComp(L"CompNode9.xaml");
+}
+
+void SwitcherTests::CompNode10WUCFullSwitcherWithMockDComp()
+{
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+    LoadAndVerifySwitcherWithMockDComp(L"CompNode10.xaml");
+}
+
+void SwitcherTests::CompNode11WUCFullSwitcherWithMockDComp()
+{
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+    LoadAndVerifySwitcherWithMockDComp(L"CompNode11.xaml");
+}
+
+void SwitcherTests::CompNode12WUCFullSwitcherWithMockDComp()
+{
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+    LoadAndVerifySwitcherWithMockDComp(L"CompNode12.xaml");
+}
+
+void SwitcherTests::CompNode13WUCFullSwitcherWithMockDComp()
+{
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+    LoadAndVerifySwitcherWithMockDComp(L"CompNode13.xaml");
+}
+
 // Shared helper for switcher + MockDComp tests. Mirrors the original CompNode1WUCFullSwitcherWithMockDComp
 // body so that every CompNode*WUCFullSwitcher* test exercises an identical flow.
 void SwitcherTests::LoadAndVerifySwitcherWithMockDComp(Platform::String^ markupFile)

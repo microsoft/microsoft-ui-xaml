@@ -14,7 +14,7 @@ parameters:
     default: '*SwitcherTests*'
   - name: expectedTestCount
     type: number
-    default: 6
+    default: 14
 
 stages:
 - stage: RunSwitcherTests
