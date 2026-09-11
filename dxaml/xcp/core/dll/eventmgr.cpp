@@ -465,6 +465,13 @@ CEventManager::Raise(
             // Do not raise events when shutting down.
             return;
         }
+        // Pillar D: the IsShuttingDown() check above only covers the reversible ResetVisualTree flag. The explicit
+        // teardown epoch also catches island teardown and core destruction - phases during which raising an event
+        // can reenter half-destroyed tree/core state (failure mode P5). Feature-gated (default off) and telemetered.
+        if (pSender->GetContext()->ShouldNoOpReentrantCallbackDuringTeardown())
+        {
+            return;
+        }
         if (!pSender->ShouldRaiseEvent(hEvent, fInputEvent, pArgs))
         {
             // Do not raise events when there are no listeners, unless there are implicit
