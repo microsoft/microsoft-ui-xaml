@@ -239,7 +239,7 @@ struct TypeInfo
   } 
             this.Write("\r\n");
   entryIndex = 0; 
-            this.Write("constexpr uint32_t TypeInfoLookup[] = { \r\n");
+            this.Write("constexpr std::uint32_t TypeInfoLookup[] = { \r\n");
   foreach(var entry in Model.TypeInfoLookup) 
   { 
             this.Write("    ");
@@ -356,7 +356,7 @@ struct TypeInfo
             this.Write(@"
 const TypeInfo* GetTypeInfo(::winrt::hstring const& typeName)
 {
-    size_t typeNameLength = typeName.size();
+    std::size_t typeNameLength = typeName.size();
     if (typeNameLength < _countof(TypeInfoLookup) - 1)
     {
         const auto begin = TypeInfos + TypeInfoLookup[typeNameLength];

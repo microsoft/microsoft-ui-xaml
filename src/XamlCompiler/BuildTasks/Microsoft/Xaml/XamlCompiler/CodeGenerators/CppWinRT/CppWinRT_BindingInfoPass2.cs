@@ -84,29 +84,29 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                     "d)\r\n{\r\n    _pBindings->DisconnectUnloadedObject(connectionId);\r\n}\r\n\r\nvoid XamlBi" +
                     "ndings::Connect(int connectionId, IInspectable const& target)\r\n{\r\n    _pBindings" +
                     "->Connect(connectionId, target);\r\n}\r\n\r\nIComponentConnector XamlBindings::GetBind" +
-                    "ingConnector(int32_t, IInspectable const&)\r\n{\r\n    return nullptr;\r\n}\r\n\r\nbool Xa" +
-                    "mlBindings::ProcessBinding(unsigned int)\r\n{\r\n    throw ::winrt::hresult_not_impl" +
-                    "emented {};\r\n}\r\n\r\nint XamlBindings::ProcessBindings(ContainerContentChangingEven" +
-                    "tArgs const& args)\r\n{\r\n    int32_t nextPhase;\r\n    _pBindings->ProcessBindings(a" +
-                    "rgs.Item(), args.ItemIndex(), args.Phase(), nextPhase);\r\n    return nextPhase;\r\n" +
-                    "}\r\n\r\nvoid XamlBindings::ResetTemplate()\r\n{\r\n    _pBindings->Recycle();\r\n}\r\n\r\nvoi" +
-                    "d XamlBindings::ProcessBindings(\r\n    IInspectable const& item, int itemIndex, i" +
-                    "nt phase, int32_t& nextPhase)\r\n{\r\n    _pBindings->ProcessBindings(item, itemInde" +
-                    "x, phase, nextPhase);\r\n}\r\n\r\nvoid XamlBindings::Recycle()\r\n{\r\n    _pBindings->Rec" +
-                    "ycle();\r\n}\r\n\r\n// XamlBindingTrackingBase\r\n\r\nXamlBindingTrackingBase::XamlBinding" +
-                    "TrackingBase()\r\n{\r\n}\r\n\r\nvoid XamlBindingTrackingBase::SetListener(IXamlBindingTr" +
-                    "acking* pBindings)\r\n{\r\n    _pBindingsTrackingWeakRef = pBindings;\r\n}\r\n\r\nvoid Xam" +
-                    "lBindingTrackingBase::PropertyChanged(\r\n    IInspectable const& sender,\r\n    Pro" +
-                    "pertyChangedEventArgs const&  e)\r\n{\r\n    if (_pBindingsTrackingWeakRef)\r\n    {\r\n" +
-                    "        _pBindingsTrackingWeakRef->PropertyChanged(sender, e);\r\n    }\r\n}\r\n\r\nvoid" +
-                    " XamlBindingTrackingBase::CollectionChanged(\r\n    IInspectable const& sender,\r\n " +
-                    "   NotifyCollectionChangedEventArgs const& e)\r\n{\r\n    if (_pBindingsTrackingWeak" +
-                    "Ref)\r\n    {\r\n        _pBindingsTrackingWeakRef->CollectionChanged(sender, e);\r\n " +
-                    "   }\r\n}\r\n\r\nvoid XamlBindingTrackingBase::DependencyPropertyChanged(\r\n    Depende" +
-                    "ncyObject const& sender,\r\n    DependencyProperty const& prop)\r\n{\r\n    if (_pBind" +
-                    "ingsTrackingWeakRef)\r\n    {\r\n        _pBindingsTrackingWeakRef->DependencyProper" +
-                    "tyChanged(sender, prop);\r\n    }\r\n}\r\n\r\nvoid XamlBindingTrackingBase::VectorChange" +
-                    "d(\r\n    IInspectable const& sender,\r\n    ");
+                    "ingConnector(std::int32_t, IInspectable const&)\r\n{\r\n    return nullptr;\r\n}\r\n\r\nbo" +
+                    "ol XamlBindings::ProcessBinding(unsigned int)\r\n{\r\n    throw ::winrt::hresult_not" +
+                    "_implemented {};\r\n}\r\n\r\nint XamlBindings::ProcessBindings(ContainerContentChangin" +
+                    "gEventArgs const& args)\r\n{\r\n    std::int32_t nextPhase;\r\n    _pBindings->Process" +
+                    "Bindings(args.Item(), args.ItemIndex(), args.Phase(), nextPhase);\r\n    return ne" +
+                    "xtPhase;\r\n}\r\n\r\nvoid XamlBindings::ResetTemplate()\r\n{\r\n    _pBindings->Recycle();" +
+                    "\r\n}\r\n\r\nvoid XamlBindings::ProcessBindings(\r\n    IInspectable const& item, int it" +
+                    "emIndex, int phase, std::int32_t& nextPhase)\r\n{\r\n    _pBindings->ProcessBindings" +
+                    "(item, itemIndex, phase, nextPhase);\r\n}\r\n\r\nvoid XamlBindings::Recycle()\r\n{\r\n    " +
+                    "_pBindings->Recycle();\r\n}\r\n\r\n// XamlBindingTrackingBase\r\n\r\nXamlBindingTrackingBa" +
+                    "se::XamlBindingTrackingBase()\r\n{\r\n}\r\n\r\nvoid XamlBindingTrackingBase::SetListener" +
+                    "(IXamlBindingTracking* pBindings)\r\n{\r\n    _pBindingsTrackingWeakRef = pBindings;" +
+                    "\r\n}\r\n\r\nvoid XamlBindingTrackingBase::PropertyChanged(\r\n    IInspectable const& s" +
+                    "ender,\r\n    PropertyChangedEventArgs const&  e)\r\n{\r\n    if (_pBindingsTrackingWe" +
+                    "akRef)\r\n    {\r\n        _pBindingsTrackingWeakRef->PropertyChanged(sender, e);\r\n " +
+                    "   }\r\n}\r\n\r\nvoid XamlBindingTrackingBase::CollectionChanged(\r\n    IInspectable co" +
+                    "nst& sender,\r\n    NotifyCollectionChangedEventArgs const& e)\r\n{\r\n    if (_pBindi" +
+                    "ngsTrackingWeakRef)\r\n    {\r\n        _pBindingsTrackingWeakRef->CollectionChanged" +
+                    "(sender, e);\r\n    }\r\n}\r\n\r\nvoid XamlBindingTrackingBase::DependencyPropertyChange" +
+                    "d(\r\n    DependencyObject const& sender,\r\n    DependencyProperty const& prop)\r\n{\r" +
+                    "\n    if (_pBindingsTrackingWeakRef)\r\n    {\r\n        _pBindingsTrackingWeakRef->D" +
+                    "ependencyPropertyChanged(sender, prop);\r\n    }\r\n}\r\n\r\nvoid XamlBindingTrackingBas" +
+                    "e::VectorChanged(\r\n    IInspectable const& sender,\r\n    ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.WindowsFoundationCollections)));
             this.Write("::IVectorChangedEventArgs const& e)\r\n{\r\n    if (_pBindingsTrackingWeakRef)\r\n    {" +
                     "\r\n        _pBindingsTrackingWeakRef->VectorChanged(sender, e);\r\n    }\r\n}\r\n\r\nvoid" +
@@ -157,17 +157,17 @@ void XamlBindingTrackingBase::UpdatePropertyChangedListener(
                     "obj.CollectionChanged({ this, &XamlBindingTrackingBase::CollectionChanged });\r\n " +
                     "   }\r\n}\r\n\r\nvoid XamlBindingTrackingBase::UpdateDependencyPropertyChangedListener" +
                     "(\r\n    DependencyObject const& obj,\r\n    DependencyProperty const& property,\r\n  " +
-                    "  DependencyObject& cache,\r\n    int64_t& token)\r\n{\r\n    if (cache && cache != ob" +
-                    "j)\r\n    {\r\n        cache.UnregisterPropertyChangedCallback(property, token);\r\n  " +
-                    "      cache = nullptr;\r\n    }\r\n\r\n    if (!cache && obj)\r\n    {\r\n        cache = " +
-                    "obj;\r\n        token = obj.RegisterPropertyChangedCallback(property, \r\n          " +
-                    "  { this, &XamlBindingTrackingBase::DependencyPropertyChanged });\r\n    }\r\n}\r\n\r\nv" +
-                    "oid XamlBindingTrackingBase::UpdateDependencyPropertyChangedListener(\r\n    Depen" +
-                    "dencyObject const& obj,\r\n    DependencyProperty const& property,\r\n    winrt::wea" +
-                    "k_ref<");
+                    "  DependencyObject& cache,\r\n    std::int64_t& token)\r\n{\r\n    if (cache && cache " +
+                    "!= obj)\r\n    {\r\n        cache.UnregisterPropertyChangedCallback(property, token)" +
+                    ";\r\n        cache = nullptr;\r\n    }\r\n\r\n    if (!cache && obj)\r\n    {\r\n        cac" +
+                    "he = obj;\r\n        token = obj.RegisterPropertyChangedCallback(property, \r\n     " +
+                    "       { this, &XamlBindingTrackingBase::DependencyPropertyChanged });\r\n    }\r\n}" +
+                    "\r\n\r\nvoid XamlBindingTrackingBase::UpdateDependencyPropertyChangedListener(\r\n    " +
+                    "DependencyObject const& obj,\r\n    DependencyProperty const& property,\r\n    winrt" +
+                    "::weak_ref<");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.Xaml)));
             this.Write(@"::DependencyObject>& cacheRef,
-    int64_t& token)
+    std::int64_t& token)
 {
     DependencyObject cache = cacheRef.get();
     if (cache && cache != obj)
