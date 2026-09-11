@@ -32,11 +32,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 //------------------------------------------------------------------------------
 #pragma once
 
+#include <unknwn.h>
+
 #include <functional>
 #include <map>
 #include <vector>
-#include <unknwn.h>
 #include <mutex>
+#include <cstdint>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime

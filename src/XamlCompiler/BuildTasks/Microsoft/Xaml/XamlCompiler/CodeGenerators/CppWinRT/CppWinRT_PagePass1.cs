@@ -37,6 +37,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
 
+#include <cstdint>
+
 ");
   foreach (var includeFile in Model.NeededCppWinRTProjectionHeaderFiles) { 
             this.Write("#if __has_include(<");
