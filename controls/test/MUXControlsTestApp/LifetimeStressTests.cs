@@ -3,17 +3,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 using MUXControlsTestApp.Utilities;
 
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
 
 using Common;
 
@@ -537,6 +541,466 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // -----------------------------------------------------------------------------------------------------------
+        // Targeted component scenarios.
+        //
+        // The scenarios below extend the suite past the broad control sweep to specific components that recur in the
+        // Watson "Lifetime Issues" crash buckets. Each one drives that component's create -> use -> teardown -> GC
+        // path so a peer-lifetime / ref-counting bug in it either faults promptly or leaves a residual reference that
+        // is reported as a non-gating warning. They are report-only like the rest of the suite (see RunStress). NOTE:
+        // a scenario reproducing a bug is not guaranteed in the small PR-gate "report" pass - some faults only appear
+        // under the scheduled soak (WINUI_LIFETIME_STRESS_MINUTES) and/or under AppVerifier/page-heap.
+        // -----------------------------------------------------------------------------------------------------------
+
+        // MenuFlyout / MenuFlyoutPresenter open/close lifetime stress (Watson: CMenuFlyoutPresenter teardown,
+        // STOWED_EXCEPTION_8000ffff). Attaching a MenuFlyout to a button, opening it (which realizes the presenter and
+        // its items inside a popup) and dismissing it exercises the flyout-presenter create/teardown path.
+        [TestMethod]
+        public void StressMenuFlyoutOpenClose()
+        {
+            RunStress("StressMenuFlyoutOpenClose", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var button = new Button() { Content = "target" };
+                    Content = button;
+                    Content.UpdateLayout();
+
+                    for (int churn = 0; churn < 5; churn++)
+                    {
+                        var flyout = new MenuFlyout();
+                        for (int m = 0; m < 6; m++)
+                        {
+                            flyout.Items.Add(new MenuFlyoutItem() { Text = string.Format("Item {0}", m) });
+                        }
+                        flyout.Items.Add(new MenuFlyoutSubItem() { Text = "More" });
+                        if (churn == 0)
+                        {
+                            objects["Flyout"] = new WeakReference(flyout);
+                        }
+
+                        button.Flyout = flyout;
+                        flyout.ShowAt(button);
+                        Content.UpdateLayout();
+                        flyout.Hide();
+                        Content.UpdateLayout();
+                        button.Flyout = null;
+                    }
+
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // ResourceDictionary lifetime stress (Watson: CResourceDictionary::GetKeyNoRefImpl access violation).
+        // Build merged/keyed ResourceDictionaries, attach them to an element, resolve keys through the merged graph,
+        // then clear and drop them. Churning the dictionary graph exercises the resource-map lookup/teardown paths.
+        [TestMethod]
+        public void StressResourceDictionaryChurn()
+        {
+            RunStress("StressResourceDictionaryChurn", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var root = new Grid();
+                    Content = root;
+
+                    for (int churn = 0; churn < 6; churn++)
+                    {
+                        var merged = new ResourceDictionary();
+                        merged["Brush" + churn] = new SolidColorBrush(Microsoft.UI.Colors.Red);
+
+                        var dict = new ResourceDictionary();
+                        dict.MergedDictionaries.Add(merged);
+                        dict["LocalKey"] = 42.0;
+                        if (churn == 0)
+                        {
+                            objects["ResourceDictionary"] = new WeakReference(dict);
+                            objects["Merged"] = new WeakReference(merged);
+                        }
+
+                        var border = new Border();
+                        border.Resources = dict;
+                        root.Children.Add(border);
+                        root.UpdateLayout();
+
+                        // Resolve keys so the lookup path (GetKeyNoRefImpl) runs against the merged graph.
+                        object localValue = border.Resources["LocalKey"];
+                        object mergedValue = border.Resources.MergedDictionaries[0]["Brush" + churn];
+
+                        root.Children.Remove(border);
+                        merged.Clear();
+                        dict.MergedDictionaries.Clear();
+                        dict.Clear();
+                        root.UpdateLayout();
+                    }
+
+                    root.Children.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // ItemsSourceView lifetime stress (Watson: ItemsSourceView::OnItemsSourceChanged fail-fast).
+        // Rapidly swap the ItemsSource of items controls between different collection kinds (array, List,
+        // ObservableCollection) and null. Each swap tears down the previous ItemsSourceView and builds a new one.
+        [TestMethod]
+        public void StressItemsSourceViewSwaps()
+        {
+            RunStress("StressItemsSourceViewSwaps", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var repeater = new ItemsRepeater() { Layout = new StackLayout() };
+                    var listView = new ListView() { Width = 200, Height = 200 };
+                    objects["Repeater"] = new WeakReference(repeater);
+
+                    var panel = new StackPanel();
+                    panel.Children.Add(repeater);
+                    panel.Children.Add(listView);
+                    Content = panel;
+                    Content.UpdateLayout();
+
+                    for (int churn = 0; churn < 6; churn++)
+                    {
+                        object[] sources =
+                        {
+                            Enumerable.Range(0, 40).ToArray(),
+                            Enumerable.Range(0, 30).Select(i => "S" + i).ToList(),
+                            new ObservableCollection<string>(Enumerable.Range(0, 20).Select(i => "O" + i)),
+                            null,
+                        };
+
+                        foreach (var src in sources)
+                        {
+                            repeater.ItemsSource = src;
+                            listView.ItemsSource = src;
+                            Content.UpdateLayout();
+                        }
+                    }
+
+                    repeater.ItemsSource = null;
+                    listView.ItemsSource = null;
+                    panel.Children.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // Automation-peer lifetime stress (Watson: CUIAWindow::InitIds, AppBarAutomationPeerFactory::Release,
+        // DependencyObjectPropertyAccess::Release). Create controls, build their automation peers, walk the peer
+        // children, then drop everything. Peers hold cross-boundary references back to their owners - a classic
+        // lifetime path where a mistake over-pegs the owner or frees the peer early.
+        [TestMethod]
+        public void StressAutomationPeerCreateRelease()
+        {
+            RunStress("StressAutomationPeerCreateRelease", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var panel = new StackPanel();
+                    var owners = new List<FrameworkElement>
+                    {
+                        new Button() { Content = "b" },
+                        new CommandBar(),
+                        new AppBar(),
+                        new ListView() { ItemsSource = Enumerable.Range(0, 10) },
+                        new TextBox() { Text = "t" },
+                        new CheckBox() { Content = "c" },
+                    };
+                    foreach (var owner in owners) { panel.Children.Add(owner); }
+                    objects["FirstOwner"] = new WeakReference(owners[0]);
+
+                    Content = panel;
+                    Content.UpdateLayout();
+
+                    foreach (var owner in owners)
+                    {
+                        var peer = FrameworkElementAutomationPeer.CreatePeerForElement(owner);
+                        if (peer != null)
+                        {
+                            var name = peer.GetName();
+                            var children = peer.GetChildren();
+                            if (children != null)
+                            {
+                                foreach (var child in children)
+                                {
+                                    var childName = child.GetName();
+                                }
+                            }
+                        }
+                    }
+
+                    panel.Children.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // Frame navigation-cache lifetime stress (Watson: DirectUI::NavigationCache::LoadContent access violation).
+        // Navigate a Frame between cached pages and back so the navigation cache retains, reuses and finally releases
+        // page instances - the path that has over-held or prematurely freed cached pages. The pages set
+        // NavigationCacheMode=Required so the cache actually participates.
+        [TestMethod]
+        public void StressFrameNavigationCache()
+        {
+            RunStress("StressFrameNavigationCache", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var frame = new Frame() { Width = 300, Height = 300 };
+                    objects["Frame"] = new WeakReference(frame);
+                    Content = frame;
+                    Content.UpdateLayout();
+
+                    for (int nav = 0; nav < 6; nav++)
+                    {
+                        frame.Navigate(typeof(LifetimeStressPage));
+                        Content.UpdateLayout();
+                        frame.Navigate(typeof(LifetimeStressPageTwo));
+                        Content.UpdateLayout();
+                        if (frame.CanGoBack)
+                        {
+                            frame.GoBack();
+                            Content.UpdateLayout();
+                        }
+                    }
+
+                    frame.Content = null;
+                    frame.BackStack.Clear();
+                    frame.ForwardStack.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // XAML/XBF parse + teardown lifetime stress (Watson: XamlBinaryFormatReader2::GetXbfHash / markup teardown).
+        // Repeatedly parse a non-trivial XAML fragment with XamlReader.Load, add the produced tree to the live tree,
+        // lay it out and drop it. This drives the parser-produced object graph create/teardown path.
+        [TestMethod]
+        public void StressXamlReaderLoadUnload()
+        {
+            const string markup =
+                "<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'" +
+                "      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>" +
+                "  <Grid.Resources><SolidColorBrush x:Key='B' Color='Blue'/></Grid.Resources>" +
+                "  <StackPanel>" +
+                "    <TextBlock Text='hello'/>" +
+                "    <Button Content='ok'/>" +
+                "    <ListView/>" +
+                "  </StackPanel>" +
+                "</Grid>";
+
+            RunStress("StressXamlReaderLoadUnload", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    for (int churn = 0; churn < 6; churn++)
+                    {
+                        var element = (UIElement)XamlReader.Load(markup);
+                        if (churn == 0)
+                        {
+                            objects["ParsedRoot"] = new WeakReference(element);
+                        }
+                        Content = element;
+                        Content.UpdateLayout();
+                        Content = null;
+                    }
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // Simple-property lifetime stress (Watson: SimpleProperty::details::SetImpl access violation).
+        // Simple properties (Translation/Scale/Rotation/CenterPoint) are stored in a side table keyed by element.
+        // Setting and clearing them across many elements, then dropping the tree while some are still set, exercises
+        // that storage's set/teardown path - which has faulted when an element is torn down with a simple property set.
+        [TestMethod]
+        public void StressSimplePropertySetClear()
+        {
+            RunStress("StressSimplePropertySetClear", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var panel = new StackPanel();
+                    var elements = new List<UIElement>();
+                    for (int i = 0; i < 12; i++)
+                    {
+                        var el = new Border() { Width = 20, Height = 20 };
+                        elements.Add(el);
+                        panel.Children.Add(el);
+                    }
+                    objects["FirstElement"] = new WeakReference(elements[0]);
+
+                    Content = panel;
+                    Content.UpdateLayout();
+
+                    for (int churn = 0; churn < 4; churn++)
+                    {
+                        foreach (var el in elements)
+                        {
+                            el.Translation = new Vector3(churn, churn, 0);
+                            el.Scale = new Vector3(1.1f, 1.1f, 1.0f);
+                            el.Rotation = churn * 10.0f;
+                            el.CenterPoint = new Vector3(5, 5, 0);
+                        }
+                        Content.UpdateLayout();
+
+                        foreach (var el in elements)
+                        {
+                            el.Translation = new Vector3(0, 0, 0);
+                            el.Scale = new Vector3(1, 1, 1);
+                            el.Rotation = 0;
+                            el.CenterPoint = new Vector3(0, 0, 0);
+                        }
+                        Content.UpdateLayout();
+                    }
+
+                    // Tear the tree down while the last set of simple properties may still be live.
+                    foreach (var el in elements)
+                    {
+                        el.Translation = new Vector3(3, 3, 0);
+                    }
+                    panel.Children.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // MediaTransportControls lifetime stress (Watson: MediaTransportControls crash with a shared MediaPlayer).
+        // Repeatedly stand up MediaPlayerElements with transport controls enabled (which realizes the
+        // MediaTransportControls template) and tear them down, clearing the media player on the way out. Exercises
+        // the transport-controls create/teardown path. (A true multi-element shared-MediaPlayer repro is best driven
+        // from the scheduled soak; here we keep it self-contained and window-free.)
+        [TestMethod]
+        public void StressMediaTransportControls()
+        {
+            RunStress("StressMediaTransportControls", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var panel = new StackPanel();
+                    Content = panel;
+
+                    for (int churn = 0; churn < 4; churn++)
+                    {
+                        var mpe1 = new MediaPlayerElement() { Width = 160, Height = 90, AreTransportControlsEnabled = true };
+                        var mpe2 = new MediaPlayerElement() { Width = 160, Height = 90, AreTransportControlsEnabled = true };
+                        if (churn == 0)
+                        {
+                            objects["MediaPlayerElement"] = new WeakReference(mpe1);
+                        }
+                        panel.Children.Add(mpe1);
+                        panel.Children.Add(mpe2);
+                        panel.UpdateLayout();
+
+                        panel.Children.Remove(mpe1);
+                        panel.Children.Remove(mpe2);
+                        mpe1.SetMediaPlayer(null);
+                        mpe2.SetMediaPlayer(null);
+                        panel.UpdateLayout();
+                    }
+
+                    panel.Children.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // InkToolbar lifetime stress (Watson: InkToolbar ReferenceTracker fail-fast, InkControls.dll).
+        // Attach an InkToolbar to an InkCanvas, lay it out, then detach and drop. InkToolbar holds a tracked
+        // reference to its target InkCanvas; attach/detach churn exercises that cross-reference teardown.
+        [TestMethod]
+        public void StressInkToolbarTargeting()
+        {
+            RunStress("StressInkToolbarTargeting", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var grid = new Grid() { Width = 300, Height = 300 };
+                    Content = grid;
+
+                    for (int churn = 0; churn < 4; churn++)
+                    {
+                        var inkCanvas = new InkCanvas();
+                        var inkToolbar = new InkToolbar();
+                        if (churn == 0)
+                        {
+                            objects["InkCanvas"] = new WeakReference(inkCanvas);
+                            objects["InkToolbar"] = new WeakReference(inkToolbar);
+                        }
+                        grid.Children.Add(inkCanvas);
+                        grid.Children.Add(inkToolbar);
+                        grid.UpdateLayout();
+
+                        inkToolbar.TargetInkCanvas = inkCanvas;
+                        grid.UpdateLayout();
+
+                        inkToolbar.TargetInkCanvas = null;
+                        grid.Children.Remove(inkToolbar);
+                        grid.Children.Remove(inkCanvas);
+                        grid.UpdateLayout();
+                    }
+
+                    grid.Children.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
         // Build a fresh instance of every WinUI control we want to torture. Each entry is a distinct control type so
         // a single iteration covers essentially the whole WinUI control surface.
         //
@@ -750,6 +1214,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 return value;
             }
             return fallback;
+        }
+    }
+
+    // Minimal cached pages used by StressFrameNavigationCache. NavigationCacheMode=Required makes the Frame's
+    // navigation cache actually retain and later release these page instances (the code path under test). Declared
+    // as top-level public types so Frame.Navigate can activate them.
+    public sealed class LifetimeStressPage : Page
+    {
+        public LifetimeStressPage()
+        {
+            NavigationCacheMode = NavigationCacheMode.Required;
+            Content = new TextBlock() { Text = "LifetimeStressPage" };
+        }
+    }
+
+    public sealed class LifetimeStressPageTwo : Page
+    {
+        public LifetimeStressPageTwo()
+        {
+            NavigationCacheMode = NavigationCacheMode.Required;
+            Content = new TextBlock() { Text = "LifetimeStressPageTwo" };
         }
     }
 }
