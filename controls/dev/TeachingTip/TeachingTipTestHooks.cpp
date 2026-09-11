@@ -174,15 +174,6 @@ bool TeachingTipTestHooks::GetIsIdle(const winrt::TeachingTip& teachingTip)
     return true;
 }
 
-bool TeachingTipTestHooks::GetIsExpandAnimationPlaying(const winrt::TeachingTip& teachingTip)
-{
-    if (teachingTip)
-    {
-        return winrt::get_self<TeachingTip>(teachingTip)->m_isExpandAnimationPlaying;
-    }
-    return false;
-}
-
 void TeachingTipTestHooks::NotifyEffectivePlacementChanged(const winrt::TeachingTip& sender)
 {
     auto hooks = EnsureGlobalTestHooks();

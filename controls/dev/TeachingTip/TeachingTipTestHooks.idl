@@ -21,7 +21,6 @@ runtimeclass TeachingTipTestHooks
     static void SetContractAnimationDuration(MU_XC_NAMESPACE.TeachingTip teachingTip, Windows.Foundation.TimeSpan animationDurationMultiplier);
 
     static Boolean GetIsIdle(MU_XC_NAMESPACE.TeachingTip teachingTip);
-    static Boolean GetIsExpandAnimationPlaying(MU_XC_NAMESPACE.TeachingTip teachingTip);
     static MU_XC_NAMESPACE.TeachingTipPlacementMode GetEffectivePlacement(MU_XC_NAMESPACE.TeachingTip teachingTip);
     static MU_XC_NAMESPACE.TeachingTipHeroContentPlacementMode GetEffectiveHeroContentPlacement(MU_XC_NAMESPACE.TeachingTip teachingTip);
     static Double GetVerticalOffset(MU_XC_NAMESPACE.TeachingTip teachingTip);

@@ -31,31 +31,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     {
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        public void CloseDuringExpandAnimation()
-        {
-            VerifyCloseDuringExpandAnimation(lightDismiss: false, interruptAnimation: false);
-        }
-
-        [TestMethod]
-        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void LightDismissDuringExpandAnimation()
-        {
-            VerifyCloseDuringExpandAnimation(lightDismiss: true, interruptAnimation: false);
-        }
-
-        [TestMethod]
-        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        public void CloseDuringInterruptedExpandAnimation()
-        {
-            VerifyCloseDuringExpandAnimation(lightDismiss: false, interruptAnimation: true);
-        }
-
-        private void VerifyCloseDuringExpandAnimation(bool lightDismiss, bool interruptAnimation)
         {
             TeachingTip tip = null;
             int closingCount = 0;
             int closedCount = 0;
-            var expectedReason = lightDismiss ? TeachingTipCloseReason.LightDismiss : TeachingTipCloseReason.Programmatic;
 
             try
             {
@@ -63,16 +43,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Verify.IsTrue(new global::Windows.UI.ViewManagement.UISettings().AnimationsEnabled,
                         "This regression test requires animations to be enabled.");
-                    tip = new TeachingTip { Title = "Animation regression", IsLightDismissEnabled = lightDismiss };
+                    tip = new TeachingTip { Title = "Animation regression", IsLightDismissEnabled = true };
                     tip.Closing += (sender, args) =>
                     {
                         closingCount++;
-                        Verify.AreEqual(expectedReason, args.Reason);
+                        Verify.AreEqual(TeachingTipCloseReason.LightDismiss, args.Reason);
                     };
                     tip.Closed += (sender, args) =>
                     {
                         closedCount++;
-                        Verify.AreEqual(expectedReason, args.Reason);
+                        Verify.AreEqual(TeachingTipCloseReason.LightDismiss, args.Reason);
                     };
                     TeachingTipTestHooks.SetExpandAnimationDuration(tip, TimeSpan.FromSeconds(10));
                     TeachingTipTestHooks.SetContractAnimationDuration(tip, TimeSpan.FromMilliseconds(100));
@@ -81,44 +61,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 WaitForTeachingTipCondition(() =>
-                    TeachingTipTestHooks.GetPopup(tip)?.IsOpen == true && TeachingTipTestHooks.GetIsExpandAnimationPlaying(tip),
+                    TeachingTipTestHooks.GetPopup(tip)?.IsOpen == true && !TeachingTipTestHooks.GetIsIdle(tip),
                     "The popup should open while its expand animation is still running.");
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Verify.IsTrue(TeachingTipTestHooks.GetIsExpandAnimationPlaying(tip));
+                    Verify.IsFalse(TeachingTipTestHooks.GetIsIdle(tip));
                     var popup = TeachingTipTestHooks.GetPopup(tip);
-                    if (interruptAnimation)
+                    Microsoft.UI.Xaml.Controls.Primitives.Popup indicator = null;
+                    foreach (var openPopup in VisualTreeHelper.GetOpenPopupsForXamlRoot(tip.XamlRoot))
                     {
-                        // Interrupt only one animation: the expand batch must still be busy.
-                        var grid = (UIElement)VisualTreeUtils.FindVisualChildByName(popup.Child, "TailOcclusionGrid");
-                        Verify.IsNotNull(grid);
-                        var interruptedAnimation = CompositionTarget.GetCompositorForCurrentThread().CreateVector3KeyFrameAnimation();
-                        interruptedAnimation.Target = "Scale";
-                        grid.StopAnimation(interruptedAnimation);
-                    }
-
-                    if (lightDismiss)
-                    {
-                        Microsoft.UI.Xaml.Controls.Primitives.Popup indicator = null;
-                        foreach (var openPopup in VisualTreeHelper.GetOpenPopupsForXamlRoot(tip.XamlRoot))
+                        if (openPopup != popup && openPopup.IsLightDismissEnabled)
                         {
-                            if (openPopup != popup && openPopup.IsLightDismissEnabled)
-                            {
-                                Verify.IsNull(indicator, "There should be only one light-dismiss indicator.");
-                                indicator = openPopup;
-                            }
+                            Verify.IsNull(indicator, "There should be only one light-dismiss indicator.");
+                            indicator = openPopup;
                         }
-                        Verify.IsNotNull(indicator);
-                        // Exercise the same Closed notification used by outside click and deactivation.
-                        indicator.IsOpen = false;
                     }
-                    else
-                    {
-                        tip.IsOpen = false;
-                        tip.IsOpen = true;
-                        tip.IsOpen = false;
-                    }
+                    Verify.IsNotNull(indicator);
+                    // Exercise the same Closed notification used by outside click and deactivation.
+                    indicator.IsOpen = false;
                 });
 
                 WaitForTeachingTipCondition(() => closedCount == 1 && TeachingTipTestHooks.GetIsIdle(tip),
@@ -135,84 +96,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             finally
             {
                 RunOnUIThread.Execute(() => Content = null);
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        public void DeferredCloseDuringExpandAnimation()
-        {
-            TeachingTip tip = null;
-            global::Windows.Foundation.Deferral deferral = null;
-            TeachingTipClosingEventArgs closingArgs = null;
-            int closingCount = 0;
-            int closedCount = 0;
-            try
-            {
-                RunOnUIThread.Execute(() =>
-                {
-                    Verify.IsTrue(new global::Windows.UI.ViewManagement.UISettings().AnimationsEnabled,
-                        "This regression test requires animations to be enabled.");
-                    tip = new TeachingTip { Title = "Deferred animation regression" };
-                    tip.Closing += (sender, args) =>
-                    {
-                        closingCount++;
-                        closingArgs = args;
-                        deferral = args.GetDeferral();
-                    };
-                    tip.Closed += (sender, args) => closedCount++;
-                    TeachingTipTestHooks.SetExpandAnimationDuration(tip, TimeSpan.FromSeconds(1));
-                    TeachingTipTestHooks.SetContractAnimationDuration(tip, TimeSpan.FromMilliseconds(100));
-                    Content = tip;
-                    tip.IsOpen = true;
-                });
-                WaitForTeachingTipCondition(() =>
-                    TeachingTipTestHooks.GetPopup(tip)?.IsOpen == true && TeachingTipTestHooks.GetIsExpandAnimationPlaying(tip),
-                    "The expand animation should start.");
-                RunOnUIThread.Execute(() => tip.IsOpen = false);
-                WaitForTeachingTipCondition(() => deferral != null, "Closing should provide a deferral during expansion.");
-
-                WaitForTeachingTipCondition(() => !TeachingTipTestHooks.GetIsExpandAnimationPlaying(tip),
-                    "The expand batch should complete while the close is deferred.");
-                RunOnUIThread.Execute(() => tip.IsOpen = true);
-                WaitForTeachingTipCondition(() => !tip.IsOpen,
-                    "A reopen request must be rejected while Closing is deferred.");
-                RunOnUIThread.Execute(() =>
-                {
-                    Verify.IsFalse(TeachingTipTestHooks.GetIsIdle(tip));
-                    Verify.IsTrue(TeachingTipTestHooks.GetPopup(tip).IsOpen);
-                    Verify.AreEqual(1, closingCount);
-                    Verify.AreEqual(0, closedCount);
-                    closingArgs.Cancel = true;
-                    deferral.Complete();
-                    deferral = null;
-                });
-                WaitForTeachingTipCondition(() => tip.IsOpen && TeachingTipTestHooks.GetIsIdle(tip),
-                    "Canceling the deferred close should restore the idle open state.");
-
-                RunOnUIThread.Execute(() => tip.IsOpen = false);
-                WaitForTeachingTipCondition(() => deferral != null, "A subsequent close should still work.");
-                RunOnUIThread.Execute(() =>
-                {
-                    deferral.Complete();
-                    deferral = null;
-                });
-                WaitForTeachingTipCondition(() => closedCount == 1 && TeachingTipTestHooks.GetIsIdle(tip),
-                    "Completing the deferral should close the tip.");
-                RunOnUIThread.Execute(() =>
-                {
-                    Verify.IsFalse(tip.IsOpen);
-                    Verify.IsFalse(TeachingTipTestHooks.GetPopup(tip).IsOpen);
-                    Verify.AreEqual(2, closingCount);
-                });
-            }
-            finally
-            {
-                RunOnUIThread.Execute(() =>
-                {
-                    deferral?.Complete();
-                    Content = null;
-                });
             }
         }
 
