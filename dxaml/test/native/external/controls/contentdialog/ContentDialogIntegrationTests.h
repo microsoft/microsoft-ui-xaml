@@ -45,6 +45,44 @@ public:
         TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(ShowingAnimationPlaysWithoutOptimizeApplyStyles)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the ContentDialog entrance animation plays when OptimizeApplyStyles is disabled (compat mode).")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        // Force compat mode: PerfOptIn OR's into OptimizeApplyStyles, so both must be off to actually
+        // exercise the pre-optimization behavior (see OptionalChangeState::IsOptimizeApplyStylesEnabled).
+        TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+        TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:false}")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ShowingAnimationPlaysWithOptimizeApplyStyles)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the ContentDialog entrance animation plays with an explicit style set in markup when OptimizeApplyStyles is enabled. Regression coverage for GitHub #11257.")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        // Isolate OptimizeApplyStyles as the only variable versus the compat test: PerfOptIn off, optimization on.
+        TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+        TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ShowingAnimationPlaysWithCodeExplicitStyleAndOptimizeApplyStyles)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the ContentDialog entrance animation plays with an explicit style set in code before entering the tree when OptimizeApplyStyles is enabled.")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+        TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ApplyTemplateUsesExplicitAndImplicitStylesWithoutOptimizeApplyStyles)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that ApplyTemplate uses explicit and Application implicit styles when OptimizeApplyStyles is disabled.")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+        TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:false}")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ApplyTemplateUsesExplicitAndImplicitStylesWithOptimizeApplyStyles)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that ApplyTemplate uses explicit and Application implicit styles when OptimizeApplyStyles is enabled.")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+        TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
+    END_TEST_METHOD()
+
     BEGIN_TEST_METHOD(ValidateUnconstrainedPopupPlacementBehavior)
         TEST_METHOD_PROPERTY(L"Description", L"Validates that when ContentDialog is opened with placement = UnconstrainedPopup, the opened popup will be indeed windowed.")
         TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
@@ -442,6 +480,13 @@ private:
         FullSize
     };
 
+    enum class ContentDialogStyleSource
+    {
+        ExplicitInMarkup,
+        ExplicitInCode,
+        Implicit
+    };
+
     struct ValidateFootprintExpectedValues
     {
         double ContentDialogWidth;
@@ -470,6 +515,10 @@ private:
     static xaml_controls::Button^ GetButton(xaml_controls::ContentDialog^, xaml_controls::ContentDialogButton button);
 
     static void CanOpenAndCloseWorker(xaml_controls::ContentDialogPlacement placement = xaml_controls::ContentDialogPlacement::Popup, bool validateDCompTree = false);
+    static void ShowingAnimationPlaysWorker(
+        bool expectOptimizeApplyStylesEnabled,
+        ContentDialogStyleSource styleSource = ContentDialogStyleSource::ExplicitInMarkup);
+    static void ApplyTemplateUsesExplicitAndImplicitStylesWorker(bool expectOptimizeApplyStylesEnabled);
     static void CanClickButtonsWorker(xaml_controls::ContentDialogPlacement placement = xaml_controls::ContentDialogPlacement::Popup);
 
     static void CanDeferButtonClickHelper(xaml_controls::ContentDialogButton buttonType);
