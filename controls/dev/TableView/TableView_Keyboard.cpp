@@ -191,40 +191,21 @@ bool TableView::TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& 
     return true;
 }
 
-// Enter / Space sorts the column whose header has focus. Left/Right are already taken by resize,
-// so activation lands on the standard activation keys.
-bool TableView::TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args)
+// Resolves the sortable column whose header raised this key, or null when the key did not come
+// from the header chrome itself.
+winrt::TableViewColumn TableView::ResolveHeaderSortKeyTarget(const winrt::KeyRoutedEventArgs& args)
 {
-    if (args.Handled())
-    {
-        return false;
-    }
-
-    const auto key = args.Key();
-    if (key != winrt::Windows::System::VirtualKey::Enter &&
-        key != winrt::Windows::System::VirtualKey::Space)
-    {
-        return false;
-    }
-
-    // Without this, holding the key re-sorts the whole collection once per auto-repeat tick and the
-    // final direction depends on when the user let go.
-    if (args.KeyStatus().WasKeyDown)
-    {
-        return false;
-    }
-
     // Modified chords belong to the app (and Alt alone opens the window menu).
     if (IsKeyDown(winrt::VirtualKey::Menu) ||
         IsKeyDown(winrt::VirtualKey::Control) ||
         IsKeyDown(winrt::VirtualKey::Shift))
     {
-        return false;
+        return nullptr;
     }
 
     if (!CanUserSortColumns())
     {
-        return false;
+        return nullptr;
     }
 
     // Resolves only for focus inside the header band, so Space in a body cell's interactive content
@@ -233,7 +214,7 @@ bool TableView::TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args)
     auto const column = ResolveFocusedHeaderColumn(args.OriginalSource(), m_headerHost.get(), headerCell);
     if (!column || !column.CanSort())
     {
-        return false;
+        return nullptr;
     }
 
     // The walk above matches any descendant of a header cell, so require the key to have been
@@ -241,7 +222,53 @@ bool TableView::TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args)
     // AcceptsReturn=false leaves Enter unhandled, which would otherwise toggle the sort.
     if (args.OriginalSource().try_as<winrt::DependencyObject>() != headerCell)
     {
+        return nullptr;
+    }
+
+    return column;
+}
+
+// Enter sorts the column whose header has focus. Left/Right are already taken by resize, so
+// activation lands on the standard activation keys.
+//
+// Space is deliberately NOT activated here: XAML activation semantics (ButtonInteraction) are that
+// Enter fires on key down while Space arms on key down and fires on key up, which is what lets a
+// user press Space, change their mind and move focus away without activating.
+bool TableView::TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args)
+{
+    if (args.Handled())
+    {
         return false;
+    }
+
+    const auto key = args.Key();
+    const bool isEnter = key == winrt::Windows::System::VirtualKey::Enter;
+    const bool isSpace = key == winrt::Windows::System::VirtualKey::Space;
+    if (!isEnter && !isSpace)
+    {
+        return false;
+    }
+
+    // Without this, holding the key re-arms or re-sorts once per auto-repeat tick.
+    if (args.KeyStatus().WasKeyDown)
+    {
+        // Still consume a held Space so the ancestor ScrollViewer does not page-scroll under the
+        // armed header.
+        return isSpace && m_headerSortSpaceArmedColumn.get() != nullptr;
+    }
+
+    auto const column = ResolveHeaderSortKeyTarget(args);
+    if (!column)
+    {
+        return false;
+    }
+
+    if (isSpace)
+    {
+        // Arm only; the sort happens on key up.
+        m_headerSortSpaceArmedColumn = winrt::make_weak(column);
+        args.Handled(true);
+        return true;
     }
 
     if (!ToggleSortDirection(column))
@@ -252,6 +279,49 @@ bool TableView::TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args)
     // The sort itself announces through TableView_Sort's notification event.
     args.Handled(true);
     return true;
+}
+
+// Space activates here, on key up, and only if the same header is still the one raising the key -
+// so releasing Space after moving focus elsewhere does not sort.
+bool TableView::TryHandleHeaderSortKeyUp(const winrt::KeyRoutedEventArgs& args)
+{
+    auto const armed = m_headerSortSpaceArmedColumn.get();
+    if (!armed)
+    {
+        return false;
+    }
+
+    if (args.Key() != winrt::Windows::System::VirtualKey::Space)
+    {
+        return false;
+    }
+
+    m_headerSortSpaceArmedColumn = nullptr;
+
+    if (args.Handled())
+    {
+        return false;
+    }
+
+    if (ResolveHeaderSortKeyTarget(args) != armed)
+    {
+        return false;
+    }
+
+    if (!ToggleSortDirection(armed))
+    {
+        return false;
+    }
+
+    args.Handled(true);
+    return true;
+}
+
+void TableView::OnKeyUpForHeaderSort(
+    const winrt::IInspectable& /*sender*/,
+    const winrt::KeyRoutedEventArgs& args)
+{
+    TryHandleHeaderSortKeyUp(args);
 }
 
 void TableView::OnPreviewKeyDownForNavigation(

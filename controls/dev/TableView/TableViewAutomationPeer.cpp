@@ -429,36 +429,6 @@ winrt::AutomationPeer TableViewAutomationPeer::GetOrCreateColumnHeaderPeer(
     return peer;
 }
 
-static winrt::hstring ItemToName(winrt::IInspectable const& item)
-{
-    // Boxed WinRT primitives surface as IPropertyValue, not IStringable.
-    if (auto const propValue = item.try_as<winrt::IPropertyValue>())
-    {
-        switch (propValue.Type())
-        {
-        case winrt::PropertyType::String:  return propValue.GetString();
-        case winrt::PropertyType::Boolean: return propValue.GetBoolean() ? winrt::hstring{ L"True" } : winrt::hstring{ L"False" };
-        case winrt::PropertyType::Int16:   return winrt::to_hstring(static_cast<int32_t>(propValue.GetInt16()));
-        case winrt::PropertyType::Int32:   return winrt::to_hstring(propValue.GetInt32());
-        case winrt::PropertyType::Int64:   return winrt::to_hstring(propValue.GetInt64());
-        case winrt::PropertyType::UInt8:   return winrt::to_hstring(static_cast<uint32_t>(propValue.GetUInt8()));
-        case winrt::PropertyType::UInt16:  return winrt::to_hstring(static_cast<uint32_t>(propValue.GetUInt16()));
-        case winrt::PropertyType::UInt32:  return winrt::to_hstring(propValue.GetUInt32());
-        case winrt::PropertyType::UInt64:  return winrt::to_hstring(propValue.GetUInt64());
-        case winrt::PropertyType::Single:  return winrt::to_hstring(propValue.GetSingle());
-        case winrt::PropertyType::Double:  return winrt::to_hstring(propValue.GetDouble());
-        default: break;
-        }
-    }
-
-    if (auto const stringable = item.try_as<winrt::IStringable>())
-    {
-        return stringable.ToString();
-    }
-
-    return {};
-}
-
 static winrt::hstring StringPropertyValue(winrt::IInspectable const& value)
 {
     if (auto const propValue = value.try_as<winrt::IPropertyValue>())
@@ -523,25 +493,32 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
         return nullptr;
     }
 
-    // Resolve startAfter through its owning realized TableViewRow.
+    // Resolve startAfter through its owning realized repeater child.
     int32_t startIndex = -1;
     if (startAfter)
     {
+        // Any child of the rows repeater is a valid anchor - a data row or a group-header band.
+        // Matching only TableViewRow left startIndex at -1 for a group header, and the search then
+        // restarted at item 0 - which under grouping IS that header, so a client enumerating the
+        // container never advanced past the first group.
+        bool resolved = false;
         if (auto const startPeer = PeerFromProvider(startAfter).try_as<winrt::FrameworkElementAutomationPeer>())
         {
-            if (auto const ownerRow = startPeer.Owner().try_as<winrt::TableViewRow>())
+            if (auto const ownerElement = startPeer.Owner().try_as<winrt::UIElement>())
             {
-                const int32_t rowIndex = repeater.GetElementIndex(ownerRow);
-                if (rowIndex >= 0)
+                if (const int32_t index = repeater.GetElementIndex(ownerElement); index >= 0)
                 {
-                    startIndex = rowIndex;
-                }
-                else
-                {
-                    // Avoid restarting at item 0 after startAfter has been virtualized away.
-                    return nullptr;
+                    startIndex = index;
+                    resolved = true;
                 }
             }
+        }
+
+        // An unresolvable startAfter - virtualized away, or not one of ours - must not degrade to
+        // "start from the beginning": that turns a wrong answer into an enumeration that never ends.
+        if (!resolved)
+        {
+            return nullptr;
         }
     }
 

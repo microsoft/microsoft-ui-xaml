@@ -285,6 +285,18 @@ TableView::TableView()
     // AddHandler takes the handler as IInspectable, so the delegate must be boxed (see RoutedEventHelpers.h).
     AddHandler(winrt::UIElement::KeyDownEvent(), winrt::box_value(m_keyDownHandler), true /* handledEventsToo */);
 
+    // Space on a focused header arms on key down and sorts here, on key up. handledEventsToo:
+    // the ancestor ScrollViewer marks Space handled for page-scrolling.
+    m_keyUpHandler = winrt::KeyEventHandler(
+        [weakThis](winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->OnKeyUpForHeaderSort(sender, args);
+            }
+        });
+    AddHandler(winrt::UIElement::KeyUpEvent(), winrt::box_value(m_keyUpHandler), true /* handledEventsToo */);
+
     // Tunneling PreviewKeyDown runs before the framework's built-in focus navigation; snapshot the
     // currently focused row there so OnKeyDownForNavigation anchors on the pre-move index.
     m_previewKeyDownHandler = winrt::KeyEventHandler(

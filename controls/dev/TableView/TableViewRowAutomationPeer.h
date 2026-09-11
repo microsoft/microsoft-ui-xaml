@@ -54,6 +54,11 @@ private:
     int32_t GetRowIndex();
     // 1-based position within the owning group and that group's item count; false when ungrouped.
     bool TryGetGroupPosition(int32_t rowIndex, int32_t& positionInGroup, int32_t& sizeOfGroup);
+    // Joins the visible cells' display text in visual order.
+    static std::wstring ComposeCellTexts(
+        TableViewRow* rowImpl,
+        winrt::Panel const& cellsHost,
+        bool allowPeerCreation);
 
     // One peer per realized cell, keyed weakly so a recycled or rebuilt cell releases immediately.
     // tracker_ref is the convention for a strong WinRT ref owned by a ReferenceTracker type.

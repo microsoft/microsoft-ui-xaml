@@ -96,6 +96,35 @@ hstring TableViewRowAutomationPeer::GetNameCore()
     }
 
     // Visible cells in visual order; empty cells are skipped so the name has no separator runs.
+    // The cheap pass first: GetCellDisplayText does not create peers, because this runs on every
+    // UIA name query across every cell.
+    std::wstring composed = ComposeCellTexts(rowImpl, cellsHost, false /* allowPeerCreation */);
+
+    if (composed.empty())
+    {
+        // Every visible cell was template content, which the cheap pass cannot read - so the row
+        // would announce as a bare "data item" with nothing in it, the exact case this name exists
+        // to fix. Retry allowing peer creation: bounded to rows that would otherwise be nameless,
+        // and the peers it attaches make the following queries cheap again.
+        composed = ComposeCellTexts(rowImpl, cellsHost, true /* allowPeerCreation */);
+    }
+
+    if (composed.empty())
+    {
+        // Template content with no name of its own either. The data item is the last thing left
+        // that can distinguish this row from its neighbours.
+        return ItemToName(row.DataContext());
+    }
+
+    return winrt::hstring{ composed };
+}
+
+// Joins the visible cells' display text in visual order.
+std::wstring TableViewRowAutomationPeer::ComposeCellTexts(
+    TableViewRow* rowImpl,
+    winrt::Panel const& cellsHost,
+    bool allowPeerCreation)
+{
     std::wstring composed;
     auto const cellChildren = cellsHost.Children();
     const auto count = cellChildren.Size();
@@ -107,7 +136,7 @@ hstring TableViewRowAutomationPeer::GetNameCore()
             continue;
         }
 
-        auto const text = GetCellDisplayText(cellElement.try_as<winrt::FrameworkElement>(), false /* allowPeerCreation */);
+        auto const text = GetCellDisplayText(cellElement.try_as<winrt::FrameworkElement>(), allowPeerCreation);
         if (text.empty())
         {
             continue;
@@ -120,7 +149,7 @@ hstring TableViewRowAutomationPeer::GetNameCore()
         composed += text;
     }
 
-    return winrt::hstring{ composed };
+    return composed;
 }
 
 int32_t TableViewRowAutomationPeer::GetPositionInSetCore()
