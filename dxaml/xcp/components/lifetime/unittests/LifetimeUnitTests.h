@@ -31,6 +31,18 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
             TEST_METHOD_PROPERTY(L"Description", L"Description")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(OffThreadFinalReleaseRoutesToOwningThread)
+            TEST_METHOD_PROPERTY(L"Description", L"Pillar C: an off-thread final release is funneled to the owning core's release queue rather than destroyed inline.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(OnThreadFinalReleaseIsNotRouted)
+            TEST_METHOD_PROPERTY(L"Description", L"Pillar C: a final release already on the owning thread is not routed and proceeds inline.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ReleasingIsALegalTransitionFromEveryPreReleaseState)
+            TEST_METHOD_PROPERTY(L"Description", L"Pillar C: the Releasing edge announced by the off-thread funnel is legal from every pre-release peer-lifetime state.")
+        END_TEST_METHOD()
+
     private:
 
         DirectUI::FakeDXamlCore* m_dxamlCore;
