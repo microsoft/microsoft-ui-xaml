@@ -31,6 +31,38 @@ inline bool IsVisibleColumn(winrt::TableViewColumn const& column)
     return column && column.Visibility() == winrt::Visibility::Visible;
 }
 
+// Stringifies a data item for UIA. Shared by the TableView peer's item search and the row peer's
+// name fallback, so both describe the same item the same way.
+inline winrt::hstring ItemToName(winrt::IInspectable const& item)
+{
+    // Boxed WinRT primitives surface as IPropertyValue, not IStringable.
+    if (auto const propValue = item.try_as<winrt::IPropertyValue>())
+    {
+        switch (propValue.Type())
+        {
+        case winrt::PropertyType::String:  return propValue.GetString();
+        case winrt::PropertyType::Boolean: return propValue.GetBoolean() ? winrt::hstring{ L"True" } : winrt::hstring{ L"False" };
+        case winrt::PropertyType::Int16:   return winrt::to_hstring(static_cast<int32_t>(propValue.GetInt16()));
+        case winrt::PropertyType::Int32:   return winrt::to_hstring(propValue.GetInt32());
+        case winrt::PropertyType::Int64:   return winrt::to_hstring(propValue.GetInt64());
+        case winrt::PropertyType::UInt8:   return winrt::to_hstring(static_cast<uint32_t>(propValue.GetUInt8()));
+        case winrt::PropertyType::UInt16:  return winrt::to_hstring(static_cast<uint32_t>(propValue.GetUInt16()));
+        case winrt::PropertyType::UInt32:  return winrt::to_hstring(propValue.GetUInt32());
+        case winrt::PropertyType::UInt64:  return winrt::to_hstring(propValue.GetUInt64());
+        case winrt::PropertyType::Single:  return winrt::to_hstring(propValue.GetSingle());
+        case winrt::PropertyType::Double:  return winrt::to_hstring(propValue.GetDouble());
+        default: break;
+        }
+    }
+
+    if (auto const stringable = item.try_as<winrt::IStringable>())
+    {
+        return stringable.ToString();
+    }
+
+    return {};
+}
+
 inline int32_t CountVisibleColumns(winrt::IVector<winrt::TableViewColumn> const& columns)
 {
     int32_t count = 0;
