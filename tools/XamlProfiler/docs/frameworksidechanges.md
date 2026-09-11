@@ -222,15 +222,18 @@ island, windowed-popup).
 
 ---
 
-## 9. IVisual live-highlight support — `Comment` identity stamping
+## 9. IVisual live-highlight support — in-process identity matching
 
 To make a WUC node highlightable live (it has no DXaml peer and there is no
-"find visual by pointer" API), the producer stamps each live visual's writable
-`Comment` (via `ICompositionObject2`) with `xpid:<hex IVisual*>` — the **same
-hex** the profiler shows as the node id — inside `NotifyChildInserted` /
-`NotifyRootSet`. The tap later DFS-walks the live tree matching that `Comment`.
-An `__xp_adorner` comment prefix marks the tap's own overlay so the producer
-**skips** it (`IsProfilerAdorner`) and it never surfaces as a phantom node.
+"find visual by pointer" API), the producer emits the normalized `IVisual*`
+identity as the node id. The injected tap runs in the target process, so it can
+DFS-walk the live tree and compare the ABI pointer of each candidate's `IVisual`
+interface with that id. This value is a transient, same-process, same-interface
+identity token: the profiler never dereferences it, and the producer suppresses
+the event if the source object cannot be normalized to `IVisual`. An
+`__xp_adorner` comment prefix marks the tap's own overlay so the producer **skips** it
+(`IsProfilerAdorner`) and it never surfaces as a phantom node. App-provided
+visual comments remain unchanged.
 
 **Detailed doc:** `resources/ivisual-live-highlight.md`.
 
@@ -263,7 +266,7 @@ phantom nodes in the very tree being inspected. Suppression is producer-side:
 | --- | --- |
 | `dxaml/xcp/components/base/inc/XamlProfilerTracing.h` | The provider + **all** event schemas; `XamlProfilerGetPeerHandle` declaration |
 | `dxaml/xcp/components/comptree/inc/WucVisualTreeProfiler.h` | **New.** WUC notify API + comp-node suppression API |
-| `dxaml/xcp/components/comptree/WucVisualTreeProfiler.cpp` | **New.** WUC serialization, `IsEnabled()` gating, `Comment` stamping, suppression registry |
+| `dxaml/xcp/components/comptree/WucVisualTreeProfiler.cpp` | **New.** WUC serialization, `IsEnabled()` gating, `IVisual` identity normalization, suppression registry |
 | `dxaml/xcp/components/comptree/lib/Microsoft.UI.Xaml.CompTree.vcxproj` | Registered the new `.cpp` in `ClCompile` |
 | `dxaml/xcp/components/comptree/HWCompNodeWinRT.cpp` | Sync comp-node events; WUC spine/inter-node/hand-in/DManip/reparent/bulk-clear edges |
 | `dxaml/xcp/components/comptree/DCompTreeHost.cpp` | WUC in-proc island + Xaml-island root attach (`WucVisualRootSet`) |
@@ -325,6 +328,6 @@ need rebuilding when only the producer changes.
 | `resources/peer-handle-live-highlight-phase2.md` | §6 tap consumption |
 | `resources/producer-side-sync-comp-node-events.md` | §7 sync comp-node events |
 | `resources/addingisvisualtree.md` | §8 full WUC tree (producer + consumer) |
-| `resources/ivisual-live-highlight.md` | §9 `Comment` stamping + IVisual highlight |
+| `resources/ivisual-live-highlight.md` | §9 in-process IVisual identity matching |
 | `resources/pick-overlay-etl-suppression.md` | §10 pick-overlay suppression |
 | `resources/visual-tree-cross-connection.md` | Consumer cross-tree linkage (uses these ids) |

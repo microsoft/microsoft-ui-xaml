@@ -60,8 +60,8 @@ internal sealed class TapChannel : IDisposable
 
     /// <summary>
     /// Raised on the worker thread alongside <see cref="ElementPicked"/>: the composition
-    /// visual id (an IVisual*, from the clicked element's GetElementVisual — its xpid stamp
-    /// or raw pointer). The profiler glows that visual node's whole subtree.
+    /// visual id (the IVisual identity from the clicked element's GetElementVisual).
+    /// The profiler glows that visual node's whole subtree.
     /// </summary>
     public event Action<ulong>? VisualPicked;
 
@@ -185,9 +185,9 @@ internal sealed class TapChannel : IDisposable
                         ElementPicked?.Invoke(picked);
                     }
 
-                    // The tap also reports the clicked element's composition visual id
-                    // (xpid stamp or raw IVisual*). The profiler uses it to glow that
-                    // visual node's whole subtree in the IVisual/Composition tree.
+                    // The tap also reports the clicked element's IVisual identity. The
+                    // profiler uses it to glow that visual node's whole subtree in the
+                    // IVisual/Composition tree.
                     if (!string.IsNullOrEmpty(msg.VisualId) &&
                         ulong.TryParse(msg.VisualId, System.Globalization.NumberStyles.HexNumber,
                             System.Globalization.CultureInfo.InvariantCulture, out ulong pickedVisual) &&
@@ -243,9 +243,9 @@ internal sealed class TapChannel : IDisposable
     public void StopPick() => WriteToTap("STOP-PICK");
 
     /// <summary>
-    /// Highlight a live IVisual / Composition-only node (no XAML peer handle). The
-    /// producer stamps each live visual's Comment with "xpid:&lt;IVisual* hex&gt;", which
-    /// equals this node's Id; the tap walks the live composition tree to find and adorn it.
+    /// Highlight a live IVisual / Composition-only node (no XAML peer handle). The tap
+    /// walks the live composition tree in-process and finds the visual whose IVisual
+    /// identity equals this node's Id.
     /// </summary>
     public void HighlightVisual(ulong visualId)
     {
