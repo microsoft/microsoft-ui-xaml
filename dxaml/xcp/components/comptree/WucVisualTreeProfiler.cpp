@@ -127,18 +127,12 @@ namespace
             return 0;
         }
         wrl::ComPtr<WUComp::IVisual> spVisual;
-        if (SUCCEEDED(pUnknown->QueryInterface(IID_PPV_ARGS(&spVisual))))
+        if (FAILED(pUnknown->QueryInterface(IID_PPV_ARGS(&spVisual))))
         {
-            return reinterpret_cast<uint64_t>(spVisual.Get());
+            return 0;
         }
-        return reinterpret_cast<uint64_t>(pUnknown);
+        return reinterpret_cast<uint64_t>(spVisual.Get());
     }
-
-    // Prefix written into a tracked visual's Comment so an out-of-process tap can locate
-    // this exact live visual by string match. There is no public "find visual by pointer"
-    // API, and dereferencing the raw IVisual* cross-process is unsafe; matching a stamped
-    // Comment on the live object is safe (the object only exists if it's still alive).
-    constexpr const WCHAR* c_visualIdCommentPrefix = L"xpid:";
 
     // Comment marker the tap stamps onto its OWN highlight adorner visual, so the producer
     // can skip emitting tree events for it (otherwise the adorner would surface as a phantom
@@ -161,29 +155,6 @@ namespace
     {
         static SuppressedCompNodeSet set;
         return set;
-    }
-
-    // Stamps "xpid:<hex IVisual*>" onto the visual's Comment. The id written here is
-    // identical to the VisualId() emitted over ETW, so a node the profiler clicked
-    // (node.Id) round-trips back to this exact live visual. Idempotent and cheap; only
-    // ever called from the already-IsEnabled()-gated Notify* paths below.
-    void StampVisualId(_In_opt_ WUComp::IVisual* pVisual)
-    {
-        if (pVisual == nullptr)
-        {
-            return;
-        }
-
-        // Comment lives on ICompositionObject2 (CompositionObject), not IVisual directly.
-        wrl::ComPtr<WUComp::ICompositionObject2> spObject2;
-        if (FAILED(pVisual->QueryInterface(IID_PPV_ARGS(&spObject2))))
-        {
-            return;
-        }
-
-        WCHAR comment[32];
-        swprintf_s(comment, _countof(comment), L"%s%llx", c_visualIdCommentPrefix, VisualId(pVisual));
-        spObject2->put_Comment(wrl_wrappers::HStringReference(comment).Get());
     }
 
     // True if the visual is the tap's highlight adorner (its Comment starts with the adorner
@@ -460,6 +431,13 @@ namespace WucVisualTreeProfiler
             return;
         }
 
+        const uint64_t parentVisualId = VisualId(parentVisual);
+        const uint64_t childVisualId = VisualId(childVisual);
+        if (parentVisualId == 0 || childVisualId == 0)
+        {
+            return;
+        }
+
         wrl::ComPtr<WUComp::IVisual> spChild;
         if (childVisual != nullptr)
         {
@@ -472,16 +450,12 @@ namespace WucVisualTreeProfiler
             return;
         }
 
-        // Stamp the child's identity onto its Comment so a Ctrl+Click in the profiler can
-        // resolve this exact live visual in the tap (match by Comment == "xpid:<node.Id>").
-        StampVisualId(spChild.Get());
-
         WCHAR properties[4096];
         BuildPropertiesString(spChild.Get(), properties, _countof(properties));
 
         XamlProfilerTracing::WucVisualChildInserted(
-            VisualId(parentVisual),
-            VisualId(childVisual),
+            parentVisualId,
+            childVisualId,
             ownerCompNodeId,
             index,
             GetWucVisualTypeName(spChild.Get()),
@@ -497,9 +471,16 @@ namespace WucVisualTreeProfiler
             return;
         }
 
+        const uint64_t parentVisualId = VisualId(parentVisual);
+        const uint64_t childVisualId = VisualId(childVisual);
+        if (parentVisualId == 0 || childVisualId == 0)
+        {
+            return;
+        }
+
         XamlProfilerTracing::WucVisualChildRemoved(
-            VisualId(parentVisual),
-            VisualId(childVisual));
+            parentVisualId,
+            childVisualId);
     }
 
     void NotifyChildrenCleared(_In_opt_ IUnknown* parentVisual)
@@ -509,7 +490,13 @@ namespace WucVisualTreeProfiler
             return;
         }
 
-        XamlProfilerTracing::WucVisualChildrenCleared(VisualId(parentVisual));
+        const uint64_t parentVisualId = VisualId(parentVisual);
+        if (parentVisualId == 0)
+        {
+            return;
+        }
+
+        XamlProfilerTracing::WucVisualChildrenCleared(parentVisualId);
     }
 
     void NotifyRootSet(
@@ -528,20 +515,23 @@ namespace WucVisualTreeProfiler
             return;
         }
 
+        const uint64_t visualId = VisualId(visual);
+        if (visualId == 0)
+        {
+            return;
+        }
+
         wrl::ComPtr<WUComp::IVisual> spVisual;
         if (visual != nullptr)
         {
             visual->QueryInterface(IID_PPV_ARGS(&spVisual));
         }
 
-        // Stamp the root visual's identity onto its Comment (see NotifyChildInserted).
-        StampVisualId(spVisual.Get());
-
         WCHAR properties[4096];
         BuildPropertiesString(spVisual.Get(), properties, _countof(properties));
 
         XamlProfilerTracing::WucVisualRootSet(
-            VisualId(visual),
+            visualId,
             targetId,
             ownerCompNodeId,
             GetWucVisualTypeName(spVisual.Get()),

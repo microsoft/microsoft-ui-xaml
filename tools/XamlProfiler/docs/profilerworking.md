@@ -272,7 +272,7 @@ with `ERROR_NOT_FOUND 0x80070490`):
 | Command | Effect |
 | --- | --- |
 | `HIGHLIGHT: %p` | Resolve `InstanceHandle` → `FrameworkElement`, draw overlay `SpriteVisual`s over its bounds (`TransformToVisual(xamlRoot.Content)` + `ElementCompositionPreview.SetElementChildVisual`) |
-| `HIGHLIGHT-VISUAL: %llx` | IVisual path (§9) — DFS the live comp tree, match `Comment == "xpid:<id>"`, add an in-place translucent child adorner |
+| `HIGHLIGHT-VISUAL: %llx` | IVisual path (§9) — DFS the live comp tree, match the live `IVisual` identity, add an in-place translucent child adorner |
 | `CLEAR-HIGHLIGHT` | Remove element overlay + in-place adorner |
 | `START-PICK` / `STOP-PICK` | Enter / leave app→profiler pick mode (§10) |
 | `CLOSE` | Tear down; profiler then ejects the DLL via remote `CreateRemoteThread(FreeLibrary)` |
@@ -292,19 +292,21 @@ were removed in the UI-cleanup pass; the tap is now just highlight + pick.)
 
 ---
 
-## 9. IVisual live highlight — the `Comment` trick
+## 9. IVisual live highlight — in-process identity matching
 
 A WUC visual has no DXaml peer and there is no "find visual by pointer" API, and
-its `IVisual*` id belongs to the **target** process (unsafe to deref from the
-profiler). So identity is carried in the visual's writable **`Comment`**: the
-producer stamps every live visual `Comment = "xpid:<hex IVisual*>"` — the *same
-hex* the profiler shows as `node.Id`. The tap's `HighlightVisual(id)` DFS-walks
-the live composition tree (from
-`ElementCompositionPreview.GetElementVisual(xamlRoot.Content)`), matches
-`Comment == "xpid:<id>"`, and adds a translucent child `SpriteVisual` stamped
-`Comment = "__xp_adorner"` with `RelativeSizeAdjustment {1,1}` (no coordinate
-math). The `__xp_adorner` sentinel makes the producer **skip** the overlay so it
-never appears as a phantom node. Full detail: `resources/ivisual-live-highlight.md`.
+its `IVisual*` id belongs to the **target** process (unsafe to dereference from
+the profiler). The profiler sends that id to the injected tap, which runs inside
+the target process. `HighlightVisual(id)` DFS-walks the live composition tree
+(from `ElementCompositionPreview.GetElementVisual(xamlRoot.Content)`) and
+explicitly obtains each candidate's `IVisual` interface and compares its ABI
+pointer with the requested id. The id is a transient, same-process,
+same-interface identity token; neither the profiler nor the tap dereferences the
+received value. The tap then adds a
+translucent child `SpriteVisual` stamped `Comment = "__xp_adorner"` with
+`RelativeSizeAdjustment {1,1}` (no coordinate math). The `__xp_adorner`
+sentinel makes the producer **skip** the profiler-owned overlay so it never
+appears as a phantom node. App-provided comments are never modified.
 
 ---
 
@@ -366,6 +368,6 @@ element's `PeerHandle` (or picked `IVisual`) only arrives over ETW a frame later
 | `resources/feature-is-template-child.md` | Developer-only logical tree filter |
 | `resources/feature-resolved-summary-names.md` | Resolved names in the history pane |
 | `resources/peer-handle-live-highlight-phase1.md` / `…phase2.md` | Peer-handle emission + element tap |
-| `resources/ivisual-live-highlight.md` | WUC `Comment` highlight |
+| `resources/ivisual-live-highlight.md` | WUC in-process `IVisual` identity highlight |
 | `resources/pick-overlay-etl-suppression.md` | Pick-overlay suppression |
 | `resources/producer-side-component-labels.md`, `resources/producer-side-sync-comp-node-events.md` | Individual producer changes |
