@@ -836,8 +836,7 @@ void TeachingTip::OnIsOpenChanged()
         SharedHelpers::QueueCallbackForCompositionRendering([strongThis = get_strong()]()
         {
             strongThis->m_isOpenChangedPending = false;
-            // Expansion must not discard a close request: light dismiss has already closed
-            // the indicator popup, so reverting IsOpen would leave an undismissable tip.
+            // Light dismiss has already closed the indicator popup, so an expanding tip must accept the close.
             if (!strongThis->m_isClosing && (strongThis->m_isIdle || strongThis->m_isExpandAnimationPlaying)) {
                 if (strongThis->IsOpen())
                 {
@@ -853,7 +852,6 @@ void TeachingTip::OnIsOpenChanged()
             }
             else if (strongThis->IsOpen())
             {
-                // Keep the existing policy of rejecting reopen requests while closing.
                 strongThis->m_ignoreNextIsOpenChanged = true;
                 strongThis->IsOpen(false);
             }
@@ -963,9 +961,6 @@ void TeachingTip::IsOpenChangedToOpen()
                 if (!m_isExpandAnimationPlaying && !m_isContractAnimationPlaying)
                 {
                     SetIsIdle(true);
-#ifdef MUX_PRERELEASE
-                    RaisePendingOpenedEvent();
-#endif
                 }
             }
         }
@@ -1476,9 +1471,6 @@ void TeachingTip::ClosePopupWithAnimationIfAvailable()
 void TeachingTip::ClosePopup()
 {
     m_isClosing = false;
-#ifdef MUX_PRERELEASE
-    m_isOpenedEventPending = false;
-#endif
     if (auto&& popup = m_popup.get())
     {
         popup.IsOpen(false);
@@ -1755,9 +1747,6 @@ void TeachingTip::CreateContractAnimation()
 
 void TeachingTip::StartExpandToOpen()
 {
-#ifdef MUX_PRERELEASE
-    m_isOpenedEventPending = true;
-#endif
     if (!m_expandAnimation)
     {
         CreateExpandAnimation();
@@ -1795,11 +1784,18 @@ void TeachingTip::StartExpandToOpen()
     scopedBatch.Completed([strongThis = get_strong()](auto, auto)
     {
         strongThis->m_isExpandAnimationPlaying = false;
-        if (!strongThis->m_isClosing && !strongThis->m_isContractAnimationPlaying)
+        if (!strongThis->m_isContractAnimationPlaying)
         {
-            strongThis->SetIsIdle(true);
+            if (!strongThis->m_isClosing)
+            {
+                strongThis->SetIsIdle(true);
+            }
 #ifdef MUX_PRERELEASE
-            strongThis->RaisePendingOpenedEvent();
+            if (strongThis->m_popup && strongThis->m_popup.get().IsOpen())
+            {
+                auto const myArgs = winrt::make_self<TeachingTipOpenedEventArgs>();
+                strongThis->m_openedEventSource(*strongThis, *myArgs);
+            }
 #endif
         }
     });
@@ -1810,18 +1806,6 @@ void TeachingTip::StartExpandToOpen()
         SetIsIdle(true);
     }
 }
-
-#ifdef MUX_PRERELEASE
-void TeachingTip::RaisePendingOpenedEvent()
-{
-    if (m_isOpenedEventPending && IsOpen() && m_popup && m_popup.get().IsOpen())
-    {
-        m_isOpenedEventPending = false;
-        auto const myArgs = winrt::make_self<TeachingTipOpenedEventArgs>();
-        m_openedEventSource(*this, *myArgs);
-    }
-}
-#endif
 
 void TeachingTip::StartContractToClose()
 {

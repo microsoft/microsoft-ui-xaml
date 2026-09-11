@@ -143,10 +143,6 @@ private:
 
     void StartExpandToOpen();
     void StartContractToClose();
-#ifdef MUX_PRERELEASE
-    void RaisePendingOpenedEvent();
-    bool m_isOpenedEventPending{ false };
-#endif
 
     void UpdatePopupRequestedTheme();
 
