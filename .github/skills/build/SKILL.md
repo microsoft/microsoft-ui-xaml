@@ -39,11 +39,12 @@ For an unattended agent, prefer `Invoke-AgentBuild.ps1`. It calls the same scrip
 changes none of them, but it adds three things an agent needs:
 
 - **First-time initialization.** A full `init.cmd` must have run at least once, or the
-  build fails in a way that looks like a code error. The wrapper detects this and
-  initializes first. The detection is deliberately simple: it checks that `packages\` and
-  `.tools\` exist, the same signal `init.cmd /envcheck` uses. It cannot tell that a restore
-  was partial or is out of date, so see
-  [missing packages or tools](#missing-packages-or-tools) if the build fails that way.
+  build fails in a way that looks like a code error. The wrapper initializes first when it
+  finds the repository uninitialized. That check is deliberately simple: it confirms that
+  `packages\` and `.tools\` exist, the same signal `init.cmd /envcheck` uses. It cannot
+  tell that a restore was interrupted or has gone out of date, so a partial restore passes
+  the check and the build then fails for missing packages. See
+  [missing packages or tools](#missing-packages-or-tools) when that happens.
 - **A trustworthy exit code.** `build.cmd` can exit `0` after a failed build, because the
   failing exit code is not preserved on the way out of the script. The wrapper derives the
   real result from the build output and the binary log.
@@ -151,12 +152,12 @@ Errors such as `NU1101`, `MSB3644`, "references NuGet package(s) that are missin
 tool that is "not recognized as an internal or external command" mean the repository is not
 fully initialized. They are not code errors, so do not try to fix them by changing source.
 
-This can happen even though the wrapper ran without initializing, because its check only
+This can happen even when the wrapper skipped initialization, because its check only
 confirms that `packages\` and `.tools\` exist. A restore that was interrupted, or that
 predates a change to the dependencies, leaves those directories in place but incomplete.
 The wrapper prints this advice when it detects the case.
 
-Initialize directly, then build again:
+Initialize directly with the flavor you are building, then build again:
 
 ```powershell
 .\init.cmd amd64chk

@@ -100,6 +100,7 @@ $script:NeedsInitPatterns = @(
     'The missing file is packages\\',
     'Unable to find package',
     '\berror\s+NU\d{4}\b',
+    '\bMSB3644\b',
     "Could not find .*\\\.tools\\",
     'is not recognized as an internal or external command'
 )
