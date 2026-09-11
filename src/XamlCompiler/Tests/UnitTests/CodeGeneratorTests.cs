@@ -108,21 +108,39 @@ namespace UnitTests
             }
         }
 
-        [TestMethod]
+[TestMethod]
         public void CodeGenerator_ObsoleteWithoutMessageSuppressesCS0612()
         {
-            string xaml = @"
+            string typeInfoXaml = @"
+<Page
+    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+    xmlns:dll='using:LibManagedDll'>
+    <Page.Resources>
+        <dll:ObsoleteClassHolder x:Key='obsolete' ObsoleteProperty='value' />
+    </Page.Resources>
+</Page>";
+            string codeBehindXaml = @"
 <Page
     xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
     xmlns:dll='using:LibManagedDll'
     x:Class='MyNamespace.MyPage'>
-    <dll:ObsoleteClass x:Name='obsoleteElement' ObsoleteProperty='value' />
+    <dll:ObsoleteClass x:Name='obsoleteElement' />
 </Page>";
 
             DirectUISchemaContext schema = _testHelper.LoadSchema(SchemaMode.LoadUserDll);
-            CodeGeneratorProjectContext context = new CodeGeneratorProjectContext(new Version(KnownVersions.Latest));
-            TypeInfoCollector collector = _testHelper.CollectTypes(xaml, schema);
+            CodeGeneratorProjectContext context = new CodeGeneratorProjectContext(
+                new Version(KnownVersions.Latest),
+                "ObsoleteWithoutMessage");
+            context.IsLibrary = true;
+            context.RootNamespace = "MyNamespace";
+            context.ProjectInfo.SetCodeGenFlags("FullXamlMetadataProvider");
+            CompilerDomRootToken domRoot = _testHelper.LoadXamlDom(typeInfoXaml, schema);
+            XamlDomValidator validator = _testHelper.ValidateXamlDom(domRoot, false);
+            Assert.AreEqual(0, validator.Errors.Count);
+            TypeInfoCollector collector = new TypeInfoCollector(schema);
+            collector.Collect(domRoot);
 
             List<FileNameAndContentPair> pairs = _testHelper.GenerateTypeInfo(
                 false,
@@ -139,7 +157,7 @@ namespace UnitTests
             context.IsPass1 = true;
             pairs = _testHelper.GenerateCodeBehind(
                 context,
-                new List<string> { xaml },
+                new List<string> { codeBehindXaml },
                 schema,
                 CodeGenLanguage.CSharp);
 
@@ -149,7 +167,7 @@ namespace UnitTests
             context.IsPass1 = false;
             pairs = _testHelper.GenerateCodeBehind(
                 context,
-                new List<string> { xaml },
+                new List<string> { codeBehindXaml },
                 schema,
                 CodeGenLanguage.CSharp);
 

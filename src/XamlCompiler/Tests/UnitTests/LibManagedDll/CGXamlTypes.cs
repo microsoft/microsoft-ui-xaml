@@ -62,6 +62,12 @@ namespace LibManagedDll
         public String MyStringField;
     }
 
+    public class ObsoleteClassHolder : FrameworkElement
+    {
+        [Obsolete]
+        public ObsoleteClass ObsoleteProperty { get; set; }
+    }
+
     public class MyEventClass
     {
         public event EventHandler MyEvent;
