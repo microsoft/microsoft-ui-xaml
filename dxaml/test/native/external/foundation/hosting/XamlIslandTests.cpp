@@ -463,6 +463,38 @@ void XamlIslandTests::ValidateXamlShutdownCompletedOnThread()
     WindowsXamlManager^ wxm2;
 
     int numberOfTimesEventFired = 0;
+    bool didWxm1RaiseEvent = false;
+    bool didWxm2RaiseEvent = false;
+    int processShutdownStartingCount = 0;
+    int processShutdownCompletedCount = 0;
+    DWORD finalXamlThreadId = 0;
+
+    auto processShutdownStartingToken =
+        WindowsXamlManager::WinUIProcessShutdownStarting +=
+            ref new EventHandler<Object^>(
+                [&](Object^ sender, Object^ args)
+                {
+                    ++processShutdownStartingCount;
+                    LOG_OUTPUT(L"WinUIProcessShutdownStarting raised.");
+                    VERIFY_IS_NULL(sender);
+                    VERIFY_IS_NULL(args);
+                    VERIFY_IS_TRUE(didWxm2RaiseEvent);
+                    VERIFY_ARE_EQUAL(finalXamlThreadId, GetCurrentThreadId());
+                    VERIFY_ARE_EQUAL(0, processShutdownCompletedCount);
+                });
+
+    auto processShutdownCompletedToken =
+        WindowsXamlManager::WinUIProcessShutdownCompleted +=
+            ref new EventHandler<Object^>(
+                [&](Object^ sender, Object^ args)
+                {
+                    ++processShutdownCompletedCount;
+                    LOG_OUTPUT(L"WinUIProcessShutdownCompleted raised.");
+                    VERIFY_IS_NULL(sender);
+                    VERIFY_IS_NULL(args);
+                    VERIFY_ARE_EQUAL(finalXamlThreadId, GetCurrentThreadId());
+                    VERIFY_ARE_EQUAL(1, processShutdownStartingCount);
+                });
 
     RunOnIslandUIThread(ih1, [&]()
     {
@@ -477,6 +509,12 @@ void XamlIslandTests::ValidateXamlShutdownCompletedOnThread()
                         LOG_OUTPUT(L"XamlShutdownCompletedOnThread for wxm1 raised.");
                         LOG_OUTPUT(L"Application::Current is valid? %d", Application::Current != nullptr);
                         VERIFY_IS_NOT_NULL(Application::Current);
+
+                        // No assertions about having seen 0 WinUIProcessShutdown events. Here wxm2 is the one that
+                        // closes the final Xaml core, not wxm1. WinUI only guarantees that XamlShutdownCompletedOnThread
+                        // precedes the WinUIProcessShutdown* events on the thread that closes the final core, so wxm1's
+                        // event is not ordered relative to the WinUIProcessShutdown events raised on wxm2's thread.
+                        didWxm1RaiseEvent = true;
                     });
     });
 
@@ -493,6 +531,14 @@ void XamlIslandTests::ValidateXamlShutdownCompletedOnThread()
                         LOG_OUTPUT(L"XamlShutdownCompletedOnThread for wxm2 raised.");
                         LOG_OUTPUT(L"Application::Current is valid? %d", Application::Current != nullptr);
                         VERIFY_IS_NULL(Application::Current);
+
+                        // We should not have seen any WinUIProcessShutdown events yet. WinUI guarantees that
+                        // XamlShutdownCompletedOnThread fires before WinUIProcessShutdown* events for the thread
+                        // that shut down the final Xaml core.
+                        VERIFY_ARE_EQUAL(0, processShutdownStartingCount);
+                        VERIFY_ARE_EQUAL(0, processShutdownCompletedCount);
+                        finalXamlThreadId = GetCurrentThreadId();
+                        didWxm2RaiseEvent = true;
                     });
     });
 
@@ -507,6 +553,11 @@ void XamlIslandTests::ValidateXamlShutdownCompletedOnThread()
     wxm2 = nullptr;
 
     VERIFY_ARE_EQUAL(2, numberOfTimesEventFired);
+    VERIFY_ARE_EQUAL(1, processShutdownStartingCount);
+    VERIFY_ARE_EQUAL(1, processShutdownCompletedCount);
+
+    WindowsXamlManager::WinUIProcessShutdownStarting -= processShutdownStartingToken;
+    WindowsXamlManager::WinUIProcessShutdownCompleted -= processShutdownCompletedToken;
 
     ::RoUninitialize();
 }
@@ -516,7 +567,10 @@ void XamlIslandTests::ValidateXamlShutdownCompletedOnThreadWithDeferral()
     Deferral^ deferral;
     bool didWxm1RaiseEvent {false};
     bool didWxm2RaiseEvent {false};
+    bool didProcessShutdownStartingRaiseEvent {false};
+    bool didProcessShutdownCompletedRaiseEvent {false};
     bool didShutdownQueueComplete {false};
+    DWORD xamlThreadId {0};
     DispatcherQueueController^ uiThreadDqc;
     Event uiThreadReady;
     WindowsXamlManager^ wxm1;
@@ -526,8 +580,41 @@ void XamlIslandTests::ValidateXamlShutdownCompletedOnThreadWithDeferral()
 
     VERIFY_IS_NULL(WindowsXamlManager::GetForCurrentThread());
 
+    auto processShutdownStartingToken =
+        WindowsXamlManager::WinUIProcessShutdownStarting +=
+            ref new EventHandler<Object^>(
+                [&](Object^ sender, Object^ args)
+                {
+                    LOG_OUTPUT(L"WinUIProcessShutdownStarting raised.");
+                    VERIFY_IS_NULL(sender);
+                    VERIFY_IS_NULL(args);
+                    VERIFY_IS_TRUE(didWxm1RaiseEvent);
+                    VERIFY_IS_TRUE(didWxm2RaiseEvent);
+                    VERIFY_IS_FALSE(didProcessShutdownStartingRaiseEvent);
+                    VERIFY_IS_FALSE(didProcessShutdownCompletedRaiseEvent);
+                    VERIFY_IS_FALSE(didShutdownQueueComplete);
+                    VERIFY_ARE_EQUAL(xamlThreadId, GetCurrentThreadId());
+                    didProcessShutdownStartingRaiseEvent = true;
+                });
+
+    auto processShutdownCompletedToken =
+        WindowsXamlManager::WinUIProcessShutdownCompleted +=
+            ref new EventHandler<Object^>(
+                [&](Object^ sender, Object^ args)
+                {
+                    LOG_OUTPUT(L"WinUIProcessShutdownCompleted raised.");
+                    VERIFY_IS_NULL(sender);
+                    VERIFY_IS_NULL(args);
+                    VERIFY_IS_TRUE(didProcessShutdownStartingRaiseEvent);
+                    VERIFY_IS_FALSE(didProcessShutdownCompletedRaiseEvent);
+                    VERIFY_IS_FALSE(didShutdownQueueComplete);
+                    VERIFY_ARE_EQUAL(xamlThreadId, GetCurrentThreadId());
+                    didProcessShutdownCompletedRaiseEvent = true;
+                });
+
     auto uiThread = RunOnNewThread([&]() {
         VERIFY_SUCCEEDED(::RoInitialize(RO_INIT_MULTITHREADED));
+        xamlThreadId = GetCurrentThreadId();
 
         VERIFY_IS_NULL(WindowsXamlManager::GetForCurrentThread());
 
@@ -594,6 +681,8 @@ void XamlIslandTests::ValidateXamlShutdownCompletedOnThreadWithDeferral()
 
         VERIFY_IS_TRUE(didWxm1RaiseEvent);
         VERIFY_IS_TRUE(didWxm2RaiseEvent);
+        VERIFY_IS_TRUE(didProcessShutdownStartingRaiseEvent);
+        VERIFY_IS_TRUE(didProcessShutdownCompletedRaiseEvent);
     });
 
     uiThreadReady.WaitForDefault();
@@ -613,10 +702,13 @@ void XamlIslandTests::ValidateXamlShutdownCompletedOnThreadWithDeferral()
         waitCompleted.WaitForDefault();
     }
 
-    // Since we took thre deferral, shutdown should have not completed at this point.
+    // Since we took the deferral, DispatcherQueue shutdown should not have completed. The deferral
+    // does not delay Xaml teardown or prevent the remaining WinUIProcessShutdown events from being raised.
     VERIFY_IS_NOT_NULL(deferral);
     VERIFY_IS_TRUE(didWxm1RaiseEvent);
     VERIFY_IS_TRUE(didWxm2RaiseEvent);
+    VERIFY_IS_TRUE(didProcessShutdownStartingRaiseEvent);
+    VERIFY_IS_TRUE(didProcessShutdownCompletedRaiseEvent);
     VERIFY_IS_FALSE(didShutdownQueueComplete);
 
     deferral->Complete();
@@ -629,6 +721,9 @@ void XamlIslandTests::ValidateXamlShutdownCompletedOnThreadWithDeferral()
     wxm2 = nullptr;
     deferral = nullptr;
     uiThreadDqc = nullptr;
+
+    WindowsXamlManager::WinUIProcessShutdownStarting -= processShutdownStartingToken;
+    WindowsXamlManager::WinUIProcessShutdownCompleted -= processShutdownCompletedToken;
 
     ::RoUninitialize();
 }
@@ -3984,7 +4079,7 @@ void XamlIslandTests::ValidateUiaFindAllWithWindowedPopup()
     ::Sleep(500);
 
     LowBudgetWaitForIdle(ih1);
-    
+
     RunOnIslandUIThread(ih1, [&]()
     {
         popup->IsOpen = true;
@@ -4026,10 +4121,10 @@ void XamlIslandTests::ValidateUiaFindAllWithWindowedPopup()
         };
 
         visitElement(L"Root", windowElement.Get());
-        
+
         wrl::ComPtr<IUIAutomationCondition> trueCondition;
         LogThrow_IfFailed(automation->CreateTrueCondition(&trueCondition));
-        
+
         wrl::ComPtr<IUIAutomationElementArray> children;
         LogThrow_IfFailed(windowElement->FindAll(TreeScope_Descendants, trueCondition.Get(), &children));
 
@@ -4066,7 +4161,7 @@ void XamlIslandTests::ValidateNavigationView()
     XamlIslandTestHelper testHelper(this);
     testHelper.StartAppOnCurrentThread();
 
-    IUnknown* unk {nullptr};    
+    IUnknown* unk {nullptr};
 
     LOG_OUTPUT(L"Create MyNavView...");
     {
@@ -4077,10 +4172,10 @@ void XamlIslandTests::ValidateNavigationView()
         unk->AddRef();
         unk->AddRef();
         unk->AddRef();
-        
+
         navView->SelectedItem = 1;
     }
-    
+
     int refcount = GetRefCount(unk);
     VERIFY_ARE_EQUAL(3, refcount);
 
@@ -4355,7 +4450,7 @@ void XamlIslandTests::PopupsWorkInHwndlessIslands()
                                     <Flyout x:Name="WindowlessFlyout">
                                         <TextBlock Text="Flyout content" />
                                     </Flyout>
-                                </Button.Flyout>    
+                                </Button.Flyout>
                             </Button>
                             <Button x:Name="WindowedFlyoutButton" Content="Click to open windowed flyout">
                                 <Button.Flyout>
@@ -4364,7 +4459,7 @@ void XamlIslandTests::PopupsWorkInHwndlessIslands()
                                         <MenuFlyoutItem Text="Item 2" />
                                         <MenuFlyoutItem Text="Item 3" />
                                     </MenuFlyout>
-                                </Button.Flyout>    
+                                </Button.Flyout>
                             </Button>
                         </StackPanel>
                     </Grid>)"));

@@ -3822,9 +3822,15 @@ namespace Parser
         FrameworkApplication_ResourceManagerInitializing_Deleted0 = 337,
         FrameworkApplication_ResourceManagerRequested = 338,
         WindowsXamlManager_XamlShutdownCompletedOnThread = 339,
+        WindowsXamlManager_XamlShutdownStartingInProcess_Deleted0 = 340,
+        WindowsXamlManager_XamlShutdownCompletedInProcess_Deleted0 = 341,
+        WindowsXamlManager_XamlProcessShutdownStarting_Deleted0 = 342,
+        WindowsXamlManager_XamlProcessShutdownCompleted_Deleted0 = 343,
+        WindowsXamlManager_WinUIProcessShutdownStarting = 344,
+        WindowsXamlManager_WinUIProcessShutdownCompleted = 345,
     };
 
     static const UINT16 StableXbfTypeCount = static_cast<UINT16>(StableXbfTypeIndex::SplitMenuFlyoutItem) + 1;
     static const UINT16 StableXbfPropertyCount = static_cast<UINT16>(StableXbfPropertyIndex::Window_MinWidth) + 1;
-    static const UINT16 StableEventCount = static_cast<UINT16>(StableEventIndex::WindowsXamlManager_XamlShutdownCompletedOnThread) + 1;
+    static const UINT16 StableEventCount = static_cast<UINT16>(StableEventIndex::WindowsXamlManager_WinUIProcessShutdownCompleted) + 1;
 }
