@@ -33,14 +33,17 @@ private:
 
     static DWORD WINAPI CreateNewWindowOnNewThreadProc(_In_ LPVOID parameter);
 
+    bool StartXaml();
+    void ShutdownXaml(bool deinitializeMuxc);
+    void DeinitializeMuxc();
+
     void CreateButton(const wchar_t* name, DWORD id, std::function<void(HWND)> func, int x, int y, int w, int h);
     std::vector<ButtonCommand> m_buttons;
-
-    winrt::Microsoft::UI::Xaml::Hosting::WindowsXamlManager m_windowsXamlManager{ nullptr };
 
     winrt::event_token m_dispatcherQueueShutdownStartingToken;
 
     HWND m_label{ 0 };
+    HWND m_objectCountLabel{ 0 };
 
     static INT_PTR CALLBACK DialogBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 

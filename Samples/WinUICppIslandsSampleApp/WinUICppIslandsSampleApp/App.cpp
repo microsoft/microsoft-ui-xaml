@@ -27,7 +27,6 @@ void OnAppDestructed();
 /// </summary>
 App::App()
 {
-    s_hasExistedInProcess = true;
     ::OutputDebugString(L">>> App::App has been called.\n");
 
     m_initialWindowsXamlManager = winrt::Microsoft::UI::Xaml::Hosting::WindowsXamlManager::InitializeForCurrentThread();
@@ -44,12 +43,15 @@ App::App()
         }
     });
 #endif
+
+    ++s_instanceCount;
 }
 
 App::~App()
 {
     ::OutputDebugString(L">>> App::~App has been called.\n");
     OnAppDestructed();
+    --s_instanceCount;
 }
 
 /// <summary>

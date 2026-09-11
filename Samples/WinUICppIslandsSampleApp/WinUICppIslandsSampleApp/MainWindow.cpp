@@ -8,6 +8,7 @@
 #include "DesktopWindow.h"
 #include <Psapi.h>
 #include "XamlUtil.h"
+#include <atomic>
 
 using namespace winrt;
 using namespace winrt::Windows::Foundation;
@@ -27,12 +28,57 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 // This pointer needs to be global because the Application object is global, there can only be one in a process.
 winrt::com_ptr< winrt::WinUICppIslandsSampleApp::implementation::App> g_app{ nullptr };
 
+extern winrt::Microsoft::UI::Xaml::Hosting::WindowsXamlManager g_windowsXamlManager;
+
+namespace
+{
+    thread_local winrt::Microsoft::UI::Dispatching::DispatcherQueueController s_dispatcherQueueController{ nullptr };
+    thread_local std::vector<MainWindow*> s_windowsOnThread;
+    thread_local bool s_hasWindowsXamlManager{ false };
+    std::atomic_uint32_t s_dispatcherQueueControllerCount{ 0 };
+    std::atomic_uint32_t s_windowsXamlManagerCount{ 0 };
+
+    void MarkWindowsXamlManagerCreated()
+    {
+        if (!s_hasWindowsXamlManager)
+        {
+            s_hasWindowsXamlManager = true;
+            ++s_windowsXamlManagerCount;
+        }
+    }
+
+    void EnsureDispatcherQueueController()
+    {
+        if (!s_dispatcherQueueController)
+        {
+            s_dispatcherQueueController = winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnCurrentThread();
+            ++s_dispatcherQueueControllerCount;
+        }
+    }
+
+    void ShutdownDispatcherQueueController()
+    {
+        if (s_dispatcherQueueController)
+        {
+            s_dispatcherQueueController.ShutdownQueue();
+            s_dispatcherQueueController = nullptr;
+            --s_dispatcherQueueControllerCount;
+
+            if (s_hasWindowsXamlManager)
+            {
+                s_hasWindowsXamlManager = false;
+                --s_windowsXamlManagerCount;
+            }
+        }
+    }
+}
+
 [[nodiscard]] int APIENTRY MainWindow::Run(_In_ HINSTANCE hInstance, _In_ int nCmdShow)
 {
     winrt::init_apartment(winrt::apartment_type::single_threaded);
 
     // Start a DispatcherQueueController.  A DispatcherQueue must be running on the thread for XAML to work.
-    auto dqc = winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnCurrentThread();
+    EnsureDispatcherQueueController();
 
     MainWindow mainWindow(hInstance, nCmdShow);
 
@@ -42,13 +88,15 @@ winrt::com_ptr< winrt::WinUICppIslandsSampleApp::implementation::App> g_app{ nul
 
     // Calling DispatcherQueueController.ShutdownQueue will shutdown XAML on the thread, and automatically close some
     // other WinAppSDK objects too.
-    dqc.ShutdownQueue();
+    ShutdownDispatcherQueueController();
 
     return retValue;
 }
 
 MainWindow::MainWindow(HINSTANCE hInstance, int nCmdShow, HWND parentHWnd) noexcept
 {
+    s_windowsOnThread.push_back(this);
+
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_ISLANDSAMPLEWINUI3, szWindowClass, MAX_LOADSTRING);
 
@@ -83,6 +131,12 @@ MainWindow::~MainWindow()
             dq.ShutdownStarting(m_dispatcherQueueShutdownStartingToken);
             m_dispatcherQueueShutdownStartingToken = {};
         }
+    }
+
+    const auto window = std::find(s_windowsOnThread.begin(), s_windowsOnThread.end(), this);
+    if (window != s_windowsOnThread.end())
+    {
+        s_windowsOnThread.erase(window);
     }
 }
 
@@ -156,8 +210,13 @@ void MainWindow::CreateButton(const wchar_t* name, DWORD id, std::function<void(
 
 bool MainWindow::OnCreate(HWND, LPCREATESTRUCT)
 {
-    m_label = CreateWindow(L"STATIC", L"Starting up...", WS_CHILD | WS_VISIBLE, 10, 10, 500, 20, m_hMainWnd, 0, NULL, NULL);
+    RECT clientRect{};
+    ::GetClientRect(m_hMainWnd, &clientRect);
+    const int labelWidth = clientRect.right > 20 ? clientRect.right - 20 : 0;
+    m_label = CreateWindow(L"STATIC", L"Starting up...", WS_CHILD | WS_VISIBLE, 10, 10, labelWidth, 20, m_hMainWnd, 0, NULL, NULL);
     SendMessage(m_label, WM_SETFONT, (LPARAM)GetStockObject(DEFAULT_GUI_FONT), TRUE);
+    m_objectCountLabel = CreateWindow(L"STATIC", L"Object counts: starting up...", WS_CHILD | WS_VISIBLE, 10, 30, labelWidth, 20, m_hMainWnd, 0, NULL, NULL);
+    SendMessage(m_objectCountLabel, WM_SETFONT, (LPARAM)GetStockObject(DEFAULT_GUI_FONT), TRUE);
     ::SetTimer(m_hMainWnd, 101, 500, nullptr);
 
     static bool s_createRTL = false; // whether to create the next DesktopWindowXamlSource content as RTL
@@ -168,13 +227,17 @@ bool MainWindow::OnCreate(HWND, LPCREATESTRUCT)
             // Start App object if needed
             if (!XamlUtil::IsXamlRunningInProcess() && g_app == nullptr)
             {
-                winrt::make<winrt::WinUICppIslandsSampleApp::implementation::App>().as(g_app);
+                if (!StartXaml())
+                {
+                    return;
+                }
             }
 
             size_t position = m_xamlSources.size();
 
             // If XAML's not already running on the thread, creating a XAML element before creating the DesktopWindowXamlSource will fail.
             auto dwxs = CreateDesktopWindowsXamlSource(WS_TABSTOP);
+            MarkWindowsXamlManagerCreated();
 
             auto stackPanel = StackPanel();
             dwxs.Content(stackPanel);
@@ -192,7 +255,7 @@ bool MainWindow::OnCreate(HWND, LPCREATESTRUCT)
 
             auto height = 450;
             auto width = 900;
-            RectInt32 rect = { 10, 80 + static_cast<int>((height+5) * position), width, height };
+            RectInt32 rect = { 10, 95 + static_cast<int>((height+5) * position), width, height };
             dwxs.SiteBridge().MoveAndResize(rect);
 
             auto textBox = TextBox();
@@ -443,6 +506,7 @@ bool MainWindow::OnCreate(HWND, LPCREATESTRUCT)
                     [this](const winrt::Microsoft::UI::Dispatching::DispatcherQueue&, const winrt::Microsoft::UI::Dispatching::DispatcherQueueShutdownStartingEventArgs&)
                     {
                         ::OutputDebugString(L">>> DispatcherQueue.ShutdownStarting fired\n");
+                        m_dispatcherQueueShutdownStartingToken = {};
                     });
             }
         }
@@ -452,7 +516,7 @@ bool MainWindow::OnCreate(HWND, LPCREATESTRUCT)
             ::StringCchPrintf(str, ARRAYSIZE(str), L"Error: 0x%x", ex.code().value);
             ::MessageBox(GetHandle(), str, L"Error", MB_OK);
         }
-        }, 10, 40, 200, 30);
+        }, 10, 55, 200, 30);
 
     CreateButton(L"More...", 208, [this](HWND hwnd) {
         // Show a context menu with some interesting options.
@@ -460,8 +524,9 @@ bool MainWindow::OnCreate(HWND, LPCREATESTRUCT)
 
         const bool startAppEnabled = (g_app == nullptr && !XamlUtil::IsXamlRunningInProcess());
         const bool releaseAppEnabled = (g_app != nullptr);
-        ::AppendMenuW(contextMenu, MF_STRING | (startAppEnabled ? 0 : MF_GRAYED), IDM_START_APP, L"Create Xaml Application object");
-        ::AppendMenuW(contextMenu, MF_STRING | (releaseAppEnabled ? 0 : MF_GRAYED), IDM_RELEASE_APP, L"Release Xaml Application object");
+        ::AppendMenuW(contextMenu, MF_STRING | (startAppEnabled ? 0 : MF_GRAYED), IDM_START_APP, L"Start WinUI");
+        ::AppendMenuW(contextMenu, MF_STRING | (releaseAppEnabled ? 0 : MF_GRAYED), IDM_RELEASE_APP, L"Shut down WinUI (public APIs)");
+        ::AppendMenuW(contextMenu, MF_STRING | (releaseAppEnabled ? 0 : MF_GRAYED), IDM_RELEASE_APP_WITH_MUXC_DEINIT, L"Shut down WinUI (+ private MUXC cleanup)");
         ::AppendMenuW(contextMenu, MF_SEPARATOR, 0, nullptr);
         ::AppendMenuW(contextMenu, MF_STRING, IDM_CREATE_NEW_THREAD, L"Create new window on new thread");
         ::AppendMenuW(contextMenu, MF_STRING, IDM_CREATE_MODAL_WINDOW, L"Create modal window on same thread");
@@ -473,7 +538,7 @@ bool MainWindow::OnCreate(HWND, LPCREATESTRUCT)
         ::GetWindowRect(hwnd, &rc);
 
         ::TrackPopupMenu(contextMenu, TPM_TOPALIGN | TPM_LEFTALIGN, rc.left + 5, rc.top + 5, 0, this->m_hMainWnd, nullptr);
-        }, 210, 40, 50, 30);
+        }, 210, 55, 50, 30);
 
     return true;
 }
@@ -490,35 +555,13 @@ void MainWindow::OnCommand(HWND, int id, HWND hwndCtl, UINT )
     switch (id)
     {
     case IDM_START_APP:
-        if (winrt::WinUICppIslandsSampleApp::implementation::App::s_hasExistedInProcess)
-        {
-            auto result = ::MessageBox(GetHandle(),
-                L"It's currently not supported to create more than one Application in a process, even if the previous "
-                L"instance has been closed.  Press OK to proceed", L"Warning", MB_OKCANCEL | MB_ICONWARNING);
-            if (result == IDCANCEL)
-            {
-                break;
-            }
-        }
-        // This object derrives from Microsoft.UI.Xaml.Application.  Creating this object will also create a WindowsXamlManager,
-        // effectively starting up XAML in the process and on the thread.
-        winrt::make<winrt::WinUICppIslandsSampleApp::implementation::App>().as(g_app);
+        StartXaml();
         break;
     case IDM_RELEASE_APP:
-        {
-            g_app->m_initialWindowsXamlManager = nullptr;
-            g_app = nullptr;
-
-            // MUXC has a special export that clears out some of its static state.
-            HMODULE muxcHandle = GetModuleHandle(L"Microsoft.UI.Xaml.Controls.dll");
-            if (muxcHandle != NULL)
-            {
-                typedef void(__stdcall* DeinitializeMuxcPtr)();
-                auto deinitializeMuxcPtr = reinterpret_cast<DeinitializeMuxcPtr>(
-                    GetProcAddress(muxcHandle, "DeinitializeMUXC"));
-                deinitializeMuxcPtr();
-            }
-        }
+        ShutdownXaml(false);
+        break;
+    case IDM_RELEASE_APP_WITH_MUXC_DEINIT:
+        ShutdownXaml(true);
         break;
     case IDM_CREATE_NEW_THREAD:
         ::CreateThread(nullptr, 0, &MainWindow::CreateNewWindowOnNewThreadProc, this, 0, 0);
@@ -551,6 +594,88 @@ void MainWindow::OnCommand(HWND, int id, HWND hwndCtl, UINT )
     }
 }
 
+bool MainWindow::StartXaml()
+{
+    try
+    {
+        EnsureDispatcherQueueController();
+
+        if (!g_app)
+        {
+            // Creating the Application also creates the WindowsXamlManager needed to start XAML.
+            winrt::make<winrt::WinUICppIslandsSampleApp::implementation::App>().as(g_app);
+            MarkWindowsXamlManagerCreated();
+        }
+
+        return true;
+    }
+    catch (const winrt::hresult_error& ex)
+    {
+        wchar_t message[200]{};
+        ::StringCchPrintf(message, ARRAYSIZE(message), L"Unable to start XAML: 0x%08X", ex.code().value);
+        ::MessageBox(GetHandle(), message, L"XAML startup failed", MB_OK | MB_ICONERROR);
+        return false;
+    }
+}
+
+void MainWindow::ShutdownXaml(bool deinitializeMuxc)
+{
+    if (s_dispatcherQueueControllerCount.load() != 1)
+    {
+        ::MessageBox(
+            GetHandle(),
+            L"Close the sample's other top-level windows before shutting down XAML. "
+            L"Process-wide shutdown requires every XAML thread to stop.",
+            L"XAML shutdown blocked",
+            MB_OK | MB_ICONWARNING);
+        return;
+    }
+
+    try
+    {
+        for (auto window : s_windowsOnThread)
+        {
+            window->ClearXamlSources();
+        }
+
+        if (g_app)
+        {
+            g_app->m_initialWindowsXamlManager = nullptr;
+        }
+        g_windowsXamlManager = nullptr;
+        g_app = nullptr;
+
+        ShutdownDispatcherQueueController();
+        if (deinitializeMuxc)
+        {
+            DeinitializeMuxc();
+        }
+    }
+    catch (const winrt::hresult_error& ex)
+    {
+        wchar_t message[200]{};
+        ::StringCchPrintf(message, ARRAYSIZE(message), L"Unable to shut down XAML: 0x%08X", ex.code().value);
+        ::MessageBox(GetHandle(), message, L"XAML shutdown failed", MB_OK | MB_ICONERROR);
+    }
+}
+
+void MainWindow::DeinitializeMuxc()
+{
+    HMODULE muxcHandle = GetModuleHandle(L"Microsoft.UI.Xaml.Controls.dll");
+    if (muxcHandle)
+    {
+        using DeinitializeMuxcPtr = void(__stdcall*)();
+        auto deinitializeMuxc = reinterpret_cast<DeinitializeMuxcPtr>(
+            GetProcAddress(muxcHandle, "DeinitializeMUXC"));
+        if (!deinitializeMuxc)
+        {
+            winrt::throw_last_error();
+        }
+
+        deinitializeMuxc();
+    }
+}
+
 void MainWindow::OnDestroy(HWND hwnd)
 {
     base_type::OnDestroy(hwnd);
@@ -558,9 +683,15 @@ void MainWindow::OnDestroy(HWND hwnd)
 
 void MainWindow::OnResize(HWND, UINT state, int cx, int cy)
 {
-    UNREFERENCED_PARAMETER(cx);
     UNREFERENCED_PARAMETER(cy);
     UNREFERENCED_PARAMETER(state);
+
+    if (m_label)
+    {
+        const int labelWidth = cx > 20 ? cx - 20 : 0;
+        ::MoveWindow(m_label, 10, 10, labelWidth, 20, TRUE);
+        ::MoveWindow(m_objectCountLabel, 10, 30, labelWidth, 20, TRUE);
+    }
 }
 
 void MainWindow::OnPaint(HWND)
@@ -605,6 +736,19 @@ void MainWindow::OnTimer(HWND, UINT)
             XamlUtil::IsXamlRunningOnThread() ? L"Yes" : L"No",
             workingSetInMb);
         ::SetWindowText(m_label, str);
+    }
+
+    {
+        wchar_t str[200];
+        ::StringCchPrintf(
+            str,
+            ARRAYSIZE(str),
+            L"Object counts | Application: %u | DispatcherQueueController: %u | WindowsXamlManager: %u | DesktopWindowXamlSource: %u",
+            winrt::WinUICppIslandsSampleApp::implementation::App::InstanceCount(),
+            s_dispatcherQueueControllerCount.load(),
+            s_windowsXamlManagerCount.load(),
+            DesktopWindow::XamlSourceCount());
+        ::SetWindowText(m_objectCountLabel, str);
     }
 }
 

@@ -6,7 +6,10 @@
 class DesktopWindow
 {
 public:
+    ~DesktopWindow();
+
     int MessageLoop(HACCEL hAccelTable);
+    static uint32_t XamlSourceCount();
 
 private:
     winrt::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSource GetFocusedIsland();
