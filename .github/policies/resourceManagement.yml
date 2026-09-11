@@ -70,8 +70,11 @@ configuration:
             action: Synchronize
       - isActivitySender:
           user: dotnet-maestro[bot]
-      - targetsBranch:
-          branch: main
+      - or:
+        - targetsBranch:
+            branch: main
+        - targetsBranch:
+            branch: release/*
       - bodyContains:
           pattern: 'Begin:57be40db-9f69-47be-beb4-eb42d78d3d8b'
           isRegex: false
