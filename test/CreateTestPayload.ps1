@@ -184,6 +184,14 @@ if ($Mode -eq "DevTestSuite" -or $Mode -eq "ScenarioTestSuite")
         {
             throw "The x64 Evergreen WebView2 Standalone Installer was not found at '$webView2RuntimeInstaller'."
         }
+
+        $signature = Get-AuthenticodeSignature -FilePath $webView2RuntimeInstaller
+        $signerSubject = if ($signature.SignerCertificate) { $signature.SignerCertificate.Subject } else { "<none>" }
+        if ($signature.Status -ne "Valid" -or $signerSubject -notmatch "(^|,\s*)O=Microsoft Corporation(,|$)")
+        {
+            throw "Evergreen WebView2 Standalone Installer signature validation failed. Status: $($signature.Status); signer: $signerSubject"
+        }
+
         Publish-Item $webView2RuntimeInstaller "$outpath\tools\x64"
     }
 }

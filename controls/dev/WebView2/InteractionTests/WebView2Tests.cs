@@ -44,7 +44,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             EnsureBrowser();
         }
 
-        // Ensure the test image provides a WebView2 Runtime compatible with the SDK.
+        // Ensure a suitable version of Edge browser or WebView2 Runtime is present. If not, use the Evergreen
+        // Standalone Installer to install the Runtime.
         public static void EnsureBrowser()
         {
             // If a previous run of CoreWebView2Initialized_FailedTest failed to clean up the
@@ -60,21 +61,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // 3. Check if a runtime is already installed, and if it's compatible.
             bool hasCompatibleRuntimeInstalled = GetHasCompatibleRuntimeInstalled(browserBuildVersion, sdkBuildVersion);
 
-            // 4. If we have a compatible runtime installed, continue on to the tests.
+            // 4a. If we have a compatible runtime installed, continue on to the tests.
             if (hasCompatibleRuntimeInstalled)
             {
                 return;
             }
 
-            // An Evergreen update may already be in progress. Wait for it before failing the test.
+            // 4b. If we don't have a compatible runtime, try to install one.
+
+            // 5. Before installing, check if Edge is already installing/updating. We can't run the standalone installer if it is.
             bool didWait = WaitForEdgeIfAlreadyInstalling();
 
             if (didWait && IsEdgeAlreadyInstalling())
             {
-                Verify.Fail("WebView2Tests Init: Evergreen WebView2 Runtime update did not finish within 3 minutes.");
+                Log.Error("WebView2Tests Init: Edge took more than 3 minutes to install, give up.");
             }
             else if (didWait)
             {
+                // If we waited for Edge to finish installing/updating and it finished, check the versions again.
                 browserBuildVersion = GetInstalledBrowserVersion();
                 hasCompatibleRuntimeInstalled = GetHasCompatibleRuntimeInstalled(browserBuildVersion, sdkBuildVersion);
                 if (hasCompatibleRuntimeInstalled)
@@ -83,11 +87,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
 
-            Verify.Fail(string.Format(
-                "WebView2Tests Init: The test image must provide a compatible Evergreen WebView2 Runtime. " +
-                "Installed Runtime build: {0}; required SDK build: {1}.",
-                browserBuildVersion,
-                sdkBuildVersion));
+            // 6. If Edge wasn't already installing/updating, or it installed an incompatible version,
+            // run the standalone installer. Retry because installation can fail transiently.
+            int attemptsLeft = 5;
+            bool successfullyInstalled = false;
+            while (attemptsLeft > 0)
+            {
+                attemptsLeft--;
+                successfullyInstalled = TryInstallingBrowser(attemptsLeft);
+                if (successfullyInstalled)
+                {
+                    break;
+                }
+            }
+            if (attemptsLeft == 0 && !successfullyInstalled)
+            {
+                Log.Error("WebView2Tests Init: Runtime installation failed, out of retries.");
+            }
         }
 
         private static void RemoveFakeBrowserExecutableFolderKey()
@@ -207,6 +223,44 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
             return edgeUpdateIsRunning;
+        }
+
+        private static bool TryInstallingBrowser(int attemptsLeft)
+        {
+            bool successfullyInstalled = false;
+            string installer = Path.Combine(
+                Environment.CurrentDirectory,
+                "tools",
+                "x64",
+                "MicrosoftEdgeWebView2RuntimeInstallerX64.exe");
+            string installerArguments = "/silent /install";
+
+            if (!File.Exists(installer))
+            {
+                Log.Error("WebView2Tests Init: Evergreen WebView2 Standalone Installer was not found at {0}.", installer);
+                return false;
+            }
+
+            Log.Comment("WebView2Tests Init: Installing WebView2 Runtime: '{0} {1}'", installer, installerArguments);
+            ProcessStartInfo installerStartInfo = new ProcessStartInfo(installer, installerArguments);
+            Process installerProcess = Process.Start(installerStartInfo);
+            installerProcess.WaitForExit();
+
+            if (installerProcess.ExitCode == 0)
+            {
+                Log.Comment("WebView2Tests Init: {0} exited successfully", installer);
+                successfullyInstalled = true;
+            }
+            else
+            {
+                Log.Warning(
+                    "WebView2Tests Init: {0} failed with exit code {1}. Attempts left: {2}",
+                    installer,
+                    installerProcess.ExitCode,
+                    attemptsLeft);
+            }
+
+            return successfullyInstalled;
         }
 
         [TestCleanup]

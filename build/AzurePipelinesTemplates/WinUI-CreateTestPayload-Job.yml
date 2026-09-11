@@ -138,7 +138,7 @@ jobs:
       Write-Host "buildFlavor = $buildFlavor"
       Write-Host "buildFlavorAlt = $buildFlavorAlt"
 
-      $webView2RuntimeInstallerArgument = if ($env:testOS -eq "Win10-RS5") { "-IncludeWebView2RuntimeInstaller" } else { "" }
+      $webView2RuntimeInstallerArgument = if ($env:testOS -eq "Win10-RS5" -and "${{ parameters.testSuite }}" -eq "DevTestSuite") { "-IncludeWebView2RuntimeInstaller" } else { "" }
 
       Write-Host "##vso[task.setvariable variable=targetOsVersion;]$targetOsVersion"
       Write-Host "##vso[task.setvariable variable=helixtargetqueues;]$helixQueue"
