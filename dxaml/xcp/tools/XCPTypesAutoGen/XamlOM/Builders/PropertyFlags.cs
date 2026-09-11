@@ -103,6 +103,13 @@ namespace XamlOM
         public bool UseComPtr { get; set; }
 
         /// <summary>
+        /// Gets or sets whether this property's field should be stored as a weak reference
+        /// (ctl::WeakRefPtr) instead of the tracked-storage default (TrackerPtr). This is the
+        /// explicit, greppable opt-out from GC-visible tracked storage.
+        /// </summary>
+        public bool WeakRef { get; set; }
+
+        /// <summary>
         /// Gets or sets whether this property's getter should have a virtual implementation
         /// </summary>
         public bool IsGetterImplVirtual { get; set; }
