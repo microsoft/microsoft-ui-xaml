@@ -40,7 +40,10 @@ void ScrollingAnchorRequestedEventArgs::AnchorElement(winrt::UIElement const& va
     }
     else
     {
-        throw winrt::hresult_error(E_INVALIDARG);
+        throw winrt::hresult_invalid_argument(
+            StringUtil::FormatString(
+                L"AnchorElement must be a descendant of the ScrollPresenter content; element '%1!s!' is not a valid anchor candidate.",
+                winrt::get_class_name(anchorElement).c_str()));
     }
 }
 

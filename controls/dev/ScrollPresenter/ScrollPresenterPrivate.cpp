@@ -109,7 +109,7 @@ void ScrollPresenter::RegisterAnchorCandidate(winrt::UIElement const& element)
 
     if (!element)
     {
-        throw winrt::hresult_error(E_INVALIDARG);
+        throw winrt::hresult_invalid_argument(L"Anchor candidate cannot be null.");
     }
 
     if (!isnan(HorizontalAnchorRatio()) || !isnan(VerticalAnchorRatio()))
@@ -140,7 +140,7 @@ void ScrollPresenter::UnregisterAnchorCandidate(winrt::UIElement const& element)
 
     if (!element)
     {
-        throw winrt::hresult_error(E_INVALIDARG);
+        throw winrt::hresult_invalid_argument(L"Anchor candidate cannot be null.");
     }
 
     const winrt::UIElement anchorCandidate = element;
