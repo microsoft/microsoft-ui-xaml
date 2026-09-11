@@ -113,11 +113,13 @@ namespace TableViewDetails
     }
 
     // Returns whether the element is left carrying a control-owned tooltip. Never touches one the
-    // app set itself.
+    // app set itself. publishHelpText is false when a peer publishes the text instead.
     inline bool SetOwnedToolTip(
         const winrt::FrameworkElement& element,
         const winrt::IInspectable& content,
-        winrt::PlacementMode placement)
+        winrt::PlacementMode placement,
+        bool publishHelpText = true,
+        const wchar_t* propertyName = L"CellToolTipBinding")
     {
         if (!element)
         {
@@ -144,8 +146,8 @@ namespace TableViewDetails
         auto const text = TryGetString(content);
         if (content && content.try_as<winrt::ToolTip>())
         {
-            TVDiag::LogRetailF(L"[TableView] A CellToolTipBinding value must be tooltip content, "
-                L"not a ToolTip; the cell has no tooltip.");
+            TVDiag::LogRetailF(L"[TableView] A %ls value must be tooltip content, "
+                L"not a ToolTip; the element has no tooltip.", propertyName);
             ClearOwnedToolTip(element);
             return false;
         }
@@ -193,11 +195,19 @@ namespace TableViewDetails
         // Published unconditionally and recorded; TableViewCellAutomationPeer decides at query time
         // whether it merely repeats the cell's own text. Comparing here would race the cell's binding.
         auto const helpText = text ? *text : winrt::hstring{};
-        if (!helpText.empty() &&
+        if (publishHelpText &&
+            !helpText.empty() &&
             winrt::AutomationProperties::GetHelpText(element).empty())
         {
             winrt::AutomationProperties::SetHelpText(element, helpText);
             record->PublishedHelpText = helpText;
+        }
+
+        // Both paths report string content only.
+        if (!text)
+        {
+            TVDiag::DbgLogF(L"[TableView] %ls content is not a string; it shows on hover but is "
+                L"not reported to assistive technology.", propertyName);
         }
 
         return true;
@@ -275,6 +285,28 @@ namespace TableViewDetails
         if (element && binding)
         {
             winrt::BindingOperations::SetBinding(element, EnsureCellToolTipValueProperty(), binding);
+        }
+    }
+
+    // Headers rebuild wholesale, so there is no binding or refresh path. Contained: both call sites
+    // are fail-fast, and app content can throw (a UIElement already parented by another header).
+    inline void ApplyHeaderToolTip(
+        const winrt::FrameworkElement& element,
+        const winrt::IInspectable& content)
+    {
+        try
+        {
+            SetOwnedToolTip(
+                element,
+                content,
+                winrt::PlacementMode::Mouse,
+                false /* publishHelpText */,
+                L"HeaderToolTip");
+        }
+        catch (...)
+        {
+            TVDiag::LogRetailF(L"[TableView] Applying a header tooltip failed (HRESULT 0x%08X).",
+                static_cast<unsigned int>(winrt::to_hresult()));
         }
     }
 }

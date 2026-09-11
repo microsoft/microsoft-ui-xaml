@@ -1,9 +1,10 @@
 ## Fixes
 
-<!-- Link the issue this PR addresses. Use "Fixes #xxx" or "Closes #xxx" so GitHub auto-closes it on merge. -->
+<!-- Link either the public GitHub issue or the internal issue this PR addresses. Remove the unused line. -->
 <!-- PRs without a linked issue may be closed unless they are minor documentation/typo fixes. -->
 
 Fixes #
+Internal Issue: https://task.ms/<ado-bug-id>
 
 ## PR Type
 

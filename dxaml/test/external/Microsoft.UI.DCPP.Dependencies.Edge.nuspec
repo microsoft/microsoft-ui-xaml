@@ -1,18 +1,18 @@
 <package>
   <metadata>
     <id>Microsoft.UI.DCPP.Dependencies.Edge</id>
-    <title>Microsoft Edge WebView2 Runtime installer for WinUI tests</title>
-    <version>144.0.3719.82</version>
+    <title>Microsoft Edge WebView2 Evergreen Standalone Installer (x64) for WinUI tests</title>
+    <version>152.0.4191.66</version>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <projectUrl>https://github.com/microsoft/microsoft-ui-xaml</projectUrl>
     <iconUrl>https://img-prod-cms-rt-microsoft-com.akamaized.net/cms/api/am/imageFileData/RE1Mu3b?ver=5c31</iconUrl>
     <description>
-      Contains the Microsft Edge WebView2 Runtime mini_installer.exe.
+      Contains Microsoft's official x64 Evergreen WebView2 Standalone Installer for WinUI test infrastructure.
     </description>
   </metadata>
   <files>
-    <file src="..\..\test\edge\144.0.3719.82\**" target="edge\mini_installer" />
+    <file src="..\..\test\edge\152.0.4191.66\x64\MicrosoftEdgeWebView2RuntimeInstallerX64.exe" target="tools\x64" />
   </files>
 </package>

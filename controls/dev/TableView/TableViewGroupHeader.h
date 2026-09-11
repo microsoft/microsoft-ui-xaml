@@ -49,12 +49,22 @@ public:
     void OnPointerReleased(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
 
+    // Keyboard parity with the pointer toggle: a focused group header expands/collapses from the
+    // keyboard, matching TreeViewItem / Expander. Enter/Space toggles; Right/Left expand/collapse
+    // (mirrored under RTL). Without this the band is pointer-only -- a WCAG 2.1.1 failure on the
+    // headline grouping feature.
+    void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
+
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     // Internal: raise ToggleRequested for the band gesture. Note the ExpandCollapse peer does
     // NOT come through here -- it calls TableView::SetGroupExpansion directly, because the
     // pattern is directional and this is not.
     void RequestToggle();
+
+    // Internal: directional keyboard expand/collapse. Routes through the owner exactly like the
+    // ExpandCollapse peer (idempotent, resolved through the stored owner, not an ancestor walk).
+    void RequestExpansion(bool expand);
 
     // Internal: announced by TableView::PrepareGroupHeaderElement, which is the only place that
     // knows whether the incoming state belongs to the SAME group this container last showed.

@@ -99,6 +99,10 @@
     <value>Not sorted</value>
     <comment>Help text reported by a sortable column header that is not currently sorted.</comment>
   </data>
+  <data name="TableViewColumnHeaderHelpTextFormat" xml:space="preserve">
+    <value>%1!s!. %2!s!</value>
+    <comment>Joins a column header's tooltip text with its sort state when the header reports both as help text. %1!s! is the tooltip text; %2!s! is the sort-state help text.</comment>
+  </data>
   <!-- Automation peer strings -->
   <data name="TableViewColumnWidthChanged" xml:space="preserve">
     <value>Column %1!s! width: %2!s! pixels.</value>

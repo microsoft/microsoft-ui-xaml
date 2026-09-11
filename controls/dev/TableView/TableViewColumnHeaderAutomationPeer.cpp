@@ -7,8 +7,10 @@
 #include "TableViewCellsPanel.h"
 #include "TableViewAutomationHelpers.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
+#include "TableViewToolTipHelpers.h"
 #include "TableViewColumnHeaderAutomationPeer.properties.cpp"
 #include "ResourceAccessor.h"
+#include "Utils.h"
 
 #include <limits>
 
@@ -31,6 +33,19 @@ namespace
             static_cast<int32_t>(identity & 0xffffffffull),
             static_cast<int32_t>((identity >> 32) & 0xffffffffull)
         };
+    }
+
+    // Help text is supplementary: degrade instead of letting a resource failure escape into UIA.
+    winrt::hstring TryGetLocalizedString(const std::wstring_view& resourceName)
+    {
+        try
+        {
+            return ResourceAccessor::GetLocalizedStringResource(resourceName);
+        }
+        catch (...)
+        {
+            return {};
+        }
     }
 }
 
@@ -130,22 +145,57 @@ hstring TableViewColumnHeaderAutomationPeer::GetHelpTextCore()
     }
 
     // Only a column the control will actually sort reports a sort state; on any other column the
-    // absence of help text is the honest answer.
-    if (!IsSortableColumn())
+    // absence of a sort state is the honest answer.
+    winrt::hstring sortText{};
+    if (IsSortableColumn())
     {
-        return __super::GetHelpTextCore();
+        switch (column.SortDirection())
+        {
+        case winrt::SortDirection::Ascending:
+            sortText = TryGetLocalizedString(SR_TableViewSortAscendingHelpText);
+            break;
+        case winrt::SortDirection::Descending:
+            sortText = TryGetLocalizedString(SR_TableViewSortDescendingHelpText);
+            break;
+        case winrt::SortDirection::None:
+        default:
+            sortText = TryGetLocalizedString(SR_TableViewSortNoneHelpText);
+            break;
+        }
     }
 
-    switch (column.SortDirection())
+    // From the column, not the realized header: the peer can be queried before the band exists.
+    // String only; rich content is mouse-only, as with cells.
+    winrt::hstring toolTipText{};
+    if (auto const text = TableViewDetails::TryGetString(column.HeaderToolTip()))
     {
-    case winrt::SortDirection::Ascending:
-        return ResourceAccessor::GetLocalizedStringResource(SR_TableViewSortAscendingHelpText);
-    case winrt::SortDirection::Descending:
-        return ResourceAccessor::GetLocalizedStringResource(SR_TableViewSortDescendingHelpText);
-    case winrt::SortDirection::None:
-    default:
-        return ResourceAccessor::GetLocalizedStringResource(SR_TableViewSortNoneHelpText);
+        toolTipText = *text;
     }
+
+    // Dropped when it repeats the header name, to avoid a double announcement.
+    if (!toolTipText.empty() && toolTipText == GetNameCore())
+    {
+        toolTipText = {};
+    }
+
+    if (toolTipText.empty())
+    {
+        return sortText.empty() ? __super::GetHelpTextCore() : sortText;
+    }
+
+    if (sortText.empty())
+    {
+        return toolTipText;
+    }
+
+    // A sighted user gets both at a glance, so neither is dropped.
+    auto const format = TryGetLocalizedString(SR_TableViewColumnHeaderHelpTextFormat);
+    if (format.empty())
+    {
+        return toolTipText;
+    }
+
+    return StringUtil::FormatString(format, toolTipText.c_str(), sortText.c_str());
 }
 
 winrt::IInspectable TableViewColumnHeaderAutomationPeer::GetPatternCore(winrt::PatternInterface patternInterface)

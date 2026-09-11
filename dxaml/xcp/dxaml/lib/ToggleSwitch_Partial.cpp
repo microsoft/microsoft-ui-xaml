@@ -164,10 +164,10 @@ ToggleSwitch::OnApplyTemplate()
 
     m_tpCurtainBounds.Clear();
     m_tpCurtainClip.Clear();
-    m_spCurtainTransform = nullptr;
+    m_spCurtainTransform.Clear();
     m_tpKnob.Clear();
     m_tpKnobBounds.Clear();
-    m_spKnobTransform = nullptr;
+    m_spKnobTransform.Clear();
     m_tpThumb.Clear();
     m_tpHeaderPresenter.Clear();
 
@@ -194,7 +194,8 @@ ToggleSwitch::OnApplyTemplate()
         ctl::ComPtr<xaml_media::ITransform> spCurtainRenderTransform;
 
         IFC(spCurtainIUIElement->get_RenderTransform(&spCurtainRenderTransform));
-        m_spCurtainTransform = spCurtainRenderTransform.AsOrNull<ITranslateTransform>();
+        ctl::ComPtr<ITranslateTransform> spCurtainTranslateTransform = spCurtainRenderTransform.AsOrNull<ITranslateTransform>();
+        SetPtrValue(m_spCurtainTransform, spCurtainTranslateTransform.Get());
     }
 
     spKnobIUIElement = spKnobIDependencyObject.AsOrNull<xaml::IUIElement>();
@@ -203,7 +204,8 @@ ToggleSwitch::OnApplyTemplate()
         ctl::ComPtr<xaml_media::ITransform> spKnobRenderTransform;
 
         IFC(spKnobIUIElement->get_RenderTransform(&spKnobRenderTransform));
-        m_spKnobTransform = spKnobRenderTransform.AsOrNull<ITranslateTransform>();
+        ctl::ComPtr<ITranslateTransform> spKnobTranslateTransform = spKnobRenderTransform.AsOrNull<ITranslateTransform>();
+        SetPtrValue(m_spKnobTransform, spKnobTranslateTransform.Get());
     }
 
     if (spThumbIUIElement)

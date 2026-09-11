@@ -1,12 +1,12 @@
 namespace TableViewAppCppPackaged
 {
+    [bindable]
     [default_interface]
     runtimeclass Person
     {
         Person();
         String Name;
         Int32 Age;
-        String AgeText{ get; };
     }
 
     [default_interface]

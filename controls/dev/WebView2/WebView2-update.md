@@ -1,7 +1,7 @@
 # Updating WebView2 SDK and Runtime Installers
 
 When Edge releases a new WebView2 SDK, we may want to update the version that Xaml WebView2 uses. As part of the 
-product, we ship a WebView2 SDK. For test code only, we include WebView2 Runtime installers, in case the pipeline VMs 
+product, we ship a WebView2 SDK. For test code only, we include a WebView2 Runtime installer, in case the pipeline VMs
 don't already have a runtime installed. This document will help you update these two components.
 
 ## Table of Contents
@@ -28,27 +28,22 @@ be used when possible. When we must use a private SDK version, **TODO**
 
 ### WebView2 Runtime
 
-When Xaml WebView2 tests run, they check to see if a WebView2 runtime is available on the machine to use. If not, the 
-tests install one. These installers live in a nuget package we create and keep in the 
-**Microsoft.UI.DCPP.Dependencies.Edge** feed. 
+When Xaml WebView2 tests run, they check to see if a WebView2 runtime is available on the machine to use. If not, the
+test infrastructure provisions one. The x64 installer is published as a new immutable version of
+**Microsoft.UI.DCPP.Dependencies.Edge** on both the internal `WinUI.Dependencies` feed and the public shine-oss
+`WinUI-Dependencies` feed.
+
+The package is created from Microsoft's official public
+[x64 Evergreen Standalone Installer](https://go.microsoft.com/fwlink/?linkid=2124701). The download link is moving, so
+the installer must be downloaded, verified, and packaged manually. It must not be downloaded during package restore or
+checked in to Git.
 
 **This package is only used for tests.** The WinUI product does not specify or require a specific Runtime version 
 (instead, apps may specify a minimum version depending on the APIs they use).
 
-Versions are defined in `%<edgeroot>%\edge_embedded_browser\client\win\embedded_browser_version_info_values.h.version`:
-
-```
-  #ifndef EDGE_EMBEDDED_BROWSER_CLIENT_WIN_EMBEDDED_BROWSER_VERSION_INFO_VALUES_H_
-  #define EDGE_EMBEDDED_BROWSER_CLIENT_WIN_EMBEDDED_BROWSER_VERSION_INFO_VALUES_H_
-    
-  #define PRODUCT_VERSION L"@MAJOR@.@MINOR@.@BUILD@.@PATCH@"
-  #define MAJOR_NUMBER @MAJOR@
-  #define MINOR_NUMBER @MINOR@
-  #define BUILD_NUMBER @BUILD@
-  #define PATCH_NUMBER @PATCH@
-    
-  #endif  // EDGE_EMBEDDED_BROWSER_CLIENT_WIN_EMBEDDED_BROWSER_VERSION_INFO_VALUES_H_
-```
+The package version must be the immutable four-part WebView2 Runtime version from the signed installer's embedded
+`OfflineManifest.gup`, not the outer EXE's `FileVersion` or `ProductVersion`. Those outer values identify the Edge
+Update engine.
 
 The version of Edge we install for tests should have a build number greater than or equal to the number of the SDK. For 
 example, Edge version 82.0.**436**.0 can work with SDK version 0.9.**430**.
@@ -69,10 +64,10 @@ example, if an API was previously experimental before but is currently final, ol
 
 ## **Updating TL;DR**
 
-1. Run `UpdateWebView2.cmd`
-2. Drop in the installers
-3. Pack and push the nuget package
-4. Run `init` and make sure everything looks good
+1. Run `UpdateWebView2.cmd`.
+2. Download and verify the official x64 Evergreen Standalone Installer.
+3. Pack and, after approval, manually push the NuGet package.
+4. Run `init` and make sure the SDK update looks good.
 
 ## Detailed Updating Instructions
 
@@ -80,74 +75,92 @@ example, if an API was previously experimental before but is currently final, ol
    together. This may also necessitate working with the Edge WebView2 team to understand what SDK will have any new 
    APIs we need.
 
-1. Run `UpdateWebView2.cmd`. This can be found in the `\scripts` folder. For help, run `UpdateWebView2.cmd /?`. 
+1. Run `UpdateWebView2.cmd`. This can be found in the `\scripts` folder. For help, run `UpdateWebView2.cmd /?`.
    This script will:
-   * Update the SDK version in `\eng\versions.props` and `\controls\dev\dll\packages.config`
-     > Updating these numbers is actually the only thing that needs to happen to consume a new, public SDK. All other 
-       instructions in this document (besides step 4 used for private SDKs) are related to the runtime we include for 
-       tests.
-   * Update the Runtime version in 
-     * `\packages.config`
-       * This is what actually gives the nuget package we're creating a version number. We use the SDK number, but it's 
-         technically arbitrary
-     * `\dxaml\test\infra\taefhostappmanaged\TaefHostAppManaged.csproj`
-       * This is the binplace logic
-       * Note in this path, any terminating .0 gets dropped (ie. Use 80.0.333 rather than 8.0.333.0)
-     * `\dxaml\test\external\Microsoft.UI.DCPP.Dependencies.Edge.nuspec`
-       * This points to the `mini_installer`s you will drop into the repo, to be packaged into a nuget package
-   * Create directories where you will need to copy installers from the Edge Official Builds website
-     * E.g.  
-       `<repo_root>\dxaml\test\edge\144.0.3719.82\x64\mini_installer.exe`  
-       `<repo_root>\dxaml\test\edge\144.0.3719.82\x86\mini_installer.exe`
-   * Give you detailed instructions about the following steps.
+   * Update the SDK version in `\eng\versions.props`, `\controls\dev\dll\packages.config`, and
+     `\controls\test\TestAppCX\packages.config`.
+     > Updating these numbers is the only thing that needs to happen to consume a new public SDK.
+   * Update the Runtime version and temporary x64 installer source path in
+     `\dxaml\test\external\Microsoft.UI.DCPP.Dependencies.Edge.nuspec`.
+   * Create the temporary directory where the x64 installer must be copied:
+     `<repo_root>\dxaml\test\edge\<runtime-version>\x64\MicrosoftEdgeWebView2RuntimeInstallerX64.exe`.
+   * Give you the pack and manual publication commands.
 
-2. Drop the Edge installers into the directories created in the previous step
-   * These should be retrieved from the correct version at https://edgeteam.ms/builds-and-branches
-   * The links called Win64 and Win32 under "Installers" are mini_installer.exe files that must be dropped into the
-     repo in the directories created by the script (Win64 goes under x64, Win32 goes under x86).
-   * These files **should not** be checked in to the repo. Once the nuget package has been created and pushed per the 
-     instructions below, these files can be deleted.
+2. Download and verify the official installer.
+   * Download `MicrosoftEdgeWebView2RuntimeInstallerX64.exe` from Microsoft's public
+     [x64 Evergreen Standalone Installer link](https://go.microsoft.com/fwlink/?linkid=2124701) and place it in the
+     temporary directory created by the script.
+   * For Runtime version `152.0.4191.66`, the approved installer identity is:
 
-3. Pack and push the Runtime installer nuget package
-   * **The update script will tell you exactly what commands to run** to do this. You will need to obtain the API key 
-     from a team member. 
-   * Packing is done by
-     * `nuget pack <.nuspec path> -OutputDirectory <repo_root>\packages`
-     * Example command and output:
-      ```
-      >nuget pack <repo_root>\dxaml\external\Microsoft.UI.DCPP.Dependencies.Edge.nuspec -OutputDirectory <repo_root>\packages\Microsoft.UI.DCPP.Dependencies.Edge
-      
-      Attempting to build package from 'Microsoft.UI.DCPP.Dependencies.Edge.nuspec'.
-      Successfully created package 'C:\winui3\packages\Microsoft.UI.DCPP.Dependencies.Edge\Microsoft.UI.DCPP.Dependencies.Edge.80.0.333.nupkg'.
-      WARNING: NU5048: The 'PackageIconUrl'/'iconUrl' element is deprecated. Consider using the 'PackageIcon'/'icon' element instead. Learn more at https://aka.ms/deprecateIconUrl
-      ```
-   * Pushing is done by
-     * `nuget push <.nupkg path> -Source WinUI.Dependencies -apikey <ask_a_teammate_for_key>`
-     * You need to be part of the WinUI.Dependencies feed (ask a teammate for access) to be able to push using the command above.
-     * Example command and output:
-      ```
-      > nuget push <repo_root>\packages\Microsoft.UI.DCPP.Dependencies.Edge\<created_nupkg> -Source WinUI.Dependencies -apikey <ask_a_teammate_for_key>
-      
-      MSBuild auto-detection: using msbuild version '16.3.2.50909' from 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin'.
-          [CredentialProvider]VstsCredentialProvider - Acquired bearer token using 'ADAL Windows Integrated Authentication'
-          [CredentialProvider]VstsCredentialProvider - Attempting to exchange the bearer token for an Azure DevOps session token.
-      Pushing Microsoft.UI.DCPP.Dependencies.Edge.80.0.333.nupkg to 'https://.../'
-        PUT https://.../
-        Accepted https://.../ 16326ms
-      Your package was pushed.
-      ```
-   * This pushes the package to the feed in the NuGet.config at the root of the repo.
+     | Property | Value |
+     | --- | --- |
+     | Size | `258614480` bytes |
+     | SHA-256 | `E7FA35755196AD9223596EF021A1CE6799509142EAA40BA35F634026BE50B831` |
+     | Embedded WebView2 app ID | `{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}` |
+     | Embedded manifest version | `152.0.4191.66` |
+
+   * Verify the downloaded file before packing:
+
+     ```powershell
+     $installer = "<repo_root>\dxaml\test\edge\152.0.4191.66\x64\MicrosoftEdgeWebView2RuntimeInstallerX64.exe"
+     Get-AuthenticodeSignature -LiteralPath $installer |
+         Format-List Status, SignerCertificate, TimeStamperCertificate
+     Get-FileHash -LiteralPath $installer -Algorithm SHA256
+     (Get-Item -LiteralPath $installer).Length
+     ```
+
+     The Authenticode status must be `Valid`, the signer must be Microsoft Corporation, and the hash and size must
+     exactly match the approved values above. Do not use the outer EXE's version `1.3.265.7`; that is the Edge Update
+     engine version.
+   * The EXE is temporary packaging input. It must not be checked in to Git and should be deleted after packaging.
+
+3. Pack and push the Runtime installer NuGet package.
+   * Packing is done with the command printed by the update script:
+
+     ```console
+     nuget pack <repo_root>\dxaml\test\external\Microsoft.UI.DCPP.Dependencies.Edge.nuspec -OutputDirectory <repo_root>\packages
+     ```
+
+   * Inspect the package before publication. It must contain exactly one installer at:
+
+     ```text
+     tools\x64\MicrosoftEdgeWebView2RuntimeInstallerX64.exe
+     ```
+
+   * NuGet normalizes a package version ending in `.0` by dropping that component from the generated filename. Set
+     `$packagePath` to the exact `.nupkg` path reported by `nuget pack`; do not construct the filename from the
+     four-part Runtime version.
+   * Obtain required legal, redistribution, and feed-owner approval. Retrieve both feed URLs from Key Vault; do not
+     place either URL in source code or documentation. First publish to the internal feed:
+
+     ```powershell
+     $packagePath = "<exact .nupkg path printed by nuget pack>"
+     $internalFeed = "<internal feed URL from Key Vault>"
+     nuget push $packagePath -Source $internalFeed -apikey AzureDevOps
+     ```
+
+   * Then publish the exact same `.nupkg` to the public shine-oss feed:
+
+     ```powershell
+     $shineOssFeed = "<shine-oss feed URL from Key Vault>"
+     nuget push $packagePath -Source $shineOssFeed -apikey AzureDevOps
+     ```
+
+   * You need publish access to both feeds. The Azure Artifacts Credential Provider supplies authentication;
+     `AzureDevOps` is the required non-secret NuGet API-key argument.
+   * NuGet package versions are immutable. If installer bytes change while the embedded Runtime version remains the
+     same, stop and investigate; do not overwrite or republish that package version.
+   * Generated `.nupkg` files must not be checked in to Git.
 
 4. **Follow this step ONLY if you are updating the SDK to a private version**  
    If you are updating to a private SDK version (one not on nuget.org) you must also push it to the WinUI.Dependencies 
    private feed. Download the signed nuget from the Edge WebView2 pipeline, and push it to the feed like you did above.
    * You can see which SDK versions were pushed manually by us, vs which came from the public Nuget Gallery, by looking 
      at the history in the feed.
- 
-5. Run `init` to ensure the package gets pulled down correctly.
-   * Clear the nuget caches before doing this to be even more sure the right package is being pulled down
-   * `init` should run without errors
-   * Under the `packages` directory in your repo, you should now see a `packages/Microsoft.UI.DCPP.Dependencies.Edge` 
-     directory containing the version you just created, and a `packages/Microsoft.UI.DCPP.Dependencies.Edge.<version>` 
-     directory below it (e.g. `packages/Microsoft.UI.DCPP.Dependencies.Edge.80.0.333`)
-   * Build the repo for additional assurance
+
+5. Run `init` to ensure the SDK package gets pulled down correctly.
+   * Clear the NuGet caches first to be more certain the right SDK package is restored.
+   * `init` should run without errors.
+   * Restoring and consuming `Microsoft.UI.DCPP.Dependencies.Edge` version `152.0.4191.66` is intentionally deferred
+     to a separate change after this package has been approved and published.
+   * Build the repo for additional assurance.

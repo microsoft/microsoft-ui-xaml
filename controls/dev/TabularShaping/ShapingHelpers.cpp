@@ -13,7 +13,7 @@
 #include <unordered_map>
 #include "winnls.h"
 
-namespace TabularShapingHelpers
+namespace ShapingHelpers
 {
     namespace
     {
@@ -421,13 +421,13 @@ namespace TabularShapingHelpers
 
         int CompareObjectLookupKeys(winrt::IInspectable const& a, winrt::IInspectable const& b)
         {
-            const auto keyA = TabularValueKey::ToObjectLookupKey(a);
-            const auto keyB = TabularValueKey::ToObjectLookupKey(b);
+            const auto keyA = ValueKey::ToObjectLookupKey(a);
+            const auto keyB = ValueKey::ToObjectLookupKey(b);
             return keyA < keyB ? -1 : (keyA > keyB ? 1 : 0);
         }
     }
 
-    bool TabularValueKey::TryFormatPropertyValue(
+    bool ValueKey::TryFormatPropertyValue(
         winrt::Windows::Foundation::IPropertyValue const& propertyValue,
         winrt::hstring& key,
         bool rejectEmptyString)
@@ -519,7 +519,7 @@ namespace TabularShapingHelpers
         }
     }
 
-    bool TabularValueKey::TryGetStablePropertyKey(
+    bool ValueKey::TryGetStablePropertyKey(
         winrt::IInspectable const& value,
         winrt::hstring& key,
         bool rejectEmptyString)
@@ -538,7 +538,7 @@ namespace TabularShapingHelpers
         return false;
     }
 
-    winrt::hstring TabularValueKey::ToString(winrt::IInspectable const& value)
+    winrt::hstring ValueKey::ToString(winrt::IInspectable const& value)
     {
         if (!value)
         {
@@ -572,7 +572,7 @@ namespace TabularShapingHelpers
         return L"<unknown>";
     }
 
-    winrt::hstring TabularValueKey::ToObjectLookupKey(winrt::IInspectable const& value, bool rejectEmptyString)
+    winrt::hstring ValueKey::ToObjectLookupKey(winrt::IInspectable const& value, bool rejectEmptyString)
     {
         if (!value)
         {
@@ -595,17 +595,17 @@ namespace TabularShapingHelpers
         return L"";
     }
 
-    bool TabularValueComparer::UsesFallbackKey(winrt::IInspectable const& value)
+    bool ValueComparer::UsesFallbackKey(winrt::IInspectable const& value)
     {
         return value && !value.try_as<winrt::Windows::Foundation::IPropertyValue>();
     }
 
-    int TabularValueComparer::Compare(winrt::IInspectable const& a, winrt::IInspectable const& b)
+    int ValueComparer::Compare(winrt::IInspectable const& a, winrt::IInspectable const& b)
     {
         return Compare(a, b, nullptr, nullptr);
     }
 
-    int TabularValueComparer::Compare(
+    int ValueComparer::Compare(
         winrt::IInspectable const& a,
         winrt::IInspectable const& b,
         winrt::hstring const* fallbackKeyA,
@@ -653,8 +653,8 @@ namespace TabularShapingHelpers
             return CompareValueClassRank(rankA, rankB);
         }
 
-        const winrt::hstring keyA{ fallbackKeyA ? *fallbackKeyA : TabularValueKey::ToString(a) };
-        const winrt::hstring keyB{ fallbackKeyB ? *fallbackKeyB : TabularValueKey::ToString(b) };
+        const winrt::hstring keyA{ fallbackKeyA ? *fallbackKeyA : ValueKey::ToString(a) };
+        const winrt::hstring keyB{ fallbackKeyB ? *fallbackKeyB : ValueKey::ToString(b) };
         return keyA < keyB ? -1 : (keyA > keyB ? 1 : 0);
     }
 
@@ -892,10 +892,10 @@ namespace TabularShapingHelpers
             for (size_t s = 0; s < axisCount; ++s)
             {
                 auto key = extractKey(items[i], s);
-                const bool needsFallback = TabularValueComparer::UsesFallbackKey(key);
+                const bool needsFallback = ValueComparer::UsesFallbackKey(key);
                 if (needsFallback)
                 {
-                    fallbackKeys[rowBase + s] = TabularValueKey::ToString(key);
+                    fallbackKeys[rowBase + s] = ValueKey::ToString(key);
                 }
                 hasFallbackKey[rowBase + s] = needsFallback ? 1 : 0;
                 keys[rowBase + s] = std::move(key);
@@ -915,7 +915,7 @@ namespace TabularShapingHelpers
                 const size_t bBase = b * axisCount;
                 for (size_t s = 0; s < axisCount; ++s)
                 {
-                    const int cmp = TabularValueComparer::Compare(
+                    const int cmp = ValueComparer::Compare(
                         keys[aBase + s],
                         keys[bBase + s],
                         hasFallbackKey[aBase + s] ? &fallbackKeys[aBase + s] : nullptr,
@@ -1116,7 +1116,7 @@ namespace TabularShapingHelpers
     }
 
     void CustomSortRankAdapter::Rank(
-        TabularPairwiseComparer const& comparer,
+        PairwiseComparer const& comparer,
         std::vector<winrt::IInspectable> const& rows)
     {
         // Set the flag before ClearRanks so a reentrant path cannot observe a torn intermediate.

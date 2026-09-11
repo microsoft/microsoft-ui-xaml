@@ -21,6 +21,7 @@ GlobalDependencyProperty TableViewColumnProperties::s_FrozenEdgeProperty{ nullpt
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderTemplateProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderTemplateSelectorProperty{ nullptr };
+GlobalDependencyProperty TableViewColumnProperties::s_HeaderToolTipProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_IsReadOnlyProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_MaxWidthProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_MinWidthProperty{ nullptr };
@@ -125,6 +126,17 @@ void TableViewColumnProperties::EnsureProperties()
                 ValueHelper<winrt::DataTemplateSelector>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnHeaderTemplateSelectorPropertyChanged));
     }
+    if (!s_HeaderToolTipProperty)
+    {
+        s_HeaderToolTipProperty =
+            InitializeDependencyProperty(
+                L"HeaderToolTip",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::TableViewColumn>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnHeaderToolTipPropertyChanged));
+    }
     if (!s_IsReadOnlyProperty)
     {
         s_IsReadOnlyProperty =
@@ -225,6 +237,7 @@ void TableViewColumnProperties::ClearProperties()
     s_HeaderProperty = nullptr;
     s_HeaderTemplateProperty = nullptr;
     s_HeaderTemplateSelectorProperty = nullptr;
+    s_HeaderToolTipProperty = nullptr;
     s_IsReadOnlyProperty = nullptr;
     s_MaxWidthProperty = nullptr;
     s_MinWidthProperty = nullptr;
@@ -284,6 +297,14 @@ void TableViewColumnProperties::OnHeaderTemplatePropertyChanged(
 }
 
 void TableViewColumnProperties::OnHeaderTemplateSelectorPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TableViewColumn>();
+    winrt::get_self<TableViewColumn>(owner)->OnPropertyChanged(args);
+}
+
+void TableViewColumnProperties::OnHeaderToolTipPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -433,6 +454,19 @@ void TableViewColumnProperties::HeaderTemplateSelector(winrt::DataTemplateSelect
 winrt::DataTemplateSelector TableViewColumnProperties::HeaderTemplateSelector()
 {
     return ValueHelper<winrt::DataTemplateSelector>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_HeaderTemplateSelectorProperty));
+}
+
+void TableViewColumnProperties::HeaderToolTip(winrt::IInspectable const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableViewColumn*>(this)->SetValue(s_HeaderToolTipProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::IInspectable TableViewColumnProperties::HeaderToolTip()
+{
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_HeaderToolTipProperty));
 }
 
 void TableViewColumnProperties::IsReadOnly(bool value)

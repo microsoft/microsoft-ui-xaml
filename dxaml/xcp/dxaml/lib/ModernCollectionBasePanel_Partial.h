@@ -1567,7 +1567,7 @@ namespace DirectUI
         TransitionContextManager m_transitionContextManager;
         CacheManager m_cacheManager;
         ContainerManager m_containerManager;
-        ctl::ComPtr<xaml_controls::ILayoutStrategy> m_spLayoutStrategy;
+        TrackerPtr<xaml_controls::ILayoutStrategy> m_spLayoutStrategy;
         TrackerPtr<wfc::IObservableVector<IInspectable*>> m_tpObservableItemsSource;
         EventRegistrationToken m_observableItemsSourceChangedToken;
 
@@ -2541,7 +2541,7 @@ public:
         UINT m_containerCreatedCount;
 
         // Provides information about the data source for the layout strategies.
-        ctl::ComPtr<xaml_controls::ILayoutDataInfoProvider> m_spLayoutDataInfoProvider;
+        TrackerPtr<xaml_controls::ILayoutDataInfoProvider> m_spLayoutDataInfoProvider;
 
         // Iterator used for CCC's incremental visualization.
         ctl::ComPtr<ContainerContentChangingIterator> m_spContainerContentChangingIterator;

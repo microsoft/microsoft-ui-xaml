@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TableViewGroupHeader.h"
+#include "TableView.h"
 #include "TableViewGroupHeaderToggleRequestedEventArgs.h"
 #include "TableViewGroupInfo.h"
 #include "TableViewGroupHeaderAutomationPeer.h"
@@ -180,6 +181,57 @@ void TableViewGroupHeader::RequestToggle()
     auto const self = strongThis.as<winrt::TableViewGroupHeader>();
 
     m_toggleRequestedEventSource(self, args);
+}
+
+void TableViewGroupHeader::RequestExpansion(bool expand)
+{
+    if (!IsExpandable())
+    {
+        return;
+    }
+
+    // Mirror the ExpandCollapse peer: pass the direction through to the owner unresolved (the
+    // mutation is idempotent and applied on a later turn) and resolve through the stored owner
+    // rather than an ancestor walk, so a header that has been recycled/unparented still works.
+    if (auto const owner = GetOwningTableView())
+    {
+        auto const self = get_strong().as<winrt::TableViewGroupHeader>();
+        winrt::get_self<TableView>(owner)->SetGroupExpansion(self, expand);
+    }
+}
+
+void TableViewGroupHeader::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
+{
+    if (!args.Handled() && IsExpandable())
+    {
+        const auto key = args.Key();
+        const bool isRtl = FlowDirection() == winrt::FlowDirection::RightToLeft;
+
+        switch (key)
+        {
+        case winrt::VirtualKey::Enter:
+        case winrt::VirtualKey::Space:
+            RequestToggle();
+            args.Handled(true);
+            break;
+
+        case winrt::VirtualKey::Right:
+            // Right expands in LTR, collapses in RTL -- the TreeViewItem / Expander convention.
+            RequestExpansion(!isRtl);
+            args.Handled(true);
+            break;
+
+        case winrt::VirtualKey::Left:
+            RequestExpansion(isRtl);
+            args.Handled(true);
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    __super::OnKeyDown(args);
 }
 
 void TableViewGroupHeader::OnPointerEntered(winrt::PointerRoutedEventArgs const& args)

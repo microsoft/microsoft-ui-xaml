@@ -33,6 +33,9 @@ public:
     void HeaderTemplateSelector(winrt::DataTemplateSelector const& value);
     winrt::DataTemplateSelector HeaderTemplateSelector();
 
+    void HeaderToolTip(winrt::IInspectable const& value);
+    winrt::IInspectable HeaderToolTip();
+
     void IsReadOnly(bool value);
     bool IsReadOnly();
 
@@ -65,6 +68,7 @@ public:
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
     static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
     static winrt::DependencyProperty HeaderTemplateSelectorProperty() { return s_HeaderTemplateSelectorProperty; }
+    static winrt::DependencyProperty HeaderToolTipProperty() { return s_HeaderToolTipProperty; }
     static winrt::DependencyProperty IsReadOnlyProperty() { return s_IsReadOnlyProperty; }
     static winrt::DependencyProperty MaxWidthProperty() { return s_MaxWidthProperty; }
     static winrt::DependencyProperty MinWidthProperty() { return s_MinWidthProperty; }
@@ -82,6 +86,7 @@ public:
     static GlobalDependencyProperty s_HeaderProperty;
     static GlobalDependencyProperty s_HeaderTemplateProperty;
     static GlobalDependencyProperty s_HeaderTemplateSelectorProperty;
+    static GlobalDependencyProperty s_HeaderToolTipProperty;
     static GlobalDependencyProperty s_IsReadOnlyProperty;
     static GlobalDependencyProperty s_MaxWidthProperty;
     static GlobalDependencyProperty s_MinWidthProperty;
@@ -119,6 +124,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnHeaderTemplateSelectorPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnHeaderToolTipPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
