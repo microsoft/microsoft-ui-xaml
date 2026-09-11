@@ -174,6 +174,13 @@ Accessibility exposes a UIA grid/table model:
 
 `ScrollItem` is not implemented explicitly on any of these — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer.
 
+Peers that compute `PositionInSet`, `SizeOfSet` or `Level` report `0` — UIA's "not specified" — when the value cannot be resolved, never `-1`, and an app-set `AutomationProperties` value always wins over the computed one.
+
+Two known gaps, both pre-existing and tracked outside this control's code:
+
+- **The cell's localized control type does not reach the user yet.** `GetLocalizedControlTypeCore` resolves `TableViewCellLocalizedControlType` and falls back to the framework default when the lookup fails. That lookup currently always fails in a consuming app: `ResourceAccessor` reads the `Microsoft.UI.Xaml/Resources` subtree while the Tabular PRI indexes under `Microsoft.UI.Xaml.Controls.Tabular/Resources`, so every string in this control's `.resw` — sort, group-header, resize and help-text strings included — silently degrades. Cells announce "data item" until that is fixed.
+- **`ITableProvider::GetColumnHeaders` returns an empty array.** The synthesized header peers are never parented into the UIA tree, so `ProviderFromPeer` yields null for each and every entry is filtered out. A cell's `GetColumnHeaderItems` is unaffected and does return the header provider.
+
 Lifetime rules: columns and rows use weak owner back-pointers (`GetOwningTableView()` resolves a strong owner for synchronous work); runtime classes use `ReferenceTracker` where required; cross-object events use `auto_revoke`; recycled rows reset transient visual state before reuse.
 
 Theme values resolve through `TabularSurfaces` resources and re-resolve across theme (and high-contrast) changes. Dark `TabularSurfaceGridLineBrush` is `#29FFFFFF`; the C++ fallback uses the same 16% white.

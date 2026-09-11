@@ -220,14 +220,30 @@ bool TableViewColumnHeaderAutomationPeer::IsSortableColumn()
 
 int32_t TableViewColumnHeaderAutomationPeer::GetPositionInSetCore()
 {
+    // An app-set AutomationProperties.PositionInSet wins, matching the row and group-header peers
+    // and every dxaml peer that computes this property.
+    if (const auto provided = __super::GetPositionInSetCore(); provided > 0)
+    {
+        return provided;
+    }
+
     // Complements the distinct RuntimeId and GetNameCore: expose the 1-based visible column
     // position so AT (Narrator) can announce "column i of n" as the user moves across headers.
     const auto index = GetColumnIndex();
-    return index >= 0 ? index + 1 : -1;
+
+    // 0, not -1: 0 is UIA's "not specified" for this property and valid values are 1-based
+    // positives, so -1 was forwarded to clients verbatim as a nonsense position. Matches the row
+    // and group-header peers, TreeViewItemAutomationPeer and NavigationViewItemAutomationPeer.
+    return index >= 0 ? index + 1 : 0;
 }
 
 int32_t TableViewColumnHeaderAutomationPeer::GetSizeOfSetCore()
 {
+    if (const auto provided = __super::GetSizeOfSetCore(); provided > 0)
+    {
+        return provided;
+    }
+
     // Total visible column count, so PositionInSet reads as "i of n".
     if (auto const owner = Owner().try_as<winrt::TableView>())
     {
@@ -241,7 +257,9 @@ int32_t TableViewColumnHeaderAutomationPeer::GetSizeOfSetCore()
             if (count > 0) { return count; }
         }
     }
-    return -1;
+
+    // 0 = "not specified", as above.
+    return 0;
 }
 
 winrt::Windows::Foundation::Rect TableViewColumnHeaderAutomationPeer::GetBoundingRectangleCore()

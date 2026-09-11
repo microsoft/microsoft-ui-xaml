@@ -725,7 +725,7 @@ These peers expose the table structure to assistive technologies. Cell peers als
 
 Rows report `PositionInSet` / `SizeOfSet` and compose their name from their visible cells, so a virtualized row still announces "row *i* of *n*" and what it contains. When the source is grouped, both values are **relative to the containing group** and exclude the group-header bands, matching `ItemsControlAutomationPeer`. An app-set `AutomationProperties.PositionInSet` / `SizeOfSet` / `Level` always takes precedence over the computed value.
 
-A cell provider and a column-header provider each keep a stable identity: the row peer owns its cell peers and the TableView peer owns its column-header peers, so tree navigation, `IGridProvider.GetItem` and `ITableItemProvider.GetColumnHeaderItems` all resolve to the same provider for the same element.
+A cell provider and a column-header provider each keep a stable identity: the row peer owns its cell peers and the TableView peer owns its column-header peers, so tree navigation, `IGridProvider.GetItem` and `ITableItemProvider.GetColumnHeaderItems` all resolve to the same provider for the same element. (`ITableProvider.GetColumnHeaders` is a known pre-existing exception — it returns an empty array because the header peers are never parented into the UIA tree, so the provider lookup it performs yields nothing to return.)
 
 `ScrollItem` is not implemented explicitly — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer, so a client can bring a row or cell into view after reaching it through `IGridProvider.GetItem`.
 
