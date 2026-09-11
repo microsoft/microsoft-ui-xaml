@@ -1,0 +1,10 @@
+# WinUI/XAML peer-storage lint configuration.
+#
+# Enables only the custom peer-storage check and promotes it to an error, so a
+# raw ComPtr<T> field whose pointee is a reference-tracker target fails the
+# build. Place (or symlink) this file at the root of the peer directories that
+# should be gated (e.g. dxaml/xcp/dxaml/lib). The check itself lives in the
+# clangTidyXamlModule built from ./XamlChecks (see README.md).
+Checks: '-*,xaml-peer-comptr-field'
+WarningsAsErrors: 'xaml-peer-comptr-field'
+HeaderFilterRegex: 'dxaml[\\/]xcp[\\/]dxaml[\\/]lib[\\/].*'
