@@ -143,6 +143,10 @@ private:
 
     void StartExpandToOpen();
     void StartContractToClose();
+#ifdef MUX_PRERELEASE
+    void RaisePendingOpenedEvent();
+    bool m_isOpenedEventPending{ false };
+#endif
 
     void UpdatePopupRequestedTheme();
 
@@ -209,6 +213,8 @@ private:
     winrt::Size m_currentXamlRootSize{ 0,0 };
 
     bool m_ignoreNextIsOpenChanged{ false };
+    bool m_isOpenChangedPending{ false };
+    bool m_isClosing{ false };
     bool m_isTemplateApplied{ false };
     bool m_createNewPopupOnOpen{ false };
 

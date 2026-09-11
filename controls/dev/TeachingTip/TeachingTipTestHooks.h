@@ -33,6 +33,7 @@ public:
     static void SetContractAnimationDuration(const winrt::TeachingTip& teachingTip, const winrt::TimeSpan& contractAnimationDuration);
 
     static bool GetIsIdle(const winrt::TeachingTip& teachingTip);
+    static bool GetIsExpandAnimationPlaying(const winrt::TeachingTip& teachingTip);
     static winrt::TeachingTipPlacementMode GetEffectivePlacement(const winrt::TeachingTip& teachingTip);
     static winrt::TeachingTipHeroContentPlacementMode GetEffectiveHeroContentPlacement(const winrt::TeachingTip& teachingTip);
     static double GetVerticalOffset(const winrt::TeachingTip& teachingTip);

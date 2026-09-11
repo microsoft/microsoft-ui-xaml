@@ -30,6 +30,344 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     public class TeachingTipTests : ApiTestBase
     {
         [TestMethod]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public void CloseDuringExpandAnimation()
+        {
+            VerifyCloseDuringExpandAnimation(lightDismiss: false, interruptAnimation: false);
+        }
+
+        [TestMethod]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public void LightDismissDuringExpandAnimation()
+        {
+            VerifyCloseDuringExpandAnimation(lightDismiss: true, interruptAnimation: false);
+        }
+
+        [TestMethod]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public void CloseDuringInterruptedExpandAnimation()
+        {
+            VerifyCloseDuringExpandAnimation(lightDismiss: false, interruptAnimation: true);
+        }
+
+        private void VerifyCloseDuringExpandAnimation(bool lightDismiss, bool interruptAnimation)
+        {
+            TeachingTip tip = null;
+            int closingCount = 0;
+            int closedCount = 0;
+            var expectedReason = lightDismiss ? TeachingTipCloseReason.LightDismiss : TeachingTipCloseReason.Programmatic;
+#if MUX_PRERELEASE
+            int openedCount = 0;
+#endif
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(new global::Windows.UI.ViewManagement.UISettings().AnimationsEnabled,
+                        "This regression test requires animations to be enabled.");
+                    tip = new TeachingTip { Title = "Animation regression", IsLightDismissEnabled = lightDismiss };
+#if MUX_PRERELEASE
+                    tip.Opened += (sender, args) => openedCount++;
+#endif
+                    tip.Closing += (sender, args) =>
+                    {
+                        closingCount++;
+                        Verify.AreEqual(expectedReason, args.Reason);
+                    };
+                    tip.Closed += (sender, args) =>
+                    {
+                        closedCount++;
+                        Verify.AreEqual(expectedReason, args.Reason);
+                    };
+                    TeachingTipTestHooks.SetExpandAnimationDuration(tip, TimeSpan.FromSeconds(10));
+                    TeachingTipTestHooks.SetContractAnimationDuration(tip, TimeSpan.FromMilliseconds(100));
+                    Content = tip;
+                    tip.IsOpen = true;
+                });
+
+                WaitForTeachingTipCondition(() =>
+                    TeachingTipTestHooks.GetPopup(tip)?.IsOpen == true && TeachingTipTestHooks.GetIsExpandAnimationPlaying(tip),
+                    "The popup should open while its expand animation is still running.");
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(TeachingTipTestHooks.GetIsExpandAnimationPlaying(tip));
+                    var popup = TeachingTipTestHooks.GetPopup(tip);
+                    if (interruptAnimation)
+                    {
+                        // Interrupt only one animation: the expand batch must still be busy.
+                        var grid = (UIElement)VisualTreeUtils.FindVisualChildByName(popup.Child, "TailOcclusionGrid");
+                        Verify.IsNotNull(grid);
+                        var interruptedAnimation = CompositionTarget.GetCompositorForCurrentThread().CreateVector3KeyFrameAnimation();
+                        interruptedAnimation.Target = "Scale";
+                        grid.StopAnimation(interruptedAnimation);
+                    }
+
+                    if (lightDismiss)
+                    {
+                        Microsoft.UI.Xaml.Controls.Primitives.Popup indicator = null;
+                        foreach (var openPopup in VisualTreeHelper.GetOpenPopupsForXamlRoot(tip.XamlRoot))
+                        {
+                            if (openPopup != popup && openPopup.IsLightDismissEnabled)
+                            {
+                                Verify.IsNull(indicator, "There should be only one light-dismiss indicator.");
+                                indicator = openPopup;
+                            }
+                        }
+                        Verify.IsNotNull(indicator);
+                        // Exercise the same Closed notification used by outside click and deactivation.
+                        indicator.IsOpen = false;
+                    }
+                    else
+                    {
+                        tip.IsOpen = false;
+                        tip.IsOpen = true;
+                        tip.IsOpen = false;
+                    }
+                });
+
+                WaitForTeachingTipCondition(() => closedCount == 1 && TeachingTipTestHooks.GetIsIdle(tip),
+                    "Closing must complete without waiting for the ten-second expand animation.");
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(tip.IsOpen);
+                    Verify.IsFalse(TeachingTipTestHooks.GetPopup(tip).IsOpen);
+                    Verify.IsNull(TeachingTipTestHooks.GetPopup(tip).Child);
+                    Verify.AreEqual(1, closingCount);
+                    Verify.AreEqual(1, closedCount);
+#if MUX_PRERELEASE
+                    Verify.AreEqual(0, openedCount, "Interrupted expansion must not report Opened after closing.");
+#endif
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => Content = null);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public void DeferredCloseDuringExpandAnimation()
+        {
+            VerifyDeferredCloseDuringExpandAnimation(cancelDuringExpand: false);
+        }
+
+        [TestMethod]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public void CancelCloseDuringExpandAnimation()
+        {
+            VerifyDeferredCloseDuringExpandAnimation(cancelDuringExpand: true);
+        }
+
+        private void VerifyDeferredCloseDuringExpandAnimation(bool cancelDuringExpand)
+        {
+            TeachingTip tip = null;
+            global::Windows.Foundation.Deferral deferral = null;
+            TeachingTipClosingEventArgs closingArgs = null;
+            int closingCount = 0;
+            int closedCount = 0;
+#if MUX_PRERELEASE
+            int openedCount = 0;
+#endif
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(new global::Windows.UI.ViewManagement.UISettings().AnimationsEnabled,
+                        "This regression test requires animations to be enabled.");
+                    tip = new TeachingTip { Title = "Deferred animation regression" };
+                    tip.Closing += (sender, args) =>
+                    {
+                        closingCount++;
+                        closingArgs = args;
+                        deferral = args.GetDeferral();
+                    };
+                    tip.Closed += (sender, args) => closedCount++;
+#if MUX_PRERELEASE
+                    tip.Opened += (sender, args) => openedCount++;
+#endif
+                    TeachingTipTestHooks.SetExpandAnimationDuration(tip, TimeSpan.FromSeconds(cancelDuringExpand ? 10 : 1));
+                    TeachingTipTestHooks.SetContractAnimationDuration(tip, TimeSpan.FromMilliseconds(100));
+                    Content = tip;
+                    tip.IsOpen = true;
+                });
+                WaitForTeachingTipCondition(() =>
+                    TeachingTipTestHooks.GetPopup(tip)?.IsOpen == true && TeachingTipTestHooks.GetIsExpandAnimationPlaying(tip),
+                    "The expand animation should start.");
+                RunOnUIThread.Execute(() => tip.IsOpen = false);
+                WaitForTeachingTipCondition(() => deferral != null, "Closing should provide a deferral during expansion.");
+
+                // The expand batch completing must not make the tip idle while Closing is deferred.
+                if (!cancelDuringExpand)
+                {
+                    WaitForTeachingTipCondition(() => !TeachingTipTestHooks.GetIsExpandAnimationPlaying(tip),
+                        "The expand batch should complete while the close is deferred.");
+                }
+                RunOnUIThread.Execute(() => tip.IsOpen = true);
+                WaitForTeachingTipCondition(() => !tip.IsOpen,
+                    "A reopen request must be rejected while Closing is deferred.");
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(TeachingTipTestHooks.GetIsIdle(tip));
+                    Verify.IsTrue(TeachingTipTestHooks.GetPopup(tip).IsOpen);
+                    Verify.AreEqual(1, closingCount);
+                    Verify.AreEqual(0, closedCount);
+                    closingArgs.Cancel = true;
+                    deferral.Complete();
+                    deferral = null;
+                });
+                WaitForTeachingTipCondition(() => tip.IsOpen && TeachingTipTestHooks.GetIsIdle(tip) != cancelDuringExpand,
+                    "Canceling the deferred close should restore the ongoing expansion or the idle open state.");
+#if MUX_PRERELEASE
+                if (!cancelDuringExpand)
+                {
+                    WaitForTeachingTipCondition(() => openedCount == 1,
+                        "Canceling after expansion finishes should deliver the pending Opened event exactly once.");
+                }
+#endif
+
+                RunOnUIThread.Execute(() => tip.IsOpen = false);
+                WaitForTeachingTipCondition(() => deferral != null, "A subsequent close should still work.");
+                RunOnUIThread.Execute(() =>
+                {
+                    deferral.Complete();
+                    deferral = null;
+                });
+                WaitForTeachingTipCondition(() => closedCount == 1 && TeachingTipTestHooks.GetIsIdle(tip),
+                    "Completing the deferral should close the tip.");
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(tip.IsOpen);
+                    Verify.IsFalse(TeachingTipTestHooks.GetPopup(tip).IsOpen);
+                    Verify.AreEqual(2, closingCount);
+#if MUX_PRERELEASE
+                    Verify.AreEqual(cancelDuringExpand ? 0 : 1, openedCount);
+#endif
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    deferral?.Complete();
+                    Content = null;
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public void RepeatedAnimatedOpenAndClose()
+        {
+            TeachingTip tip = null;
+            int closingCount = 0;
+            int closedCount = 0;
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    tip = new TeachingTip { Title = "Repeated animation regression" };
+                    tip.Closing += (sender, args) => closingCount++;
+                    tip.Closed += (sender, args) => closedCount++;
+                    Content = tip;
+                });
+
+                for (int iteration = 1; iteration <= 3; iteration++)
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        tip.IsOpen = true;
+                        tip.IsOpen = false;
+                        tip.IsOpen = true;
+                    });
+                    WaitForTeachingTipCondition(() =>
+                        tip.IsOpen && TeachingTipTestHooks.GetPopup(tip)?.IsOpen == true && TeachingTipTestHooks.GetIsIdle(tip),
+                        "Rapid property changes should settle on an open, idle tip.");
+                    RunOnUIThread.Execute(() => tip.IsOpen = false);
+                    WaitForTeachingTipCondition(() => closedCount == iteration && TeachingTipTestHooks.GetIsIdle(tip),
+                        "A normal animated close should complete exactly once.");
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.IsFalse(tip.IsOpen);
+                        Verify.IsFalse(TeachingTipTestHooks.GetPopup(tip).IsOpen);
+                        Verify.AreEqual(iteration, closingCount);
+                    });
+                }
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => Content = null);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public void ReopenDuringContractAnimationIsRejected()
+        {
+            TeachingTip tip = null;
+            int closedCount = 0;
+            bool closing = false;
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(new global::Windows.UI.ViewManagement.UISettings().AnimationsEnabled,
+                        "This regression test requires animations to be enabled.");
+                    tip = new TeachingTip { Title = "Reopen animation regression" };
+                    tip.Closing += (sender, args) => closing = true;
+                    tip.Closed += (sender, args) => closedCount++;
+                    TeachingTipTestHooks.SetContractAnimationDuration(tip, TimeSpan.FromSeconds(2));
+                    Content = tip;
+                    tip.IsOpen = true;
+                });
+                WaitForTeachingTipCondition(() =>
+                    TeachingTipTestHooks.GetPopup(tip)?.IsOpen == true && TeachingTipTestHooks.GetIsIdle(tip),
+                    "The tip should finish opening.");
+                RunOnUIThread.Execute(() => tip.IsOpen = false);
+                WaitForTeachingTipCondition(() => closing && !TeachingTipTestHooks.GetIsIdle(tip),
+                    "The contract animation should start.");
+                RunOnUIThread.Execute(() => tip.IsOpen = true);
+                WaitForTeachingTipCondition(() => !tip.IsOpen, "Reopening during contraction should be rejected.");
+                WaitForTeachingTipCondition(() => closedCount == 1 && TeachingTipTestHooks.GetIsIdle(tip),
+                    "The original close should finish.");
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(tip.IsOpen);
+                    Verify.IsFalse(TeachingTipTestHooks.GetPopup(tip).IsOpen);
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => Content = null);
+            }
+        }
+
+        private static void WaitForTeachingTipCondition(Func<bool> condition, string message)
+        {
+            using (var completed = new ManualResetEvent(false))
+            {
+                EventHandler<object> rendering = (sender, args) =>
+                {
+                    if (condition())
+                    {
+                        completed.Set();
+                    }
+                };
+                try
+                {
+                    RunOnUIThread.Execute(() => CompositionTarget.Rendering += rendering);
+                    Verify.IsTrue(completed.WaitOne(TimeSpan.FromSeconds(5)), message);
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() => CompositionTarget.Rendering -= rendering);
+                }
+            }
+        }
+
+        [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // TeachingTip doesn't appear to show up correctly in OneCore.
         public void TeachingTipBackgroundTest()
         {

@@ -830,11 +830,15 @@ void TeachingTip::OnIsOpenChanged()
     if (m_ignoreNextIsOpenChanged) {
         m_ignoreNextIsOpenChanged = false;
     }
-    else
+    else if (!m_isOpenChangedPending)
     {
+        m_isOpenChangedPending = true;
         SharedHelpers::QueueCallbackForCompositionRendering([strongThis = get_strong()]()
         {
-            if (strongThis->m_isIdle) {
+            strongThis->m_isOpenChangedPending = false;
+            // Expansion must not discard a close request: light dismiss has already closed
+            // the indicator popup, so reverting IsOpen would leave an undismissable tip.
+            if (!strongThis->m_isClosing && (strongThis->m_isIdle || strongThis->m_isExpandAnimationPlaying)) {
                 if (strongThis->IsOpen())
                 {
                     strongThis->IsOpenChangedToOpen();
@@ -847,10 +851,11 @@ void TeachingTip::OnIsOpenChanged()
                 TeachingTipTestHooks::NotifyOpenedStatusChanged(*strongThis);
 #endif
             }
-            else
+            else if (strongThis->IsOpen())
             {
+                // Keep the existing policy of rejecting reopen requests while closing.
                 strongThis->m_ignoreNextIsOpenChanged = true;
-                strongThis->IsOpen(!strongThis->IsOpen());
+                strongThis->IsOpen(false);
             }
         });
     }
@@ -958,6 +963,9 @@ void TeachingTip::IsOpenChangedToOpen()
                 if (!m_isExpandAnimationPlaying && !m_isContractAnimationPlaying)
                 {
                     SetIsIdle(true);
+#ifdef MUX_PRERELEASE
+                    RaisePendingOpenedEvent();
+#endif
                 }
             }
         }
@@ -995,6 +1003,7 @@ void TeachingTip::IsOpenChangedToClose()
         if (popup.IsOpen())
         {
             // We are about to begin the process of trying to close the teaching tip, so notify that we are no longer idle.
+            m_isClosing = true;
             SetIsIdle(false);
             RaiseClosingEvent(true);
         }
@@ -1419,6 +1428,11 @@ void TeachingTip::RaiseClosingEvent(bool attachDeferralCompletedHandler)
                 {
                     // The developer has changed the Cancel property to true, indicating that they wish to Cancel the
                     // closing of this tip, so we need to revert the IsOpen property to true.
+                    strongThis->m_isClosing = false;
+                    if (!strongThis->m_isExpandAnimationPlaying && !strongThis->m_isContractAnimationPlaying)
+                    {
+                        strongThis->SetIsIdle(true);
+                    }
                     strongThis->IsOpen(true);
                 }
             }
@@ -1461,6 +1475,10 @@ void TeachingTip::ClosePopupWithAnimationIfAvailable()
 
 void TeachingTip::ClosePopup()
 {
+    m_isClosing = false;
+#ifdef MUX_PRERELEASE
+    m_isOpenedEventPending = false;
+#endif
     if (auto&& popup = m_popup.get())
     {
         popup.IsOpen(false);
@@ -1737,6 +1755,9 @@ void TeachingTip::CreateContractAnimation()
 
 void TeachingTip::StartExpandToOpen()
 {
+#ifdef MUX_PRERELEASE
+    m_isOpenedEventPending = true;
+#endif
     if (!m_expandAnimation)
     {
         CreateExpandAnimation();
@@ -1774,12 +1795,11 @@ void TeachingTip::StartExpandToOpen()
     scopedBatch.Completed([strongThis = get_strong()](auto, auto)
     {
         strongThis->m_isExpandAnimationPlaying = false;
-        if (!strongThis->m_isContractAnimationPlaying)
+        if (!strongThis->m_isClosing && !strongThis->m_isContractAnimationPlaying)
         {
             strongThis->SetIsIdle(true);
 #ifdef MUX_PRERELEASE
-            auto const myArgs = winrt::make_self<TeachingTipOpenedEventArgs>();
-            strongThis->m_openedEventSource(*strongThis, *myArgs);
+            strongThis->RaisePendingOpenedEvent();
 #endif
         }
     });
@@ -1790,6 +1810,18 @@ void TeachingTip::StartExpandToOpen()
         SetIsIdle(true);
     }
 }
+
+#ifdef MUX_PRERELEASE
+void TeachingTip::RaisePendingOpenedEvent()
+{
+    if (m_isOpenedEventPending && IsOpen() && m_popup && m_popup.get().IsOpen())
+    {
+        m_isOpenedEventPending = false;
+        auto const myArgs = winrt::make_self<TeachingTipOpenedEventArgs>();
+        m_openedEventSource(*this, *myArgs);
+    }
+}
+#endif
 
 void TeachingTip::StartContractToClose()
 {
