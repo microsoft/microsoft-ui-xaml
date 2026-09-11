@@ -1611,8 +1611,29 @@ ContentDialog::UpdateTitleSpaceVisibility()
         IFC(get_Title(&spTitleAsInspectable));
         IFC(get_TitleTemplate(&spTitleTemplate));
 
+        xaml::Visibility oldVisibility = xaml::Visibility_Visible;
+        IFC(m_tpTitlePart.AsOrNull<IUIElement>()->get_Visibility(&oldVisibility));
+
         xaml::Visibility visibility = (spTitleAsInspectable || spTitleTemplate) ?
             xaml::Visibility_Visible : xaml::Visibility_Collapsed;
+
+        LARGE_INTEGER timestamp;
+        QueryPerformanceCounter(&timestamp);
+
+        wchar_t message[512];
+        swprintf_s(
+            message,
+            L"[ContentDialogStyleTiming] qpc=%lld tid=%lu event=ContentDialog.UpdateTitleSpaceVisibility dialog=%p title=%p titleValue=%p titleTemplate=%p oldVisibility=%d newVisibility=%d\n",
+            timestamp.QuadPart,
+            GetCurrentThreadId(),
+            this,
+            m_tpTitlePart.Get(),
+            spTitleAsInspectable.Get(),
+            spTitleTemplate.Get(),
+            static_cast<int>(oldVisibility),
+            static_cast<int>(visibility));
+        OutputDebugStringW(message);
+        __debugbreak();
 
         IFC(m_tpTitlePart.AsOrNull<IUIElement>()->put_Visibility(visibility));
     }

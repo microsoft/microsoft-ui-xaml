@@ -19,9 +19,42 @@
 #include "RootScale.h"
 #include "XamlTelemetry.h"
 #include <OptionalChangeState.h>
+#include <ResourceResolver.h>
 
 using namespace Theming;
 using namespace DirectUI;
+
+namespace
+{
+    void LogContentDialogTemplateTiming(_In_z_ const wchar_t* eventName, _In_ CFrameworkElement* element)
+    {
+        if (!element->OfTypeByIndex<KnownTypeIndex::ContentDialog>() &&
+            !element->m_strName.Equals(XSTRING_PTR_EPHEMERAL(L"Title")))
+        {
+            return;
+        }
+
+        LARGE_INTEGER timestamp;
+        QueryPerformanceCounter(&timestamp);
+
+        wchar_t message[512];
+        swprintf_s(
+            message,
+            L"[ContentDialogStyleTiming] qpc=%lld tid=%lu event=%s element=%p type=%d name=%s active=%d parsing=%d collapsed=%d template=%p child=%p\n",
+            timestamp.QuadPart,
+            GetCurrentThreadId(),
+            eventName,
+            element,
+            static_cast<int>(element->GetTypeIndex()),
+            element->m_strName.IsNullOrEmpty() ? L"(unnamed)" : element->m_strName.GetBuffer(),
+            element->IsActive(),
+            element->IsParsing(),
+            element->IsCollapsed(),
+            element->GetTemplate().get(),
+            element->GetFirstChildNoAddRef());
+        OutputDebugStringW(message);
+    }
+}
 
 CFrameworkElement::CFrameworkElement(_In_ CCoreServices *pCore)
     : CUIElement(pCore)
@@ -97,6 +130,8 @@ CFrameworkElement::~CFrameworkElement()
 _Check_return_ HRESULT
 CFrameworkElement::CreationComplete()
 {
+    LogContentDialogTemplateTiming(L"FrameworkElement.CreationComplete.begin", this);
+
 #ifdef TRACE_RESOURCELOOKUPS
     TraceLoggingProviderWrite(
         XamlTelemetry, "ResourceLookup_CFrameworkElement_CreationComplete",
@@ -130,6 +165,8 @@ CFrameworkElement::CreationComplete()
 
     // call base implementation.
     IFC_RETURN(CUIElement::CreationComplete());
+
+    LogContentDialogTemplateTiming(L"FrameworkElement.CreationComplete.end", this);
     return S_OK;
 }
 
@@ -641,6 +678,51 @@ CFrameworkElement::ApplyStyle()
     if (pOldStyle != pNewStyle)
     {
         IFC_RETURN(OnStyleChanged(pOldStyle, pNewStyle, BaseValueSourceStyle));
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT
+CFrameworkElement::EnsureInitialStyleApplied()
+{
+    if (!m_initialStyleApplied)
+    {
+        IFC_RETURN(ApplyStyle());
+#if 0
+        if (GetStyle())
+        {
+            IFC_RETURN(ApplyStyle());
+        }
+        else if (m_pImplicitStyle)
+        {
+            auto implicitStyle = m_pImplicitStyle;
+            m_initialStyleApplied = true;
+            IFC_RETURN(OnStyleChanged(nullptr, implicitStyle, BaseValueSourceStyle));
+        }
+        else
+        {
+            xref_ptr<CStyle> applicationStyle;
+
+            IFC_RETURN(EnsureClassName());
+            IFC_RETURN(Resources::ResourceResolver::ResolveApplicationImplicitStyleKey(this, &applicationStyle));
+
+            if (applicationStyle)
+            {
+                auto oldStyle = m_pImplicitStyle;
+                m_pImplicitStyle = std::move(applicationStyle);
+                m_eImplicitStyleProvider =
+                    IsActive() ? ImplicitStyleProvider::AppWhileInTree : ImplicitStyleProvider::AppWhileNotInTree;
+                m_pImplicitStyleParentWeakRef.reset();
+                m_initialStyleApplied = true;
+
+                if (oldStyle != m_pImplicitStyle)
+                {
+                    IFC_RETURN(OnStyleChanged(oldStyle, m_pImplicitStyle, BaseValueSourceStyle));
+                }
+            }
+        }
+#endif
     }
 
     return S_OK;
@@ -1268,6 +1350,8 @@ _Check_return_
 HRESULT
 CFrameworkElement::InvokeApplyTemplate(_Out_ BOOLEAN* bAddedVisuals)
 {
+    LogContentDialogTemplateTiming(L"FrameworkElement.InvokeApplyTemplate.begin", this);
+
     bool fAddedVisuals = false;
     auto setAddedVisuals = wil::scope_exit([&fAddedVisuals, bAddedVisuals]()
     {
@@ -1294,6 +1378,8 @@ CFrameworkElement::InvokeApplyTemplate(_Out_ BOOLEAN* bAddedVisuals)
     }
 
     IFC_RETURN(ApplyTemplate(fAddedVisuals));
+
+    LogContentDialogTemplateTiming(L"FrameworkElement.InvokeApplyTemplate.after-ApplyTemplate", this);
 
     if (auto visualTree = VisualTree::GetForElementNoRef(pControl))
     {
@@ -1357,6 +1443,8 @@ CFrameworkElement::InvokeApplyTemplate(_Out_ BOOLEAN* bAddedVisuals)
         TraceLoggingBoolean(false, "IsStart"),
         TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    LogContentDialogTemplateTiming(L"FrameworkElement.InvokeApplyTemplate.end", this);
 
     return S_OK;
 }

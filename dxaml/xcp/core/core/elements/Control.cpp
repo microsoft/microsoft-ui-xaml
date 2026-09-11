@@ -375,35 +375,65 @@ CControl::EnsureBuiltInStyleApplied()
 //
 //  Function:   CControl::ApplyTemplate
 //
-//  Synopsis:   Ensures the built-in style (which provides the control's
-//              Template) has been applied before the base class expands the
-//              template.
+//  Synopsis:   Ensures deferred styles have been applied before the base class
+//              expands the template.
 //
-//              Under OptimizeApplyStyles the built-in style is applied lazily
-//              when the control becomes active (see CControl::CreationComplete
-//              and CControl::EnterImpl). However ApplyTemplate can be invoked
-//              on a control that is not yet live - for example
-//              ContentDialog::ShowAsync() explicitly applies the template
-//              before hosting the dialog in a popup. In that case GetTemplate()
-//              would return null, the template wouldn't be expanded, and named
-//              template parts would only resolve later once the control goes
-//              live - producing an extra re-parent that cancels the dialog's
-//              entrance transition (GitHub #11257). Applying the built-in style
-//              here ensures the template and its named parts are available now,
-//              matching the non-optimized behavior. EnsureBuiltInStyleApplied
-//              is a no-op once the style has already been applied.
+//              Under OptimizeApplyStyles, explicit, implicit, and built-in
+//              styles are applied lazily when the control becomes active (see
+//              CFrameworkElement::CreationComplete and EnterImpl). However
+//              ApplyTemplate can be invoked on a control that is not yet live -
+//              for example ContentDialog::ShowAsync() explicitly applies the
+//              template before hosting the dialog in a popup. Apply the
+//              effective style and then the built-in style in the same order as
+//              CreationComplete so the correct template is expanded now.
 //
 //-------------------------------------------------------------------------
+namespace
+{
+    void LogContentDialogTemplateTiming(_In_z_ const wchar_t* eventName, _In_ CFrameworkElement* element)
+    {
+        if (!element->OfTypeByIndex<KnownTypeIndex::ContentDialog>() &&
+            !element->m_strName.Equals(XSTRING_PTR_EPHEMERAL(L"Title")))
+        {
+            return;
+        }
+
+        LARGE_INTEGER timestamp;
+        QueryPerformanceCounter(&timestamp);
+
+        wchar_t message[512];
+        swprintf_s(
+            message,
+            L"[ContentDialogStyleTiming] qpc=%lld tid=%lu event=%s element=%p type=%d name=%s active=%d parsing=%d collapsed=%d template=%p child=%p\n",
+            timestamp.QuadPart,
+            GetCurrentThreadId(),
+            eventName,
+            element,
+            static_cast<int>(element->GetTypeIndex()),
+            element->m_strName.IsNullOrEmpty() ? L"(unnamed)" : element->m_strName.GetBuffer(),
+            element->IsActive(),
+            element->IsParsing(),
+            element->IsCollapsed(),
+            element->GetTemplate().get(),
+            element->GetFirstChildNoAddRef());
+        OutputDebugStringW(message);
+        __debugbreak();
+    }
+}
 _Check_return_ HRESULT
 CControl::ApplyTemplate(_Out_ bool& fAddedVisuals)
 {
+    LogContentDialogTemplateTiming(L"Control.ApplyTemplate.begin", this);
+    
     if (OptionalChangeState::IsOptimizeApplyStylesEnabled())
     {
+        IFC_RETURN(EnsureInitialStyleApplied());
         IFC_RETURN(EnsureBuiltInStyleApplied());
     }
 
     IFC_RETURN(CFrameworkElement::ApplyTemplate(fAddedVisuals));
 
+    LogContentDialogTemplateTiming(L"Control.ApplyTemplate.end", this);
     return S_OK;
 }
 

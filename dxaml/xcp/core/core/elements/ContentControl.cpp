@@ -7,6 +7,36 @@
 #include "XamlProfilerTracing.h"
 #endif // XAMLPROFILER_ENABLED
 
+namespace
+{
+    void LogTitleTemplateTiming(_In_z_ const wchar_t* eventName, _In_ CContentControl* contentControl)
+    {
+        if (!contentControl->m_strName.Equals(XSTRING_PTR_EPHEMERAL(L"Title")))
+        {
+            return;
+        }
+
+        LARGE_INTEGER timestamp;
+        QueryPerformanceCounter(&timestamp);
+
+        wchar_t message[512];
+        swprintf_s(
+            message,
+            L"[ContentDialogStyleTiming] qpc=%lld tid=%lu event=%s element=%p active=%d parsing=%d collapsed=%d contentNull=%d template=%p child=%p\n",
+            timestamp.QuadPart,
+            GetCurrentThreadId(),
+            eventName,
+            contentControl,
+            contentControl->IsActive(),
+            contentControl->IsParsing(),
+            contentControl->IsCollapsed(),
+            contentControl->m_content.IsNull(),
+            contentControl->GetTemplate().get(),
+            contentControl->GetFirstChildNoAddRef());
+        OutputDebugStringW(message);
+    }
+}
+
 CContentControl::~CContentControl()
 {
     RemoveLogicalChild(m_content.AsObject());
@@ -419,7 +449,11 @@ _Check_return_ HRESULT CContentControl::ApplyTemplate(_Out_ bool& fAddedVisuals)
 {
     HRESULT hr;
 
+    LogTitleTemplateTiming(L"ContentControl.ApplyTemplate.begin", this);
+
     IFC(CControl::ApplyTemplate(fAddedVisuals));
+
+    LogTitleTemplateTiming(L"ContentControl.ApplyTemplate.after-Control", this);
 
     if (m_bInOnApplyTemplate)
         goto Cleanup;
@@ -434,6 +468,7 @@ _Check_return_ HRESULT CContentControl::ApplyTemplate(_Out_ bool& fAddedVisuals)
 
 Cleanup:
     m_bInOnApplyTemplate = FALSE;
+    LogTitleTemplateTiming(L"ContentControl.ApplyTemplate.end", this);
     RRETURN(hr);
 }
 
