@@ -95,8 +95,7 @@ hstring TableViewRowAutomationPeer::GetNameCore()
         return {};
     }
 
-    // Visible cells only, in visual order, so the announcement matches what a sighted user reads
-    // across the row. Empty cells are skipped rather than producing runs of separators.
+    // Visible cells in visual order; empty cells are skipped so the name has no separator runs.
     std::wstring composed;
     auto const cellChildren = cellsHost.Children();
     const auto count = cellChildren.Size();
@@ -126,8 +125,7 @@ hstring TableViewRowAutomationPeer::GetNameCore()
 
 int32_t TableViewRowAutomationPeer::GetPositionInSetCore()
 {
-    // An app-set AutomationProperties.PositionInSet wins, matching how every dxaml peer that
-    // computes this property defers to the container value first.
+    // An app-set AutomationProperties value wins, as in every dxaml peer that computes this.
     if (const auto provided = __super::GetPositionInSetCore(); provided > 0)
     {
         return provided;
@@ -136,14 +134,13 @@ int32_t TableViewRowAutomationPeer::GetPositionInSetCore()
     const auto index = GetRowIndex();
     if (index < 0)
     {
-        // 0, not -1: 0 is UIA's "not specified". An unrealized row honestly reports unknown.
+        // 0 is UIA's "not specified"; -1 would reach the client verbatim.
         return 0;
     }
 
-    // Grouped: report the position WITHIN the owning group and exclude the header bands, which is
-    // what ItemsControlAutomationPeer does (indexInsideGroup) and what NavigationView and TreeView
-    // do in this repo. A global index counted over a projection that interleaves headers and rows
-    // would announce a number the user cannot relate to anything on screen.
+    // Grouped: position within the owning group, excluding the header bands. A global index over a
+    // projection that interleaves headers and rows announces a number matching nothing on screen.
+    // Same basis as ItemsControlAutomationPeer's indexInsideGroup.
     if (int32_t positionInGroup = 0, sizeOfGroup = 0; TryGetGroupPosition(index, positionInGroup, sizeOfGroup))
     {
         return positionInGroup;
@@ -167,8 +164,8 @@ int32_t TableViewRowAutomationPeer::GetSizeOfSetCore()
         }
     }
 
-    // Ungrouped: the full projection, the same basis TableViewAutomationPeer::RowCount and GetItem
-    // use, so "i of n" stays consistent with grid addressing.
+    // Ungrouped: same basis as TableViewAutomationPeer::RowCount and GetItem, so "i of n" agrees
+    // with grid addressing.
     if (auto const tableView = GetOwningTableView())
     {
         if (const auto count = winrt::get_self<TableView>(tableView)->GetRowCountInternal(); count > 0)
@@ -196,8 +193,7 @@ bool TableViewRowAutomationPeer::TryGetGroupPosition(int32_t rowIndex, int32_t& 
         return false;
     }
 
-    // Walk back to the owning header. Bounded by the group's size, not the row count - the same
-    // shape as NavigationViewItemAutomationPeer, which walks its repeater resetting at each header.
+    // Walk back to the owning header; bounded by the group's size, not the row count.
     for (int32_t i = rowIndex - 1; i >= 0; --i)
     {
         TableViewRowInfo info{};
@@ -209,7 +205,6 @@ bool TableViewRowAutomationPeer::TryGetGroupPosition(int32_t rowIndex, int32_t& 
         if (info.Kind == TableViewRowKind::GroupHeader)
         {
             positionInGroup = rowIndex - i;
-            // ChildCount is the group's item count and the single source of truth for group size.
             sizeOfGroup = info.ChildCount;
             return sizeOfGroup > 0;
         }
@@ -242,10 +237,8 @@ winrt::AutomationPeer TableViewRowAutomationPeer::GetOrCreateCellPeer(
         return nullptr;
     }
 
-    // Pruned on the miss path, not only when GetChildrenCore rebuilds: a client that only ever
-    // addresses cells through IGridProvider::GetItem never walks children, so without this the
-    // vector would keep every entry whose cell has since been released. Mirrors the identical
-    // prune in TableViewAutomationPeer::GetOrCreateColumnHeaderPeer.
+    // Pruned here as well as on the GetChildrenCore rebuild: a client that only addresses cells
+    // through IGridProvider::GetItem never walks children, so this is its only prune point.
     m_cellPeerCache.erase(
         std::remove_if(
             m_cellPeerCache.begin(),
@@ -253,8 +246,6 @@ winrt::AutomationPeer TableViewRowAutomationPeer::GetOrCreateCellPeer(
             [](CellPeerCacheEntry const& entry) { return !entry.peer || !entry.cell.get(); }),
         m_cellPeerCache.end());
 
-    // Cached on miss so Grid.GetItem - which can be the first, or only, path a client takes to a
-    // cell - still yields a provider whose identity survives the next query.
     winrt::AutomationPeer const peer = winrt::make<TableViewCellAutomationPeer>(cell, row, column, visibleColumnIndex);
     m_cellPeerCache.emplace_back(this, cell, peer);
     return peer;
@@ -346,9 +337,8 @@ winrt::IVector<winrt::AutomationPeer> TableViewRowAutomationPeer::GetChildrenCor
     const auto count = cellChildren.Size();
     int32_t visibleColumnIndex = 0;
 
-    // Rebuilt wholesale so peers for cells dropped by a rebuild or a recycle are released here,
-    // while a cell that survives keeps the very same peer - and therefore the same UIA provider
-    // identity - across enumerations.
+    // Rebuilt wholesale: peers for cells dropped by a rebuild or recycle are released, while a
+    // surviving cell keeps the same peer and therefore the same provider identity.
     std::vector<CellPeerCacheEntry> liveCache;
     liveCache.reserve(count);
 

@@ -220,20 +220,17 @@ bool TableViewColumnHeaderAutomationPeer::IsSortableColumn()
 
 int32_t TableViewColumnHeaderAutomationPeer::GetPositionInSetCore()
 {
-    // An app-set AutomationProperties.PositionInSet wins, matching the row and group-header peers
-    // and every dxaml peer that computes this property.
+    // An app-set AutomationProperties value wins, as in the row and group-header peers.
     if (const auto provided = __super::GetPositionInSetCore(); provided > 0)
     {
         return provided;
     }
 
-    // Complements the distinct RuntimeId and GetNameCore: expose the 1-based visible column
-    // position so AT (Narrator) can announce "column i of n" as the user moves across headers.
+    // 1-based visible column position, so AT can announce "column i of n".
     const auto index = GetColumnIndex();
 
-    // 0, not -1: 0 is UIA's "not specified" for this property and valid values are 1-based
-    // positives, so -1 was forwarded to clients verbatim as a nonsense position. Matches the row
-    // and group-header peers, TreeViewItemAutomationPeer and NavigationViewItemAutomationPeer.
+    // 0 is UIA's "not specified"; valid values are 1-based, so -1 reached the client as a nonsense
+    // position.
     return index >= 0 ? index + 1 : 0;
 }
 
@@ -258,7 +255,6 @@ int32_t TableViewColumnHeaderAutomationPeer::GetSizeOfSetCore()
         }
     }
 
-    // 0 = "not specified", as above.
     return 0;
 }
 
