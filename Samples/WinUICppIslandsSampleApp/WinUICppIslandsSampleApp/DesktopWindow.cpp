@@ -7,6 +7,7 @@
 #include "resource.h"
 #include <inspectable.h>
 #include <Microsoft.UI.Dispatching.Interop.h> // For ContentPreTranslateMessage
+#include <atomic>
 
 using namespace winrt;
 using namespace winrt::Microsoft::UI;
@@ -14,6 +15,17 @@ using namespace winrt::Microsoft::UI::Xaml;
 using namespace winrt::Microsoft::UI::Xaml::Hosting;
 
 const auto static invalidReason = static_cast<XamlSourceFocusNavigationReason>(-1);
+std::atomic_uint32_t g_xamlSourceCount{ 0 };
+
+DesktopWindow::~DesktopWindow()
+{
+    g_xamlSourceCount.fetch_sub(static_cast<uint32_t>(m_xamlSources.size()));
+}
+
+uint32_t DesktopWindow::XamlSourceCount()
+{
+    return g_xamlSourceCount.load();
+}
 
 XamlSourceFocusNavigationReason GetReasonFromKey(WPARAM key)
 {
@@ -224,6 +236,7 @@ DesktopWindowXamlSource DesktopWindow::CreateDesktopWindowsXamlSource(DWORD dwSt
     m_takeFocusEventRevokers.push_back(desktopSource.TakeFocusRequested(winrt::auto_revoke, { this, &DesktopWindow::OnTakeFocusRequested }));
 
     m_xamlSources.push_back(desktopSource);
+    ++g_xamlSourceCount;
 
     return desktopSource;
 }
@@ -238,6 +251,7 @@ void DesktopWindow::RemoveDesktopWindowXamlSource(winrt::Microsoft::UI::Xaml::Ho
             m_xamlSources[i].Close();
             m_xamlSources.erase(m_xamlSources.begin() + i);
             m_takeFocusEventRevokers.erase(m_takeFocusEventRevokers.begin() + i);
+            --g_xamlSourceCount;
             
             return;
         }

@@ -23,6 +23,7 @@
 #define IDM_CLOSE_ISLAND_HWND			155
 #define IDM_START_APP					157
 #define IDM_RELEASE_APP					158
+#define IDM_RELEASE_APP_WITH_MUXC_DEINIT	159
 #define XAMLRESOURCE                    256
 #define IDC_STATIC                      -1
 
