@@ -1,230 +1,247 @@
 # Window placement session handoff
 
-Updated on 2026-09-10 for the local squash and rebase requested by Jesse.
+Updated on 2026-09-11 for transfer to another session.
 
-This is a local engineering handoff, not part of the proposed public API spec or content for
-learn.microsoft.com.
+This is an engineering handoff, not part of the API contract or content for learn.microsoft.com.
+It supersedes the earlier handoff about the September 10 squash. The current API proposal is
+only [window-placement-persistence-spec.md](../../specs/window-placement-persistence-spec.md).
 
 ## Resume here
 
-The current task is API design and documentation for microsoft/microsoft-ui-xaml#2680, not
-implementation delivery. Jesse pivoted away from shipping the prototype to reviewing the API
-shape locally. The public spec is the source of truth for the intended API.
+Jesse requested a fresh API spec after reviewing the previous draft. On September 10, he
+authorized using the agent's best judgment about the API shape and using PlacementEx as the
+default placement engine. He specifically requested conceptual explanations for missing
+monitors, changed DPI, off-screen windows, snapping, and similar scenarios.
 
-This commit preserves the entire branch, including the older implementation and tests. It is
-not a spec-only change and the prototype does not implement the latest API design.
+The previous spec was preserved byte-for-byte as
+[window-placement-persistence-spec-old.md](../../specs/window-placement-persistence-spec-old.md).
+The replacement was written from scratch using the repository's API-spec template.
 
-The latest request authorized squashing, rebasing to fetched main, and including this handoff
-in the repo. It did not authorize fixing review findings, changing API decisions, or publishing.
+This remains API design and documentation work, not implementation delivery. The replacement
+contains agent-selected design choices made under Jesse's authorization. Do not describe those
+choices as independently ratified by an API review board or already implemented.
 
-## Git state and recovery
+On September 11, Jesse authorized committing the work, putting important session notes into
+the repository, and pushing for transfer, with **no PR creation or reopening**. After being told
+that both configured GitHub repositories are public, he explicitly selected:
 
-- Repository: microsoft/microsoft-ui-xaml.
-- Local branch: `jecollin-microsoft-window-placement`.
-- Work only in the assigned worktree, never the main checkout.
-- The squashed commit containing this file has parent
-  `914147a04d5439e88d551f23869cfaeae6eb474b`, the fetched `origin/main` on September 10.
-  Its subject is "Package official WebView2 Evergreen standalone installer (#11822)".
-- The branch was rebased without conflicts before squashing. The final local history has one
-  commit above that base. Use `git log -1` to get the new commit id.
-- Recovery ref: `refs/backup/jessecol-window-placement-pre-squash-20260910-1539` points to
-  `b4688991cc380aef14811605d65ee5494fae5a18`, the 13-commit branch before this rebase and squash.
-  This ref is local and has not been pushed.
-- On September 8, the documents were committed and the branch rebased onto
-  `d0c6705ec4`, then-current `origin/main`. The only conflict then was `.gitignore`: main's
-  broader `TestPayload*` rule already covered the incoming `/TestPayload/` rule.
-- The unrelated `dxaml\test\infra\taefhostappnetcore\WinRT.Host.runtimeconfig.json` was not
-  committed. Main now ignores this generated file.
-- Neither the September 8 nor September 10 history changes were pushed.
+> Push to public GitHub origin; branch visibility is OK, but do not open a PR.
 
-## User constraints and preferences
+That clarification permits a public branch push. It is not permission to announce the proposal,
+start the public review period, post comments, or create a PR.
 
-- Work locally. Do not push, open or reopen PRs, modify remote branches, or post comments without
-  explicit authorization.
-- Earlier "don't commit" instructions applied during drafting. Jesse authorized the September 8
-  commit and this September 10 squash. Do not assume blanket permission for future commits.
-- Use `jessecol` for GitHub-facing names, rather than the internal ADO alias `jecollin`.
-  The existing local branch and worktree path still contain `jecollin`; do not rename them
-  implicitly.
-- Use precise, declarative API prose. Avoid promotional or cute wording such as "Three lines,
-  and the window opens where it was last closed." Use ASCII and approximately 100-column prose.
-- Show the intended stable API using `Microsoft.UI.Xaml.WinUIContract` version 12, with a note
-  that the actual shipping version is undecided. Do not change the spec to an Experimental
-  contract merely because implementation should stage experimentally.
-- Do not add an "Open questions for reviewers" section. Reviewers can comment where they choose.
-- Label each major spec section's learn.microsoft.com publication intent. Background, API
-  Details, and Appendix are not published. Conceptual pages, Examples, and API Pages are intended
-  for publication.
-- Mention PlacementEx only in the Appendix of the public spec. Engineering notes can discuss it.
-- Any future PR description or comment must begin with
-  `*This content was largely generated by AI.  AI makes mistakes.*` followed by a newline.
+## Which files are authoritative
 
-## Documents
-
-| File | Purpose |
+| File | Role |
 |---|---|
-| `specs\window-placement-persistence-spec.md` | Public API review document and canonical API shape |
-| `docs\design-notes\Window-PlacementPersistence-PlacementEx-WinRT.md` | Engineering note for mutable placement and direct Window APIs |
-| `docs\design-notes\Window-PlacementPersistence.md` | Original engineering design: storage, native mechanics, lifecycle, policy, tests, and prior art |
+| `specs\window-placement-persistence-spec.md` | The only current API proposal |
+| `specs\window-placement-persistence-spec-old.md` | Unmodified archive of the previous spec |
+| `docs\design-notes\Window-PlacementPersistence.md` | Historical engineering design, not current policy |
+| `docs\design-notes\Window-PlacementPersistence-PlacementEx-WinRT.md` | Historical advanced API design, not current policy |
+| `dxaml\xcp\components\windowplacement\inc\PlacementEx\` | Native engine source used to establish default mechanics |
+| This handoff | Current transfer context, rationale, and limitations |
 
-The public spec has about 907 lines, the advanced note about 537, and the base design about
-1,510. The advanced note no longer proposes a public manager or builder despite its original
-exploratory history. Some base-design sections still describe the smaller API; the advanced note
-extends it.
+Do not reconcile the new spec back to the historical documents. In particular, the old public
+flags, copy constructor, hidden-placement wording, and broader unpackaged-storage plans are not
+the current proposal. The native component README also predates build integration; its statement
+that the component is not wired into a build target is stale.
 
-The original proposal came from the "Window placement PM" session
-`5af7ed65-db5d-4402-b6fb-240595e111c3`. The advanced exploratory design was recovered later; it
-was not in the original port. All relevant documents are now in this repo.
+The rewrite touched only the new spec and its archive. This transfer additionally updates this
+handoff. The engine source, historical designs, prototype, generated API files, and tests were
+not changed by the rewrite or transfer.
 
-## Settled API direction
+The archived spec's SHA-256 is:
 
-- Preserve the packaged-app easy path:
-  `<Window PersistPlacementId="MainWindow" />`, with the app's normal initial `Activate()`.
-- The optional advanced API is a mutable, detached `WindowPlacement`, plus
-  `Window.TryGetPlacement(out WindowPlacement placement)` and
-  `Window.TrySetInitialPlacement(WindowPlacement placement)`.
-- Do not reintroduce `WindowPlacementBuilder` or a public `WindowPlacementManager`.
-  Jesse explicitly chose direct mutation and operations on Window.
-- The placement value exposes all durable data WinUI understands: NormalRect, WorkArea, Dpi,
-  ShowState, Flags, DisplayDeviceName, nullable ArrangeRect, and nullable VirtualDesktopId.
-  The proposed copy constructor is still under review.
-- Capture is detached; editing a value does not move a live window.
-- Staging copies and validates the value, so subsequent mutation cannot alter staged state.
-- Explicit placement takes precedence over automatic load for the initial attempt. A non-empty
-  PersistPlacementId still enables automatic saving of the final placement.
-- Public serialization and a custom-storage save event are deferred.
-- FullScreen/CompactOverlay presenter persistence is excluded. Returned overlapped-placement
-  details still need clarification.
+```text
+B4F9E92CA79E9AF1656646E0D8912505F8A7DF803C2E3AF80AE895F343E4E83A
+```
 
-## Show, Hide, and Activate
+Its Git blob id is `c785923f016a6752976b9d9c379f5f073f9d2614`. Preserve the archive rather than
+editing it alongside the new proposal.
 
-These choices were explicitly settled with Jesse. Do not revert them based on older prototype
-code or earlier design drafts.
+## Current proposed shape
 
-- There is one initial opportunity per Window, not one per method.
-- Whichever initial `Show()` or `Activate()` consumes it honors all InitialShowOptions:
-  Reason, ActivationBehavior, and KeepHidden.
-- Default options display and request activation.
-- DoNotActivate permits either initial method to display without requesting activation.
-- KeepHidden leaves the window hidden and inactive even if ActivationBehavior is Activate.
-  It does not change the reason/activation policy row.
-- Invalid option enums fail without consuming the opportunity.
-- After consumption, neither method rereads initial options nor reapplies initial placement.
-- Later Show reveals and requests activation for a hidden window. It is a no-op while currently
-  visible, including minimized.
-- Later Activate preserves existing WinUI behavior: reveals hidden, restores minimized, and
-  calls SetActiveWindow.
-- ApplicationRestart + DoNotActivate is the only row preserving saved minimized state and
-  restoring virtual desktop best effort, regardless of initial entry method.
-- Launch applies the shell monitor hint. Default and ApplicationRestart do not.
-- Public `Window.Hide()` was explicitly requested despite earlier advice to omit it. It hides
-  without closing or destroying HWND/content, does not immediately save, and does not reset
-  options or consume an open placement opportunity.
-- Hide is a no-op if already hidden. It must hide windows displayed directly via AppWindow too.
-- Reentrant Show/Hide/Activate during the initial operation are specified as ignored.
-- Hide raises visibility change and existing deactivation behavior when applicable.
-  Closed-window and UI-thread rules apply.
-- Saving while hidden uses the last non-hidden placement; a successful KeepHidden apply seeds
-  that state even before first visibility. Full cached-placement versus show-state semantics
-  should still be examined carefully during implementation.
+- Keep the packaged-app easy path: set `Window.PersistPlacementId`, then retain the app's
+  initial `Activate()` call.
+- Keep `Window.InitialShowOptions`, `Window.Show()`, and `Window.Hide()`.
+- Keep direct `Window.TryGetPlacement` and `Window.TrySetInitialPlacement` methods. Do not
+  reintroduce a public manager or builder merely because archived discussions used one.
+- Use mutable, detached `WindowPlacement` with `NormalRect`, `WorkArea`, `Dpi`, `State`,
+  nullable `SnapRect`, `DisplayDeviceName`, and nullable `VirtualDesktopId`.
+- Replace the old `WindowPlacementFlags` and `WindowPlacementShowState` combination with
+  `WindowPlacementState`: `Normal`, `Maximized`, `Minimized`, `Snapped`,
+  `MinimizedFromMaximized`, and `MinimizedFromSnapped`.
+- Use `Clone()` for an independent copy. There is no same-type constructor.
+- Do not expose `AllowPartiallyOffScreen` or saved source-window resizability. Use ordinary
+  keep-on-screen behavior and current target capability and constraints.
+- `TrySetInitialPlacement(null)` clears staged explicit placement while the opportunity is
+  open. A non-null value is copied and validated; later mutation cannot alter staging.
+- `true` means accepted, not applied or durably saved. Explicit selection prevents automatic
+  loading even if applying that value later fails.
+- Make the two data/options classes agile with thread-safe individual accesses and coherent
+  snapshot operations. Multiple property assignments are not a transaction. Window operations
+  retain their UI-thread affinity.
+- Automatic persistence is packaged-only in this version. Unpackaged apps can capture, stage
+  explicit placement, and use display options. No placeholder storage setup API is proposed.
 
-## September 8 fresh review: unresolved work
+The six-state enum, null-to-clear behavior, target-derived sizing, and agile mutable values are
+deliberate new design choices. Review their usability, but do not silently revert them to the
+older flags-based design.
 
-No review fixes were made during the commit, rebase, and squash work. The docs were read and
-findings reported. Do not describe the following as already fixed or runtime-proven.
+## Lifecycle and persistence decisions
 
-### Straightforward document corrections
+Read the conceptual lifecycle and API pages for the full contract. The important distinctions are:
 
-- Remove the old second short TOC near spec lines 50-55. Its unnumbered anchors no longer match
-  the numbered headings; the detailed numbered TOC already exists.
-- Correct the related issue link near line 47. It points to microsoft/microsoft-ui-xaml#1606,
-  an unrelated codegen bug. The intended link is
-  https://github.com/microsoft/WinUI-Gallery/issues/1606 ("Resize the window on startup").
-- Remove the unconditional claim that a Loaded handler can set PersistPlacementId in time.
-  Loaded can occur after initial Show/Activate. Require configuration before the call.
+- One opportunity belongs to the window, not one to each display method.
+- `Show()` uses the new pipeline. Initial `Activate()` uses it when persistence, explicit
+  placement, or non-null initial options configure the feature. An unconfigured initial
+  `Activate()` preserves the legacy path and consumes the opportunity without restore.
+- A non-null, default-valued options object therefore opts `Activate()` into the new pipeline.
+  Null supplies default values when that pipeline is used for another reason.
+- Both initial entry methods honor reason, activation behavior, and `KeepHidden`.
+- Invalid initial option enums fail before consumption. Later invalid options are ignored
+  behaviorally because the options are no longer consulted.
+- Direct native display consumes the opportunity without this restore. Hiding does not reopen it.
+- Initial reentrant `Show`, `Activate`, and `Hide` are ignored. Close is not ignored, and the
+  outer operation must not continue using a closed window.
+- Later `Show()` is a no-op for an already shown window, including minimized. It reveals a
+  hidden window without unminimizing it and requests activation only if not minimized.
+- Later `Activate()` reveals, restores minimization, and requests activation. No later call
+  reapplies initial placement.
+- Only `ApplicationRestart + DoNotActivate` preserves saved minimization and attempts desktop
+  restoration. `KeepHidden` suppresses display without changing the selected policy row.
+- `Launch` uses a valid shell monitor hint, including for fallback geometry without saved data.
+  WinUI does not replay a native startup show command for each window.
+- Hidden overlapped capture uses current geometry and the last meaningful state. Hidden app
+  geometry adjustments are retained. This intentionally differs from saving a whole old
+  non-hidden snapshot.
+- Other presenters use the last complete valid overlapped placement. An unsupported target
+  presenter is not changed by initial restore; the opportunity is consumed without applying.
+- Saving eligibility requires actual display or successful application of explicit/loaded
+  placement while hidden. Mere construction, capture, staging, failed hidden apply, or moving
+  fallback geometry for a launch hint does not qualify.
+- Ids are case-sensitive, ordinal, and not Unicode-normalized. Last successful save wins.
+  Late changes affect saving, not restore. There is no topology history or duplicate cascade.
+- Saving and restore failures are best effort. Migration examples do not claim that staging
+  proves durable storage or that old data can safely be deleted.
 
-### Substantive decisions and clarifications
+## Engine findings that must not be lost
 
-- WindowPlacement threading/marshaling and concurrent mutation are undefined. Decide apartment
-  affinity versus agility and define coherent snapshot semantics.
-- The `WindowPlacement(WindowPlacement source)` constructor has a reported C++/WinRT
-  reference-copy/signature hazard. Verify generated projection behavior before treating that
-  review claim as proven. A named Clone/static factory is the suggested alternative.
-- Make API-review MIDL consistent across documents. Resolve webhosthidden/factory naming and
-  distinguish ABI/implementation names from projected names. The prose currently claims
-  ShowDefault/HideDefault are C++ projection names; that needs verification/correction.
-  Do not infer that shorthand MIDL property syntax is necessarily invalid.
-- Specify exact rectangle units/limits, checked extent-to-edge conversion, DPI bounds,
-  monitor-name length/encoding, and ShowState/Flags relationships. Define constructor validation.
-- Define invalid-input versus late-call versus wrong-thread/closed-window error precedence.
-- Clarify capture before visibility, after hidden/closed, and during presenter changes.
-- Clarify cached versus live virtual-desktop capture; avoid blocking shell COM calls on a window
-  message path. The engineering note specifies last safely cached identity more clearly than
-  the public API page.
-- Describe explicit placement's topology/DPI/safety adjustments, not an exact-position guarantee.
-- Resizable describes source capability but influences target fitting. Decide target capability
-  versus an explicit resize-to-fit policy.
-- Review AppWindow interoperability and coexistence of Window.PersistPlacementId with
-  AppWindow.PersistedStateId. Prior review reported different flag values and no AppWindow
-  AllowPartiallyOffScreen equivalent. September 8 could not independently re-find the generated
-  headers, so verify current SDK metadata before asserting an exact mapping.
-- Expose direct-AppWindow bypass and reentrant Show/Activate rules in publishable API remarks,
-  not only engineering notes.
-- Define a test matrix for lifecycle/error ordering, explicit apply failure, every reason/
-  activation row, mutable snapshot ownership, and C#/C++/WinRT projections.
+The replacement's appendix links the exact engine ranges. These conclusions were checked in
+the actual source after an exploratory agent returned some inaccurate summaries:
 
-Some earlier agent reviews inflated severity or made incorrect claims. Use their reports as
-leads, not authority. Distinct enum numeric values alone are not a critical bug when meaning-based
-translation is explicit. The stable v12 spec format is a user decision.
+| Finding | Source or consequence |
+|---|---|
+| Monitor fallback uses the saved normal rectangle, not the saved work area | `PlacementEx::FindClosestMonitor` matches device name, then calls `MonitorData::FromRect(normalRect)` |
+| The native action API's own fallback is not the helper's policy | PlacementEx explicitly supplies its selected target monitor |
+| Position and size migrate differently | `AdjustNormalRect` scales work-area-relative offsets and DPI-relative dimensions |
+| Validity requires overlap with the saved work area | `PlacementEx::IsValid` requires positive rectangles, DPI at least 96, and intersection |
+| Old-screen validity is not current-screen overlap | A valid saved rectangle can be wholly outside today's screens after monitor removal |
+| A live wholly off-work-area capture may be invalid | Saving then skips rather than overwriting the previous stored value |
+| Snap bounds are visible frame bounds | They exclude invisible resize borders and migrate relative to work-area edges |
+| Snap groups are not represented | Do not claim Snap Layout or snap-group reconstruction |
+| Minimized-from-snapped history is not recovered by a single capture | `GetPlacement` captures current arrangement and restore-to-maximized; WinUI must track restore-to-arranged history |
+| Ordinary normalization needs a snap-specific adapter step | Convert minimized-from-snapped to arranged before ordinary adjustment |
+| Native and downlevel fitting differ | Native uses fit-to-monitor; downlevel uses geometry helpers and `AllowSizing` |
+| Downlevel no-activate is not implemented by simply setting the native flag | Cloaking does not prove that focus and activation were preserved |
+| Native capture can be DPI-virtualized | The public physical-pixel contract requires a controlled coordinate boundary |
+| The native in/out value is not a resulting-window snapshot | The native path can leave old metadata; downlevel mutates normal bounds to workspace coordinates |
+| Failure can occur after partial native changes | No transactional rollback guarantee; fallback uses valid current bounds |
+| Public input needs more than native `IsValid` | Use checked edge conversion, scaling, and adjustments before invoking native arithmetic |
 
-## Prototype status and historical validation
+Do not repeat the exploratory claims that `GetPlacement` independently reconstructs
+minimized-from-snapped history, that downlevel `NoActivate` is sufficient, or that monitor
+fallback uses the saved work area. The corrected spec and direct source reads supersede them.
 
-The implementation is parked and predates the latest API design:
+## What remains unproven
 
-- Initial Activate still forces activation and clears KeepHidden.
-- Later Show does not yet implement the specified visible/minimized no-op behavior.
-- Public WindowPlacement and the two direct placement methods are not implemented.
-- Public Hide is not implemented; the private DesktopWindowImpl::HideImpl returns E_NOTIMPL.
-- Reentrant display suppression and direct AppWindow display tracking remain implementation gaps.
-- Other historical findings include non-activating visibility/event state, Window lifetime
-  pegging, fixed test storage ids, and missing executable persistence coverage.
+The spec's acceptance criteria describe work an implementation must still demonstrate:
 
-Historical results below predate both September rebases. They do not validate the revised API:
+- Visibility, focus, event ordering, and native launcher commands on both backends, especially
+  non-activating maximized/snapped restore and hidden restart on another virtual desktop.
+- Correct lifecycle eligibility and compatibility for unconfigured `Activate()`, direct
+  `AppWindow` display, reentrancy, close, and presenter changes.
+- Coherent hidden and pre-presenter placement tracking, including when native geometry/state
+  is unavailable or only partly observed.
+- Translation of the six states and loss of unavailable snap state without inventing history.
+- Checked handling of the full public numeric domain. The archived serializer's coordinate
+  and DPI caps are not automatically the new public contract.
+- Exact MIDL/codegen integration, C#/C++/WinRT projection, null contracts, and atomic snapshots
+  for agile mutable runtime classes.
+- Reliable no-store and write-failure behavior without treating `TrySetInitialPlacement`
+  acceptance as a save acknowledgment.
 
-- Full Microsoft.ui.xaml.dll and prodtest build succeeded.
-- Serialization tests: 35/35 passed.
-- Final VM run: 37 total, 35 passed, 0 failed, 2 blocked because the TAEF host could not activate
-  Microsoft.Windows.Storage.ApplicationData.
-- UAP host did not support desktop Window tests; switching to it caused failures.
-- Do not add a process-wide bootstrapper to the shared test host casually.
-- Test helper: `tools\run-tests-on-vm.ps1`; prior VM name `ge_current-260820-Desktop`.
-- Build setup and Build.cmd must run in the same cmd.exe process; environment does not persist
-  between tool calls. Historical build: `init.cmd x64chk /envcheck` then `Build.cmd prodtest /q`.
-- No build/test run was done after the September rebases.
-- VM credentials were supplied earlier but are intentionally not copied into this handoff.
+These are implementation and focused review risks, not evidence that runtime behavior already
+matches the proposal. Do not expand this transfer into fixing the prototype without a new task.
 
-## Publishing history
+The earlier copy-constructor concern was independently supported by Microsoft's
+[C++/WinRT guidance](https://learn.microsoft.com/windows/apps/develop/cpp-winrt/consume-apis#dont-copy-construct-by-mistake).
+The new `Clone` avoids it. The exact proposed IDL was not compiled.
 
-- A draft spec PR was opened prematurely at #11708. Jesse wanted local review first and closed it.
-- Its original remote head `jecollin-window-placement-spec` was renamed to
-  `jessecol-window-placement-spec`. The closed PR still referenced the old head at last inspection.
-  Do not automatically restore refs, reopen, or replace the PR.
-- A separate public implementation branch `jessecol-window-placement-persistence` had closed
-  draft PR #11699. It is not the current local design branch.
-- Both branches are on the public upstream repository. Pushing is public even when PRs are closed.
-- Jesse explicitly said not to worry about the previously discussed internal provenance strings.
-  Do not restart that investigation without a reason.
-- A closed PR is not unpublished. Do not repeat the earlier absolute claim that a renamed/deleted
-  head permanently prevents reopening; restoration may be possible if authorized.
+The ABI-name distinction was checked against
+[MIDL documentation](https://learn.microsoft.com/uwp/midl-3/advanced#overloads):
+`method_name` changes the ABI name, not the projected `Show()` or `Hide()` name.
 
-## Other session files
+Published `windows-app-sdk-2.0-experimental` AppWindow documentation did not substantiate the
+old complete-field-equivalence claim. The latest 2.4.1 experimental WinMD was not inspected.
+Do not turn that documentation limitation into a claim about the latest package. The new spec
+does not depend on those experimental APIs or claim parity.
 
-The original handoff lives in the session's `files\window-placement-handoff.md`. This repo copy
-records the subsequent squash/rebase request and is the current handoff.
+## Validation and prototype status
 
-Other session files, `pr-description.md`, `review-context.md`, `review-diff.txt`,
-`review-filelist.txt`, and `review-commits.txt`, predate the current API design. Do not use them
-as current PR content.
+The rewrite's document checks covered template sections, internal and relative links, code-fence
+balance, enum/table agreement, removal of obsolete API names, ASCII, line width, and diff
+whitespace. The old spec's exact hash was retained.
 
-If Jesse asks to continue, the next useful work is a focused spec cleanup and resolution of the
-public value's threading/copy/validation contracts, not another broad review or publishing.
+No app/product build, runtime test, or end-to-end MIDL generation was performed for the rewrite.
+The prior commit preserves a much older implementation; documentation-only checks do not
+validate it. The latest transfer commit is documentation-only, but the complete branch is not.
+
+Known historical prototype gaps include initial Activate forcing activation and clearing
+KeepHidden, different later Show behavior, absent public placement value/methods and Hide,
+and incomplete direct-display, reentrancy, visibility, and lifetime handling.
+
+Historical results before the September rebases were a successful DLL/prodtest build,
+35 passing serialization tests, and a VM run with 35 passed and 2 blocked on ApplicationData
+activation. None validates the new spec. If implementation resumes, use the repository's
+current build/test workflow; do not assume the old VM environment or credentials exist.
+
+## Git state and transfer destination
+
+- Repository: `microsoft/microsoft-ui-xaml`.
+- Local worktree branch: `jecollin-microsoft-window-placement`; it was not renamed.
+- Approved remote: `origin`, the public `microsoft/microsoft-ui-xaml` GitHub repository.
+- Transfer branch: `jessecol-window-placement-spec-rewrite`. This new remote name follows
+  Jesse's GitHub naming preference and avoids reusing a historical PR head.
+- The transfer commit follows `4a46c37f60` ("Add window placement design and prototype").
+  That earlier squashed commit has parent `914147a04d5439e88d551f23869cfaeae6eb474b`.
+- Use Git to obtain the exact current SHA and confirm remote state. This file records the
+  chosen destination, not an assertion that an in-progress push has already succeeded.
+- Only the transfer branch is to be pushed. Do not push backup refs, other branches, or tags.
+- Local recovery ref `refs/backup/jessecol-window-placement-pre-squash-20260910-1539` points
+  to `b4688991cc380aef14811605d65ee5494fae5a18`, the older pre-squash history.
+
+Closed historical PRs #11708 and #11699 are not transfer targets. Do not restore their heads,
+reopen them, or create replacement PRs. A public branch remains visible without a PR.
+
+## Continuing in another session
+
+Work in the new session's assigned worktree, not the main checkout. Start with the current spec
+and its acceptance criteria. The historical designs are background only; this handoff does not
+make them current again.
+
+The authoring guide is `specs\api_spec_template.md`, which points to the Windows App SDK
+spec template. Use its six major sections. Keep observable behavior in the publishable
+conceptual/API sections and engine details in the appendix. Keep prose declarative, ASCII,
+and approximately 100 columns. Contract version 12 is illustrative, not a shipping commitment.
+
+Do not automatically announce or publish for review because the branch is now pushed.
+Any future PR description or comment must start with:
+
+```text
+*This content was largely generated by AI.  AI makes mistakes.*
+```
+
+The current session's scratch-files folder was empty at transfer. Important decisions and
+review caveats previously held in the session database are summarized here and in the spec;
+the next session does not need access to that private session state.

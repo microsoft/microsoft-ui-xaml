@@ -1,52 +1,6 @@
 Window placement persistence
 ===
 
-- [Window placement persistence](#window-placement-persistence)
-- [1. Background](#1-background)
-- [2. Conceptual pages (How To)](#2-conceptual-pages-how-to)
-  - [2.1. Turning on placement persistence](#21-turning-on-placement-persistence)
-  - [2.2. When placement is saved and restored](#22-when-placement-is-saved-and-restored)
-  - [2.3. Controlling the initial operation](#23-controlling-the-initial-operation)
-  - [2.4. Working with placement explicitly](#24-working-with-placement-explicitly)
-- [3. Examples](#3-examples)
-  - [3.1. Remember where the user left the main window](#31-remember-where-the-user-left-the-main-window)
-  - [3.2. Remember several windows separately](#32-remember-several-windows-separately)
-  - [3.3. Copy and adjust placement for another window](#33-copy-and-adjust-placement-for-another-window)
-  - [3.4. Migrate placement from app-owned data](#34-migrate-placement-from-app-owned-data)
-  - [3.5. Show a window without taking focus](#35-show-a-window-without-taking-focus)
-  - [3.6. Restore windows after an application restart](#36-restore-windows-after-an-application-restart)
-  - [3.7. Place a window before showing it](#37-place-a-window-before-showing-it)
-  - [3.8. Hide and show a window again](#38-hide-and-show-a-window-again)
-- [4. API Pages](#4-api-pages)
-  - [4.1. Window.PersistPlacementId property](#41-windowpersistplacementid-property)
-  - [4.2. Window.InitialShowOptions property](#42-windowinitialshowoptions-property)
-  - [4.3. Window.Show method](#43-windowshow-method)
-  - [4.4. Window.Activate method](#44-windowactivate-method)
-  - [4.5. Window.Hide method](#45-windowhide-method)
-  - [4.6. WindowPlacement class](#46-windowplacement-class)
-  - [4.7. Window.TryGetPlacement method](#47-windowtrygetplacement-method)
-  - [4.8. Window.TrySetInitialPlacement method](#48-windowtrysetinitialplacement-method)
-  - [4.9. WindowPlacementShowState enum](#49-windowplacementshowstate-enum)
-  - [4.10. WindowPlacementFlags enum](#410-windowplacementflags-enum)
-  - [4.11. WindowInitialShowOptions class](#411-windowinitialshowoptions-class)
-  - [4.12. WindowShowReason enum](#412-windowshowreason-enum)
-  - [4.13. WindowActivationBehavior enum](#413-windowactivationbehavior-enum)
-- [5. API Details](#5-api-details)
-- [6. Appendix](#6-appendix)
-  - [6.1. What is not in this proposal](#61-what-is-not-in-this-proposal)
-  - [6.2. How are Show, Hide, and Activate different?](#62-how-are-show-hide-and-activate-different)
-  - [6.3. Comparison with WPF and UWP](#63-comparison-with-wpf-and-uwp)
-  - [6.4. PlacementEx](#64-placementex)
-  - [6.5. Relationship to experimental AppWindow placement APIs](#65-relationship-to-experimental-appwindow-placement-apis)
-  - [6.6. Alternatives considered](#66-alternatives-considered)
-  - [6.7. Behavior notes](#67-behavior-notes)
-
-
-Addresses [#2680](https://github.com/microsoft/microsoft-ui-xaml/issues/2680).
-Related: [#9503](https://github.com/microsoft/microsoft-ui-xaml/issues/9503),
-[#1606](https://github.com/microsoft/microsoft-ui-xaml/issues/1606),
-[WindowsAppSDK#5896](https://github.com/microsoft/WindowsAppSDK/issues/5896).
-
 - [Background](#background)
 - [Conceptual pages (How To)](#conceptual-pages-how-to)
 - [Examples](#examples)
@@ -54,248 +8,621 @@ Related: [#9503](https://github.com/microsoft/microsoft-ui-xaml/issues/9503),
 - [API Details](#api-details)
 - [Appendix](#appendix)
 
-# 1. Background
+# Background
 
-_Spec note: This section is for API review and will not be published to learn.microsoft.com._
+_Spec note: This section supports API review and is not intended for publication on
+learn.microsoft.com. This is a proposal, not a description of the prototype's current behavior._
 
-Desktop applications commonly restore window position, size, and state across launches. WinUI
-does not currently provide an API for this behavior, so applications implement persistence
-themselves. A complete implementation must save and restore placement while accounting for cases
-in which the saved placement is no longer valid:
+Desktop apps commonly remember where a window was when it closed. Saving a rectangle is not
+sufficient: the monitor can disappear, the display scale or work area can change, and the window
+can have different restored, maximized, minimized, and snapped positions.
 
-* The monitor it was on has been unplugged.
-* The monitor is still there but its resolution or scale factor changed.
-* The saved rectangle is entirely off-screen, or far enough off-screen that the title bar cannot
-  be grabbed.
-* The window was maximized, minimized, or snapped when it was saved.
-* The window was on a virtual desktop that no longer exists.
+This proposal adds automatic placement persistence to `Microsoft.UI.Xaml.Window`. A packaged app
+opts in by setting one stable `PersistPlacementId` before its existing `Activate()` call.
+Optional APIs let an app capture placement, edit a detached value, and supply initial placement
+without enabling automatic storage.
 
-Saving only the window rectangle can restore a window off-screen after the display topology
-changes. Handling every case requires applications to reproduce placement logic already present in
-Win32 and the shell.
+The proposal addresses [#2680](https://github.com/microsoft/microsoft-ui-xaml/issues/2680) and
+[#9503](https://github.com/microsoft/microsoft-ui-xaml/issues/9503). Related requests include
+[microsoft/WinUI-Gallery#1606](https://github.com/microsoft/WinUI-Gallery/issues/1606) and
+[microsoft/WindowsAppSDK#5896](https://github.com/microsoft/WindowsAppSDK/issues/5896).
 
-[Issue #2680](https://github.com/microsoft/microsoft-ui-xaml/issues/2680) asks for this as a
-framework feature. It has been open since 2020 and lists restoring size and position as a "Must".
+The API separates three operations:
 
-This spec proposes two layers of opt-in API:
+- **Capture:** obtain a detached description of a window's placement.
+- **Initial placement:** select and apply placement before displaying a window.
+- **Persistence:** save the window's eventual placement for a later process instance.
 
-* A packaged app can set one property and let WinUI load, apply, and save placement.
-* An app with advanced requirements can capture a placement, change its data, or supply an
-  explicit placement before its initial-placement opportunity is consumed.
+Accepting an initial placement is not confirmation that it was applied or durably saved.
 
-A window that does not use any new API behaves exactly as it does today.
+The public value describes placement rather than native flags. One state enum represents normal,
+maximized, minimized, and snapped placement, including the state to restore after minimization.
+Current target-window configuration determines sizing constraints and resize-to-fit behavior.
 
-_Spec note: the API details use `WinUIContract` version 12 to show the intended stable shape. The
-shipping contract version has not been decided._
+The new APIs apply to desktop WinUI windows. Automatic storage requires package identity in this
+version. Capture, explicit initial placement, and display options also work in unpackaged desktop
+apps. The proposal does not add APIs to classic UWP `Windows.UI.Xaml.Window`.
 
-# 2. Conceptual pages (How To)
+Apps that do not use the new APIs retain their existing runtime behavior. Adding instance
+`Show()` and `Hide()` methods has a source-compatibility consideration discussed in the appendix.
+
+_Spec note: The API declaration uses `WinUIContract` version 12 to describe the intended stable
+shape. The shipping contract version and release are not assigned. This local draft does not
+start the repository's public feedback period. Publication follows the
+[public API review process](public-api-review-process.md)._
+
+# Conceptual pages (How To)
 
 _This section is intended for publication on learn.microsoft.com._
 
-## 2.1. Turning on placement persistence
+## Enable automatic persistence
 
-Set `PersistPlacementId` to opt a window into placement persistence:
+Set `PersistPlacementId` before the operation that first displays the window:
 
 ```csharp
-var window = new Window();
+var window = new MainWindow();
 window.PersistPlacementId = "MainWindow";
 window.Activate();
 ```
 
-WinUI uses the id to restore placement before the initial display and to save placement when the
-window closes.
+Configure the property in the window's constructor, in XAML, or before calling `Show()` or
+`Activate()`. Do not rely on a content element's `Loaded` event to run before initial placement.
 
-The id names the saved placement. It is your identifier, not a display string, and it is never
-shown to the user. Use a stable id that means something in your app, such as `"MainWindow"` or
-`"DocumentWindow"`. Two windows that use the same id share one saved placement, so give each
-window that should be remembered separately its own id.
+```xml
+<Window
+    x:Class="Contoso.MainWindow"
+    PersistPlacementId="MainWindow">
+    <!-- Window content -->
+</Window>
+```
 
-An empty or unset `PersistPlacementId` means the window does not participate in automatic
-placement persistence. An app can still supply an explicit placement through `Window`.
+Use a stable, application-defined id. The id is not displayed or localized. Each window that
+should be remembered independently needs its own id. An empty id disables automatic loading
+and saving; it does not disable explicit placement or display options.
 
-## 2.2. When placement is saved and restored
+Automatic persistence is per user, per app identity, and local to the machine. It uses the
+packaged app's default `Microsoft.Windows.Storage.ApplicationData` local settings. Without a
+usable store, automatic loading and saving are skipped. Explicit placement and display options
+continue to work.
 
-WinUI restores placement once per window, on the first `Show()` or `Activate()` call. It
-restores before the window is displayed, so a restored window is never painted in the wrong
-place first.
+## Understand what placement contains
 
-For a window with a non-empty `PersistPlacementId`, WinUI saves placement when the window closes,
-and as a backstop when the window is destroyed or the user signs out. It does not save
-continuously while you drag or resize, so moving a window and then terminating the process
-abnormally does not persist that move.
+A placement contains the window's normal rectangle, saved monitor work area and DPI, display
+state, and optional monitor, snap, and virtual-desktop information.
 
-Setting `PersistPlacementId` after the initial `Show()` or `Activate()` call has no effect on that
-window's restore. The new id is still used when the window is saved.
+**Normal rectangle** means the outer window rectangle used when the window is neither maximized
+nor snapped. A maximized, snapped, or minimized window still has a normal rectangle.
+**Snap rectangle** means the visible frame bounds of the snapped window; it excludes invisible
+resize borders.
 
-## 2.3. Controlling the initial operation
+All rectangles in `WindowPlacement` use physical pixels in the virtual screen coordinate system.
+Negative X and Y coordinates are valid for monitors to the left of or above the primary monitor.
+They are not XAML device-independent units, client-area rectangles, or Win32 workspace coordinates.
 
-`InitialShowOptions` carries one-time options for the initial `Show()` or `Activate()` operation.
-WinUI reads them when that operation consumes the placement attempt, and ignores them afterward.
+The work area is the usable part of the saved monitor, excluding reserved areas such as the
+taskbar. The recorded DPI and work area describe the coordinate environment of the saved
+rectangles. Keep them together when storing or constructing placement data.
 
-You use these options to tell WinUI *why* the window is being shown. WinUI applies a different
-placement policy for an ordinary display, an app launch, and a reconstruction after an
-application restart.
+Hidden, active, and foreground are not placement states. A window can be hidden while retaining
+normal, maximized, minimized, or snapped placement. In this document, a **shown** window is one
+that has not been hidden. A minimized window or a window on another virtual desktop can be shown
+without having visible content on the user's current desktop.
+
+## Restore after display changes
+
+Restoration uses the current display configuration. It does not blindly reuse saved screen
+coordinates and does not require the current monitor layout to equal the saved layout.
+
+These adjustments apply to automatically loaded and explicitly supplied placement alike.
+They occur during the initial-placement operation, before its visible display. Changing the
+display configuration later does not start another persistence restore; normal live windowing
+behavior continues to apply.
+
+### The original monitor is still connected
+
+WinUI first tries to match the saved display device name. A match selects that monitor even if
+its location, work area, resolution, or DPI has changed. WinUI adapts the placement to its current
+work area and DPI.
+
+The device name is a display-system identifier, not a monitor's friendly name or a guaranteed
+physical-device serial number. Matching is best effort.
+
+### The original monitor went missing
+
+If the saved monitor cannot be matched, WinUI selects a current monitor using the saved normal
+rectangle. It chooses the monitor with the largest intersection with that rectangle, or the
+nearest monitor if none intersects. It does not always choose the primary monitor. The saved
+work area is used to adapt the geometry after monitor selection, not to choose this fallback.
+
+For example, when a laptop's only external monitor is disconnected, a window saved on that monitor
+is relocated to the laptop display. Its normal position is adapted to the new work area, and its
+size is adjusted for the new DPI and available space.
+
+If you subsequently close the relocated window, its new placement is saved. This feature keeps
+one placement per id, not a separate placement for every monitor topology. Reconnecting the old
+monitor does not make a running window return to its earlier location.
+
+### The DPI changed
+
+WinUI adjusts the normal size to preserve its approximate logical size. Moving from 100% scale
+to 200% scale doubles the nominal physical-pixel width and height before fitting and current
+window constraints are applied.
+
+For example, a saved normal size of 800 by 600 physical pixels at 96 DPI has a nominal target
+size of 1600 by 1200 physical pixels at 192 DPI. A smaller target work area or the window's current
+size constraints can change the final result. Pixel rounding and window-frame calculations can
+also affect the final bounds.
+
+Position and size use different adjustments. Position follows the window's relative location
+within the saved work area; it is not simply multiplied by the DPI ratio.
+
+### The resolution or taskbar work area changed
+
+WinUI adapts the normal position to the current work area. For example, a window near the
+right side of its former work area is placed toward the right side of the new work area rather
+than keeping an absolute offset that could now be off-screen.
+
+If the nominal restored size is too large, a resizable target window can be reduced to fit.
+Current window sizing constraints take precedence over the saved size. Restoration does not
+change whether the target window is user-resizable.
+
+A fixed-size window, or a window whose minimum size exceeds the available work area, may not
+fit completely. Fitting moves geometry toward the usable work area, but oversized windows can
+remain partly off-screen. The precise fitted bounds can differ across Windows versions.
+This API does not guarantee that all content or every window control will fit on the display.
+
+### The saved window is completely or partly off-screen
+
+A placement can be entirely off the current screens while still describing a valid position on
+its former monitor. That position is not reapplied unchanged. WinUI relocates the normal rectangle
+toward the selected monitor's work area and fits it when the target window permits resizing.
+
+The default also brings a partly off-screen normal window back within the work area when it can
+fit. This API does not expose an option to preserve intentionally off-screen placement. Oversized
+windows remain subject to the sizing limitations described above.
+
+The normal rectangle must still intersect the saved work area to describe a valid saved
+placement. If stored data does not satisfy that requirement, or an adjustment cannot be
+represented safely, WinUI ignores that placement and uses the initial-placement fallback.
+If a live window is completely outside its current work area and no valid placement can be
+captured, automatic saving leaves the previously stored value unchanged.
+
+### The window was snapped
+
+WinUI retains both the normal rectangle and the snap rectangle. A snapped placement uses the
+snap rectangle for its visible frame; the normal rectangle remains the position used when the
+window is restored out of snap.
+
+When the target work area changes, the snap rectangle is adjusted relative to its edges.
+A window snapped along the left side of its former monitor is therefore placed along the left
+side of the target work area, subject to current system snapping behavior and window constraints.
+
+This restores an individual window's snapped bounds. It does not recreate a Snap Layout selection,
+a snap group, or the positions of other apps' windows.
+
+If snapping is disabled or the target cannot accept the snapped placement, WinUI falls back to
+the normal placement. A minimized window whose snapped restore state cannot be retained remains
+minimized during non-activating application restart, but restores to normal rather than snapped.
+
+### The window was minimized
+
+For ordinary display, WinUI removes minimization while retaining the saved restore state:
+
+| Saved state | State after normalization |
+|---|---|
+| `Minimized` | `Normal` |
+| `MinimizedFromMaximized` | `Maximized` |
+| `MinimizedFromSnapped` | `Snapped`, or `Normal` if snapping is unavailable |
+
+Normal, maximized, and snapped placements otherwise retain their state, subject to current
+system capabilities and constraints.
+
+Only non-activating application restart preserves saved minimization. This avoids an ordinary
+restore appearing to do nothing while allowing an app to reconstruct its previous minimized
+windows. An explicit native launcher show command is separate from saved state; see
+[Choose launch or restart policy](#choose-launch-or-restart-policy).
+
+### The window was full-screen or compact overlay
+
+Full-screen and compact-overlay presenters are app-controlled and are not persisted by this
+feature. Capture and automatic saving use the most recent valid overlapped placement, including
+its normal rectangle, maximized or snapped state, and matching monitor and DPI information.
+They do not save the full-screen or compact-overlay bounds as normal window bounds.
+
+If no valid overlapped placement is available, capture returns `false` and automatic saving is
+skipped. WinUI does not invent a previous windowed placement.
+
+Initial placement does not change an app-selected presenter. If the target is already using a
+full-screen or compact-overlay presenter when its initial operation runs, placement is skipped
+and the opportunity is consumed. Display options still apply. Returning to an overlapped
+presenter later does not retry that initial placement.
+
+To restore the windowed position before entering another presenter, first apply initial placement
+while hidden and overlapped, then select the other presenter and reveal the window.
+
+## Use the initial-placement opportunity
+
+Each window has one initial-placement opportunity, tracked separately from its current visibility
+and activation. Display can consume the opportunity; hiding never resets it. Assigning a
+persistence id does not create another opportunity.
+
+`Show()` uses the new initial pipeline. `Activate()` also uses it when a non-empty
+`PersistPlacementId`, an explicit placement, or a non-null `InitialShowOptions` has been supplied.
+An unconfigured initial `Activate()` retains its existing path and consumes the opportunity
+without a persistence restore. The pipeline's reentrancy rules do not change that legacy path.
+
+While the opportunity is open, an operation using the initial pipeline:
+
+1. Snapshots and validates `InitialShowOptions`.
+2. Consumes the opportunity before callbacks can start another initial operation.
+3. Selects a copied explicit placement, or loads automatic placement if an id is assigned.
+4. Applies policy and current-display adjustments to the selected placement.
+5. Displays and requests activation as specified by the initial options.
+
+An explicit placement prevents automatic loading for that attempt. It does not disable
+automatic saving. The persistence id used for selection is read before placement callbacks;
+changes made during the operation can affect later saving, not its selected placement.
+
+| Action | Effect on the opportunity |
+|---|---|
+| Construct the window or set its properties | Remains open |
+| Stage or clear explicit placement | Remains open |
+| Hide an already hidden window | Remains open |
+| Fail initial-option validation | Remains open |
+| Run a valid initial operation, including `KeepHidden` | Consumed |
+| Complete an unconfigured initial `Activate()` | Consumed without this restore |
+| Directly display the native window, including through `AppWindow.Show()` | Consumed without this restore |
+| Hide or show after consumption | Remains consumed |
+
+Direct native display bypasses this pipeline. A subsequent `Window.Show()` or `Window.Activate()`
+uses post-initial behavior, even if it is the first call to that particular method. Hiding a
+directly displayed window does not reopen the opportunity.
+
+Reentrant `Show()`, `Activate()`, and `Hide()` calls while the initial operation is in progress
+are ignored. A valid `TrySetInitialPlacement` call during that operation returns `false`.
+Property assignments remain accepted but cannot replace the operation's options or placement.
+A reentrant close is not ignored: normal close behavior applies, and the initial operation does
+not continue applying placement or revealing a window that has closed.
+
+### Initial-placement fallback
+
+A valid initial operation consumes the opportunity even when there is no persistence id, no
+usable saved value, an unsupported target presenter, or a placement-application failure.
+
+In those cases, the window continues through its normal initial-display path. Pending initial
+sizing is applied before placement selection and supplies fallback geometry. Successfully applied
+placement supersedes that pending size, subject to the target window's current constraints.
+A failed native application is not a transaction: it can already have adjusted geometry before
+reporting failure. Fallback uses valid current bounds rather than promising to undo every native
+change, but it does not retry automatic loading.
+
+For `Launch`, the shell monitor hint is also considered for fallback geometry when it can be
+captured and adjusted. No saved value is required to use the hint.
+
+When an explicit placement was selected but could not be applied, WinUI does not then load an
+automatic placement. Explicit precedence is not a request to try multiple stored positions.
+
+`KeepHidden` and `DoNotActivate` still apply when placement is unavailable or cannot be applied.
+Failure to restore position must not turn a non-activating operation into an activating one.
+Once the opportunity has been consumed, later display calls do not retry placement.
+
+## Control display and activation
+
+Assign `InitialShowOptions` before the opportunity is consumed. Its defaults are ordinary display,
+activation requested, and not kept hidden:
 
 ```csharp
-var window = new Window();
-window.PersistPlacementId = "MainWindow";
 window.InitialShowOptions = new WindowInitialShowOptions
 {
+    Reason = WindowShowReason.Default,
+    ActivationBehavior = WindowActivationBehavior.Activate,
+    KeepHidden = false,
+};
+```
+
+Both initial `Show()` and initial `Activate()` honor these options. `KeepHidden` leaves the window
+hidden and suppresses activation, even if `ActivationBehavior` is `Activate`. It does not change
+the placement-policy row selected by `Reason` and `ActivationBehavior`.
+
+After consumption, the options are no longer consulted:
+
+| Method | Post-initial behavior |
+|---|---|
+| `Show()` on a shown window | No-op, including while minimized |
+| `Show()` on a hidden window | Reveals its current state; requests activation only if not minimized |
+| `Activate()` | Reveals if hidden, restores if minimized, and requests activation |
+| `Hide()` | Hides without closing or resetting placement; no-op if already hidden |
+
+Showing a hidden minimized window does not unminimize it. Use `Activate()` when the window should
+return from minimization. The restore target is normal, maximized, or snapped according to its
+current restore state and system capabilities.
+
+An activation request is subject to Windows activation policy; it is not a guarantee of foreground
+ownership. `DoNotActivate` means this initial operation does not request activation or transfer
+focus. It does not prevent the user, or subsequent app code, from activating the window.
+
+Visibility changes raise `VisibilityChanged` using the existing Window visibility semantics;
+non-activating display does not suppress that event merely because activation was not requested.
+`KeepHidden` causes no visibility or activation events. Hiding causes the normal visibility
+notification and, if applicable, deactivation. A visibility no-op does not raise a visibility event.
+
+If you need a later non-activating reveal of a non-minimized window, use the existing
+`window.AppWindow.Show(false)`. It does not reapply placement after the opportunity is consumed.
+
+## Choose launch or restart policy
+
+`Reason` selects initial-placement policy; it does not identify a main window, create a window
+hierarchy, or register the app for restart.
+
+| Reason | Activation behavior | Saved minimization | Saved desktop | Monitor hint |
+|---|---|---|---|---|
+| `Default` | `Activate` | Normalize | Ignore | Ignore |
+| `Default` | `DoNotActivate` | Normalize | Ignore | Ignore |
+| `Launch` | `Activate` | Normalize | Ignore | Use if valid |
+| `Launch` | `DoNotActivate` | Normalize | Ignore | Use if valid |
+| `ApplicationRestart` | `Activate` | Normalize | Ignore | Ignore |
+| `ApplicationRestart` | `DoNotActivate` | Preserve | Restore, best effort | Ignore |
+
+`Launch` prefers the monitor the shell selected for the launch over the saved monitor.
+For example, launching from a taskbar on a different monitor can cause restoration on that
+monitor. If no valid hint is available, normal saved-monitor selection applies.
+
+Assign `Launch` to each window for which you want that policy. WinUI does not infer it from
+construction order or the first `Activate()` call. Setting only `PersistPlacementId` uses
+`Default`, including when that call occurs in `OnLaunched`.
+
+Native launcher show commands, such as `start /min`, are distinct from saved minimization and
+follow Windows startup behavior. This API does not redistribute a command already consumed by
+another window, such as a splash screen. `Reason` does not replay that command for every window.
+The initial operation must still honor explicit `KeepHidden` and `DoNotActivate`.
+
+For application restart, your app owns restart registration, detection, and the inventory of
+windows to reconstruct. Configure each reconstructed window with `ApplicationRestart` and
+`DoNotActivate`. You can then explicitly activate a window if appropriate.
+
+On that non-activating restart path, WinUI attempts to return each window to its saved virtual
+desktop without switching the user's active desktop. If the saved desktop no longer exists or
+the move cannot be completed, the window stays on its current desktop.
+
+Virtual-desktop identity is optional and best effort. Capture uses the most recently available
+identity for the live window; it can be absent or stale if a current identity cannot be obtained
+safely. It is not a guarantee that every desktop move has already been observed.
+
+Restart restores the last successfully persisted placement, not necessarily placement immediately
+before a crash. This feature does not periodically save moves and resizes.
+
+## Capture, change, and supply placement
+
+`TryGetPlacement` returns a detached `WindowPlacement`. Mutating it does not move the source
+window. `Clone()` makes an independent copy of that value.
+
+`TrySetInitialPlacement` copies and validates a value for a window whose opportunity is still
+open. It does not move or show the target immediately. A successful call replaces any previously
+staged value. Passing `null` clears the staged value so automatic loading can be selected again.
+
+The result describes **acceptance**, not successful application or storage:
+
+- `true`: the supplied value, or the request to clear it, was accepted.
+- `false`: the opportunity is already consumed or in progress.
+- An argument error: a non-null value is structurally invalid.
+
+Monitor removal, a changed DPI, a rectangle outside the current screens, and a missing virtual
+desktop do not alone make placement structurally invalid. The saved geometry must still satisfy
+its own work-area and data-validity rules. Accepted data can produce adjusted bounds rather than
+its exact saved coordinates.
+
+Capture and automatic saving use the same definition of durable placement:
+
+- A shown overlapped window supplies its current geometry and placement state.
+- A hidden overlapped window supplies its current geometry and last meaningful show state.
+- A full-screen or compact-overlay window supplies its last valid overlapped placement.
+
+Hiding does not replace the state with a fictitious `Hidden` value. Position or size changes made
+while an overlapped window is hidden are included in subsequent capture and saving. An app-initiated
+state change also updates its meaningful state; hiding alone does not.
+
+Before any visible display or successful hidden placement, `TryGetPlacement` can capture valid
+current overlapped geometry. If no show state has yet been established, it uses `Normal`.
+Merely capturing or staging that geometry does not make the window eligible for automatic saving.
+
+## Know when placement is saved
+
+An automatically persisted window becomes eligible for saving after it has been shown through
+any display path, or after an explicit or automatically loaded placement was successfully applied
+while hidden. Adjusting fallback geometry for a launch-monitor hint alone does not make a hidden
+window eligible.
+
+A constructed window, a staged value, or a failed `KeepHidden` placement attempt does not by
+itself make a window eligible. This prevents unused windows from replacing saved placement with
+default geometry.
+
+| Trigger | Saving behavior |
+|---|---|
+| Accepted normal close | Capture after close handlers finish and before native-window teardown |
+| Cancelled close | Do not save for that close |
+| Other native destruction | Best-effort backstop if normal close did not already save |
+| Confirmed sign-out or shutdown | Best-effort save while placement is still available |
+| Cancelled sign-out or shutdown | Do not save for that session-end request |
+| Hide, move, resize, or placement application | No persistence write |
+| Crash or forced process termination | No guaranteed save opportunity |
+
+Saving reads the current `PersistPlacementId`. Setting it after initial display enables future
+saves without moving the window. Changing it selects a different slot for future saves; clearing
+it stops them. Old slots are not automatically migrated or deleted.
+
+Ids use ordinal, case-sensitive comparison without Unicode normalization. Windows and processes
+using the same app store and id share a slot; the last successful save wins. The feature does not
+coordinate their window positions or cascade duplicate instances.
+
+Missing storage, corrupt or unsupported stored data, and ordinary capture, placement, or storage
+failures do not fail a display or close operation solely because persistence could not complete.
+Automatic storage is best effort, not a durable-write acknowledgment.
+
+The stored representation is private to WinUI. These APIs do not expose a serialization format,
+a save-completed event, or an application-supplied persistence store.
+
+Use one automatic placement mechanism per native window. WinUI does not coordinate with another
+library or an app-owned routine that also restores and saves the same window. Use explicit
+initial placement when you need to supply data to this pipeline rather than running a second
+restore operation.
+
+# Examples
+
+_This section is intended for publication on learn.microsoft.com. The snippets assume an
+initialized desktop WinUI app and application-defined window and content types._
+
+## Remember the main window
+
+An existing app can retain its normal activation path:
+
+```csharp
+private Window? _mainWindow;
+
+protected override void OnLaunched(LaunchActivatedEventArgs args)
+{
+    _mainWindow = new MainWindow
+    {
+        PersistPlacementId = "MainWindow",
+    };
+    _mainWindow.Activate();
+}
+```
+
+To also use the shell's launch-monitor preference, assign initial options before activation:
+
+```csharp
+_mainWindow.InitialShowOptions = new WindowInitialShowOptions
+{
     Reason = WindowShowReason.Launch,
+};
+_mainWindow.Activate();
+```
+
+This second snippet replaces the first example's final activation call; it is not a second
+activation after the initial opportunity has been consumed.
+
+## Remember independent windows
+
+```csharp
+var document = new DocumentWindow
+{
+    PersistPlacementId = $"Document:{stableDocumentId}",
+};
+var inspector = new InspectorWindow
+{
+    PersistPlacementId = "Inspector",
+};
+
+document.Activate();
+inspector.Activate();
+```
+
+`stableDocumentId` is an app-owned, non-sensitive identifier, not a localized title or a document
+path. Use different ids for independently remembered windows.
+
+## Show without requesting activation
+
+```csharp
+var window = new NotificationWindow
+{
+    PersistPlacementId = "Notifications",
+    InitialShowOptions = new WindowInitialShowOptions
+    {
+        ActivationBehavior = WindowActivationBehavior.DoNotActivate,
+    },
 };
 window.Show();
 ```
 
-The first `Show()` or `Activate()` honors every option. With default options, both display and
-request activation. An app can keep its existing initial `Activate()` call while using
-`ActivationBehavior` or `KeepHidden`.
+If usable placement exists, WinUI applies it with current-display adjustments. Otherwise, it uses
+fallback placement. Neither case requests activation.
 
-## 2.4. Working with placement explicitly
-
-`PersistPlacementId` provides automatic persistence for packaged apps. The explicit placement APIs
-are optional:
-
-```xml
-<Window PersistPlacementId="MainWindow" />
-```
-
-`Window.TryGetPlacement` and `Window.TrySetInitialPlacement` provide the advanced path. They let an
-app capture a detached snapshot of a window's current placement or supply an explicit placement
-before the first `Show()` or `Activate()` call.
-
-`WindowPlacement` exposes every durable placement field WinUI understands. It is mutable so an app
-can change only the fields it cares about. Changing the object does not move a live window. The
-target window copies and validates the placement when `TrySetInitialPlacement` accepts it.
-
-An explicit placement and automatic persistence can be used together. When both are present:
-
-1. The explicit placement is used for the current initial-placement attempt.
-2. The automatically stored placement is not loaded for that attempt.
-3. WinUI still captures the final placement and saves it under `PersistPlacementId`.
-
-After WinUI selects the explicit placement, it applies the same `InitialShowOptions` policy used
-for an automatically loaded placement. For example, ordinary launch still normalizes a minimized
-placement, and virtual-desktop restoration remains limited to a non-activating application
-restart.
-
-This behavior supports one-time migration, transformation, testing, and placement reuse while
-retaining automatic persistence.
-
-# 3. Examples
-
-_These examples are intended for publication on learn.microsoft.com._
-
-## 3.1. Remember where the user left the main window
-
-Set `PersistPlacementId` before the initial `Activate()` call. WinUI restores the placement saved
-under that id and updates it when the window closes.
+## Prepare a window while it remains hidden
 
 ```csharp
-public partial class App : Application
+var window = new MainWindow
 {
-    private Window _window;
+    PersistPlacementId = "MainWindow",
+    InitialShowOptions = new WindowInitialShowOptions { KeepHidden = true },
+};
 
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
-    {
-        _window = new Window();
-        _window.PersistPlacementId = "MainWindow";
-        _window.Activate();
-    }
-}
+window.Show(); // Initial placement attempted; the window remains hidden.
+
+var data = await LoadDataAsync();
+window.Content = new MainPage(data);
+window.Activate();
 ```
 
-## 3.2. Remember several windows separately
+The later activation does not retry placement. If you adjust an overlapped window's geometry
+while hidden, that geometry is available to subsequent capture and automatic saving.
 
-Give each window its own id. Leave `PersistPlacementId` unset for a document window whose placement
-should not be saved.
-
-```csharp
-var main = new Window { PersistPlacementId = "MainWindow" };
-var inspector = new Window { PersistPlacementId = "Inspector" };
-var scratch = new Window(); // not persisted
-
-main.Activate();
-inspector.Activate();
-scratch.Activate();
-```
-
-## 3.3. Copy and adjust placement for another window
-
-The placement returned by `TryGetPlacement` is a detached snapshot. You can change it and supply
-it to a window that has not yet been displayed:
+## Copy a window's placement without copying its state
 
 ```csharp
-if (sourceWindow.TryGetPlacement(out WindowPlacement placement))
+if (sourceWindow.TryGetPlacement(out var captured))
 {
-    placement.ShowState = WindowPlacementShowState.Normal;
+    var placement = captured.Clone();
+    placement.State = WindowPlacementState.Normal;
+    placement.SnapRect = null;
     placement.VirtualDesktopId = null;
 
-    var replacement = new Window
-    {
-        PersistPlacementId = "ReplacementWindow",
-    };
-
+    var replacement = new DocumentWindow { PersistPlacementId = "Replacement" };
     replacement.TrySetInitialPlacement(placement);
     replacement.Activate();
 }
 ```
 
-The explicit placement wins over a placement previously saved for `"ReplacementWindow"` on this
-restore attempt. When the replacement window closes, automatic persistence saves its final
-placement under that id.
+The target is newly constructed, so its opportunity is open. Staging copies the value; later
+changes to `placement` cannot alter the target's selected data. Current-display adjustments still
+apply, so this is not a guarantee of pixel-identical placement on a changed display configuration.
 
-## 3.4. Migrate placement from app-owned data
+C++/WinRT uses the same explicit cloning operation:
 
-You can construct a placement from legacy data and supply it before showing the window:
+```cpp
+auto copy = captured.Clone();
+copy.State(winrt::Microsoft::UI::Xaml::WindowPlacementState::Normal);
+```
+
+Ordinary assignment of a runtime-class reference is not a clone.
+
+## Supply placement from app-owned data
+
+This example assumes the app has validated its data and decided to use it for this opening:
 
 ```csharp
-var placement = new WindowPlacement(legacyNormalRect, currentWorkArea, currentDpi)
+var placement = new WindowPlacement(savedNormalRect, savedWorkArea, savedDpi)
 {
-    ShowState = legacyWasMaximized
-        ? WindowPlacementShowState.Maximized
-        : WindowPlacementShowState.Normal,
-    DisplayDeviceName = legacyMonitorName,
+    State = savedWasMaximized
+        ? WindowPlacementState.Maximized
+        : WindowPlacementState.Normal,
+    DisplayDeviceName = savedDisplayDeviceName,
 };
-var window = new Window { PersistPlacementId = "MainWindow" };
+
+var window = new MainWindow { PersistPlacementId = "MainWindow" };
 window.TrySetInitialPlacement(placement);
 window.Activate();
 ```
 
-Automatic persistence saves the resulting placement in WinUI's current format when the window
-closes. The app does not need to migrate the legacy data again.
+The rectangle, work area, and DPI must describe the same saved coordinate environment. Do not
+substitute the current work area or DPI for missing saved metadata without first converting
+the geometry. A legacy rectangle alone may not contain enough information to reproduce its
+former logical size.
 
-## 3.5. Show a window without taking focus
+Explicit placement wins over automatic loading on every opening where you supply it.
+For migration, your app owns the decision to stop supplying legacy data. Acceptance does not
+acknowledge a persistence write, so do not treat it as proof that legacy data can safely be
+deleted. This example does not implement a transactional migration protocol.
 
-Use `Show()` with `DoNotActivate` when displaying a window must not change the foreground
-activation.
+## Reconstruct windows after application restart
 
-```csharp
-var window = new Window();
-window.PersistPlacementId = "Notifications";
-window.InitialShowOptions = new WindowInitialShowOptions
-{
-    ActivationBehavior = WindowActivationBehavior.DoNotActivate,
-};
-window.Show();
-```
-
-The window becomes visible in its saved position without being activated, and the user's current
-foreground window keeps focus.
-
-## 3.6. Restore windows after an application restart
-
-When Windows restarts the app after an update or a crash, the app can reconstruct its previous
-windows and restore their saved placements, including minimized state.
-
-Your app is responsible for calling
-[RegisterApplicationRestart](https://learn.microsoft.com/windows/win32/api/winbase/nf-winbase-registerapplicationrestart)
-and for recording which windows were open. WinUI restores each window's placement.
+The app has registered for restart, detected the restart launch, and retained its own window
+inventory:
 
 ```csharp
-foreach (string id in savedWindowIds)
+foreach (var savedWindow in savedWindowInventory)
 {
-    var window = new Window();
-    window.PersistPlacementId = id;
+    var window = CreateWindowFor(savedWindow);
+    window.PersistPlacementId = savedWindow.PlacementId;
     window.InitialShowOptions = new WindowInitialShowOptions
     {
         Reason = WindowShowReason.ApplicationRestart,
@@ -305,134 +632,98 @@ foreach (string id in savedWindowIds)
 }
 ```
 
-`ApplicationRestart` with `DoNotActivate` is the only combination that preserves a saved
-minimized state. Every other combination normalizes a minimized window. Preserving minimized state
-is limited to non-activating application restart.
+`CreateWindowFor` creates content without displaying the window. This path preserves saved
+minimization and attempts virtual-desktop restoration. The app can separately activate a window
+when appropriate; it need not activate any window when reconstructing an all-minimized inventory.
 
-## 3.7. Place a window before showing it
+See [RegisterApplicationRestart] for the native registration API. Registration, inventory storage,
+and application-data recovery are outside placement persistence.
 
-`KeepHidden` applies the saved placement but leaves the window hidden. Use this when you want the
-window sized and positioned before its content is visible.
+# API Pages
 
-```csharp
-var window = new Window();
-window.PersistPlacementId = "MainWindow";
-window.InitialShowOptions = new WindowInitialShowOptions { KeepHidden = true };
+_This section is intended for publication on learn.microsoft.com._
 
-window.Show();      // placement applied, window still hidden
+## Window.PersistPlacementId property
 
-await LoadContentAsync();
-
-window.Activate();  // now reveal it
-```
-
-## 3.8. Hide and show a window again
-
-`Hide()` removes a window from view without closing it. The window keeps its content and can be
-shown again:
-
-```csharp
-window.Hide();
-
-// The same Window and content remain alive.
-window.Show();
-```
-
-Hiding does not save or reapply placement. The later `Show()` displays and requests activation
-through the normal post-initial path.
-
-# 4. API Pages
-
-_These API pages are intended for publication on learn.microsoft.com._
-
-## 4.1. Window.PersistPlacementId property
-
-Gets or sets the id under which this window's placement is saved and restored.
+Gets or sets the application-defined id used for automatic placement loading and saving.
 
 ```csharp
 public string PersistPlacementId { get; set; }
 ```
 
-Setting a non-empty id opts the window into placement persistence. The default is an empty
-string, which means the window does not participate.
+The default is an empty string. Null is treated as empty. An empty value disables automatic
+loading and saving without clearing an explicitly staged placement.
 
-The id is an application-defined identifier. It is never displayed to the user and is not
-localized. Windows that share an id share one saved placement.
+WinUI reads the id when selecting initial placement and again when saving. A late assignment
+affects future saves, not the current window's restore. See
+[Know when placement is saved](#know-when-placement-is-saved) for identity and save timing.
 
-WinUI reads this property when the first `Show()` or `Activate()` call runs the window's one
-restore attempt, so you can set it any time before then, including from a `Loaded` handler. WinUI
-reads it again when the window is saved.
+This property does not provide an application-supplied storage location. Automatic storage is
+available for packaged apps; explicit placement does not require it.
 
-**Remarks**
+## Window.InitialShowOptions property
 
-Placement persistence requires a usable default `ApplicationData` store. Packaged apps have this
-store. Without it, restore and save are no-ops and the window opens at its default placement.
-
-Saved placement is per-user and per-app. It is not roamed between machines.
-
-## 4.2. Window.InitialShowOptions property
-
-Gets or sets one-time options that describe this window's initial `Show()` or `Activate()`
-operation.
+Gets or sets the options used when this window consumes its initial-placement opportunity.
 
 ```csharp
 public WindowInitialShowOptions InitialShowOptions { get; set; }
 ```
 
-The default is `null`, which behaves the same as a `WindowInitialShowOptions` with all properties
-at their default values.
+The default is null. When the initial pipeline runs, null supplies the default option values.
+Assigning a non-null object also opts an initial `Activate()` into that pipeline, even if its
+properties all have their default values. See
+[Use the initial-placement opportunity](#use-the-initial-placement-opportunity).
 
-WinUI reads this property once, when the first `Show()` or `Activate()` call consumes the
-window's placement attempt. Changing it afterward has no effect. Mutating the
-`WindowInitialShowOptions` object after that point also has no effect, because WinUI takes a
-snapshot of the values rather than holding a reference.
+The property retains the assigned reference. The initial operation copies its values once and
+does not consult it again. Changing or mutating the assigned object after consumption has no
+effect on this window's placement or display behavior. The getter still returns the current
+property value; it does not return an execution record.
 
-**Remarks**
+Undefined `Reason` or `ActivationBehavior` values fail validation with `E_INVALIDARG` only while
+the opportunity is open. Validation failure leaves it open and does not apply placement, show,
+or activate the window. After consumption, even invalid option values are behaviorally ignored.
 
-If you set `InitialShowOptions` to an object whose `Reason` or `ActivationBehavior` holds a value
-that is not a defined enumeration value, the `Show()` or `Activate()` call fails and the window
-is not displayed. The placement attempt is not consumed, so you can correct the value and show
-the window again.
+Several windows can share one options object. Each takes its own snapshot when its opportunity
+is consumed.
 
-## 4.3. Window.Show method
+## Window.Show method
 
-Runs the initial-display pipeline or displays a hidden window.
+Runs the initial-display operation, or reveals a hidden window without restoring minimization.
 
 ```csharp
 public void Show();
 ```
 
-The first `Show()` or
-[Activate](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.window.activate)
-call honors every value in `InitialShowOptions`. With the default options, either method displays
-and requests activation.
+While the placement opportunity is open, this method honors `InitialShowOptions`, just as
+`Activate()` does. With default options it attempts initial placement, displays, and requests
+activation. With `KeepHidden` it consumes the opportunity without displaying.
 
-**Remarks**
+After consumption, it is a no-op for a shown window, including a minimized one. For a hidden
+window, it reveals the current state. It does not unminimize the window and requests activation
+only when revealing a non-minimized window.
 
-The first `Show()` or `Activate()` call consumes the window's one placement attempt. Later calls
-do not re-read `InitialShowOptions` or reapply placement. `Show()` displays and requests activation
-for a hidden window, and is otherwise a no-op for a visible window, including a minimized window.
-A later `Activate()` follows existing WinUI behavior: it displays a hidden window, restores a
-minimized window, and calls `SetActiveWindow()`.
+See [Control display and activation](#control-display-and-activation) for shared visibility,
+event, and reentrancy behavior.
 
-## 4.4. Window.Activate method
+## Window.Activate method
 
-Runs the initial-display pipeline or activates the window.
+Runs the initial-display operation, or reveals, restores, and requests activation of the window.
 
 ```csharp
 public void Activate();
 ```
 
-When `Activate()` is the initial operation, it runs the same initial-display pipeline as `Show()`
-and honors every value in `InitialShowOptions`. It can therefore display without activation when
-`ActivationBehavior` is `DoNotActivate`, or apply placement without displaying when `KeepHidden`
-is `true`.
+While the placement opportunity is open and the feature is configured, this existing method
+runs the initial pipeline and honors all `InitialShowOptions`. It can therefore perform a
+non-activating or hidden initial operation despite its name. An unconfigured initial call retains
+the legacy path, as described in
+[Use the initial-placement opportunity](#use-the-initial-placement-opportunity).
 
-After the initial operation, `Activate()` does not re-read `InitialShowOptions` or reapply
-placement. It retains its existing WinUI behavior: it displays a hidden window, restores a
-minimized window, and calls `SetActiveWindow()`.
+After consumption, it reveals a hidden window, restores a minimized window, and requests
+activation through the existing WinUI activation path. It does not reapply initial placement or
+consult initial options.
 
-## 4.5. Window.Hide method
+## Window.Hide method
 
 Hides the window without closing it.
 
@@ -440,147 +731,188 @@ Hides the window without closing it.
 public void Hide();
 ```
 
-`Hide()` keeps the native window and its XAML content alive. It does not raise `Closed`, save
-placement, reset `InitialShowOptions`, or reset the initial-placement opportunity.
+The native window and XAML content remain alive. `Hide()` does not raise `Closed`, perform a
+persistence write, or reset the placement opportunity. It also hides windows displayed directly
+through `AppWindow`. An already hidden window is unchanged.
 
-`Hide()` hides the window whenever it is currently visible, including when it became visible
-through `AppWindow.Show()`. It is a no-op while the window is hidden, including before the initial
-`Show()` or `Activate()` operation, and does not consume an open placement opportunity.
+See [Control display and activation](#control-display-and-activation) for event and reentrancy
+behavior, and [Capture, change, and supply placement](#capture-change-and-supply-placement) for
+capture and saving while hidden.
 
-A reentrant `Hide()` call made while the initial `Show()` or `Activate()` operation is in progress
-is ignored. The outer operation determines the final visibility.
+## Window.TryGetPlacement method
 
-Hiding a visible window raises `VisibilityChanged`. If the window was active, existing activation
-event behavior reports its deactivation. A no-op `Hide()` raises no visibility event.
-
-A later `Show()` or `Activate()` displays the same window without reapplying persisted or
-explicitly supplied placement. If automatic persistence saves a window while it is hidden, WinUI
-saves its last non-hidden placement rather than a hidden show state.
-
-When `KeepHidden` applies placement before the window has ever been visible, that applied placement
-becomes the last non-hidden placement used for saving.
-
-This method must be called on the window's UI thread. Calling it after `Close()` follows the
-existing closed-window error behavior.
-
-## 4.6. WindowPlacement class
-
-Represents a mutable, detached snapshot of a window placement.
-
-```csharp
-public sealed class WindowPlacement
-{
-    public WindowPlacement(
-        RectInt32 normalRect,
-        RectInt32 workArea,
-        int dpi);
-
-    public WindowPlacement(WindowPlacement source);
-
-    public RectInt32 NormalRect { get; set; }
-    public RectInt32 WorkArea { get; set; }
-    public int Dpi { get; set; }
-    public WindowPlacementShowState ShowState { get; set; }
-    public WindowPlacementFlags Flags { get; set; }
-    public string DisplayDeviceName { get; set; }
-    public RectInt32? ArrangeRect { get; set; }
-    public Guid? VirtualDesktopId { get; set; }
-}
-```
-
-| Name | Description |
-|-|-|
-| `NormalRect` | The restored position and size of the window. For a maximized or minimized window, this is its normal restored rectangle. |
-| `WorkArea` | The work area of the monitor when the placement was captured. |
-| `Dpi` | The DPI associated with `NormalRect` and `WorkArea`. |
-| `ShowState` | Whether the captured window was normal, maximized, or minimized. |
-| `Flags` | Additional durable state needed to reproduce the placement. |
-| `DisplayDeviceName` | The optional device name used to match the original monitor. |
-| `ArrangeRect` | The optional visible bounds of a snapped window. |
-| `VirtualDesktopId` | The optional virtual desktop associated with the placement. |
-
-The three-argument constructor creates a normal placement with no flags or optional identities.
-The copy constructor creates an independent snapshot containing all placement data from `source`.
-
-Changing a placement has no immediate effect. Pass it to `Window.TrySetInitialPlacement` to use it
-for a window's initial placement.
-
-The target window validates the complete object when accepting it. `NormalRect` and `WorkArea` must
-have positive dimensions, `Dpi` must be at least 96, enumeration and flag values must be defined,
-and arranged flags require a valid `ArrangeRect`. Invalid placement fails with `E_INVALIDARG`
-(`ArgumentException` in .NET).
-
-`WindowPlacement` contains durable placement data, not display instructions. Activation,
-`KeepHidden`, and why the window is being shown remain in `WindowInitialShowOptions`.
-
-## 4.7. Window.TryGetPlacement method
-
-Gets a detached snapshot of the window's current durable placement.
+Attempts to capture a detached description of the window's current durable placement.
 
 ```csharp
 public bool TryGetPlacement(out WindowPlacement placement);
 ```
 
-`TryGetPlacement` returns `true` and sets `placement` when WinUI captures a valid placement. It
-returns `false` and sets `placement` to `null` when the window does not have a valid native window
-or WinUI cannot capture a valid placement.
+Returns `true` with a valid placement, or `false` with `placement` set to null if no valid
+placement can be captured. Missing optional monitor or virtual-desktop identity does not by
+itself make capture fail.
 
-Full-screen and compact-overlay windows return their most recent overlapped placement.
+The returned object is independent of the window and other captures. It does not keep the
+window alive, and its properties do not update when the window moves.
 
-This method must be called on the window's UI thread.
+Hidden and non-overlapped capture follow
+[Capture, change, and supply placement](#capture-change-and-supply-placement). If the restore state
+of a minimized window cannot be established, capture uses `Minimized` rather than inventing
+maximized or snapped history.
 
-## 4.8. Window.TrySetInitialPlacement method
+This method does not load stored placement, write storage, or consume the initial opportunity.
+A call on the wrong thread or on a closed window is an API-use error, not a `false` result.
 
-Supplies an explicit placement for the window's initial `Show()` or `Activate()` operation.
+## Window.TrySetInitialPlacement method
+
+Attempts to stage or clear an explicit placement before this window's initial operation.
 
 ```csharp
 public bool TrySetInitialPlacement(WindowPlacement placement);
 ```
 
-The method copies and stages `placement`. It returns `true` only while the window's
-initial-placement opportunity is still open. It returns `false` after a successful initial
-`Show()` or `Activate()` operation consumes the opportunity, or after direct display through
-`AppWindow` bypasses it. A call that fails while validating `InitialShowOptions` does not consume
-the opportunity.
-Passing `null` or an invalid placement fails with `E_INVALIDARG` (`ArgumentException` in .NET).
+A non-null value is snapshotted and validated before it is accepted. Subsequent mutation does
+not change the staged value. Passing null clears explicit placement. Successful staging or
+clearing returns `true` and leaves the opportunity open.
 
-Mutating the supplied object after `TrySetInitialPlacement` returns does not change the staged
-placement.
+A non-null invalid value fails with `E_INVALIDARG` and leaves any previously staged value
+unchanged. A valid value or a clear request returns `false` when the opportunity is consumed or
+in progress. Staging does not move the window or acknowledge application or persistence.
 
-When the window also has a non-empty `PersistPlacementId`, the explicit placement takes precedence
-over automatic restore for this attempt. Automatic saving remains enabled.
+Explicit placement prevents automatic loading for the attempt, including if later application
+fails. Automatic saving remains governed by `PersistPlacementId`.
 
-This method must be called on the window's UI thread.
+Thread and closed-window errors are checked first. Non-null argument validation precedes the
+opportunity check, so invalid data remains an argument error even after the opportunity has
+expired.
 
-## 4.9. WindowPlacementShowState enum
+## WindowPlacement class
 
-Specifies the display state captured in a placement.
+Represents a mutable, detached description of window placement.
 
-| Name | Value | Description |
-|-|-|-|
-| `Normal` | 0 | The window is in its normal restored state. |
-| `Maximized` | 1 | The window is maximized. |
-| `Minimized` | 2 | The window is minimized. |
+```csharp
+public sealed class WindowPlacement
+{
+    public WindowPlacement(RectInt32 normalRect, RectInt32 workArea, int dpi);
+    public WindowPlacement Clone();
 
-## 4.10. WindowPlacementFlags enum
+    public RectInt32 NormalRect { get; set; }
+    public RectInt32 WorkArea { get; set; }
+    public int Dpi { get; set; }
+    public WindowPlacementState State { get; set; }
+    public RectInt32? SnapRect { get; set; }
+    public string DisplayDeviceName { get; set; }
+    public Guid? VirtualDesktopId { get; set; }
+}
+```
 
-Specifies additional durable state needed to reproduce a placement.
+This object contains no live window or presenter reference. See
+[Understand what placement contains](#understand-what-placement-contains) for coordinate units
+and bounds.
 
-| Name | Value | Description |
-|-|-|-|
-| `None` | 0x0000 | No additional state. |
-| `RestoreToMaximized` | 0x0001 | A minimized window returns to maximized when restored. |
-| `Arranged` | 0x0002 | The window was snapped at `ArrangeRect`. |
-| `AllowPartiallyOffScreen` | 0x0004 | Applying the placement may retain a partially off-screen normal rectangle. |
-| `Resizable` | 0x0008 | The captured window was resizable, so its size may adapt to a smaller target work area. |
-| `RestoreToArranged` | 0x0020 | A minimized window returns to its snapped placement when restored. |
+### Data validity
 
-`WindowPlacementFlags` contains only durable state. It does not contain transient instructions such
-as whether to activate, remain hidden, or use a particular native placement implementation.
+The constructor validates its required geometry and DPI. Property setters permit temporary
+invalid combinations while you edit a value. `TrySetInitialPlacement` validates a complete
+snapshot using these rules:
 
-## 4.11. WindowInitialShowOptions class
+- `NormalRect` and `WorkArea` have positive width and height.
+- `NormalRect` has a positive-area intersection with the saved `WorkArea`.
+- Any present `SnapRect` has positive width and height.
+- Each rectangle's right and bottom edges are representable as signed 32-bit coordinates when
+  computed from its X, Y, width, and height using checked arithmetic.
+- `Dpi` is at least 96.
+- `State` is a defined `WindowPlacementState` value.
+- `Snapped` and `MinimizedFromSnapped` require `SnapRect`.
+- `DisplayDeviceName` is empty or contains at most 31 UTF-16 code units, without embedded NUL.
 
-Provides one-time options for a window's initial `Show()` or `Activate()` operation.
+These are structural rules, not a requirement that the saved monitor or desktop still exists or
+that the rectangle currently overlaps a monitor. The intersection rule refers to the supplied
+saved work area, not the work area of a currently connected monitor. Application also uses
+checked arithmetic; an invalid or unrepresentable adjusted rectangle fails placement application
+and uses fallback.
+
+`SnapRect` is ignored for other states. You can set `State` to `Normal` to remove both snapping
+and minimized restore-state instructions without manipulating separate flags.
+
+Null `DisplayDeviceName` is treated as empty. `VirtualDesktopId` can be null; `Guid.Empty` is
+treated as no identity when placement is accepted.
+
+### Threading
+
+`WindowPlacement` is agile and can be shared across threads. Individual property accesses are
+thread-safe. `Clone()` and staging copy the fields as one coherent snapshot.
+
+Several property assignments are not a transaction. Another thread taking a snapshot between
+assignments can observe a temporarily invalid combination, which staging rejects. Finish related
+edits before sharing a value for use.
+
+The `Window` methods themselves must run on that window's UI thread. Agility of the data does
+not make the target window agile.
+
+## WindowPlacement constructor
+
+Initializes a placement from a normal rectangle and its associated monitor work area and DPI.
+
+```csharp
+public WindowPlacement(RectInt32 normalRect, RectInt32 workArea, int dpi);
+```
+
+The initial `State` is `Normal`, `SnapRect` and `VirtualDesktopId` are null, and
+`DisplayDeviceName` is empty. Invalid required geometry or DPI fails with `E_INVALIDARG`
+(`ArgumentException` in .NET).
+
+The constructor does not inspect the current monitor layout or move a window.
+
+## WindowPlacement.Clone method
+
+Creates an independent copy of this placement value.
+
+```csharp
+public WindowPlacement Clone();
+```
+
+The copy contains all property values, including fields not currently used by `State`.
+It can be edited independently. Cloning does not validate the value, so you can also copy
+an intermediate value while editing it.
+
+Ordinary reference assignment does not clone the object. There is no same-type constructor
+whose behavior can be confused with reference copying in C++/WinRT.
+
+## Other WindowPlacement properties
+
+| Property | Meaning |
+|---|---|
+| `NormalRect` | Outer restored bounds in physical screen pixels |
+| `WorkArea` | Saved monitor work area associated with the rectangles |
+| `Dpi` | DPI associated with the saved geometry |
+| `State` | Visible or minimized placement and its restore state |
+| `SnapRect` | Optional visible frame bounds used for snapped states |
+| `DisplayDeviceName` | Optional GDI display device name, such as `\\.\DISPLAY1` |
+| `VirtualDesktopId` | Optional most recently available virtual-desktop identity |
+
+Current target-window sizing capability and constraints are not properties of a placement
+snapshot. Applying a value does not change the target's presenter or resizability configuration.
+
+## WindowPlacementState enum
+
+Specifies the placement state and, for a minimized window, its restore state.
+
+| Name | Value | Meaning |
+|---|---|---|
+| `Normal` | 0 | Neither maximized, minimized, nor snapped; uses `NormalRect` |
+| `Maximized` | 1 | Maximized; retains `NormalRect` for restoring |
+| `Minimized` | 2 | Minimized; restores to normal |
+| `Snapped` | 3 | Snapped at `SnapRect`; retains `NormalRect` for restoring |
+| `MinimizedFromMaximized` | 4 | Minimized; restores to maximized |
+| `MinimizedFromSnapped` | 5 | Minimized; restores to snapped |
+
+These values describe the placement to reproduce, not a requirement to prove how an app-created
+value acquired that state. Initial policy can normalize minimization, and current system
+capabilities can require a snapped placement to fall back to normal.
+
+## WindowInitialShowOptions class
+
+Provides one-time placement policy and display options for a window's initial operation.
 
 ```csharp
 public sealed class WindowInitialShowOptions
@@ -593,69 +925,76 @@ public sealed class WindowInitialShowOptions
 }
 ```
 
-| Name | Description |
-|-|-|
-| `Reason` | Why the window is being shown. Selects the placement policy. Defaults to `WindowShowReason.Default`. |
-| `ActivationBehavior` | Whether the initial `Show()` or `Activate()` call should activate the window. Defaults to `WindowActivationBehavior.Activate`. |
-| `KeepHidden` | When `true`, the initial `Show()` or `Activate()` call applies placement but leaves the window hidden. Defaults to `false`. |
+| Property | Default | Meaning |
+|---|---|---|
+| `Reason` | `Default` | Selects launch, restart, or ordinary placement policy |
+| `ActivationBehavior` | `Activate` | Selects activation and restart policy |
+| `KeepHidden` | `false` | Suppresses display and activation for the initial operation |
 
-**Remarks**
+This object is agile. Individual property accesses are thread-safe, and an initial operation
+copies its values as one coherent snapshot. Multiple assignments are not a transaction.
+Invalid enum values are rejected when an open opportunity consumes the options, not by setters.
 
-When `KeepHidden` is `true`, the window remains hidden and is not activated, regardless of the
-`ActivationBehavior` setting.
+See [Choose launch or restart policy](#choose-launch-or-restart-policy) for the policy table.
 
-A window initially placed with `KeepHidden` has already consumed its placement attempt. A later
-`Show()` displays and requests activation without restoring placement a second time. A later
-`Activate()` displays it, calls `SetActiveWindow()`, and does not restore placement a second time.
+## WindowShowReason enum
 
-## 4.12. WindowShowReason enum
+Specifies the policy used for initial placement.
 
-Specifies why a window is being shown for the first time.
+| Name | Value | Meaning |
+|---|---|---|
+| `Default` | 0 | Ordinary restore without launch-monitor preference |
+| `Launch` | 1 | Ordinary restore with a valid shell launch-monitor preference |
+| `ApplicationRestart` | 2 | Reconstruction after application restart |
 
-| Name | Value | Description |
-|-|-|-|
-| `Default` | 0 | Ordinary display. |
-| `Launch` | 1 | The window is being shown as part of app launch. |
-| `ApplicationRestart` | 2 | The app is reconstructing the window after an application restart. |
+`ApplicationRestart` preserves saved minimization and permits virtual-desktop restoration only
+when combined with `DoNotActivate`. `KeepHidden` does not substitute for that setting.
 
-The reason selects which policy WinUI applies to the saved placement:
+## WindowActivationBehavior enum
 
-| Reason | ActivationBehavior | Saved minimized state | Saved virtual desktop | Shell monitor hint |
-|-|-|-|-|-|
-| `Default` | `Activate` | Normalize | Ignore | Ignore |
-| `Default` | `DoNotActivate` | Normalize | Ignore | Ignore |
-| `Launch` | `Activate` | Normalize | Ignore | Apply |
-| `Launch` | `DoNotActivate` | Normalize | Ignore | Apply |
-| `ApplicationRestart` | `Activate` | Normalize | Ignore | Ignore |
-| `ApplicationRestart` | `DoNotActivate` | Preserve | Restore, best effort | Ignore |
+Specifies whether the initial operation requests activation.
 
-"Normalize" means a window saved in a minimized state is restored to its normal position rather
-than reopening minimized.
+| Name | Value | Meaning |
+|---|---|---|
+| `Activate` | 0 | Request activation unless kept hidden |
+| `DoNotActivate` | 1 | Do not request activation |
 
-"Shell monitor hint" means the monitor the shell chose for the launch is preferred over the saved
-monitor. This matters when the user launches your app from a taskbar on a different monitor than
-the one the window was last closed on.
+These options do not govern later display or activation calls.
 
-## 4.13. WindowActivationBehavior enum
+## Common Window API requirements
 
-Specifies whether the initial `Show()` or `Activate()` operation activates the window.
+The new `Window` properties and methods have the same UI-thread affinity as the window.
+Calls on the wrong thread or on a closed window fail with the corresponding existing Window
+API error. These checks precede the reentrant-display rules for an initial operation.
 
-| Name | Value | Description |
-|-|-|-|
-| `Activate` | 0 | Request activation unless `KeepHidden` is `true`. |
-| `DoNotActivate` | 1 | Do not request activation. |
+Invalid app-supplied options or placement use `E_INVALIDARG` (`ArgumentException` in .NET).
+Automatic persisted-data failures instead follow the fallback and best-effort saving rules.
+The `Try` methods do not suppress programming errors, and their Boolean results are not
+storage-success indicators.
 
-`DoNotActivate` prevents the window from taking focus and selects the non-activating row in the
-placement policy table.
+# API Details
 
-# 5. API Details
+_Spec note: This section supports API review and is not intended for publication on
+learn.microsoft.com. Existing Window members are omitted; `Activate()` is an existing method
+whose initial-operation behavior is extended as described above._
 
-_This section is for API review and will not be published to learn.microsoft.com._
-
-```csharp (but really MIDL3)
+```midl
 namespace Microsoft.UI.Xaml
 {
     [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [webhosthidden]
+    enum WindowPlacementState
+    {
+        Normal = 0,
+        Maximized = 1,
+        Minimized = 2,
+        Snapped = 3,
+        MinimizedFromMaximized = 4,
+        MinimizedFromSnapped = 5,
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [webhosthidden]
     enum WindowShowReason
     {
         Default = 0,
@@ -664,6 +1003,7 @@ namespace Microsoft.UI.Xaml
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [webhosthidden]
     enum WindowActivationBehavior
     {
         Activate = 0,
@@ -671,42 +1011,9 @@ namespace Microsoft.UI.Xaml
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
-    enum WindowPlacementShowState
-    {
-        Normal = 0,
-        Maximized = 1,
-        Minimized = 2,
-    };
-
-    [flags]
-    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
-    enum WindowPlacementFlags
-    {
-        None = 0x0000,
-        RestoreToMaximized = 0x0001,
-        Arranged = 0x0002,
-        AllowPartiallyOffScreen = 0x0004,
-        Resizable = 0x0008,
-        RestoreToArranged = 0x0020,
-    };
-
-    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
-    runtimeclass WindowInitialShowOptions
-    {
-        WindowInitialShowOptions();
-
-        /// Why the window is being shown. Selects the initial placement policy.
-        WindowShowReason Reason { get; set; };
-
-        /// Whether the initial Show or Activate call should activate the window.
-        WindowActivationBehavior ActivationBehavior { get; set; };
-
-        /// When true, the initial Show or Activate call applies placement while leaving the
-        /// window hidden.
-        Boolean KeepHidden { get; set; };
-    };
-
-    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [webhosthidden]
+    [threading(both)]
+    [marshaling_behavior(agile)]
     runtimeclass WindowPlacement
     {
         WindowPlacement(
@@ -714,194 +1021,185 @@ namespace Microsoft.UI.Xaml
             Windows.Graphics.RectInt32 workArea,
             Int32 dpi);
 
-        WindowPlacement(WindowPlacement source);
+        WindowPlacement Clone();
 
-        Windows.Graphics.RectInt32 NormalRect { get; set; };
-        Windows.Graphics.RectInt32 WorkArea { get; set; };
-        Int32 Dpi { get; set; };
-        WindowPlacementShowState ShowState { get; set; };
-        WindowPlacementFlags Flags { get; set; };
-        String DisplayDeviceName { get; set; };
-        Windows.Foundation.IReference<
-            Windows.Graphics.RectInt32> ArrangeRect { get; set; };
-        Windows.Foundation.IReference<Guid> VirtualDesktopId { get; set; };
+        Windows.Graphics.RectInt32 NormalRect;
+        Windows.Graphics.RectInt32 WorkArea;
+        Int32 Dpi;
+        WindowPlacementState State;
+        Windows.Foundation.IReference<Windows.Graphics.RectInt32> SnapRect;
+        String DisplayDeviceName;
+        Windows.Foundation.IReference<Guid> VirtualDesktopId;
     };
 
-    runtimeclass Window
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [webhosthidden]
+    [threading(both)]
+    [marshaling_behavior(agile)]
+    runtimeclass WindowInitialShowOptions
+    {
+        WindowInitialShowOptions();
+
+        WindowShowReason Reason;
+        WindowActivationBehavior ActivationBehavior;
+        Boolean KeepHidden;
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
+    [webhosthidden]
+    unsealed runtimeclass Window
     {
         // ... existing members ...
 
-        /// The id under which this window's placement is saved and restored.
-        /// An empty id means the window does not participate.
         [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
-        String PersistPlacementId { get; set; };
+        {
+            String PersistPlacementId;
+            WindowInitialShowOptions InitialShowOptions;
 
-        /// One-time options consumed by this window's first Show or Activate call.
-        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
-        WindowInitialShowOptions InitialShowOptions { get; set; };
+            Boolean TryGetPlacement(out WindowPlacement placement);
+            Boolean TrySetInitialPlacement(WindowPlacement placement);
 
-        /// Gets a detached snapshot of the window's current placement.
-        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
-        Boolean TryGetPlacement(out WindowPlacement placement);
+            [method_name("ShowDefault")]
+            void Show();
 
-        /// Supplies an explicit placement for the window's initial Show or Activate operation.
-        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
-        Boolean TrySetInitialPlacement(WindowPlacement placement);
-
-        /// Runs the initial-display pipeline or displays a hidden window.
-        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
-        void Show();
-
-        /// Hides the window without closing it.
-        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
-        void Hide();
+            [method_name("HideDefault")]
+            void Hide();
+        }
     };
 }
 ```
 
-_Spec note: in the C++ projection the new `Show()` and `Hide()` methods are named `ShowDefault`
-and `HideDefault`, because `Window` already carries private `IWindowPrivate::Show` and
-`IWindowPrivate::Hide` methods. This does not affect the C# or WinRT surface._
+# Appendix
 
-# 6. Appendix
+_Spec note: This section supports API review and is not intended for publication on
+learn.microsoft.com._
 
-_This section is for API review and will not be published to learn.microsoft.com._
+## Native engine and WinUI policy
 
-## 6.1. What is not in this proposal
+The native placement engine is the checked-in
+[PlacementEx implementation](../dxaml/xcp/components/windowplacement/inc/PlacementEx/PlacementEx.h).
+Its default monitor migration and keep-on-screen behavior form the basis of the conceptual
+scenarios. The public API does not expose the native structure or depend on its numeric flag values.
 
-* **Saving anything other than placement.** No window state beyond position, size, and show
-  state. No per-window app data.
-* **Persistence without an explicit opt-in.** A window with no `PersistPlacementId` and no
-  explicitly supplied placement behaves exactly as it does today.
-* **Roaming.** Saved placement stays on the machine that produced it.
-* **Continuous saving.** Placement is saved on close, not on every move or resize.
-* **An app-supplied store.** WinUI writes to the app's local settings. There is no hook for you
-  to supply your own storage.
+| Concern | Engine behavior or additional WinUI responsibility |
+|---|---|
+| Monitor selection | Match display device name, then select a monitor from the saved normal rectangle |
+| Normal geometry | Adapt work-area-relative position and DPI-scaled size; keep on screen and fit where supported |
+| Snapped geometry | Preserve visible frame bounds separately and adapt their work-area-edge relationships |
+| Snap availability | Apply the documented snapping-availability policy before either backend |
+| Sizing capability | Use current target configuration; do not persist the old source window's resizable bit |
+| Public state | Translate the six public states into native show state and restore/snap flags |
+| Minimized-from-snap normalization | Convert the saved restore-to-arranged state into arranged placement before ordinary adjustment |
+| Hidden capture | Retain meaningful state while reading current overlapped geometry |
+| Other presenters | Retain a coherent last overlapped placement rather than structurally detecting full-screen bounds |
+| Coordinate context | Produce physical coordinates consistently; do not expose DPI-virtualized engine output as physical pixels |
+| Safe public input | Validate complete snapshots and use checked conversion and geometry arithmetic |
+| Persistence and eligibility | Own store identity, initial-operation ordering, close/session-end saving, and fallback |
+| Virtual desktops | Use optional identity safely; do not require a blocking shell query on a synchronous window-message path |
 
-## 6.2. How are Show, Hide, and Activate different?
+`AdjustForMainWindow` already normalizes minimized-from-maximized placement. WinUI supplies
+minimized-from-snapped normalization explicitly. `Default` and activating restart use adjustment
+without startup flags; `Launch` requests the monitor hint. WinUI does not replay native startup
+show commands for each window.
 
-Whichever method is called first, `Show()` or `Activate()`, runs the same initial-display pipeline.
-It snapshots and honors every value in `InitialShowOptions`, applies placement, and consumes the
-window's one initial-placement opportunity.
+`FindClosestMonitor` explicitly selects by device name, then `normalRect`, even though the native
+action API has its own work-area-based default. WinUI preserves PlacementEx's explicit selection.
+The default adapter does not enable `AllowPartiallyOffScreen`. It derives downlevel `AllowSizing`
+from the target at application time rather than trusting a captured source configuration.
+The native path instead requests fit-to-monitor. Exact oversized-window fitting can differ
+between these paths; current app constraints and presenter selection remain authoritative.
 
-With default options, either method makes the window visible and requests activation. With
-`ActivationBehavior` set to `DoNotActivate`, either method displays without requesting activation.
-With `KeepHidden` set to `true`, either method applies placement without displaying or activating
-the window.
+PlacementEx has native `ApplyWindowAction` and downlevel paths. Their internal steps are not the
+public contract, and downlevel `NoActivate` support is not equivalent to the native flag.
+Integration must preserve the requested visibility and activation on both paths. If it cannot
+apply placement without violating those options, it uses fallback with the same display options.
+Cloaking alone is not evidence that focus or activation was preserved.
 
-| Behavior | First `Show()` | First `Activate()` |
-|-|-|-|
-| Consumes initial placement | Yes | Yes |
-| Honors `Reason` | Yes | Yes |
-| Honors `ActivationBehavior` | Yes | Yes |
-| Honors `KeepHidden` | Yes | Yes |
+The snapshot contract also requires WinUI-owned state tracking; `GetPlacement` captures
+restore-to-maximized and currently arranged state, but does not reconstruct
+`RestoreToArranged` history for an already minimized window. A single native geometry query
+also does not establish hidden state or pre-presenter placement.
 
-After the initial operation, neither method reapplies persisted or explicitly supplied placement.
-`Show()` displays and requests activation for a hidden window but is otherwise a no-op for a
-visible window, including a minimized window. `Activate()` retains its existing WinUI behavior: it
-displays a hidden window, restores a minimized window, and calls `SetActiveWindow()`.
+Capture effective window geometry after application rather than exposing the native in/out value
+as a post-apply snapshot. The native action path can leave saved input metadata unchanged, while
+the downlevel path mutates the normal rectangle into workspace coordinates. Neither is a
+substitute for a coherent physical-coordinate snapshot of the resulting window.
 
-`Hide()` operates outside the initial-display pipeline. It hides a visible window without closing
-it and does not consume an initial-placement opportunity that is still open. A later `Show()` or
-`Activate()` reuses the same window and content.
+Source references for these defaults:
 
-Existing apps can retain `Activate()` as their initial entry point. When `InitialShowOptions`
-requests no activation or no visibility, the initial `Activate()` does not perform the action
-implied by its name. This exception applies only to the initial operation. Later `Activate()` calls
-use the established activation behavior.
+- [Capture and native validity](../dxaml/xcp/components/windowplacement/inc/PlacementEx/PlacementEx.h#L429-L581)
+- [Monitor selection and application](../dxaml/xcp/components/windowplacement/inc/PlacementEx/PlacementEx.h#L583-L790)
+- [Normal and snapped geometry adjustment](../dxaml/xcp/components/windowplacement/inc/PlacementEx/PlacementEx.h#L1298-L1444)
+- [Launch and minimized-state adjustment](../dxaml/xcp/components/windowplacement/inc/PlacementEx/PlacementEx.h#L1493-L1625)
 
-## 6.3. Comparison with WPF and UWP
+`IsValid()` requires an intersection with the saved work area, not the current topology.
+The public validity rule retains that distinction. Public-input handling must additionally
+check arithmetic before invoking helpers whose native calculations assume valid desktop geometry.
 
-The names `Show` and `Activate` come from different framework histories:
+## API-shape rationale
 
-| API surface | `Show` | `Hide` | `Activate` |
-|-|-|-|-|
-| UWP `Windows.UI.Xaml.Window` | Not present | Not present | Serves as the initial display entry point and requests activation |
-| WPF `System.Windows.Window` | Displays the window; `ShowActivated` controls activation | Hides without closing, so the same window can be shown again | Requests activation for a displayed window |
-| Existing WinUI `Microsoft.UI.Xaml.Window` | Not present | Not present | Preserves the UWP entry point and activation behavior |
-| This proposal | Runs the initial-display pipeline or later displays a hidden window | Hides without closing or consuming an open placement opportunity | Runs the same initial-display pipeline; later calls preserve existing WinUI activation behavior |
+`PersistPlacementId` combines opt-in with application-owned identity. A Boolean alone would
+require the framework to invent an identity from unstable properties such as creation order
+or a XAML class name.
 
-UWP established `Activate()` as the initial display method for a XAML window. Existing WinUI apps
-use the same pattern. Requiring `Show()` would make those apps change their initial display call
-solely to enable placement persistence.
+The optional value is mutable because editing a captured placement is a common operation.
+A six-state enum avoids invalid combinations of native maximize, minimize, and arrange flags.
+Current resizability is live window configuration, not a durable property copied from another
+window. No native off-screen opt-out is exposed in this version.
 
-WPF separates the concepts more explicitly. `Show()` displays a window, while `Activate()` requests
-activation for a window that has been shown. WPF's `ShowActivated` property can suppress activation
-when the window is first shown.
+`Clone()` explicitly creates an independent object in both C# and C++/WinRT. It avoids the
+[same-type constructor ambiguity][Copy-construction guidance] of a WinRT runtime class.
 
-This proposal retains UWP's initial `Activate()` entry point and adds the WPF `Show()` and `Hide()`
-method names. `InitialShowOptions` controls the first operation regardless of whether the app uses
-`Show()` or `Activate()`. After that operation, `Show()` and `Hide()` control visibility while
-`Activate()` retains its current WinUI activation semantics.
+`InitialShowOptions` keeps one configuration path for existing `Activate()` callers and new
+`Show()` callers. It is intentionally initial-only. Existing `AppWindow.Show(false)` covers a
+later non-activating reveal without adding another set of overlapping options.
 
-Adding an instance `Show()` or `Hide()` method can silently change source binding for an app that
-currently calls a `Show(this Window)` or `Hide(this Window)` extension method. After recompilation,
-the same call binds to the instance method instead. API review must account for this
-source-compatibility cost.
+`TrySetInitialPlacement(null)` reverses staging while the opportunity is open without adding a
+separate clear method. The method's Boolean describes lifetime eligibility, not application or
+storage success.
 
-## 6.4. PlacementEx
+## Compatibility and non-goals
 
-PlacementEx is an internal native helper used by this proposal. It captures and applies complete
-Win32 window placement, matches a saved monitor to the current display topology, migrates geometry
-across DPI changes, restores snapped placement, and keeps invalid or stale rectangles on a usable
-screen.
+The instance methods can take precedence over existing `Show(this Window)` or `Hide(this Window)`
+extension methods when an app is recompiled. Derived app classes may also already declare those
+names. This source-compatibility cost requires API review.
 
-PlacementEx is not a public API. Apps use `PersistPlacementId`, `WindowPlacement`, and the
-`Window` methods described above. The public contract expresses durable placement concepts rather
-than PlacementEx's native structure, flag values, or helper operations. WinUI can replace the
-native implementation without changing the API shape.
+`method_name("ShowDefault")` and `method_name("HideDefault")` distinguish ABI/implementation names
+from existing private methods. They do not rename projected calls: C++/WinRT and C# apps call
+`Show()` and `Hide()`.
 
-## 6.5. Relationship to experimental AppWindow placement APIs
+This version does not provide:
 
-Windows App SDK experimental builds contain `AppWindow` placement APIs, including
-`PersistedStateId`, `GetCurrentPlacement`, `SetCurrentPlacement`, `SaveCurrentPlacement`, and
-`AppWindowPlacementDetails`.
+- automatic persistence for apps without package identity;
+- an app-supplied persistence store, public serialization format, or transactional migration;
+- continuous saves or crash-time recovery of the latest move;
+- per-topology placement histories or duplicate-instance cascading;
+- full-screen or compact-overlay presenter restoration;
+- snap-group reconstruction or coordination with other apps' windows;
+- a guarantee of exact saved pixels despite topology or constraint changes.
 
-Both designs use the same native placement logic for geometry. This proposal is a WinUI contract
-that also defines one-property XAML opt-in, initial `Window` display behavior, string identity,
-storage policy, session-end saving, virtual-desktop state, and interaction with `Show()` and
-`Activate()`.
+Experimental AppWindow placement APIs are related, but are not a dependency of this contract.
+A future implementation could use them after establishing the required state, policy, and
+compatibility mappings. This proposal does not assert complete field or behavior equivalence
+with an unversioned experimental surface.
 
-The public `WindowPlacement` type represents all durable fields WinUI currently saves.
-`AppWindowPlacementDetails` currently represents those fields except virtual-desktop identity. A
-future implementation can use stable `AppWindow` placement APIs underneath this contract if they
-meet WinUI's requirements.
+## Implementation acceptance criteria
 
-## 6.6. Alternatives considered
+The implementation must demonstrate the published behavior on native and downlevel paths.
+In particular, it must cover:
 
-**A boolean opt-in instead of an id.** `PersistPlacement = true` requires less API surface, but a
-multi-window app could not identify placements independently. WinUI would also have to derive
-identity from information such as window class, XAML type, or creation order, none of which is
-stable across app versions.
+- removed and repositioned monitors, missing device names, DPI changes, and work-area changes;
+- completely off-screen, partly off-screen, oversized, fixed-size, and constrained windows;
+- normal, maximized, snapped, and all three minimized restore states;
+- snapping disabled, missing virtual desktops, and unavailable desktop identity;
+- hidden adjustments, successful and failed hidden placement, and absent overlapped history;
+- both initial entry methods, every reason/activation row, and every `KeepHidden` combination;
+- direct native display, reentrant display and close, invalid options, and consumed opportunities;
+- snapshot independence, coherent concurrent reads, invalid intermediate edits, and C#/C++/WinRT projection;
+- accepted and cancelled close, native destruction, confirmed and cancelled session end;
+- corrupt or unavailable storage, explicit precedence, no automatic retry, and no-data fallback;
+- native launcher commands with a preceding splash or other HWND, without unexpected activation;
+- unchanged runtime behavior for apps that do not use the feature.
 
-**Persisting automatically for every window.** Rejected. It changes behavior for every existing
-app, and there is no identity WinUI could safely derive to key the saved data.
-
-**Restoring on window construction rather than on first show.** Rejected. It would apply
-placement before the app has had a chance to set `PersistPlacementId`, and it would make the
-restore ordering depend on when the app happened to construct the window.
-
-**An immutable placement plus a builder.** This keeps every accepted placement valid, but adds a
-second type and a `Build()` step whenever an app changes placement data. A mutable detached
-snapshot is used instead. The target window copies and validates the complete object when it is
-accepted.
-
-**Projecting PlacementEx directly.** Rejected. `PlacementEx` also contains transient display
-instructions, test controls, and methods that implement policy. `WindowPlacement` projects its
-durable data by meaning rather than exposing its native layout or every native operation.
-
-## 6.7. Behavior notes
-
-* Placement is restored before the window is first displayed, so a restored window is never
-  painted at its default placement first.
-* A window that is constructed but never shown does not overwrite good saved data with default
-  geometry.
-* `Hide()` does not close the window, save placement, or consume an open initial-placement
-  opportunity.
-* Saving a hidden window uses its last non-hidden placement.
-* Sizes set through `Width` and `Height` before the first display are applied first, and a
-  successfully restored placement supersedes them.
-* Explicit placement supplied through `Window.TrySetInitialPlacement` takes precedence over
-  automatic restore. A non-empty `PersistPlacementId` still enables automatic saving.
-* Restoring placement does not trigger a save. Saving happens on close, on destroy, and on
-  session end.
+[RegisterApplicationRestart]: https://learn.microsoft.com/windows/win32/api/winbase/nf-winbase-registerapplicationrestart
+[Copy-construction guidance]: https://learn.microsoft.com/windows/apps/develop/cpp-winrt/consume-apis#dont-copy-construct-by-mistake
