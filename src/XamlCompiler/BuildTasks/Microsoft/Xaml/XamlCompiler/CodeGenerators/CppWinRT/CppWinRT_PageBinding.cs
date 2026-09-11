@@ -61,8 +61,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.BindingsClassName));
             this.Write("()\r\n        {\r\n            ReleaseAllListeners();\r\n        }\r\n\r\n");
   }
-            this.Write("        void Connect(int32_t connectionId, IInspectable const& target) override\r\n" +
-                    "        {\r\n            switch(connectionId)\r\n            {\r\n");
+            this.Write("        void Connect(std::int32_t connectionId, IInspectable const& target) overr" +
+                    "ide\r\n        {\r\n            switch(connectionId)\r\n            {\r\n");
  foreach (var element in bindUniverse.ElementsWithConnectCase) { 
             this.Write("            case ");
             this.Write(this.ToStringHelper.ToStringWithCulture(element.ConnectionId));
@@ -174,7 +174,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
       } 
             this.Write(@"        }
 
-        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
+        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase)
         {
             nextPhase = -1;
             switch (phase)
@@ -228,8 +228,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write(">(item) , 1 << phase);\r\n        }\r\n");
  } else if (bindUniverse.NeedsIDataTemplateComponent) { 
             this.Write("        void Recycle() override\r\n        {\r\n            return;\r\n        }\r\n\r\n   " +
-                    "     void ProcessBindings(IInspectable const& item, int itemIndex, int phase, in" +
-                    "t32_t& nextPhase)\r\n        {\r\n            nextPhase = 1;\r\n        }\r\n");
+                    "     void ProcessBindings(IInspectable const& item, int itemIndex, int phase, st" +
+                    "d::int32_t& nextPhase)\r\n        {\r\n            nextPhase = 1;\r\n        }\r\n");
  } 
             this.Write("\r\n");
  if (bindUniverse.DistinctConvertersUsed.Count() > 0) { 
@@ -324,13 +324,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
       if (bindStep is FunctionStep) { 
             this.Write("        void Update_");
             this.Write(this.ToStringHelper.ToStringWithCulture(bindStep.CodeName));
-            this.Write("(int32_t phase)\r\n");
+            this.Write("(std::int32_t phase)\r\n");
       } else { 
             this.Write("        void Update_");
             this.Write(this.ToStringHelper.ToStringWithCulture(bindStep.CodeName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(bindStep.ValueType));
-            this.Write(" obj, int32_t phase)\r\n");
+            this.Write(" obj, std::int32_t phase)\r\n");
       }
             this.Write("        {\r\n");
       Output_UpdateChildListeners_Call(bindStep, "obj");

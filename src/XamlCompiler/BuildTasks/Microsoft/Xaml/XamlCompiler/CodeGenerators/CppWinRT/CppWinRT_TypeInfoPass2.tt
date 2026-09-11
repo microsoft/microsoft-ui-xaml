@@ -178,7 +178,7 @@ const TypeInfo TypeInfos[] =
 <#  } #>
 
 <#  entryIndex = 0; #>
-constexpr uint32_t TypeInfoLookup[] = { 
+constexpr std::uint32_t TypeInfoLookup[] = { 
 <#  foreach(var entry in Model.TypeInfoLookup) #>
 <#  { #>
     <#= String.Format("{0,3},   // {1,3}", entry, entryIndex++) #>
@@ -271,7 +271,7 @@ const wchar_t* GetShortName(const wchar_t* longName)
 
 const TypeInfo* GetTypeInfo(::winrt::hstring const& typeName)
 {
-    size_t typeNameLength = typeName.size();
+    std::size_t typeNameLength = typeName.size();
     if (typeNameLength < _countof(TypeInfoLookup) - 1)
     {
         const auto begin = TypeInfos + TypeInfoLookup[typeNameLength];

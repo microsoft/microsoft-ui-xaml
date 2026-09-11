@@ -543,12 +543,12 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
         _enumValues.insert_or_assign(name.data(), value);
     }
 
-    uint32_t XamlUserType::CreateEnumUIntFromString(::winrt::hstring const& input) const
+    std::uint32_t XamlUserType::CreateEnumUIntFromString(::winrt::hstring const& input) const
     {
         bool found = false;
 
         const std::wregex regularExpression(L"^\\s+|\\s*,\\s*|\\s+$");
-        uint32_t val = 0;
+        std::uint32_t val = 0;
 
         for (std::wcregex_token_iterator it{ input.begin(), input.end(), regularExpression, -1 }, end; it != end; ++it)
         {

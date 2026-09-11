@@ -52,7 +52,7 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
         virtual void StopTracking() = 0;
         virtual void Connect(int connectionId, IInspectable const& target) = 0;
         virtual void Recycle() = 0;
-        virtual void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase) = 0;
+        virtual void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase) = 0;
         virtual void SubscribeForDataContextChanged(FrameworkElement const& object, XamlBindings& handler) = 0;
         virtual void DisconnectUnloadedObject(int connectionId) = 0;
     };
@@ -78,14 +78,14 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 
         // IComponentConnector
         void Connect(int connectionId, IInspectable const& target);
-        IComponentConnector GetBindingConnector(int32_t, IInspectable const&);
+        IComponentConnector GetBindingConnector(std::int32_t, IInspectable const&);
 
         // IDataTemplateComponent
-        virtual void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase);
+        virtual void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase);
         virtual void Recycle();
 
         // IDataTemplateExtension
-        bool ProcessBinding(uint32_t phase);
+        bool ProcessBinding(std::uint32_t phase);
         int ProcessBindings(ContainerContentChangingEventArgs const& args);
         void ResetTemplate();
 
@@ -157,7 +157,7 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
             // Overridden in the binding class as needed.
         }
 
-        virtual void ProcessBindings(IInspectable const&, int, int, int32_t& nextPhase) override
+        virtual void ProcessBindings(IInspectable const&, int, int, std::int32_t& nextPhase) override
         {
             // Overridden in the binding class as needed.
             nextPhase = -1;
@@ -183,8 +183,8 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
         void UpdatePropertyChangedListener(INotifyPropertyChanged const& obj, INotifyPropertyChanged& cache, ::winrt::event_token& token);
         void UpdatePropertyChangedListener(INotifyPropertyChanged const& obj, ::winrt::weak_ref<<#=Projection(KnownNamespaces.XamlData)#>::INotifyPropertyChanged>& cache, ::winrt::event_token& token);
         void UpdateCollectionChangedListener(INotifyCollectionChanged const& obj, INotifyCollectionChanged& cache, ::winrt::event_token& token);
-        void UpdateDependencyPropertyChangedListener(DependencyObject const& obj, DependencyProperty const& property, DependencyObject&  cache, int64_t& token);
-        void UpdateDependencyPropertyChangedListener(DependencyObject const& obj, DependencyProperty const& property, ::winrt::weak_ref<<#=Projection(KnownNamespaces.Xaml)#>::DependencyObject>& cache, int64_t& token);
+        void UpdateDependencyPropertyChangedListener(DependencyObject const& obj, DependencyProperty const& property, DependencyObject&  cache, std::int64_t& token);
+        void UpdateDependencyPropertyChangedListener(DependencyObject const& obj, DependencyProperty const& property, ::winrt::weak_ref<<#=Projection(KnownNamespaces.Xaml)#>::DependencyObject>& cache, std::int64_t& token);
 <# if (ProjectInfo.IsInputValidationEnabled) {#>
         void UpdateErrorsChangedListener(INotifyDataErrorInfo const& obj, INotifyDataErrorInfo& cache, ::winrt::event_token& token);
         void UpdateErrorsChangedListener(INotifyDataErrorInfo const& obj, ::winrt::weak_ref<<#=Projection(KnownNamespaces.XamlData)#>::INotifyDataErrorInfo>& cache, ::winrt::event_token& token);
