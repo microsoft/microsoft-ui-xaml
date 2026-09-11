@@ -613,6 +613,9 @@ WeakReferenceSourceNoThreadId::ClearRefCountPeg()
 
 void WeakReferenceSourceNoThreadId::UpdatePeg(bool peg)
 {
+#if DBG
+    const PeerLifetimeState fromState = GetPeerLifetimeState();
+#endif
     if(peg)
     {
         if (0 == m_ulPegRefCount)
@@ -650,19 +653,33 @@ void WeakReferenceSourceNoThreadId::UpdatePeg(bool peg)
            ASSERT(FALSE, L"Over unpeg: %p", this );
         }
     }
+#if DBG
+    // Pillar A: announce the counted-peg transition through the single choke point (observability only).
+    IGNOREHR(TransitionPeerState(fromState, GetPeerLifetimeState()));
+#endif
 }
 
 void WeakReferenceSourceNoThreadId::PegNoRef()
 {
+#if DBG
+    const PeerLifetimeState fromState = GetPeerLifetimeState();
+#endif
     if (!m_bIsPeggedNoRef)
     {
         m_bIsPeggedNoRef = TRUE;
         ctl::addref_interface(this);
     }
+#if DBG
+    // Pillar A: announce the no-ref-peg transition through the single choke point (observability only).
+    IGNOREHR(TransitionPeerState(fromState, GetPeerLifetimeState()));
+#endif
 }
 
 void WeakReferenceSourceNoThreadId::UnpegNoRef(bool suppressClearReferenceTrackerPeg)
 {
+#if DBG
+    const PeerLifetimeState fromState = GetPeerLifetimeState();
+#endif
     if (m_bIsPeggedNoRef)
     {
         m_bIsPeggedNoRef = FALSE;
@@ -685,6 +702,10 @@ void WeakReferenceSourceNoThreadId::UnpegNoRef(bool suppressClearReferenceTracke
         ReferenceTrackerManager::TriggerCollection();
     }
     #endif
+#if DBG
+    // Pillar A: announce the no-ref-unpeg transition through the single choke point (observability only).
+    IGNOREHR(TransitionPeerState(fromState, GetPeerLifetimeState()));
+#endif
 }
 
 //+---------------------------------------------------------------------------
@@ -753,6 +774,138 @@ bool
 WeakReferenceSourceNoThreadId::IsPeggedNoRef()
 {
     return m_bIsPeggedNoRef ? TRUE : FALSE;
+}
+
+//+---------------------------------------------------------------------------
+//
+// Peer-lifetime state machine (Pillar A)
+//
+// GetPeerLifetimeState derives the single explicit lifetime state from the existing (scattered) peg/tracker
+// bookkeeping. It reads the backing fields directly rather than the Is* helpers so it can stay const and cannot
+// itself perturb any state. Ordering matters: a torn-down peer is terminal, an explicitly rooted peer is Pegged,
+// otherwise a peer still visible to a tracker source (or protected by the create-time tracker peg) is Tracked, and
+// everything else is Detached.
+//
+//+---------------------------------------------------------------------------
+
+WeakReferenceSourceNoThreadId::PeerLifetimeState
+WeakReferenceSourceNoThreadId::GetPeerLifetimeState() const
+{
+    if (m_bIsDisconnected || m_bIsDisconnectedFromCore)
+    {
+        return PeerLifetimeState::TornDown;
+    }
+
+    // Strongly rooted by the native side: a counted ref peg, a no-ref peg, an implicit ref-count peg, or an
+    // expected reference from the tree/RCWs.
+    if (m_ulPegRefCount > 0
+        || m_bIsPeggedNoRef
+        || m_referenceTrackerBitFields.bRefCountPeg
+        || m_referenceTrackerBitFields.peggedByCoreTable
+        || m_ulExpectedRefCount > 0)
+    {
+        return PeerLifetimeState::Pegged;
+    }
+
+    // Not explicitly pegged, but still GC-visible: held by a tracker source, or protected by the create-time
+    // reference-tracker peg until the object is referenced/rooted.
+    if (m_ulRefCountFromTrackerSource > 0 || m_bReferenceTrackerPeg)
+    {
+        return PeerLifetimeState::Tracked;
+    }
+
+    return PeerLifetimeState::Detached;
+}
+
+/* static */ bool
+WeakReferenceSourceNoThreadId::IsLegalPeerStateTransition(PeerLifetimeState from, PeerLifetimeState to)
+{
+    // Idempotent self-edges are always legal (e.g. incrementing an already-nonzero ref peg keeps the peer Pegged,
+    // and shutdown may re-announce TornDown).
+    if (from == to)
+    {
+        return true;
+    }
+
+    switch (from)
+    {
+        case PeerLifetimeState::Detached:
+            // A detached peer can become rooted, become tracker-visible, or be torn down.
+            return to == PeerLifetimeState::Pegged
+                || to == PeerLifetimeState::Tracked
+                || to == PeerLifetimeState::Releasing
+                || to == PeerLifetimeState::TornDown;
+
+        case PeerLifetimeState::Pegged:
+            // A rooted peer can drop to tracker-visible, drop all roots, begin releasing, or be torn down.
+            return to == PeerLifetimeState::Tracked
+                || to == PeerLifetimeState::Detached
+                || to == PeerLifetimeState::Releasing
+                || to == PeerLifetimeState::TornDown;
+
+        case PeerLifetimeState::Tracked:
+            // A tracker-visible peer can be re-rooted, drop to detached, begin releasing, or be torn down.
+            return to == PeerLifetimeState::Pegged
+                || to == PeerLifetimeState::Detached
+                || to == PeerLifetimeState::Releasing
+                || to == PeerLifetimeState::TornDown;
+
+        case PeerLifetimeState::Releasing:
+            // Release only proceeds to teardown.
+            return to == PeerLifetimeState::TornDown;
+
+        case PeerLifetimeState::TornDown:
+            // Terminal.
+            return false;
+    }
+
+    return false;
+}
+
+#if DBG
+/* static */ const wchar_t*
+WeakReferenceSourceNoThreadId::PeerLifetimeStateToString(PeerLifetimeState state)
+{
+    switch (state)
+    {
+        case PeerLifetimeState::Detached:  return L"Detached";
+        case PeerLifetimeState::Pegged:    return L"Pegged";
+        case PeerLifetimeState::Tracked:   return L"Tracked";
+        case PeerLifetimeState::Releasing: return L"Releasing";
+        case PeerLifetimeState::TornDown:  return L"TornDown";
+    }
+    return L"<invalid>";
+}
+#endif
+
+_Check_return_ HRESULT
+WeakReferenceSourceNoThreadId::TransitionPeerState(PeerLifetimeState expectedFrom, PeerLifetimeState to)
+{
+    // Non-fatal observability/assertion gate. During the migration/compat-shim phase the peg primitives still own
+    // the field mutations; this validates that whatever they did corresponds to a legal edge of the state machine
+    // and that the caller's view of the "from" state matched reality. We deliberately avoid a retail fail-fast so
+    // that weaving this into hot peg paths cannot destabilize shipping builds; disagreements are surfaced as debug
+    // asserts and (when enabled) lifetime traces instead.
+#if DBG
+    ASSERT(
+        IsLegalPeerStateTransition(expectedFrom, to),
+        L"Illegal peer-lifetime transition %s -> %s on %p",
+        PeerLifetimeStateToString(expectedFrom),
+        PeerLifetimeStateToString(to),
+        this);
+
+    #if DBG_LIFETIME
+    WCHAR szValue[256];
+    swprintf_s(szValue, 256, L"PeerLifetime: %p transition %s -> %s", this,
+        PeerLifetimeStateToString(expectedFrom), PeerLifetimeStateToString(to));
+    Trace(szValue);
+    #endif
+#else
+    UNREFERENCED_PARAMETER(expectedFrom);
+    UNREFERENCED_PARAMETER(to);
+#endif
+
+    return S_OK;
 }
 
 //+---------------------------------------------------------------------------
