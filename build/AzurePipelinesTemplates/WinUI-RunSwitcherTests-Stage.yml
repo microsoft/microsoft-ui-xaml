@@ -188,6 +188,36 @@ stages:
             throw "Switcher certification requires exactly ${{ parameters.expectedTestCount }} passing tests."
           }
 
+    # ---- NON-GATING full-suite engagement probe (no regkey) -------------------------------------------
+    # Runs the full master-backed lifted suite under /p:SwitcherMode=true, which (a) engages the switcher
+    # process-wide via ModuleSetup and (b) makes each test prefer .master.switcher.<ext> (fallback .master.<ext>).
+    # Engagement uses the PUBLIC-API LAF path only (SwitcherLafToken) - NO regkey. continueOnError + a separate
+    # te process, AFTER the gating CompNode certification, so it cannot affect the 14/14 gate. Purpose: empirically
+    # determine on the CURRENT ge_current image whether ModuleSetup engagement works for non-SwitcherTests classes
+    # (if it Blocks with REGDB/"did not engage", per-class packaged ClassSetup engagement is required instead).
+    # The Collect/Publish steps below capture any generated .save.xml trees for baselining.
+    - task: powershell@2
+      condition: always()
+      continueOnError: true
+      timeoutInMinutes: 120
+      displayName: '[Probe] Full master-backed suite under SwitcherMode (no regkey)'
+      inputs:
+        targetType: inline
+        workingDirectory: $(testPayloadDirInner)
+        script: |
+          New-Item -ItemType Directory -Path "$(ob_outputDirectory)" -Force | Out-Null
+          $log = Join-Path "$(ob_outputDirectory)" 'fullsuite-switcher-probe.log'
+          .\runtests.cmd "*" -TestsWithMasterFilesOnly -HostingMode:UAP -forceHostingMode /p:SwitcherMode=true /p:SwitcherLafToken=$env:SWITCHER_LAF_TOKEN /reportLoadingIssue 2>&1 | Tee-Object -FilePath $log
+          $s = Select-String -Path $log -Pattern 'Summary:\s*Total=(\d+).*?Passed=(\d+).*?Failed=(\d+).*?Blocked=(\d+)' | Select-Object -Last 1
+          if ($s) {
+            Write-Host "##[section]FULL-SUITE PROBE RESULT: $($s.Line.Trim())"
+          } else {
+            Write-Host "##[warning]Full-suite probe produced no TAEF summary - likely ModuleSetup did not engage (see fullsuite-switcher-probe.log)."
+          }
+          Write-Host "Full-suite probe exit=$LASTEXITCODE (non-gating)."
+      env:
+        SWITCHER_LAF_TOKEN: $(CompositionSwitcherLafToken)
+
     - task: PublishTestResults@2
       condition: always()
       inputs:
