@@ -61,10 +61,23 @@ private:
 
     // One peer per realized cell, keyed weakly so a cell dropped by a rebuild or a recycle releases
     // immediately. Rebuilt wholesale from the live cell list on every GetChildrenCore.
+    //
+    // The peer is held in a tracker_ref, the repo convention for a strong WinRT reference owned by
+    // a ReferenceTracker type, so the reference tracker can walk this edge and collect cycles
+    // rather than the peer being an opaque strong ref inside a tracked object.
     struct CellPeerCacheEntry
     {
+        CellPeerCacheEntry(
+            ITrackerHandleManager const* owner,
+            winrt::FrameworkElement const& cellElement,
+            winrt::AutomationPeer const& cellPeer)
+            : cell(winrt::make_weak(cellElement))
+            , peer(owner, cellPeer)
+        {
+        }
+
         winrt::weak_ref<winrt::FrameworkElement> cell{ nullptr };
-        winrt::AutomationPeer peer{ nullptr };
+        tracker_ref<winrt::AutomationPeer> peer;
     };
 
     std::vector<CellPeerCacheEntry> m_cellPeerCache;

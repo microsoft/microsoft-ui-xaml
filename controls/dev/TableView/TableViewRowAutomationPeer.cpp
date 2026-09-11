@@ -232,7 +232,7 @@ winrt::AutomationPeer TableViewRowAutomationPeer::GetOrCreateCellPeer(
     {
         if (entry.peer && entry.cell.get() == cell)
         {
-            return entry.peer;
+            return entry.peer.get();
         }
     }
 
@@ -256,7 +256,7 @@ winrt::AutomationPeer TableViewRowAutomationPeer::GetOrCreateCellPeer(
     // Cached on miss so Grid.GetItem - which can be the first, or only, path a client takes to a
     // cell - still yields a provider whose identity survives the next query.
     winrt::AutomationPeer const peer = winrt::make<TableViewCellAutomationPeer>(cell, row, column, visibleColumnIndex);
-    m_cellPeerCache.push_back({ winrt::make_weak(cell), peer });
+    m_cellPeerCache.emplace_back(this, cell, peer);
     return peer;
 }
 
@@ -367,7 +367,7 @@ winrt::IVector<winrt::AutomationPeer> TableViewRowAutomationPeer::GetChildrenCor
                 // Dedicated cell peers provide names, coordinates, and header references.
                 if (auto const cellPeer = GetOrCreateCellPeer(cellFE, column, visibleColumnIndex))
                 {
-                    liveCache.push_back({ winrt::make_weak(cellFE), cellPeer });
+                    liveCache.emplace_back(this, cellFE, cellPeer);
                     children.Append(cellPeer);
                 }
             }

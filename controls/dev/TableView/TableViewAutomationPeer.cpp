@@ -375,7 +375,7 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetC
                 // The peer is cached even when it currently has no provider: ProviderFromPeer only
                 // yields one for a peer UIA has connected, so a transiently unconnected peer must
                 // keep its identity for the next enumeration rather than being rebuilt.
-                liveCache.push_back({ winrt::make_weak(column), headerPeer });
+                liveCache.emplace_back(this, column, headerPeer);
 
                 // A provider array must not contain nulls - UIA marshals every element.
                 if (auto const provider = ProviderFromPeer(headerPeer))
@@ -407,7 +407,7 @@ winrt::AutomationPeer TableViewAutomationPeer::GetOrCreateColumnHeaderPeer(
     {
         if (entry.peer && entry.column.get() == column)
         {
-            return entry.peer;
+            return entry.peer.get();
         }
     }
 
@@ -428,7 +428,7 @@ winrt::AutomationPeer TableViewAutomationPeer::GetOrCreateColumnHeaderPeer(
             [](ColumnHeaderPeerCacheEntry const& entry) { return !entry.peer || !entry.column.get(); }),
         m_columnHeaderPeerCache.end());
 
-    m_columnHeaderPeerCache.push_back({ winrt::make_weak(column), peer });
+    m_columnHeaderPeerCache.emplace_back(this, column, peer);
     return peer;
 }
 

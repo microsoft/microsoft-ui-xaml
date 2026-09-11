@@ -62,10 +62,22 @@ private:
     // to GetColumnHeaders must hand back the same provider for a given column: minting a fresh
     // peer per call yields unstable provider identity and leaves the returned providers with no
     // owner keeping them alive.
+    //
+    // The peer is held in a tracker_ref, the repo convention for a strong WinRT reference owned by
+    // a ReferenceTracker type, so the reference tracker can walk this edge and collect cycles.
     struct ColumnHeaderPeerCacheEntry
     {
+        ColumnHeaderPeerCacheEntry(
+            ITrackerHandleManager const* owner,
+            winrt::TableViewColumn const& headerColumn,
+            winrt::AutomationPeer const& headerPeer)
+            : column(winrt::make_weak(headerColumn))
+            , peer(owner, headerPeer)
+        {
+        }
+
         winrt::weak_ref<winrt::TableViewColumn> column{ nullptr };
-        winrt::AutomationPeer peer{ nullptr };
+        tracker_ref<winrt::AutomationPeer> peer;
     };
 
     void RaiseStructureChanged(winrt::AutomationStructureChangeType const& structureChangeType);
