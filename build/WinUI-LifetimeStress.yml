@@ -1,0 +1,115 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+#
+# WinUI Lifetime Stress (soak) pipeline.
+#
+# This scheduled pipeline exists to reintroduce the long-running "lifetime" coverage XAML used to have back in the
+# Win8 era: build WinUI and then run the lifetime stress suite for an extended period, watching for object-lifetime
+# crashes (use-after-free / premature native peer destruction / ref-counting bugs in the 3-layer peer model).
+#
+# It reuses the normal Build + RunTests stages. The only difference from a Nightly run is the
+# WINUI_LIFETIME_STRESS_MINUTES variable below: it puts the LifetimeStressTestSuite tests
+# (controls/test/MUXControlsTestApp/LifetimeStressTests.cs) into soak mode so each lifetime scenario loops on a
+# wall-clock budget instead of a fixed (gate) iteration count. Every other test still runs with its normal
+# behavior. The suite is isolated into its own TAEF/Helix work item, so a lifetime crash here does not cascade
+# into unrelated tests.
+#
+# NOTE: This pipeline must be registered in Azure DevOps and its schedule/soak duration tuned there. The value
+# below is the default soak duration (in minutes) per lifetime scenario.
+
+trigger: none
+name: $(versionFinal)
+
+schedules:
+- cron: "0 7 * * *" # Daily at 07:00 UTC (outside of peak Nightly hours).
+  displayName: Daily lifetime stress soak
+  branches:
+    include:
+    - main
+  always: true
+
+parameters: # parameters show up in the ADO UI at build-queue time
+- name: SignOutput
+  type: boolean
+  default: false
+- name: runArm64Tests
+  displayName: "Enable running tests on arm64"
+  type: boolean
+  default: false
+- name: lifetimeStressMinutes
+  displayName: "Minutes to soak each lifetime stress scenario"
+  # NOTE: The shared RunTests job/step has a ~90 minute timeout. The lifetime suite runs as a single isolated
+  # work item, so the total added time is roughly (this value x number of lifetime scenarios). Keep the default
+  # comfortably inside that timeout; for a true multi-hour soak, raise this AND the timeoutInMinutes in
+  # WinUI-RunTestPassOnPipeline-Job.yml (or run this pipeline against a dedicated long-timeout job).
+  type: number
+  default: 10
+
+variables:
+- template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
+- template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
+- group: WinUI-Variable-Library
+# Puts LifetimeStressTests into soak mode. The harness reads this from the environment and, when > 0, loops each
+# scenario until the budget elapses instead of using its default gate iteration count.
+- name: WINUI_LIFETIME_STRESS_MINUTES
+  value: ${{ parameters.lifetimeStressMinutes }}
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: OneBranch.Pipelines/GovernedTemplates
+      ref: refs/heads/main
+    - repository: WindowsAppSDKConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
+      ref: refs/heads/main
+    - repository: WindowsAppSDKVersionConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
+      ref: refs/heads/main
+
+extends:
+  template: v2/Microsoft.NonOfficial.yml@templates
+  parameters:
+    featureFlags:
+      EnableCDPxPAT: false
+      WindowsHostVersion:
+        Version: 2022
+        Network: KS3
+    platform:
+      name: 'windows_undocked' # windows undocked
+    globalsdl:
+      tsa:
+        enabled: false
+      enableXFGCheck: false
+      codeql:
+        tsandjs:
+          enabled: false
+        python:
+          enabled: false
+        psscriptanalyzer:
+          enable: false
+      prefast:
+        enabled: false
+        break: true
+      apiscan:
+        enabled: false
+        break: false
+      binskim:
+        enabled: true
+        analyzeTargetGlob: $(BinskimExclusion)
+        break: true
+      policheck:
+        exclusionsFile: $(Build.SourcesDirectory)\.config\PolicheckExclusions.xml
+
+    stages:
+    - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
+      parameters:
+        pipelineKind: Nightly
+        signOutput: ${{ parameters.SignOutput }}
+        runStaticAnalysis: false
+
+    - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
+      parameters:
+        pipelineKind: Nightly

@@ -48,6 +48,14 @@ if(!(Test-Path $dumpsDir))
 }
 
 
+# If the work item proj directory is missing, the upstream CreateTestPayload job most likely did not publish
+# its test-payload artifact (canceled/timed out, e.g. in a hung 1ES post-job/SDL step). Fail with a clear,
+# actionable message instead of letting Get-ChildItem throw a cryptic PathNotFound error under $ErrorActionPreference=Stop.
+if (-not (Test-Path $WorkItemProjDir))
+{
+    Throw "Work item proj dir '$WorkItemProjDir' does not exist. The upstream CreateTestPayload job likely did not publish its test-payload artifact (canceled/timed out), so no helix work item proj files were available to run."
+}
+
 $projFiles = Get-ChildItem -Path $WorkItemProjDir -Filter $WorkItemProjFileNameFilter
 
 $workItems =@()
