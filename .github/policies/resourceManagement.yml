@@ -57,6 +57,34 @@ configuration:
       - closeIssue
 
 
+    - description: Enable validation and auto-merge for WindowsAppSDK Maestro PRs
+      triggerOnOwnActions: false
+      if:
+      - payloadType: Pull_Request
+      - or:
+        - isAction:
+            action: Opened
+        - isAction:
+            action: Reopened
+        - isAction:
+            action: Synchronize
+      - isActivitySender:
+          user: dotnet-maestro[bot]
+      - or:
+        - targetsBranch:
+            branch: main
+        - targetsBranch:
+            branch: release/*
+      - bodyContains:
+          pattern: 'Begin:57be40db-9f69-47be-beb4-eb42d78d3d8b'
+          isRegex: false
+      then:
+      - addReply:
+          reply: /azp run
+      - enableAutoMerge:
+          mergeMethod: Squash
+
+
     - description: Enable auto merge
       if:
       - payloadType: Pull_Request
