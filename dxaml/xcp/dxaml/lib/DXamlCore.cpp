@@ -1905,16 +1905,6 @@ _Check_return_ HRESULT DXamlCore::ShutdownAllPeers()
     HRESULT hr = S_OK;
     HRESULT recordHr = S_OK;
 
-    // Pillar D: detaching managed peers from their native objects is the first teardown phase. Only advance if
-    // the core is still Live so we never regress a native teardown that has already started.
-    if (CCoreServices* core = GetHandle())
-    {
-        if (core->GetTeardownPhase() == DirectUI::TeardownPhase::Live)
-        {
-            core->SetTeardownPhase(DirectUI::TeardownPhase::DetachingManaged);
-        }
-    }
-
     // RS5 Bug #16045535:  If VSM sets a long-lived animated value on a DO, this DO will leak when used in a secondary View.
     // The issue here is that the CModifiedValue destructor doesn't run until the XAML tree is finally being torn down, which
     // happens after we've shutdown all the peers.  Once this happens, the CModifiedValue cannot release its expected reference

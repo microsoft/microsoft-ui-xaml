@@ -182,7 +182,6 @@ namespace Theming {
 #include "DebugSource.h"
 #include <Microsoft.UI.Xaml.hosting.referencetracker.h>
 #include "ReferenceTrackerInterfaces.h"
-#include "TeardownPhase.h"
 
 #include "PropertyChangedParams.h"
 
@@ -1625,26 +1624,10 @@ public:
     // Returns true when we are resetting the visual tree
     _Check_return_ bool IsShuttingDown() { return m_bIsShuttingDown;}
     bool IsTearingDownTree() { return m_bIsShuttingDown || m_isTearingDownIsland; }
-    void SetShuttingDown(_In_ bool bState)
-    {
-        m_bIsShuttingDown = bState;
-        // Pillar D: keep the explicit teardown epoch in step with the legacy reset flag. Resetting the visual
-        // tree is a native teardown; clearing the flag returns the (still-live) core to Live so the tree can be
-        // rebuilt.
-        SetTeardownPhase(bState ? DirectUI::TeardownPhase::TearingDownNative : DirectUI::TeardownPhase::Live);
-    }
+    void SetShuttingDown(_In_ bool bState) { m_bIsShuttingDown = bState;}
 
     // Returns true when we are in the CoreServices destructor
     bool IsDestroyingCoreServices() { return m_bIsDestroyingCoreServices; }
-
-    // Pillar D - explicit teardown epoch (single authoritative "how far into teardown are we?" token).
-    DirectUI::TeardownPhase GetTeardownPhase() const { return m_teardownPhase; }
-    // Single choke point for advancing the teardown epoch. Validates the ordering contract in debug and traces.
-    void SetTeardownPhase(DirectUI::TeardownPhase phase);
-    // Pillar D reentrancy gate: returns true when a reentrant teardown callback should no-op because the native
-    // tree/core is being torn down. Gated behind the NoOpReentrantCallbacksDuringTeardown feature (default off);
-    // emits telemetry when it fires so we can measure before enabling.
-    bool ShouldNoOpReentrantCallbackDuringTeardown();
 
     bool IsTransparentBackground() const { return m_isTransparentBackground; }
     bool GetIsTextPerformanceVisualizationEnabled() const;
@@ -1940,9 +1923,6 @@ private:
     bool                        m_bVisibilityToggled;
     bool                        m_isTransparentBackground;
     bool                        m_isTearingDownIsland { false };
-
-    // Pillar D - explicit teardown epoch. Drives alongside (does not replace) the scattered shutdown bools above.
-    DirectUI::TeardownPhase     m_teardownPhase { DirectUI::TeardownPhase::Live };
 
     XINT32                      m_cPendingDecodes;
     INT32                       m_cPendingFontDownloads;

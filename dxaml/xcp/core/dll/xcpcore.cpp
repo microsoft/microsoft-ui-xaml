@@ -910,9 +910,6 @@ CCoreServices::~CCoreServices() noexcept
     CCoreServices::SetIsCoreServicesReady(FALSE);
 
     m_bIsDestroyingCoreServices = TRUE;
-    // Pillar D: entering the core destructor. The core tree is being torn down here; the terminal Dead phase
-    // is announced at the very end of the destructor, once teardown has actually completed.
-    SetTeardownPhase(DirectUI::TeardownPhase::TearingDownNative);
 
     // TODO: Do this now or in ResetVisualTree?
     // Shutdown the work items early in the process of shutting down the core
@@ -1199,61 +1196,7 @@ CCoreServices::~CCoreServices() noexcept
 
     ASSERT(m_deviceListeners.empty());
     ASSERT(m_renderStateListeners.empty());
-    // Pillar D: teardown is complete - the core is now dead. This is the terminal phase; no legal transition
-    // leaves it. It is intentionally the final statement of the destructor.
-    SetTeardownPhase(DirectUI::TeardownPhase::Dead);
     LEAVESECTION(Main);
-}
-
-// Pillar D - single choke point for advancing the explicit teardown epoch. Validates the ordering contract in
-// debug builds and traces every transition, so a bad teardown ordering surfaces in logs (and asserts under DBG).
-void CCoreServices::SetTeardownPhase(DirectUI::TeardownPhase phase)
-{
-    const DirectUI::TeardownPhase previous = m_teardownPhase;
-    if (previous == phase)
-    {
-        return; // idempotent re-announce - nothing changed
-    }
-
-#if DBG
-    ASSERT(DirectUI::IsLegalTeardownPhaseTransition(previous, phase));
-#endif
-
-    m_teardownPhase = phase;
-
-    TraceLoggingProviderWrite(
-        XamlTelemetry, "CoreServices_TeardownPhaseTransition",
-        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "CoreServices"),
-        TraceLoggingUInt32(GetThreadID(), "ThreadId"),
-        TraceLoggingUInt8(static_cast<uint8_t>(previous), "FromPhase"),
-        TraceLoggingUInt8(static_cast<uint8_t>(phase), "ToPhase"),
-        TraceLoggingLevel(WINEVENT_LEVEL_INFO));
-}
-
-// Pillar D reentrancy gate. Returns true when a reentrant callback arriving during native teardown should no-op
-// instead of touching half-destroyed tree/core invariants (failure mode P5). It is feature-gated (default off)
-// via NoOpReentrantCallbacksDuringTeardown, but always emits telemetry when it would fire so the impact can be
-// sized before the behavior change is enabled.
-bool CCoreServices::ShouldNoOpReentrantCallbackDuringTeardown()
-{
-    if (!DirectUI::IsTearingDownOrDead(m_teardownPhase))
-    {
-        return false;
-    }
-
-    static auto runtimeEnabledFeatureDetector = RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector();
-    const bool featureEnabled = runtimeEnabledFeatureDetector->IsFeatureEnabled(
-        RuntimeFeatureBehavior::RuntimeEnabledFeature::NoOpReentrantCallbacksDuringTeardown);
-
-    TraceLoggingProviderWrite(
-        XamlTelemetry, "CoreServices_ReentrantCallbackDuringTeardown",
-        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "CoreServices"),
-        TraceLoggingUInt32(GetThreadID(), "ThreadId"),
-        TraceLoggingUInt8(static_cast<uint8_t>(m_teardownPhase), "Phase"),
-        TraceLoggingBoolean(featureEnabled, "NoOpEnabled"),
-        TraceLoggingLevel(WINEVENT_LEVEL_WARNING));
-
-    return featureEnabled;
 }
 
 // Creates an instance of the core services object and initializes its
@@ -4093,8 +4036,6 @@ CCoreServices::ResetCoreWindowVisualTree()
     HRESULT recordHr = S_OK;
     m_bInResetVisualTree = true;
     m_isTearingDownIsland = true;
-    // Pillar D: island visual-tree reset is a native teardown.
-    SetTeardownPhase(DirectUI::TeardownPhase::TearingDownNative);
 
     // Clear any pending download requests
     RECORDFAILURE(ProcessDownloadRequests(TRUE));
@@ -4192,8 +4133,6 @@ CCoreServices::ResetCoreWindowVisualTree()
 Cleanup:
     m_isTearingDownIsland = false;
     m_bInResetVisualTree = false;
-    // Pillar D: island reset is reversible - return to Live unless a full core shutdown is still in progress.
-    SetTeardownPhase((m_bIsShuttingDown || m_bIsDestroyingCoreServices) ? DirectUI::TeardownPhase::TearingDownNative : DirectUI::TeardownPhase::Live);
 
     RRETURN(hr);
 }
@@ -11601,8 +11540,6 @@ void CCoreServices::AddXamlIslandRoot(_In_ CXamlIslandRoot* xamlIslandRoot)
 void CCoreServices::RemoveXamlIslandRoot(_In_ CXamlIslandRoot* xamlIslandRoot)
 {
     m_isTearingDownIsland = true;
-    // Pillar D: removing an island tears down native tree state.
-    SetTeardownPhase(DirectUI::TeardownPhase::TearingDownNative);
 
     CXamlIslandRootCollection* xamlIslandRootCollection {
         do_pointer_cast<CXamlIslandRootCollection>(xamlIslandRoot->GetParentInternal(false /*publicOnly*/)) };
@@ -11633,8 +11570,6 @@ void CCoreServices::RemoveXamlIslandRoot(_In_ CXamlIslandRoot* xamlIslandRoot)
     }
 
     m_isTearingDownIsland = false;
-    // Pillar D: island removal is reversible - return to Live unless a full core shutdown is still in progress.
-    SetTeardownPhase((m_bIsShuttingDown || m_bIsDestroyingCoreServices) ? DirectUI::TeardownPhase::TearingDownNative : DirectUI::TeardownPhase::Live);
 }
 
 void CCoreServices::UpdateXamlIslandRootTargetSize(_In_ CXamlIslandRoot* xamlIslandRoot)
