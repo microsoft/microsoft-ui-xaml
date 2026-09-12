@@ -224,8 +224,28 @@ NavigationView::NavigationView()
 
     m_selectionModel.SingleSelect(true);
     m_selectionModel.Source(m_selectionModelSource);
-    m_selectionChangedRevoker = m_selectionModel.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionModelSelectionChanged });
-    m_childrenRequestedRevoker = m_selectionModel.ChildrenRequested(winrt::auto_revoke, { this, &NavigationView::OnSelectionModelChildrenRequested });
+    // Bind the SelectionModel callbacks weakly. m_selectionModel is a plain (non-tracker) strong field owned by this
+    // NavigationView, and a strong { this, ... } delegate would form a NavigationView -> m_selectionModel -> delegate
+    // -> NavigationView cycle that the reference-tracker GC cannot see (SelectionModel is not a ReferenceTracker peer).
+    // That cycle is only broken in ~NavigationView(), which can never run while the cycle keeps the peer alive, so the
+    // NavigationView (and everything it roots) leaks. A weak delegate breaks the cycle; the handler simply no-ops once
+    // this NavigationView has been collected. Use the make_weak lambda form (not get_weak()) per the note above.
+    m_selectionChangedRevoker = m_selectionModel.SelectionChanged(winrt::auto_revoke,
+        [weakThis](const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                winrt::get_self<NavigationView>(strongThis)->OnSelectionModelSelectionChanged(selectionModel, e);
+            }
+        });
+    m_childrenRequestedRevoker = m_selectionModel.ChildrenRequested(winrt::auto_revoke,
+        [weakThis](const winrt::SelectionModel& selectionModel, const winrt::SelectionModelChildrenRequestedEventArgs& e)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                winrt::get_self<NavigationView>(strongThis)->OnSelectionModelChildrenRequested(selectionModel, e);
+            }
+        });
 
     m_navigationViewItemsFactory = winrt::make_self<NavigationViewItemsFactory>();
 
@@ -3581,7 +3601,11 @@ void NavigationView::UpdateLeftNavigationOnlyVisualState(bool useTransitions)
 void NavigationView::SetNavigationViewItemBaseRevokers(const winrt::NavigationViewItemBase& nvib)
 {
     auto nvibRevokers = winrt::make_self<NavigationViewItemBaseRevokers>();
-    nvibRevokers->visibilityRevoker = RegisterPropertyChanged(nvib, winrt::UIElement::VisibilityProperty(), { this, &NavigationView::OnNavigationViewItemBaseVisibilityPropertyChanged });
+    // Bind weakly: the revokers object is parked on the item's own DP (s_NavigationViewItemBaseRevokersProperty) and the
+    // item is strongly held by m_itemsWithRevokerObjects, so a strong { this, ... } delegate forms a
+    // NavigationView -> item -> revokers -> NavigationView cycle that the tracker GC cannot see. It is only broken in
+    // ~NavigationView() (via ClearAllNavigationViewItemBaseRevokers), which can never run while the cycle roots the peer.
+    nvibRevokers->visibilityRevoker = RegisterPropertyChanged(nvib, winrt::UIElement::VisibilityProperty(), { get_weak(), &NavigationView::OnNavigationViewItemBaseVisibilityPropertyChanged });
     nvib.SetValue(s_NavigationViewItemBaseRevokersProperty, nvibRevokers.as<winrt::IInspectable>());
     m_itemsWithRevokerObjects.insert(nvib);
 }
@@ -3592,10 +3616,12 @@ void NavigationView::SetNavigationViewItemRevokers(const winrt::NavigationViewIt
     {
         if (auto const revokersAsNVIBR = revokers.try_as<NavigationViewItemBaseRevokers>()) 
         {
-            revokersAsNVIBR->keyDownRevoker = nvi.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
-            revokersAsNVIBR->gotFocusRevoker = nvi.GotFocus(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemOnGotFocus });
-            revokersAsNVIBR->isSelectedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItemBase::IsSelectedProperty(), { this, &NavigationView::OnNavigationViewItemIsSelectedPropertyChanged });
-            revokersAsNVIBR->isExpandedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItem::IsExpandedProperty(), { this, &NavigationView::OnNavigationViewItemExpandedPropertyChanged });
+            // Bind weakly to break the NavigationView -> item -> revokers -> NavigationView strong cycle (see
+            // SetNavigationViewItemBaseRevokers). Handlers no-op if the NavigationView has already been collected.
+            revokersAsNVIBR->keyDownRevoker = nvi.KeyDown(winrt::auto_revoke, { get_weak(), &NavigationView::OnNavigationViewItemKeyDown });
+            revokersAsNVIBR->gotFocusRevoker = nvi.GotFocus(winrt::auto_revoke, { get_weak(), &NavigationView::OnNavigationViewItemOnGotFocus });
+            revokersAsNVIBR->isSelectedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItemBase::IsSelectedProperty(), { get_weak(), &NavigationView::OnNavigationViewItemIsSelectedPropertyChanged });
+            revokersAsNVIBR->isExpandedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItem::IsExpandedProperty(), { get_weak(), &NavigationView::OnNavigationViewItemExpandedPropertyChanged });
         }
     }
 }
