@@ -3,7 +3,7 @@
 namespace System.Reflection.Adds
 {
 
-    using Debug = Microsoft.UI.Xaml.Markup.Compiler.Lmr.Internal.Debug;
+    using Debug = System.Diagnostics.Debug;
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
     using System;

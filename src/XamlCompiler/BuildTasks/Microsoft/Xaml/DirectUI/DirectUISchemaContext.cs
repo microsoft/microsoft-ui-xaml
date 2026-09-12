@@ -366,9 +366,18 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
 
                 foreach (Type t in types)
                 {
-                    int idx = t.FullName.LastIndexOf('.');
-                    string clrPath = t.FullName.Substring(0, idx);
-                    if (KS.ContainsString(DirectUI2010Paths, clrPath))
+                    // Only top-level types can be expressed in a winmd, which is the shape this
+                    // enumeration was written for. Skipping nested types keeps the C#/WinRT
+                    // projection's private helpers out - notably the 900-odd
+                    // Microsoft.UI.Xaml.<Class>+InterfaceTag`1 marker structs, whose FullName
+                    // reports the enclosing type's namespace and which, being generic, would drag
+                    // in an open type parameter whose FullName is null.
+                    if (t.DeclaringType != null)
+                    {
+                        continue;
+                    }
+
+                    if (KS.ContainsString(DirectUI2010Paths, t.Namespace))
                     {
                         XamlType xamlType = this.GetXamlType(t);
                         xamlTypes.Add(xamlType);
@@ -406,6 +415,18 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             }
 
             string typePath = xamlNamespace.StripUsingPrefix();
+
+            // A "using:" namespace with no CLR namespace after it names the global namespace.
+            // XAML requires a type to live in a namespace to be referenceable, so refuse to resolve
+            // it here; XamlDomValidator turns the unresolved type into WMC0105
+            // (XamlCompilerTypeMustHaveANamespace). Without this guard the lookup below would ask
+            // for ".TypeName", which the underlying metadata reader parses as an empty namespace
+            // plus a name and happily matches - resolving global-namespace types by accident.
+            if (string.IsNullOrEmpty(typePath))
+            {
+                return null;
+            }
+
             XamlType xamlType = this.GetXamlTypeFromAssembliesAndPath(this.ReferenceAssemblies, typePath, name);
 
             // If the type doesn't come from the 4 'most popular' winmds load the 'extraReferences' if there were any and see if it's in one of them

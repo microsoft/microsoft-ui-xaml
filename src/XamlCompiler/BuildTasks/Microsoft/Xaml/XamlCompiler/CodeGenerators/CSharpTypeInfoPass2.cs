@@ -34,14 +34,20 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 using System.Diagnostics.CodeAnalysis;
 
 ");
-  if(!Model.GenerateTypeInfo)  
+  if(Model.IsPass1)
+    {
+        WriteLine(TypeInfoDefinition.CSharpPass1StubMarker);
+        WriteLine(TypeInfoDefinition.CSharpPass1WarningPragma);
+    }
+    if(!Model.GenerateTypeInfo)
   {                                       
-            this.Write("// No local types.\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(TypeInfoDefinition.CSharpNoTypeInfoMarker));
+            this.Write("\r\n");
   }                                       
   else                                    
   {                                       
             this.Write("\r\n");
-  if (!ProjectInfo.IsLibrary && Model.AppMetadataProviderNamespace != null) 
+  if (!Model.IsPass1 && !ProjectInfo.IsLibrary && Model.AppMetadataProviderNamespace != null)
   { 
             this.Write("namespace ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Model.AppMetadataProviderNamespace));
@@ -62,9 +68,14 @@ using System.Diagnostics.CodeAnalysis;
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownNamespaces.XamlMarkup)));
             this.Write(".FullXamlMetadataProvider()]\r\n");
   } 
-            this.Write("    public sealed partial class XamlMetaDataProvider : ");
+            this.Write("    ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(TypeInfoDefinition.XamlMetadataProviderClassDeclaration));
+            this.Write(" : ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.IXamlMetadataProvider)));
-            this.Write("\r\n    {\r\n        private ");
+            this.Write("\r\n    {\r\n");
+  if (!Model.IsPass1)
+  {
+            this.Write("        private ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(ProjectInfo.XamlTypeInfoNamespace)));
             this.Write(".XamlTypeInfoProvider _provider = null;\r\n\r\n        private ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(ProjectInfo.XamlTypeInfoNamespace)));
@@ -82,6 +93,7 @@ using System.Diagnostics.CodeAnalysis;
             this.Write(" otherProvider)\r\n        {\r\n            Provider.AddOtherProvider(otherProvider);" +
                     "\r\n        }\r\n\r\n");
       }
+  }
             this.Write("        /// <summary>\r\n        /// GetXamlType(Type)\r\n        /// </summary>\r\n   " +
                     "     ");
             this.Write(this.ToStringHelper.ToStringWithCulture(OverloadAttribute));
@@ -89,21 +101,48 @@ using System.Diagnostics.CodeAnalysis;
             this.Write(this.ToStringHelper.ToStringWithCulture(NotCLSCompliantAttribute));
             this.Write("public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.IXamlType)));
-            this.Write(" GetXamlType(global::System.Type type)\r\n        {\r\n            return Provider.Ge" +
-                    "tXamlTypeByType(type);\r\n        }\r\n\r\n        /// <summary>\r\n        /// GetXamlT" +
-                    "ype(String)\r\n        /// </summary>\r\n        ");
+            this.Write(" GetXamlType(global::System.Type type)\r\n        {\r\n");
+  if (Model.IsPass1)
+  {
+            this.Write("            throw new global::System.NotImplementedException();\r\n");
+  }
+  else
+  {
+            this.Write("            return Provider.GetXamlTypeByType(type);\r\n");
+  }
+            this.Write("        }\r\n\r\n        /// <summary>\r\n        /// GetXamlType(String)\r\n        /// " +
+                    "</summary>\r\n        ");
             this.Write(this.ToStringHelper.ToStringWithCulture(NotCLSCompliantAttribute));
             this.Write("public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.IXamlType)));
-            this.Write(" GetXamlType(string fullName)\r\n        {\r\n            return Provider.GetXamlType" +
-                    "ByName(fullName);\r\n        }\r\n\r\n        /// <summary>\r\n        /// GetXmlnsDefin" +
-                    "itions()\r\n        /// </summary>\r\n        ");
+            this.Write(" GetXamlType(string fullName)\r\n        {\r\n");
+  if (Model.IsPass1)
+  {
+            this.Write("            throw new global::System.NotImplementedException();\r\n");
+  }
+  else
+  {
+            this.Write("            return Provider.GetXamlTypeByName(fullName);\r\n");
+  }
+            this.Write("        }\r\n\r\n        /// <summary>\r\n        /// GetXmlnsDefinitions()\r\n        //" +
+                    "/ </summary>\r\n        ");
             this.Write(this.ToStringHelper.ToStringWithCulture(NotCLSCompliantAttribute));
             this.Write("public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.XmlnsDefinition)));
-            this.Write("[] GetXmlnsDefinitions()\r\n        {\r\n            return new ");
+            this.Write("[] GetXmlnsDefinitions()\r\n        {\r\n");
+  if (Model.IsPass1)
+  {
+            this.Write("            throw new global::System.NotImplementedException();\r\n");
+  }
+  else
+  {
+            this.Write("            return new ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.XmlnsDefinition)));
-            this.Write("[0];\r\n        }\r\n    }\r\n\r\n");
+            this.Write("[0];\r\n");
+  }
+            this.Write("        }\r\n    }\r\n\r\n");
+  if (!Model.IsPass1)
+  {
     if(ProjectInfo.EnableTypeInfoReflection)
     { 
             this.Write("    ");
@@ -545,6 +584,7 @@ using System.Diagnostics.CodeAnalysis;
     }
 ");
   } //End of non-reflection type info provider 
+  } // End of pass 2 implementation
             this.Write("}\r\n");
  } // End of both type info providers codegen
             return this.GenerationEnvironment.ToString();

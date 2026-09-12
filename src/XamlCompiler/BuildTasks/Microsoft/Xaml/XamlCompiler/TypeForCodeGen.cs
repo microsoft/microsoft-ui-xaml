@@ -177,7 +177,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 
         public static LanguageSpecificString Declaration(this IEnumerable<Parameter> parameters)
         {
-            var cppDeclarations = parameters.Select(p => $"{XamlSchemaCodeInfo.GetFullGenericNestedName(p.ParameterType, ProgrammingLanguage.CppWinRT, true)} const& {p.Name}");
+            var cppDeclarations = parameters.Select(p => CppWinRTDeclaration(p));
             var csDeclarations = parameters.Select(p => $"{XamlSchemaCodeInfo.GetFullGenericNestedName(p.ParameterType, ProgrammingLanguage.CSharp, true)} {p.Name}");
             var vbDeclarations = parameters.Select(p => $"{p.Name} As {XamlSchemaCodeInfo.GetFullGenericNestedName(p.ParameterType, ProgrammingLanguage.VB, true)}");
             var cxDeclarations = parameters.Select(p => string.Format("{0}{1} {2}",
@@ -189,6 +189,43 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                 () => cppDeclarations.ToCommaSeparatedValues(),
                 () => csDeclarations.ToCommaSeparatedValues(),
                 () => vbDeclarations.ToCommaSeparatedValues());
+        }
+
+        /// <summary>
+        /// Renders one delegate parameter using C++/WinRT projection rules:
+        ///
+        ///     String a         -> hstring const& a
+        ///     UInt32[] a       -> array_view<uint32_t const> a
+        ///     ref UInt32[] a   -> array_view<uint32_t> a
+        ///     out UInt32[] a   -> com_array<uint32_t>& a
+        ///     out String a     -> hstring& a
+        ///
+        /// Fill and pass arrays are non-byref metadata arrays distinguished by [out]; receive
+        /// arrays and scalar out parameters are byref and are projected from their element type.
+        /// </summary>
+        private static string CppWinRTDeclaration(Parameter parameter)
+        {
+            string cppName(Type t) => XamlSchemaCodeInfo.GetFullGenericNestedName(t, ProgrammingLanguage.CppWinRT, true);
+
+            Type parameterType = parameter.ParameterType;
+
+            if (parameterType.IsByRef)
+            {
+                Type target = parameterType.GetElementType();
+                return target.IsArray
+                    ? $"::winrt::com_array<{cppName(target.GetElementType())}>& {parameter.Name}"
+                    : $"{cppName(target)}& {parameter.Name}";
+            }
+
+            if (parameterType.IsArray)
+            {
+                string element = cppName(parameterType.GetElementType());
+                return parameter.IsOut
+                    ? $"::winrt::array_view<{element}> {parameter.Name}"
+                    : $"::winrt::array_view<{element} const> {parameter.Name}";
+            }
+
+            return $"{cppName(parameterType)} const& {parameter.Name}";
         }
     }
 }
