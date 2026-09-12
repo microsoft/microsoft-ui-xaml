@@ -31,6 +31,9 @@
 #include "ImageProvider.h"
 #include "AsyncImageFactory.h"
 #include "ResourceLookupLogger.h"
+#ifdef XAMLPROFILER_ENABLED
+#include "XamlLaunchPhase.h"
+#endif
 
 #include "AutomationEventsHelper.h"
 
@@ -1097,6 +1100,9 @@ public:
 
     _Check_return_ HRESULT StartApplication(_In_ CApplication *pApplication);
     _Check_return_ HRESULT RaisePendingLoadedRequests();
+#ifdef XAMLPROFILER_ENABLED
+    XamlLaunchTrace& GetLaunchTrace() noexcept { return m_launchTrace; }
+#endif
 
 // Get the default template for ContentPresenter
     const xref_ptr<CDisplayMemberTemplate>& GetDefaultContentPresenterTemplate();
@@ -2222,6 +2228,9 @@ public:
     XUINT64                     m_qpcDrawMainTreeStart;
 
     bool                        m_isFirstFrameAfterAppStart;
+#ifdef XAMLPROFILER_ENABLED
+    XamlLaunchTrace              m_launchTrace;
+#endif
 
     // Core objects which are GC roots. These objects don't have FX peers
     // so GC cannot walk them as roots from the FX peers. Instead GC will
