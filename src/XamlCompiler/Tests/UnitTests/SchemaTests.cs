@@ -456,7 +456,7 @@ namespace UnitTests
                 count += 1;
                 memberNames.Add(member.Name);
             }
-            String[] shouldBeNames = new string[] { "BasedOn", "IsSealed", "Setters", "TargetType", "Dispatcher" };
+            String[] shouldBeNames = new string[] { "BasedOn", "IsSealed", "Setters", "TargetType", "Dispatcher", "DispatcherQueue" };
             _testHelper.AssertListsAreEqual("property", memberNames, shouldBeNames);
         }
 

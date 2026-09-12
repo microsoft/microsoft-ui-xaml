@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 #include "pch.h"
 #include "A.h"
+#include "A.g.cpp"
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;

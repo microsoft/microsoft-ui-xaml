@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 #include "pch.h"
 #include "Class.h"
+#include "Class.g.cpp"
 
 namespace winrt::StaticLibInRuntimeComponent::implementation
 {

@@ -1,0 +1,27 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+//
+// MainPage.xaml.h++WinRT
+// Declaration of the MainPage class.
+//
+// The file extension is deliberately non-standard - see BlankPage.h++WinRT.
+//
+
+#pragma once
+
+#include "MainPage.g.h"
+
+namespace winrt::NonStandardCppWinRT::implementation
+{
+    struct MainPage : MainPageT<MainPage>
+    {
+        MainPage();
+    };
+}
+
+namespace winrt::NonStandardCppWinRT::factory_implementation
+{
+    struct MainPage : MainPageT<MainPage, implementation::MainPage>
+    {
+    };
+}

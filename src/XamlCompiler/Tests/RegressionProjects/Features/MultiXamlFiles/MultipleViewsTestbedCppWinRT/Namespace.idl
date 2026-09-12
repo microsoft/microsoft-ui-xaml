@@ -1,0 +1,15 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+//
+// This class and its associated views verify that XamlCompiler properly handles pages
+// with multiple periods in their name, including the per-orientation alternate view
+// Namespace.CustomControl.Portrait.xaml.
+//
+namespace MultipleViewsTestbedCppWinRT
+{
+    [default_interface]
+    runtimeclass Namespace : Microsoft.UI.Xaml.Controls.Page
+    {
+        Namespace();
+    }
+}

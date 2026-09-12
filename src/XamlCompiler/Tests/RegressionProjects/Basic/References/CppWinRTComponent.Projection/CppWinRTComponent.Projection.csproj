@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
+  <Import Project="$(CommonFilesPath)ClassLibraryPreamble.csproj" />
+
+  <PropertyGroup>
+    <!-- Generate the C#/WinRT projection for this component's namespace only. -->
+    <CSWinRTIncludes>CppWinRTComponent</CSWinRTIncludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Supplies CppWinRTComponent.winmd as a cswinrt input. CsWinRT's
+         CsWinRTRemoveWinMDReferences target moves it out of the C# reference set, which is
+         what keeps .NET 5+ consumers from hitting NETSDK1130. -->
+    <ProjectReference Include="..\CppWinRTComponent\CppWinRTComponent.vcxproj">
+      <Project>{7c8d2b51-b3c2-490c-859e-13ff73ae618f}</Project>
+      <Name>CppWinRTComponent</Name>
+      <!-- The winmd is an implementation detail of this projection. Without PrivateAssets it flows
+           transitively to managed consumers, which then fail with NETSDK1130. -->
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

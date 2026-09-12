@@ -30,6 +30,22 @@ namespace BindTestbed
         void UpdateValues(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
     }
 
+    runtimeclass DisableXBindTests : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        DisableXBindTests();
+        BindTestbedModel.DataModel Model;
+        BindTestbedModel.DOModel DOModel;
+
+        // Returns Object, not String: this is bound with TargetNullValue, and in C++/WinRT a
+        // String projects to the non-nullable hstring, so TargetNullValue cannot apply to it.
+        // FunctionTests declares the same member for the same reason.
+        Object FunctionReturningNull();
+
+        void Click_RegularArgs(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+        void Click_NoArgs();
+        void On_Loaded(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+    }
+
     runtimeclass EventTests : Microsoft.UI.Xaml.Controls.UserControl
     {
         EventTests();
@@ -72,8 +88,6 @@ namespace BindTestbed
         ListAndTemplateTests();
         BindTestbedModel.DataModel Model;
         BindTestbedModel.DOModel DOModel;
-        //TODO: Convert BindTestbedModelCX to C++/WinRT
-        //BindTestbedCXModel.ModelCX ModelCX;
         Microsoft.UI.Xaml.Controls.ListView FirstListView;
         Object SomeButtonContent;
         Windows.Foundation.Collections.IObservableVector<BindTestbedModel.IEmployee> Employees;
@@ -97,9 +111,6 @@ namespace BindTestbed
         BindTestbedModel.Circle test2;
         BindTestbedModel.Circle test3;
         BindTestbedModel.Circle test4;
-        //TODO: Convert BindTestbedModelCX to C++/WinRT
-        //BindTestbedCXModel.StarCx test5;
-        //BindTestbedCXModel.StarCx test6;
         Microsoft.UI.Xaml.Controls.TextBlock innerMostNestedPanelStaticText;
     }
 
@@ -114,8 +125,6 @@ namespace BindTestbed
         MainModel();
         BindTestbedModel.DataModel Model { get; };
         BindTestbedModel.DOModel DOModel{ get; };
-        //TODO: Convert BindTestbedModelCX to C++/WinRT
-        //BindTestbedCXModel.ModelCX ModelCX{ get; };
         Windows.Foundation.Collections.IObservableVector<BindTestbedModel.IEmployee> Employees;
         Windows.Foundation.Collections.IObservableVector<String> AllFirstNames;
         Windows.Foundation.Collections.IObservableVector<String> AllLastNames;
@@ -231,6 +240,25 @@ namespace BindTestbed
         INotifyDataErrorInfoTests();
         BindTestbedModel.DataErrorModel ErrorModel{ get; };
         BindTestbedModel.DODataErrorModel DOErrorModel{ get; };
+    }
+
+    // TestStr and TestCreateFromString stand in for the x:Property declarations used by the C# and
+    // C++/CX versions of xPropertiesTest.xaml; see the comment in xPropertiesTest.xaml for why
+    // x:Property cannot be used from C++/WinRT.
+    runtimeclass xPropertiesTest : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        xPropertiesTest();
+        String TestStr;
+        BindTestbedModel.Diameter TestCreateFromString;
+    }
+
+    namespace NamedRootsPage {
+
+        [default_interface]
+        runtimeclass NamedPageRootWithCompiledBindingUserChild : Microsoft.UI.Xaml.Controls.Page
+        {
+            NamedPageRootWithCompiledBindingUserChild();
+        }
     }
 
 }
