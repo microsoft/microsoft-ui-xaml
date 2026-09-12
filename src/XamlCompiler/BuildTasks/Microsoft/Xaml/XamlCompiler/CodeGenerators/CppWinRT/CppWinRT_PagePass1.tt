@@ -15,6 +15,8 @@
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
 
+#include <cstdint>
+
 <#  foreach (var includeFile in Model.NeededCppWinRTProjectionHeaderFiles) { #>
 #if __has_include(<<#=includeFile#>>)
 #include <<#=includeFile#>>
@@ -46,10 +48,10 @@ namespace winrt::<#=Colonize(Model.CodeInfo.ClassName.Namespace)#>::implementati
 <#  if (Model.CodeInfo.PerXamlFileInfo.Count > 1) { #>
         void InitializeComponent(<#=Projection(KnownNamespaces.WindowsFoundation)#>::Uri const& resourceLocator);
 <#  }#>
-        virtual void Connect(int32_t connectionId, IInspectable const& target);
-        virtual <#=Projection(KnownNamespaces.XamlMarkup)#>::IComponentConnector GetBindingConnector(int32_t connectionId, IInspectable const& target);
+        virtual void Connect(std::int32_t connectionId, IInspectable const& target);
+        virtual <#=Projection(KnownNamespaces.XamlMarkup)#>::IComponentConnector GetBindingConnector(std::int32_t connectionId, IInspectable const& target);
         void UnloadObject(<#=Projection(KnownNamespaces.Xaml)#>::DependencyObject const& dependencyObject);
-        void DisconnectUnloadedObject(int32_t connectionId);
+        void DisconnectUnloadedObject(std::int32_t connectionId);
 <#  foreach (var fieldData in Model.CodeInfo.FieldDeclarations) {
         if (fieldData.IsDeprecated) { #>
 #pragma warning(push)
