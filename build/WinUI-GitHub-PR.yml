@@ -6,7 +6,23 @@
 # This file is intentionally separate from the internal Azure Repos PR pipeline
 # so the existing ADO PR validation path can remain unchanged.
 
-trigger: none
+# CI trigger scoped to the fork-PR validation branches only.
+#
+# Fork PRs run without credentials, so the .github/workflows/fork-pr-validation.yml
+# workflow republishes a reviewed fork commit onto validation/fork-pr/<n>/ in this
+# repo; that push is what starts a credentialed build. Branches covered by the `pr:`
+# trigger below are unaffected.
+#
+# This block is a declarative fallback, NOT the mechanism relied on. Azure DevOps
+# evaluates a YAML trigger from the file in the branch that was pushed, and that
+# branch carries the fork's commit — so this block is absent for any PR branched
+# from an older main, and a fork can remove it. The authoritative trigger is
+# defined on the pipeline itself (Triggers > Continuous integration > override).
+trigger:
+  batch: true
+  branches:
+    include:
+    - validation/fork-pr/*
 
 pr:
   autoCancel: true
