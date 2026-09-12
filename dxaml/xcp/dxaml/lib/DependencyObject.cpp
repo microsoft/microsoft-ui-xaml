@@ -476,6 +476,19 @@ IDXamlCore* DependencyObject::GetCoreForObject()
 void
 DependencyObject::OnFinalRelease()
 {
+#if DBG
+    // Pillar A: the framework peer is entering final release. Announce the transition through the single
+    // choke point (observability only; this does not alter the release path). A peer that has already been
+    // disconnected derives to the terminal TornDown state, which has no legal edge to Releasing; skip the
+    // announcement in that case rather than assert on an illegal terminal transition (matches the guard in
+    // WeakReferenceSourceNoThreadId::OnFinalReleaseOffThread).
+    const auto currentPeerState = GetPeerLifetimeState();
+    if (currentPeerState != ctl::WeakReferenceSourceNoThreadId::PeerLifetimeState::TornDown)
+    {
+        IGNOREHR(TransitionPeerState(currentPeerState, ctl::WeakReferenceSourceNoThreadId::PeerLifetimeState::Releasing));
+    }
+#endif
+
     if (OnFinalReleaseOffThread())
     {
         // the object will have post for
@@ -568,6 +581,12 @@ DependencyObject::DisconnectFrameworkPeerCore()
 {
     CDependencyObject* pDO = NULL;
 
+#if DBG
+    // Pillar A: capture the lifetime state before we begin tearing down, so we can announce the terminal
+    // transition to TornDown once the disconnect flags are set.
+    const auto peerStateBeforeDisconnect = GetPeerLifetimeState();
+#endif
+
     // Set a flag that we're shutting down
     m_bIsDisconnected = TRUE;
 
@@ -613,6 +632,12 @@ DependencyObject::DisconnectFrameworkPeerCore()
 
     // Set a flag that we're disconnected from our core object.
     m_bIsDisconnectedFromCore = TRUE;
+
+#if DBG
+    // Pillar A: the peer is now disconnected from its core object (terminal TornDown state). Announce the
+    // transition through the single choke point (observability only).
+    IGNOREHR(TransitionPeerState(peerStateBeforeDisconnect, GetPeerLifetimeState()));
+#endif
 
     return S_OK;
 }
