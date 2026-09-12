@@ -11,6 +11,15 @@ namespace LibManagedDll
     public class AnotherClassForPathing
     {
         public string StringFunction() { return "StringFunction"; }
+
+        public string Format(string value) { return String.Format("Format: {0}", value); }
+    }
+
+    public class NamedElementForPathing : FrameworkElement
+    {
+        public string Value { get; set; }
+
+        public string Format(string value) { return String.Format("Format: {0}", value); }
     }
 
     public class BindPathParserClass

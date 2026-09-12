@@ -681,9 +681,7 @@ Namespace Global.BindTestbed
                 End If
             End Sub
             Private Sub Update_DataContext_Cast_DataContext_To_CastingTestsVM_Prefix(obj As Global.System.String, phase As Integer)
-                If obj IsNot Nothing Then
-                    Me.Update_DataContext_Cast_DataContext_To_CastingTestsVM_M_CombineStringWithInt_1807171632(phase)
-                End If
+                Me.Update_DataContext_Cast_DataContext_To_CastingTestsVM_M_CombineStringWithInt_1807171632(phase)
             End Sub
             Private Sub Update_DataContext_Cast_DataContext_To_CastingTestsVM_Postfix(obj As Global.System.Double, phase As Integer)
                 If (phase And (NOT_PHASED Or (1 << 0))) <> 0 Then

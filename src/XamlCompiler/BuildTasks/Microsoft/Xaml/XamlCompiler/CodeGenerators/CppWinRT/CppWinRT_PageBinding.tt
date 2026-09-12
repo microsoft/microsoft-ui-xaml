@@ -270,6 +270,7 @@
         {
 <#      Output_UpdateChildListeners_Call(bindStep, "obj");#>
 <#      Output_Update_Steps(bindStep.ValueType.IsNullable, bindStep.Children, true, "phase");#>
+<#      // Dependents are function bindings: a null value is a valid argument, not an unresolved path.#>
 <#      Output_Update_Steps(false, bindStep.Dependents, false, "phase");#>
 <#      foreach (int distinctPhase in bindStep.DistinctPhases) { #>
 <#          Output_Binding_Phased_SetValue(distinctPhase, true, bindStep, false);#>
@@ -990,7 +991,17 @@
             <#=param.ValueType#> <#=param.Name#> = <#=param.CodeGen().PathExpression#>;
 <#+             }#>
 <#+         }#>
-            <#=functionStep.ValueType#> result = <#= functionStep.CodeGen().PathExpression #>;
+<#+         BindPathStep instanceStep = functionStep.InstanceStep;#>
+<#+         if (instanceStep != null) {#>
+<#+             if (instanceStep.ValueType.IsNullable) {#>
+            <#=instanceStep.ValueType#> <#=KnownStrings.FunctionInstanceName#> = nullptr;
+            if (!<#=instanceStep.TryGetValueCodeName#>(<#=KnownStrings.FunctionInstanceName#>) || !<#=KnownStrings.FunctionInstanceName#>) { return; }
+<#+             } else { #>
+            <#=instanceStep.ValueType#> <#=KnownStrings.FunctionInstanceName#>;
+            if (!<#=instanceStep.TryGetValueCodeName#>(<#=KnownStrings.FunctionInstanceName#>)) { return; }
+<#+             }#>
+<#+         }#>
+            <#=functionStep.ValueType#> result = <#= instanceStep == null ? functionStep.CodeGen().PathExpression : functionStep.CodeGen().InstanceCallExpression(KnownStrings.FunctionInstanceName) #>;
 <#+         foreach (int distinctPhase in functionStep.DistinctPhases) {#>
 <#+             Output_Binding_Phased_SetValue(distinctPhase, true, functionStep, true);#>
 <#+             Output_Binding_Phased_SetValue(distinctPhase, false, functionStep, true);#>
@@ -1006,7 +1017,7 @@
 
         bool <#=step.TryGetValueCodeName#>(<#=step.ValueType#>& val)
         {
-<#+         if (step is RootStep || !step.Parent.IsIncludedInUpdate) {#>
+<#+         if (!step.IsRetrievedThroughParent) {#>
             val = <#=step.CodeGen().PathExpression#>;
             return true;
 <#+         }#>

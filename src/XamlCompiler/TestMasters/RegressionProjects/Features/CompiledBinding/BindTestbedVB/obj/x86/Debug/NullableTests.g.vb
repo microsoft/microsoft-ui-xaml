@@ -251,9 +251,7 @@ Namespace Global.BindTestbed
                 End If
             End Sub
             Private Sub Update_Model_NullableDoublePropertyDP(obj As Global.System.Nullable(Of Global.System.Double), phase As Integer)
-                If obj IsNot Nothing Then
-                    Me.Update_Model_M_FunctionReturningNullableDouble_1740600808(phase)
-                End If
+                Me.Update_Model_M_FunctionReturningNullableDouble_1740600808(phase)
                 If (phase And ((1 << 0) Or NOT_PHASED Or DATA_CHANGED)) <> 0 Then
                     If isobj5NullableDoubleDPDisabled = False Then
                         XamlBindingSetters.Set_BindTestbedModel_NullablePropertiesButton_NullableDoubleDP(Me.obj5, obj, Nothing)

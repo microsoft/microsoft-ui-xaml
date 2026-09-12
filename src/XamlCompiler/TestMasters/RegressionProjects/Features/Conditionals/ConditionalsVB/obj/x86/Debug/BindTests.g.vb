@@ -948,9 +948,7 @@ Namespace Global.Conditionals
             End Sub
             Private Sub Update_Model_Org_Employees(obj As Global.ConditionalControls.IObservableCollection, phase As Integer)
                 Me.bindingsTracking.UpdateChildListeners_Model_Org_Employees(obj)
-                If obj IsNot Nothing Then
-                    Me.Update_ConditionalControls_Organization_M_IsNonEmpty_2973382484(phase)
-                End If
+                Me.Update_ConditionalControls_Organization_M_IsNonEmpty_2973382484(phase)
                 If (phase And ((1 << 0) Or NOT_PHASED Or DATA_CHANGED)) <> 0 Then
                     If isobj12ItemsSourceDisabled = False Then
                         XamlBindingSetters.Set_Windows_UI_Xaml_Controls_ItemsControl_ItemsSource(Me.obj12, obj, Nothing)

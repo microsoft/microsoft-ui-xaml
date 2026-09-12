@@ -267,6 +267,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                     {
                         AddTryGetValueStep(steps, param.Path);
                     }
+
+                    if (functionStep.InstanceStep != null)
+                    {
+                        AddTryGetValueStep(steps, functionStep.InstanceStep);
+                    }
                 }
                 return steps.Values;
             }
@@ -277,7 +282,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             if (step.IsIncludedInUpdate)
             {
                 steps[step.TryGetValueCodeName] = step;
-                if (step.Parent != null)
+                if (step.IsRetrievedThroughParent)
                 {
                     AddTryGetValueStep(steps, step.Parent);
                 }
