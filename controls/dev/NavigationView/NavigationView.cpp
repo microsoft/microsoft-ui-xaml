@@ -5260,10 +5260,16 @@ winrt::IndexPath NavigationView::SearchEntireTreeForIndexPath(const winrt::Navig
 
                             if (auto const foundIndexPath = SearchEntireTreeForIndexPath(nvi, data, newIndexPath))
                             {
+                                RecycleContainer(nvib);
                                 return foundIndexPath;
                             }
 
-                            //TODO: Recycle container!
+                            RecycleContainer(nvib);
+                        }
+                        else
+                        {
+                            // Container is not a NavigationViewItem (e.g., header/separator) — still must recycle.
+                            RecycleContainer(nvib);
                         }
                     }
                 }
