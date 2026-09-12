@@ -478,8 +478,15 @@ DependencyObject::OnFinalRelease()
 {
 #if DBG
     // Pillar A: the framework peer is entering final release. Announce the transition through the single
-    // choke point (observability only; this does not alter the release path).
-    IGNOREHR(TransitionPeerState(GetPeerLifetimeState(), ctl::WeakReferenceSourceNoThreadId::PeerLifetimeState::Releasing));
+    // choke point (observability only; this does not alter the release path). A peer that has already been
+    // disconnected derives to the terminal TornDown state, which has no legal edge to Releasing; skip the
+    // announcement in that case rather than assert on an illegal terminal transition (matches the guard in
+    // WeakReferenceSourceNoThreadId::OnFinalReleaseOffThread).
+    const auto currentPeerState = GetPeerLifetimeState();
+    if (currentPeerState != ctl::WeakReferenceSourceNoThreadId::PeerLifetimeState::TornDown)
+    {
+        IGNOREHR(TransitionPeerState(currentPeerState, ctl::WeakReferenceSourceNoThreadId::PeerLifetimeState::Releasing));
+    }
 #endif
 
     if (OnFinalReleaseOffThread())
