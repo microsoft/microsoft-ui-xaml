@@ -1001,6 +1001,609 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // TreeView expand/collapse + node add/remove lifetime stress.
+        //
+        // TreeView realizes a container per visible node and recycles containers as nodes are expanded, collapsed,
+        // added and removed. Building a nested node tree, toggling expansion and mutating the node collection drives
+        // the tree-node container generation/recycling/teardown path before the tree is dropped.
+        [TestMethod]
+        public void StressTreeViewNodeChurn()
+        {
+            RunStress("StressTreeViewNodeChurn", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var treeView = new TreeView() { Width = 400, Height = 500 };
+                    objects["TreeView"] = new WeakReference(treeView);
+
+                    for (int r = 0; r < 6; r++)
+                    {
+                        var root = new TreeViewNode() { Content = string.Format("Root {0}", r) };
+                        if (r == 0)
+                        {
+                            objects["FirstNode"] = new WeakReference(root);
+                        }
+                        for (int c = 0; c < 3; c++)
+                        {
+                            root.Children.Add(new TreeViewNode() { Content = string.Format("Child {0}.{1}", r, c) });
+                        }
+                        treeView.RootNodes.Add(root);
+                    }
+
+                    Content = treeView;
+                    Content.UpdateLayout();
+
+                    for (int churn = 0; churn < 5; churn++)
+                    {
+                        foreach (var node in treeView.RootNodes)
+                        {
+                            node.IsExpanded = !node.IsExpanded;
+                        }
+                        Content.UpdateLayout();
+
+                        var extra = new TreeViewNode() { Content = string.Format("Extra {0}", churn) };
+                        treeView.RootNodes.Add(extra);
+                        Content.UpdateLayout();
+                        treeView.RootNodes.Remove(extra);
+                        Content.UpdateLayout();
+                    }
+
+                    treeView.RootNodes.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // ComboBox drop-down open/close + item add/remove lifetime stress.
+        //
+        // ComboBox realizes its item containers inside a popup on drop-down open and recycles/tears them down on
+        // close. Opening and closing the drop-down, changing the selection and swapping the item collection exercises
+        // the ComboBoxItem container generation/teardown path plus the popup open/close path.
+        [TestMethod]
+        public void StressComboBoxDropDownChurn()
+        {
+            RunStress("StressComboBoxDropDownChurn", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var comboBox = new ComboBox() { Width = 200 };
+                    objects["ComboBox"] = new WeakReference(comboBox);
+
+                    for (int m = 0; m < 8; m++)
+                    {
+                        var item = new ComboBoxItem() { Content = string.Format("Item {0}", m) };
+                        if (m == 0)
+                        {
+                            objects["FirstItem"] = new WeakReference(item);
+                        }
+                        comboBox.Items.Add(item);
+                    }
+
+                    Content = comboBox;
+                    Content.UpdateLayout();
+
+                    for (int churn = 0; churn < 5; churn++)
+                    {
+                        comboBox.IsDropDownOpen = true;
+                        Content.UpdateLayout();
+                        comboBox.SelectedIndex = churn % comboBox.Items.Count;
+                        Content.UpdateLayout();
+                        comboBox.IsDropDownOpen = false;
+                        Content.UpdateLayout();
+
+                        var extra = new ComboBoxItem() { Content = string.Format("Extra {0}", churn) };
+                        comboBox.Items.Add(extra);
+                        Content.UpdateLayout();
+                        comboBox.Items.Remove(extra);
+                        Content.UpdateLayout();
+                    }
+
+                    comboBox.SelectedIndex = -1;
+                    comboBox.Items.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // FlipView item add/remove lifetime stress.
+        //
+        // FlipView realizes one item container at a time and recycles containers as the selection flips and items are
+        // added/removed. Flipping through items and mutating the collection drives the FlipViewItem container
+        // generation/recycling/teardown path.
+        [TestMethod]
+        public void StressFlipViewItemChurn()
+        {
+            RunStress("StressFlipViewItemChurn", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var flipView = new FlipView() { Width = 400, Height = 300 };
+                    objects["FlipView"] = new WeakReference(flipView);
+
+                    for (int m = 0; m < 8; m++)
+                    {
+                        var item = new FlipViewItem() { Content = new TextBlock() { Text = string.Format("Item {0}", m) } };
+                        if (m == 0)
+                        {
+                            objects["FirstItem"] = new WeakReference(item);
+                        }
+                        flipView.Items.Add(item);
+                    }
+
+                    Content = flipView;
+                    Content.UpdateLayout();
+
+                    for (int churn = 0; churn < 5; churn++)
+                    {
+                        flipView.SelectedIndex = churn % flipView.Items.Count;
+                        Content.UpdateLayout();
+
+                        var extra = new FlipViewItem() { Content = new TextBlock() { Text = string.Format("Extra {0}", churn) } };
+                        flipView.Items.Add(extra);
+                        Content.UpdateLayout();
+                        flipView.Items.Remove(extra);
+                        Content.UpdateLayout();
+                    }
+
+                    flipView.Items.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // Pivot item add/remove + selection lifetime stress.
+        //
+        // Pivot realizes a header plus the selected item's content and recycles them as the selection moves and items
+        // are added/removed. Changing the selected pivot and mutating the item collection drives the PivotItem
+        // header/content generation/teardown path.
+        [TestMethod]
+        public void StressPivotItemChurn()
+        {
+            RunStress("StressPivotItemChurn", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var pivot = new Pivot() { Width = 400, Height = 400 };
+                    objects["Pivot"] = new WeakReference(pivot);
+
+                    for (int m = 0; m < 6; m++)
+                    {
+                        var item = new PivotItem()
+                        {
+                            Header = string.Format("Header {0}", m),
+                            Content = new TextBlock() { Text = string.Format("Item {0}", m) },
+                        };
+                        if (m == 0)
+                        {
+                            objects["FirstItem"] = new WeakReference(item);
+                        }
+                        pivot.Items.Add(item);
+                    }
+
+                    Content = pivot;
+                    Content.UpdateLayout();
+
+                    for (int churn = 0; churn < 5; churn++)
+                    {
+                        pivot.SelectedIndex = churn % pivot.Items.Count;
+                        Content.UpdateLayout();
+
+                        var extra = new PivotItem()
+                        {
+                            Header = string.Format("Extra {0}", churn),
+                            Content = new TextBlock() { Text = string.Format("Extra {0}", churn) },
+                        };
+                        pivot.Items.Add(extra);
+                        Content.UpdateLayout();
+                        pivot.Items.Remove(extra);
+                        Content.UpdateLayout();
+                    }
+
+                    pivot.Items.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // SplitView pane open/close lifetime stress.
+        //
+        // SplitView hosts a pane (here a ListView that realizes its own containers) alongside content and shows/hides
+        // the pane. Toggling IsPaneOpen and switching display mode while the pane holds realized item containers
+        // drives the pane show/hide + content teardown path.
+        [TestMethod]
+        public void StressSplitViewPaneChurn()
+        {
+            RunStress("StressSplitViewPaneChurn", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var paneList = new ListView() { ItemsSource = Enumerable.Range(0, 20) };
+                    var splitView = new SplitView()
+                    {
+                        Width = 500,
+                        Height = 400,
+                        Pane = paneList,
+                        Content = new TextBlock() { Text = "content" },
+                        IsPaneOpen = true,
+                        DisplayMode = SplitViewDisplayMode.Inline,
+                    };
+                    objects["SplitView"] = new WeakReference(splitView);
+                    objects["PaneListView"] = new WeakReference(paneList);
+
+                    Content = splitView;
+                    Content.UpdateLayout();
+
+                    for (int churn = 0; churn < 5; churn++)
+                    {
+                        splitView.IsPaneOpen = !splitView.IsPaneOpen;
+                        Content.UpdateLayout();
+                        splitView.DisplayMode = (churn % 2 == 0)
+                            ? SplitViewDisplayMode.CompactOverlay
+                            : SplitViewDisplayMode.Inline;
+                        Content.UpdateLayout();
+                    }
+
+                    splitView.Pane = null;
+                    splitView.Content = null;
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // Expander expand/collapse + content swap lifetime stress.
+        //
+        // Expander realizes its header and (on expand) its content, tearing the content presenter down on collapse.
+        // Toggling IsExpanded and swapping the content element drives the expander content presenter
+        // create/teardown path.
+        [TestMethod]
+        public void StressExpanderExpandCollapse()
+        {
+            RunStress("StressExpanderExpandCollapse", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var firstContent = new TextBlock() { Text = "content 0" };
+                    var expander = new Expander()
+                    {
+                        Width = 300,
+                        Header = "header",
+                        Content = firstContent,
+                        IsExpanded = true,
+                    };
+                    objects["Expander"] = new WeakReference(expander);
+                    objects["FirstContent"] = new WeakReference(firstContent);
+
+                    Content = expander;
+                    Content.UpdateLayout();
+
+                    for (int churn = 0; churn < 5; churn++)
+                    {
+                        expander.IsExpanded = !expander.IsExpanded;
+                        Content.UpdateLayout();
+                        expander.Content = new TextBlock() { Text = string.Format("content {0}", churn + 1) };
+                        Content.UpdateLayout();
+                    }
+
+                    expander.Content = null;
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // CommandBar primary/secondary command add/remove lifetime stress.
+        //
+        // CommandBar hosts AppBar* command elements and (for secondary commands) realizes an overflow flyout on open.
+        // Adding/removing commands and opening/closing the overflow drives the command element + overflow presenter
+        // create/teardown path.
+        [TestMethod]
+        public void StressCommandBarButtonChurn()
+        {
+            RunStress("StressCommandBarButtonChurn", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var commandBar = new CommandBar() { Width = 500 };
+                    objects["CommandBar"] = new WeakReference(commandBar);
+
+                    for (int m = 0; m < 6; m++)
+                    {
+                        var button = new AppBarButton() { Label = string.Format("Cmd {0}", m) };
+                        if (m == 0)
+                        {
+                            objects["FirstButton"] = new WeakReference(button);
+                        }
+                        commandBar.PrimaryCommands.Add(button);
+                        commandBar.SecondaryCommands.Add(new AppBarButton() { Label = string.Format("More {0}", m) });
+                    }
+
+                    Content = commandBar;
+                    Content.UpdateLayout();
+
+                    for (int churn = 0; churn < 5; churn++)
+                    {
+                        commandBar.IsOpen = true;
+                        Content.UpdateLayout();
+                        commandBar.IsOpen = false;
+                        Content.UpdateLayout();
+
+                        var extra = new AppBarButton() { Label = string.Format("Extra {0}", churn) };
+                        commandBar.PrimaryCommands.Add(extra);
+                        Content.UpdateLayout();
+                        commandBar.PrimaryCommands.Remove(extra);
+                        Content.UpdateLayout();
+                    }
+
+                    commandBar.PrimaryCommands.Clear();
+                    commandBar.SecondaryCommands.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // ListView selection + item add/remove lifetime stress.
+        //
+        // ListView realizes a container per visible item and recycles them as items are selected, added and removed.
+        // Driving explicit ListViewItem instances (so a specific container instance can be tracked), churning the
+        // selection and mutating the collection exercises the container generation/recycling/teardown path.
+        [TestMethod]
+        public void StressListViewSelectionChurn()
+        {
+            RunStress("StressListViewSelectionChurn", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var listView = new ListView()
+                    {
+                        Width = 300,
+                        Height = 400,
+                        SelectionMode = ListViewSelectionMode.Multiple,
+                    };
+                    objects["ListView"] = new WeakReference(listView);
+
+                    for (int m = 0; m < 12; m++)
+                    {
+                        var item = new ListViewItem() { Content = string.Format("Item {0}", m) };
+                        if (m == 0)
+                        {
+                            objects["FirstItem"] = new WeakReference(item);
+                        }
+                        listView.Items.Add(item);
+                    }
+
+                    Content = listView;
+                    Content.UpdateLayout();
+
+                    for (int churn = 0; churn < 5; churn++)
+                    {
+                        listView.SelectedIndex = churn % listView.Items.Count;
+                        Content.UpdateLayout();
+                        listView.SelectAll();
+                        Content.UpdateLayout();
+                        listView.SelectedItems.Clear();
+                        Content.UpdateLayout();
+
+                        var extra = new ListViewItem() { Content = string.Format("Extra {0}", churn) };
+                        listView.Items.Add(extra);
+                        Content.UpdateLayout();
+                        listView.Items.Remove(extra);
+                        Content.UpdateLayout();
+                    }
+
+                    listView.SelectedIndex = -1;
+                    listView.Items.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // GridView selection + item add/remove lifetime stress.
+        //
+        // GridView is the wrapping-panel sibling of ListView and shares the same container generation/recycling
+        // machinery. Driving explicit GridViewItem instances, churning the selection and mutating the collection
+        // exercises that container generation/recycling/teardown path in the wrapping-layout configuration.
+        [TestMethod]
+        public void StressGridViewSelectionChurn()
+        {
+            RunStress("StressGridViewSelectionChurn", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var gridView = new GridView()
+                    {
+                        Width = 400,
+                        Height = 400,
+                        SelectionMode = ListViewSelectionMode.Extended,
+                    };
+                    objects["GridView"] = new WeakReference(gridView);
+
+                    for (int m = 0; m < 12; m++)
+                    {
+                        var item = new GridViewItem() { Content = string.Format("Item {0}", m) };
+                        if (m == 0)
+                        {
+                            objects["FirstItem"] = new WeakReference(item);
+                        }
+                        gridView.Items.Add(item);
+                    }
+
+                    Content = gridView;
+                    Content.UpdateLayout();
+
+                    for (int churn = 0; churn < 5; churn++)
+                    {
+                        gridView.SelectedIndex = churn % gridView.Items.Count;
+                        Content.UpdateLayout();
+
+                        var extra = new GridViewItem() { Content = string.Format("Extra {0}", churn) };
+                        gridView.Items.Add(extra);
+                        Content.UpdateLayout();
+                        gridView.Items.Remove(extra);
+                        Content.UpdateLayout();
+                    }
+
+                    gridView.SelectedIndex = -1;
+                    gridView.Items.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // BreadcrumbBar item-source churn lifetime stress.
+        //
+        // BreadcrumbBar realizes a container per crumb from its ItemsSource and regenerates them when the source
+        // changes. Repeatedly swapping the item source (growing and shrinking the crumb trail) drives the crumb
+        // container generation/teardown path.
+        [TestMethod]
+        public void StressBreadcrumbBarChurn()
+        {
+            RunStress("StressBreadcrumbBarChurn", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var breadcrumb = new BreadcrumbBar() { Width = 500 };
+                    objects["BreadcrumbBar"] = new WeakReference(breadcrumb);
+
+                    var initial = new ObservableCollection<string>();
+                    for (int m = 0; m < 6; m++)
+                    {
+                        initial.Add(string.Format("Crumb {0}", m));
+                    }
+                    objects["FirstItemSource"] = new WeakReference(initial);
+                    breadcrumb.ItemsSource = initial;
+
+                    Content = breadcrumb;
+                    Content.UpdateLayout();
+
+                    for (int churn = 0; churn < 5; churn++)
+                    {
+                        var next = new ObservableCollection<string>();
+                        for (int m = 0; m < (churn % 6) + 1; m++)
+                        {
+                            next.Add(string.Format("C{0}.{1}", churn, m));
+                        }
+                        breadcrumb.ItemsSource = next;
+                        Content.UpdateLayout();
+                    }
+
+                    breadcrumb.ItemsSource = null;
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // SelectorBar item add/remove + selection lifetime stress.
+        //
+        // SelectorBar realizes a container per SelectorBarItem and moves selection between them. Adding a set of
+        // items, churning the selection and mutating the collection drives the SelectorBarItem container
+        // generation/teardown path.
+        [TestMethod]
+        public void StressSelectorBarItemChurn()
+        {
+            RunStress("StressSelectorBarItemChurn", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var selectorBar = new SelectorBar() { Width = 500 };
+                    objects["SelectorBar"] = new WeakReference(selectorBar);
+
+                    for (int m = 0; m < 6; m++)
+                    {
+                        var item = new SelectorBarItem() { Text = string.Format("Item {0}", m) };
+                        if (m == 0)
+                        {
+                            objects["FirstItem"] = new WeakReference(item);
+                        }
+                        selectorBar.Items.Add(item);
+                    }
+
+                    Content = selectorBar;
+                    Content.UpdateLayout();
+
+                    for (int churn = 0; churn < 5; churn++)
+                    {
+                        selectorBar.SelectedItem = selectorBar.Items[churn % selectorBar.Items.Count];
+                        Content.UpdateLayout();
+
+                        var extra = new SelectorBarItem() { Text = string.Format("Extra {0}", churn) };
+                        selectorBar.Items.Add(extra);
+                        Content.UpdateLayout();
+                        selectorBar.Items.Remove(extra);
+                        Content.UpdateLayout();
+                    }
+
+                    selectorBar.SelectedItem = null;
+                    selectorBar.Items.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
         // Build a fresh instance of every WinUI control we want to torture. Each entry is a distinct control type so
         // a single iteration covers essentially the whole WinUI control surface.
         //
