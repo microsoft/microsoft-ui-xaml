@@ -830,6 +830,11 @@ WeakReferenceSourceNoThreadId::GetPeerLifetimeState() const
 {
     if (m_bIsDisconnected || m_bIsDisconnectedFromCore)
     {
+        // NOTE: this returns TornDown for TWO distinct situations, because both set/leave m_bIsDisconnectedFromCore
+        // TRUE: (1) a peer that has genuinely been disconnected/torn down, and (2) a freshly constructed peer that
+        // has NOT YET been connected to its core object (m_bIsDisconnectedFromCore is initialized TRUE in the ctor).
+        // The derived getter cannot distinguish them, so callers that assert on transitions must not treat a
+        // TornDown *origin* as terminal - see the guard in TransitionPeerState.
         return PeerLifetimeState::TornDown;
     }
 
@@ -924,12 +929,25 @@ WeakReferenceSourceNoThreadId::TransitionPeerState(PeerLifetimeState expectedFro
     // that weaving this into hot peg paths cannot destabilize shipping builds; disagreements are surfaced as debug
     // asserts and (when enabled) lifetime traces instead.
 #if DBG
-    ASSERT(
-        IsLegalPeerStateTransition(expectedFrom, to),
-        L"Illegal peer-lifetime transition %s -> %s on %p",
-        PeerLifetimeStateToString(expectedFrom),
-        PeerLifetimeStateToString(to),
-        this);
+    // A peer that has NOT YET been connected to its core object derives the same TornDown state as a peer that has
+    // ALREADY been disconnected: GetPeerLifetimeState() reports TornDown whenever m_bIsDisconnectedFromCore is set,
+    // and that flag starts TRUE at construction (see the ctor initializer list). The peg / tracker-source primitives
+    // legitimately run in that pre-connect window (create-time reference-tracker peg, early ConnectFromTrackerSource,
+    // etc.), so a transition *out of* TornDown here is a normal "not-yet-rooted -> rooted" edge, NOT an illegal
+    // resurrection of a torn-down peer. Because the derived getter cannot tell the two apart, asserting on any
+    // TornDown-origin edge produces a false STATUS_ASSERTION_FAILURE (0xC0000420) on essentially every peer under a
+    // chk/DBG TAEF host, crashing the test host on nearly every test. Skip the legality assert when the origin is
+    // TornDown - this gate is observability-only (never fatal in retail), and it matches the explicit `!= TornDown`
+    // guards already used at the DependencyObject::OnFinalRelease / DisconnectFrameworkPeerCore call sites.
+    if (expectedFrom != PeerLifetimeState::TornDown)
+    {
+        ASSERT(
+            IsLegalPeerStateTransition(expectedFrom, to),
+            L"Illegal peer-lifetime transition %s -> %s on %p",
+            PeerLifetimeStateToString(expectedFrom),
+            PeerLifetimeStateToString(to),
+            this);
+    }
 
     #if DBG_LIFETIME
     WCHAR szValue[256];
