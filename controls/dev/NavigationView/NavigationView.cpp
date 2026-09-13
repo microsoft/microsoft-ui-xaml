@@ -2109,11 +2109,18 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
             m_prevIndicator.set(prevIndicator);
             m_nextIndicator.set(nextIndicator);
 
-            auto strongThis = get_strong();
+            // Capture weakly: a strong self-capture stored on the compositor's scoped batch is a GC-invisible
+            // strong self-reference that roots this NavigationView until the animation completes. If teardown
+            // races the still-playing selection-indicator animation, that keeps the peer alive. Mirrors the
+            // weak DispatcherQueue pattern used below in this file.
+            auto weakThis{ winrt::make_weak(static_cast<winrt::NavigationView>(*this)) };
             scopedBatch.Completed(
-                [strongThis](auto sender, auto args)
+                [weakThis](auto sender, auto args)
                 {
-                    strongThis->OnAnimationComplete(sender, args);
+                    if (auto strongThis = weakThis.get())
+                    {
+                        winrt::get_self<NavigationView>(strongThis)->OnAnimationComplete(sender, args);
+                    }
                 });
         }
         else if (prevIndicator != nextIndicator)
