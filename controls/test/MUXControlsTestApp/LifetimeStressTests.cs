@@ -431,7 +431,58 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             RunStress("StressNavigationViewMenuChurn", (iteration) =>
             {
-                RunMockCollectableWorkload();
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var navView = new NavigationView()
+                    {
+                        Width = 400,
+                        Height = 500,
+                        Content = new TextBlock() { Text = "content" },
+                    };
+                    objects["NavigationView"] = new WeakReference(navView);
+
+                    for (int m = 0; m < 8; m++)
+                    {
+                        var item = new NavigationViewItem() { Content = string.Format("Item {0}", m) };
+                        if (m == 0)
+                        {
+                            objects["FirstItem"] = new WeakReference(item);
+                        }
+                        navView.MenuItems.Add(item);
+                    }
+
+                    Content = navView;
+                    Content.UpdateLayout();
+
+                    for (int churn = 0; churn < 5; churn++)
+                    {
+                        navView.IsPaneOpen = !navView.IsPaneOpen;
+                        Content.UpdateLayout();
+
+                        if (navView.MenuItems.Count > 0)
+                        {
+                            navView.SelectedItem = navView.MenuItems[churn % navView.MenuItems.Count];
+                            Content.UpdateLayout();
+                        }
+
+                        // Add then remove an item so the menu-item container generation/recycling path runs.
+                        navView.MenuItems.Add(new NavigationViewItem() { Content = string.Format("Extra {0}", churn) });
+                        Content.UpdateLayout();
+                        navView.MenuItems.RemoveAt(navView.MenuItems.Count - 1);
+                        Content.UpdateLayout();
+                    }
+
+                    navView.SelectedItem = null;
+                    navView.MenuItems.Clear();
+                    navView.Content = null;
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
             });
         }
 
@@ -960,7 +1011,52 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             RunStress("StressTreeViewNodeChurn", (iteration) =>
             {
-                RunMockCollectableWorkload();
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var treeView = new TreeView() { Width = 400, Height = 500 };
+                    objects["TreeView"] = new WeakReference(treeView);
+
+                    for (int r = 0; r < 6; r++)
+                    {
+                        var root = new TreeViewNode() { Content = string.Format("Root {0}", r) };
+                        if (r == 0)
+                        {
+                            objects["FirstNode"] = new WeakReference(root);
+                        }
+                        for (int c = 0; c < 3; c++)
+                        {
+                            root.Children.Add(new TreeViewNode() { Content = string.Format("Child {0}.{1}", r, c) });
+                        }
+                        treeView.RootNodes.Add(root);
+                    }
+
+                    Content = treeView;
+                    Content.UpdateLayout();
+
+                    for (int churn = 0; churn < 5; churn++)
+                    {
+                        foreach (var node in treeView.RootNodes)
+                        {
+                            node.IsExpanded = !node.IsExpanded;
+                        }
+                        Content.UpdateLayout();
+
+                        var extra = new TreeViewNode() { Content = string.Format("Extra {0}", churn) };
+                        treeView.RootNodes.Add(extra);
+                        Content.UpdateLayout();
+                        treeView.RootNodes.Remove(extra);
+                        Content.UpdateLayout();
+                    }
+
+                    treeView.RootNodes.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
             });
         }
 
@@ -974,7 +1070,50 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             RunStress("StressComboBoxDropDownChurn", (iteration) =>
             {
-                RunMockCollectableWorkload();
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var comboBox = new ComboBox() { Width = 200 };
+                    objects["ComboBox"] = new WeakReference(comboBox);
+
+                    for (int m = 0; m < 8; m++)
+                    {
+                        var item = new ComboBoxItem() { Content = string.Format("Item {0}", m) };
+                        if (m == 0)
+                        {
+                            objects["FirstItem"] = new WeakReference(item);
+                        }
+                        comboBox.Items.Add(item);
+                    }
+
+                    Content = comboBox;
+                    Content.UpdateLayout();
+
+                    for (int churn = 0; churn < 5; churn++)
+                    {
+                        comboBox.IsDropDownOpen = true;
+                        Content.UpdateLayout();
+                        comboBox.SelectedIndex = churn % comboBox.Items.Count;
+                        Content.UpdateLayout();
+                        comboBox.IsDropDownOpen = false;
+                        Content.UpdateLayout();
+
+                        var extra = new ComboBoxItem() { Content = string.Format("Extra {0}", churn) };
+                        comboBox.Items.Add(extra);
+                        Content.UpdateLayout();
+                        comboBox.Items.Remove(extra);
+                        Content.UpdateLayout();
+                    }
+
+                    comboBox.SelectedIndex = -1;
+                    comboBox.Items.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
             });
         }
 
@@ -1537,17 +1676,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // want, and we handle a known deterministic crasher by quarantining the specific scenario with
         // [TestProperty("Ignore","True")] (see StressItemsRepeaterRealizationAndRecycling). Everything a managed
         // catch can reach (thrown exceptions, leaks) is downgraded to a non-gating warning here.
-        private static void RunMockCollectableWorkload()
-        {
-            SafeUI(() =>
-            {
-                var probe = new object();
-                GC.KeepAlive(probe);
-            });
-
-            SettleAndCollect();
-        }
-
         private static void RunStress(string scenarioName, Action<int> iteration)
         {
             double soakMinutes = ConfiguredSoakMinutes;
