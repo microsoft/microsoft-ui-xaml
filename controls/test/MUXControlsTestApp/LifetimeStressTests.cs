@@ -1763,11 +1763,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // turns an "eventual" lifetime crash into a prompt one.
         private static void SettleAndCollect()
         {
-            IdleSynchronizer.Wait();
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-            IdleSynchronizer.Wait();
+            // XAML tears down heavy controls asynchronously, draining its release queue over several dispatcher
+            // ticks. A single Idle->GC pass under-drains the largest controls (NavigationView, ComboBox drop-down)
+            // and reports them as benign survivors, so loop the drain a bounded number of times. A genuine leak
+            // still survives every pass; this only removes deferred-release false positives.
+            for (int pass = 0; pass < 5; pass++)
+            {
+                IdleSynchronizer.Wait();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                IdleSynchronizer.Wait();
+            }
         }
 
         private static void VerifyCollected(Dictionary<string, WeakReference> objects, bool failOnLeak)
