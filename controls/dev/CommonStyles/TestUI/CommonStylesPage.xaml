@@ -396,6 +396,24 @@
                 <TextBlock Text="Validating" Style="{ThemeResource StandardGroupHeader}"/>
                 <TextBox x:Name="DensityTestResult" AutomationProperties.Name="DensityTestResult" Text="Result" Header="Test result"/>
                 <TextBlock Text="Control tests"/>
+                <StackPanel>
+                    <StackPanel.Resources>
+                        <x:Double x:Key="AppBarButtonWidth">45</x:Double>
+                        <x:Double x:Key="AppBarToggleButtonWidth">47</x:Double>
+                    </StackPanel.Resources>
+                    <TextBlock Text="AppBarButton width resource"/>
+                    <StackPanel Orientation="Horizontal">
+                        <AppBarButton x:Name="AppBarButtonWidthFullSize" Label="Full size" Icon="Accept"/>
+                        <AppBarButton x:Name="AppBarButtonWidthCompact" Label="Compact" Icon="Accept" IsCompact="True"/>
+                        <CommandBar DefaultLabelPosition="Right">
+                            <AppBarButton x:Name="AppBarButtonWidthRight" Label="Right" Icon="Accept"/>
+                        </CommandBar>
+                        <AppBarButton x:Name="AppBarButtonWidthCollapsed" Label="Collapsed" Icon="Accept" LabelPosition="Collapsed"/>
+                        <AppBarButton x:Name="AppBarButtonLocalWidth" Label="Local" Icon="Accept" Width="90"/>
+                        <AppBarToggleButton x:Name="AppBarToggleButtonWidthFullSize" Label="Toggle" Icon="Accept"/>
+                        <AppBarToggleButton x:Name="AppBarToggleButtonWidthCompact" Label="Compact toggle" Icon="Accept" IsCompact="True"/>
+                    </StackPanel>
+                </StackPanel>
                 <StackPanel Grid.Row="1" Orientation="Horizontal" BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="2">
                     <Button x:Name="SliderDensityTest" AutomationProperties.Name="SliderDensityTest" Content="Slider" Click="SliderDensityTest_Click" />
                     <Button x:Name="ToggleSwitchDensityTest" AutomationProperties.Name="ToggleSwitchDensityTest" Content="ToggleSwitch" Click="ToggleSwitchDensityTest_Click" />
@@ -408,6 +426,7 @@
                     <Button x:Name="ComboBoxDensityTest" AutomationProperties.Name="ComboBoxDensityTest" Content="ComboBoxDensity" Click="ComboBoxDensityTest_Click" />
                     <Button x:Name="AppBarButtonDensityTest" AutomationProperties.Name="AppBarButtonDensityTest" Content="AppBarButtonDensity" Click="AppBarButtonDensityTest_Click" />
                     <Button x:Name="AppBarToggleButtonDensityTest" AutomationProperties.Name="AppBarToggleButtonDensityTest" Content="AppBarToggleButtonDensity" Click="AppBarToggleButtonDensityTest_Click" />
+                    <Button x:Name="AppBarButtonWidthResourceTest" AutomationProperties.Name="AppBarButtonWidthResourceTest" Content="AppBarButtonWidthResource" Click="AppBarButtonWidthResourceTest_Click" />
                     <Button x:Name="RichEditBoxDensityTest" AutomationProperties.Name="RichEditBoxDensityTest" Content="RichEditBoxDensity" Click="RichEditBoxDensityTest_Click" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
