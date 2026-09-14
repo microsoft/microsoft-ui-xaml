@@ -1650,15 +1650,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         //   60801847 Vector _scalar_deleting_destructor (double free) . StressItemsSourceViewSwaps
         //   55026189 WindowGenerated::get_DispatcherQueue ............. StressWindowOpenClose
         //   62091304 InkToolbar ReferenceTrackerRuntimeClass ......... StressInkToolbarTargeting
-        //   56307002 LsDestroyBreakRecord (text line services) ....... StressTextLineServicesChurn        (added below)
-        //   53672707 CDirectManipulationService::Activate... ......... StressScrollViewContentChurn       (added below;
+        //   56307002 LsDestroyBreakRecord (text line services) ....... StressTextLineServicesChurnNative  (added below)
+        //   53672707 CDirectManipulationService::Activate... ......... StressScrollViewContentChurnNative (added below;
         //            realizes + tears down the DM/scroll service - full activation needs real manipulation input)
-        //   58759931 WeakReferenceImpl::Resolve ...................... StressEventHandlerAfterTeardown
+        //   58759931 WeakReferenceImpl::Resolve ...................... StressEventHandlerAfterTeardownNative
         //   50386959 AddRefForPeerReferenceHelper / 54447527 UnpegManagedPeer / 54449843 TrackerTargetReference::Clear /
         //   54506263 OfTypeByIndex / 54554788 unconditional_release_ref / 54638556 AddRef / 56731116 xstring_ptr_view::
         //   GetBuffer / 57024687 DynamicMetadataStorage / 59109646 ShouldDisablePixelSnapping / 60579018 GetProperty
         //   BaseByIndex / 63449698 DependencyObjectPropertyAccess::Release / 63129346 / 63277512 / 63485295 / 63779618
         //   ctl::ComObject_* ........................................ Generic peer churn (see above)
+        //
+        // "Generic peer churn" native-suffixed scenarios: StressOffThreadPeerFinalReleaseNative,
+        // StressRapidReparentEnterLeaveNative, StressDeepVisualTreePeerChurnNative, StressReentrantUnloadTeardownNative.
         //
         // Tracked but NOT reproduced here - each needs infrastructure MUXControlsTestApp (a desktop test app) cannot
         // host, so a managed scenario cannot drive the faulting path:
@@ -1671,6 +1674,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         // =============================================================================================================
         // Native-crash reproduction scenarios.
+        //
+        // NAMING: every scenario below carries a "Native" suffix (e.g. StressOffThreadPeerFinalReleaseNative) so the
+        // native-crash-repro tests are easy to grep in build/TAEF logs - search for "Native" to find just these.
         //
         // The scenarios above surface *managed*-observable lifetime problems (a leaked WeakReference, a thrown managed
         // exception) and report them as non-gating warnings. The scenarios in THIS section instead target the native
@@ -1698,9 +1704,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // GC/finalizer thread, so the FINAL native release originates off the owning (UI) thread and must be marshaled
         // back through the UIAffinityReleaseQueue funnel. A bug in that off-thread release path faults here.
         [TestMethod]
-        public void StressOffThreadPeerFinalRelease()
+        public void StressOffThreadPeerFinalReleaseNative()
         {
-            RunStress("StressOffThreadPeerFinalRelease", (iteration) =>
+            RunStress("StressOffThreadPeerFinalReleaseNative", (iteration) =>
             {
                 var objects = new Dictionary<string, WeakReference>();
                 int peers = AggressiveNativeReproEnabled ? 64 : 6;
@@ -1742,9 +1748,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // mutate the tree again (null its content, clear its parent). Re-entering teardown while the native peer is
         // mid-unlink is a classic use-after-free / premature-peer-destruction trigger.
         [TestMethod]
-        public void StressReentrantUnloadTeardown()
+        public void StressReentrantUnloadTeardownNative()
         {
-            RunStress("StressReentrantUnloadTeardown", (iteration) =>
+            RunStress("StressReentrantUnloadTeardownNative", (iteration) =>
             {
                 var objects = new Dictionary<string, WeakReference>();
                 int churn = AggressiveNativeReproEnabled ? 60 : 5;
@@ -1793,9 +1799,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // the element, remove and drop the element, force collection, then keep mutating the live tree so the framework
         // pumps layout/size callbacks. If a revoked/native handler outlives the peer it dereferences freed native state.
         [TestMethod]
-        public void StressEventHandlerAfterTeardown()
+        public void StressEventHandlerAfterTeardownNative()
         {
-            RunStress("StressEventHandlerAfterTeardown", (iteration) =>
+            RunStress("StressEventHandlerAfterTeardownNative", (iteration) =>
             {
                 var objects = new Dictionary<string, WeakReference>();
                 int churn = AggressiveNativeReproEnabled ? 60 : 5;
@@ -1837,9 +1843,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // both in the live tree. Each move drives the native peer through leave-tree + enter-tree wiring; a bug in the
         // enter/leave peer bookkeeping faults under this churn.
         [TestMethod]
-        public void StressRapidReparentEnterLeave()
+        public void StressRapidReparentEnterLeaveNative()
         {
-            RunStress("StressRapidReparentEnterLeave", (iteration) =>
+            RunStress("StressRapidReparentEnterLeaveNative", (iteration) =>
             {
                 var objects = new Dictionary<string, WeakReference>();
                 int moves = AggressiveNativeReproEnabled ? 400 : 20;
@@ -1885,9 +1891,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // tear the whole chain down at once and collect. Deep nesting multiplies native peer create/destroy traffic and
         // stresses the recursive leave-tree teardown path where premature-peer-destruction bugs live.
         [TestMethod]
-        public void StressDeepVisualTreePeerChurn()
+        public void StressDeepVisualTreePeerChurnNative()
         {
-            RunStress("StressDeepVisualTreePeerChurn", (iteration) =>
+            RunStress("StressDeepVisualTreePeerChurnNative", (iteration) =>
             {
                 var objects = new Dictionary<string, WeakReference>();
                 int depth = AggressiveNativeReproEnabled ? 400 : 30;
@@ -1922,9 +1928,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // elements whose wrapped, multi-line content forces the line-services layer to create line/break records,
         // realize them, then tear them down and collect. A lifetime bug in break-record teardown faults here.
         [TestMethod]
-        public void StressTextLineServicesChurn()
+        public void StressTextLineServicesChurnNative()
         {
-            RunStress("StressTextLineServicesChurn", (iteration) =>
+            RunStress("StressTextLineServicesChurnNative", (iteration) =>
             {
                 var objects = new Dictionary<string, WeakReference>();
                 int churn = AggressiveNativeReproEnabled ? 60 : 6;
@@ -1967,9 +1973,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // DM manager needs real touch/pen manipulation input this headless suite cannot inject; this exercises the
         // DM/scroll service create + teardown path, which is where the reported lifetime fault occurs.
         [TestMethod]
-        public void StressScrollViewContentChurn()
+        public void StressScrollViewContentChurnNative()
         {
-            RunStress("StressScrollViewContentChurn", (iteration) =>
+            RunStress("StressScrollViewContentChurnNative", (iteration) =>
             {
                 var objects = new Dictionary<string, WeakReference>();
                 int churn = AggressiveNativeReproEnabled ? 60 : 6;
