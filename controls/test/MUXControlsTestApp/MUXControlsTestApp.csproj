@@ -24,6 +24,7 @@
     <PublishAot>false</PublishAot>
     <EnableMsixTooling>true</EnableMsixTooling>
     <CsWinRTIncludes>AppTestAutomationHelpers</CsWinRTIncludes>
+    <CsWinRTIncludes Condition="$(FeatureTableViewEnabled) == 'true'">$(CsWinRTIncludes);Microsoft.UI.Xaml.Controls.Tabular;Microsoft.UI.Xaml.Data.GroupedEntry;Microsoft.UI.Xaml.Data.IGroupedEntry</CsWinRTIncludes>
     <CsWinRTWindowsMetadata>$(WindowsTargetPlatformVersion)</CsWinRTWindowsMetadata>
     <BinplaceOutputAssemblies>true</BinplaceOutputAssemblies>
     <WindowsAppSDKSelfContained Condition="'$(Platform)' == 'ARM64EC'">true</WindowsAppSDKSelfContained>
@@ -181,6 +182,18 @@
     <Content Include="$(XamlBuildOutputRoot)Samples\AppTestAutomationHelpers\AppTestAutomationHelpers.dll" />
   </ItemGroup>
 
+  <ItemGroup Condition="$(FeatureTableViewEnabled) == 'true'">
+    <CsWinRTInputs Include="$(XamlBuildOutputRoot)controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd" Condition="Exists('$(XamlBuildOutputRoot)controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd')" />
+    <Reference Include="$(XamlBuildOutputRoot)controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd" Condition="Exists('$(XamlBuildOutputRoot)controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd')">
+      <IsWinMDFile>true</IsWinMDFile>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="EnsureTabularWasBuilt" BeforeTargets="Build" Condition="$(FeatureTableViewEnabled) == 'true'">
+    <Error Text="$(XamlBuildOutputRoot)controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd does not exist. Build controls\dev\dll-tabular\Microsoft.UI.Xaml.Controls.Tabular.vcxproj before building MUXControlsTestApp with TableView tests."
+           Condition="!Exists('$(XamlBuildOutputRoot)controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd')" />
+  </Target>
+
   <Import Project="$(MUXCProjectRoot)CustomInlineTasks.targets" />
   <Import Project="..\RetargetCopyLocalFiles.targets" />
   <Import Project="..\TestApp.targets" />
@@ -281,6 +294,7 @@
   <Import Project="$(MUXCProjectRoot)dev\AutoSuggestBox\TestUI\AutoSuggestBox_TestUI.projitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\TabView\TestUI\TabView_TestUI.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\TabView\APITests\TabView_APITests.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\TableView\APITests\TableView_APITests.projitems" Label="Shared" Condition="$(FeatureTableViewEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\ComboBox\TestUI\ComboBox_TestUI.projitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\ComboBox\APITests\ComboBox_APITests.projitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\NumberBox\APITests\NumberBox_APITests.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
