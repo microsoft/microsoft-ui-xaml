@@ -44,7 +44,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             EnsureBrowser();
         }
 
-        // Ensure a suitable version of Edge browser or WebView2 runtime is present. If not, use mini_installer to install the runtime.
+        // Ensure a suitable version of Edge browser or WebView2 Runtime is present. If not, use the Evergreen
+        // Standalone Installer to install the Runtime.
         public static void EnsureBrowser()
         {
             // If a previous run of CoreWebView2Initialized_FailedTest failed to clean up the
@@ -60,7 +61,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // 3. Check if a runtime is already installed, and if it's compatible.
             bool hasCompatibleRuntimeInstalled = GetHasCompatibleRuntimeInstalled(browserBuildVersion, sdkBuildVersion);
 
-            // 4a. If we have a compatible runtime installed, continue on to the tests!
+            // 4a. If we have a compatible runtime installed, continue on to the tests.
             if (hasCompatibleRuntimeInstalled)
             {
                 return;
@@ -77,7 +78,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
             else if (didWait)
             {
-                // If we waited for Edge to finish installing/updating and it finished, check the versions again
+                // If we waited for Edge to finish installing/updating and it finished, check the versions again.
                 browserBuildVersion = GetInstalledBrowserVersion();
                 hasCompatibleRuntimeInstalled = GetHasCompatibleRuntimeInstalled(browserBuildVersion, sdkBuildVersion);
                 if (hasCompatibleRuntimeInstalled)
@@ -86,20 +87,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
 
-            // 6. If Edge wasn't already installing/updating, or it was but installed something old (unlikely),
-            // run the standalone installer to install it.
-            // This installation can sometimes fail, so we'll try a number of times before failing out.
+            // 6. If Edge wasn't already installing/updating, or it installed an incompatible version,
+            // run the standalone installer. Retry because installation can fail transiently.
             int attemptsLeft = 5;
             bool successfullyInstalled = false;
             while (attemptsLeft > 0)
             {
                 attemptsLeft--;
                 successfullyInstalled = TryInstallingBrowser(attemptsLeft);
-                if (successfullyInstalled) break;
+                if (successfullyInstalled)
+                {
+                    break;
+                }
             }
             if (attemptsLeft == 0 && !successfullyInstalled)
             {
-                Log.Error("WebView2Tests Init: Browser installation failed, out of retries.");
+                Log.Error("WebView2Tests Init: Runtime installation failed, out of retries.");
             }
         }
 
@@ -180,7 +183,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Browser/Runtime version ex: 80.0.361.48
             // WebView2 SDK version ex: 0.8.355
             // Webview2Loader compares the build versions (361 and 355 in above example), we do so here as well
-            if (browserBuildVersion >= sdkBuildVersion)
+            if (browserBuildVersion > 0 && sdkBuildVersion > 0 && browserBuildVersion >= sdkBuildVersion)
             {
                 Log.Comment("WebView2Tests Init: Installed Edge build will be used for testing... ");
                 hasCompatibleRuntime = true;
@@ -225,16 +228,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         private static bool TryInstallingBrowser(int attemptsLeft)
         {
             bool successfullyInstalled = false;
-            string installer = "mini_installer.exe";
-            // Note: Starting with SDK 0.9.488 / Edge version 83, evergreen WebView2 no longer targets the Stable
-            //       browser channel. Instead, it targets another set of binaries, branded Evergreen WebView2 Runtime.
-            //       (See https://docs.microsoft.com/en-us/microsoft-edge/webview2/releasenotes).
-            //
-            //       Accordingly, Update mini_installer args to install WV2Runtime instead of full browser.
-            string installerArgs_WV2Runtime = "--msedgewebview --system-level";
-            Log.Comment(@"WebView2Tests Init: Installing WebView2 runtime: '{0} {1}'", installer, installerArgs_WV2Runtime);
-            ProcessStartInfo installerStartInfo = new ProcessStartInfo(installer, installerArgs_WV2Runtime);
+            string installer = Path.Combine(
+                Environment.CurrentDirectory,
+                "tools",
+                "x64",
+                "MicrosoftEdgeWebView2RuntimeInstallerX64.exe");
+            string installerArguments = "/silent /install";
 
+            if (!File.Exists(installer))
+            {
+                Log.Error("WebView2Tests Init: Evergreen WebView2 Standalone Installer was not found at {0}.", installer);
+                return false;
+            }
+
+            Log.Comment("WebView2Tests Init: Installing WebView2 Runtime: '{0} {1}'", installer, installerArguments);
+            ProcessStartInfo installerStartInfo = new ProcessStartInfo(installer, installerArguments);
             Process installerProcess = Process.Start(installerStartInfo);
             installerProcess.WaitForExit();
 
@@ -245,17 +253,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
             else
             {
-                Log.Warning("WebView2Tests Init: {0} failed with exit code {1}! Attempts left: {2}", installer, installerProcess.ExitCode, attemptsLeft);
-                // Print information about some of the error codes we sometimes hit
-                if (installerProcess.ExitCode == 4)
-                {
-                    Log.Comment("Exit code 4 = HIGHER_VERSION_EXISTS, Higher version already exists");
-                }
-                else if (installerProcess.ExitCode == 60)
-                {
-                    Log.Comment("Exit code 60 = SETUP_SINGLETON_ACQUISITION_FAILED, The setup process could not acquire the exclusive right to modify the installation.");
-                }
+                Log.Warning(
+                    "WebView2Tests Init: {0} failed with exit code {1}. Attempts left: {2}",
+                    installer,
+                    installerProcess.ExitCode,
+                    attemptsLeft);
             }
+
             return successfullyInstalled;
         }
 
