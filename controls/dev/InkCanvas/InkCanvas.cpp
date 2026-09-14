@@ -123,11 +123,21 @@ void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventAr
         return;
     }
 
+    // Bracket the whole attach sequence so a throw from any step is still recorded as a failure.
+    InkTelemetry::BeginCanvasInitialization(m_telemetryState);
+    auto initializationOutcome = wil::scope_exit([this]()
+        {
+            InkTelemetry::CompleteCanvasInitialization(
+                m_telemetryState, InkTelemetry::Result::Failure, CompositorEngineForTelemetry(), E_FAIL);
+        });
+
     // Make sure the presenter (proxy + OS presenter) exists before we queue any ink-thread work
     // (SetRootVisual below runs against it). Safe here: we are past construction and on the UI thread.
+    InkTelemetry::SetCanvasInitializationStage(m_telemetryState, InkTelemetry::InitializationStage::InkPresenter);
     EnsureInkPresenter();
 
     // Hook up this ink canvas with the DComp tree.
+    InkTelemetry::SetCanvasInitializationStage(m_telemetryState, InkTelemetry::InitializationStage::VisualLink);
     AttachToVisualLink();
 
     // The composition target maintains position/clipping for our visual, but the presenter
@@ -169,7 +179,40 @@ void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventAr
 
     // Both compositor paths host the ink visual in the lifted XAML tree, which positions/clips/
     // scrolls it natively; the presenter still needs its size in physical pixels though.
+    InkTelemetry::SetCanvasInitializationStage(m_telemetryState, InkTelemetry::InitializationStage::PresenterSize);
     UpdateInkPresenterSize();
+
+    initializationOutcome.release();
+    auto const engine = CompositorEngineForTelemetry();
+    InkTelemetry::CompleteCanvasInitialization(m_telemetryState, InkTelemetry::Result::Success, engine);
+    ReportUsageTelemetry(engine);
+}
+
+// The engine is decided once per process, so this is stable for the lifetime of the canvas.
+InkTelemetry::CompositorEngine InkCanvas::CompositorEngineForTelemetry() noexcept
+{
+    if (!m_hostHwnd)
+    {
+        return InkTelemetry::CompositorEngine::Unknown;
+    }
+
+    return IsSystemCompositor()
+        ? InkTelemetry::CompositorEngine::System
+        : InkTelemetry::CompositorEngine::Lifted;
+}
+
+void InkCanvas::ReportUsageTelemetry(InkTelemetry::CompositorEngine engine) noexcept
+{
+    if (!m_inkPresenterProxy)
+    {
+        return;
+    }
+
+    InkTelemetry::ReportCanvasUsage(
+        m_telemetryState,
+        engine,
+        static_cast<uint32_t>(m_inkPresenterProxy.InputDeviceTypes()),
+        static_cast<uint32_t>(m_inkPresenterProxy.HighContrastAdjustment()));
 }
 
 void InkCanvas::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)

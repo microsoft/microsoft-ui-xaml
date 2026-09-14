@@ -714,10 +714,12 @@ muxc::InkSynchronizer InkPresenter::ActivateCustomDrying()
     // rather than handing back a synchronizer whose BeginDry would silently do nothing.
     if (!activated)
     {
+        InkTelemetry::ReportCustomDryingActivation(InkTelemetry::Result::Failure, E_ILLEGAL_METHOD_CALL);
         throw winrt::hresult_error(E_ILLEGAL_METHOD_CALL, L"InkPresenter is not ready for custom drying.");
     }
 
     m_customDrySynchronizer = customDrySynchronizer;
+    InkTelemetry::ReportCustomDryingActivation(InkTelemetry::Result::Success);
     return m_customDrySynchronizer;
 }
 

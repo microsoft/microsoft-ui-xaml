@@ -23,6 +23,7 @@
 
 #include "ButtonManager.h"
 #include "InkToolbarMenuButton.h"   // InkToolbarMenuButtonCheckedState
+#include "InkTelemetry.h"
 
 class InkToolbar :
     public ReferenceTracker<InkToolbar, winrt::implementation::InkToolbarT>,
@@ -157,6 +158,9 @@ private:
     std::vector<winrt::UIElement> m_autoPopulatedButtons;
     bool m_autoPopulated = false;
     bool m_childrenDirty = true;
+
+    void ReportUsageTelemetry() noexcept;
+    InkTelemetry::ToolbarState m_telemetryState;
 
     // Tracks an open L3 for as long as it is open (registered for flyout Closed to prune).
     struct OpenFlyout

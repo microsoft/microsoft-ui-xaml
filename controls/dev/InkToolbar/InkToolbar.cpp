@@ -1184,6 +1184,8 @@ winrt::Size InkToolbar::MeasureOverride(winrt::Size const& availableSize)
 
         UpdateToolButtonVisuals();
         m_childrenDirty = false;
+
+        ReportUsageTelemetry();
     }
 
     // Measure the applied template root (standard templated-Control behavior).
@@ -1199,6 +1201,23 @@ winrt::Size InkToolbar::MeasureOverride(winrt::Size const& availableSize)
 winrt::AutomationPeer InkToolbar::OnCreateAutomationPeer()
 {
     return winrt::make<InkToolbarAutomationPeer>(*this);
+}
+
+// Reported once per toolbar, after auto-population has settled on an active tool.
+void InkToolbar::ReportUsageTelemetry() noexcept
+{
+    auto const activeTool = ActiveTool();
+    auto const toolKind = activeTool
+        ? static_cast<uint32_t>(activeTool.ToolKind())
+        : static_cast<uint32_t>(winrt::InkToolbarTool::CustomTool) + 1;   // sentinel: no active tool
+
+    InkTelemetry::ReportToolbarUsage(
+        m_telemetryState,
+        static_cast<uint32_t>(InitialControls()),
+        static_cast<uint32_t>(Orientation()),
+        toolKind,
+        TargetInkCanvas() != nullptr,
+        TargetInkPresenter() != nullptr);
 }
 
 // ---- Ruler / stencil checked handlers (faithful ports; dial + ruler-event dropped) ----------
