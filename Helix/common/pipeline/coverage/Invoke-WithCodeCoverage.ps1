@@ -10,7 +10,10 @@ param(
     [string]$OutputFile,
 
     [Parameter(Mandatory = $true)]
-    [scriptblock]$RunTests
+    [scriptblock]$RunTests,
+
+    [ValidateRange(1, 600)]
+    [int]$ShutdownTimeoutSeconds = 60
 )
 
 $ErrorActionPreference = 'Stop'
@@ -73,16 +76,25 @@ finally
 {
     if ($collector)
     {
+        $shutdown = $null
         try
         {
-            & $tool shutdown $sessionId | Out-Host
-            if ($LASTEXITCODE -ne 0)
+            # The shutdown client can itself hang waiting for a collector response.
+            $shutdownClock = [Diagnostics.Stopwatch]::StartNew()
+            $shutdown = Start-Process -FilePath $tool -ArgumentList @('shutdown', $sessionId) `
+                -PassThru -NoNewWindow -RedirectStandardOutput "$OutputFile.shutdown.log" -RedirectStandardError "$OutputFile.shutdown.err"
+            if (-not $shutdown.WaitForExit($ShutdownTimeoutSeconds * 1000))
             {
-                throw "Coverage shutdown failed (exit $LASTEXITCODE)."
+                throw "Coverage shutdown did not finish within $ShutdownTimeoutSeconds seconds."
             }
-            if (-not $collector.WaitForExit(60000))
+            if ($shutdown.ExitCode -ne 0)
             {
-                throw 'Coverage collector did not exit within 60 seconds.'
+                throw "Coverage shutdown failed (exit $($shutdown.ExitCode))."
+            }
+            $remainingMilliseconds = [int][Math]::Max(0, $ShutdownTimeoutSeconds * 1000 - $shutdownClock.ElapsedMilliseconds)
+            if (-not $collector.WaitForExit($remainingMilliseconds))
+            {
+                throw "Coverage collector did not exit within $ShutdownTimeoutSeconds seconds."
             }
             if (-not (Test-Path -LiteralPath $OutputFile) -or (Get-Item -LiteralPath $OutputFile).Length -eq 0)
             {
@@ -95,9 +107,16 @@ finally
         }
         finally
         {
-            if (-not $collector.HasExited)
+            foreach ($process in @($shutdown, $collector))
             {
-                Stop-Process -Id $collector.Id -ErrorAction Continue
+                if ($process)
+                {
+                    if (-not $process.HasExited)
+                    {
+                        Stop-Process -Id $process.Id -ErrorAction Continue
+                    }
+                    $process.Dispose()
+                }
             }
         }
     }

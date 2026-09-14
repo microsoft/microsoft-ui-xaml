@@ -20,23 +20,67 @@ if ($files.Count -eq 0 -or @($files | Where-Object Length -eq 0).Count -gt 0)
 }
 $tool = & "$PSScriptRoot\Get-CoverageTool.ps1" -CoverageToolPath $CoverageToolPath
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
-
-foreach ($format in @('cobertura', 'coverage'))
+foreach ($name in @('merged.cobertura.xml', 'merged.coverage'))
 {
-    $name = if ($format -eq 'cobertura') { 'merged.cobertura.xml' } else { 'merged.coverage' }
-    $output = Join-Path $OutputDir $name
-    if (Test-Path -LiteralPath $output)
+    $previousOutput = Join-Path $OutputDir $name
+    if (Test-Path -LiteralPath $previousOutput)
     {
-        Remove-Item -LiteralPath $output
+        Remove-Item -LiteralPath $previousOutput
     }
-    & $tool merge @($files.FullName) --output $output --output-format $format | Out-Host
+}
+
+function Merge-CoverageFiles([string[]]$InputFiles, [string]$Format, [string]$Output)
+{
+    if (Test-Path -LiteralPath $Output)
+    {
+        Remove-Item -LiteralPath $Output
+    }
+    & $tool merge @InputFiles --output $Output --output-format $Format | Out-Host
     if ($LASTEXITCODE -ne 0)
     {
-        throw "Coverage merge failed for $format (exit $LASTEXITCODE)."
+        throw "Coverage merge failed for $Format (exit $LASTEXITCODE)."
     }
-    if (-not (Test-Path -LiteralPath $output) -or (Get-Item -LiteralPath $output).Length -eq 0)
+    if (-not (Test-Path -LiteralPath $Output) -or (Get-Item -LiteralPath $Output).Length -eq 0)
     {
-        throw "Coverage merge did not produce '$output'."
+        throw "Coverage merge did not produce '$Output'."
     }
+}
+
+# The VS tool silently skips invalid files and can return a nonempty, zero-module
+# report even for corrupt-only input. Validate each slice has source lines before
+# combining it with valid slices, which would otherwise conceal the missing data.
+$validationDir = Join-Path $OutputDir ('.validation-' + [guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -Path $validationDir | Out-Null
+try
+{
+    $validationFile = Join-Path $validationDir 'slice.cobertura.xml'
+    $readerSettings = [Xml.XmlReaderSettings]::new()
+    $readerSettings.DtdProcessing = [Xml.DtdProcessing]::Ignore
+    $readerSettings.XmlResolver = $null
+    foreach ($file in $files)
+    {
+        Write-Host "Validating coverage slice '$($file.FullName)'."
+        Merge-CoverageFiles -InputFiles @($file.FullName) -Format cobertura -Output $validationFile
+        $reader = [Xml.XmlReader]::Create($validationFile, $readerSettings)
+        try
+        {
+            [void]$reader.MoveToContent()
+            if ($reader.LocalName -ne 'coverage' -or [long]$reader.GetAttribute('lines-valid') -le 0)
+            {
+                throw "Coverage slice '$($file.FullName)' is invalid or contains no source-line data."
+            }
+        }
+        finally
+        {
+            $reader.Dispose()
+        }
+    }
+
+    Merge-CoverageFiles -InputFiles $files.FullName -Format cobertura -Output (Join-Path $OutputDir 'merged.cobertura.xml')
+    Merge-CoverageFiles -InputFiles $files.FullName -Format coverage -Output (Join-Path $OutputDir 'merged.coverage')
+}
+finally
+{
+    Remove-Item -LiteralPath $validationDir -Recurse -Force
 }
 Write-Host "Merged $($files.Count) coverage files into '$OutputDir'."

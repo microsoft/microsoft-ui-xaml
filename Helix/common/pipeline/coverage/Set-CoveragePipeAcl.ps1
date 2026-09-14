@@ -10,8 +10,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-# TAEF's low-integrity process host cannot use the collector's default pipe permissions.
-# Keep this workaround confined to the collector's lifetime on an isolated lab agent.
+# Preserve the experimental TAEF pipe-permission workaround. This changes only the
+# DACL, not integrity labels, and belongs only on an isolated lab agent.
 if (-not ('WinUI.Coverage.PipeAcl' -as [type]))
 {
     Add-Type -Namespace 'WinUI.Coverage' -Name 'PipeAcl' -MemberDefinition @'

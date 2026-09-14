@@ -165,6 +165,11 @@ try
         BeforeEach { New-CoverageFixture }
 
         It 'instruments only the two target modules and distributes every DLL and runtime copy' {
+            $originalHashes = @{}
+            foreach ($module in $script:modules)
+            {
+                $originalHashes[$module] = (Get-FileHash -LiteralPath "$script:payload\app one\$module").Hash
+            }
             Invoke-Instrumentation
             $calls = @(Get-ToolCalls 'instrument')
             $calls.Count | Should Be 2
@@ -182,9 +187,10 @@ try
                     Test-Path -LiteralPath (Join-Path $directory ([IO.Path]::ChangeExtension($module, '.pdb'))) | Should Be $false
                 }
                 $marker = @(Get-Content -LiteralPath "$script:payload\_coverage-instrumented-$module.txt")
-                $marker.Count | Should Be 2
+                $marker.Count | Should Be 3
                 $marker[0] | Should Be $script:sessionId
                 $marker[1] | Should Be (Get-FileHash -LiteralPath "$script:payload\app one\$module").Hash
+                $marker[2] | Should Be $originalHashes[$module]
                 [IO.File]::ReadAllText((Join-Path $script:symbols ([IO.Path]::ChangeExtension($module, '.pdb')))) | Should Be "symbols:$module"
             }
             foreach ($app in $script:appDirectories)
@@ -212,6 +218,38 @@ try
             @(Get-ToolCalls 'instrument').Count | Should Be 2
             [IO.File]::ReadAllText("$script:payload\nested\app two\Microsoft.ui.xaml.dll") | Should Be "original:Microsoft.ui.xaml.dll|instrumented:$script:sessionId"
             [IO.File]::ReadAllText("$script:payload\nested\app two\static_covrun64.dll") | Should Be 'runtime-64'
+        }
+
+        It 'warns that packaged runtime copies are outside coverage without changing the package' {
+            $package = "$script:payload\Test\IXMPTestApp.appx"
+            Write-FixtureFile $package 'signed package'
+            Mock Write-Host {}
+            Invoke-Instrumentation
+            [IO.File]::ReadAllText($package) | Should Be 'signed package'
+            Assert-MockCalled Write-Host -Times 1 -Exactly -Scope It -ParameterFilter {
+                "$Object" -like '##vso*warning*Runtime copies inside APPX/MSIX packages*not instrumented*'
+            }
+        }
+
+        foreach ($module in @('Microsoft.ui.xaml.dll', 'Microsoft.UI.Xaml.Controls.dll'))
+        {
+            It "rejects a different-build $module on retry without overwriting it" {
+                Invoke-Instrumentation
+                $otherBuild = "$script:payload\nested\app two\$module"
+                Write-FixtureFile $otherBuild 'another build'
+                { Invoke-Instrumentation } | Should Throw "copies of $module differ"
+                [IO.File]::ReadAllText($otherBuild) | Should Be 'another build'
+                @(Get-ToolCalls 'instrument').Count | Should Be 2
+            }
+        }
+
+        It 'rejects legacy markers that cannot prove the original binary identity' {
+            Invoke-Instrumentation
+            $path = "$script:payload\_coverage-instrumented-Microsoft.ui.xaml.dll.txt"
+            $marker = @(Get-Content -LiteralPath $path)
+            Set-Content -LiteralPath $path -Value $marker[0..1]
+            { Invoke-Instrumentation } | Should Throw 'Invalid coverage marker'
+            @(Get-ToolCalls 'instrument').Count | Should Be 2
         }
 
         It 'resumes after the second module fails without instrumenting the first twice' {
@@ -339,21 +377,28 @@ try
         It 'passes every slice, without logs or unrelated files, to both requested output formats' {
             Invoke-CoverageMerge
             $calls = @(Get-ToolCalls 'merge')
-            $calls.Count | Should Be 2
+            $calls.Count | Should Be 4
             $expectedInputs = @("$script:inputDir\x64\coverage-one.coverage", "$script:inputDir\x86\nested\coverage-two.coverage")
-            foreach ($call in $calls)
+            foreach ($call in $calls[0..1])
+            {
+                $call.Arguments.Count | Should Be 6
+                ($expectedInputs -contains $call.Arguments[1]) | Should Be $true
+                $call.Arguments[5] | Should Be 'cobertura'
+            }
+            foreach ($call in $calls[2..3])
             {
                 $call.Arguments.Count | Should Be 7
                 ($call.Arguments[1..2] | Sort-Object) -join '|' | Should Be (($expectedInputs | Sort-Object) -join '|')
                 $call.Arguments[3] | Should Be '--output'
                 $call.Arguments[5] | Should Be '--output-format'
             }
-            $calls[0].Arguments[4] | Should Be "$script:outputDir\merged.cobertura.xml"
-            $calls[0].Arguments[6] | Should Be 'cobertura'
-            $calls[1].Arguments[4] | Should Be "$script:outputDir\merged.coverage"
-            $calls[1].Arguments[6] | Should Be 'coverage'
-            [IO.File]::ReadAllText("$script:outputDir\merged.cobertura.xml") | Should Be 'merged-cobertura'
+            $calls[2].Arguments[4] | Should Be "$script:outputDir\merged.cobertura.xml"
+            $calls[2].Arguments[6] | Should Be 'cobertura'
+            $calls[3].Arguments[4] | Should Be "$script:outputDir\merged.coverage"
+            $calls[3].Arguments[6] | Should Be 'coverage'
+            [IO.File]::ReadAllText("$script:outputDir\merged.cobertura.xml") | Should Be '<coverage lines-valid="2" />'
             [IO.File]::ReadAllText("$script:outputDir\merged.coverage") | Should Be 'merged-coverage'
+            @(Get-ChildItem -LiteralPath $script:outputDir -Directory).Count | Should Be 0
         }
 
         It 'fails for a missing input directory' {
@@ -374,10 +419,14 @@ try
             @(Get-ToolCalls 'merge').Count | Should Be 0
         }
 
-        It 'fails for corrupt slice input rejected by the coverage tool' {
+        It 'rejects corrupt input even when the real CLI behavior is to skip it and return success' {
             Write-FixtureFile "$script:inputDir\x86\nested\coverage-two.coverage" 'invalid'
-            { Invoke-CoverageMerge } | Should Throw 'exit 25'
-            @(Get-ToolCalls 'merge').Count | Should Be 1
+            Write-FixtureFile "$script:outputDir\merged.cobertura.xml" 'stale'
+            Write-FixtureFile "$script:outputDir\merged.coverage" 'stale'
+            { Invoke-CoverageMerge } | Should Throw 'invalid or contains no source-line data'
+            Test-Path -LiteralPath "$script:outputDir\merged.cobertura.xml" | Should Be $false
+            Test-Path -LiteralPath "$script:outputDir\merged.coverage" | Should Be $false
+            @(Get-ChildItem -LiteralPath $script:outputDir -Directory).Count | Should Be 0
         }
 
         It 'fails if the coverage tool is missing' {
@@ -438,22 +487,47 @@ try
                 ExitCode = 28
                 FinishOnWait = $true
                 WaitMilliseconds = 0
+                Disposed = $false
             }
-            $script:collector | Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {
-                param($milliseconds)
-                $this.WaitMilliseconds = $milliseconds
-                if ($this.FinishOnWait) { $this.HasExited = $true }
-                return $this.FinishOnWait
+            $script:shutdown = [pscustomobject]@{
+                Id = 2147483002
+                HasExited = $false
+                ExitCode = 0
+                FinishOnWait = $true
+                WaitMilliseconds = 0
+                Disposed = $false
+            }
+            foreach ($process in @($script:collector, $script:shutdown))
+            {
+                $process | Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {
+                    param($milliseconds)
+                    $this.WaitMilliseconds = $milliseconds
+                    if ($this.FinishOnWait) { $this.HasExited = $true }
+                    return $this.FinishOnWait
+                }
+                $process | Add-Member -MemberType ScriptMethod -Name Dispose -Value { $this.Disposed = $true }
             }
             $global:CoverageTestCollector.Process = $script:collector
+            $global:CoverageTestCollector.ShutdownProcess = $script:shutdown
             [WinUI.Coverage.PipeAcl]::LastPipe = $null
             [WinUI.Coverage.PipeAcl]::Fail = $false
 
             Mock Start-Process {
+                if ($ArgumentList[0] -eq 'shutdown')
+                {
+                    & $FilePath @ArgumentList
+                    $global:CoverageTestCollector.ShutdownProcess.ExitCode = $LASTEXITCODE
+                    return $global:CoverageTestCollector.ShutdownProcess
+                }
                 $global:CoverageTestCollector.StartedArguments = $ArgumentList
                 $global:CoverageTestCollector.Process
             }
-            Mock Stop-Process { $global:CoverageTestCollector.Process.HasExited = $true }
+            Mock Stop-Process {
+                foreach ($process in @($global:CoverageTestCollector.Process, $global:CoverageTestCollector.ShutdownProcess))
+                {
+                    if ($process.Id -eq $Id) { $process.HasExited = $true }
+                }
+            }
             Mock Start-Sleep {}
             Mock Write-Host {}
             Mock Write-Warning {}
@@ -491,7 +565,10 @@ try
             $calls.Count | Should Be 1
             @(Get-ToolCalls 'test').Count | Should Be 1
             ($calls[0].Arguments -join '|') | Should Be "shutdown|$script:sessionId"
-            $script:collector.WaitMilliseconds | Should Be 60000
+            $script:shutdown.WaitMilliseconds | Should Be 60000
+            ($script:collector.WaitMilliseconds -gt 0 -and $script:collector.WaitMilliseconds -le 60000) | Should Be $true
+            $script:collector.Disposed | Should Be $true
+            $script:shutdown.Disposed | Should Be $true
             Assert-MockCalled Stop-Process -Times 0 -Exactly -Scope It
             $LASTEXITCODE | Should Be 0
         }
@@ -581,15 +658,97 @@ try
                 }
             }
             $LASTEXITCODE | Should Be 37
-            $script:collector.WaitMilliseconds | Should Be 60000
+            ($script:collector.WaitMilliseconds -gt 0 -and $script:collector.WaitMilliseconds -le 60000) | Should Be $true
         }
 
         It 'preserves the original test exception and runs shutdown and forced cleanup' {
             $script:collector.FinishOnWait = $false
             { Invoke-Collector { throw 'original test exception' } } | Should Throw 'original test exception'
             @(Get-ToolCalls 'shutdown').Count | Should Be 1
-            $script:collector.WaitMilliseconds | Should Be 60000
+            ($script:collector.WaitMilliseconds -gt 0 -and $script:collector.WaitMilliseconds -le 60000) | Should Be $true
             Assert-MockCalled Stop-Process -Times 1 -Exactly -Scope It -ParameterFilter { $Id -eq 2147483001 }
+        }
+
+        foreach ($exitCode in @(0, 37))
+        {
+            It "bounds a stalled shutdown client and preserves test exit $exitCode" {
+                $script:shutdown.FinishOnWait = $false
+                $global:CoverageTestCollector.TestExitCode = $exitCode
+                Invoke-Collector { & $global:CoverageTestCollector.TestTool test $global:CoverageTestCollector.TestExitCode }
+                $LASTEXITCODE | Should Be $exitCode
+                $script:shutdown.WaitMilliseconds | Should Be 60000
+                $script:collector.WaitMilliseconds | Should Be 0
+                Assert-MockCalled Stop-Process -Times 1 -Exactly -Scope It -ParameterFilter { $Id -eq 2147483001 }
+                Assert-MockCalled Stop-Process -Times 1 -Exactly -Scope It -ParameterFilter { $Id -eq 2147483002 }
+                Assert-MockCalled Write-Host -Times 1 -Scope It -ParameterFilter { "$Object" -like '*shutdown did not finish within 60 seconds*' }
+            }
+        }
+
+        It 'preserves the original test exception when the shutdown client stalls' {
+            $script:shutdown.FinishOnWait = $false
+            { Invoke-Collector { throw 'original test exception' } } | Should Throw 'original test exception'
+            Assert-MockCalled Stop-Process -Times 1 -Exactly -Scope It -ParameterFilter { $Id -eq 2147483001 }
+            Assert-MockCalled Stop-Process -Times 1 -Exactly -Scope It -ParameterFilter { $Id -eq 2147483002 }
+        }
+
+        foreach ($outcome in @('pass', 'fail', 'throw'))
+        {
+            It "terminates real owned processes after a stalled pipe reply and preserves $outcome" {
+                $env:WINUI_COVERAGE_TEST_MODE = 'stall-shutdown'
+                Write-FixtureFile "$script:payload\_coverage-session-id.txt" ('coverage-test-' + [guid]::NewGuid().ToString('N'))
+                $global:CoverageTestCollector.OwnedProcesses = @()
+                $global:CoverageTestCollector.Outcome = $outcome
+                $global:CoverageTestCollector.StartCommand = Get-Command Start-Process -CommandType Cmdlet
+                $global:CoverageTestCollector.StopCommand = Get-Command Stop-Process -CommandType Cmdlet
+                Mock Start-Process {
+                    $process = & $global:CoverageTestCollector.StartCommand -FilePath $FilePath -ArgumentList $ArgumentList `
+                        -PassThru -NoNewWindow -RedirectStandardOutput $RedirectStandardOutput -RedirectStandardError $RedirectStandardError
+                    $global:CoverageTestCollector.OwnedProcesses += $process.Id
+                    return $process
+                }
+                Mock Stop-Process {
+                    foreach ($processId in $Id)
+                    {
+                        ($global:CoverageTestCollector.OwnedProcesses -contains $processId) | Should Be $true
+                    }
+                    & $global:CoverageTestCollector.StopCommand -Id $Id -ErrorAction Stop
+                }
+                $run = {
+                    if ($global:CoverageTestCollector.Outcome -eq 'throw') { throw 'original native test exception' }
+                    $code = if ($global:CoverageTestCollector.Outcome -eq 'fail') { 37 } else { 0 }
+                    & $global:CoverageTestCollector.TestTool test $code
+                }
+                $clock = [Diagnostics.Stopwatch]::StartNew()
+                try
+                {
+                    if ($outcome -eq 'throw')
+                    {
+                        { & "$script:coverageScripts\Invoke-WithCodeCoverage.ps1" -PayloadDir $script:payload `
+                            -OutputFile $script:coverageOutput -RunTests $run -ShutdownTimeoutSeconds 2 } | Should Throw 'original native test exception'
+                    }
+                    else
+                    {
+                        & "$script:coverageScripts\Invoke-WithCodeCoverage.ps1" -PayloadDir $script:payload `
+                            -OutputFile $script:coverageOutput -RunTests $run -ShutdownTimeoutSeconds 2
+                        $LASTEXITCODE | Should Be $(if ($outcome -eq 'fail') { 37 } else { 0 })
+                    }
+                    $clock.Elapsed.TotalSeconds | Should BeLessThan 15
+                    Test-Path -LiteralPath "$script:caseRoot\shutdown-requested.txt" | Should Be $true
+                    $global:CoverageTestCollector.OwnedProcesses.Count | Should Be 2
+                    foreach ($processId in $global:CoverageTestCollector.OwnedProcesses)
+                    {
+                        Get-Process -Id $processId -ErrorAction SilentlyContinue | Should BeNullOrEmpty
+                    }
+                }
+                finally
+                {
+                    foreach ($processId in $global:CoverageTestCollector.OwnedProcesses)
+                    {
+                        $process = Get-Process -Id $processId -ErrorAction SilentlyContinue
+                        if ($process) { & $global:CoverageTestCollector.StopCommand -Id $processId }
+                    }
+                }
+            }
         }
 
         It 'preserves a native test exit code even when the test script then throws' {

@@ -3,6 +3,8 @@
 
 using System;
 using System.IO;
+using System.IO.Pipes;
+using System.Threading;
 
 // A process, rather than a PowerShell mock, exercises native arguments and LASTEXITCODE.
 internal static class CoverageToolFixture
@@ -54,14 +56,38 @@ internal static class CoverageToolFixture
             string format = Option(args, "--output-format");
             if (mode == "fail-" + format)
                 return 24;
+            int validInputs = 0;
             for (int index = 1; index < Array.IndexOf(args, "--output"); index++)
             {
-                if (File.ReadAllText(args[index]) == "invalid")
-                    return 25;
+                // The real VS CLI skips corrupt inputs and still returns success.
+                if (File.ReadAllText(args[index]) != "invalid")
+                    validInputs++;
             }
             if (mode != "no-output-" + format)
-                File.WriteAllText(Option(args, "--output"), mode == "empty-" + format ? "" : "merged-" + format);
+                File.WriteAllText(Option(args, "--output"), mode == "empty-" + format ? "" :
+                    format == "cobertura" ? "<coverage lines-valid=\"" + validInputs + "\" />" : "merged-" + format);
             return 0;
+        }
+
+        if (mode == "stall-shutdown" && args[0] == "collect")
+        {
+            using (var pipe = new NamedPipeServerStream("CodeCoverage.pipe." + Option(args, "--session-id")))
+            {
+                pipe.WaitForConnection();
+                pipe.ReadByte();
+                Thread.Sleep(Timeout.Infinite);
+            }
+        }
+
+        if (mode == "stall-shutdown" && args[0] == "shutdown")
+        {
+            using (var pipe = new NamedPipeClientStream(".", "CodeCoverage.pipe." + args[1]))
+            {
+                pipe.Connect(10000);
+                pipe.WriteByte(1);
+                File.WriteAllText(Path.Combine(root, "shutdown-requested.txt"), "waiting for reply");
+                pipe.ReadByte();
+            }
         }
 
         if (args[0] == "shutdown")

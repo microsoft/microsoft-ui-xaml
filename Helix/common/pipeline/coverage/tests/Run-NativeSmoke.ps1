@@ -143,6 +143,34 @@ try
             throw "Merged Cobertura report has no executed lines for $module."
         }
     }
+
+    $validBytes = [IO.File]::ReadAllBytes((Join-Path $slices 'coverage-0.coverage'))
+    foreach ($corruption in @('garbage', 'truncated'))
+    {
+        $invalidFile = Join-Path $slices 'coverage-invalid.coverage'
+        if ($corruption -eq 'garbage')
+        {
+            [IO.File]::WriteAllText($invalidFile, 'not a coverage file')
+        }
+        else
+        {
+            [IO.File]::WriteAllBytes($invalidFile, $validBytes[0..([int]($validBytes.Length / 2))])
+        }
+        $rejected = $false
+        try
+        {
+            & "$scripts\Merge-CodeCoverage.ps1" -InputDir $slices -OutputDir "$root\$corruption" -CoverageToolPath $tool
+        }
+        catch
+        {
+            $rejected = $true
+            Write-Host "Rejected $corruption coverage alongside valid slices: $($_.Exception.Message)"
+        }
+        if (-not $rejected)
+        {
+            throw "The merge accepted $corruption coverage alongside valid slices."
+        }
+    }
     Write-Host 'Native smoke passed: two DLLs, two payload copies, two collected slices, Cobertura and binary coverage reports.'
 }
 finally

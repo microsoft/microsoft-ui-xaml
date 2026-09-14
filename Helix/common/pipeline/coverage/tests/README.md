@@ -16,13 +16,15 @@ inside this directory. A small executable replaces the coverage tool and
 vswhere. It records arguments, returns native exit codes, and creates fixture
 binaries, runtimes, and reports. Each run removes only its own fixture root.
 
-Collector process operations, time, and pipe readiness are mocked. An inert
+Most collector process operations, time, and pipe readiness are mocked. Three
+shutdown tests use owned native fixture processes and a unique pipe that withholds
+its reply, verifying wall-clock timeout, cleanup, and test-result preservation. An inert
 `WinUI.Coverage.PipeAcl` type records ACL requests without loading Win32 code or
 changing any permissions. Always use a fresh process, not an existing collector
 session.
 
 These are script contract tests, not a validation of native binary rewriting,
-PDB identity, the coverage report schema, real collector readiness/shutdown, or
+PDB identity, the coverage report schema, real VS collector readiness, or
 Windows pipe permissions. They do not run WinUI tests or validate pipeline YAML.
 
 ## Optional native smoke test
@@ -36,8 +38,9 @@ pwsh.exe -NoProfile -File .\Helix\common\pipeline\coverage\tests\Run-NativeSmoke
 This builds two tiny native DLLs and a runner, executes production instrumentation
 and merge scripts, and collects two slices using the bundled real coverage tool.
 It checks runtime distribution, symbol cleanup, both output formats, and executed
-lines for both fixture DLLs. All generated files stay under a unique test directory
-and are removed after the run.
+lines for both fixture DLLs. It also rejects garbage and truncated coverage files
+alongside valid slices using the real VS merge tool. All generated files stay
+under a unique test directory and are removed after the run.
 
 The fixture DLLs use `/PROFILE` to emit the linker metadata needed for native
 instrumentation. The smoke test does not verify the real WinUI build's linker settings.

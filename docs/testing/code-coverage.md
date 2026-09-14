@@ -2,6 +2,8 @@
 
 Code coverage is an opt-in Azure Pipelines test mode. It instruments only
 `Microsoft.ui.xaml.dll` (MUX) and `Microsoft.UI.Xaml.Controls.dll` (MUXC).
+This experimental mode covers loose DLLs in the test payload, not runtime copies
+inside APPX/MSIX packages such as `IXMPTestApp.appx`.
 It does not instrument test binaries, sample apps, or Windows App SDK dependencies.
 It does not set a coverage threshold or add a required PR check.
 
@@ -41,7 +43,7 @@ No new pipeline registration is required to test the port with the existing
    download, or merge job.
 2. Queue the same commit again with **CollectCodeCoverage=true**. Confirm payload
    instrumentation finds both runtime DLLs, copies each instrumented DLL and its
-   `static_covrun*.dll` runtime to every payload location, and bundles the collector.
+   `static_covrun*.dll` runtime to every loose-DLL payload location, and bundles the collector.
 3. Check the test-output artifacts for nonempty `coverage-<machine>-slice<N>.coverage`
    files and collector logs. Coverage setup/shutdown warnings indicate an incomplete
    result even if the tests pass. Confirm no collector remains after each slice.
@@ -79,6 +81,13 @@ The build agent creates the normal symbol-free test payload, then instruments it
 as a separate opt-in step. Matching product PDBs are downloaded from the same build.
 Only test payload copies are instrumented; shipped packages and build outputs are not.
 All payloads in a run use the same session ID because test jobs overlay OS payloads.
+Retry markers record original and instrumented hashes so a retry can repair
+same-build copies without replacing binaries from another build.
+
+The scripts leave signed test packages unchanged and warn about their coverage
+gap. Packaged tests still run, but their embedded runtime DLLs do not contribute
+to the report. Instrumenting them would require a separate package deployment or
+repackaging/re-signing path; that is outside this initial port.
 
 Instrumentation uses Visual Studio's `Microsoft.CodeCoverage.Console.exe`.
 `dotnet-coverage` alone does not support native instrumentation. The script bundles
@@ -86,15 +95,23 @@ the VS collector and native dependencies because test agents do not have VS or
 the .NET CLI installed. Build and merge images must provide the VS coverage tool.
 
 Each slice starts a collector, invokes the unchanged test runner, and shuts down
-the collector in `finally`, including when tests throw. Collector failures produce
+the collector in `finally`, including when tests throw. Shutdown has a 60-second
+wall-clock budget covering both the client and collector; stalled owned processes
+are terminated without replacing the test result. Collector failures produce
 warnings and do not prevent test execution. Missing or empty merge input fails the
 coverage job rather than publishing an empty success report. A partial report can
 still be published when only some slices produce data; inspect all slice warnings.
+The merge converts each input separately and requires source-line data before
+combining slices, because the VS CLI can otherwise silently skip corrupt files.
+This adds one conversion per slice and temporary space for one Cobertura report.
+Slices with no source-line data also fail validation; inspect their collector logs.
 
-TAEF's low-integrity process host needs access to the collector's named pipe.
-The port retains the experimental NULL DACL workaround from the original change.
+The port retains the original experimental NULL DACL workaround for TAEF's
+access to the collector's named pipe.
 It allows all local users to access that pipe until the collector exits. Run this
 mode only on isolated, disposable test agents, not shared developer machines.
+This changes discretionary permissions, not integrity labels. Actual lab tokens,
+IPC permissions, and collector privileges still need end-to-end verification.
 
 Coverage increases payload size, artifact storage, and run time. A local VM runner,
 additional runtime modules, and per-PR automatic coverage are outside this change.

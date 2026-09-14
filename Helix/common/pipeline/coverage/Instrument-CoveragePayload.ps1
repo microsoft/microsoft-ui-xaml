@@ -20,6 +20,13 @@ $ErrorActionPreference = 'Stop'
 $tool = & "$PSScriptRoot\Get-CoverageTool.ps1" -CoverageToolPath $CoverageToolPath
 $PayloadDir = (Get-Item -LiteralPath $PayloadDir).FullName
 
+$packages = @(Get-ChildItem -LiteralPath $PayloadDir -Recurse -File |
+    Where-Object { $_.Extension -in @('.appx', '.msix', '.appxbundle', '.msixbundle') })
+if ($packages.Count -gt 0)
+{
+    Write-Host '##vso[task.logissue type=warning]Coverage instruments loose runtime DLLs only. Runtime copies inside APPX/MSIX packages (including IXMPTestApp) are not instrumented, so their execution is missing from the report.'
+}
+
 # Lab agents have no VS installation. Bundle the same collector that instruments the DLLs.
 $consoleDir = Split-Path $tool
 $common7 = $tool.IndexOf('\Common7\', [StringComparison]::OrdinalIgnoreCase)
@@ -67,28 +74,38 @@ foreach ($module in @('Microsoft.ui.xaml.dll', 'Microsoft.UI.Xaml.Controls.dll')
     $primary = $copies[0]
     $markerFile = Join-Path $PayloadDir "_coverage-instrumented-$module.txt"
     $primaryHash = (Get-FileHash -LiteralPath $primary.FullName -Algorithm SHA256).Hash
+    $originalHash = $primaryHash
     $alreadyInstrumented = $false
     if (Test-Path -LiteralPath $markerFile)
     {
         $marker = @(Get-Content -LiteralPath $markerFile)
-        $alreadyInstrumented = $marker.Count -eq 2 -and $marker[1] -eq $primaryHash
+        if ($marker.Count -ne 3 -or $marker[1] -notmatch '^[A-Fa-f0-9]{64}$' -or $marker[2] -notmatch '^[A-Fa-f0-9]{64}$')
+        {
+            throw "Invalid coverage marker for $module. Recreate the payload before retrying."
+        }
+        $alreadyInstrumented = $marker[1] -eq $primaryHash
         if ($alreadyInstrumented -and $marker[0] -ne $SessionId)
         {
             throw "$module is instrumented for another session. Recreate the payload before changing the session ID."
+        }
+        if ($alreadyInstrumented)
+        {
+            $originalHash = $marker[2]
+        }
+    }
+
+    # Retries may repair an original copy, but must never replace a DLL from another build.
+    foreach ($copy in $copies)
+    {
+        $copyHash = (Get-FileHash -LiteralPath $copy.FullName -Algorithm SHA256).Hash
+        if ($copyHash -notin @($primaryHash, $originalHash))
+        {
+            throw "The copies of $module differ. Recreate the payload from a single build."
         }
     }
 
     if (-not $alreadyInstrumented)
     {
-        # Every app loads its own copy. Only broadcast over identical binaries from this build.
-        foreach ($copy in $copies)
-        {
-            if ((Get-FileHash -LiteralPath $copy.FullName -Algorithm SHA256).Hash -ne $primaryHash)
-            {
-                throw "The copies of $module differ. Recreate the payload from a single build."
-            }
-        }
-
         $pdbName = [IO.Path]::ChangeExtension($module, '.pdb')
         $pdbs = @(Get-ChildItem -LiteralPath $SymbolsSearchRoot -Recurse -File -Filter $pdbName)
         if ($pdbs.Count -ne 1)
@@ -122,7 +139,7 @@ foreach ($module in @('Microsoft.ui.xaml.dll', 'Microsoft.UI.Xaml.Controls.dll')
             throw "$module was not instrumented. Use a coverage-enabled build with matching symbols and linker fixup metadata."
         }
         $primaryHash = $instrumentedHash
-        Set-Content -LiteralPath $markerFile -Value @($SessionId, $primaryHash) -Encoding ASCII
+        Set-Content -LiteralPath $markerFile -Value @($SessionId, $primaryHash, $originalHash) -Encoding ASCII
     }
 
     $runtimes = @(Get-ChildItem -LiteralPath $primary.DirectoryName -File -Filter 'static_covrun*.dll')
