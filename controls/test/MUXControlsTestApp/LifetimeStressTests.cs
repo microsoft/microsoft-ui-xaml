@@ -1630,6 +1630,45 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // -------------------------------------------------------------------------------------------------------------
+        // Coverage map: WinUI "Lifetime Issues" reliability/Watson bugs (WinUI_Bugs_2026-09-10, Technical area =
+        // "Lifetime Issues", 38 items) -> the scenario that exercises each faulting path. "Generic peer churn" is the
+        // AddRef/Release/Unpeg/TrackerClear/metadata/ComObject teardown traffic driven by every-pass creation,
+        // realization, off-thread final release, reparenting and deep-tree teardown of the whole control surface
+        // (StressControlCreateLoadUnloadCollect + StressOffThreadPeerFinalRelease + StressRapidReparentEnterLeave +
+        // StressDeepVisualTreePeerChurn).
+        //
+        //   48542267 MediaTransportControls / shared MediaPlayer ...... StressMediaTransportControls
+        //   49348881 CMenuFlyoutPresenter ............................. StressMenuFlyoutOpenClose
+        //   54453205 SimpleProperty::SetImpl .......................... StressSimplePropertySetClear
+        //   54466371 / 55902178 CResourceDictionary::GetKeyNoRefImpl .. StressResourceDictionaryChurn
+        //   54475960 CUIAWindow::InitIds .............................. StressAutomationPeerCreateRelease
+        //   63277318 AppBarAutomationPeerFactory::Release ............. StressAutomationPeerCreateRelease
+        //   54537037 XamlBinaryFormatReader2::GetXbfHash ............... StressXamlReaderLoadUnload
+        //   56712355 NavigationCache::LoadContent ..................... StressFrameNavigationCache
+        //   57672120 ItemsSourceView::OnItemsSourceChanged ........... StressItemsSourceViewSwaps
+        //   60801847 Vector _scalar_deleting_destructor (double free) . StressItemsSourceViewSwaps
+        //   55026189 WindowGenerated::get_DispatcherQueue ............. StressWindowOpenClose
+        //   62091304 InkToolbar ReferenceTrackerRuntimeClass ......... StressInkToolbarTargeting
+        //   56307002 LsDestroyBreakRecord (text line services) ....... StressTextLineServicesChurn        (added below)
+        //   53672707 CDirectManipulationService::Activate... ......... StressScrollViewContentChurn       (added below;
+        //            realizes + tears down the DM/scroll service - full activation needs real manipulation input)
+        //   58759931 WeakReferenceImpl::Resolve ...................... StressEventHandlerAfterTeardown
+        //   50386959 AddRefForPeerReferenceHelper / 54447527 UnpegManagedPeer / 54449843 TrackerTargetReference::Clear /
+        //   54506263 OfTypeByIndex / 54554788 unconditional_release_ref / 54638556 AddRef / 56731116 xstring_ptr_view::
+        //   GetBuffer / 57024687 DynamicMetadataStorage / 59109646 ShouldDisablePixelSnapping / 60579018 GetProperty
+        //   BaseByIndex / 63449698 DependencyObjectPropertyAccess::Release / 63129346 / 63277512 / 63485295 / 63779618
+        //   ctl::ComObject_* ........................................ Generic peer churn (see above)
+        //
+        // Tracked but NOT reproduced here - each needs infrastructure MUXControlsTestApp (a desktop test app) cannot
+        // host, so a managed scenario cannot drive the faulting path:
+        //   54170426 CXamlIslandRoot::SetIslandInputSite / 54479739 GetElementIslandInputSite . XAML island input site
+        //   55899151 WindowsXamlManager (Taskbar.dll) ............... system XAML hosting from an external host process
+        //   54463285 CWindowsServices::GetKeyboardModifiersState .... live keyboard input state
+        //   56396875 dcomp CompositionObject::get_Properties ........ DirectComposition device internals
+        //   54450443 / 54450547 PLMHandler::OnSuspending/OnResuming . Process Lifetime Management suspend/resume (UWP)
+        // -------------------------------------------------------------------------------------------------------------
+
         // =============================================================================================================
         // Native-crash reproduction scenarios.
         //
@@ -1870,6 +1909,91 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     root.UpdateLayout();
                     root.Child = null;
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // Text line-services teardown (Watson: Microsoft.UI.Xaml.Internal.dll!LsDestroyBreakRecord). Build text-heavy
+        // elements whose wrapped, multi-line content forces the line-services layer to create line/break records,
+        // realize them, then tear them down and collect. A lifetime bug in break-record teardown faults here.
+        [TestMethod]
+        public void StressTextLineServicesChurn()
+        {
+            RunStress("StressTextLineServicesChurn", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+                int churn = AggressiveNativeReproEnabled ? 60 : 6;
+                string paragraph = string.Concat(Enumerable.Repeat("The quick brown fox jumps over the lazy dog. ", 40));
+
+                SafeUI(() =>
+                {
+                    var host = new StackPanel() { Width = 200 };
+                    Content = host;
+                    host.UpdateLayout();
+
+                    for (int c = 0; c < churn; c++)
+                    {
+                        var block = new TextBlock() { Text = paragraph, TextWrapping = TextWrapping.WrapWholeWords, Width = 180 };
+                        var box = new TextBox() { Text = paragraph, TextWrapping = TextWrapping.Wrap, Width = 180, Height = 80, AcceptsReturn = true };
+                        if (c == 0)
+                        {
+                            objects["FirstBlock"] = new WeakReference(block);
+                            objects["FirstBox"] = new WeakReference(box);
+                        }
+                        host.Children.Add(block);
+                        host.Children.Add(box);
+                        host.UpdateLayout();
+                        host.Children.Clear();
+                        host.UpdateLayout();
+                    }
+
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // ScrollView / DirectManipulation service setup + teardown (Watson: CDirectManipulationService::Activate
+        // DirectManipulationManager). Realize a ScrollView over large scrollable content - which stands up the
+        // manipulation/scroll service - then swap its content and tear it down repeatedly. NOTE: fully ACTIVATING the
+        // DM manager needs real touch/pen manipulation input this headless suite cannot inject; this exercises the
+        // DM/scroll service create + teardown path, which is where the reported lifetime fault occurs.
+        [TestMethod]
+        public void StressScrollViewContentChurn()
+        {
+            RunStress("StressScrollViewContentChurn", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+                int churn = AggressiveNativeReproEnabled ? 60 : 6;
+
+                SafeUI(() =>
+                {
+                    var scroll = new ScrollView() { Width = 200, Height = 200 };
+                    objects["ScrollView"] = new WeakReference(scroll);
+                    Content = scroll;
+                    Content.UpdateLayout();
+
+                    for (int c = 0; c < churn; c++)
+                    {
+                        var content = new StackPanel();
+                        for (int i = 0; i < 40; i++)
+                        {
+                            content.Children.Add(new Button() { Content = "row " + i, Width = 400 });
+                        }
+                        scroll.Content = content;
+                        scroll.UpdateLayout();
+                        scroll.Content = null;
+                        scroll.UpdateLayout();
+                    }
+
                     Content = null;
                 });
 
