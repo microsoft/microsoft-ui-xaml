@@ -867,8 +867,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         double const expectedDatePickerWidth = 296;
         double const expectedDatePickerWidth_WithWideHeader = 350;
 
-        double const expectedDatePickerHeight = 30;
-        double const expectedDatePickerHeight_WithHeader = 19 + 4 + expectedDatePickerHeight;
+        double const expectedDatePickerHeight = 31;
+        double const expectedDatePickerHeight_WithHeader = 19 + 8 + expectedDatePickerHeight;
 
         xaml_controls::DatePicker^ datePicker;
         xaml_controls::DatePicker^ datePickerWithHeader;
