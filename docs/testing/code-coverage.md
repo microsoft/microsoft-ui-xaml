@@ -150,7 +150,11 @@ instrument it. MUX already emits this metadata. The option also disables increme
 linking for MUXC; normal builds keep their existing linker settings.
 
 The build agent creates the normal symbol-free test payload, then instruments it
-as a separate opt-in step. Matching product PDBs are downloaded from the same build.
+as a separate opt-in step. Coverage preparation first replaces loose MUX/MUXC
+copies with the final product DLLs from the selected build. Test apps can contain
+an earlier component-package link with different PDB metadata, even when the
+executable code is identical. Matching product PDBs are downloaded from that same
+build, so instrumentation always uses the final DLL/PDB pair.
 Only test payload copies are instrumented; shipped packages and build outputs are not.
 All payloads in a run use the same session ID because test jobs overlay OS payloads.
 Retry markers record original and instrumented hashes so a retry can repair

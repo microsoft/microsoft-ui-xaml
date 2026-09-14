@@ -116,6 +116,16 @@ function Invoke-Collector([scriptblock]$RunTests)
         -OutputFile $script:coverageOutput -RunTests $RunTests
 }
 
+function Invoke-PayloadPreparation
+{
+    $template = Get-Content -LiteralPath "$PSScriptRoot\..\..\..\..\..\build\AzurePipelinesTemplates\WinUI-CreateTestPayload-Job.yml" -Raw
+    $match = [regex]::Match($template, "(?ms)displayName: 'Prepare final runtime copies for code coverage'.*?script: \|\r?\n(?<code>(?: {10}[^\r\n]*\r?\n)+)")
+    if (-not $match.Success) { throw 'Coverage preparation task was not found.' }
+    $code = $match.Groups['code'].Value.Replace('$(artifactsDir)', "$script:caseRoot\artifacts")
+    $code = $code.Replace('$(buildFlavor)', 'x86chk').Replace('$(testBinaryPath)', $script:payload)
+    & ([scriptblock]::Create($code))
+}
+
 try
 {
     New-Item -ItemType Directory -Path $script:fixtureRoot | Out-Null
@@ -160,6 +170,41 @@ try
         It 'fails when the Visual Studio locator is missing' {
             [Environment]::SetEnvironmentVariable('ProgramFiles(x86)', $script:caseRoot)
             { & "$script:coverageScripts\Get-CoverageTool.ps1" -ErrorAction Stop } | Should Throw 'not recognized'
+        }
+    }
+
+    Describe 'Coverage pipeline payload preparation' {
+        BeforeEach {
+            New-CoverageFixture
+            $script:product = "$script:caseRoot\artifacts\drop\x86chk\Product"
+            foreach ($module in $script:modules)
+            {
+                Write-FixtureFile "$script:product\$module" "final link:$module"
+            }
+        }
+
+        It 'uses final product copies instead of the earlier component-package link' {
+            Invoke-PayloadPreparation
+            foreach ($module in $script:modules)
+            {
+                foreach ($app in $script:appDirectories)
+                {
+                    [IO.File]::ReadAllText("$script:payload\$app\$module") | Should Be "final link:$module"
+                }
+                [IO.File]::ReadAllText("$script:product\$module") | Should Be "final link:$module"
+            }
+            [IO.File]::ReadAllText("$script:payload\app one\Unrelated.dll") | Should Be 'leave dll alone'
+            [IO.File]::ReadAllText("$script:payload\app one\Unrelated.pdb") | Should Be 'leave pdb alone'
+        }
+
+        It 'fails when the final product DLL is missing' {
+            Remove-Item -LiteralPath "$script:product\Microsoft.ui.xaml.dll"
+            { Invoke-PayloadPreparation } | Should Throw 'Cannot find path'
+        }
+
+        It 'fails when the payload has no target DLL copies' {
+            Get-ChildItem -LiteralPath $script:payload -Recurse -Filter 'Microsoft.ui.xaml.dll' | Remove-Item
+            { Invoke-PayloadPreparation } | Should Throw 'No payload copies'
         }
     }
 
