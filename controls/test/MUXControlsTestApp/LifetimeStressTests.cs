@@ -1706,7 +1706,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void StressOffThreadPeerFinalReleaseNative()
         {
-            RunStress("StressOffThreadPeerFinalReleaseNative", (iteration) =>
+            RunNativeStress("StressOffThreadPeerFinalReleaseNative", (iteration) =>
             {
                 var objects = new Dictionary<string, WeakReference>();
                 int peers = AggressiveNativeReproEnabled ? 64 : 6;
@@ -1750,7 +1750,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void StressReentrantUnloadTeardownNative()
         {
-            RunStress("StressReentrantUnloadTeardownNative", (iteration) =>
+            RunNativeStress("StressReentrantUnloadTeardownNative", (iteration) =>
             {
                 var objects = new Dictionary<string, WeakReference>();
                 int churn = AggressiveNativeReproEnabled ? 60 : 5;
@@ -1801,7 +1801,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void StressEventHandlerAfterTeardownNative()
         {
-            RunStress("StressEventHandlerAfterTeardownNative", (iteration) =>
+            RunNativeStress("StressEventHandlerAfterTeardownNative", (iteration) =>
             {
                 var objects = new Dictionary<string, WeakReference>();
                 int churn = AggressiveNativeReproEnabled ? 60 : 5;
@@ -1845,7 +1845,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void StressRapidReparentEnterLeaveNative()
         {
-            RunStress("StressRapidReparentEnterLeaveNative", (iteration) =>
+            RunNativeStress("StressRapidReparentEnterLeaveNative", (iteration) =>
             {
                 var objects = new Dictionary<string, WeakReference>();
                 int moves = AggressiveNativeReproEnabled ? 400 : 20;
@@ -1893,7 +1893,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void StressDeepVisualTreePeerChurnNative()
         {
-            RunStress("StressDeepVisualTreePeerChurnNative", (iteration) =>
+            RunNativeStress("StressDeepVisualTreePeerChurnNative", (iteration) =>
             {
                 var objects = new Dictionary<string, WeakReference>();
                 int depth = AggressiveNativeReproEnabled ? 400 : 30;
@@ -1930,7 +1930,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void StressTextLineServicesChurnNative()
         {
-            RunStress("StressTextLineServicesChurnNative", (iteration) =>
+            RunNativeStress("StressTextLineServicesChurnNative", (iteration) =>
             {
                 var objects = new Dictionary<string, WeakReference>();
                 int churn = AggressiveNativeReproEnabled ? 60 : 6;
@@ -1975,7 +1975,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void StressScrollViewContentChurnNative()
         {
-            RunStress("StressScrollViewContentChurnNative", (iteration) =>
+            RunNativeStress("StressScrollViewContentChurnNative", (iteration) =>
             {
                 var objects = new Dictionary<string, WeakReference>();
                 int churn = AggressiveNativeReproEnabled ? 60 : 6;
@@ -2115,6 +2115,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     RunIterationReporting(scenarioName, iteration, i);
                 }
             }
+        }
+
+        // Native-crash-repro wrapper. Emits an explicit, greppable "[LifetimeStress] NATIVE" marker around the
+        // scenario so EVERY pipeline run - including the non-gating per-PR gate - produces a searchable native test
+        // log line that proves the scenario executed and records which mode it ran in. aggressiveNativeRepro reflects
+        // WINUI_LIFETIME_STRESS_NATIVE: it is off in the PR gate (light, non-gating variant) and on in the scheduled
+        // soak (aggressive, host-crashing variant). Search build/TAEF logs for "[LifetimeStress] NATIVE" to find just
+        // these lines.
+        private static void RunNativeStress(string scenarioName, Action<int> iteration)
+        {
+            Log.Comment("[LifetimeStress] NATIVE: scenario '{0}' starting (aggressiveNativeRepro={1}).",
+                scenarioName, AggressiveNativeReproEnabled);
+            RunStress(scenarioName, iteration);
+            Log.Comment("[LifetimeStress] NATIVE: scenario '{0}' completed (aggressiveNativeRepro={1}).",
+                scenarioName, AggressiveNativeReproEnabled);
         }
 
         // Run a single scenario iteration, downgrading any thrown managed exception to a non-gating warning so it is
