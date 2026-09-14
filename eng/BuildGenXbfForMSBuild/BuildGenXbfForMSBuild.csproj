@@ -30,5 +30,12 @@
     <ProjectReference Include="$(XamlSourcePath)\xcp\tools\GenXbfDLL\GenXbf.vcxproj">
       <Properties>Configuration=$(Configuration);Platform=x64;CurrentSolutionConfigurationContents=;ShouldUnsetParentConfigurationAndPlatform=false</Properties>
     </ProjectReference>
+    <!-- On an arm64 build host, MSBuild - and the managed XamlCompiler.exe it launches - runs
+         arm64, so it loads GenXbf.dll from the arm64 folder regardless of the product target arch.
+         Build it explicitly (mirrors the always-x64 reference above); otherwise x86/x64-target
+         builds on an arm64 host fail with "Cannot resolve 'GenXbf.dll' under ...\GenXbf\arm64". -->
+    <ProjectReference Include="$(XamlSourcePath)\xcp\tools\GenXbfDLL\GenXbf.vcxproj" Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'Arm64'">
+      <Properties>Configuration=$(Configuration);Platform=arm64;CurrentSolutionConfigurationContents=;ShouldUnsetParentConfigurationAndPlatform=false</Properties>
+    </ProjectReference>
   </ItemGroup>
 </Project>
