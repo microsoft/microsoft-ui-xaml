@@ -27,7 +27,7 @@
         }
 
 <#  }#>
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -133,7 +133,7 @@
 <#      } #>
         }
 
-        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
+        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase)
         {
             nextPhase = -1;
             switch (phase)
@@ -182,7 +182,7 @@
             return;
         }
 
-        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
+        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase)
         {
             nextPhase = 1;
         }
@@ -263,9 +263,9 @@
 <#  foreach (var bindStep in bindUniverse.BindPathSteps.Values.Where(bindStep => bindStep.IsIncludedInUpdate == true)) { #>
 
 <#      if (bindStep is FunctionStep) { #>
-        void Update_<#=bindStep.CodeName#>(int32_t phase)
+        void Update_<#=bindStep.CodeName#>(std::int32_t phase)
 <#      } else { #>
-        void Update_<#=bindStep.CodeName#>(<#=bindStep.ValueType#> obj, int32_t phase)
+        void Update_<#=bindStep.CodeName#>(<#=bindStep.ValueType#> obj, std::int32_t phase)
 <#      }#>
         {
 <#      Output_UpdateChildListeners_Call(bindStep, "obj");#>
