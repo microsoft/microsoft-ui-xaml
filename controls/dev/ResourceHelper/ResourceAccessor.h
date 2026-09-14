@@ -110,6 +110,8 @@ public:
 #define SR_AutomationNameMoreButtonCollapsed L"AutomationNameMoreButtonCollapsed"
 #define SR_AutomationNameMoreButtonExpanded L"AutomationNameMoreButtonExpanded"
 #define SR_HelpTextMoreButton L"HelpTextMoreButton"
+#define SR_HelpTextMoreButtonCollapsed L"HelpTextMoreButtonCollapsed"
+#define SR_HelpTextMoreButtonExpanded L"HelpTextMoreButtonExpanded"
 #define SR_TextMoreButtonLabelCollapsed L"TextMoreButtonLabelCollapsed"
 #define SR_TextMoreButtonLabelExpanded L"TextMoreButtonLabelExpanded"
 #define SR_BadgeItemPlural1 L"BadgeItemPlural1"

@@ -311,6 +311,131 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/7395:
+        // the More/Less button's accessibility Name and HelpText must both update when toggled,
+        // instead of the HelpText being set once and going stale.
+        [TestMethod]
+        public void VerifyMoreButtonAccessibilityTextUpdatesOnToggle()
+        {
+            ColorPicker colorPicker = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                colorPicker = new ColorPicker { IsMoreButtonVisible = true };
+                Content = colorPicker;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var moreButton = VisualTreeUtils.FindVisualChildByName(colorPicker, "MoreButton") as ToggleButton;
+                Verify.IsNotNull(moreButton, "MoreButton template part should be present when IsMoreButtonVisible is true.");
+
+                // Collapsed (initial) state.
+                var collapsedName = Microsoft.UI.Xaml.Automation.AutomationProperties.GetName(moreButton);
+                var collapsedHelpText = Microsoft.UI.Xaml.Automation.AutomationProperties.GetHelpText(moreButton);
+                Verify.AreEqual("More", collapsedName, "Collapsed AutomationProperties.Name should be 'More'.");
+                Verify.AreEqual("Invoke to show the text entry fields.", collapsedHelpText, "Collapsed AutomationProperties.HelpText should describe showing the fields.");
+
+                // Expand: both Name and HelpText must update (HelpText not updating was the #7395 bug).
+                moreButton.IsChecked = true;
+                Content.UpdateLayout();
+
+                var expandedName = Microsoft.UI.Xaml.Automation.AutomationProperties.GetName(moreButton);
+                var expandedHelpText = Microsoft.UI.Xaml.Automation.AutomationProperties.GetHelpText(moreButton);
+                Verify.AreEqual("Less", expandedName, "Expanded AutomationProperties.Name should be 'Less'.");
+                Verify.AreEqual("Invoke to hide the text entry fields.", expandedHelpText, "Expanded AutomationProperties.HelpText should describe hiding the fields.");
+                Verify.AreNotEqual(collapsedHelpText, expandedHelpText, "HelpText must change when the More button is expanded (#7395).");
+
+                // Collapse again: both must revert to the collapsed strings (no stale text).
+                moreButton.IsChecked = false;
+                Content.UpdateLayout();
+
+                Verify.AreEqual(collapsedName, Microsoft.UI.Xaml.Automation.AutomationProperties.GetName(moreButton), "Name should revert to the collapsed value.");
+                Verify.AreEqual(collapsedHelpText, Microsoft.UI.Xaml.Automation.AutomationProperties.GetHelpText(moreButton), "HelpText should revert to the collapsed value (#7395).");
+            });
+        }
+
+        // Regression follow-up for https://github.com/microsoft/microsoft-ui-xaml/issues/7395:
+        // if the template is re-applied (e.g. on a theme change) while the text-entry grid is
+        // expanded, OnApplyTemplate must reflect the current expanded state rather than resetting
+        // the More button's accessibility Name/HelpText back to the collapsed values.
+        [TestMethod]
+        public void VerifyMoreButtonAccessibilityTextSurvivesReTemplating()
+        {
+            ColorPicker colorPicker = null;
+            ToggleButton originalMoreButton = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                colorPicker = new ColorPicker { IsMoreButtonVisible = true };
+                Content = colorPicker;
+            });
+
+            IdleSynchronizer.Wait();
+
+            object template = null;
+            string collapsedName = null;
+            string collapsedHelpText = null;
+            string expandedName = null;
+            string expandedHelpText = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                originalMoreButton = VisualTreeUtils.FindVisualChildByName(colorPicker, "MoreButton") as ToggleButton;
+                Verify.IsNotNull(originalMoreButton, "MoreButton template part should be present.");
+
+                collapsedName = Microsoft.UI.Xaml.Automation.AutomationProperties.GetName(originalMoreButton);
+                collapsedHelpText = Microsoft.UI.Xaml.Automation.AutomationProperties.GetHelpText(originalMoreButton);
+
+                // Expand the text-entry grid, then capture the expanded a11y text.
+                originalMoreButton.IsChecked = true;
+                Content.UpdateLayout();
+                expandedName = Microsoft.UI.Xaml.Automation.AutomationProperties.GetName(originalMoreButton);
+                expandedHelpText = Microsoft.UI.Xaml.Automation.AutomationProperties.GetHelpText(originalMoreButton);
+                Verify.AreEqual("Less", expandedName, "Expanding should set the Name to 'Less'.");
+                Verify.AreNotEqual(collapsedHelpText, expandedHelpText, "Expanded HelpText should differ from collapsed.");
+
+                template = colorPicker.Template;
+            });
+
+            IdleSynchronizer.Wait();
+
+            // Force the template to be re-applied while still expanded, simulating a theme change.
+            RunOnUIThread.Execute(() =>
+            {
+                colorPicker.Template = null;
+                Content.UpdateLayout();
+                colorPicker.Template = (ControlTemplate)template;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var reTemplatedMoreButton = VisualTreeUtils.FindVisualChildByName(colorPicker, "MoreButton") as ToggleButton;
+                Verify.IsNotNull(reTemplatedMoreButton, "MoreButton should be present after re-templating.");
+                Verify.IsFalse(object.ReferenceEquals(originalMoreButton, reTemplatedMoreButton), "Template should have been re-applied, producing a new MoreButton instance.");
+
+                // The control is still logically expanded, so the re-applied template must keep the
+                // expanded a11y text instead of reverting to the collapsed strings (the #7395 risk).
+                Verify.AreEqual(expandedName, Microsoft.UI.Xaml.Automation.AutomationProperties.GetName(reTemplatedMoreButton), "Re-applied template should keep the expanded Name while the grid is open.");
+                Verify.AreEqual(expandedHelpText, Microsoft.UI.Xaml.Automation.AutomationProperties.GetHelpText(reTemplatedMoreButton), "Re-applied template should keep the expanded HelpText while the grid is open.");
+
+                // The toggle state must also be restored, otherwise the button is visually unchecked
+                // while the grid is open and the next click would fail to collapse it.
+                Verify.AreEqual(true, reTemplatedMoreButton.IsChecked, "Re-applied template should keep the toggle checked while the grid is open.");
+
+                // Collapsing after re-template must still work and revert the a11y text.
+                reTemplatedMoreButton.IsChecked = false;
+                Content.UpdateLayout();
+                Verify.AreEqual(collapsedName, Microsoft.UI.Xaml.Automation.AutomationProperties.GetName(reTemplatedMoreButton), "Collapsing after re-template should revert the Name.");
+                Verify.AreEqual(collapsedHelpText, Microsoft.UI.Xaml.Automation.AutomationProperties.GetHelpText(reTemplatedMoreButton), "Collapsing after re-template should revert the HelpText.");
+            });
+        }
+
         [TestMethod]
         [TestProperty("Ignore", "True")] // https://github.com/microsoft/microsoft-ui-xaml/issues/3982
         public void VerifyVisualTree()
