@@ -3,6 +3,7 @@
 
 using System;
 using Common;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using MUXControlsTestApp.Utilities;
 using Microsoft.UI.Xaml.Markup;
@@ -69,6 +70,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // simply be callable without throwing.
                 InkPresenter presenter = inkCanvas.InkPresenter;
                 Log.Comment("InkPresenter getter is accessible (value may be null before the ink thread initializes).");
+            });
+        }
+
+        // The canvas renders through a composition visual rather than XAML children, so the peer has
+        // to supply bounds itself. Without that it reports an empty rect and offscreen, and assistive
+        // technology skips the canvas entirely.
+        [TestMethod]
+        public void InkCanvasAutomationPeerReportsBounds()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var inkCanvas = new InkCanvas { Width = 400, Height = 300 };
+
+                Content = inkCanvas;
+                Content.UpdateLayout();
+
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(inkCanvas);
+                Verify.IsNotNull(peer, "InkCanvas should create an automation peer.");
+
+                var bounds = peer.GetBoundingRectangle();
+                Log.Comment($"Bounding rectangle: {bounds.X},{bounds.Y} {bounds.Width}x{bounds.Height}");
+
+                Verify.IsGreaterThan(bounds.Width, 0.0, "Bounding rectangle should have a non-zero width.");
+                Verify.IsGreaterThan(bounds.Height, 0.0, "Bounding rectangle should have a non-zero height.");
+                Verify.IsFalse(peer.IsOffscreen(), "A visible InkCanvas should not report itself as offscreen.");
             });
         }
 

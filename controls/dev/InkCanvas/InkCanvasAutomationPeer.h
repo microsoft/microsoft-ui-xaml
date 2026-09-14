@@ -13,4 +13,6 @@ public:
     // IAutomationPeerOverrides
     hstring GetClassNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
+    winrt::Rect GetBoundingRectangleCore();
+    bool IsOffscreenCore();
 };
