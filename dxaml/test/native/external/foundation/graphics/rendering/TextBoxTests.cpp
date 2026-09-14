@@ -28,9 +28,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool TextBoxTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool TextBoxTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool TextBoxTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool TextBoxTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
 
         bool TextBoxTests::TestSetup()
         {
@@ -48,7 +68,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         //------------------------------------------------------------------------
         // Test case: Renders a TextBox
         //------------------------------------------------------------------------
-        void TextBoxTests::RenderTextBoxWith18Zoom()
+        void TextBoxTestsUap::RenderTextBoxWith18Zoom()
         {
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
             TestServices::WindowHelper->SetWindowSizeOverrideWithWindowScale(wf::Size(400, 300), 1.8f);

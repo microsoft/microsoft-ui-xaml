@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 #include <CommonInputHelper.h>
 #include <ComboBoxHelper.h>
@@ -20,6 +21,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"854cb07a-8bd6-43e3-a0db-4f0fe8648245;8fdf7774-ee0a-492c-9951-4371f13328a0;fb6372ee-e783-49fd-b5cc-8669c0c85f22")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -160,13 +162,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(ValidateOpenedComboBoxPositionByTouchInput)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates the opened ComboBox's position that must be positioned within the visible bounds when it is opened by using the touch input.")
-            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Not working in WPF-hosting, scrollViewer bounds relative to WindowHelper->WindowBounds are unexpected.
-            TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(CanNavigateAscendingComboBoxesWithGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the combobox can be navigated when we realize wider items at the bottom of the list using gamepad.")
         END_TEST_METHOD()
@@ -188,13 +183,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(CanCloseComboBoxWithAltDown)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the alt down key combination closes the combobox dropdown.")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(ValidateOpenedComboBoxPositionWithDifferentInput)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates the opened ComboBox position that must be positioned within the visible bounds when it is opened with the different input.")
-            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Not working in WPF-hosting, scrollViewer bounds relative to WindowHelper->WindowBounds are unexpected.
-            TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateLightDismissOverlayMode)
@@ -421,11 +409,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates DropDown overlay visuals for Editable ComboBox.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(LightDismissLayerOnIslands)
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Move windowed popups to lifted input
         END_TEST_METHOD()
 
@@ -439,7 +425,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateEditableComboBoxHasLightDismissLayer)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that an open editable combo box has a light-dismiss layer that catches input before it can go elsewhere.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 
@@ -465,8 +450,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CanCloseComboBoxWithKeySequence(Platform::String^ keySequence);
 
-        void DoValidatePosition(int itemCount, ComboBoxHelper::OpenMethod openMethod, bool addMouseOpenMethod, bool isVerticalAlignment = true);
-        void ValidatePosition(xaml::HorizontalAlignment horizontalAlign, xaml::VerticalAlignment verticalAlignment, xaml_controls::ComboBox^ comboBox, ComboBoxHelper::OpenMethod openMethod);
 
         static void ValidateComboBoxPopupLightDismissOverlayMode(xaml_controls::LightDismissOverlayMode expectedMode);
 
@@ -487,6 +470,43 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         void EnsureEditableTextBoxHasFocus(xaml_controls::ComboBox^ comboBox);
 
         void CanExpandAndClose();
+    };
+
+    class ComboBoxIntegrationTestsUap : public WEX::TestClass<ComboBoxIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(ComboBoxIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"ComboBoxIntegrationTests")
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"854cb07a-8bd6-43e3-a0db-4f0fe8648245;8fdf7774-ee0a-492c-9951-4371f13328a0;fb6372ee-e783-49fd-b5cc-8669c0c85f22")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        void DoValidatePosition(int itemCount, ComboBoxHelper::OpenMethod openMethod, bool addMouseOpenMethod, bool isVerticalAlignment = true);
+        xaml_controls::ComboBox^ SetupBasicComboBoxTest(UINT numberOfItems = 5, bool adjustMargin = true, bool isEditable = false);
+        void ValidatePosition(xaml::HorizontalAlignment horizontalAlign, xaml::VerticalAlignment verticalAlignment, xaml_controls::ComboBox^ comboBox, ComboBoxHelper::OpenMethod openMethod);
+
+    public:
+        BEGIN_TEST_METHOD(ValidateOpenedComboBoxPositionByTouchInput)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the opened ComboBox's position that must be positioned within the visible bounds when it is opened by using the touch input.")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+            // Not working in WPF-hosting, scrollViewer bounds relative to WindowHelper->WindowBounds are unexpected.
+            TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateOpenedComboBoxPositionWithDifferentInput)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the opened ComboBox position that must be positioned within the visible bounds when it is opened with the different input.")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+            // Not working in WPF-hosting, scrollViewer bounds relative to WindowHelper->WindowBounds are unexpected.
+            TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
     };
 
 } } } } } }

@@ -3,6 +3,7 @@
 
 #pragma once
 #include <string>
+#include <HostingModeTestClass.h>
 #include <collection.h>
 #include <MocoHelper.h>
 #include <Versioning.h>
@@ -25,6 +26,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"IsolationLevel", L"Class")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"2f2374e7-40ca-495b-b878-9c1acf349dee;e7de4cca-1436-4030-80b9-56ef01aa1cae")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -185,7 +187,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(CanDragMulitpleItemsInListView)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can drag multiple items in a ListView uinsg the ListViewItemExpanded style")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateNoSelectionWithCVSAndNone)
@@ -266,7 +267,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(VerifyEdgeScrollingWithReorder)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that dragging to the bottom of the listview causes the listview to scroll")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanCalculateFutureRealizationWindowCorrectly)
@@ -301,7 +301,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(VerifyDropIntoFolder)
             TEST_METHOD_PROPERTY(L"Description", L"Validates dropping into folder scenario does not reorder items")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyLiveReorderStoryboards)
@@ -318,7 +317,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateScrollingWithLiveReorder)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that scrolling the mouse wheel during reorder resets containers' location correctly")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"True") // ValidateScrollingWithLiveReorder is failing
         END_TEST_METHOD()
 
@@ -346,7 +344,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateMultipleSelectionModeRangeSelection)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the new Multiple selection supports the new keyboard range selection behavior")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateSourceClearDuringSelection)
@@ -361,13 +358,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateGlyphAndCaptionVisibilityDuringReorder)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the glyph and caption visibility during a Reorder")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateInsertFromOutsideAfterLastItem)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can drag an item from the outside the ListView and insert at the end of the ListView")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"OneCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
 protected:

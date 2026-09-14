@@ -35,9 +35,129 @@ Platform::String^ SISTests::GetResourcesPath() const
 
 bool SISTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool SISTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool SISTestsUap::TestSetup()
+{
+    TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool SISTestsUap::TestCleanup()
+{
+    TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+void SISTestsUap::CleanupDevices()
+{
+    m_d2dContext = nullptr;
+    m_d2dDevice = nullptr;
+    m_dxgiDevice = nullptr;
+    m_d3dDevice = nullptr;
+}
+
+void SISTestsUap::CreateD3DDevice()
+{
+    const D3D_FEATURE_LEVEL featureLevels[] =
+    {
+        D3D_FEATURE_LEVEL_11_0,
+        D3D_FEATURE_LEVEL_10_1,
+        D3D_FEATURE_LEVEL_10_0,
+        D3D_FEATURE_LEVEL_9_3,
+        D3D_FEATURE_LEVEL_9_2,
+        D3D_FEATURE_LEVEL_9_1,
+    };
+
+    unsigned int flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+
+    VERIFY_SUCCEEDED(D3D11CreateDevice(
+        nullptr,
+        D3D_DRIVER_TYPE_HARDWARE,
+        nullptr,
+        flags,
+        featureLevels,
+        ARRAYSIZE(featureLevels),
+        D3D11_SDK_VERSION,
+        &m_d3dDevice,
+        nullptr,
+        nullptr
+        ));
+
+    VERIFY_SUCCEEDED(m_d3dDevice.As(&m_dxgiDevice));
+}
+
+void SISTestsUap::CreateD2DDevice()
+{
+    VERIFY_SUCCEEDED(D2D1CreateDevice(m_dxgiDevice.Get(), nullptr, &m_d2dDevice));
+}
+
+void SISTestsUap::CreateD2DContext()
+{
+    VERIFY_SUCCEEDED(m_d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, &m_d2dContext));
+}
+
+ComPtr<ISurfaceImageSourceNative> SISTestsUap::GetSISNative(ISurfaceImageSource^ sis)
+{
+    ComPtr<ISurfaceImageSourceNative> spSISNative;
+    (reinterpret_cast<IUnknown*>(sis))->QueryInterface(IID_PPV_ARGS(&spSISNative));
+
+    return spSISNative;
+}
+
+ComPtr<ISurfaceImageSourceNativeWithD2D> SISTestsUap::GetSISNativeWithD2D(ISurfaceImageSource^ sis)
+{
+    ComPtr<ISurfaceImageSourceNativeWithD2D> spSISNative;
+    (reinterpret_cast<IUnknown*>(sis))->QueryInterface(IID_PPV_ARGS(&spSISNative));
+
+    return spSISNative;
+}
+
+void SISTestsUap::Draw(ISurfaceImageSourceNative* pSIS, RECT rect, D2D1::ColorF color)
+{
+    POINT offset;
+    ComPtr<IDXGISurface> spSurface;
+    VERIFY_SUCCEEDED(pSIS->BeginDraw(rect, &spSurface, &offset));
+    ComPtr<ID2D1Bitmap1> spD2DBitmap;
+    VERIFY_SUCCEEDED(m_d2dContext->CreateBitmapFromDxgiSurface(spSurface.Get(), nullptr, &spD2DBitmap));
+    m_d2dContext->SetTarget(spD2DBitmap.Get());
+    m_d2dContext->BeginDraw();
+    m_d2dContext->Clear(color);
+    VERIFY_SUCCEEDED(m_d2dContext->EndDraw());
+    VERIFY_SUCCEEDED(pSIS->EndDraw());
+    m_d2dContext->SetTarget(nullptr);
+}
+
+void SISTestsUap::DrawWithD2D(ISurfaceImageSourceNativeWithD2D* pSIS, RECT rect, D2D1::ColorF color)
+{
+    POINT offset;
+    ComPtr<ID2D1DeviceContext> spDeviceContext;
+    VERIFY_SUCCEEDED(pSIS->BeginDraw(rect, __uuidof(ID2D1DeviceContext), &spDeviceContext, &offset));
+    spDeviceContext->Clear(color);
+    VERIFY_SUCCEEDED(pSIS->EndDraw());
+}
+
+unsigned int SISTestsUap::VerifySpriteVisualsCleanedUp(MockDComp::IMockDCompDevice2^ mockDevice2, unsigned int expected)
+{
+    unsigned int actual;
+    RunOnUIThread([&]()
+    {
+        mockDevice2->GetWUCSpriteVisualsEverUnparentedCount(&actual);
+        VERIFY_ARE_EQUAL(expected, actual);
+        LOG_OUTPUT(L">");
+    });
+    return actual;
+}
+
 
 bool SISTests::TestSetup()
 {
@@ -647,7 +767,7 @@ void SISTests::SuspendFailureTest2()
     });
 }
 
-void SISTests::RegenerateVisual()
+void SISTestsUap::RegenerateVisual()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
     TestCleanupWrapper cleanup([&]()

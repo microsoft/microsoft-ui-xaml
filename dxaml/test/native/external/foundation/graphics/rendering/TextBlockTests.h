@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <WUCRenderingScopeGuard.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
@@ -18,6 +19,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"1d91ef47-c885-45e2-a578-7aaf1a1b1296;df11dd90-2e1d-45ff-93cb-cd6c0b87e24d")
                 TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -84,12 +86,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(PlateauScaleTestWUCFull)
-                TEST_METHOD_PROPERTY(L"Description", L"Test fast path rendering with high dpi.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Zoom scale not applied
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(ActualSizeIncludePadding)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify that the ActualWidth and ActualHeight properties include Padding")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
@@ -108,13 +104,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(HitTestTightBoundTextBlock)
                 TEST_METHOD_PROPERTY(L"Description", L"Validate TextLineBounds = Tight hittesting.")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(GetUIAAttributesFromEmptyTextRange)
-                TEST_METHOD_PROPERTY(L"Description", L"Validate gettting attributes form empty text range.")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Null UIA element
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(FindAttributeInTextRange)
@@ -160,7 +149,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(ChangeTextDecorations)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify textblocks redraw when the TextDecorations property changes.")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(SelectionChangedEvent)
@@ -172,12 +160,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(SelectionTextUpdate)
                 TEST_METHOD_PROPERTY(L"Description", L"Updating text when current selection is active")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(DisableTextSelection)
-                TEST_METHOD_PROPERTY(L"Description", L"Disable IsTextSelectionEnabled property when current selection is active")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: RichTextBlockTests::SelectionChangedEvent isn't loading content on WPF
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TextUpdatesWithFocus)
@@ -304,6 +286,54 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             void TextBlockSelection(Microsoft::UI::Xaml::Tests::Common::DCompRendering dcompRendering);
         };
+
+    class TextBlockTestsUap : public WEX::TestClass<TextBlockTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(TextBlockTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"1d91ef47-c885-45e2-a578-7aaf1a1b1296;df11dd90-2e1d-45ff-93cb-cd6c0b87e24d")
+                TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"TextBlockTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        void DCompValidationHelper(
+                Platform::String^ filename,
+                float scale,
+                MockDComp::SurfaceComparison comparisonMode,
+                float fontScale = 1.0f,
+                Microsoft::UI::Xaml::Tests::Common::DCompRendering dcompRendering = Microsoft::UI::Xaml::Tests::Common::DCompRendering::WUCCompleteSynchronousCompTree
+            );
+        inline Platform::String^ GetResourcesPath() const;
+
+    public:
+        BEGIN_TEST_METHOD(PlateauScaleTestWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"Test fast path rendering with high dpi.")
+        // Zoom scale not applied
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(GetUIAAttributesFromEmptyTextRange)
+        TEST_METHOD_PROPERTY(L"Description", L"Validate gettting attributes form empty text range.")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Null UIA element
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DisableTextSelection)
+        TEST_METHOD_PROPERTY(L"Description", L"Disable IsTextSelectionEnabled property when current selection is active")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        // DCPP: RichTextBlockTests::SelectionChangedEvent isn't loading content on WPF
+        END_TEST_METHOD()
+    };
 
     } }
 } } } }

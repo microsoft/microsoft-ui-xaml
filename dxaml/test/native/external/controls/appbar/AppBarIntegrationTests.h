@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <RuntimeEnabledFeatureOverride.h>
 #include <TestEvent.h>
 #include <SafeEventRegistration.h>
@@ -21,6 +22,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"3d58ff19-7f87-4023-8cdf-dcff2b313f3f;88333911-8806-45c4-840a-99c755703018;cc5953d4-6553-42e5-8c02-80720aa9d842")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -101,11 +103,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that setting AppBar.ClosedDisplayMode causes the control to be sized appropriately and to be able to be expanded by tapping on the ellipsis button.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(CanOpenAndCloseUsingKeyboard)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that Top and Bottom (and not Inline) AppBars open/close in response to ContextMenu key.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Not working in WPF-hosting: ContextMenu key doesn't trigger this.
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanCloseNonStickyAppBarUsingEscapeKey)
@@ -227,5 +224,39 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         Microsoft::UI::Xaml::Tests::Common::RuntimeEnabledFeatureOverride featureDisableTransitionsForTest;
     };
 
-} } } } } }
+    class AppBarIntegrationTestsUap : public WEX::TestClass<AppBarIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(AppBarIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"AppBarIntegrationTests")
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"3d58ff19-7f87-4023-8cdf-dcff2b313f3f;88333911-8806-45c4-840a-99c755703018;cc5953d4-6553-42e5-8c02-80720aa9d842")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
 
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        xaml_controls::Page^ SetupTopBottomInlineAppBarsPage();
+        void AttachOpenedAndClosedHandlers(
+            xaml_controls::AppBar^& appbar,
+            std::shared_ptr<Microsoft::UI::Xaml::Tests::Common::Event>& openedEvent,
+            SafeEventRegistrationType(xaml_controls::AppBar, Opened)& openedRegistration,
+            std::shared_ptr<Microsoft::UI::Xaml::Tests::Common::Event>& closedEvent,
+            SafeEventRegistrationType(xaml_controls::AppBar, Closed)& closedRegistration);
+
+    public:
+        BEGIN_TEST_METHOD(CanOpenAndCloseUsingKeyboard)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that Top and Bottom (and not Inline) AppBars open/close in response to ContextMenu key.")
+            // Not working in WPF-hosting: ContextMenu key doesn't trigger this.
+        END_TEST_METHOD()
+
+    private:
+        Microsoft::UI::Xaml::Tests::Common::RuntimeEnabledFeatureOverride featureDisableTransitionsForTest;
+    };
+
+} } } } } }

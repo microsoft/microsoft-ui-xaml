@@ -40,7 +40,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool DuplicateAutomationNameRuleIntegrationTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
 
             // Ensure our metadata and custom DPs are registered
             m_provider.reset(new XamlMetadataProviderOverrider(

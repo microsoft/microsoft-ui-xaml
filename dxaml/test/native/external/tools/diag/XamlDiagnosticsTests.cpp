@@ -40,9 +40,131 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         bool XamlDiagnosticsTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool XamlDiagnosticsTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool XamlDiagnosticsTestsUap::TestSetup()
+        {
+            TestServices::WindowHelper->InitializeXaml(ref new MetadataProvider(), ref new CustomMetadataRegistrar<shared_types::CustomUserControl>());
+            return EnsureTapLoaded();
+        }
+
+    bool XamlDiagnosticsTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            test_infra::TestServices::WindowHelper->VerifyTestCleanup();
+
+            return true;
+        }
+
+std::vector<InstanceHandle> XamlDiagnosticsTestsUap::DoHitTest(const RECT& rect)
+        {
+            unsigned int hitTestCount = 0;
+            CoTaskMemPtr<InstanceHandle> spHitTestHandles;
+
+            // TODO: add compatibility so that we don't run this on ui thread and that everything still
+            // works
+            RunOnUIThread([&](){
+                VERIFY_SUCCEEDED(m_tap->HitTest(rect, &hitTestCount, &spHitTestHandles));
+            });
+
+            VERIFY_ARE_NOT_EQUAL(spHitTestHandles[0], 0);
+
+            std::vector<InstanceHandle> handlesToReturn;
+            for (unsigned int i = 0; i < hitTestCount; i++)
+            {
+                handlesToReturn.push_back(spHitTestHandles[i]);
+            }
+
+            return handlesToReturn;
+        }
+
+Microsoft::UI::Xaml::Tests::Common::TestCleanupWrapper XamlDiagnosticsTestsUap::LoadXamlFromFunction(const std::function<UIElement^()> func, wrl::ComPtr<VisualTreeServiceCallback>& callback)
+        {
+            callback = m_connectionHelper->Advise();
+
+            Microsoft::UI::Xaml::Tests::Common::TestCleanupWrapper cleanup([&] {
+                m_connectionHelper->OnTestComplete(callback);
+            });
+
+            UIElement^ uielement = func();
+            Microsoft::UI::Xaml::Tests::Common::RunOnUIThread([&]()
+            {
+                test_infra::TestServices::WindowHelper->WindowContent = uielement;
+            });
+
+            test_infra::TestServices::WindowHelper->WaitForIdle();
+            return cleanup;
+        }
+
+void XamlDiagnosticsTestsUap::TestReturnCorrectRootsHelper(unsigned numberOfRoots)
+        {
+            // Since we always create the callback before the roots are in the tree.
+            TestCleanupWrapper cleanup;
+
+            xaml_controls::Grid^ root;
+            RunOnUIThread([&]()
+            {
+                root = dynamic_cast<xaml_controls::Grid^> (xaml_markup::XamlReader::Load(
+                    L"<Grid x:Name='root' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                    L"</Grid>"));
+            });
+
+            auto callback = m_connectionHelper->Advise();
+            auto scopeGuard = wil::scope_exit([&]
+            {
+                VERIFY_SUCCEEDED(m_tap->UnadviseVisualTreeChange(callback.Get()));
+            });
+
+            RunOnUIThread([&]()
+            {
+                TestServices::WindowHelper->WindowContent = root;
+            });
+
+            TestServices::WindowHelper->WaitForIdle();
+
+            LOG_OUTPUT(L"Verifying correct number of roots returned");
+
+            // When we run in a mode where multiple windows are supported, we give the window as the top level root.
+            auto roots = callback->GetRoots();
+            VERIFY_ARE_EQUAL(roots.size(), 1u);
+
+            // We'll verify three roots are the child of the window since we aren't running in a background task and there is no RenderTargetBitmapRoot:
+            //  1. RootScrollViewer
+            //  2. PopupRoot
+            //  3. FullWindowMediaRoot --(not under DesktopWindowXAMLSource)
+
+            auto children = callback->GetChildren(roots.at(0));
+            VERIFY_ARE_EQUAL(children.size(), numberOfRoots);
+
+            LOG_OUTPUT(L"Verifying VisualDiagnosticsRoot isn't in cache");
+            wrl::ComPtr<IInspectable> spVisualDiagRoot;
+
+            InstanceHandle diagRootHandle = 0;
+            RunOnUIThread([&]()
+            {
+                VERIFY_SUCCEEDED(m_tap->GetUiLayer(spVisualDiagRoot.GetAddressOf()));
+                VERIFY_SUCCEEDED(m_tap->GetHandleFromIInspectable(spVisualDiagRoot.Get(), &diagRootHandle));
+            });
+
+            auto unregister = wil::scope_exit([&] {
+                if (diagRootHandle > 0u)
+                {
+                    m_tap->UnregisterInstance(diagRootHandle);
+                }
+            });
+            auto iter = std::find(children.begin(), children.end(), diagRootHandle);
+
+            VERIFY_IS_TRUE(iter == children.end());
+        }
+
 
         bool XamlDiagnosticsTests::ClassCleanup()
         {
@@ -282,7 +404,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_ARE_EQUAL(yellowRectangle.Handle, verifiedYellowRectangle);
         }
 
-        void XamlDiagnosticsTests::TestHitTest()
+        void XamlDiagnosticsTestsUap::TestHitTest()
         {
             // We need to reset the window content here so this test is reliable. The tree is in a weird state where there
             // is an extra rectangle in the tree if this test is the first test to run. If run after a test, the previous
@@ -307,7 +429,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             }
         }
 
-        void XamlDiagnosticsTests::TestHitTestReturnsInvisibleElements()
+        void XamlDiagnosticsTestsUap::TestHitTestReturnsInvisibleElements()
         {
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridWithInvisibleElementsString, callback);
@@ -336,7 +458,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_TRUE(foundZeroOpacity);
         }
 
-        void XamlDiagnosticsTests::TestHitTestReturnsDisabledElements()
+        void XamlDiagnosticsTestsUap::TestHitTestReturnsDisabledElements()
         {
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridWithDisabledElementsString, callback);
@@ -360,7 +482,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_TRUE(foundDisabled);
         }
 
-        void XamlDiagnosticsTests::TestHitTestDoesntReturnCollapsedElements()
+        void XamlDiagnosticsTestsUap::TestHitTestDoesntReturnCollapsedElements()
         {
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::relativePanelWithCollapsedElementsString, callback);
@@ -395,7 +517,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_TRUE(foundVisible3);
         }
 
-        void XamlDiagnosticsTests::TestHitTestAfterChangingVisiblity()
+        void XamlDiagnosticsTestsUap::TestHitTestAfterChangingVisiblity()
         {
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::relativePanelWithCollapsedElementsString, callback);
@@ -434,7 +556,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_TRUE(foundCollapsed);
         }
 
-        void XamlDiagnosticsTests::TestHitTestDoesntReturnElementsNotInTree()
+        void XamlDiagnosticsTestsUap::TestHitTestDoesntReturnElementsNotInTree()
         {
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = LoadXamlFromFunction(XamlDiagnosticsTestHelpers::SetupGroupedListView, callback);
@@ -759,7 +881,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_TRUE(wcscmp(setColor.Value, L"Blue") == 0);
         }
 
-        void XamlDiagnosticsTests::TestReturnCorrectRootsInUAP()
+        void XamlDiagnosticsTestsUap::TestReturnCorrectRootsInUAP()
         {
             TestReturnCorrectRootsHelper(3 /*numberOfRoots*/);
         }
@@ -1258,7 +1380,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_TRUE(wcscmp(colorProperty.Value, L"Blue") == 0);
         }
 
-        void XamlDiagnosticsTests::TestAddNewSetterInStyle()
+        void XamlDiagnosticsTestsUap::TestAddNewSetterInStyle()
         {
             //Verifies that calling SetProperty on a Style with a property that doesn't exist as
             //a setter correctly adds the setter to the Style.
@@ -2024,7 +2146,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             }
         }
 
-        void XamlDiagnosticsTests::VerifyMutationEvents()
+        void XamlDiagnosticsTestsUap::VerifyMutationEvents()
         {
             LOG_OUTPUT(L"Scenario 1: Basic adding/remove from Grid");
             {

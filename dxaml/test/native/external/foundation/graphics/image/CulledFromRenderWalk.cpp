@@ -44,7 +44,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool CulledFromRenderWalk::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
 
             // TODO:  Background Thread Image Loading is causing WaitForIdle() stability issues, so disabling it for these tests.
             // Remove this workaround after addressing this issue, tracked by:
@@ -52,6 +52,25 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             m_backgroundThreadImageLoadingFeature.Initialize(RuntimeEnabledFeature::BackgroundThreadImageLoading, false);
             return true;
         }
+
+    bool CulledFromRenderWalkWpf::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        m_backgroundThreadImageLoadingFeature.Initialize(RuntimeEnabledFeature::BackgroundThreadImageLoading, false);
+        return true;
+    }
+
+    bool CulledFromRenderWalkWpf::TestCleanup()
+        {
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+Platform::String^ CulledFromRenderWalkWpf::GetResourcesPath() const
+        {
+            return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\image\\";
+        }
+
 
         bool CulledFromRenderWalk::TestCleanup()
         {
@@ -401,7 +420,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         // -One of the Images is not in the live tree at all
         // -The other Image is in the live tree but is culled
         // Validate the ImageDecodeBoundsFinder code properly skips over the Image that's not in the live tree.
-        void CulledFromRenderWalk::EdgeCase1()
+        void CulledFromRenderWalkWpf::EdgeCase1()
         {
             xaml_controls::Image^ image1 = nullptr;
             xaml_controls::Image^ image2 = nullptr;

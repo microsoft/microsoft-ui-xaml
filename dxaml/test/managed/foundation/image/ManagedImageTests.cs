@@ -55,6 +55,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Image
         [TestMethod]
         [TestProperty("Description", "Validates an image can be loaded without crashing.")]
         [TestProperty("Hosting:Mode", "UAP")] // fails due to the final release queue is not empty error
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void BasicTest()
         {
             Microsoft.UI.Xaml.Controls.Image image = null;

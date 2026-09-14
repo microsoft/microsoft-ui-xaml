@@ -26,9 +26,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool StrictModeTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool StrictModeTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool StrictModeTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool StrictModeTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
     bool StrictModeTests::TestSetup()
     {
@@ -43,7 +63,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         return true;
     }
 
-    void StrictModeTests::ValidateNonStrictType()
+    void StrictModeTestsUap::ValidateNonStrictType()
     {
         TestCleanupWrapper cleanup;
 

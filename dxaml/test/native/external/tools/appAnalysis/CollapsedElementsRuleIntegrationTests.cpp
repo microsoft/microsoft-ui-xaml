@@ -44,10 +44,36 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool CollapsedElementsRuleIntegrationTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
 
             return true;
         }
+
+    bool CollapsedElementsRuleIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool CollapsedElementsRuleIntegrationTestsUap::TestSetup()
+        {
+            TestServices::WindowHelper->InitializeXaml(ref new MetadataProvider(), ref new CustomMetadataRegistrar<custom_types::CustomUserControl>());
+
+            return true;
+        }
+
+    bool CollapsedElementsRuleIntegrationTestsUap::TestCleanup()
+        {
+            TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+Platform::String^ CollapsedElementsRuleIntegrationTestsUap::GetResourcesPath() const
+        {
+            return "ms-appx:///resources/native/tools/";
+        }
+
 
         bool CollapsedElementsRuleIntegrationTests::ClassCleanup()
         {
@@ -158,7 +184,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             helper.VerifyDescription(0, COLLAPSED_ELEMENTS_DESCRIPTION, L"collapsed", L"Microsoft.UI.Xaml.Shapes.Rectangle");
         }
 
-        void CollapsedElementsRuleIntegrationTests::VerifyDoesntFlagWhenUsingEnC()
+        void CollapsedElementsRuleIntegrationTestsUap::VerifyDoesntFlagWhenUsingEnC()
         {
             TestCleanupWrapper cleanup;
             XamlDiagnosticsHelper xamlDiagHelper;

@@ -19,9 +19,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool RelativePanelIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool RelativePanelIntegrationTestsWpf::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool RelativePanelIntegrationTestsWpf::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool RelativePanelIntegrationTestsWpf::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
     bool RelativePanelIntegrationTests::ClassCleanup()
     {
@@ -186,7 +206,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void RelativePanelIntegrationTests::ThrowsExceptionForCircularDependencies()
+    void RelativePanelIntegrationTestsWpf::ThrowsExceptionForCircularDependencies()
     {
         TestCleanupWrapper cleanup;
         DisableErrorReportingScopeGuard disableErrors;
@@ -209,7 +229,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::WindowHelper->SetLastLayoutExceptionElement(nullptr);
     }
 
-    void RelativePanelIntegrationTests::ThrowsExceptionForNameNotFound()
+    void RelativePanelIntegrationTestsWpf::ThrowsExceptionForNameNotFound()
     {
         TestCleanupWrapper cleanup;
         DisableErrorReportingScopeGuard disableErrors;
@@ -232,7 +252,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::WindowHelper->SetLastLayoutExceptionElement(nullptr);
     }
 
-    void RelativePanelIntegrationTests::ThrowsExceptionForReferenceNotFound()
+    void RelativePanelIntegrationTestsWpf::ThrowsExceptionForReferenceNotFound()
     {
         TestCleanupWrapper cleanup;
         DisableErrorReportingScopeGuard disableErrors;
@@ -258,7 +278,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::WindowHelper->SetLastLayoutExceptionElement(nullptr);
     }
 
-    void RelativePanelIntegrationTests::ThrowsExceptionForInvalidType()
+    void RelativePanelIntegrationTestsWpf::ThrowsExceptionForInvalidType()
     {
         TestCleanupWrapper cleanup;
         DisableErrorReportingScopeGuard disableErrors;
@@ -278,7 +298,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void RelativePanelIntegrationTests::ThrowsExceptionForInvalidParsingOfDeferredElements()
+    void RelativePanelIntegrationTestsWpf::ThrowsExceptionForInvalidParsingOfDeferredElements()
     {
         TestCleanupWrapper cleanup;
         DisableErrorReportingScopeGuard disableErrors;

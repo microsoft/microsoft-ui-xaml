@@ -32,6 +32,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestProperty("BinaryUnderTest", "Microsoft.UI.Xaml.dll")]
         [TestProperty("RunAs", "UAP")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Classification", "Integration")]
         [TestProperty("HelixWorkItemCreation", "CreateWorkItemPerTestClass")]
         public static void Setup(TestContext context)
@@ -69,6 +70,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void CanChangeSelectionWithTap()
         {
             ListView list = null;
@@ -404,6 +406,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyDragItemsEventsFiredUsingMouse()
         {
             ListView list = null;
@@ -547,6 +550,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyDragItemsEventsFiredUsingTouch()
         {
             ListView list = null;
@@ -764,6 +768,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void CanReorderUsingMouse()
         {
             ListView list = null;
@@ -818,6 +823,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void CanReorderUsingTouch()
         {
             ListView list = null;
@@ -871,6 +877,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ValidateListViewVisualStateOnCaptureLostTouch()
         {
             ValidateListViewItemPointerOverVisualStateOnCaptureLost(false /* isPenInsteadOfTouch */);
@@ -1082,6 +1089,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void EstimationCorrectionAfterScrollIntoViewGroupedItem(bool scrollToHeader)
         {
             EstimationCorrectionAfterScrollIntoViewGrouped(false);
@@ -1089,6 +1097,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void EstimationCorrectionAfterScrollIntoViewGroupedHeader(bool scrollToHeader)
         {
             EstimationCorrectionAfterScrollIntoViewGrouped(true);
@@ -1210,6 +1219,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         // same tick and a layout in the middle of that is not expected.
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void SelectionChangeDuringGroupInsert()
         {
             ListView lv = null;
@@ -1286,6 +1296,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void InsertGroupInMiddleOfVisibleWindow()
         {
             ListView lv = null;
@@ -1350,6 +1361,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void MouseLargeClickWithStickyHeaders()
         {
             ListView lv = null;
@@ -1637,6 +1649,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void GroupStyleSelectorTest()
         {
             Grid rootPanel = null;
@@ -1846,6 +1859,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Hosting:Mode", "UAP")]
         [TestProperty("Ignore", "True")] // ListViewBaseTests.ThumbDragTest is unreliable
         public void ThumbDragTest()
@@ -1958,6 +1972,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ScrollGroupIntoViewOnLoaded()
         {
             ListView list = null;
@@ -2106,6 +2121,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void FocusResetAfterSwitchingItemsSource()
         {
             ListView list = null;
@@ -2154,6 +2170,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void GroupPaddingShouldReduceMeasureSizeForHeadersAndItems_ItemsStackPanel()
         {
             GroupPaddingShouldReduceMeasureSizeForHeadersAndItems(
@@ -2164,6 +2181,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void GroupPaddingShouldReduceMeasureSizeForHeadersAndItems_ItemsWrapGrid()
         {
             GroupPaddingShouldReduceMeasureSizeForHeadersAndItems(
@@ -2175,6 +2193,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ValidateListViewHeaderArrangBounds()
         {
             ValidateHeaderArrangBounds(true /*useListView*/);
@@ -2182,6 +2201,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ValidateGridViewHeaderArrangeBounds()
         {
             ValidateHeaderArrangBounds(false /*useListView*/);
@@ -2890,6 +2910,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [Description("Home/End key press when focus is on a group header caused us to mess up key navigation")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ValidateListViewHomeEndAndArrowKeyNav()
         {
             ListView listView = null;
@@ -2952,6 +2973,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [TestProperty("Description", "When a ListView is the root focusable control in the tree, validate that focus does not get trapped within the header sub-tree with multiple focusable controls.")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void CanTabOutOfHeaderWithMultipleFocusableChildren()
         {
             ListView listView = null;
@@ -3153,6 +3175,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void CanRemoveGroupFromListViewWithEmptyGroupAfter()
         {
             ListView listView = null;
@@ -3207,6 +3230,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void CanRemoveFromGroupInListViewWithEmptyGroupBefore()
         {
             ListView listView = null;
@@ -3547,6 +3571,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         // Regression Test: ListView crash on RS3
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ValidateCollectionChangeAndResetBeforeLayout()
         {
             ListView lv = null;
@@ -3597,6 +3622,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "OneCore, WindowsCore")]
+        // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Hosting:Mode", "UAP")]
         [TestProperty("Ignore", "TRUE")] // TODO 20928844: Re-enable after investigating why software injection causes this to inconsistently fail.
         public void ValidateVisibilityChangeDuringDrag()

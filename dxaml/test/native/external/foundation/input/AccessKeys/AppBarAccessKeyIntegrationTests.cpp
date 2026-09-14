@@ -21,7 +21,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     // Test Cases
     //
 
-    void AccessKeyIntegrationTests::InvokeAccessKeysOnMultipleButtonsOfAppBar()
+    void AccessKeyIntegrationTestsUap::InvokeAccessKeysOnMultipleButtonsOfAppBar()
     {
         TestCleanupWrapper cleanup;
 

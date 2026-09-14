@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 enum class IslandSceneKind
 {
@@ -61,8 +62,8 @@ public:
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
         TEST_CLASS_PROPERTY(L"Description", L"Various Xaml island configurations.")
         TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
-        // When running this test, make sure to run with -hostingMode set to "Win32Explicit"
-        TEST_CLASS_PROPERTY(L"Hosting:Mode", L"Win32Explicit")
+        // Always Win32Explicit; the mode is baked on the class, so no -HostingMode is needed.
+        TEST_CLASS_HOSTING_MODE(Win32Explicit)
     END_TEST_CLASS()
 
     TEST_METHOD_SETUP(TestSetup)
@@ -91,8 +92,8 @@ public:
         TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")  // Don't cause failures in other tests if this leaves Xaml in a weird state.
     END_TEST_METHOD()
 
-    // Recommended command line:
-    //  runtests.cmd -win32explicit ApplicationLikeFileExplorerStress -runIgnoredTests /testmode:loop /looptest:1 /loop:10
+    // Recommended command line (this test is self-hosting, so -win32explicit is no longer needed):
+    //  runtests.cmd ApplicationLikeFileExplorerStress -runIgnoredTests /testmode:loop /looptest:1 /loop:10
     // It may take a few tries.
     // Race condition in XamlControlsResources creation during Xaml startup (affects FileExplorer)
     BEGIN_TEST_METHOD(ApplicationLikeFileExplorerStress)

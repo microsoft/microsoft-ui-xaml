@@ -34,9 +34,685 @@ Platform::String^ HitTestBasic::GetResourcesPath() const
 
 bool HitTestBasic::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool HitTestBasicUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool HitTestBasicUap::TestSetup()
+{
+    TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool HitTestBasicUap::TestCleanup()
+{
+    TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+void HitTestBasicUap::HitTestPopupCommon(bool isParented, bool include3D, bool includeNestedPopup, bool specifySubtreeRootElement)
+{
+    const auto& wh = TestServices::WindowHelper;
+
+    Canvas^ root;
+    Canvas^ popupParent;
+    Canvas^ popupChild;
+    Canvas^ nestedPopupChild;
+    xaml_shapes::Rectangle^ rectangle;
+    Popup^ popup;
+    Popup^ nestedPopup;
+
+    TestCleanupWrapper cleanup;
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Creating tree");
+        rectangle = ref new xaml_shapes::Rectangle();
+        rectangle->Width = 100;
+        rectangle->Height = 100;
+        rectangle->Fill = ref new SolidColorBrush(Microsoft::UI::Colors::Red);
+
+        if (includeNestedPopup)
+        {
+            nestedPopupChild = ref new Canvas();
+            nestedPopupChild->Children->Append(rectangle);
+
+            nestedPopup = ref new Popup();
+            nestedPopup->Child = nestedPopupChild;
+
+            popupChild = ref new Canvas();
+            popupChild->Children->Append(nestedPopup);
+        }
+        else
+        {
+            popupChild = ref new Canvas();
+            popupChild->Children->Append(rectangle);
+        }
+
+        popup = ref new Popup();
+        popup->Child = popupChild;
+
+        popupParent = ref new Canvas();
+        if (isParented)
+        {
+            Canvas::SetLeft(popupParent, 50);
+            Canvas::SetTop(popupParent, 50);
+            popupParent->Children->Append(popup);
+        }
+        else
+        {
+            popupParent->Width = 100;
+            popupParent->Height = 100;
+            popupParent->Background = ref new SolidColorBrush(Microsoft::UI::Colors::Green);
+
+            // Since there's no popup parent to position, we have to set the offsets on the popup itself.
+            popup->HorizontalOffset = 50;
+            popup->VerticalOffset = 50;
+        }
+
+        root = ref new Canvas();
+        if (include3D)
+        {
+            PerspectiveTransform3D^ perspective = ref new PerspectiveTransform3D();
+            root->Transform3D = perspective;
+        }
+        root->Children->Append(popupParent);
+        wh->WindowContent = root;
+
+        if (!isParented)
+        {
+            auto xamlRoot = root->XamlRoot;
+            if (xamlRoot)
+            {
+                // UAP will return a null content root and does not need this to be set
+                popup->XamlRoot = xamlRoot;
+            }
+        }
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Opening popup");
+        popup->IsOpen = true;
+    });
+    wh->WaitForIdle();
+
+    if (includeNestedPopup)
+    {
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"> Opening nested popup");
+            nestedPopup->IsOpen = true;
+        });
+        wh->WaitForIdle();
+    }
+
+    wh->SynchronouslyTickUIThread(2);   // We rely on DComp property notifications to fill the hit testing stash. Wait for it.
+
+    {
+        LOG_OUTPUT(L"> Hit testing");
+
+        std::vector<wf::Point> points;
+        RunOnUIThread([&]()
+        {
+            points = GetHitTestingPoints(static_cast<FrameworkElement^>(rectangle), root);
+
+        });
+        wh->WaitForIdle();
+        VerifyTappedPointsNoWindowSetup(specifySubtreeRootElement, rectangle, points);
+    }
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Giving offset to Popup");
+        // += instead of directly set because parentless popups will already have an offset of 50.
+        popup->HorizontalOffset += 100;
+        popup->VerticalOffset += 100;
+        if (include3D)
+        {
+            CompositeTransform3D^ composite = ref new CompositeTransform3D();
+            composite->TranslateZ = 0.1;
+            popup->Transform3D = composite;
+        }
+    });
+    wh->WaitForIdle();
+    wh->SynchronouslyTickUIThread(2);
+
+    {
+        LOG_OUTPUT(L"> Hit testing");
+        std::vector<wf::Point> points;
+
+        RunOnUIThread([&]()
+        {
+            points = GetHitTestingPoints(static_cast<FrameworkElement^>(rectangle), root);
+        });
+        wh->WaitForIdle();
+
+        VerifyTappedPointsNoWindowSetup(specifySubtreeRootElement, rectangle, points);
+    }
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Giving RenderTransform to Popup.Child");
+        TranslateTransform^ translate = ref new TranslateTransform();
+        translate->X = -100;
+        popupChild->RenderTransform = translate;
+        if (include3D)
+        {
+            LOG_OUTPUT(L"  > Removing Transform3D on Popup.");
+            popup->Transform3D = nullptr;
+
+            CompositeTransform3D^ composite = ref new CompositeTransform3D();
+            composite->TranslateZ = 0.1;
+            popupChild->Transform3D = composite;
+        }
+    });
+    wh->WaitForIdle();
+    wh->SynchronouslyTickUIThread(2);
+
+    {
+        LOG_OUTPUT(L"> Hit testing");
+        std::vector<wf::Point> points;
+        RunOnUIThread([&]()
+        {
+            points = GetHitTestingPoints(static_cast<FrameworkElement^>(rectangle), root);
+        });
+        wh->WaitForIdle();
+        VerifyTappedPointsNoWindowSetup(specifySubtreeRootElement, rectangle, points);
+    }
+
+    RunOnUIThread([&]()
+    {
+        if (isParented)
+        {
+            LOG_OUTPUT(L"> Giving RenderTransform to Popup parent");
+            TranslateTransform^ translate = ref new TranslateTransform();
+            translate->X = 100;
+            translate->Y = -100;
+            popupParent->RenderTransform = translate;
+            if (include3D)
+            {
+                CompositeTransform3D^ composite = ref new CompositeTransform3D();
+                composite->TranslateZ = 0.1;
+                popupParent->Transform3D = composite;
+            }
+        }
+        else
+        {
+            LOG_OUTPUT(L"> No Popup parent. Adjusting offset on parentless Popup to make the rest of the test work.");
+            popup->HorizontalOffset += 100;
+            popup->VerticalOffset -= 100;
+        }
+    });
+    wh->WaitForIdle();
+    wh->SynchronouslyTickUIThread(2);
+
+    {
+        LOG_OUTPUT(L"> Hit testing");
+        std::vector<wf::Point> points;
+
+        RunOnUIThread([&]()
+        {
+            points = GetHitTestingPoints(static_cast<FrameworkElement^>(rectangle), root);
+        });
+        wh->WaitForIdle();
+
+        VerifyTappedPointsNoWindowSetup(specifySubtreeRootElement, rectangle, points);
+    }
+
+    if (includeNestedPopup)
+    {
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"> Giving offset to nested Popup");
+            nestedPopup->VerticalOffset = 100;
+            if (include3D)
+            {
+                CompositeTransform3D^ composite = ref new CompositeTransform3D();
+                composite->TranslateZ = 0.1;
+                nestedPopup->Transform3D = composite;
+            }
+        });
+        wh->WaitForIdle();
+        wh->SynchronouslyTickUIThread(2);
+
+        {
+            LOG_OUTPUT(L"> Hit testing");
+            std::vector<wf::Point> points;
+            RunOnUIThread([&]()
+            {
+                points = GetHitTestingPoints(static_cast<FrameworkElement^>(rectangle), root);
+            });
+            wh->WaitForIdle();
+            VerifyTappedPointsNoWindowSetup(specifySubtreeRootElement, rectangle, points);
+        }
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"> Giving RenderTransform to nested Popup.Child");
+            TranslateTransform^ translate = ref new TranslateTransform();
+            translate->X = -100;
+            nestedPopupChild->RenderTransform = translate;
+            if (include3D)
+            {
+                CompositeTransform3D^ composite = ref new CompositeTransform3D();
+                composite->TranslateZ = 0.1;
+                nestedPopupChild->Transform3D = composite;
+            }
+        });
+        wh->WaitForIdle();
+        wh->SynchronouslyTickUIThread(2);
+
+        {
+            LOG_OUTPUT(L"> Hit testing");
+            std::vector<wf::Point> points;
+            RunOnUIThread([&]()
+            {
+                points = GetHitTestingPoints(static_cast<FrameworkElement^>(rectangle), root);
+            });
+            wh->WaitForIdle();
+            VerifyTappedPointsNoWindowSetup(specifySubtreeRootElement, rectangle, points);
+        }
+    }
+}
+
+void HitTestBasicUap::HitTestLTECommon(bool include3D)
+{
+    const auto& wh = TestServices::WindowHelper;
+
+    Canvas^ root;
+
+    // An LTE that targets a direct sibling
+    Canvas^ lte1Parent;
+    Canvas^ lte1Target;
+    UIElement^ lte1;
+
+    // A nested LTE that targets a sibling's child
+    Canvas^ lte2Parent;
+    Canvas^ lte2TargetParent;
+    Canvas^ lte2Target;
+    UIElement^ lte2;
+
+    // A nested LTE that targets a sibling. The target's parent itself is the target of lte2.
+    Canvas^ lte3Target;
+    UIElement^ lte3;
+
+    // An LTE that sits
+    Canvas^ popupLTETargetParent;
+    Canvas^ popupLTETarget;
+    UIElement^ popupLTE;
+    Canvas^ absolutelyPositionedLTETarget;
+    UIElement^ absolutelyPositionedLTE;
+
+    TestCleanupWrapper cleanup([&]()
+    {
+        RunOnUIThread([&]()
+        {
+            if (popupLTE)
+            {
+                // Because popupLTE is rooted under the popup root, it won't be removed when we clean up the public root.
+                // Remove it explicitly.
+                LOG_OUTPUT(L"> Removing popupLTE");
+                wh->RemoveTestLTE(popupLTE);
+                popupLTE = nullptr;
+            }
+        });
+    });
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Creating tree");
+
+        // This (300, 300) canvas offset will get overridden by the LTE
+        lte3Target = MakeCanvas(include3D, 300, 300, Microsoft::UI::Colors::Purple, nullptr);
+
+        // This (300, 300) canvas offset will get overridden by the LTE
+        lte2Target = MakeCanvas(include3D, 300, 300, Microsoft::UI::Colors::Blue, lte3Target);
+        lte2TargetParent = MakeCanvas(include3D, 100, 0, Microsoft::UI::Colors::Green, lte2Target);
+        lte2Parent = MakeCanvas(include3D, 0, 100, Microsoft::UI::Colors::Yellow, lte2TargetParent);
+        lte2 = wh->AddTestLTE(lte2Target, lte2Parent, LTEParentMode::NormalTree, false /* isAbsolutelyPositioned */);
+        SetLTETransform(lte2, include3D, 0, 100);
+
+        // lte3's parent is itself targeted by lte2
+        lte3 = wh->AddTestLTE(lte3Target, lte2Target, LTEParentMode::NormalTree, false /* isAbsolutelyPositioned */);
+        SetLTETransform(lte3, include3D, 100, 0);
+
+        // This (300, 300) canvas offset will get overridden by the LTE
+        lte1Target = MakeCanvas(include3D, 300, 300, Microsoft::UI::Colors::Orange, lte2Parent);
+        lte1Parent = MakeCanvas(include3D, 50, 50, Microsoft::UI::Colors::Red, lte1Target);
+        lte1 = wh->AddTestLTE(lte1Target, lte1Parent, LTEParentMode::NormalTree, false /* isAbsolutelyPositioned */);
+        SetLTETransform(lte1, include3D, 100, 0);
+
+        // This (300, 300) canvas offset will get overridden by the LTE
+        popupLTETarget = MakeCanvas(include3D, 300, 300, Microsoft::UI::Colors::White, nullptr);
+        popupLTETargetParent = MakeCanvas(include3D, 50, 200, Microsoft::UI::Colors::Gray, popupLTETarget);
+
+        root = ref new Canvas();
+        if (include3D)
+        {
+            root->Transform3D = ref new PerspectiveTransform3D();
+        }
+        root->Children->Append(lte1Parent);
+        root->Children->Append(popupLTETargetParent);
+        wh->WindowContent = root;
+
+        // Give the popup root a child collection, so that it can create a transition root off of that.
+        auto popup = ref new Popup();
+        popup->Child = ref new xaml_shapes::Rectangle();
+        {
+            auto xamlRoot = root->XamlRoot;
+            if (xamlRoot)
+            {
+                // UAP will return a null content root and does not need this to be set
+                popup->XamlRoot = xamlRoot;
+            }
+        }
+        popup->IsOpen = true;
+        popup->IsOpen = false;
+
+        popupLTE = wh->AddTestLTE(popupLTETarget, nullptr, LTEParentMode::PopupRoot, false /* isAbsolutelyPositioned */);
+        SetLTETransform(popupLTE, include3D, 0, 150);
+
+        // This (0, 100) canvas offset will get overridden by the LTE
+        absolutelyPositionedLTETarget = MakeCanvas(include3D, 0, 100, Microsoft::UI::Colors::Brown, nullptr);
+        lte2TargetParent->Children->Append(absolutelyPositionedLTETarget);
+        absolutelyPositionedLTE = wh->AddTestLTE(absolutelyPositionedLTETarget, lte2TargetParent, LTEParentMode::NormalTree, true /* isAbsolutelyPositioned */);
+        SetLTETransform(absolutelyPositionedLTE, include3D, 250, 0);
+    });
+    wh->WaitForIdle();
+
+    {
+        LOG_OUTPUT(L"> Hit testing lte1Target");
+        std::vector<wf::Point> points;
+        points.push_back(wf::Point(153.0f, 53.0f));
+        points.push_back(wf::Point(197.0f, 53.0f));
+        points.push_back(wf::Point(153.0f, 97.0f));
+        VerifyTappedPointsNoWindowSetup(true /* specifySubtreeRootElement */, lte1Target, points);
+    }
+
+    {
+        LOG_OUTPUT(L"> Hit testing nested lte2Target");
+        std::vector<wf::Point> points;
+        points.push_back(wf::Point(253.0f, 253.0f));
+        points.push_back(wf::Point(297.0f, 253.0f));
+        points.push_back(wf::Point(253.0f, 297.0f));
+        VerifyTappedPointsNoWindowSetup(true /* specifySubtreeRootElement */, lte2Target, points);
+    }
+
+    {
+        LOG_OUTPUT(L"> Hit testing nested lte3Target");
+        std::vector<wf::Point> points;
+        points.push_back(wf::Point(353.0f, 253.0f));
+        points.push_back(wf::Point(397.0f, 253.0f));
+        points.push_back(wf::Point(353.0f, 297.0f));
+        VerifyTappedPointsNoWindowSetup(true /* specifySubtreeRootElement */, lte3Target, points);
+    }
+
+    {
+        LOG_OUTPUT(L"> Hit testing popupLTETarget");
+        std::vector<wf::Point> points;
+        points.push_back(wf::Point(53.0f, 353.0f));
+        points.push_back(wf::Point(97.0f, 353.0f));
+        points.push_back(wf::Point(53.0f, 397.0f));
+        VerifyTappedPointsNoWindowSetup(true /* specifySubtreeRootElement */, popupLTETarget, points);
+    }
+
+    {
+        LOG_OUTPUT(L"> Skip hit testing absolutelyPositionedLTETarget");
+        // Absolutely positioned LTEs don't copy transforms from the tree via SetTransformParent2. They only write their
+        // own local transforms. This LTE is parented under the orange lte1, which has offset (150, 50). The LTE adds
+        // its absolute transform of (250, 0), which puts it at (400, 50).
+        // ^ This behavior seems flaky. It depends on whichever ancestor happens to have a comp node. In the 3D version
+        //      of this test, the green element has a comp node because of a Transform3D, and the absolutely positioned
+        //      LTE renders in a different place.
+        //
+        //   Revisit absolutely positioned LTEs. Maybe they should be doing SetTransformParent2 to the root comp node.
+        //
+        //   They also really mess up bounds checking in the hit testing walk. All LTEs mess up bounds checking, but
+        //      especially absolutely positioned LTEs. Child bounds don't include LTEs, and if they did, then the LTE's
+        //      outer bounds needs to be aware of where the LTE is attached. In this test, lte2's outer bounds are tricky.
+        std::vector<wf::Point> points;
+        points.push_back(wf::Point(403.0f, 53.0f));
+        points.push_back(wf::Point(447.0f, 53.0f));
+        points.push_back(wf::Point(403.0f, 97.0f));
+//        VerifyTappedPointsNoWindowSetup(root, absolutelyPositionedLTETarget, points);
+    }
+}
+
+Microsoft::UI::Xaml::Controls::Canvas^ HitTestBasicUap::MakeCanvas(bool include3D, double left, double top, ::Windows::UI::Color color, Canvas^ child)
+{
+    // If we're including 3D, make sure it includes a non-zero transform. Otherwise hit testing could ignore 3D and still pass.
+    double offsetIn3D = include3D ? 30 : 0;
+
+    Canvas^ canvas = ref new Canvas();
+    canvas->Width = 50;
+    canvas->Height = 50;
+    canvas->Background = ref new SolidColorBrush(color);
+    Canvas::SetLeft(canvas, left - offsetIn3D);
+    Canvas::SetTop(canvas, top - offsetIn3D);
+
+    if (include3D)
+    {
+        CompositeTransform3D^ composite = ref new CompositeTransform3D();
+        composite->TranslateX = offsetIn3D;
+        composite->TranslateY = offsetIn3D;
+        composite->TranslateZ = 0.1;
+        canvas->Transform3D = composite;
+    }
+
+    if (child)
+    {
+        canvas->Children->Append(child);
+    }
+
+    return canvas;
+}
+
+void HitTestBasicUap::VerifyTappedPointsNoWindowSetup(
+    // In UAP mode we pass in null for the subtree UIElement so it's implicitly understood to be the RootVisual and
+    // so we can hit contents of parentless popups. In XamlIslandRoots mode we have to specify a subtree UIElement so
+    // Xaml knows what island we're talking about.
+    bool specifySubtreeRootElement,
+    UIElement^ tappedElement,
+    std::vector<wf::Point> points)
+{
+    const int defaultMissedOffset = 15; // Shift tapped points by this many pixels to check for misses.
+    const bool defaultVerifyUsingTaps = true; // Verify using both VisualTreeHelper and Taps.
+
+    UIElement^ rootElement = nullptr;
+    if (specifySubtreeRootElement)
+    {
+        RunOnUIThread([&]()
+        {
+            auto xamlRoot = tappedElement->XamlRoot;
+            if (xamlRoot)
+            {
+                // UAP will return a null content root and does not need this to be set
+                rootElement = xamlRoot->Content;
+            }
+        });
+    }
+
+    VerifyTappedPoints(rootElement, tappedElement, points, defaultMissedOffset, defaultMissedOffset, defaultVerifyUsingTaps, false /*doWindowSetup*/);
+}
+
+std::vector<wf::Point> HitTestBasicUap::GetHitTestingPoints(FrameworkElement^ element, UIElement^ root, float offset)
+{
+    std::vector<wf::Point> points;
+    auto transform = element->TransformToVisual(root);
+    points.push_back(transform->TransformPoint(wf::Point(0 + offset, 0 + offset)));
+    points.push_back(transform->TransformPoint(wf::Point(0 + static_cast<float>(element->Width) - offset, 0 + offset)));
+    points.push_back(transform->TransformPoint(wf::Point(0 + offset, 0 + static_cast<float>(element->Height) - offset)));
+    LOG_OUTPUT(L"  > Hit testing points: topleft : %lf,%lf topright : %lf,%lf bottomleft: %lf,%lf",\
+                            points[0].X, points[0].Y, points[1].X, points[1].Y, points[2].X, points[2].Y);
+    return points;
+}
+
+void HitTestBasicUap::SetLTETransform(Microsoft::UI::Xaml::UIElement^ lte, bool include3D, double x, double y)
+{
+    if (include3D)
+    {
+        CompositeTransform3D^ composite = ref new CompositeTransform3D();
+        composite->TranslateX = x;
+        composite->TranslateY = y;
+        composite->TranslateZ = 0.1;
+        lte->Transform3D = composite;
+    }
+    else
+    {
+        TranslateTransform^ translate = ref new TranslateTransform();
+        translate->X = x;
+        translate->Y = y;
+        lte->RenderTransform = translate;
+    }
+}
+
+void HitTestBasicUap::VerifyTappedPoints(UIElement^ root, UIElement^ tappedElement, std::vector<wf::Point> points)
+{
+    const int defaultMissedOffset = 15; // Shift tapped points by this many pixels to check for misses.
+    const bool defaultVerifyUsingTaps = true; // Verify using both VisualTreeHelper and Taps.
+
+    VerifyTappedPoints(root, tappedElement, points, defaultMissedOffset, defaultVerifyUsingTaps);
+}
+
+void HitTestBasicUap::VerifyTappedPoints(UIElement^ root, UIElement^ tappedElement, std::vector<wf::Point> points, int missedOffset, bool verifyUsingTaps)
+{
+    VerifyTappedPoints(root, tappedElement, points, missedOffset, missedOffset, verifyUsingTaps, true /*doWindowSetup*/);
+}
+
+// Takes a tree root, an element to tap, and a set of points and attempts to tap the element at those points.
+// The test passes if all points result in the "tapped" flag being set.
+// Note: The target points provided are not exact, just "close" - exact Outer to Inner points are tested in Transform3DHitTestUnitTests.cpp.
+void HitTestBasicUap::VerifyTappedPoints(UIElement^ root, UIElement^ tappedElement, std::vector<wf::Point> points, int missedOffsetX, int missedOffsetY, bool verifyUsingTaps, bool doWindowSetup)
+{
+    auto tappedElementEvent = std::make_shared<Microsoft::UI::Xaml::Tests::Common::Event>();
+    auto tappedElementRegistration = CreateSafeEventRegistration(UIElement, Tapped);
+
+    if (doWindowSetup)
+    {
+        HitTestBasic::WindowSetup(root);
+    }
+
+    RunOnUIThread([&]()
+    {
+        if (verifyUsingTaps)
+        {
+            LOG_OUTPUT(L"Set up tapped handler");
+
+            tappedElementRegistration.Attach(
+                tappedElement,
+                ref new xaml_input::TappedEventHandler(
+                    [tappedElementEvent](Platform::Object^ sender, xaml_input::TappedRoutedEventArgs^ args)
+                    {
+                        LOG_OUTPUT(L"tappedElement was tapped");
+                        tappedElementEvent->Set();
+                    }));
+        }
+        else
+        {
+            LOG_OUTPUT(L"!! Note: Is not using taps to verify.");
+        }
+    });
+
+    TestServices::WindowHelper->WaitForIdle();
+
+    int numPoints = static_cast<int>(points.size());
+    UINT doubleClickTime = ::GetDoubleClickTime();
+    LOG_OUTPUT(L"> Verifying inner points, should hit...");
+    for (int i = 0; i < numPoints; i++)
+    {
+        if (verifyUsingTaps)
+        {
+            LOG_OUTPUT(L"  > Expecting hit: Tap point {%f, %f}", points[i].X, points[i].Y);
+            TestServices::InputHelper->Tap(points[i]);
+
+            tappedElementEvent->WaitForDefault();
+            VERIFY_IS_TRUE(tappedElementEvent->HasFired());
+            tappedElementEvent->Reset();
+
+            // I hate sleeps, but we need to ensure that we don't tap so fast that the gesture recognizer
+            // thinks it is a double tap.  If this is an issue, it may be possible to figure out what
+            // the maximum distance is to qualify for a double tap and only delay if we are inside that
+            // distance.
+            ::Sleep(doubleClickTime);
+
+            TestServices::WindowHelper->WaitForIdle();  // For any animations kicked off by the tap
+        }
+
+        LOG_OUTPUT(L"  > Expecting hit: Verify point {%f, %f} using VisualTreeHelper", points[i].X, points[i].Y);
+        VERIFY_IS_TRUE(HitTestBasic::VerifyPointContainsElementWithVisualTreeHelper(root, tappedElement, points[i]));
+    }
+
+    LOG_OUTPUT(L"> Verifying outer points, should miss...");
+    for (int i = 0; i < numPoints; i++)
+    {
+        // Assumes no bottom-right point tested. If a bottom right point is provided, the point translation is expected to result in a hit.
+        points[i].X -= missedOffsetX;
+        points[i].Y -= missedOffsetY;
+
+        if (verifyUsingTaps)
+        {
+            LOG_OUTPUT(L"  > Expecting miss: Tap point {%f, %f}", points[i].X, points[i].Y);
+            TestServices::InputHelper->Tap(points[i]);
+
+            tappedElementEvent->WaitForNoThrow(std::chrono::milliseconds(100));
+            VERIFY_IS_FALSE(tappedElementEvent->HasFired());
+
+            // I hate sleeps, but we need to ensure that we don't tap so fast that the gesture recognizer
+            // thinks it is a double tap.  If this is an issue, it may be possible to figure out what
+            // the maximum distance is to qualify for a double tap and only delay if we are inside that
+            // distance.
+            ::Sleep(doubleClickTime);
+
+            TestServices::WindowHelper->WaitForIdle();  // For any animations kicked off by the tap
+        }
+
+        LOG_OUTPUT(L"  > Expecting miss: Verify point {%f, %f} using VisualTreeHelper", points[i].X, points[i].Y);
+        VERIFY_IS_FALSE(HitTestBasic::VerifyPointContainsElementWithVisualTreeHelper(root, tappedElement, points[i]));
+    }
+}
+
+void HitTestBasicUap::WindowSetup(UIElement^ root)
+{
+    TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(500, 500));
+    RunOnUIThread([&]()
+    {
+        TestServices::WindowHelper->WindowContent = root;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+}
+
+bool HitTestBasicUap::VerifyPointContainsElementWithVisualTreeHelper(UIElement^ source, UIElement^ target, wf::Point point)
+{
+    bool containsElement = false;
+    RunOnUIThread([&]()
+    {
+        IIterable<UIElement^>^ hitElements;
+        hitElements = VisualTreeHelper::FindElementsInHostCoordinates(point, source);
+
+        for_each (
+            begin(hitElements),
+            end(hitElements),
+            [&](UIElement^ value)
+            {
+                if (value == target)
+                {
+                    containsElement = true;
+                }
+            });
+    });
+    TestServices::WindowHelper->WaitForIdle();
+    return containsElement;
+}
+
 
 bool HitTestBasic::TestSetup()
 {
@@ -1165,12 +1841,12 @@ void HitTestBasic::HitTestParentedPopup3D_SubtreeRoot()
     HitTestPopupCommon(true /* isParented */, true /* include3D */, false /* includeNestedPopup */, true /* specifySubtreeRootElement */);
 }
 
-void HitTestBasic::HitTestParentedPopup_NullSubtreeRoot()
+void HitTestBasicUap::HitTestParentedPopup_NullSubtreeRoot()
 {
     HitTestPopupCommon(true /* isParented */, false /* include3D */, false /* includeNestedPopup */, false /* specifySubtreeRootElement */);
 }
 
-void HitTestBasic::HitTestParentedPopup3D_NullSubtreeRoot()
+void HitTestBasicUap::HitTestParentedPopup3D_NullSubtreeRoot()
 {
     HitTestPopupCommon(true /* isParented */, true /* include3D */, false /* includeNestedPopup */, false /* specifySubtreeRootElement */);
 }
@@ -1185,12 +1861,12 @@ void HitTestBasic::HitTestNestedParentedPopup3D_SubtreeRoot()
     HitTestPopupCommon(true /* isParented */, true /* include3D */, true /* includeNestedPopup */, true /* specifySubtreeRootElement */);
 }
 
-void HitTestBasic::HitTestNestedParentedPopup_NullSubtreeRoot()
+void HitTestBasicUap::HitTestNestedParentedPopup_NullSubtreeRoot()
 {
     HitTestPopupCommon(true /* isParented */, false /* include3D */, true /* includeNestedPopup */, false /* specifySubtreeRootElement */);
 }
 
-void HitTestBasic::HitTestNestedParentedPopup3D_NullSubtreeRoot()
+void HitTestBasicUap::HitTestNestedParentedPopup3D_NullSubtreeRoot()
 {
     HitTestPopupCommon(true /* isParented */, true /* include3D */, true /* includeNestedPopup */, false /* specifySubtreeRootElement */);
 }
@@ -1205,12 +1881,12 @@ void HitTestBasic::HitTestParentlessPopup3D_SubtreeRoot()
     HitTestPopupCommon(false /* isParented */, true /* include3D */, false /* includeNestedPopup */, true /* specifySubtreeRootElement */);
 }
 
-void HitTestBasic::HitTestParentlessPopup_NullSubtreeRoot()
+void HitTestBasicUap::HitTestParentlessPopup_NullSubtreeRoot()
 {
     HitTestPopupCommon(false /* isParented */, false /* include3D */, false /* includeNestedPopup */, false /* specifySubtreeRootElement */);
 }
 
-void HitTestBasic::HitTestParentlessPopup3D_NullSubtreeRoot()
+void HitTestBasicUap::HitTestParentlessPopup3D_NullSubtreeRoot()
 {
     HitTestPopupCommon(false /* isParented */, true /* include3D */, false /* includeNestedPopup */, false /* specifySubtreeRootElement */);
 }
@@ -1225,12 +1901,12 @@ void HitTestBasic::HitTestNestedParentlessPopup3D_SubtreeRoot()
     HitTestPopupCommon(false /* isParented */, true /* include3D */, true /* includeNestedPopup */, true /* specifySubtreeRootElement */);
 }
 
-void HitTestBasic::HitTestNestedParentlessPopup_NullSubtreeRoot()
+void HitTestBasicUap::HitTestNestedParentlessPopup_NullSubtreeRoot()
 {
     HitTestPopupCommon(false /* isParented */, false /* include3D */, true /* includeNestedPopup */, false /* specifySubtreeRootElement */);
 }
 
-void HitTestBasic::HitTestNestedParentlessPopup3D_NullSubtreeRoot()
+void HitTestBasicUap::HitTestNestedParentlessPopup3D_NullSubtreeRoot()
 {
     HitTestPopupCommon(false /* isParented */, true /* include3D */, true /* includeNestedPopup */, false /* specifySubtreeRootElement */);
 }
@@ -1481,17 +2157,17 @@ void HitTestBasic::HitTestLTECommon(bool include3D)
 }
 
 
-void HitTestBasic::HitTestLTE()
+void HitTestBasicUap::HitTestLTE()
 {
     HitTestLTECommon(false /* include3D */);
 }
 
-void HitTestBasic::HitTestLTE3D()
+void HitTestBasicUap::HitTestLTE3D()
 {
     HitTestLTECommon(true /* include3D */);
 }
 
-void HitTestBasic::NewLTETargetingExisting3D()
+void HitTestBasicUap::NewLTETargetingExisting3D()
 {
     // Regression test
     // An LTE that targets an existing 3D branch of the tree isn't labeling itself as 3D. We weren't
@@ -1699,7 +2375,7 @@ void HitTestBasic::DManipHitTestVisual()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"Content");
 }
 
-void HitTestBasic::ProgrammaticHitTestWithEmptyTree()
+void HitTestBasicUap::ProgrammaticHitTestWithEmptyTree()
 {
     const auto& wh = TestServices::WindowHelper;
 

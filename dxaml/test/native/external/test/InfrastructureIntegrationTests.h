@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Test {
@@ -16,15 +17,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"478e7719-b8f0-434b-b29a-e7911a52ae17;e63becda-2a21-4186-9066-a5c3d52f5603")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
             TEST_METHOD_CLEANUP(TestCleanup)
-
-            BEGIN_TEST_METHOD(ValidateWindowContentAccessor)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates the WindowHelper getter/setters operate as expected.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidateWaitForIdle)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that wait for idle successfully waits.")
@@ -54,8 +51,28 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(ValidatePressKeySequence)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that the end-to-end keyboard press key sequence infrastructure is functional.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
         };
+
+    class InfrastructureIntegrationTestsUap : public WEX::TestClass<InfrastructureIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(InfrastructureIntegrationTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"478e7719-b8f0-434b-b29a-e7911a52ae17;e63becda-2a21-4186-9066-a5c3d52f5603")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"InfrastructureIntegrationTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+        BEGIN_TEST_METHOD(ValidateWindowContentAccessor)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates the WindowHelper getter/setters operate as expected.")
+        END_TEST_METHOD()
+    };
     }
 } } } }

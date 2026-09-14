@@ -23,9 +23,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool FrameworkElementExTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool FrameworkElementExTestsWpf::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool FrameworkElementExTestsWpf::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool FrameworkElementExTestsWpf::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
     bool FrameworkElementExTests::TestSetup()
     {
@@ -40,7 +60,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         return true;
     }
 
-    void FrameworkElementExTests::CanAccessProtectedChildrenProperty()
+    void FrameworkElementExTestsWpf::CanAccessProtectedChildrenProperty()
     {
         VELOCITY_TESTGUARD_XAML2018
 
@@ -186,7 +206,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void FrameworkElementExTests::DoesRespectMargin()
+    void FrameworkElementExTestsWpf::DoesRespectMargin()
     {
         VELOCITY_TESTGUARD_XAML2018
 

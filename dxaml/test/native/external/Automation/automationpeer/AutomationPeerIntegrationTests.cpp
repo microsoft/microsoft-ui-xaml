@@ -29,9 +29,30 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
 bool AutomationPeerIntegrationTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool AutomationPeerIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool AutomationPeerIntegrationTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool AutomationPeerIntegrationTestsUap::TestCleanup()
+{
+    DisableDCompLeakDetectionScopeGuard disableLeakGuard;
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
 
 bool AutomationPeerIntegrationTests::TestSetup()
 {
@@ -50,7 +71,7 @@ bool AutomationPeerIntegrationTests::TestCleanup()
 //
 // Test Cases
 //
-void AutomationPeerIntegrationTests::VerifyCommonUiaPropertyChangesBeingRaised()
+void AutomationPeerIntegrationTestsUap::VerifyCommonUiaPropertyChangesBeingRaised()
 {
     TestCleanupWrapper cleanup([]()
     {
@@ -1027,7 +1048,7 @@ void AutomationPeerIntegrationTests::FocusTest()
     TestServices::WindowHelper->WaitForIdle();
 }
 
-void AutomationPeerIntegrationTests::VerifyPeerFromPointWithNon100DpiIsCorrect()
+void AutomationPeerIntegrationTestsUap::VerifyPeerFromPointWithNon100DpiIsCorrect()
 {
     TestCleanupWrapper cleanup;
     

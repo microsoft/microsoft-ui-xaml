@@ -37,9 +37,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool BasicKeyboardTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool BasicKeyboardTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool BasicKeyboardTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool BasicKeyboardTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
 
         bool BasicKeyboardTests::TestSetup()
         {
@@ -570,7 +590,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             VERIFY_IS_TRUE(buttonKeyUpEvent->HasFired());
         }
 
-        void BasicKeyboardTests::VerifyCtrlAltKeys()
+        void BasicKeyboardTestsUap::VerifyCtrlAltKeys()
         {
             TestCleanupWrapper cleanup;
 

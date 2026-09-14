@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include "XamlMetadataProviderOverrider.h"
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Tools { namespace AppAnalysis {
@@ -17,6 +18,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e22a917c-ad18-4a09-bff9-d3ca3e5ee0b8")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // All AppAnalysis tests are unreliable or failing.
+                TEST_CLASS_HOSTING_MODE(UAP)
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -26,48 +28,33 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(VerifiesCatchesSyncronousDecode)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies the ImageDecodingRule fires when source is set on an image before in live tree.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyCatchesImageBrushInEllipse)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies the ImageDecodingRule fires when using an image brush for ellipses.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(VerifyNoFireImageBrushInEllipseWithDecodeSize)
-                TEST_METHOD_PROPERTY(L"Description", L"Verifies the ImageDecodingRule doesn't fire when specifying the decode size "
-                                      " when using an image brush for ellipses.")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyCatchesRedecodeAfterDecodeSizeSpecified)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies the ImageDecodingRule fires when we redecode an image after DecodePixelWidth/Height set.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyNoFireAfterPlateauScalingChangedSmaller)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies the ImageDecodingRule doesn't fires when we dont redecode due to scaling change where we scaled smaller.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyNoFireAfterPlateauScalingChangedLarger)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies the ImageDecodingRule fires doesn't fire when redecode due to scaling change where we scaled larger.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyCatchesSecondIncorrectDecode)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies the ImageDecodingRule fires when we redecode an image synchronously with a new source after it was first "
                                       "decoded correctly.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(VerifyMultipleImagesDifferentSizeSameUri)
-                TEST_METHOD_PROPERTY(L"Description", L"Verifies the ImageDecodingRule doesn't fire for the smaller image when DTRS is used for two images.")
             END_TEST_METHOD()
 
         private:
@@ -91,6 +78,41 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 bool setDecodePixelSize
             );
         };
+
+    class ImageDecodingRuleIntegrationTestsWpf : public WEX::TestClass<ImageDecodingRuleIntegrationTestsWpf>
+    {
+    public:
+        BEGIN_TEST_CLASS(ImageDecodingRuleIntegrationTestsWpf)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.Diagnostics.AppAnalysis.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e22a917c-ad18-4a09-bff9-d3ca3e5ee0b8")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // All AppAnalysis tests are unreliable or failing.
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"ImageDecodingRuleIntegrationTests")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        void MultipleImagesTestHelper(
+                Platform::String^ xamlPath,
+                Platform::String^ imagePath
+            );
+        Platform::String^ GetResourcesPath() const;
+
+    public:
+        BEGIN_TEST_METHOD(VerifyNoFireImageBrushInEllipseWithDecodeSize)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies the ImageDecodingRule doesn't fire when specifying the decode size "
+        " when using an image brush for ellipses.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyMultipleImagesDifferentSizeSameUri)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies the ImageDecodingRule doesn't fire for the smaller image when DTRS is used for two images.")
+        END_TEST_METHOD()
+    };
        
     } } 
 } } } }

@@ -24,7 +24,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool ToggleSwitchIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
 
@@ -239,7 +239,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             });
     }
 
-    void ToggleSwitchIntegrationTests::CanPanVerticallyOverToggleSwitchToScroll()
+    bool ToggleSwitchIntegrationTestsUAP::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ToggleSwitchIntegrationTestsUAP::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool ToggleSwitchIntegrationTestsUAP::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    void ToggleSwitchIntegrationTestsUAP::CanPanVerticallyOverToggleSwitchToScroll()
     {
         TestCleanupWrapper cleanup;
         xaml_controls::ToggleSwitch^ toggleSwitch = nullptr;

@@ -23,9 +23,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
 bool RenderNothingTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool RenderNothingTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool RenderNothingTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool RenderNothingTestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
 
 bool RenderNothingTests::TestSetup()
 {
@@ -40,7 +60,7 @@ bool RenderNothingTests::TestCleanup()
     return true;
 }
 
-void RenderNothingTests::RenderNoContent()
+void RenderNothingTestsUap::RenderNoContent()
 {
     TestCleanupWrapper cleanup([]()
     {

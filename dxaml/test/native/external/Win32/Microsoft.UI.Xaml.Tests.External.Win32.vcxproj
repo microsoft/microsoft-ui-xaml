@@ -13,6 +13,7 @@
       <AdditionalIncludeDirectories>
           %(AdditionalIncludeDirectories);
           $(MSBuildThisFileDirectory)\Centennial;
+          $(LiftedIXPIncludePaths);
           $(WinUIDetailsIncludePath)\abi;
           $(WinUIDetailsIncludePath)\MockDComp;
       </AdditionalIncludeDirectories>
@@ -26,10 +27,12 @@
   <ItemGroup>
     <ClInclude Include="Centennial\WPFHostTests.h" />
     <ClInclude Include="Centennial\DesktopWindowTests.h" />
+    <ClInclude Include="Centennial\HostingModeTests.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Centennial\WPFHostTests.cpp" />
     <ClCompile Include="Centennial\DesktopWindowTests.cpp" />
+    <ClCompile Include="Centennial\HostingModeTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(NativeExternalTestPath)\pch\Microsoft.UI.Xaml.Tests.External.Precomp.vcxproj" />

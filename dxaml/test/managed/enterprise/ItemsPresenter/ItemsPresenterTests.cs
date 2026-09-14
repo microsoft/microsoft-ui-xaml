@@ -54,6 +54,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]   // DCPP: Test Controls.ItemsPresenterTests.ItemsPresenterTests fails on WPF
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyHeaderGetsMaxDesiredSizeOrAvailableSize()
         {
             ListView list = PrepareListView();
@@ -70,6 +71,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]   // DCPP: Test Controls.ItemsPresenterTests.ItemsPresenterTests fails on WPF
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void CanNavigateByLineOrPage()
         {
             ListView list = PrepareListView();
@@ -142,6 +144,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void CanUseMouseWheelToNavigate()
         {
             ListView list = PrepareListView();
@@ -200,6 +203,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void CanUseMouseWheelToZoomOut()
         {
             CanUseMouseWheelToZoom(zoomIn: false);
@@ -208,6 +212,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void CanUseMouseWheelToZoomIn()
         {
             CanUseMouseWheelToZoom(zoomIn: true);
@@ -259,6 +264,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]   // DCPP: Test Controls.ItemsPresenterTests.ItemsPresenterTests fails on WPF
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void CanProcessScrollIntoViewAfterCollectionChange()
         {
             ListView list = PrepareListView();
@@ -296,6 +302,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void CanCarouselPanelHandleReset()
         {
             //

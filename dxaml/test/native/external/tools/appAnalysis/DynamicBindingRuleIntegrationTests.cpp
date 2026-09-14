@@ -44,10 +44,36 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool DynamicBindingRuleIntegrationTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
 
             return true;
         }
+
+    bool DynamicBindingRuleIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool DynamicBindingRuleIntegrationTestsUap::TestSetup()
+        {
+            TestServices::WindowHelper->InitializeXaml(ref new MetadataProvider(), ref new CustomMetadataRegistrar<shared_types::CustomUserControl>());
+
+            return true;
+        }
+
+    bool DynamicBindingRuleIntegrationTestsUap::TestCleanup()
+        {
+            TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+Platform::String^ DynamicBindingRuleIntegrationTestsUap::GetResourcesPath() const
+        {
+            return "ms-appx:///resources/native/";
+        }
+
 
         bool DynamicBindingRuleIntegrationTests::ClassCleanup()
         {
@@ -119,7 +145,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             helper.VerifyRuleNotTriggered();
         }
 
-        void DynamicBindingRuleIntegrationTests::DoesntFlagUsesOfTemplateBinding()
+        void DynamicBindingRuleIntegrationTestsUap::DoesntFlagUsesOfTemplateBinding()
         {
             TestCleanupWrapper cleanup;
 

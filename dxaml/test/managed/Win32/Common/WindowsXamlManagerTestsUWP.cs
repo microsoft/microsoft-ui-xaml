@@ -29,6 +29,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Win32.Common
         [TestProperty("RunAs", "UAP")]
         [TestProperty("UAP:Praid", "XamlManagedTAEFTests")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public static void Setup(TestContext context)
         {

@@ -22,9 +22,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool BasicPointerTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool BasicPointerTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool BasicPointerTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool BasicPointerTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
 
         bool BasicPointerTests::TestSetup()
         {
@@ -246,7 +266,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         // Test case: Test VisualTreeHelper.FindElementsInHostCoordinates in LTR/RTL
         // at different scale levels.
         //------------------------------------------------------------------------
-        void BasicPointerTests::VisualTreeHelperHitTest()
+        void BasicPointerTestsUap::VisualTreeHelperHitTest()
         {
             TestCleanupWrapper cleanup;
 
@@ -541,7 +561,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             VERIFY_ARE_EQUAL(button4ClickCount, 2);
         }
 
-        void BasicPointerTests::PointerRoutedAway()
+        void BasicPointerTestsUap::PointerRoutedAway()
         {
             Grid^ mainGrid = nullptr;
             StackPanel^ stackPanel = nullptr;
@@ -603,7 +623,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        void BasicPointerTests::CanLeftMouseClick()
+        void BasicPointerTestsUap::CanLeftMouseClick()
         {
             TestCleanupWrapper cleanup;
 

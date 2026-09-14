@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Controls { namespace Hub {
@@ -17,7 +18,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"465cba5c-d9c4-40ac-933a-f238efc26016")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"IsolationLevel", L"Test") //DCPP: Crash in Microsoft.UI.Input.dll!UIAutomationIslandForwarder::EnsureAutomationHostProvider(HWND__ * hwnd)
-                TEST_CLASS_PROPERTY(L"ThreadingModel", L"MTA")
+                TEST_CLASS_HOSTING_MODE_DEFAULT_WITH_THREADING(L"MTA")
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -38,4 +39,3 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
     } }
 } } } }
-

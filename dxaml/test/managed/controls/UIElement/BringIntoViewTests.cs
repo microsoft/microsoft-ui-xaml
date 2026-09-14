@@ -143,6 +143,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.BringIntoViewTests
         [TestMethod]
         [TestProperty("Description", "Validates that OriginalSource is not null.")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyBringIntoViewRequestedOriginialSourceIsNotNull()
         {
             StackPanel root = null;

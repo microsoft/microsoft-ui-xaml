@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Sample {
@@ -15,6 +16,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
 
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"dad50b0b-4b6e-4b44-ae60-31e745fd8f74;2848f544-9be5-4b98-bd69-bf3f2a4a04f3")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
             
             TEST_METHOD_SETUP(TestSetup)

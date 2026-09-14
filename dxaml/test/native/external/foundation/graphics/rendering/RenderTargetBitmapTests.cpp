@@ -38,9 +38,311 @@ Platform::String^ RenderTargetBitmapTests::GetResourcesPath() const
 
 bool RenderTargetBitmapTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool RenderTargetBitmapTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool RenderTargetBitmapTestsUap::TestSetup()
+{
+    TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool RenderTargetBitmapTestsUap::TestCleanup()
+{
+    TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+void RenderTargetBitmapTestsUap::PopupChildRTBInternal()
+{
+    StackPanelTestHelper(L"RTBTests-PopupChild.xaml", false, false);
+}
+
+void RenderTargetBitmapTestsUap::ScaledRenderInternal()
+{
+    const float initialScale = TestServices::WindowHelper->GetCurrentWindowScale();
+    const int initialScalePercentage = static_cast<int>(.5f + initialScale * 100.0f);
+
+    LOG_OUTPUT(L"InitialScale=%f, initialScalePercentage=%d\n", initialScale, initialScalePercentage);
+
+    const int Width = 100;
+    const int Height = 48;
+    const int scale = 125;
+
+    auto renderedEvent = std::make_shared<Event>();
+
+    RenderTargetBitmap^ rtb = nullptr;
+    wf::IAsyncOperation<IBuffer^>^ getPixelsAsyncOperation = nullptr;
+    IBuffer^ buffer = nullptr;
+    Border^ rootBorder = nullptr;
+    RunOnUIThread([&]()
+    {
+        // This is a static method which changes the current core zoom factor and therefore can be
+        // tested even if we don't have a background task
+        Platform::Object^ factory = nullptr;
+        VERIFY_SUCCEEDED(::Windows::Foundation::GetActivationFactory(wrl::Wrappers::HStringReference(L"Microsoft.UI.Xaml.Media.Imaging.XamlRenderingBackgroundTask").Get(),
+                reinterpret_cast<IInspectable**>(&factory)));
+            IXamlRenderingBackgroundTaskStaticsPrivate^ factoryPrivate = dynamic_cast<IXamlRenderingBackgroundTaskStaticsPrivate^>(factory);
+            VERIFY_IS_NOT_NULL(factoryPrivate);
+
+            factoryPrivate->SetScalePercentage(scale);
+
+        // Initialize the content to be rendered
+        rootBorder = ref new Border();
+        rootBorder->Width = Width;
+        rootBorder->Height = Height;
+        rootBorder->Background = ref new SolidColorBrush(Colors::Red);
+
+        TestServices::WindowHelper->WindowContent = rootBorder;
+    });
+
+    TestServices::WindowHelper->WaitForIdle();
+
+    int expectedWidth = (Width * scale) / 100;
+    int expectedHeight = (Height * scale) / 100;
+
+    RunOnUIThread([&]()
+    {
+        rtb = ref new RenderTargetBitmap();
+        LOG_OUTPUT(L"Invoking RenderTargetBitmap::RenderAsync: scale=%d width=%d height=%d", scale, Width, Height);
+
+        create_task(rtb->RenderAsync(rootBorder)).then([&renderedEvent] ()
+        {
+            LOG_OUTPUT(L"RenderTargetBitmap::RenderAsync completed.");
+            renderedEvent->Set();
+        });
+    });
+
+    renderedEvent->WaitForDefault();
+
+    RunOnUIThread([&]()
+    {
+        VERIFY_ARE_EQUAL(expectedWidth, rtb->PixelWidth);
+        VERIFY_ARE_EQUAL(expectedHeight, rtb->PixelHeight);
+    });
+
+    TestServices::WindowHelper->WaitForIdle();
+
+    expectedWidth = static_cast<int>(.5 + Width * initialScale);
+    expectedHeight = static_cast<int>(.5 + Height * initialScale);
+
+    RunOnUIThread([&]()
+    {
+        // This is a static method which changes the current core zoom factor and therefore can be
+        // tested even if we don't have a background task
+        Platform::Object^ factory = nullptr;
+        VERIFY_SUCCEEDED(::Windows::Foundation::GetActivationFactory(wrl::Wrappers::HStringReference(L"Microsoft.UI.Xaml.Media.Imaging.XamlRenderingBackgroundTask").Get(),
+                reinterpret_cast<IInspectable**>(&factory)));
+        IXamlRenderingBackgroundTaskStaticsPrivate^ factoryPrivate = dynamic_cast<IXamlRenderingBackgroundTaskStaticsPrivate^>(factory);
+        VERIFY_IS_NOT_NULL(factoryPrivate);
+
+        factoryPrivate->SetScalePercentage(initialScalePercentage);
+
+        rtb = ref new RenderTargetBitmap();
+
+        create_task(rtb->RenderAsync(rootBorder, Width, Height)).then([&renderedEvent]()
+        {
+            LOG_OUTPUT(L"RenderTargetBitmap::RenderAsync completed.");
+            renderedEvent->Set();
+        });
+    });
+
+    renderedEvent->WaitForDefault();
+
+    RunOnUIThread([&]()
+    {
+        VERIFY_ARE_EQUAL(expectedWidth, rtb->PixelWidth);
+        VERIFY_ARE_EQUAL(expectedHeight, rtb->PixelHeight);
+    });
+}
+
+void RenderTargetBitmapTestsUap::StackPanelTestHelper(
+    Platform::String^ fileName,     // Name of Xaml file with content to capture as RTB
+    bool expectRTL,                 // Whether RightToLeft property is set
+    bool useXCB,                    // Whether solid color brushes on the Red/White/Blue rectangles are replaced with XamlCompositionBrushes
+    bool expectCaptureAsync,        // Whether it uses the Composition API CaptureAsync to render to RTB which captures composition objects as well.
+    int renderCallCount,            // How many times to issue the RenderAsync operation
+    bool verifyIsTransparent        // If true, we expect the RTB surface to be completely transparent
+)
+{
+    TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 300));
+
+    auto renderedEvent = std::make_shared<Event>();
+    auto getPixelsEvent = std::make_shared<Event>();
+
+    RenderTargetBitmap^ rtb = nullptr;
+    wf::IAsyncOperation<IBuffer^>^ getPixelsAsyncOperation = nullptr;
+    IBuffer^ buffer = nullptr;
+    StackPanel^ rootStackPanel = safe_cast<StackPanel^>(LoadXamlFileOnUIThread(GetResourcesPath() + fileName));
+    RunOnUIThread([&]()
+    {
+        TestServices::WindowHelper->WindowContent = rootStackPanel;
+
+        // A XamlCompositionBrushBase- derived brush currently cannot be rendered in RTB mode, instead a solid FallbackColor should be used.
+        // For this test, define XCB-based brushes wiht fallback colors that match the original red/white/blue rendering.
+        if (useXCB)
+        {
+            XcbPurpleBrush^ xcbBlueFallback = ref new XcbPurpleBrush();
+            xcbBlueFallback->FallbackColor = Microsoft::UI::Colors::Blue;
+
+            XcbPurpleBrush^ xcbWhiteFallback = ref new XcbPurpleBrush();
+            xcbWhiteFallback->FallbackColor = Microsoft::UI::Colors::White;
+
+            XcbPurpleBrush^ xcbRedFallback = ref new XcbPurpleBrush();
+            xcbRedFallback->FallbackColor = Microsoft::UI::Colors::Red;
+
+            Microsoft::UI::Xaml::Shapes::Rectangle^ blueRectangle = safe_cast<Microsoft::UI::Xaml::Shapes::Rectangle^>(rootStackPanel->FindName(L"BlueRectangle"));
+            Microsoft::UI::Xaml::Shapes::Rectangle^ whiteRectangle = safe_cast<Microsoft::UI::Xaml::Shapes::Rectangle^>(rootStackPanel->FindName(L"WhiteRectangle"));
+            Microsoft::UI::Xaml::Shapes::Rectangle^ redRectangle = safe_cast<Microsoft::UI::Xaml::Shapes::Rectangle^>(rootStackPanel->FindName(L"RedRectangle"));
+
+            blueRectangle->Fill = xcbBlueFallback;
+            whiteRectangle->Fill = xcbWhiteFallback;
+            redRectangle->Fill = xcbRedFallback;
+        }
+    });
+
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        auto colors = safe_cast<FrameworkElement^>(rootStackPanel->FindName(L"colors"));
+        VERIFY_IS_NOT_NULL(colors);
+
+        rtb = ref new RenderTargetBitmap();
+        LOG_OUTPUT(L"Invoking RenderTargetBitmap::RenderAsync.");
+
+        // Issue multiple renders on the same element for stress purposes if requested.
+        // Only the last call will be used for comparison.  This is generally used to ensure there isn't
+        // a crash or an assertion hit internally when multiple renders occur on the same element.
+        while (renderCallCount > 1)
+        {
+            rtb->RenderAsync(colors);
+            renderCallCount--;
+        }
+
+        create_task(rtb->RenderAsync(colors)).then([&renderedEvent] ()
+        {
+            LOG_OUTPUT(L"RenderTargetBitmap::RenderAsync completed.");
+            renderedEvent->Set();
+        });
+    });
+
+    renderedEvent->WaitForDefault();
+
+    RunOnUIThread([&]()
+    {
+        auto colors = safe_cast<FrameworkElement^>(rootStackPanel->FindName(L"colors"));
+        Image^ img = safe_cast<Image^>(rootStackPanel->FindName(L"img"));
+        VERIFY_IS_NOT_NULL(img);
+
+        img->Source = rtb;
+        img->Width = colors->ActualWidth;
+        img->Height = colors->ActualHeight;
+        LOG_OUTPUT(L"colors->ActualWidth = %d, colors->ActualHeight = %d", colors->ActualWidth, colors->ActualHeight);
+    });
+
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        getPixelsAsyncOperation = rtb->GetPixelsAsync();
+
+        auto getPixelsCallback = ref new wf::AsyncOperationCompletedHandler<IBuffer^>(
+            [&buffer, getPixelsEvent](wf::IAsyncOperation<IBuffer^>^ operation, wf::AsyncStatus)
+        {
+            LOG_OUTPUT(L"GetPixelsAsync operation completed.");
+            buffer = operation->GetResults();
+            getPixelsEvent->Set();
+        });
+        VERIFY_IS_NOT_NULL(getPixelsCallback);
+        getPixelsAsyncOperation->Completed = getPixelsCallback;
+    });
+
+    getPixelsEvent->WaitForDefault();
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Verifying bitmap content.");
+        DataReader^ dataReader = DataReader::FromBuffer(buffer);
+        Platform::Array<byte>^ generatedImage = ref new Platform::Array<byte>(buffer->Length);
+        dataReader->ReadBytes(generatedImage);
+        VERIFY_ARE_EQUAL(buffer->Length, 48000u); // 100 x 120 x 4 == 48000
+
+        if (verifyIsTransparent)
+        {
+            VERIFY_ARE_EQUAL(generatedImage[39 * 4], 0);
+            VERIFY_ARE_EQUAL(generatedImage[39 * 4 + 1], 0);
+            VERIFY_ARE_EQUAL(generatedImage[39 * 4 + 2], 0);
+            VERIFY_ARE_EQUAL(generatedImage[39 * 4 + 3], 0);
+
+            VERIFY_ARE_EQUAL(generatedImage[(50 * 120 + 60) * 4], 0);
+            VERIFY_ARE_EQUAL(generatedImage[(50 * 120 + 60) * 4 + 1], 0);
+            VERIFY_ARE_EQUAL(generatedImage[(50 * 120 + 60) * 4 + 2], 0);
+            VERIFY_ARE_EQUAL(generatedImage[(50 * 120 + 60) * 4 + 3], 0);
+
+            VERIFY_ARE_EQUAL(generatedImage[(99 * 120 + 119) * 4], 0);
+            VERIFY_ARE_EQUAL(generatedImage[(99 * 120 + 119) * 4 + 1], 0);
+            VERIFY_ARE_EQUAL(generatedImage[(99 * 120 + 119) * 4 + 2], 0);
+            VERIFY_ARE_EQUAL(generatedImage[(99 * 120 + 119) * 4 + 3], 0);
+        }
+        else if (useXCB && expectCaptureAsync)
+        {
+            LOG_OUTPUT(L"Pixel (0,39) expected to be purple = %d, %d, %d, %d",
+                       generatedImage[39 * 4], generatedImage[39 * 4 + 1], generatedImage[39 * 4 + 2], generatedImage[39 * 4 + 3]);
+            VERIFY_ARE_EQUAL(generatedImage[39 * 4], 128);
+            VERIFY_ARE_EQUAL(generatedImage[39 * 4 + 1], 0);
+            VERIFY_ARE_EQUAL(generatedImage[39 * 4 + 2], 128);
+            VERIFY_ARE_EQUAL(generatedImage[39 * 4 + 3], 255);
+
+            VERIFY_ARE_EQUAL(generatedImage[(50 * 120 + 60) * 4], 128);
+            VERIFY_ARE_EQUAL(generatedImage[(50 * 120 + 60) * 4 + 1], 0);
+            VERIFY_ARE_EQUAL(generatedImage[(50 * 120 + 60) * 4 + 2], 128);
+            VERIFY_ARE_EQUAL(generatedImage[(50 * 120 + 60) * 4 + 3], 255);
+
+            VERIFY_ARE_EQUAL(generatedImage[(99 * 120 + 119) * 4], 128);
+            VERIFY_ARE_EQUAL(generatedImage[(99 * 120 + 119) * 4 + 1], 0);
+            VERIFY_ARE_EQUAL(generatedImage[(99 * 120 + 119) * 4 + 2], 128);
+            VERIFY_ARE_EQUAL(generatedImage[(99 * 120 + 119) * 4 + 3], 255);
+        }
+        else
+        {
+            LOG_OUTPUT(L"Pixel (0,39) expected to be %s = %d, %d, %d, %d", expectRTL ? L"red" : L"blue",
+                       generatedImage[39 * 4], generatedImage[39 * 4 + 1], generatedImage[39 * 4 + 2], generatedImage[39 * 4 + 3]);
+            VERIFY_ARE_EQUAL(generatedImage[39 * 4], expectRTL ? 0 : 255);
+            VERIFY_ARE_EQUAL(generatedImage[39 * 4 + 1], 0);
+            VERIFY_ARE_EQUAL(generatedImage[39 * 4 + 2], expectRTL ? 255 : 0);
+            VERIFY_ARE_EQUAL(generatedImage[39 * 4 + 3], 255);
+
+            LOG_OUTPUT(L"Pixel (60,50) expected to be white = %d, %d, %d, %d", generatedImage[(50 * 120 + 60) * 4], generatedImage[(50 * 120 + 60) * 4 + 1], generatedImage[(50 * 120 + 60) * 4 + 2], generatedImage[(50 * 120 + 60) * 4 + 3]);
+            VERIFY_ARE_EQUAL(generatedImage[(50 * 120 + 60) * 4], 255);
+            VERIFY_ARE_EQUAL(generatedImage[(50 * 120 + 60) * 4 + 1], 255);
+            VERIFY_ARE_EQUAL(generatedImage[(50 * 120 + 60) * 4 + 2], 255);
+            VERIFY_ARE_EQUAL(generatedImage[(50 * 120 + 60) * 4 + 3], 255);
+
+            LOG_OUTPUT(L"Pixels (119,99) expected to be %s = %d, %d, %d, %d", expectRTL ? L"blue" : L"red",
+                       generatedImage[(99 * 120 + 119) * 4], generatedImage[(99 * 120 + 119) * 4 + 1], generatedImage[(99 * 120 + 119) * 4 + 2], generatedImage[(99 * 120 + 119) * 4 + 3]);
+            VERIFY_ARE_EQUAL(generatedImage[(99 * 120 + 119) * 4], expectRTL ? 255 : 0);
+            VERIFY_ARE_EQUAL(generatedImage[(99 * 120 + 119) * 4 + 1], 0);
+            VERIFY_ARE_EQUAL(generatedImage[(99 * 120 + 119) * 4 + 2], expectRTL ? 0 : 255);
+            VERIFY_ARE_EQUAL(generatedImage[(99 * 120 + 119) * 4 + 3], 255);
+        }
+    });
+}
+
+Platform::String^ RenderTargetBitmapTestsUap::GetResourcesPath() const
+{
+    return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\rendering\\";
+}
+
 
 bool RenderTargetBitmapTests::TestSetup()
 {
@@ -1250,7 +1552,7 @@ void RenderTargetBitmapTests::BasicRenderTargetBitmapWUCFull()
     BasicRenderTargetBitmapInternal();
 }
 
-void RenderTargetBitmapTests::PopupChildRTBWUCFull()
+void RenderTargetBitmapTestsUap::PopupChildRTBWUCFull()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
     PopupChildRTBInternal();
@@ -1304,7 +1606,7 @@ void RenderTargetBitmapTests::RenderToSizeWUCFull()
     RenderToSizeInternal();
 }
 
-void RenderTargetBitmapTests::ScaledRenderWUCFull()
+void RenderTargetBitmapTestsUap::ScaledRenderWUCFull()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
     ScaledRenderInternal();

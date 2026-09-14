@@ -17,9 +17,183 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool ScrollViewerInFlipViewTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool ScrollViewerInFlipViewTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ScrollViewerInFlipViewTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool ScrollViewerInFlipViewTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    void ScrollViewerInFlipViewTestsUap::TemporarilyUnparentFlipViewDuringSelectionChange(bool flick, bool tapNextButton, bool changeSelectionOnReentry)
+    {
+        TestCleanupWrapper cleanup([]()
+        {
+            TestServices::WindowHelper->SetPostTickCallback(nullptr);
+            TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+        });
+
+        ::Windows::Foundation::Size size(400, 400);
+        TestServices::WindowHelper->SetWindowSizeOverride(size);
+
+        bool flipViewRemoved = false;
+
+        auto loadedEvent = std::make_shared<Event>();
+        auto loadedRegistration = CreateSafeEventRegistration(xaml_controls::FlipView, Loaded);
+
+        auto viewChangedEvent = std::make_shared<Event>();
+        auto viewChangedRegistration = CreateSafeEventRegistration(xaml_controls::ScrollViewer, ViewChanged);
+
+        Platform::String^ xamlFile = GetPackageFolder() + L"resources\\native\\controls\\ScrollViewer\\ScrollViewerInFlipView.xaml";
+
+        xaml_controls::Button^ nextButtonInFlipView = nullptr;
+        xaml_controls::ScrollViewer^ scrollViewerInFlipView = nullptr;
+        xaml_controls::FlipView^ flipView = nullptr;
+        xaml_controls::Grid^ rootGrid = safe_cast<xaml_controls::Grid^>(LoadXamlFileOnUIThread(xamlFile));
+        VERIFY_IS_NOT_NULL(rootGrid);
+
+        RunOnUIThread([&]()
+        {
+            flipView = safe_cast<xaml_controls::FlipView^>(rootGrid->FindName(L"flipView"));
+            VERIFY_IS_NOT_NULL(flipView);
+
+            loadedRegistration.Attach(
+                flipView,
+                ref new RoutedEventHandler([loadedEvent](Platform::Object^, RoutedEventArgs^)
+            {
+                loadedEvent->Set();
+            }));
+
+            TestServices::WindowHelper->WindowContent = rootGrid;
+        });
+
+        loadedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            scrollViewerInFlipView = safe_cast<xaml_controls::ScrollViewer^>(TreeHelper::GetVisualChildByName(flipView, L"ScrollingHost"));
+            VERIFY_IS_NOT_NULL(scrollViewerInFlipView);
+
+            nextButtonInFlipView = safe_cast<xaml_controls::Button^>(TreeHelper::GetVisualChildByName(flipView, L"NextButtonHorizontal"));
+            VERIFY_IS_NOT_NULL(nextButtonInFlipView);
+
+            nextButtonInFlipView->Visibility = xaml::Visibility::Visible;
+
+            viewChangedRegistration.Attach(scrollViewerInFlipView, ref new wf::EventHandler<xaml_controls::ScrollViewerViewChangedEventArgs^>(
+                [rootGrid, flipView, scrollViewerInFlipView, viewChangedEvent, &flipViewRemoved](Platform::Object^, xaml_controls::ScrollViewerViewChangedEventArgs^ args)
+            {
+                LOG_OUTPUT(L"ViewChanged raised. View=(%.3f, %.3f, %.3f), IsIntermediate=%d.",
+                    scrollViewerInFlipView->HorizontalOffset, scrollViewerInFlipView->VerticalOffset, scrollViewerInFlipView->ZoomFactor, args->IsIntermediate);
+
+                if (args->IsIntermediate)
+                {
+                    if (!flipViewRemoved)
+                    {
+                        LOG_OUTPUT(L"Setting PostTickCallback.");
+                        // Could not get this to properly work on phone.
+                        TestServices::WindowHelper->SetPostTickCallback(ref new PostTickCallback([rootGrid, &flipViewRemoved]()
+                        {
+                            LOG_OUTPUT(L"Running PostTickCallback.");
+                            if (!flipViewRemoved)
+                            {
+                                flipViewRemoved = true;
+                                LOG_OUTPUT(L"Removing FlipView.");
+                                rootGrid->Children->RemoveAt(0);
+                                TestServices::WindowHelper->SetPostTickCallback(nullptr);
+                            }
+                        }));
+                    }
+                }
+                else
+                {
+                    viewChangedEvent->Set();
+                }
+            }));
+        });
+
+        if (flick)
+        {
+            TestServices::InputHelper->Flick(flipView, FlickDirection::West);
+        }
+        else
+        {
+            TestServices::InputHelper->MoveMouse(scrollViewerInFlipView);
+            TestServices::WindowHelper->WaitForIdle();
+
+            TestServices::InputHelper->MoveMouse(nextButtonInFlipView);
+            TestServices::WindowHelper->WaitForIdle();
+
+            if (tapNextButton)
+            {
+                LOG_OUTPUT(L"Tapping FlipView's next button.");
+                TestServices::InputHelper->Tap(nextButtonInFlipView);
+            }
+            else
+            {
+                LOG_OUTPUT(L"Clicking FlipView's next button.");
+                TestServices::InputHelper->LeftMouseClick(nextButtonInFlipView);
+            }
+        }
+
+        viewChangedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            if (flipViewRemoved)
+            {
+                LOG_OUTPUT(L"Re-adding FlipView.");
+                rootGrid->Children->Append(flipView);
+
+                if (changeSelectionOnReentry)
+                {
+                    LOG_OUTPUT(L"Changing FlipView selection.");
+                    flipView->SelectedIndex = 2;
+                }
+            }
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(flipView->SelectedIndex, changeSelectionOnReentry ? 2 : (flick ? 0 : 1));
+
+            // Focus the FlipView to ensure it gets the key press.
+            flipView->Focus(xaml::FocusState::Keyboard);
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+        viewChangedEvent->Reset();
+
+        LOG_OUTPUT(L"Hitting right arrow key.");
+        TestServices::KeyboardHelper->Right();
+
+        viewChangedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(flipView->SelectedIndex, changeSelectionOnReentry ? 3 : (flick ? 1 : 2));
+        });
+    }
+
 
     bool ScrollViewerInFlipViewTests::TestSetup()
     {
@@ -40,7 +214,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     // Temporarily removes the FlipView control from the visual tree during a FlipViewItem selection change.
     // FlipView's next button is tapped and FlipView's selection is changed when it re-enters the tree.
-    void ScrollViewerInFlipViewTests::UnparentFlipViewDuringTapSelectionChange1()
+    void ScrollViewerInFlipViewTestsUap::UnparentFlipViewDuringTapSelectionChange1()
     {
         TemporarilyUnparentFlipViewDuringSelectionChange(false /*flick*/, true /*tapNextButton*/, true /*changeSelectionOnReentry*/);
     }
@@ -68,14 +242,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     // Temporarily removes the FlipView control from the visual tree during a FlipViewItem selection change.
     // FlipView is flicked and its selection is changed when it re-enters the tree.
-    void ScrollViewerInFlipViewTests::UnparentFlipViewDuringFlickSelectionChange1()
+    void ScrollViewerInFlipViewTestsUap::UnparentFlipViewDuringFlickSelectionChange1()
     {
         TemporarilyUnparentFlipViewDuringSelectionChange(true /*flick*/, false /*tapNextButton*/, true /*changeSelectionOnReentry*/);
     }
 
     // Temporarily removes the FlipView control from the visual tree during a FlipViewItem selection change.
     // FlipView is flicked.
-    void ScrollViewerInFlipViewTests::UnparentFlipViewDuringFlickSelectionChange2()
+    void ScrollViewerInFlipViewTestsUap::UnparentFlipViewDuringFlickSelectionChange2()
     {
         TemporarilyUnparentFlipViewDuringSelectionChange(true /*flick*/, false /*tapNextButton*/, false /*changeSelectionOnReentry*/);
     }

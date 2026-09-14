@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Foundation { namespace Input { namespace Keyboard {
@@ -16,6 +17,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89;d04573b8-e899-4822-bb72-9f4743c89d36")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -49,12 +51,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(VerifyCtrlAltKeys)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // ALT key is eaten by WPF
-                TEST_METHOD_PROPERTY(L"Description", L"Validates Ctrl-Alt+e and verify keydown-up events correctly")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(EnterKeyDownKeyUpOnButton)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates key down and up for enter key press on button")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
@@ -63,7 +59,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(EnterKeyDownKeyUpOnTextBox)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates key down and up for enter key press on textbox")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(F10KeyDown)
@@ -74,6 +69,30 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         private:
             void EnterKeyDownKeyUpHelper(xaml_controls::Control^ element);
         };
+
+    class BasicKeyboardTestsUap : public WEX::TestClass<BasicKeyboardTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(BasicKeyboardTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89;d04573b8-e899-4822-bb72-9f4743c89d36")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"BasicKeyboardTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+        BEGIN_TEST_METHOD(VerifyCtrlAltKeys)
+        // ALT key is eaten by WPF
+        TEST_METHOD_PROPERTY(L"Description", L"Validates Ctrl-Alt+e and verify keydown-up events correctly")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        END_TEST_METHOD()
+    };
 
     } } }
 } } } }

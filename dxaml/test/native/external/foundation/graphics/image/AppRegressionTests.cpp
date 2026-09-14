@@ -40,9 +40,58 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool AppRegressionTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool AppRegressionTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool AppRegressionTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool AppRegressionTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+Platform::String^ AppRegressionTestsUap::GetResourcesPath() const
+        {
+            return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\image\\";
+        }
+
+void AppRegressionTestsUap::SetSourceAsyncFromFile(
+            xaml_imaging::BitmapImage^ bi,
+            Platform::String^ filePath
+            )
+        {
+            create_task(StorageFile::GetFileFromPathAsync(filePath))
+                .then([=](StorageFile^ pFile)
+            {
+                VERIFY_IS_NOT_NULL(pFile);
+
+                create_task(pFile->OpenAsync(::Windows::Storage::FileAccessMode::Read))
+                    .then([=](IRandomAccessStream^ pFileStream)
+                {
+                    VERIFY_IS_NOT_NULL(pFileStream);
+
+                    RunOnUIThread([=]()
+                    {
+                        auto pAsyncAction = bi->SetSourceAsync(pFileStream);
+                        VERIFY_IS_NOT_NULL(pAsyncAction);
+                    });
+                });
+            });
+        }
+
 
         bool AppRegressionTests::TestSetup()
         {
@@ -302,7 +351,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         // The test ensures that when this sequence happens with these properties set, we do not
         // generate a new hardware surface with the image scaled to the new plateau scale factor,
         // instead we should be simply reusing the existing surface.
-        void AppRegressionTests::TFS_2524409()
+        void AppRegressionTestsUap::TFS_2524409()
         {
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
 
@@ -448,7 +497,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         // 3. Layout size must be conditional to the decoded size of the image.
         // This causes the image size to be rotated twice without rotating the image twice causing
         // a landscape size for a portrait rotated image making people appear wider than normal.
-        void AppRegressionTests::TFS_6697031()
+        void AppRegressionTestsUap::TFS_6697031()
         {
             // This test uses a JPEG source because it exercises EXIF rotation. JPEG/EXIF
             // decode rounds slightly differently across OS builds, so allow a small per-channel tolerance.
@@ -589,7 +638,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         // Pre-RS2 the image would not be recovered because the main surface responsible for updates is
         // hidden and because it is not walked, it will not detect that it is discarded and issue the
         // necessary work to recover the surface.
-        void AppRegressionTests::TFS_4354828()
+        void AppRegressionTestsUap::TFS_4354828()
         {
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -675,7 +724,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         }
 
         // Set the URI on the BitmapImage after it has been used with stream.
-        void AppRegressionTests::TFS_9797797()
+        void AppRegressionTestsUap::TFS_9797797()
         {
             TestCleanupWrapper cleanup;
 
@@ -809,7 +858,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             xaml_controls::Image ^m_image = ref new xaml_controls::Image();
         };
 
-        void AppRegressionTests::TFS_12066837()
+        void AppRegressionTestsUap::TFS_12066837()
         {
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 

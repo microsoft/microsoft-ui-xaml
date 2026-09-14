@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <TestEvent.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Foundation { namespace Graphics { namespace Image {
@@ -20,30 +21,12 @@ public:
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
 
         TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e6d4a8e5-be97-431f-871b-4937e816c8b3;bd1463b3-e5f2-4d54-9394-63a431c53a6e;d04573b8-e899-4822-bb72-9f4743c89d36")
+        TEST_CLASS_HOSTING_MODE_DEFAULT()
     END_TEST_CLASS()
 
     TEST_CLASS_SETUP(ClassSetup)
 
     TEST_METHOD_CLEANUP(TestCleanup)
-
-    BEGIN_TEST_METHOD(SetSourceAsync)
-        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
-        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-    END_TEST_METHOD()
-
-    // Regression test for AB#47128962. Asserts decode size via ETW, so no master file.
-    BEGIN_TEST_METHOD(SetSourceAsyncBeforeEnteringTreeDecodesToRenderSize)
-        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
-        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
-    END_TEST_METHOD()
-
-    BEGIN_TEST_METHOD(UriSource)
-        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // MockDComp surface mismatch
-        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-    END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(SimpleImageElementRelativePath)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
@@ -67,11 +50,6 @@ public:
     BEGIN_TEST_METHOD(Printing)
         TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-    END_TEST_METHOD()
-
-    BEGIN_TEST_METHOD(PlateauScale)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Zoom scale not applied
-        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(StretchMode)
@@ -137,11 +115,6 @@ public:
     TEST_METHOD(DeviceLostOnCreatingSvgDecoder_Uri)
     TEST_METHOD(DeviceLostOnCreatingSvgDecoder_Stream)
 
-    BEGIN_TEST_METHOD(ReloadsOnScaleChange)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Zoom scale not applied
-        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-    END_TEST_METHOD()
-
     TEST_METHOD(SvgWithoutDevice)
 
 private:
@@ -185,6 +158,48 @@ private:
         std::vector<SafeEventRegistrationType(SvgImageSource, Opened)>& svgEventRegistrations);
 };
 
-} } } } } } }
+class SvgImageSourceTestsUap : public WEX::TestClass<SvgImageSourceTestsUap>
+{
+public:
+    BEGIN_TEST_CLASS(SvgImageSourceTestsUap)
+        TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+        TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+        TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+        TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e6d4a8e5-be97-431f-871b-4937e816c8b3;bd1463b3-e5f2-4d54-9394-63a431c53a6e;d04573b8-e899-4822-bb72-9f4743c89d36")
+        TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"SvgImageSourceTests")
+        TEST_CLASS_HOSTING_MODE(UAP)
+    END_TEST_CLASS()
 
+    TEST_CLASS_SETUP(ClassSetup)
+    TEST_METHOD_CLEANUP(TestCleanup)
+
+    BEGIN_TEST_METHOD(SetSourceAsync)
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+    END_TEST_METHOD()
+
+    // Regression test for AB#47128962. Asserts decode size via ETW, so no master file.
+    BEGIN_TEST_METHOD(SetSourceAsyncBeforeEnteringTreeDecodesToRenderSize)
+        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(UriSource)
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(PlateauScale)
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ReloadsOnScaleChange)
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+    END_TEST_METHOD()
+
+private:
+    static Platform::String^ GetResourcesPath();
+};
+
+} } } } } } }
 

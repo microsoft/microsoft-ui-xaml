@@ -3,6 +3,7 @@
 
 #pragma once
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <collection.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Enterprise { namespace StickyHeaders {
@@ -15,6 +16,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"309fb554-f012-4ac9-bcf1-833e4a372493;375cd7bd-e448-4315-b2a1-bc02d75b0c4f")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -32,15 +34,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that sticky headers are functioning correctly with AreStickyGroupHeadersEnabled set to false.")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(ValidateHeaderStretchInItemsStackPanel)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that the header stretches when inline for ItemsStackPanel - converged behavior")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(ValidateHeaderStretchInItemsWrapGrid)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that the header stretches when inline for ItemsWrapGrid - converged behavior")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        END_TEST_METHOD()
         //
         // Platform:Desktop
         //
@@ -61,12 +54,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(StickyGroupHeadersListHeaderResized)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that sticky header clip is updated when the List Header size changes")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        END_TEST_METHOD()
-
         //
         // Platform:Phone
         //
@@ -77,6 +64,42 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         xaml_controls::ListView^ SetupGroupedListViewWithInlineHeaders(Platform::String^ panelStringValue);
         xaml_controls::GridView^ SetupGroupedGridViewWithInlineHeaders(Platform::String^ panelStringValue);
         Platform::Collections::Vector<Platform::Object^>^ GetGroupedData();
+    };
+
+    class StickyHeadersIntegrationTestsUap : public WEX::TestClass<StickyHeadersIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(StickyHeadersIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"309fb554-f012-4ac9-bcf1-833e4a372493;375cd7bd-e448-4315-b2a1-bc02d75b0c4f")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"StickyHeadersIntegrationTests")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        xaml_controls::ListView^ SetupGroupedListViewWithInlineHeaders(Platform::String^ panelStringValue);
+        xaml_controls::GridView^ SetupGroupedGridViewWithInlineHeaders(Platform::String^ panelStringValue);
+        xaml_controls::ListView^ SetupGroupedListView(Platform::String^ areStickyGroupHeadersEnabledStringValue);
+        Platform::Collections::Vector<Platform::Object^>^ GetGroupedData();
+
+    public:
+        BEGIN_TEST_METHOD(ValidateHeaderStretchInItemsStackPanel)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the header stretches when inline for ItemsStackPanel - converged behavior")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateHeaderStretchInItemsWrapGrid)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the header stretches when inline for ItemsWrapGrid - converged behavior")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(StickyGroupHeadersListHeaderResized)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that sticky header clip is updated when the List Header size changes")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
     };
 
 } } } } } }

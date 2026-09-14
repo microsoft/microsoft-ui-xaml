@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Foundation { namespace Text {
@@ -16,6 +17,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89")
                 TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -26,11 +28,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(DocumentDraw)
                 TEST_METHOD_PROPERTY(L"Description", L"Testing TOM (Text Object Model API exposed through Windows.UI.Text namesapce by RichEdit) API to include drawing bitmap and lines through RichEditBox's Document property.")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(TestSelection)
-                TEST_METHOD_PROPERTY(L"Description", L"Testing TOM (Text Object Model API exposed through Windows.UI.Text namesapce by RichEdit) Selection API on RichEditBox's Document property.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestClipboardCopyFormats)
@@ -46,7 +43,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(CheckFiresManipulationEvents)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates RichEditBox can fire manipulation events.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(RangeFormat)
@@ -68,19 +64,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(TestLongStringPaste)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates pasting and rendering of very long text.")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(PasteImage)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates pasting bitmap image to RichEditBox and paste event handling.")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(PasteAndSelectImage)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates pasting bitmap image into RichEditBox's current selection and bitmap image invertion when selected.")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(RichEditBoxMaxLength)
@@ -96,12 +89,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(PasteImageAdheresToMaxLength)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify that an image paste cannot exceed MaxLength")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(PasteTextAdheresToMaxLength)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify that an text paste cannot exceed MaxLength")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AlignmentIncludesTrailingWhitespace)
@@ -125,33 +116,50 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(StartEndHorizontalTextAlignment)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies new TextAlignment enums and new HorizontalTextAlignment property")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(VerifyClearUndoRedoHistory)
-                TEST_METHOD_PROPERTY(L"Description", L"Verifies ClearUndoRedoHistory clears the undo/redo history.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyProgrammaticSelectionCutRaisesRichEditBoxEvent)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that calling Cut on the RichEditBox's selection range raises the Cut event.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyProgrammaticSelectionCopyRaisesRichEditBoxEvent)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that calling Copy on the RichEditBox's selection range raises the Cut event.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyProgrammaticSelectionPasteRaisesRichEditBoxEvent)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that calling Paste on the RichEditBox's selection range raises the Cut event.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
         private:
             Platform::String^ GetResourcesPath() const;
             void PrepRichEditBox(xaml_controls::RichEditBox^ rebx, bool ignoreTrailingCharacterSpacing, Xaml::TextAlignment alignment, bool underline, bool strikethrough, bool partial, bool multiline);
         };
+
+    class RichEditBoxTOMTestsUap : public WEX::TestClass<RichEditBoxTOMTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(RichEditBoxTOMTestsUap)
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89")
+                TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"RichEditBoxTOMTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+        BEGIN_TEST_METHOD(TestSelection)
+        TEST_METHOD_PROPERTY(L"Description", L"Testing TOM (Text Object Model API exposed through Windows.UI.Text namesapce by RichEdit) Selection API on RichEditBox's Document property.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyClearUndoRedoHistory)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies ClearUndoRedoHistory clears the undo/redo history.")
+        END_TEST_METHOD()
+    };
     } }
 } } } }
 

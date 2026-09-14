@@ -37,7 +37,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         bool AnimatedValueTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             featureDisableTransitionsForTest.Initialize(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableTransitionsForTest, true);
 
             return true;

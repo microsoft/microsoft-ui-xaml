@@ -479,6 +479,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestMethod]
         [TestProperty("Description", "Validates textbox control BeforeTextChanging event re-entrancy call does not crash")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void TextBoxBeforeTextChangingReentrancyCheck()
         {
             const string rootPanelXaml =
@@ -714,6 +715,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestProperty("IsolationLevel", "Method")]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyTextBoxPlaceholderForegroundHC()
         {
             const string rootPanelXaml =
@@ -822,6 +824,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestProperty("Description", "Validates that text alignment can be set on placeholder text.")]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
         [TestProperty("Hosting:Mode", "UAP")]  // release queue not empty issue still happens in catgates run, blocking it for now
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyPlaceholderTextAlignment()
         {
             const string rootPanelXaml =
@@ -917,6 +920,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestMethod]
         [TestProperty("Description", "Verify Hold on grippers invokes Context Menu.")]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
+        // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Hosting:Mode", "UAP")]
         [TestProperty("Ignore", "True")] // WinUI 3: TextBoxTests.VerifyGripperHoldBringsUpContextMenu is unreliable
         public void VerifyGripperHoldBringsUpContextMenu()

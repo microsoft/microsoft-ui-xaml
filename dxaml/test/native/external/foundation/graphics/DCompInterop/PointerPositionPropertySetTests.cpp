@@ -23,9 +23,29 @@ namespace wfn = ::Windows::Foundation::Numerics;
 
 bool PointerPositionPropertySetTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool PointerPositionPropertySetTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool PointerPositionPropertySetTestsUap::TestSetup()
+{
+    TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool PointerPositionPropertySetTestsUap::TestCleanup()
+{
+    TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
 
 bool PointerPositionPropertySetTests::ClassCleanup()
 {
@@ -122,7 +142,7 @@ void PointerPositionPropertySetTests::Basic()
     VERIFY_IS_TRUE(targetPointerPressed);
 }
 
-void PointerPositionPropertySetTests::TouchUpdate()
+void PointerPositionPropertySetTestsUap::TouchUpdate()
 {
     WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
 

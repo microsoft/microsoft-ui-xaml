@@ -99,9 +99,27 @@ Platform::String^ SvgImageSourceTests::GetResourcesPath()
 
 bool SvgImageSourceTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool SvgImageSourceTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool SvgImageSourceTestsUap::TestCleanup()
+{
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+Platform::String^ SvgImageSourceTestsUap::GetResourcesPath()
+{
+    return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\image\\";
+}
+
 
 bool SvgImageSourceTests::TestCleanup()
 {
@@ -109,7 +127,7 @@ bool SvgImageSourceTests::TestCleanup()
     return true;
 }
 
-void SvgImageSourceTests::SetSourceAsync()
+void SvgImageSourceTestsUap::SetSourceAsync()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -193,7 +211,7 @@ void SvgImageSourceTests::SetSourceAsync()
 }
 
 // Test case: Renders a simple image element.
-void SvgImageSourceTests::UriSource()
+void SvgImageSourceTestsUap::UriSource()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -494,7 +512,7 @@ void SvgImageSourceTests::Printing()
      //TestServices::Utilities->VerifyPrinting(printSource);
 }
 
-void SvgImageSourceTests::PlateauScale()
+void SvgImageSourceTestsUap::PlateauScale()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
     TestServices::WindowHelper->SetWindowSizeOverrideWithWindowScale(wf::Size(400, 300), 2.0f);
@@ -1306,7 +1324,7 @@ void SvgImageSourceTests::DeviceLostOnCreatingSvgDecoder_Stream()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);
 }
 
-void SvgImageSourceTests::ReloadsOnScaleChange()
+void SvgImageSourceTestsUap::ReloadsOnScaleChange()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -1488,7 +1506,7 @@ void SvgImageSourceTests::SvgWithoutDevice()
 // DecodeToRenderSize off permanently, leaving the SVG rasterized at the XamlRoot's size instead of
 // the element's render size. Sets the source before parenting, then verifies the render-size decode
 // still happens. Without the fix the DecodeToRenderSize codepath never runs and the waiter times out.
-void SvgImageSourceTests::SetSourceAsyncBeforeEnteringTreeDecodesToRenderSize()
+void SvgImageSourceTestsUap::SetSourceAsyncBeforeEnteringTreeDecodesToRenderSize()
 {
     TestCleanupWrapper cleanup;
 

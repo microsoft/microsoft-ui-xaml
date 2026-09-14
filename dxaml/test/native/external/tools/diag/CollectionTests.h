@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <memory>
 #include <map>
 #include <tuple>
@@ -29,8 +30,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e22a917c-ad18-4a09-bff9-d3ca3e5ee0b8")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"IsolationLevel", L"Class")
-                TEST_CLASS_PROPERTY(L"Hosting:Mode", L"UAP")
                 TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_HOSTING_MODE(UAP)
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -38,27 +39,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_SETUP(TestSetup)
             TEST_METHOD_CLEANUP(TestCleanup)
 
-            BEGIN_TEST_METHOD(TestCollections)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully call into XamlDiagnostics and manipulate collections.")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(TestNestedCollections)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully call into XamlDiagnostics and manipulate nested collections.")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(TestCommandBarCollectionOperations)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that XamlDiagnostics collection methods work with CommandBar collections")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(VerifyDontLeakCollection)
-                TEST_METHOD_PROPERTY(L"Description", L"Verifies we dont leak collections if user calls VisualTreeService.GetPropertyValuesChain")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestStyleSetterChangeThroughCollection)
@@ -74,12 +57,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             BEGIN_TEST_METHOD(CanFindNamedElementAddedToCollectionInTemplate)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can find named elements added to a control template.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(VerifyRowDefinitionsReportAsCollections)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates that Grid.Row definitions report as collections.")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AddingMergedDictionaryUpdatesReferences)
@@ -102,16 +79,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(ClearingSettersUpdatesApp)
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(RemovingSettersFromImplicitStyleUpdatesApp)
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(AddingMergedDictionaryUpdatesReferences2)
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
                 TEST_METHOD_PROPERTY(L"UAP:AppXManifest", L"AppxManifest.DesignMode.xml")
@@ -131,6 +98,55 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(CanAddNamedListBoxItem)
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            END_TEST_METHOD()
+        };
+
+        class CollectionTestsWpf : public BaseTestClass<CollectionTestsWpf>
+        {
+        public:
+            BEGIN_TEST_CLASS(CollectionTestsWpf)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"ArtifactUnderTest", L"sdk\\inc\\xamlom.idl")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e22a917c-ad18-4a09-bff9-d3ca3e5ee0b8")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"IsolationLevel", L"Class")
+                TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"CollectionTests")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
+            END_TEST_CLASS()
+
+            TEST_CLASS_SETUP(ClassSetup)
+            TEST_CLASS_CLEANUP(ClassCleanup)
+            TEST_METHOD_SETUP(TestSetup)
+            TEST_METHOD_CLEANUP(TestCleanup)
+
+            BEGIN_TEST_METHOD(TestCollections)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully call into XamlDiagnostics and manipulate collections.")
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(TestNestedCollections)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully call into XamlDiagnostics and manipulate nested collections.")
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(VerifyDontLeakCollection)
+                TEST_METHOD_PROPERTY(L"Description", L"Verifies we dont leak collections if user calls VisualTreeService.GetPropertyValuesChain")
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(VerifyRowDefinitionsReportAsCollections)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates that Grid.Row definitions report as collections.")
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ClearingSettersUpdatesApp)
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(RemovingSettersFromImplicitStyleUpdatesApp)
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
         };

@@ -21,9 +21,30 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool FloatieContextMenuTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool FloatieContextMenuTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool FloatieContextMenuTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+            return true;
+        }
+
+    bool FloatieContextMenuTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
 
         bool FloatieContextMenuTests::TestSetup()
         {
@@ -1222,7 +1243,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        void FloatieContextMenuTests::PasswordBoxKeyInputContextMenuOpeningEventWhenFloatieEnabled()
+        void FloatieContextMenuTestsUap::PasswordBoxKeyInputContextMenuOpeningEventWhenFloatieEnabled()
         {
             TestCleanupWrapper cleanup;
             PasswordBox^ testControl = nullptr;
@@ -1247,7 +1268,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        void FloatieContextMenuTests::TextBlockKeyInputContextMenuOpeningEventWhenFloatieEnabled()
+        void FloatieContextMenuTestsUap::TextBlockKeyInputContextMenuOpeningEventWhenFloatieEnabled()
         {
             TestCleanupWrapper cleanup;
             TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(800, 600));
@@ -1284,7 +1305,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        void FloatieContextMenuTests::RichTextBlockKeyInputContextMenuOpeningEventWhenFloatieEnabled()
+        void FloatieContextMenuTestsUap::RichTextBlockKeyInputContextMenuOpeningEventWhenFloatieEnabled()
         {
             TestCleanupWrapper cleanup;
             TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(800, 600));

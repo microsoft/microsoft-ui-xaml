@@ -21,9 +21,56 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool BasicEngagementTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool BasicEngagementTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool BasicEngagementTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool BasicEngagementTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+Platform::String^ BasicEngagementTestsUap::GetPathToFiles() const
+        {
+            // Get the deployment directory, and then append our test's directory to the end
+            auto deploymentDir = GetTestDeploymentDir();
+            return ref new Platform::String(deploymentDir + L"resources\\native\\foundation\\input\\Engagement\\");
+        }
+
+void BasicEngagementTestsUap::CheckFocusStatusForAllControls(
+            _In_ std::vector<Control^>* pControls,
+            _In_opt_ Control^ expectedToBeFocused,
+            FocusState expectedFocusState) const
+        {
+                for (Control^ control : *pControls)
+                {
+                    if (control == expectedToBeFocused && control->FocusState != expectedFocusState)
+                    {
+                        LOG_OUTPUT(L"CheckFocusStatusForAllControls - error: expected FocusState=%d, actual FocusState=%d.", expectedFocusState, control->FocusState);
+                        VERIFY_ARE_EQUAL(control->FocusState, expectedFocusState);
+                    }
+                    else if (control != expectedToBeFocused && control->FocusState != FocusState::Unfocused)
+                    {
+                        LOG_OUTPUT(L"CheckFocusStatusForAllControls - error: expected FocusState=Unfocused, actual FocusState=%d.", control->FocusState);
+                        VERIFY_ARE_EQUAL(control->FocusState, FocusState::Unfocused);
+                    }
+                }
+        }
+
 
         bool BasicEngagementTests::TestSetup()
         {
@@ -389,7 +436,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void BasicEngagementTests::DisengageOnlyIfCancelNotHandled()
+        void BasicEngagementTestsUap::DisengageOnlyIfCancelNotHandled()
         {
             TestCleanupWrapper cleanup;
             Slider^ slider1 = nullptr;
@@ -766,7 +813,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void BasicEngagementTests::EngagementWhenNotTabStop()
+        void BasicEngagementTestsUap::EngagementWhenNotTabStop()
         {
             TestCleanupWrapper cleanup;
 
@@ -1260,7 +1307,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void BasicEngagementTests::UnparentedPopupAutofocusOnEngagement()
+        void BasicEngagementTestsUap::UnparentedPopupAutofocusOnEngagement()
         {
             TestCleanupWrapper cleanup;
 
@@ -1631,7 +1678,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             VERIFY_IS_TRUE(tappedPanelEvent->HasFired());
         }
 
-        void BasicEngagementTests::FocusingHyperlinkDoesNotDisengage()
+        void BasicEngagementTestsUap::FocusingHyperlinkDoesNotDisengage()
         {
             TestCleanupWrapper cleanup;
 
@@ -1836,7 +1883,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        void BasicEngagementTests::ValidateEngagementIsRemovedWithUnexpectedInput()
+        void BasicEngagementTestsUap::ValidateEngagementIsRemovedWithUnexpectedInput()
         {
             TestCleanupWrapper cleanup;
             // Leaky test, leak detection disabled 
@@ -1901,7 +1948,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             slider1FocusDisengaged->WaitForDefault();
         }
 
-        void BasicEngagementTests::ValidateIsFocusEngagedWithChildContainingFocus()
+        void BasicEngagementTestsUap::ValidateIsFocusEngagedWithChildContainingFocus()
         {
             TestCleanupWrapper cleanup;
 
@@ -2175,7 +2222,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void BasicEngagementTests::EngagedElementWithinPopupShouldDisengageWhenLosingFocus()
+        void BasicEngagementTestsUap::EngagedElementWithinPopupShouldDisengageWhenLosingFocus()
         {
             TestCleanupWrapper cleanup;
 

@@ -33,9 +33,188 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool ComboBoxIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool ComboBoxIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ComboBoxIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool ComboBoxIntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    void ComboBoxIntegrationTestsUap::DoValidatePosition(int itemCount, ComboBoxHelper::OpenMethod openMethod, bool addMouseOpenMethod, bool isVerticalAlignment)
+    {
+        TestCleanupWrapper cleanup;
+
+        auto comboBox = SetupBasicComboBoxTest(itemCount /* itemSize */);
+
+        RunOnUIThread([&]()
+        {
+            comboBox->Margin = { 0,0,0,0 };
+        });
+
+        if (isVerticalAlignment)
+        {
+            LOG_OUTPUT(L"DoValidatePosition Horizontal:Left Vertical:Top.");
+            ValidatePosition(xaml::HorizontalAlignment::Left, xaml::VerticalAlignment::Top, comboBox, openMethod);
+            if (addMouseOpenMethod)
+            {
+                ValidatePosition(xaml::HorizontalAlignment::Left, xaml::VerticalAlignment::Top, comboBox, ComboBoxHelper::OpenMethod::Mouse);
+            }
+
+            LOG_OUTPUT(L"DoValidatePosition Horizontal:Left Vertical:Center.");
+            ValidatePosition(xaml::HorizontalAlignment::Left, xaml::VerticalAlignment::Center, comboBox, openMethod);
+            if (addMouseOpenMethod)
+            {
+                ValidatePosition(xaml::HorizontalAlignment::Left, xaml::VerticalAlignment::Center, comboBox, ComboBoxHelper::OpenMethod::Mouse);
+            }
+
+            LOG_OUTPUT(L"DoValidatePosition Horizontal:Left Vertical:Bottom.");
+            ValidatePosition(xaml::HorizontalAlignment::Left, xaml::VerticalAlignment::Bottom, comboBox, openMethod);
+            if (addMouseOpenMethod)
+            {
+                ValidatePosition(xaml::HorizontalAlignment::Left, xaml::VerticalAlignment::Bottom, comboBox, ComboBoxHelper::OpenMethod::Mouse);
+            }
+        }
+        else
+        {
+            LOG_OUTPUT(L"DoValidatePosition Horizontal:Left Vertical:Top.");
+            ValidatePosition(xaml::HorizontalAlignment::Left, xaml::VerticalAlignment::Top, comboBox, openMethod);
+            if (addMouseOpenMethod)
+            {
+                ValidatePosition(xaml::HorizontalAlignment::Left, xaml::VerticalAlignment::Top, comboBox, ComboBoxHelper::OpenMethod::Mouse);
+            }
+
+            LOG_OUTPUT(L"DoValidatePosition Horizontal:Center Vertical:Top.");
+            ValidatePosition(xaml::HorizontalAlignment::Center, xaml::VerticalAlignment::Top, comboBox, openMethod);
+            if (addMouseOpenMethod)
+            {
+                ValidatePosition(xaml::HorizontalAlignment::Center, xaml::VerticalAlignment::Top, comboBox, ComboBoxHelper::OpenMethod::Mouse);
+            }
+
+            LOG_OUTPUT(L"DoValidatePosition Horizontal:Right Vertical:Top.");
+            ValidatePosition(xaml::HorizontalAlignment::Right, xaml::VerticalAlignment::Top, comboBox, openMethod);
+            if (addMouseOpenMethod)
+            {
+                ValidatePosition(xaml::HorizontalAlignment::Right, xaml::VerticalAlignment::Top, comboBox, ComboBoxHelper::OpenMethod::Mouse);
+            }
+        }
+    }
+
+    xaml_controls::ComboBox^ ComboBoxIntegrationTestsUap::SetupBasicComboBoxTest(UINT numberOfItems, bool adjustMargin, bool isEditable)
+    {
+        xaml_controls::ComboBox^ comboBox = nullptr;
+
+        auto loadedEvent = std::make_shared<Event>();
+        auto loadedRegistration = CreateSafeEventRegistration(xaml_controls::ComboBox, Loaded);
+
+        RunOnUIThread([&]()
+        {
+            comboBox = ref new xaml_controls::ComboBox();
+            comboBox->Width = 222;
+            comboBox->Margin = xaml::ThicknessHelper::FromUniformLength(25);
+
+            loadedRegistration.Attach(comboBox, [loadedEvent]()
+            {
+                LOG_OUTPUT(L"ComboBox.Loaded event raised.");
+                loadedEvent->Set();
+            });
+
+            auto rootPanel = ref new xaml_controls::Grid();
+            if (adjustMargin)
+            {
+                rootPanel->Margin = xaml::ThicknessHelper::FromLengths(0,25,0,0);
+            }
+            rootPanel->Children->Append(comboBox);
+            TestServices::WindowHelper->WindowContent = rootPanel;
+
+            for (UINT i = 0; i < numberOfItems; i++)
+            {
+                auto item = ref new xaml_controls::ComboBoxItem();
+                auto stringItem = ref new Platform::String(L"ComboBox Item ");
+                stringItem += i;
+                item->Content = stringItem;
+                comboBox->Items->Append(item);
+            }
+
+            if (isEditable)
+            {
+                comboBox->IsEditable = true;
+            }
+        });
+
+        LOG_OUTPUT(L"Waiting for ComboBox.Loaded event...");
+        loadedEvent->WaitForDefault();
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        return comboBox;
+    }
+
+    void ComboBoxIntegrationTestsUap::ValidatePosition(xaml::HorizontalAlignment horizontalAlignment, xaml::VerticalAlignment verticalAlignment, xaml_controls::ComboBox^ comboBox, ComboBoxHelper::OpenMethod openMethod)
+    {
+        xaml_controls::ScrollViewer^ scrollViewer = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            auto rootPanel = safe_cast<xaml_controls::Grid^>(comboBox->Parent);
+            rootPanel->HorizontalAlignment = horizontalAlignment;
+            rootPanel->VerticalAlignment = verticalAlignment;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        ComboBoxHelper::OpenComboBox(comboBox, openMethod);
+
+        RunOnUIThread([&]()
+        {
+            auto popup = TreeHelper::GetVisualChildByType<xaml_primitives::Popup>(comboBox);
+            auto popupChild = safe_cast<FrameworkElement^>(popup->Child);
+            scrollViewer = safe_cast<xaml_controls::ScrollViewer^>(TreeHelper::GetVisualChildByName(popupChild, L"ScrollViewer"));
+
+            wf::Rect scrollViewerBounds = ControlHelper::GetBounds(scrollViewer);
+            wf::Rect visibleBounds = TestServices::WindowHelper->VisibleBounds;
+
+            LOG_OUTPUT(L"scrollViewerBounds: (%f, %f, %f, %f)", scrollViewerBounds.X, scrollViewerBounds.Y, scrollViewerBounds.Width, scrollViewerBounds.Height);
+            LOG_OUTPUT(L"visibleBounds:      (%f, %f, %f, %f)", visibleBounds.X, visibleBounds.Y, visibleBounds.Width, visibleBounds.Height);
+
+            wf::Point topLeftCorner = { 0, 0 };
+
+            // If we're on desktop with windowed popups enabled, then we expect the popup to be able to overlap with the window chrome.
+            if (PopupHelper::AreWindowedPopupsEnabled())
+            {
+                wf::Rect windowBounds = TestServices::WindowHelper->WindowBounds;
+                LOG_OUTPUT(L"windowBounds:       (%f, %f, %f, %f)", windowBounds.X, windowBounds.Y, windowBounds.Width, windowBounds.Height);
+
+                topLeftCorner.X -= windowBounds.X;
+                topLeftCorner.Y -= windowBounds.Y;
+                visibleBounds.X += windowBounds.X;
+                visibleBounds.Y += windowBounds.Y;
+            }
+
+            VERIFY_IS_TRUE(scrollViewerBounds.X >= topLeftCorner.X);
+            VERIFY_IS_TRUE(scrollViewerBounds.X + scrollViewerBounds.Width <= topLeftCorner.X + visibleBounds.X + visibleBounds.Width);
+            VERIFY_IS_TRUE(scrollViewerBounds.Y >= topLeftCorner.Y);
+            VERIFY_IS_TRUE(scrollViewerBounds.Y + scrollViewerBounds.Height <= topLeftCorner.Y + visibleBounds.Y + visibleBounds.Height);
+        });
+
+        ComboBoxHelper::CloseComboBox(comboBox);
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
 
     bool ComboBoxIntegrationTests::TestSetup()
     {
@@ -2177,7 +2356,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         ComboBoxHelper::CloseComboBox(comboBox);
     }
 
-    void ComboBoxIntegrationTests::ValidateOpenedComboBoxPositionByTouchInput()
+    void ComboBoxIntegrationTestsUap::ValidateOpenedComboBoxPositionByTouchInput()
     {
         TestCleanupWrapper cleanup;
 
@@ -2185,121 +2364,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         DoValidatePosition(50, ComboBoxHelper::OpenMethod::Touch, false /* addMouseOpenMethod */);
     }
 
-    void ComboBoxIntegrationTests::ValidateOpenedComboBoxPositionWithDifferentInput()
+    void ComboBoxIntegrationTestsUap::ValidateOpenedComboBoxPositionWithDifferentInput()
     {
         TestCleanupWrapper cleanup;
 
         DoValidatePosition(5, ComboBoxHelper::OpenMethod::Touch, true /* addMouseOpenMethod */);
         DoValidatePosition(50, ComboBoxHelper::OpenMethod::Touch, true /* addMouseOpenMethod */);
-    }
-
-    void ComboBoxIntegrationTests::DoValidatePosition(int itemCount, ComboBoxHelper::OpenMethod openMethod, bool addMouseOpenMethod, bool isVerticalAlignment)
-    {
-        TestCleanupWrapper cleanup;
-
-        auto comboBox = SetupBasicComboBoxTest(itemCount /* itemSize */);
-
-        RunOnUIThread([&]()
-        {
-            comboBox->Margin = { 0,0,0,0 };
-        });
-
-        if (isVerticalAlignment)
-        {
-            LOG_OUTPUT(L"DoValidatePosition Horizontal:Left Vertical:Top.");
-            ValidatePosition(xaml::HorizontalAlignment::Left, xaml::VerticalAlignment::Top, comboBox, openMethod);
-            if (addMouseOpenMethod)
-            {
-                ValidatePosition(xaml::HorizontalAlignment::Left, xaml::VerticalAlignment::Top, comboBox, ComboBoxHelper::OpenMethod::Mouse);
-            }
-
-            LOG_OUTPUT(L"DoValidatePosition Horizontal:Left Vertical:Center.");
-            ValidatePosition(xaml::HorizontalAlignment::Left, xaml::VerticalAlignment::Center, comboBox, openMethod);
-            if (addMouseOpenMethod)
-            {
-                ValidatePosition(xaml::HorizontalAlignment::Left, xaml::VerticalAlignment::Center, comboBox, ComboBoxHelper::OpenMethod::Mouse);
-            }
-
-            LOG_OUTPUT(L"DoValidatePosition Horizontal:Left Vertical:Bottom.");
-            ValidatePosition(xaml::HorizontalAlignment::Left, xaml::VerticalAlignment::Bottom, comboBox, openMethod);
-            if (addMouseOpenMethod)
-            {
-                ValidatePosition(xaml::HorizontalAlignment::Left, xaml::VerticalAlignment::Bottom, comboBox, ComboBoxHelper::OpenMethod::Mouse);
-            }
-        }
-        else
-        {
-            LOG_OUTPUT(L"DoValidatePosition Horizontal:Left Vertical:Top.");
-            ValidatePosition(xaml::HorizontalAlignment::Left, xaml::VerticalAlignment::Top, comboBox, openMethod);
-            if (addMouseOpenMethod)
-            {
-                ValidatePosition(xaml::HorizontalAlignment::Left, xaml::VerticalAlignment::Top, comboBox, ComboBoxHelper::OpenMethod::Mouse);
-            }
-
-            LOG_OUTPUT(L"DoValidatePosition Horizontal:Center Vertical:Top.");
-            ValidatePosition(xaml::HorizontalAlignment::Center, xaml::VerticalAlignment::Top, comboBox, openMethod);
-            if (addMouseOpenMethod)
-            {
-                ValidatePosition(xaml::HorizontalAlignment::Center, xaml::VerticalAlignment::Top, comboBox, ComboBoxHelper::OpenMethod::Mouse);
-            }
-
-            LOG_OUTPUT(L"DoValidatePosition Horizontal:Right Vertical:Top.");
-            ValidatePosition(xaml::HorizontalAlignment::Right, xaml::VerticalAlignment::Top, comboBox, openMethod);
-            if (addMouseOpenMethod)
-            {
-                ValidatePosition(xaml::HorizontalAlignment::Right, xaml::VerticalAlignment::Top, comboBox, ComboBoxHelper::OpenMethod::Mouse);
-            }
-        }
-    }
-
-    void ComboBoxIntegrationTests::ValidatePosition(xaml::HorizontalAlignment horizontalAlignment, xaml::VerticalAlignment verticalAlignment, xaml_controls::ComboBox^ comboBox, ComboBoxHelper::OpenMethod openMethod)
-    {
-        xaml_controls::ScrollViewer^ scrollViewer = nullptr;
-
-        RunOnUIThread([&]()
-        {
-            auto rootPanel = safe_cast<xaml_controls::Grid^>(comboBox->Parent);
-            rootPanel->HorizontalAlignment = horizontalAlignment;
-            rootPanel->VerticalAlignment = verticalAlignment;
-        });
-        TestServices::WindowHelper->WaitForIdle();
-
-        ComboBoxHelper::OpenComboBox(comboBox, openMethod);
-
-        RunOnUIThread([&]()
-        {
-            auto popup = TreeHelper::GetVisualChildByType<xaml_primitives::Popup>(comboBox);
-            auto popupChild = safe_cast<FrameworkElement^>(popup->Child);
-            scrollViewer = safe_cast<xaml_controls::ScrollViewer^>(TreeHelper::GetVisualChildByName(popupChild, L"ScrollViewer"));
-
-            wf::Rect scrollViewerBounds = ControlHelper::GetBounds(scrollViewer);
-            wf::Rect visibleBounds = TestServices::WindowHelper->VisibleBounds;
-
-            LOG_OUTPUT(L"scrollViewerBounds: (%f, %f, %f, %f)", scrollViewerBounds.X, scrollViewerBounds.Y, scrollViewerBounds.Width, scrollViewerBounds.Height);
-            LOG_OUTPUT(L"visibleBounds:      (%f, %f, %f, %f)", visibleBounds.X, visibleBounds.Y, visibleBounds.Width, visibleBounds.Height);
-
-            wf::Point topLeftCorner = { 0, 0 };
-
-            // If we're on desktop with windowed popups enabled, then we expect the popup to be able to overlap with the window chrome.
-            if (PopupHelper::AreWindowedPopupsEnabled())
-            {
-                wf::Rect windowBounds = TestServices::WindowHelper->WindowBounds;
-                LOG_OUTPUT(L"windowBounds:       (%f, %f, %f, %f)", windowBounds.X, windowBounds.Y, windowBounds.Width, windowBounds.Height);
-
-                topLeftCorner.X -= windowBounds.X;
-                topLeftCorner.Y -= windowBounds.Y;
-                visibleBounds.X += windowBounds.X;
-                visibleBounds.Y += windowBounds.Y;
-            }
-
-            VERIFY_IS_TRUE(scrollViewerBounds.X >= topLeftCorner.X);
-            VERIFY_IS_TRUE(scrollViewerBounds.X + scrollViewerBounds.Width <= topLeftCorner.X + visibleBounds.X + visibleBounds.Width);
-            VERIFY_IS_TRUE(scrollViewerBounds.Y >= topLeftCorner.Y);
-            VERIFY_IS_TRUE(scrollViewerBounds.Y + scrollViewerBounds.Height <= topLeftCorner.Y + visibleBounds.Y + visibleBounds.Height);
-        });
-
-        ComboBoxHelper::CloseComboBox(comboBox);
-        TestServices::WindowHelper->WaitForIdle();
     }
 
     void ComboBoxIntegrationTests::ValidateLightDismissOverlayMode()

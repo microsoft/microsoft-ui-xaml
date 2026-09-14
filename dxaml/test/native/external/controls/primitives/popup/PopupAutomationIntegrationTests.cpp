@@ -38,7 +38,29 @@ WCHAR PopupAutomationIntegrationTests::s_automationPopupButtonId2[] = L"TestPopu
 
 bool PopupAutomationIntegrationTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
+    return true;
+}
+
+WCHAR PopupAutomationIntegrationTestsUap::s_automationPopupButtonName[] = L"TestPopupButtonName";
+WCHAR PopupAutomationIntegrationTestsUap::s_automationPopupButtonId[] = L"TestPopupButtonId";
+
+bool PopupAutomationIntegrationTestsUap::ClassSetup()
+{
+    XAML_HOSTING_MODE_CLASS_SETUP();
+    return true;
+}
+
+bool PopupAutomationIntegrationTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+bool PopupAutomationIntegrationTestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
     return true;
 }
 
@@ -688,7 +710,7 @@ void PopupAutomationIntegrationTests::VerifyContentDialogPopupImplementsWindowPa
     TestServices::WindowHelper->WaitForIdle();
 }
 
-void PopupAutomationIntegrationTests::VerifyPopupButtonAutomationPropertyChangedEvent()
+void PopupAutomationIntegrationTestsUap::VerifyPopupButtonAutomationPropertyChangedEvent()
 {
     // Leak: TemplateContent peer not being unpegged
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();

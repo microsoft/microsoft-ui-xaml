@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Tools { namespace ETW { namespace InputEvents {
 class PointerInputTests : public WEX::TestClass<PointerInputTests>
@@ -15,6 +16,7 @@ public:
 
         TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e22a917c-ad18-4a09-bff9-d3ca3e5ee0b8")
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_HOSTING_MODE(UAP)
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -23,7 +25,6 @@ public:
         BEGIN_TEST_METHOD(PointerEvents)
         TEST_METHOD_PROPERTY(L"Description", L"Validates dragging a Rectangle in a Canvas with the left mouse button and raw pointer events.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 };
 } } } } } } }

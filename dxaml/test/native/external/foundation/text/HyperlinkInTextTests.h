@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Foundation { namespace Text {
 
@@ -16,6 +17,7 @@ public:
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
         TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89;3192b2bd-30c5-4c19-a6c1-9856b940df63;d04573b8-e899-4822-bb72-9f4743c89d36")
         TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+        TEST_CLASS_HOSTING_MODE_DEFAULT()
     END_TEST_CLASS()
 
     TEST_CLASS_SETUP(ClassSetup)
@@ -38,32 +40,12 @@ public:
         TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore") // TODO: 31563479 - Mouse input helper not reliable on WindowsCore, Santorini
     END_TEST_METHOD()
 
-    BEGIN_TEST_METHOD(UnderlineStyle)
-        TEST_METHOD_PROPERTY(L"Description", L"Validates Hyperlink.UnderlineStyle property")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO 36060166: Re-enable after fixing unreliability.
-    END_TEST_METHOD()
-
     BEGIN_TEST_METHOD(ValidateHyperlinkWithRequestedTheme)
         TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore") // TODO: 31563479 - Mouse input helper not reliable on WindowsCore, Santorini
     END_TEST_METHOD()
 
-    BEGIN_TEST_METHOD(ValidateHyperlinkWithLocalForeground)
-        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore") // TODO: 31563479 - Mouse input helper not reliable on WindowsCore, Santorini
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // [DCPP-test] WPF tests are failing with AnimationIdle timeout during test cleanup
-    END_TEST_METHOD()
-
     BEGIN_TEST_METHOD(FocusHyperLinkWithSIPShowing)
         TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Phone")
-    END_TEST_METHOD()
-
-    BEGIN_TEST_METHOD(HyperLinkBringIntoView)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Explicitly tests RootScrollViewer
-    END_TEST_METHOD()
-
-    BEGIN_TEST_METHOD(HyperLinkBringIntoViewWithGamepad)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Explicitly tests RootScrollViewer
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateHyperlinkEnterKeyInput)
@@ -75,19 +57,8 @@ public:
     BEGIN_TEST_METHOD(ValidateHyperlinkGamePadAKeyInput)
     END_TEST_METHOD()
 
-    BEGIN_TEST_METHOD(ValidateNavigationOnKeyUp)
-        TEST_METHOD_PROPERTY(L"Description", L"Verifies that Hyperlink processes a KeyUp to Navigate only after it sees a KeyDown on NavigationKey first")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-    END_TEST_METHOD()
-
     BEGIN_TEST_METHOD(ValidateKeyDownBubbling)
         TEST_METHOD_PROPERTY(L"Description", L"Verifies that Hyperlink bubbles the KeyDown event to its containing element")
-    END_TEST_METHOD()
-
-    BEGIN_TEST_METHOD(PointerOverHighContrast)
-        TEST_METHOD_PROPERTY(L"Description", L"Validates Hyperlink pointer over color for high contrast theme")
-        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore") // TODO: 31563479 - Mouse input helper not reliable on WindowsCore, Santorini
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateDefaultSystemControlForegroundBrushes)
@@ -136,19 +107,6 @@ public:
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
-    BEGIN_TEST_METHOD(ValidateHyperlinkGotFocusOnLoad)
-        TEST_METHOD_PROPERTY(L"Description", L"Verifies that Hyperlink GotFocus event is fired on load.")
-        TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
-        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        // Disabled on 25H2+: Window::Activated event doesn't fire when returning from Start menu
-        // on ADO pipeline VMs. Screenshots confirm Start menu IS dismissed and app IS foreground,
-        // but the Activated event never arrives, causing windowActivatedEvent->WaitForDefault() to
-        // time out. Passes on local dev builds as of June 2026 -- may be specific to headless
-        // pipeline sessions. Bug 62791270.
-        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_24H2)
-    END_TEST_METHOD()
-
     BEGIN_TEST_METHOD(ValidateCollapsedHyperlinkFocus)
         TEST_METHOD_PROPERTY(L"Description", L"Verifies that a Hyperlink in a collapsed TextBlock cannot get focus.")
     END_TEST_METHOD()
@@ -159,16 +117,6 @@ public:
 
     BEGIN_TEST_METHOD(ValidateHyperlinkIsTabStopGamepadBehavior)
         TEST_METHOD_PROPERTY(L"Description", L"Validates Hyperlink IsTabStop behavior with Gamepad.")
-    END_TEST_METHOD()
-
-    BEGIN_TEST_METHOD(UIAPeerLifetime)
-        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-    END_TEST_METHOD()
-
-    BEGIN_TEST_METHOD(ValidateTapAndClick)
-        TEST_METHOD_PROPERTY(L"Description", L"Verifies that tapping and clicking on the Hyperlink work")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
     END_TEST_METHOD()
 
 private:
@@ -184,6 +132,82 @@ private:
             && expected.A == actual.A);
     }
 };
+
+    class HyperlinkInTextTestsUap : public WEX::TestClass<HyperlinkInTextTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(HyperlinkInTextTestsUap)
+        TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+        TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+        TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+        TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89;3192b2bd-30c5-4c19-a6c1-9856b940df63;d04573b8-e899-4822-bb72-9f4743c89d36")
+        TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+        TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"HyperlinkInTextTests")
+        TEST_CLASS_HOSTING_MODE(UAP)
+    END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        bool IsSameColor(::Windows::UI::Color expected, ::Windows::UI::Color actual)
+        {
+        return (expected.R == actual.R
+        && expected.G == actual.G
+        && expected.B == actual.B
+        && expected.A == actual.A);
+        }
+
+    public:
+        BEGIN_TEST_METHOD(UnderlineStyle)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates Hyperlink.UnderlineStyle property")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO 36060166: Re-enable after fixing unreliability.
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateHyperlinkWithLocalForeground)
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore") // TODO: 31563479 - Mouse input helper not reliable on WindowsCore, Santorini
+        // [DCPP-test] WPF tests are failing with AnimationIdle timeout during test cleanup
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(HyperLinkBringIntoView)
+        // Explicitly tests RootScrollViewer
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(HyperLinkBringIntoViewWithGamepad)
+        // Explicitly tests RootScrollViewer
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateNavigationOnKeyUp)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies that Hyperlink processes a KeyUp to Navigate only after it sees a KeyDown on NavigationKey first")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(PointerOverHighContrast)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates Hyperlink pointer over color for high contrast theme")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore") // TODO: 31563479 - Mouse input helper not reliable on WindowsCore, Santorini
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateHyperlinkGotFocusOnLoad)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies that Hyperlink GotFocus event is fired on load.")
+        TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        // Disabled on 25H2+: Window::Activated event doesn't fire when returning from Start menu
+        // on ADO pipeline VMs. Screenshots confirm Start menu IS dismissed and app IS foreground,
+        // but the Activated event never arrives, causing windowActivatedEvent->WaitForDefault() to
+        // time out. Passes on local dev builds as of June 2026 -- may be specific to headless
+        // pipeline sessions. Bug 62791270.
+        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_24H2)
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(UIAPeerLifetime)
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateTapAndClick)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies that tapping and clicking on the Hyperlink work")
+        END_TEST_METHOD()
+    };
 
 } } } } } }
 

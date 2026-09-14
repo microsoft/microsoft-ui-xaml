@@ -26,9 +26,56 @@ namespace Microsoft::UI::Xaml::Tests {
 
         bool BasicFocusTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool BasicFocusTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool BasicFocusTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool BasicFocusTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+Platform::String^ BasicFocusTestsUap::GetPathToFiles() const
+        {
+            // Get the deployment directory, and then append our test's directory to the end
+            auto deploymentDir = GetTestDeploymentDir();
+            return ref new Platform::String(deploymentDir + L"resources\\native\\foundation\\input\\Focus\\");
+        }
+
+void BasicFocusTestsUap::CheckFocusStatusForAllControls(
+            _In_ std::vector<Control^>* pControlsVect,
+            _In_opt_ Control^ expectedToBeFocused,
+            FocusState expectedFocusState) const
+        {
+            for (Control^ control : *pControlsVect)
+            {
+                if (control == expectedToBeFocused && control->FocusState != expectedFocusState)
+                {
+                    LOG_OUTPUT(L"CheckFocusStatusForAllControls - error: control=%s, expected FocusState=%d, actual FocusState=%d.", control->Name->Data(), expectedFocusState, control->FocusState);
+                    VERIFY_ARE_EQUAL(control->FocusState, expectedFocusState);
+                }
+                else if (control != expectedToBeFocused && control->FocusState != FocusState::Unfocused)
+                {
+                    LOG_OUTPUT(L"CheckFocusStatusForAllControls - error: control=%s, expected FocusState=Unfocused (0), actual FocusState=%d.", control->Name->Data(), control->FocusState);
+                    VERIFY_ARE_EQUAL(control->FocusState, FocusState::Unfocused);
+                }
+            }
+        }
+
 
         bool BasicFocusTests::TestSetup()
         {
@@ -1354,7 +1401,7 @@ namespace Microsoft::UI::Xaml::Tests {
             });
         }
 
-        void BasicFocusTests::TabStopWrapsFocusForListView()
+        void BasicFocusTestsUap::TabStopWrapsFocusForListView()
         {
             TestCleanupWrapper cleanup;
 
@@ -1678,7 +1725,7 @@ namespace Microsoft::UI::Xaml::Tests {
             VERIFY_IS_FALSE(gotFocusButton2Event->HasFired());
         }
 
-        void BasicFocusTests::FindNextFocusableElementReturnsCorrectElement()
+        void BasicFocusTestsUap::FindNextFocusableElementReturnsCorrectElement()
         {
             TestCleanupWrapper cleanup;
 
@@ -1758,7 +1805,7 @@ namespace Microsoft::UI::Xaml::Tests {
             });
         }
 
-        void BasicFocusTests::ValidateFocusApisWithInvalidSearchRootInUAP()
+        void BasicFocusTestsUap::ValidateFocusApisWithInvalidSearchRootInUAP()
         {
             TestCleanupWrapper cleanup;
 
@@ -1834,7 +1881,7 @@ namespace Microsoft::UI::Xaml::Tests {
             });
         }
 
-        void BasicFocusTests::FindNextFocusableElementForUIElement()
+        void BasicFocusTestsUap::FindNextFocusableElementForUIElement()
         {
             TestCleanupWrapper cleanup;
 
@@ -1980,7 +2027,7 @@ namespace Microsoft::UI::Xaml::Tests {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        void BasicFocusTests::FindNextElementReturnsDependencyObject()
+        void BasicFocusTestsUap::FindNextElementReturnsDependencyObject()
         {
             TestCleanupWrapper cleanup;
 
@@ -2641,7 +2688,7 @@ namespace Microsoft::UI::Xaml::Tests {
 
         }
 
-        void BasicFocusTests::VerifyElementFocusIsSetAfterPluginFocus()
+        void BasicFocusTestsUap::VerifyElementFocusIsSetAfterPluginFocus()
         {
             TestCleanupWrapper cleanup;
 
@@ -2751,7 +2798,7 @@ namespace Microsoft::UI::Xaml::Tests {
             });
         }
 
-        void BasicFocusTests::VerifyFocusRectShowsOnXboxOnInitialLoad()
+        void BasicFocusTestsUap::VerifyFocusRectShowsOnXboxOnInitialLoad()
         {
             // Note:
             // Disable WUCRenderingScopeGuard setting of Window.Content via resetWindowContent = false,

@@ -22,6 +22,9 @@ namespace Microsoft.UI.Xaml.Tests.Common
 
         public static void CommonTestClassSetup()
         {
+            // Managed tests use WPF. Share that choice with the native infrastructure.
+            Environment.SetEnvironmentVariable("XAML_TEST_HOSTING_MODE", "WPF");
+            Environment.SetEnvironmentVariable("XAML_TEST_MASTER_FILE_CLASS", null);
             if (!_isInitialized)
             {
                 global::WinRT.ComWrappersSupport.InitializeComWrappers();

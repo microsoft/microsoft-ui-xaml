@@ -24,9 +24,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool TimePickerFlyoutIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool TimePickerFlyoutIntegrationTestsWpf::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool TimePickerFlyoutIntegrationTestsWpf::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool TimePickerFlyoutIntegrationTestsWpf::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
     bool TimePickerFlyoutIntegrationTests::TestSetup()
     {
@@ -44,7 +64,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     //
     // Test Cases
     //
-    void TimePickerFlyoutIntegrationTests::CanInstantiate()
+    void TimePickerFlyoutIntegrationTestsWpf::CanInstantiate()
     {
         Generic::DependencyObjectTests<xaml_controls::TimePickerFlyout>::CanInstantiate();
     }

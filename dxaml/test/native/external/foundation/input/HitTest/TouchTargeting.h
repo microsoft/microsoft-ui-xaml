@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Foundation { namespace Input { namespace HitTest {
 
@@ -15,8 +16,9 @@ public:
         TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
         TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89;3192b2bd-30c5-4c19-a6c1-9856b940df63")
-        TEST_CLASS_PROPERTY(L"Hosting:Mode", L"UAP")    // Event times out
+        // Event times out
         TEST_CLASS_PROPERTY(L"Ignore", L"TRUE") // TODO 20928844: Re-enable after investigating why software injection causes this to fail.
+            TEST_CLASS_HOSTING_MODE(UAP)
     END_TEST_CLASS()
 
     TEST_CLASS_SETUP(ClassSetup)

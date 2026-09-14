@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Collection.h>
+#include <HostingModeTestClass.h>
 #include <Versioning.h>
 #include <TestEvent.h>
 #include <SafeEventRegistration.h>
@@ -22,6 +23,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"c84f8180-05b4-44ec-9575-917de852b45f;e6e3a886-04a7-4146-a8a7-26a3e81d503b")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -34,7 +36,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(CanEnterAndLeaveLiveTree)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully add/remove an AutoSuggestBox from the live tree.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanGetAndSetProperties)
@@ -43,91 +44,74 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(CanRaiseTextChangedEvent)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that a TextChanged event raises upon changing the text.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanRaiseTextChangedEventInFlyout)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that a TextChanged event raises upon changing the text in a Flyout.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateTextBoxStyle)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully set the TextBoxStyle property.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanSetQueryButtonIcon)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the value of QueryIcon is properly propagated down into QueryButton.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateQueryButtonIsCollapsedWithNoQueryIcon)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that QueryButton is collapsed with QueryIcon = null.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateDataContextDoesNotPropagateIntoHeader)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that a DataConext external to AutoSuggestBox does not propagate into the AutoSuggestBox's header.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateCollectionUpdates)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that dynamic updates to the ItemsSource are propagated correctly.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateFootprint)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the ActualWidth and ActualHeight of AutoSuggestBox and its SuggestionsList.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateSuggestionListNavigationUsingGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Validates navigation to the suggestion list using gamepad.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateSuggestionListNavigationUsingKeyboard)
             TEST_METHOD_PROPERTY(L"Description", L"Validates navigation to the suggestion list using keyboard.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanCloseSuggestionListUsingGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the suggestions list can be closed with gamepad input.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanCloseSuggestionListUsingKeyboard)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the suggestions list can be closed with keyboard input.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanRaiseQuerySubmittedUsingGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Validates QuerySubmitted event can be raised when using gamepad.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanRaiseQuerySubmittedUsingKeyboard)
             TEST_METHOD_PROPERTY(L"Description", L"Validates QuerySubmitted event can be raised when using keyboard.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanRaiseQuerySubmittedUsingMouse)
             TEST_METHOD_PROPERTY(L"Description", L"Validates QuerySubmitted event can be raised when using mouse.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateTraverseSuggestionListUsingGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Validates traversing through the suggestion list, using gamepad, causes SuggestionChanged to be raised for each element.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
 
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateTraverseSuggestionListUsingKeyboard)
             TEST_METHOD_PROPERTY(L"Description", L"Validates traversing through the suggestion list, using keyboard, causes SuggestionChanged to be raised for each element.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanMoveAwayUsingGamepadWhenSuggestionListIsClosed)
@@ -151,37 +135,31 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(CanRaiseSuggestionChosenEventDropShadow)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that a SuggestionChosen event raises upon changing the text, drop shadow mode.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore,Santorini")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanTraceTelemetryData)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that certain telemetry is logged during typical user scenario.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateQuerySubmittedContainsCurrentText)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the QuerySubmitted event is raised with the current text in the AutoSuggestBox.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateAutoSuggestBoxWorksWithoutQueryButton)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that an AutoSuggestBox without a QueryButton in its TextBoxStyle still works properly.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanTapOnItemAfterSelectingItWithKeyboard)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that navigating to an item with the keyboard and then tapping on it causes QuerySubmitted to be correctly raised.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateAutoSuggestBoxPosition)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the AutoSuggestionBox position.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 
@@ -195,39 +173,32 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ScrollWheelScrollsSuggestions)
             TEST_METHOD_PROPERTY(L"Description", L"The scroll wheel should scroll the suggestion list in the correct direction.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateSuggestionListChangeInTextChangedHandler)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that making updates during the callout to the textchanged event handler works correctly without crashing.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateDisplayMemberPathPropagatesToSuggestionsPopup)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that setting DisplayMemberPath properly propagates its value to the ListView in the suggestions popup.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateUpdateItemsSource)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that updates to ItemsSource get reflected in an open suggestion list")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidatePopupOpensAsSoonAsItemsSourceChanges)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that changing the value of ItemsSource in TextChanged immediately opens the popup.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateIsSuggestionListOpenChangesWhenPopupOpens)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that opening the suggestions list popup causes the value of IsSuggestionListOpen to change.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateLightDismissOverlayMode)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the behavior of the LightDismissOverlayMode property.")
                                                            // which would happen on the phone.
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(IsAutoLightDismissOverlayModeVisibleOnXbox)
@@ -237,7 +208,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateOverlayBrush)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the brush used for the overlay matches the 'AutoSuggestBoxLightDismissOverlayBackground' resource.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateOverlayUIETree)
@@ -254,7 +224,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(CanTabOutWhileSuggestionListIsOpen)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that tabbing out of the control while the suggestion list is open is supported.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(DoesNotClearTextWhenTabbedPast)
@@ -264,7 +233,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateUnloadAndReloadReregistersQuerySubmittedEvent)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that unloading and loading the ASB reregisters the QuerySubmitted event properly.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateSuggestionListFitsInWindow)

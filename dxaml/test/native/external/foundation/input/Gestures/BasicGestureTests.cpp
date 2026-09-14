@@ -20,9 +20,53 @@ using namespace test_infra;
 
 bool BasicGestureTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool BasicGestureTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool BasicGestureTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool BasicGestureTestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+void BasicGestureTestsUap::SetupElements(
+    _Out_ Microsoft::UI::Xaml::Shapes::Rectangle^* pRect,
+    _Out_opt_ Microsoft::UI::Xaml::Controls::Canvas^* pCanvas)
+{
+    auto rect = ref new Microsoft::UI::Xaml::Shapes::Rectangle();
+    rect->Margin = xaml::ThicknessHelper::FromUniformLength(30);
+    rect->Fill = ref new SolidColorBrush(Microsoft::UI::Colors::Red);
+    rect->Width = 50;
+    rect->Height = 50;
+
+    auto canvas = ref new Canvas();
+    canvas->Width = 100;
+    canvas->Height = 100;
+    canvas->Children->Append(rect);
+
+    TestServices::WindowHelper->WindowContent = canvas;
+
+    *pRect = rect;
+    if (pCanvas)
+    {
+        *pCanvas = canvas;
+    }
+}
+
 
 bool BasicGestureTests::TestSetup()
 {
@@ -61,7 +105,7 @@ void BasicGestureTests::SetupElements(
     }
 }
 
-void BasicGestureTests::TapEmptyTree()
+void BasicGestureTestsUap::TapEmptyTree()
 {
     const auto& wh = TestServices::WindowHelper;
 

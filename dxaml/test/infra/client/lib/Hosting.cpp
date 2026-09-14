@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "Hosting.h"
+#include "HostingModeOverride.h"
 
 #include <Activation.h>
 #include <wil\Result.h>
@@ -14,12 +15,21 @@ using namespace ::Private::Infrastructure;
 
 HRESULT Hosting::GetHostingMode(HostingMode* hostingMode)
 {
-   *hostingMode = HostingMode::UAP;
+    *hostingMode = HostingMode::UAP;
 
-    String value;
-    if (SUCCEEDED(RuntimeParameters::TryGetValue(L"HostingMode", value)))
+    std::wstring declaredMode;
+    RETURN_IF_FAILED_MSG(GetDeclaredHostingMode(declaredMode), "Invalid class-declared hosting mode.");
+    String value(declaredMode.c_str());
+    if (value.IsEmpty())
     {
-        if (value.IsEmpty() || value.CompareNoCase(L"UAP") == 0)
+        // UAP host startup and clients outside the native test framework can run
+        // before ClassSetup has declared a mode.
+        RuntimeParameters::TryGetValue(L"HostingMode", value);
+    }
+
+    if (!value.IsEmpty())
+    {
+        if (value.CompareNoCase(L"UAP") == 0)
         {
             *hostingMode = HostingMode::UAP;
         }
@@ -34,6 +44,10 @@ HRESULT Hosting::GetHostingMode(HostingMode* hostingMode)
         else if(value.CompareNoCase(L"Win32Explicit") == 0)
         {
             *hostingMode = HostingMode::Win32Explicit;
+        }
+        else
+        {
+            RETURN_HR_MSG(E_INVALIDARG, "Unrecognized hosting mode: %ls", static_cast<const wchar_t*>(value));
         }
     }
 

@@ -4,6 +4,10 @@
 A bunch of our tests are marked with "Hosting:Mode" "UAP", and this tells the infra to run them in a UWP context.
 We want to reduce and remove our dependence on UWP, so we want to convert these tests to use the default "WPF" hosting mode instead.
 
+Native classes declare UAP with `TEST_CLASS_HOSTING_MODE(UAP)`. To migrate a test,
+move it to a class using `TEST_CLASS_HOSTING_MODE_DEFAULT()` and verify it there.
+Changing a runner argument or adding method-level `Hosting:Mode` metadata does not change its host.
+
 Look for the tag `WPF_HOSTING_MODE_FAILURE`.  We put this on tests we recently found to be failing in WPF mode, they need more investigation.
 
 ## Progress

@@ -30,6 +30,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [TestProperty("BinaryUnderTest", "Microsoft.UI.Xaml.dll")]
         [TestProperty("RunAs", "UAP")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Classification", "Integration")]
         [TestProperty("UAP:Praid", "XamlManagedTAEFTests")]
         [TestProperty("IsolationLevel", "Class")]
@@ -574,6 +575,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ListView2DNavigation()
         {
             ListView listView = null;
@@ -767,6 +769,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerticalListView2DPageNavigation()
         {
             ListView listView = null;
@@ -1174,6 +1177,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ListViewDelayLoadNoInitilFocus()
         {
             ListView listView = null;
@@ -1329,6 +1333,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void GridView2DNavigationDown()
         {
             GridView2DNavigation(true);
@@ -1336,6 +1341,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void GridView2DNavigationUp()
         {
             GridView2DNavigation(false);
@@ -1501,6 +1507,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void GridView2DPageNavigation()
         {
             GridView gridView = null;
@@ -1814,6 +1821,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [TestMethod]
         [TestProperty("Description", "Validates that when there is a selected item and SingleSelectionFollowsFocus=True, that 2D navigation can still move onto a focusable header object.")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ListViewBase2DNavigationFocusesHeaderWithSelectedItemAndSSFF()
         {
             Action<string> runScenario = (string listViewBaseType) =>
@@ -2023,6 +2031,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Hosting:Mode", "UAP")]
         [TestProperty("Ignore", "TRUE")]    // [DCPPTest] Xaml tests are failing because Xaml no longer applies the plateau scale
         public void ScrollViewer2DPageNavigationHiDpi()
@@ -2218,12 +2227,14 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ScrollViewerEngagement()
         {
             ScrollViewerEngagementTest();
         }
 
         [TestMethod]
+        // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Hosting:Mode", "UAP")]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
         [TestProperty("Ignore", "TRUE")]    // [DCPPTest] Xaml tests are failing because Xaml no longer applies the plateau scale
@@ -2333,6 +2344,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to rendering scopeguard not working in WPF yet
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void ListBoxEngagement()
         {
@@ -2721,6 +2733,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void CalendarView2DPageNavigation()
         {
             CalendarView calendarView = null;

@@ -27,6 +27,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [ClassInitialize]
         [TestProperty("BinaryUnderTest", "Microsoft.UI.Xaml.dll")]
         [TestProperty("RunAs", "UAP")]
+        // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Hosting:Mode", "UAP")]
         [TestProperty("UAP:Praid", "XamlManagedTAEFTests")]
         [TestProperty("Classification", "Integration")]
@@ -104,6 +105,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
             "Verify tapping headers to change pivot items plays next/previous sound depending on index position")]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyPivotHeaderTapSound()
         {
             const string rootPanelXaml =
@@ -294,6 +296,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
             "Description",
             "Exercises the ElementSoundPlayer's State and Volume properties, and the ElementSoundMode property of input, HyperLink and Flyout controls for automatic element sound playing: Verify SpatialAudio is off by default - do not explicitly provide a setting")]
         [TestProperty("Hosting:Mode", "UAP")]    
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ExerciseElementSoundPlayerService()
         {
             SoundData[] soundData = new SoundData[]
@@ -323,6 +326,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestProperty("Platform", "Desktop")]
         [TestProperty("EnabledOnOneCore", "False")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ExerciseElementSoundPlayerServiceWithSpatialAudio()
         {
             SoundData[] soundData = new SoundData[]
@@ -349,6 +353,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
             "Description",
             "Exercises the ElementSoundPlayer's State and Volume properties, and the ElementSoundMode property of input, HyperLink and Flyout controls for automatic element sound playing.")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ExerciseElementSoundPlayerServiceWithoutSpatialAudio()
         {
             SoundData[] soundData = new SoundData[]
@@ -635,6 +640,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void TestButtonPanelWithSpatialAudio() 
         {
             SoundData[] soundData = new SoundData[]
@@ -651,6 +657,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void TestButtonPanelWithoutSpatialAudio() 
         {
             SoundData[] soundData = new SoundData[]

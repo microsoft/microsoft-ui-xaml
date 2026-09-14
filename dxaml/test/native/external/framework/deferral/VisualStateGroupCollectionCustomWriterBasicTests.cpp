@@ -148,7 +148,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool VisualStateGroupCollectionCustomWriterBasicTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             featureParserCustomWriter.Initialize(RuntimeFeatureBehavior::RuntimeEnabledFeature::ParserCustomWriter, true);
             return true;
         }

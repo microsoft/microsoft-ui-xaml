@@ -34,9 +34,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool RichEditBoxTOMTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool RichEditBoxTOMTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool RichEditBoxTOMTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool RichEditBoxTOMTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
 
         bool RichEditBoxTOMTests::ClassCleanup()
         {
@@ -61,7 +81,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\image\\";
         }
 
-        void RichEditBoxTOMTests::TestSelection()
+        void RichEditBoxTOMTestsUap::TestSelection()
         {
             TestCleanupWrapper cleanup;
 
@@ -161,7 +181,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void RichEditBoxTOMTests::VerifyClearUndoRedoHistory()
+        void RichEditBoxTOMTestsUap::VerifyClearUndoRedoHistory()
         {
             TestCleanupWrapper cleanup;
 

@@ -33,14 +33,14 @@ using namespace Microsoft::UI::Xaml::Input;
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Foundation { namespace Input { namespace HitTest {
 
-Platform::String^ HitTestTransform3D::GetResourcesPath() const
+Platform::String^ HitTestTransform3D::GetResourcesPath()
 {
     return GetPackageFolder() + L"resources\\native\\external\\foundation\\input\\HitTest\\";
 }
 
 bool HitTestTransform3D::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
 
@@ -50,14 +50,26 @@ bool HitTestTransform3D::TestCleanup()
     return true;
 }
 
-void HitTestTransform3D::DefaultCompositeAndPerspectiveInternal()
+bool HitTestTransform3DUap::ClassSetup()
+{
+    XAML_HOSTING_MODE_CLASS_SETUP();
+    return true;
+}
+
+bool HitTestTransform3DUap::TestCleanup()
+{
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+void HitTestTransform3DUap::DefaultCompositeAndPerspectiveInternal()
 {
     TestCleanupWrapper cleanup([]()
     {
         TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
     });
 
-    Grid^ grid = safe_cast<Grid^>(LoadXamlFileOnUIThread(GetResourcesPath() + L"GridAndButton.xaml"));
+    Grid^ grid = safe_cast<Grid^>(LoadXamlFileOnUIThread(HitTestTransform3D::GetResourcesPath() + L"GridAndButton.xaml"));
     VERIFY_IS_NOT_NULL(grid);
     xaml_controls::Button^ button = nullptr;
     Microsoft::UI::Composition::Visual^ handOffVisual = nullptr;
@@ -82,7 +94,7 @@ void HitTestTransform3D::DefaultCompositeAndPerspectiveInternal()
     HitTestBasic::VerifyTappedPoints(grid, button, points);
 
     ::Windows::Foundation::Rect expectedBounds = {50.0f,50.0f,200.0f,200.0f};
-    VerifyGetGlobalBounds(button, &expectedBounds);
+    HitTestTransform3D::VerifyGetGlobalBounds(button, &expectedBounds);
 
     // Now run the test case again, this time after having requested the HandOff visual, which triggers a different code path.
     RunOnUIThread([&]()
@@ -94,7 +106,7 @@ void HitTestTransform3D::DefaultCompositeAndPerspectiveInternal()
     TestServices::WindowHelper->SynchronouslyTickUIThread(1);
     TestServices::WindowHelper->WaitForIdle();
     HitTestBasic::VerifyTappedPoints(grid, button, points);
-    VerifyGetGlobalBounds(button, &expectedBounds);
+    HitTestTransform3D::VerifyGetGlobalBounds(button, &expectedBounds);
 }
 
 void HitTestTransform3D::ScaleXYSmallInternal()
@@ -724,7 +736,7 @@ void HitTestTransform3D::PerspectiveParentGridWithSiblingNestedPerspectiveTransf
     VerifyGetGlobalBounds(brbutton, brexpectedBounds_FlattenDepth, brexpectedBounds_PreserveDepth);
 }
 
-void HitTestTransform3D::ScaleAndRenderTransformTranslateSameElementInternal()
+void HitTestTransform3DUap::ScaleAndRenderTransformTranslateSameElementInternal()
 {
     TestCleanupWrapper cleanup([]()
     {
@@ -736,7 +748,7 @@ void HitTestTransform3D::ScaleAndRenderTransformTranslateSameElementInternal()
     points.push_back(wf::Point(169.0f, 71.0f)); // Top right
     points.push_back(wf::Point(71.0f, 169.0f)); // Bottom left
 
-    Grid^ grid = safe_cast<Grid^>(LoadXamlFileOnUIThread(GetResourcesPath() + L"GridAndButton.xaml"));
+    Grid^ grid = safe_cast<Grid^>(LoadXamlFileOnUIThread(HitTestTransform3D::GetResourcesPath() + L"GridAndButton.xaml"));
     VERIFY_IS_NOT_NULL(grid);
     xaml_controls::Button^ button = nullptr;
     Microsoft::UI::Composition::Visual^ handOffVisual = nullptr;
@@ -746,17 +758,17 @@ void HitTestTransform3D::ScaleAndRenderTransformTranslateSameElementInternal()
         button = safe_cast<Button^>(grid->FindName(L"ChildButton"));
         VERIFY_IS_NOT_NULL(button);
 
-        button->RenderTransform = GenerateRenderTransform();
+        button->RenderTransform = HitTestTransform3D::GenerateRenderTransform();
         VERIFY_IS_NOT_NULL(button->RenderTransform);
 
-        button->Transform3D = GenerateScaleTransform3D(0.5f, 0.5f, 1.0f);
+        button->Transform3D = HitTestTransform3D::GenerateScaleTransform3D(0.5f, 0.5f, 1.0f);
         VERIFY_IS_NOT_NULL(button->Transform3D);
     });
 
     HitTestBasic::VerifyTappedPoints(grid, button, points);
 
     ::Windows::Foundation::Rect expectedBounds = {70.0f,70.0f,100.0f,100.0f};
-    VerifyGetGlobalBounds(button, &expectedBounds);
+    HitTestTransform3D::VerifyGetGlobalBounds(button, &expectedBounds);
 
     // Now run the test case again, this time after having requested the HandOff visual, which triggers a different code path.
     RunOnUIThread([&]()
@@ -768,7 +780,7 @@ void HitTestTransform3D::ScaleAndRenderTransformTranslateSameElementInternal()
     TestServices::WindowHelper->SynchronouslyTickUIThread(1);
     TestServices::WindowHelper->WaitForIdle();
     HitTestBasic::VerifyTappedPoints(grid, button, points);
-    VerifyGetGlobalBounds(button, &expectedBounds);
+    HitTestTransform3D::VerifyGetGlobalBounds(button, &expectedBounds);
 }
 
 void HitTestTransform3D::ScaleParentRenderTransformTranslateChild()
@@ -1504,20 +1516,20 @@ void HitTestTransform3D::ClipWithChildRotation()
     //VerifyGetGlobalBounds(button, &expectedBounds);
 }
 
-void HitTestTransform3D::DefaultCompositeAndPerspectiveWUC()
+void HitTestTransform3DUap::DefaultCompositeAndPerspectiveWUC()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
     DefaultCompositeAndPerspectiveInternal();
 }
 
-void HitTestTransform3D::PerspectivePlusPopupScaledWUC()
+void HitTestTransform3DUap::PerspectivePlusPopupScaledWUC()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
 
     // It's important to have a plateau scale set...
     TestServices::WindowHelper->SetWindowSizeOverrideWithScale(wf::Size(500, 500), 2.0f);
 
-    Grid^ root = safe_cast<Grid^>(LoadXamlFileOnUIThread(GetResourcesPath() + L"PerspectivePlusPopup.xaml"));
+    Grid^ root = safe_cast<Grid^>(LoadXamlFileOnUIThread(HitTestTransform3D::GetResourcesPath() + L"PerspectivePlusPopup.xaml"));
     xaml_shapes::Rectangle^ targetRectangle;
 
     RunOnUIThread([&]()
@@ -1579,7 +1591,7 @@ void HitTestTransform3D::RotationXDefaultPerspectiveWUC()
     RotationXDefaultPerspectiveInternal();
 }
 
-void HitTestTransform3D::ScaleAndRenderTransformTranslateSameElementWUC()
+void HitTestTransform3DUap::ScaleAndRenderTransformTranslateSameElementWUC()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
     ScaleAndRenderTransformTranslateSameElementInternal();

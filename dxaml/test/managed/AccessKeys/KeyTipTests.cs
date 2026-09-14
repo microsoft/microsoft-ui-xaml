@@ -230,6 +230,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         [TestProperty("Hosting:Mode", "UAP")]  // crash reason: crashes at the end
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void PivotSimpleScene()
         {
             XamlRoot xamlRoot = null;
@@ -289,6 +290,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         [TestProperty("Hosting:Mode", "UAP")] // crash reason: crash at test end
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
 
         public void ValidateKeyTipTarget()
         {
@@ -496,6 +498,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         [TestProperty("Hosting:Mode", "UAP")]  // crash reason: cannot move focus to hyperlink
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void MultipleHyperlinks()
         {
             XamlRoot xamlRoot = null;
@@ -544,6 +547,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         [TestProperty("Hosting:Mode", "UAP")] // crash reason: focus doesn't move
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void KeyTipProperlyPlacedOnHyperlinkWithScaledTextBlock()
         {
             XamlRoot xamlRoot = null;
@@ -593,6 +597,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         [TestProperty("Hosting:Mode", "UAP")]  // crash reason: focus doesn't move
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void HyperlinkOnMultipleLines()
         {
            XamlRoot xamlRoot = null;
@@ -634,6 +639,7 @@ that spans multiple lines. BlahBlahBlahBlah</Hyperlink>
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         [TestProperty("Hosting:Mode", "UAP")]  // crash reason: focus doesn't move
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void MultipleCharacters()
         {
             XamlRoot xamlRoot = null;
@@ -824,6 +830,7 @@ that spans multiple lines. BlahBlahBlahBlah</Hyperlink>
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         [TestProperty("Hosting:Mode", "UAP")]  // crash reason: cannot move focus
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
 
         public void ElementRemoval()
         {
@@ -1087,6 +1094,7 @@ that spans multiple lines. BlahBlahBlahBlah</Hyperlink>
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         [TestProperty("Hosting:Mode", "UAP")] // Test Failure: KeyTipTests.OverrideResources in WPF-hosting mode fails sometimes with incorrect offset of KeyTip
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void OverrideResources()
         {
             XamlRoot xamlRoot = null;
@@ -1182,6 +1190,7 @@ that spans multiple lines. BlahBlahBlahBlah</Hyperlink>
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         [TestProperty("Hosting:Mode", "UAP")]  // crash reason: crash at the end of test
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
 
         public void AutopositioningKeytipsForColumnWithPlateauScaling()
         {
@@ -1505,6 +1514,7 @@ that spans multiple lines. BlahBlahBlahBlah</Hyperlink>
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         [TestProperty("Hosting:Mode", "UAP")]  // crash reason: crashes at the end
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void KeyTipsAutopositioningAvoidsFocusableHyperlinksWhenPlateauScaling()
         {
             XamlRoot xamlRoot = null;
@@ -1912,6 +1922,7 @@ that spans multiple lines. BlahBlahBlahBlah</Run>
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         [TestProperty("Hosting:Mode", "UAP")]  // crash reason: focus doesn't move
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void CommandBarKeyTipIsDrawnForMoreButton()
         {
             Log.Comment("Press ALT for a CommandBar that does not have an overflow button");

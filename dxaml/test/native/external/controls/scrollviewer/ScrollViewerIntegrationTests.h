@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <functional>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Controls { namespace ScrollViewer {
@@ -15,6 +16,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -70,7 +72,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(VerifyResponseToOcclusions)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that a ScrollViewer can respond to occlusions to help bring text elements into view.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanScrollWithMultipleMouseWheelClicks)
@@ -573,7 +574,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(FastScrollingWithGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Validate that the ScrollViewer can scroll fast among focusable children with the gamepad.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ScrollingWithGamepadWithCanvasAsContentRoot)
@@ -650,11 +650,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(VerifyScrollviewerCleanDestroy)
-            TEST_METHOD_PROPERTY(L"Description", L"Validate ScrollViewer's dtor does not throw.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // WPF_HOSTING_MODE_FAILURE - Creates new UWP view
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(ValidateScrollviewerKeyboardInteraction)
             TEST_METHOD_PROPERTY(L"Description", L"Validate ScrollViewer scrolls with arrow keys.")
         END_TEST_METHOD()
@@ -711,6 +706,27 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         void ValidateNoLayoutCycleWithMaxOffset(float scaleFactor);
         void ValidateScrollBarTrackLengthWithContentChanged(bool isVerticalScenario);
         void ValidateUIElementTreeHelper();
+    };
+
+    class ScrollViewerIntegrationTestsUap : public WEX::TestClass<ScrollViewerIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(ScrollViewerIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"ScrollViewerIntegrationTests")
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+        BEGIN_TEST_METHOD(VerifyScrollviewerCleanDestroy)
+            TEST_METHOD_PROPERTY(L"Description", L"Validate ScrollViewer's dtor does not throw.")
+            // WPF_HOSTING_MODE_FAILURE - Creates new UWP view
+        END_TEST_METHOD()
     };
 
 } } } } } }

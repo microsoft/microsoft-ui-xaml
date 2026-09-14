@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Foundation { namespace Input { namespace HitTest {
 
@@ -16,6 +17,7 @@ public:
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
         TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"aa6364d2-41fe-4bec-a849-584f1f309baf")
         TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+        TEST_CLASS_HOSTING_MODE_DEFAULT()
     END_TEST_CLASS()
 
     TEST_CLASS_SETUP(ClassSetup)
@@ -81,15 +83,6 @@ public:
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2. The contents are not rendering in window
     END_TEST_METHOD()
 
-    BEGIN_TEST_METHOD(HitTestParentedPopup_NullSubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // By design - XamlIslandRoots require a subtree root in the API
-        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
-    END_TEST_METHOD()
-    BEGIN_TEST_METHOD(HitTestParentedPopup3D_NullSubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // By design - XamlIslandRoots require a subtree root in the API
-        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
-    END_TEST_METHOD()
-
     BEGIN_TEST_METHOD(HitTestNestedParentedPopup_SubtreeRoot)
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
@@ -97,46 +90,21 @@ public:
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
 
-    BEGIN_TEST_METHOD(HitTestNestedParentedPopup_NullSubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // By design - XamlIslandRoots require a subtree root in the API
-        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
-    END_TEST_METHOD()
-    BEGIN_TEST_METHOD(HitTestNestedParentedPopup3D_NullSubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // By design - XamlIslandRoots require a subtree root in the API
-        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
-    END_TEST_METHOD()
-
     BEGIN_TEST_METHOD(HitTestParentlessPopup_SubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // By design - XamlIslandRoots require a subtree root in the API; UAP cannot hit parentless popup contents with a non-null subtree root
+        // By design - XamlIslandRoots require a subtree root in the API; UAP cannot hit parentless popup contents with a non-null subtree root
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(HitTestParentlessPopup3D_SubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // By design - XamlIslandRoots require a subtree root in the API; UAP cannot hit parentless popup contents with a non-null subtree root
-        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
-    END_TEST_METHOD()
-    BEGIN_TEST_METHOD(HitTestParentlessPopup_NullSubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // By design - UAP cannot hit parentless popup contents with a non-null subtree root
-        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
-    END_TEST_METHOD()
-    BEGIN_TEST_METHOD(HitTestParentlessPopup3D_NullSubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // By design - UAP cannot hit parentless popup contents with a non-null subtree root
+        // By design - XamlIslandRoots require a subtree root in the API; UAP cannot hit parentless popup contents with a non-null subtree root
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(HitTestNestedParentlessPopup_SubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // By design - XamlIslandRoots require a subtree root in the API; UAP cannot hit parentless popup contents with a non-null subtree root
+        // By design - XamlIslandRoots require a subtree root in the API; UAP cannot hit parentless popup contents with a non-null subtree root
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(HitTestNestedParentlessPopup3D_SubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // By design - XamlIslandRoots require a subtree root in the API; UAP cannot hit parentless popup contents with a non-null subtree root
-        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
-    END_TEST_METHOD()
-    BEGIN_TEST_METHOD(HitTestNestedParentlessPopup_NullSubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // By design - UAP cannot hit parentless popup contents with a non-null subtree root
-        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
-    END_TEST_METHOD()
-    BEGIN_TEST_METHOD(HitTestNestedParentlessPopup3D_NullSubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // By design - UAP cannot hit parentless popup contents with a non-null subtree root
+        // By design - XamlIslandRoots require a subtree root in the API; UAP cannot hit parentless popup contents with a non-null subtree root
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
 
@@ -147,31 +115,11 @@ public:
          TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
 
-    BEGIN_TEST_METHOD(HitTestLTE)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // LTE test hook can't add to transition root of island's popup root
-    END_TEST_METHOD()
-    BEGIN_TEST_METHOD(HitTestLTE3D)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // LTE test hook can't add to transition root of island's popup root
-    END_TEST_METHOD()
-
-    BEGIN_TEST_METHOD(NewLTETargetingExisting3D)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // VisualTreeHelper::FindElementsInHostCoordinates with no element not supported with DesktopWindowXamlSource
-    END_TEST_METHOD()
-
     TEST_METHOD(LTESkipsSubtree_DepthUnderLTE)
     TEST_METHOD(LTESkipsSubtree_DepthOnLTE)
 
     BEGIN_TEST_METHOD(DManipHitTestVisual)
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-    END_TEST_METHOD()
-
-    BEGIN_TEST_METHOD(ProgrammaticHitTestWithEmptyTree)
-        // This test tears down the tree and recovers by shutting down and reinitializing Xaml. ShutdownXaml is skipped for non-desktop SKUs
-        // due to a stale DComp tree associated with the window after the DComp device is recreated. See comment
-        // in WindowHelper::ShutdownXaml.
-        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Simulates SurfacePresenter where the root is null. XamlIslandRoots not needed.
     END_TEST_METHOD()
 
     inline Platform::String^ GetResourcesPath() const;
@@ -201,6 +149,101 @@ private:
 
     void LTESkipsSubtreeCommon(bool isDepthOnLTE);
 };
+
+    class HitTestBasicUap : public WEX::TestClass<HitTestBasicUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(HitTestBasicUap)
+        TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+        TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+        TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+        TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"aa6364d2-41fe-4bec-a849-584f1f309baf")
+        TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+        TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"HitTestBasic")
+        TEST_CLASS_HOSTING_MODE(UAP)
+    END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        void HitTestPopupCommon(bool isParented, bool include3D, bool includeNestedPopup, bool specifySubtreeRootElement);
+        void HitTestLTECommon(bool include3D);
+    public:
+        static Microsoft::UI::Xaml::Controls::Canvas^ MakeCanvas(bool include3D, double left, double top, ::Windows::UI::Color color, Microsoft::UI::Xaml::Controls::Canvas^ child);
+        static void VerifyTappedPointsNoWindowSetup(bool specifySubtreeRootElement, UIElement^ tappedElement, std::vector<wf::Point> points);
+        static std::vector<wf::Point> GetHitTestingPoints(FrameworkElement^ element, UIElement^ root, float offset = 5.0f);
+    private:
+        void SetLTETransform(Microsoft::UI::Xaml::UIElement^ element, bool include3D, double x, double y);
+    public:
+        static void VerifyTappedPoints(UIElement^ root, UIElement^ tappedElement, std::vector<wf::Point> points, int missedOffsetX, int missedOffsetY, bool verifyUsingTaps, bool doWindowSetup);
+        static void VerifyTappedPoints(UIElement^ root, UIElement^ tappedElement, std::vector<wf::Point> points, int missedOffset, bool verifyUsingTaps);
+        static void VerifyTappedPoints(UIElement^ root, UIElement^ tappedElement, std::vector<wf::Point> points);
+        static void WindowSetup(UIElement^ root);
+        static bool VerifyPointContainsElementWithVisualTreeHelper(UIElement^ source, UIElement^ target, wf::Point point);
+
+        BEGIN_TEST_METHOD(HitTestParentedPopup_NullSubtreeRoot)
+        // By design - XamlIslandRoots require a subtree root in the API
+        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(HitTestParentedPopup3D_NullSubtreeRoot)
+        // By design - XamlIslandRoots require a subtree root in the API
+        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(HitTestNestedParentedPopup_NullSubtreeRoot)
+        // By design - XamlIslandRoots require a subtree root in the API
+        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(HitTestNestedParentedPopup3D_NullSubtreeRoot)
+        // By design - XamlIslandRoots require a subtree root in the API
+        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(HitTestParentlessPopup_NullSubtreeRoot)
+        // By design - UAP cannot hit parentless popup contents with a non-null subtree root
+        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(HitTestParentlessPopup3D_NullSubtreeRoot)
+        // By design - UAP cannot hit parentless popup contents with a non-null subtree root
+        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(HitTestNestedParentlessPopup_NullSubtreeRoot)
+        // By design - UAP cannot hit parentless popup contents with a non-null subtree root
+        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(HitTestNestedParentlessPopup3D_NullSubtreeRoot)
+        // By design - UAP cannot hit parentless popup contents with a non-null subtree root
+        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(HitTestLTE)
+        // LTE test hook can't add to transition root of island's popup root
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(HitTestLTE3D)
+        // LTE test hook can't add to transition root of island's popup root
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(NewLTETargetingExisting3D)
+        // VisualTreeHelper::FindElementsInHostCoordinates with no element not supported with DesktopWindowXamlSource
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ProgrammaticHitTestWithEmptyTree)
+        // This test tears down the tree and recovers by shutting down and reinitializing Xaml. ShutdownXaml is skipped for non-desktop SKUs
+        // due to a stale DComp tree associated with the window after the DComp device is recreated. See comment
+        // in WindowHelper::ShutdownXaml.
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Simulates SurfacePresenter where the root is null. XamlIslandRoots not needed.
+        END_TEST_METHOD()
+    };
 
 } } } } } } }
 

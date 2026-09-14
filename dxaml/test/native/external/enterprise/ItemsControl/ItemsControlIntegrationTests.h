@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <collection.h>
 #include <CommonInputHelper.h>
 
@@ -21,6 +22,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"0d66400d-d95f-4953-be63-adc1e02548a0;4c9bea11-fb07-433e-bbe1-5b18dafb1b27")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)

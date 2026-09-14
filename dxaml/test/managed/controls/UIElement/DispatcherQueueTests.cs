@@ -87,6 +87,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.DispatcherQueueTests
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Description", "Verify for Window that its DispatcherQueue property is correctly set")]
         public async Task VerifyDispatcherQueuePropertyForWindow()
         {

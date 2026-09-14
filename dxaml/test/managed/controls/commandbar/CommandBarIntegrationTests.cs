@@ -83,6 +83,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestMethod]
         [TestProperty("Description", "Validates that we do not leak our view model when used to bind to an AppBarButton's Command property.")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void DoesNotLeakViewModelWithCommandBinding()
         {
             var memoryBefore = GC.GetTotalMemory(true) / (1024 * 1024);
@@ -124,6 +125,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestMethod]
         [TestProperty("Description", "Validates that we can click on primary buttons when secondary pane is open")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ValidateClickOnPrimaryButtonWhenSecondaryIsOpen()
         {
             CommandBar commandBar = null;
@@ -175,6 +177,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestMethod]
         [TestProperty("Description", "Validates that a submenu is shown on the left of its parent menu when no room is available on the right.")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ValidateSubMenuPositioning()
         {
             TestServices.WindowHelper.SetWindowSizeOverride(new Size(1024, 400));

@@ -139,10 +139,30 @@ namespace Framework { namespace DataBinding {
         // input from being routed to the app. It will also wait for the
         // debugger to attach when the waitForDebugger runtime parameter is
         // specified.
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
 
         return true;
     }
+
+    bool BindingIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool BindingIntegrationTestsUap::TestSetup()
+    {
+        TestServices::WindowHelper->InitializeXaml(ref new MetadataProvider(), ref new CustomMetadataRegistrar<MultiClassRegistrator>());
+        return true;
+    }
+
+    bool BindingIntegrationTestsUap::TestCleanup()
+    {
+        TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
     bool BindingIntegrationTests::TestSetup()
     {
@@ -1678,7 +1698,7 @@ namespace Framework { namespace DataBinding {
         TestServices::WindowHelper->WaitForIdle();
     }
 
-    void BindingIntegrationTests::CanBindToAnimation()
+    void BindingIntegrationTestsUap::CanBindToAnimation()
     {
         TestCleanupWrapper cleanup;
 

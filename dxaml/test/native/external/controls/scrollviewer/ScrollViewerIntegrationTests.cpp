@@ -29,9 +29,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool ScrollViewerIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool ScrollViewerIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ScrollViewerIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool ScrollViewerIntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
     bool ScrollViewerIntegrationTests::ClassCleanup()
     {
@@ -7392,7 +7412,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     // When the ScrollViewer's dtor runs, if core was null were crashing. In order
     // to simulate that scenario, we create a secondary view and delete it. There is a
     // timing aspect to this bug, so it does not repro 100% of the time.
-    void ScrollViewerIntegrationTests::VerifyScrollviewerCleanDestroy()
+    void ScrollViewerIntegrationTestsUap::VerifyScrollviewerCleanDestroy()
     {
         TestCleanupWrapper cleanup;
 

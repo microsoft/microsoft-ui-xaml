@@ -42,9 +42,30 @@ Platform::String^ HyperlinkInTextTests::GetResourcesPath() const
 bool HyperlinkInTextTests::ClassSetup()
 {
     LOG_OUTPUT(L"Setting up test class");
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool HyperlinkInTextTestsUap::ClassSetup()
+    {
+        LOG_OUTPUT(L"Setting up test class");
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool HyperlinkInTextTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool HyperlinkInTextTestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
 
 bool HyperlinkInTextTests::TestSetup()
 {
@@ -191,7 +212,7 @@ void HyperlinkInTextTests::ValidateHyperlinkInText(bool testPointerOver, bool wi
     }
 }
 
-void HyperlinkInTextTests::UnderlineStyle()
+void HyperlinkInTextTestsUap::UnderlineStyle()
 {
     RunOnUIThread([&]()
     {
@@ -357,7 +378,7 @@ void HyperlinkInTextTests::ValidateHyperlinkWithRequestedTheme()
     });
 }
 
-void HyperlinkInTextTests::ValidateHyperlinkWithLocalForeground()
+void HyperlinkInTextTestsUap::ValidateHyperlinkWithLocalForeground()
 {
     TestCleanupWrapper cleanup;
     Panel^ panel;
@@ -684,7 +705,7 @@ void HyperlinkInTextTests::FocusHyperLinkWithSIPShowing()
     });
 }
 
-void HyperlinkInTextTests::HyperLinkBringIntoView()
+void HyperlinkInTextTestsUap::HyperLinkBringIntoView()
 {
     TestCleanupWrapper cleanup;
 
@@ -750,7 +771,7 @@ void HyperlinkInTextTests::HyperLinkBringIntoView()
     TestServices::WindowHelper->WaitForIdle();
 }
 
-void HyperlinkInTextTests::HyperLinkBringIntoViewWithGamepad()
+void HyperlinkInTextTestsUap::HyperLinkBringIntoViewWithGamepad()
 {
     TestCleanupWrapper cleanup;
 
@@ -796,7 +817,7 @@ void HyperlinkInTextTests::HyperLinkBringIntoViewWithGamepad()
     TestServices::WindowHelper->WaitForIdle();
 }
 
-void HyperlinkInTextTests::ValidateNavigationOnKeyUp()
+void HyperlinkInTextTestsUap::ValidateNavigationOnKeyUp()
 {
     TestCleanupWrapper cleanup;
     KeyboardInjectionIgnoreEventWaitOverride keyboardEventsOverride;
@@ -890,7 +911,7 @@ void HyperlinkInTextTests::ValidateNavigationOnKeyUp()
     TestServices::WindowHelper->WaitForIdle();
 }
 
-void HyperlinkInTextTests::PointerOverHighContrast()
+void HyperlinkInTextTestsUap::PointerOverHighContrast()
 {
     TestCleanupWrapper cleanup;
 
@@ -1711,7 +1732,7 @@ void HyperlinkInTextTests::ValidateProgrammaticFocusRectOnPreviousInputPointer()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
 }
 
-void HyperlinkInTextTests::ValidateHyperlinkGotFocusOnLoad()
+void HyperlinkInTextTestsUap::ValidateHyperlinkGotFocusOnLoad()
 {
     TestCleanupWrapper cleanup;
     KeyboardInjectionIgnoreEventWaitOverride keyboardEventsOverride;
@@ -2044,7 +2065,7 @@ void HyperlinkInTextTests::ValidateHyperlinkIsTabStopGamepadBehavior()
     hyperlinkGotFocusEvent->WaitForDefault();
 }
 
-void HyperlinkInTextTests::UIAPeerLifetime()
+void HyperlinkInTextTestsUap::UIAPeerLifetime()
 {
     LOG_OUTPUT(L">>> Make sure we don't crash when the Hyperlink's UIA peer outlives the Hyperlink itself.");
 
@@ -2239,7 +2260,7 @@ private:
     std::shared_ptr<Event> m_pointerEnteredEvent { std::make_shared<Event>() };
 };
 
-void HyperlinkInTextTests::ValidateTapAndClick()
+void HyperlinkInTextTestsUap::ValidateTapAndClick()
 {
     const auto& wh = TestServices::WindowHelper;
 

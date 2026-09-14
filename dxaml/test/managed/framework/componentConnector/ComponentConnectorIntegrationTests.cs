@@ -158,6 +158,7 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ComponentConnector
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ValidateConnectCallsOnControlTemplates()
         {
             using (var helper = new ComponentConnectorTestHelper())

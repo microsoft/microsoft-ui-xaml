@@ -27,9 +27,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
 bool CompositionTargetTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool CompositionTargetTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool CompositionTargetTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool CompositionTargetTestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
 
 bool CompositionTargetTests::TestSetup()
 {
@@ -224,7 +244,7 @@ void CompositionTargetTests::RenderingEvent3()
     VERIFY_IS_FALSE(wh->GetWantsRenderingEvent());
 }
 
-void CompositionTargetTests::RenderedEventShouldNotRequestFrame()
+void CompositionTargetTestsUap::RenderedEventShouldNotRequestFrame()
 {
     // Synopsis:
     // Register one listener for CompositionTarget.Rendered event

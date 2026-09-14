@@ -26,9 +26,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             bool TextBoxHeaderTests::ClassSetup()
             {
-                CommonTestSetupHelper::CommonTestClassSetup();
+                XAML_HOSTING_MODE_CLASS_SETUP();
                  return true;
             }
+
+    bool TextBoxHeaderTestsWpf::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool TextBoxHeaderTestsWpf::TestSetup()
+            {
+                test_infra::TestServices::WindowHelper->InitializeXaml();
+                return true;
+            }
+
+    bool TextBoxHeaderTestsWpf::TestCleanup()
+            {
+                test_infra::TestServices::WindowHelper->ShutdownXaml();
+                TestServices::WindowHelper->VerifyTestCleanup();
+                return true;
+            }
+
 
             bool TextBoxHeaderTests::ClassCleanup()
             {
@@ -48,7 +68,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 return true;
             }
 
-            void TextBoxHeaderTests::UpdateTextBoxHeader()
+            void TextBoxHeaderTestsWpf::UpdateTextBoxHeader()
             {
                 WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
                 ::Windows::Foundation::Size size(400, 400);

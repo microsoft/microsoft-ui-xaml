@@ -7,6 +7,7 @@
 #include "Utilities.h"
 #include <TestResource.h>
 #include "Hosting.h"
+#include <MasterFileNameOverride.h>
 
 bool _utilities_IsBVT()
 {
@@ -114,6 +115,10 @@ namespace
     {
         WEX::Common::String testName;
         LogThrow_IfFailed(RuntimeParameters::TryGetValue(L"FullTestName", testName));
+        std::wstring masterTestName(static_cast<const wchar_t*>(testName));
+        LogThrow_IfFailedWithMessage(MasterFiles::ApplyClassName(masterTestName),
+            L"Failed to apply the test class's master-file name.");
+        testName = masterTestName.c_str();
         testName.Replace(L"Microsoft::UI::Xaml::Tests::", L"");
         testName.Replace(L"Microsoft.UI.Xaml.Tests.", L"");
         testName.Replace(L"::", L"_");
@@ -2575,4 +2580,3 @@ namespace Private { namespace Infrastructure {
         COM_END
     }
 } } // namespace Private::Infrastructure
-

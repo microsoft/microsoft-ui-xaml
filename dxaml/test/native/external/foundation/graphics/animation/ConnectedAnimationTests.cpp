@@ -189,9 +189,68 @@ Platform::String^ ConnectedAnimationTests::GetResourcesPath() const
 
 bool ConnectedAnimationTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool ConnectedAnimationTestsWpf::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ConnectedAnimationTestsWpf::TestSetup()
+{
+    TestServices::WindowHelper->InitializeXaml(ref new MetadataProvider());
+
+
+    // We, by default, disable the default connected animation configuration for these tests.  This allows us
+    // to reduce the number of masters we have to change/maintain as the default (currently gravity) animations
+    // get tweaked.
+    LOG_OUTPUT(L"Disabling the default connected animation configuration");
+    m_featureDisableDefaultConnectedAnimationConfiguration.Initialize(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableDefaultConnectedAnimationConfiguration, true);
+
+    // Ignore whether machine that is running the test has global animations turned off.
+    LOG_OUTPUT(L"Enabling Global Animations");
+    m_featureEnableGlobalAnimations.Initialize(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableGlobalAnimations, true);
+
+    return true;
+}
+
+    bool ConnectedAnimationTestsWpf::TestCleanup()
+{
+    LOG_OUTPUT(L"Re-enabling the default connected animation configuration");
+    m_featureDisableDefaultConnectedAnimationConfiguration.Initialize(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableDefaultConnectedAnimationConfiguration, false);
+    TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+xaml_controls::Grid^ ConnectedAnimationTestsWpf::CreateTestPageContent(float scale)
+{
+    TestServices::WindowHelper->SetWindowSizeOverrideWithWindowScale(wf::Size(400, 300), scale);
+    xaml_controls::Grid^ rootPanel;
+    RunOnUIThread([&]()
+    {
+        rootPanel = safe_cast<xaml_controls::Grid^>(xaml_markup::XamlReader::Load(
+            L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' Background='Blue'"
+            L"   ScrollViewer.VerticalScrollMode='Disabled' ScrollViewer.VerticalScrollBarVisibility='Hidden'>"
+            L"   <Grid x:Name='ParentGrid' Margin='10,10,10,10'>"
+            L"     <TextBlock x:Name='SourceElement' FontSize='15' Text='Source Element' HorizontalAlignment='Left' VerticalAlignment='Bottom'/>"
+            L"     <TextBlock x:Name='MiscElement' FontSize='15' Text='Miscellaneous Element' HorizontalAlignment='Left' VerticalAlignment='Center'/>"
+            L"     <TextBlock x:Name='MiscElement2' FontSize='15' Text='Miscellaneous Element' HorizontalAlignment='Right' VerticalAlignment='Center'/>"
+            L"     <TextBlock x:Name='DestinationElement' FontSize='30' Text='Destination Element' HorizontalAlignment='Right' VerticalAlignment='Top'/>"
+            L"   </Grid>"
+            L"</Grid>"
+            ));
+        VERIFY_IS_NOT_NULL(rootPanel);
+        TestServices::WindowHelper->WindowContent = rootPanel;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    return rootPanel;
+}
+
 
 bool ConnectedAnimationTests::TestSetup()
 {
@@ -220,7 +279,7 @@ bool ConnectedAnimationTests::TestCleanup()
     return true;
 }
 
-void ConnectedAnimationTests::BasicAPI()
+void ConnectedAnimationTestsWpf::BasicAPI()
 {
     TestCleanupWrapper cleanup;
     ConnectedAnimationServiceDurationHelper durationHelper;
@@ -972,7 +1031,7 @@ void ConnectedAnimationTests::VeryHighDPI()
     TestServices::WindowHelper->WaitForIdle();
 }
 
-void ConnectedAnimationTests::DefaultAnimationParameters()
+void ConnectedAnimationTestsWpf::DefaultAnimationParameters()
 {
     TestCleanupWrapper cleanup;
     ConnectedAnimationServiceDurationHelper durationHelper(true /* ignoreMinimumDuration */);
@@ -1537,7 +1596,7 @@ void ConnectedAnimationTests::Timeout()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
 }
 
-void ConnectedAnimationTests::RestartBeforeComplete()
+void ConnectedAnimationTestsWpf::RestartBeforeComplete()
 {
     TestCleanupWrapper cleanup;
     ConnectedAnimationServiceDurationHelper durationHelper;

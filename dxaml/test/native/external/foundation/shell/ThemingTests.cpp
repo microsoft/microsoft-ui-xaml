@@ -195,14 +195,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         bool ThemingTests::ClassSetup()
         {
             AttachDetours();
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
 
         bool ThemingTests::ClassCleanup()
         {
             DetachDetours();
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
 

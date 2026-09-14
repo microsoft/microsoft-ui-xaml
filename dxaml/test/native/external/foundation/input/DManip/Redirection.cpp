@@ -21,9 +21,94 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool Redirection::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool RedirectionUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool RedirectionUap::TestCleanup()
+        {
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+Platform::String^ RedirectionUap::GetResourcesPath() const
+        {
+            return GetPackageFolder() + L"resources\\native\\external\\foundation\\input\\dmanip\\";
+        }
+
+xaml_controls::ScrollViewer^ RedirectionUap::SetupUI(
+            _In_ Platform::String^ filename,
+            _In_ std::shared_ptr<Event>& viewChangedEvent,
+            _In_ SafeEventRegistrationType(ScrollViewer, ViewChanging)& viewChangingRegistration,
+            _In_ SafeEventRegistrationType(ScrollViewer, ViewChanged)& viewChangedRegistration)
+        {
+            ScrollViewer^ sv = nullptr;
+            std::shared_ptr<Event> spHasLoadedEvent = std::make_shared<Event>();
+            auto loadedRegistration = CreateSafeEventRegistration(ScrollViewer, Loaded);
+
+            auto root = safe_cast<FrameworkElement^>(LoadXamlFileOnUIThread(filename));
+
+            RunOnUIThread([&]()
+            {
+                sv = safe_cast<ScrollViewer^>(root->FindName(L"myScrollViewer"));
+
+                viewChangedRegistration.Attach(sv, ref new wf::EventHandler<ScrollViewerViewChangedEventArgs^>(
+                    [viewChangedEvent](Platform::Object^, ScrollViewerViewChangedEventArgs^ args)
+                {
+                    if (!args->IsIntermediate)
+                    {
+                        viewChangedEvent->Set();
+                    }
+                }));
+
+                viewChangingRegistration.Attach(sv, ref new wf::EventHandler<ScrollViewerViewChangingEventArgs^>(
+                    [](Platform::Object^ sender, ScrollViewerViewChangingEventArgs^ args)
+                {
+                    LOG_OUTPUT(L"ViewChanging, NextView: %f, %f, %f, FinalView: %f, %f, %f, IsInertial: %d",
+                        args->NextView->HorizontalOffset,
+                        args->NextView->VerticalOffset,
+                        args->NextView->ZoomFactor,
+                        args->FinalView->HorizontalOffset,
+                        args->FinalView->VerticalOffset,
+                        args->FinalView->ZoomFactor,
+                        args->IsInertial);
+                }));
+
+                TestServices::WindowHelper->WindowContent = root;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                Primitives::Popup^ popup = safe_cast<Primitives::Popup^>(root->FindName(L"myPopup"));
+                popup->IsOpen = true;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            return sv;
+        }
+
+void RedirectionUap::RemovePopup()
+        {
+            LOG_OUTPUT(L"Removing Popup");
+            RunOnUIThread([&]()
+            {
+                FrameworkElement^ root = safe_cast<FrameworkElement^>(TestServices::WindowHelper->WindowContent);
+                Primitives::Popup^ popup = safe_cast<Primitives::Popup^>(root->FindName(L"myPopup"));
+                Panel^ parent = safe_cast<Panel^>(popup->Parent);
+                unsigned int index;
+                VERIFY_IS_TRUE(parent->Children->IndexOf(popup, &index));
+                parent->Children->RemoveAt(index);
+            });
+            TestServices::WindowHelper->WaitForIdle();
+        }
+
 
         bool Redirection::ClassCleanup()
         {
@@ -198,7 +283,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             RemovePopup();
         }
 
-        void Redirection::NestedPopup()
+        void RedirectionUap::NestedPopup()
         {
             WUCRenderingScopeGuardWithDManipHitTestVisual guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
 
@@ -229,7 +314,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::Utilities->VerifyMockDCompOutput(SurfaceComparison::NoComparison, Platform::StringReference(L"2").GetString());
         }
 
-        void Redirection::NestedPopupPan()
+        void RedirectionUap::NestedPopupPan()
         {
             WUCRenderingScopeGuardWithDManipHitTestVisual guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
 
@@ -252,7 +337,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             RemovePopup();
         }
 
-        void Redirection::RegressionTest_3271313()
+        void RedirectionUap::RegressionTest_3271313()
         {
             WUCRenderingScopeGuardWithDManipHitTestVisual guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
 

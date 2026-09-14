@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 using namespace Microsoft::UI::Xaml::Controls;
 
@@ -20,6 +21,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e22a917c-ad18-4a09-bff9-d3ca3e5ee0b8;4ad1ae36-e7c7-47c1-8811-9796ffbc49ed")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)

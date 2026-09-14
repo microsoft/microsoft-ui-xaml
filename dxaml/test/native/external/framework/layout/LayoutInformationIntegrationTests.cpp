@@ -24,9 +24,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool LayoutInformationIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool LayoutInformationIntegrationTestsWpf::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool LayoutInformationIntegrationTestsWpf::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool LayoutInformationIntegrationTestsWpf::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
     bool LayoutInformationIntegrationTests::TestSetup()
     {
@@ -131,7 +151,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::WindowHelper->SetLastLayoutExceptionElement(nullptr);
     }
 
-    void LayoutInformationIntegrationTests::ValidateLayoutRoundingMargin()
+    void LayoutInformationIntegrationTestsWpf::ValidateLayoutRoundingMargin()
     {
         TestCleanupWrapper cleanup;
 

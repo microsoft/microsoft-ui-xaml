@@ -40,9 +40,51 @@ Platform::String^ ShapeTests::GetResourcesPath() const
 
 bool ShapeTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool ShapeTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ShapeTestsUap::TestSetup()
+{
+    TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool ShapeTestsUap::TestCleanup()
+{
+    TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+void ShapeTestsUap::RenderPathInternal(DCompRendering dcompRendering)
+{
+    TestCleanupWrapper cleanup;
+    WUCRenderingScopeGuard guard(dcompRendering);
+
+    auto windowHelper = TestServices::WindowHelper;
+
+    StackPanel^ root = safe_cast<StackPanel^>(LoadXamlFileOnUIThread(GetResourcesPath() + L"Path.xaml"));
+    RunOnUIThread([&]()
+    {
+        windowHelper->WindowContent = root;
+    });
+
+    windowHelper->WaitForIdle();
+    TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);
+}
+
+Platform::String^ ShapeTestsUap::GetResourcesPath() const
+{
+    return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\rendering\\";
+}
+
 
 bool ShapeTests::TestSetup()
 {
@@ -913,7 +955,7 @@ void ShapeTests::PathTransformTestWUC()
 
 ////////////////////////////////////////////////////////////////////////////
 
-void ShapeTests::RenderPath()
+void ShapeTestsUap::RenderPath()
 {
     RenderPathInternal(DCompRendering::WUCCompleteSynchronousCompTree);
 }

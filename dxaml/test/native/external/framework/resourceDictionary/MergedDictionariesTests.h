@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <HostingModeTestClass.h>
+
 using namespace Microsoft::UI::Xaml;
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
@@ -18,6 +20,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"f62323d4-fd46-4c98-aa85-334db95ba8f6")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)

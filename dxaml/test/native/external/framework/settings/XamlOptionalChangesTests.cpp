@@ -56,7 +56,7 @@ static const auto c_iconNoGrid = xaml_settings_abi::XamlChangeId_IconNoGridOptim
 
 bool XamlOptionalChangesTests::ClassSetup()
 {
-    Microsoft::UI::Xaml::Tests::Common::CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
 

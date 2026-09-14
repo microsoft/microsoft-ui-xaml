@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 #include <XamlMetadataProviderOverrider.h>
 #include <memory>
@@ -22,6 +23,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"f62323d4-fd46-4c98-aa85-334db95ba8f6;0a9cdf5f-1e1b-4b1d-9659-b354bf5f4ca6")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -67,24 +69,42 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"don't cause later expansions of the template to change.")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(VerifyCanReplaceGenericXaml)
-            TEST_METHOD_PROPERTY(L"Description",
-                L"Verifies that resources are loaded from replacement generic.xaml")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // DCPP: Test ResourceLoadingIntegrationTests hitting targettype assert
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(VerifyMissingGenericXamlReplacement)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verifies that resources are loaded from default generic.xaml when replacement is missing")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(VerifyIncompleteGenericXamlReplacement)
-            TEST_METHOD_PROPERTY(L"Description",
-                L"Verifies that resources are missing when replacement is incomplete")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // DCPP: Test ResourceLoadingIntegrationTests hitting targettype assert
-        END_TEST_METHOD()
     private:
+    };
+
+    class ResourceLoadingIntegrationTestsUap
+    {
+    public:
+        BEGIN_TEST_CLASS(ResourceLoadingIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"f62323d4-fd46-4c98-aa85-334db95ba8f6;0a9cdf5f-1e1b-4b1d-9659-b354bf5f4ca6")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"ResourceLoadingIntegrationTests")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+
+        BEGIN_TEST_METHOD(VerifyCanReplaceGenericXaml)
+        TEST_METHOD_PROPERTY(L"Description",
+        L"Verifies that resources are loaded from replacement generic.xaml")
+        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // DCPP: Test ResourceLoadingIntegrationTests hitting targettype assert
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyIncompleteGenericXamlReplacement)
+        TEST_METHOD_PROPERTY(L"Description",
+        L"Verifies that resources are missing when replacement is incomplete")
+        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // DCPP: Test ResourceLoadingIntegrationTests hitting targettype assert
+        END_TEST_METHOD()
     };
 } } } } } }

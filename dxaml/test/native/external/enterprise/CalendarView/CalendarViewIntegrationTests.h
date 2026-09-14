@@ -4,6 +4,7 @@
 #pragma once
 
 #include <collection.h>
+#include <HostingModeTestClass.h>
 #include <CommonInputHelper.h>
 #include <SafeEventRegistration.h>
 #include <Versioning.h>
@@ -24,6 +25,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"4f7c3f9b-7644-4513-afe1-f0bb414ff9cc;262268fd-57a5-48fa-9410-bd31d3fa5217")
             TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
             TEST_CLASS_PROPERTY(L"TestSuite", L"A") // This test class is quite large, so we break it down into suites.
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -178,13 +180,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateDCompTreeWithPointerOverNavigationButton)
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
             TEST_METHOD_PROPERTY(L"Description", L"Validates the DComp tree when Pointer Over NavigationButton")
-            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(ValidateDCompTree)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates the DComp tree and surfaces using MockDComp.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // WPF_HOSTING_MODE_FAILURE - DComp baseline doesn't match
-            TEST_METHOD_PROPERTY(L"TestSuite", L"A")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
@@ -397,7 +392,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestSuite", L"B")
         END_TEST_METHOD()
 
-
         BEGIN_TEST_METHOD(VerifyPersianCalendarBoundariesByTapping)
             TEST_METHOD_PROPERTY(L"Description", L"CalendarView crashes in DecadeView when clicking the previous button when date is half page away from the MinDate")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
@@ -573,13 +567,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(ValidateChromeFocusDecade)
-            TEST_METHOD_PROPERTY(L"Description", L"Vaidate chrome focus state in Decade mode.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // WPF_HOSTING_MODE_FAILURE - DComp baseline doesn't match
-            TEST_METHOD_PROPERTY(L"TestSuite", L"B")
-            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(IgnoreBringIntoViewOnFocusChange)
             TEST_METHOD_PROPERTY(L"Description", L"Ignore BringIntoViewOnFocusChange, when we use keyboard to focus the item on last visible row, make sure we don't add 20 pixel on the bottom")
             TEST_METHOD_PROPERTY(L"TestSuite", L"B")
@@ -679,7 +666,6 @@ VerifyAllTimeZonesPartDecl(19)
 
 #undef VerifyAllTimeZonesPartDecl
 
-
         //
         // Platform:Desktop
         //
@@ -700,6 +686,38 @@ private:
         void SetDensityColors(xaml_controls::CalendarView^ calendarView, bool hasDensityBars);
         void SetDensityColors(xaml_controls::CalendarViewDayItem^ dayItem, bool hasDensityBars);
         Platform::String^ GetResourcesPath() const;
+    };
+
+    class CalendarViewIntegrationTestsUap : public WEX::TestClass<CalendarViewIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(CalendarViewIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"4f7c3f9b-7644-4513-afe1-f0bb414ff9cc;262268fd-57a5-48fa-9410-bd31d3fa5217")
+            TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+            TEST_CLASS_PROPERTY(L"TestSuite", L"A") // This test class is quite large, so we break it down into suites.
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"CalendarViewIntegrationTests")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+        BEGIN_TEST_METHOD(ValidateDCompTree)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates the DComp tree and surfaces using MockDComp.")
+        // WPF_HOSTING_MODE_FAILURE - DComp baseline doesn't match
+        TEST_METHOD_PROPERTY(L"TestSuite", L"A")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateChromeFocusDecade)
+        TEST_METHOD_PROPERTY(L"Description", L"Vaidate chrome focus state in Decade mode.")
+        // WPF_HOSTING_MODE_FAILURE - DComp baseline doesn't match
+        TEST_METHOD_PROPERTY(L"TestSuite", L"B")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
     };
 
 } } } } } }

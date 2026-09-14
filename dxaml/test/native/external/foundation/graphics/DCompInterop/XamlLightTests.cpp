@@ -99,9 +99,179 @@ Platform::String^ XamlLightTests::GetResourcesPath() const
 
 bool XamlLightTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool XamlLightTestsWpf::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool XamlLightTestsWpf::TestSetup()
+{
+    TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool XamlLightTestsWpf::TestCleanup()
+{
+    TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+Microsoft::UI::Composition::SpotLight^ XamlLightTestsWpf::CreateSpotLight()
+{
+    SpotLight^ spotLight;
+
+    RunOnUIThread([&]()
+    {
+        auto canvas = ref new Canvas();
+        auto compositionVisual = ElementCompositionPreview::GetElementVisual(canvas);
+        auto compositionObject = safe_cast<Microsoft::UI::Composition::ICompositionObject^>(compositionVisual);
+        auto compositor = compositionObject->Compositor;
+        spotLight = compositor->CreateSpotLight();
+    });
+
+    return spotLight;
+}
+
+Canvas^ XamlLightTestsWpf::CreateCanvas(Brush^ brush)
+{
+    Canvas^ canvas = ref new Canvas();
+    canvas->Width = 25;
+    canvas->Height = 25;
+    canvas->Background = brush;
+    return canvas;
+}
+
+Canvas^ XamlLightTestsWpf::CreateCanvas()
+{
+    return CreateCanvas(ref new SolidColorBrush(Microsoft::UI::Colors::Red));
+}
+
+void XamlLightTestsWpf::MuxLightsCommon(bool isInIsland)
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    const auto& wh = TestServices::WindowHelper;
+    const auto& u = TestServices::Utilities;
+
+    SolidColorBrush^ brush1;
+    Canvas^ c1;
+    TestLight^ testLight1;
+    TestLight^ testLight2;
+    TestLight^ testLight3;
+    TestLight^ testLight4;
+    TestLight^ testLight5;
+    TestLight^ testLight6;
+    TestLight^ testLight7;
+
+    RunOnUIThread([&]()
+    {
+        // In Xaml Islands mode we specifically disable lights with an id matching:
+        //   "Microsoft.UI.Xaml.Media.RevealBorderLight_DarkTheme"
+        //   "Microsoft.UI.Xaml.Media.RevealBorderLight_LightTheme"
+        //   "Microsoft.UI.Xaml.Media.RevealHoverLight"
+        //   "Microsoft.UI.Xaml.Media.XamlAmbientLight"
+        // See CXamlLight::IsEnabledInXamlIsland() in product code.
+        // We intentionally test using a mix of strings from this list and other strings not on this list.
+
+        brush1 = ref new SolidColorBrush(Microsoft::UI::Colors::Red);
+        XamlLight::AddTargetBrush(L"Microsoft.UI.Xaml.Media.RevealBorderLight_DarkTheme", brush1);
+        XamlLight::AddTargetBrush(L"Microsoft.UI.Xaml.Media.RevealBorderLight_LightTheme", brush1);
+        XamlLight::AddTargetBrush(L"Microsoft.UI.Xaml.Media.RevealBorderLight_AsdfTheme", brush1);
+        XamlLight::AddTargetBrush(L"Microsoft.UI.Xaml.Media.RevealHoverLight", brush1);
+        XamlLight::AddTargetBrush(L"Windows.UI.Xaml.Media.RevealHoverLight", brush1);
+        XamlLight::AddTargetBrush(L"Microsoft.UI.Xaml.Media.XamlAmbientLight", brush1);
+        XamlLight::AddTargetBrush(L"Microsoft.UI.Xaml.Media.XamlAmbientLigh", brush1);
+
+        c1 = CreateCanvas(brush1);
+
+        testLight1 = ref new TestLight(CreateSpotLight(), L"Microsoft.UI.Xaml.Media.RevealBorderLight_DarkTheme");
+        testLight2 = ref new TestLight(CreateSpotLight(), L"Microsoft.UI.Xaml.Media.RevealBorderLight_LightTheme");
+        testLight3 = ref new TestLight(CreateSpotLight(), L"Microsoft.UI.Xaml.Media.RevealBorderLight_AsdfTheme");
+        testLight4 = ref new TestLight(CreateSpotLight(), L"Microsoft.UI.Xaml.Media.RevealHoverLight");
+        testLight5 = ref new TestLight(CreateSpotLight(), L"Windows.UI.Xaml.Media.RevealHoverLight");
+        testLight6 = ref new TestLight(CreateSpotLight(), L"Microsoft.UI.Xaml.Media.XamlAmbientLight");
+        testLight7 = ref new TestLight(CreateSpotLight(), L"Microsoft.UI.Xaml.Media.XamlAmbientLigh");
+
+        Grid^ grid = CreateGrid();
+        grid->Children->Append(c1);
+        grid->Lights->Append(testLight4);
+        grid->Lights->Append(testLight5);
+
+        Canvas^ root = ref new Canvas();
+        auto lights = root->Lights;
+        lights->Append(testLight1);
+        lights->Append(testLight2);
+        lights->Append(testLight3);
+        lights->Append(testLight6);
+        lights->Append(testLight7);
+
+        root->Children->Append(grid);
+        wh->WindowContent = root;
+    });
+    wh->WaitForIdle();
+
+    auto lights1 = ref new Platform::Collections::Vector<XamlLight^>();
+    auto targets1 = ref new Platform::Collections::Vector<UIElement^>();
+    auto targets2 = ref new Platform::Collections::Vector<UIElement^>();
+    auto targets3 = ref new Platform::Collections::Vector<UIElement^>();
+    auto targets4 = ref new Platform::Collections::Vector<UIElement^>();
+    auto targets5 = ref new Platform::Collections::Vector<UIElement^>();
+    auto targets6 = ref new Platform::Collections::Vector<UIElement^>();
+    auto targets7 = ref new Platform::Collections::Vector<UIElement^>();
+
+    LOG_OUTPUT(L"> Checking targets");
+    RunOnUIThread([&]()
+    {
+        wh->GetLightsTargetingElement(c1, lights1);
+        wh->GetElementsTargetedByLight(testLight1, targets1);
+        wh->GetElementsTargetedByLight(testLight2, targets2);
+        wh->GetElementsTargetedByLight(testLight3, targets3);
+        wh->GetElementsTargetedByLight(testLight4, targets4);
+        wh->GetElementsTargetedByLight(testLight5, targets5);
+        wh->GetElementsTargetedByLight(testLight6, targets6);
+        wh->GetElementsTargetedByLight(testLight7, targets7);
+    });
+
+    if (isInIsland)
+    {
+        VERIFY_ARE_EQUAL(3u, lights1->Size);
+        VERIFY_ARE_EQUAL(0u, targets1->Size);
+        VERIFY_ARE_EQUAL(0u, targets2->Size);
+        VERIFY_ARE_EQUAL(1u, targets3->Size);
+        VERIFY_ARE_EQUAL(0u, targets4->Size);
+        VERIFY_ARE_EQUAL(1u, targets5->Size);
+        VERIFY_ARE_EQUAL(0u, targets6->Size);
+        VERIFY_ARE_EQUAL(1u, targets7->Size);
+        u->VerifyMockDCompOutput(SurfaceComparison::NoComparison, L"1");
+    }
+    else
+    {
+        VERIFY_ARE_EQUAL(7u, lights1->Size);
+        VERIFY_ARE_EQUAL(1u, targets1->Size);
+        VERIFY_ARE_EQUAL(1u, targets2->Size);
+        VERIFY_ARE_EQUAL(1u, targets3->Size);
+        VERIFY_ARE_EQUAL(1u, targets4->Size);
+        VERIFY_ARE_EQUAL(1u, targets5->Size);
+        VERIFY_ARE_EQUAL(1u, targets6->Size);
+        VERIFY_ARE_EQUAL(1u, targets7->Size);
+    }
+}
+
+Microsoft::UI::Xaml::Controls::Grid^ XamlLightTestsWpf::CreateGrid()
+{
+    Grid^ grid = ref new Grid();
+    grid->Width = 50;
+    grid->Height = 50;
+    grid->Background = ref new SolidColorBrush(Microsoft::UI::Colors::Green);
+    return grid;
+}
+
 
 bool XamlLightTests::ClassCleanup()
 {
@@ -121,7 +291,7 @@ bool XamlLightTests::TestCleanup()
     return true;
 }
 
-void XamlLightTests::APITest()
+void XamlLightTestsWpf::APITest()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -2429,7 +2599,7 @@ void XamlLightTests::RootIsGridCommon(unsigned int expectedLightTargetCount)
     u->VerifyMockDCompOutput(SurfaceComparison::NoComparison);
 }
 
-void XamlLightTests::WindowedPopup_RemoveLightsFromPopupRoot()
+void XamlLightTestsWpf::WindowedPopup_RemoveLightsFromPopupRoot()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -2513,7 +2683,7 @@ void XamlLightTests::WindowedPopup_RemoveLightsFromPopupRoot()
     u->VerifyMockDCompOutput(SurfaceComparison::NoComparison, L"NoLights");
 }
 
-void XamlLightTests::MuxLightsInIslands()
+void XamlLightTestsWpf::MuxLightsInIslands()
 {
     MuxLightsCommon(true);
 }

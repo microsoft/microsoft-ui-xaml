@@ -30,7 +30,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool XamlBindingHelperTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
 

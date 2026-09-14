@@ -54,7 +54,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool ContentDialogIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
 
@@ -65,6 +65,25 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     }
 
     bool ContentDialogIntegrationTests::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    bool ContentDialogIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ContentDialogIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool ContentDialogIntegrationTestsUap::TestCleanup()
     {
         test_infra::TestServices::WindowHelper->ShutdownXaml();
         TestServices::WindowHelper->VerifyTestCleanup();
@@ -84,15 +103,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         Generic::FrameworkElementTests<xaml_controls::ContentDialog>::CanEnterAndLeaveLiveTree();
     }
 
-    void ContentDialogIntegrationTests::CanOpenAndCloseProjectedShadow()
+    void ContentDialogIntegrationTestsUap::CanOpenAndCloseProjectedShadow()
     {
         RuntimeEnabledFeatureOverride featureUseDropShadows(RuntimeFeatureBehavior::RuntimeEnabledFeature::ForceProjectedShadowsOnByDefault, true);
-        CanOpenAndClose();
+        ContentDialogIntegrationTests::CanOpenAndClose();
     }
 
-    void ContentDialogIntegrationTests::CanOpenAndCloseDropShadow()
+    void ContentDialogIntegrationTestsUap::CanOpenAndCloseDropShadow()
     {
-        CanOpenAndClose();
+        ContentDialogIntegrationTests::CanOpenAndClose();
     }
 
     void ContentDialogIntegrationTests::CanOpenAndClose()
@@ -466,7 +485,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         runScenario(xaml_controls::ContentDialogPlacement::UnconstrainedPopup);
     }
 
-    void ContentDialogIntegrationTests::ValidateFocusTrapping()
+    void ContentDialogIntegrationTestsUap::ValidateFocusTrapping()
     {
         auto runScenario = [](xaml_controls::ContentDialogPlacement placement)
         {
@@ -490,7 +509,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             });
             TestServices::WindowHelper->WaitForIdle();
 
-            xaml_controls::ContentDialog^ contentDialog = CreateContentDialog(ContentDialogContent::TextBoxContent);
+            xaml_controls::ContentDialog^ contentDialog = ContentDialogIntegrationTests::CreateContentDialog(ContentDialogIntegrationTests::ContentDialogContent::TextBoxContent);
 
             if (placement == xaml_controls::ContentDialogPlacement::InPlace)
             {
@@ -509,69 +528,69 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             }
             TestServices::WindowHelper->WaitForIdle();
 
-            OpenContentDialog(contentDialog, placement);
+            ContentDialogIntegrationTests::OpenContentDialog(contentDialog, placement);
 
-            xaml_controls::Button^ primaryButton = GetButton(contentDialog, xaml_controls::ContentDialogButton::Primary);
-            xaml_controls::Button^ secondaryButton = GetButton(contentDialog, xaml_controls::ContentDialogButton::Secondary);
-            xaml_controls::TextBox^ textBoxInContentDialog = GetTextBoxFromContentDialogContent(contentDialog);
+            xaml_controls::Button^ primaryButton = ContentDialogIntegrationTests::GetButton(contentDialog, xaml_controls::ContentDialogButton::Primary);
+            xaml_controls::Button^ secondaryButton = ContentDialogIntegrationTests::GetButton(contentDialog, xaml_controls::ContentDialogButton::Secondary);
+            xaml_controls::TextBox^ textBoxInContentDialog = ContentDialogIntegrationTests::GetTextBoxFromContentDialogContent(contentDialog);
 
             LOG_OUTPUT(L"Initial focus should be on ContentDialog content");
-            VerifyFocusedElement(textBoxInContentDialog);
+            ContentDialogIntegrationTests::VerifyFocusedElement(textBoxInContentDialog);
 
             LOG_OUTPUT(L"Pressing Gamepad Up should not move focus");
             CommonInputHelper::Up(InputDevice::Gamepad);
-            VerifyFocusedElement(textBoxInContentDialog);
+            ContentDialogIntegrationTests::VerifyFocusedElement(textBoxInContentDialog);
 
             LOG_OUTPUT(L"Pressing Gamepad Down and Left should move focus to primary button");
             CommonInputHelper::Down(InputDevice::Gamepad);
             CommonInputHelper::Left(InputDevice::Gamepad);
-            VerifyFocusedElement(primaryButton);
+            ContentDialogIntegrationTests::VerifyFocusedElement(primaryButton);
 
             LOG_OUTPUT(L"Pressing Gamepad Down should not move focus");
             CommonInputHelper::Down(InputDevice::Gamepad);
-            VerifyFocusedElement(primaryButton);
+            ContentDialogIntegrationTests::VerifyFocusedElement(primaryButton);
 
             LOG_OUTPUT(L"Pressing Gamepad Left should not move focus");
             CommonInputHelper::Left(InputDevice::Gamepad);
-            VerifyFocusedElement(primaryButton);
+            ContentDialogIntegrationTests::VerifyFocusedElement(primaryButton);
 
             LOG_OUTPUT(L"Pressing Gamepad Right should move focus to secondary button");
             CommonInputHelper::Right(InputDevice::Gamepad);
-            VerifyFocusedElement(secondaryButton);
+            ContentDialogIntegrationTests::VerifyFocusedElement(secondaryButton);
 
             LOG_OUTPUT(L"Pressing Gamepad Right should not move focus");
             CommonInputHelper::Right(InputDevice::Gamepad);
-            VerifyFocusedElement(secondaryButton);
+            ContentDialogIntegrationTests::VerifyFocusedElement(secondaryButton);
 
             LOG_OUTPUT(L"Pressing Gamepad Up should move focus to ContentDialog content");
             CommonInputHelper::Up(InputDevice::Gamepad);
-            VerifyFocusedElement(textBoxInContentDialog);
+            ContentDialogIntegrationTests::VerifyFocusedElement(textBoxInContentDialog);
 
             LOG_OUTPUT(L"Pressing Tab should move focus to primary button");
             TestServices::KeyboardHelper->Tab();
-            VerifyFocusedElement(primaryButton);
+            ContentDialogIntegrationTests::VerifyFocusedElement(primaryButton);
 
             LOG_OUTPUT(L"Pressing Tab should move focus to secondary button");
             TestServices::KeyboardHelper->Tab();
-            VerifyFocusedElement(secondaryButton);
+            ContentDialogIntegrationTests::VerifyFocusedElement(secondaryButton);
 
             LOG_OUTPUT(L"Pressing Tab should move focus to ContentDialog content");
             TestServices::KeyboardHelper->Tab();
-            VerifyFocusedElement(textBoxInContentDialog);
+            ContentDialogIntegrationTests::VerifyFocusedElement(textBoxInContentDialog);
 
             LOG_OUTPUT(L"Pressing Shift+Tab should move focus to secondary button");
             TestServices::KeyboardHelper->ShiftTab();
-            VerifyFocusedElement(secondaryButton);
+            ContentDialogIntegrationTests::VerifyFocusedElement(secondaryButton);
 
             LOG_OUTPUT(L"Pressing Shift+Tab should move focus to primary button");
             TestServices::KeyboardHelper->ShiftTab();
-            VerifyFocusedElement(primaryButton);
+            ContentDialogIntegrationTests::VerifyFocusedElement(primaryButton);
 
             LOG_OUTPUT(L"Pressing Shift+Tab should move focus to ContentDialog content");
             TestServices::KeyboardHelper->ShiftTab();
-            VerifyFocusedElement(textBoxInContentDialog);
+            ContentDialogIntegrationTests::VerifyFocusedElement(textBoxInContentDialog);
 
-            CloseContentDialog(contentDialog);
+            ContentDialogIntegrationTests::CloseContentDialog(contentDialog);
         };
 
         LOG_OUTPUT(L"==== Validate with ContentDialogPlacement.Popup (default) ====");
@@ -584,7 +603,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         runScenario(xaml_controls::ContentDialogPlacement::UnconstrainedPopup);
     }
 
-    void ContentDialogIntegrationTests::ValidateFocusShiftWhenPreviouslyFocusedElementIsRemoved()
+    void ContentDialogIntegrationTestsUap::ValidateFocusShiftWhenPreviouslyFocusedElementIsRemoved()
     {
         auto runScenario = [](xaml_controls::ContentDialogPlacement placement)
         {
@@ -639,7 +658,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TestServices::WindowHelper->WaitForIdle();
 
             // Add ContentDialog. Open it so the focus moves inside this ContentDialog, and then close it.
-            xaml_controls::ContentDialog^ contentDialog = CreateContentDialog(ContentDialogContent::TextBoxContent);
+            xaml_controls::ContentDialog^ contentDialog = ContentDialogIntegrationTests::CreateContentDialog(ContentDialogIntegrationTests::ContentDialogContent::TextBoxContent);
             auto contentDialogGotFocusRegistration = CreateSafeEventRegistration(xaml_controls::ContentDialog, GotFocus);
             contentDialogGotFocusRegistration.Attach(contentDialog, ref new xaml::RoutedEventHandler([&](Platform::Object^ sender, xaml::RoutedEventArgs^ args)
             {
@@ -663,7 +682,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             }
             TestServices::WindowHelper->WaitForIdle();
 
-            OpenContentDialog(contentDialog, placement);
+            ContentDialogIntegrationTests::OpenContentDialog(contentDialog, placement);
 
             // Remove the LastFocusedElement before ContentDialog was opened.
             RunOnUIThread([&]()
@@ -672,7 +691,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             });
             TestServices::WindowHelper->WaitForIdle();
 
-            CloseContentDialog(contentDialog);
+            ContentDialogIntegrationTests::CloseContentDialog(contentDialog);
 
             // Verify there is a Button (pageButton1) in the VisualTree; an indication that
             // the  app has not crashed and the app page is still up.
@@ -698,11 +717,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         runScenario(xaml_controls::ContentDialogPlacement::UnconstrainedPopup);
     }
 
-    void ContentDialogIntegrationTests::DoesFullSizeWorkCorrectlyInV2Template()
+    void ContentDialogIntegrationTestsUap::DoesFullSizeWorkCorrectlyInV2Template()
     {
         TestCleanupWrapper cleanup;
 
-        auto contentDialog = SetupContentDialogTest(ContentDialogContent::TextContent);
+        auto contentDialog = ContentDialogIntegrationTests::SetupContentDialogTest(ContentDialogIntegrationTests::ContentDialogContent::TextContent);
 
         float windowHeight = 0.f;
         double dialogHeight = 0.0;
@@ -717,7 +736,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             contentDialog->MaxHeight = floor(windowHeight * 0.75);
         });
 
-        OpenContentDialog(contentDialog);
+        ContentDialogIntegrationTests::OpenContentDialog(contentDialog);
 
         RunOnUIThread([&] ()
         {
@@ -740,7 +759,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
         TestServices::WindowHelper->WaitForIdle();
 
-        CloseContentDialog(contentDialog);
+        ContentDialogIntegrationTests::CloseContentDialog(contentDialog);
 
         // Now test the MaxHeight > WindowHeight behavior.
         RunOnUIThread([&] ()
@@ -749,7 +768,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
         TestServices::WindowHelper->WaitForIdle();
 
-        OpenContentDialog(contentDialog);
+        ContentDialogIntegrationTests::OpenContentDialog(contentDialog);
 
         RunOnUIThread([&] ()
         {
@@ -773,7 +792,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
         TestServices::WindowHelper->WaitForIdle();
 
-        CloseContentDialog(contentDialog);
+        ContentDialogIntegrationTests::CloseContentDialog(contentDialog);
     }
 
     void ContentDialogIntegrationTests::CanClickButtons()
@@ -930,7 +949,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         }
     }
 
-    void ContentDialogIntegrationTests::DoesTabBehaviorWork()
+    void ContentDialogIntegrationTestsUap::DoesTabBehaviorWork()
     {
         auto runScenario = [](xaml_controls::ContentDialogPlacement placement)
         {
@@ -1008,7 +1027,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TestServices::WindowHelper->WaitForIdle();
 
             // When we open the content dialog, the first button should grab focus.
-            OpenContentDialog(contentDialog, placement);
+            ContentDialogIntegrationTests::OpenContentDialog(contentDialog, placement);
 
             // Tab to move focus through the control.
             for (size_t i = 0; i < tabCount; ++i)
@@ -1024,7 +1043,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TestServices::WindowHelper->WaitForIdle();
             }
 
-            CloseContentDialog(contentDialog);
+            ContentDialogIntegrationTests::CloseContentDialog(contentDialog);
 
             VERIFY_ARE_EQUAL(focusSequence, expectedFocusSequence);
         };
@@ -1322,14 +1341,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         return rootPanel;
     }
 
-    void ContentDialogIntegrationTests::ValidateTextPanelFitsWithinWindow()
+    void ContentDialogIntegrationTestsUap::ValidateTextPanelFitsWithinWindow()
     {
         TestCleanupWrapper cleanup;
 
         wf::Rect contentDialogBounds = {};
 
-        auto contentDialog = SetupContentDialogTest(ContentDialogContent::TextPanel);
-        auto showAsyncResult = OpenContentDialog(contentDialog);
+        auto contentDialog = ContentDialogIntegrationTests::SetupContentDialogTest(ContentDialogIntegrationTests::ContentDialogContent::TextPanel);
+        auto showAsyncResult = ContentDialogIntegrationTests::OpenContentDialog(contentDialog);
 
         TestServices::WindowHelper->WaitForIdle();
 
@@ -1352,7 +1371,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
         TestServices::WindowHelper->WaitForIdle();
 
-        CloseContentDialog(contentDialog);
+        ContentDialogIntegrationTests::CloseContentDialog(contentDialog);
     }
 
     void ContentDialogIntegrationTests::ValidateAddingContentDialogToWindowContentDoesNotChangePositioning()
@@ -1988,13 +2007,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void ContentDialogIntegrationTests::DoesSupportCloseButton()
+    void ContentDialogIntegrationTestsUap::DoesSupportCloseButton()
     {
         auto runScenario = [](xaml_controls::ContentDialogPlacement placement)
         {
             TestCleanupWrapper cleanup;
 
-            auto contentDialog = SetupContentDialogTest(ContentDialogContent::Empty);
+            auto contentDialog = ContentDialogIntegrationTests::SetupContentDialogTest(ContentDialogIntegrationTests::ContentDialogContent::Empty);
             auto customCommand = ref new CustomCommand();
             Platform::String^ expectedCommandParameter = "param";
 
@@ -2032,9 +2051,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             };
 
             LOG_OUTPUT(L"Validate the Close button using a tap.");
-            auto showTask = create_task(OpenContentDialog(contentDialog, placement));
+            auto showTask = create_task(ContentDialogIntegrationTests::OpenContentDialog(contentDialog, placement));
 
-            auto closeButton = GetButton(contentDialog, xaml_controls::ContentDialogButton::Close);
+            auto closeButton = ContentDialogIntegrationTests::GetButton(contentDialog, xaml_controls::ContentDialogButton::Close);
             VERIFY_IS_NOT_NULL(closeButton);
 
             closeButtonClickRegistration.Attach(contentDialog, [&]() { closeButtonClickEvent.Set(); });
@@ -2043,19 +2062,19 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             doValidation(showTask);
 
             LOG_OUTPUT(L"Validate the Close button using the ESCAPE key.");
-            showTask = create_task(OpenContentDialog(contentDialog, placement));
+            showTask = create_task(ContentDialogIntegrationTests::OpenContentDialog(contentDialog, placement));
 
             CommonInputHelper::Cancel(InputDevice::Keyboard);
             doValidation(showTask);
 
             LOG_OUTPUT(L"Validate the Close button using the GAMEPAD_B button.");
-            showTask = create_task(OpenContentDialog(contentDialog, placement));
+            showTask = create_task(ContentDialogIntegrationTests::OpenContentDialog(contentDialog, placement));
 
             CommonInputHelper::Cancel(InputDevice::Gamepad);
             doValidation(showTask);
 
             LOG_OUTPUT(L"Validate the Close button using the BACK button.");
-            showTask = create_task(OpenContentDialog(contentDialog, placement));
+            showTask = create_task(ContentDialogIntegrationTests::OpenContentDialog(contentDialog, placement));
 
             bool backButtonPressHandled = false;
             TestServices::Utilities->InjectBackButtonPress(&backButtonPressHandled);
@@ -3202,14 +3221,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         task.wait();
     }
 
-     void ContentDialogIntegrationTests::DoesRestyledXboxInsiderHubDialogStretchHorizontally()
+     void ContentDialogIntegrationTestsUap::DoesRestyledXboxInsiderHubDialogStretchHorizontally()
     {
         TestCleanupWrapper cleanup;
 
         TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(1024, 768));
 
-        auto contentDialog = SetupContentDialogTest(ContentDialogContent::Empty);
-        auto dialogStyle = safe_cast<xaml::Style^>(LoadXamlFileOnUIThread(GetResourcesPath() + L"XboxInsiderHubDialog.xaml"));
+        auto contentDialog = ContentDialogIntegrationTests::SetupContentDialogTest(ContentDialogIntegrationTests::ContentDialogContent::Empty);
+        auto dialogStyle = safe_cast<xaml::Style^>(LoadXamlFileOnUIThread(ContentDialogIntegrationTests::GetResourcesPath() + L"XboxInsiderHubDialog.xaml"));
 
         RunOnUIThread([&]()
         {
@@ -3220,7 +3239,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
         TestServices::WindowHelper->WaitForIdle();
 
-        OpenContentDialog(contentDialog);
+        ContentDialogIntegrationTests::OpenContentDialog(contentDialog);
 
         RunOnUIThread([&]()
         {
@@ -3236,7 +3255,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_ARE_EQUAL((xaml::Window::Current->Bounds.Height - backgroundElement->ActualHeight) * 0.5, backgroundElementOffset.Y);
         });
 
-        CloseContentDialog(contentDialog);
+        ContentDialogIntegrationTests::CloseContentDialog(contentDialog);
     }
 
     void ContentDialogIntegrationTests::CanShowPopupAndInPlaceDialogsAtSameTime()
@@ -3504,14 +3523,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         CloseContentDialog(contentDialog);
     }
 
-    void ContentDialogIntegrationTests::CanUseContentDialogWithSmokeBackgroundPart()
+    void ContentDialogIntegrationTestsUap::CanUseContentDialogWithSmokeBackgroundPart()
     {
-        VerifyContentDialogSmokeBackgroundPart(xaml_controls::ContentDialogPlacement::Popup);
+        ContentDialogIntegrationTests::VerifyContentDialogSmokeBackgroundPart(xaml_controls::ContentDialogPlacement::Popup);
     }
 
-    void ContentDialogIntegrationTests::InPlaceContentDialogWithoutSmokeBackgroundPart()
+    void ContentDialogIntegrationTestsUap::InPlaceContentDialogWithoutSmokeBackgroundPart()
     {
-        VerifyContentDialogSmokeBackgroundPart(xaml_controls::ContentDialogPlacement::InPlace);
+        ContentDialogIntegrationTests::VerifyContentDialogSmokeBackgroundPart(xaml_controls::ContentDialogPlacement::InPlace);
     }
 
     void ContentDialogIntegrationTests::VerifyContentDialogSmokeBackgroundPart(xaml_controls::ContentDialogPlacement placement)

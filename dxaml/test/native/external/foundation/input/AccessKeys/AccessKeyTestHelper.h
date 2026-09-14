@@ -86,15 +86,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             
             // Cannot exit display mode with this enabled. The Alt key fix requires this to be disabled for WPF mode
             // TODO: find a better solution
-            WEX::Common::String value;
-            bool runningInWPFMode = false;
-            if (SUCCEEDED(WEX::TestExecution::RuntimeParameters::TryGetValue(L"HostingMode", value)))
-                {
-                    if (value == L"WPF")
-                    {
-                        runningInWPFMode = true;
-                    }
-            }
+            const bool runningInWPFMode = TestServices::Utilities->IsWPF;
 
             if (!runningInWPFMode && !ignoreDisplayModeCheck && m_enterAccessKeyMode)
             {
@@ -161,15 +153,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         {
             // It is the failure reason for cannot exit displaymode. The Alt key fix requirs this to be disabled for WPF mode now
             // until a better solution is found
-            WEX::Common::String value;
-            bool runningInWPFMode = false;
-            if (SUCCEEDED(WEX::TestExecution::RuntimeParameters::TryGetValue(L"HostingMode", value)))
-                {
-                    if (value == L"WPF")
-                    {
-                        runningInWPFMode = true;
-                    }
-            }
+            const bool runningInWPFMode = TestServices::Utilities->IsWPF;
             if (!runningInWPFMode)
             {
                 RunOnUIThread([&]()

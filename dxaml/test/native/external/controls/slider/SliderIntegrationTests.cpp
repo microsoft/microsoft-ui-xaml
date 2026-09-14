@@ -26,9 +26,326 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool SliderIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool SliderIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool SliderIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool SliderIntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    xaml_controls::Panel^ SliderIntegrationTestsUap::ValidateUIETreeTestSetup(xaml_controls::Orientation orientation)
+    {
+        xaml_controls::Slider^ restSlider = nullptr;
+        xaml_controls::Slider^ hoverSlider = nullptr;
+        xaml_controls::Slider^ pressedSlider = nullptr;
+        xaml_controls::Slider^ disabledSlider = nullptr;
+
+        xaml_controls::Slider^ tickInlineSlider = nullptr;
+        xaml_controls::Slider^ tickOutsideSlider = nullptr;
+        xaml_controls::Slider^ topLeftTicksSlider = nullptr;
+        xaml_controls::Slider^ bottomRightTicksSlider = nullptr;
+
+#if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
+        xaml_controls::Slider^ leftHeaderSlider = nullptr;
+#endif
+
+        xaml_controls::StackPanel^ rootPanel = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            rootPanel = ref new xaml_controls::StackPanel();
+            rootPanel->IsHitTestVisible = false;
+
+            // We split the Sliders across multiple panel so that we can get two rows
+            // of vertical Sliders to fit on screen.
+            auto commonStatesPanel = ref new xaml_controls::StackPanel();
+            auto ticksPlacementPanel = ref new xaml_controls::StackPanel();
+#if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
+            auto headerPlacementPanel = ref new xaml_controls::StackPanel();
+#endif
+            rootPanel->Children->Append(commonStatesPanel);
+            rootPanel->Children->Append(ticksPlacementPanel);
+#if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
+            rootPanel->Children->Append(headerPlacementPanel);
+#endif
+
+            if (orientation == xaml_controls::Orientation::Vertical)
+            {
+                commonStatesPanel->Orientation = xaml_controls::Orientation::Horizontal;
+                commonStatesPanel->Height = 300;
+                ticksPlacementPanel->Orientation = xaml_controls::Orientation::Horizontal;
+                ticksPlacementPanel->Height = 300;
+#if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
+                headerPlacementPanel->Orientation = xaml_controls::Orientation::Horizontal;
+                headerPlacementPanel->Height = 100;
+#endif
+            }
+
+            restSlider = ref new xaml_controls::Slider();
+            restSlider->Header = "Rest Slider";
+            restSlider->Value = 50;
+            restSlider->Orientation = orientation;
+            commonStatesPanel->Children->Append(restSlider);
+
+            hoverSlider = ref new xaml_controls::Slider();
+            hoverSlider->Header = "Hover Slider";
+            hoverSlider->Value = 50;
+            hoverSlider->Orientation = orientation;
+            commonStatesPanel->Children->Append(hoverSlider);
+
+            pressedSlider = ref new xaml_controls::Slider();
+            pressedSlider->Header = "Pressed Slider";
+            pressedSlider->Value = 50;
+            pressedSlider->Orientation = orientation;
+            commonStatesPanel->Children->Append(pressedSlider);
+
+            disabledSlider = ref new xaml_controls::Slider();
+            disabledSlider->Header = "Disabled Slider";
+            disabledSlider->Value = 50;
+            disabledSlider->IsEnabled = false;
+            disabledSlider->Orientation = orientation;
+            commonStatesPanel->Children->Append(disabledSlider);
+
+            // Tick placement
+
+            tickInlineSlider = ref new xaml_controls::Slider();
+            tickInlineSlider->Header = "Tick Inline";
+            tickInlineSlider->Value = 50;
+            tickInlineSlider->TickPlacement = xaml_primitives::TickPlacement::Inline;
+            tickInlineSlider->TickFrequency = 10;
+            tickInlineSlider->Orientation = orientation;
+            ticksPlacementPanel->Children->Append(tickInlineSlider);
+
+            tickOutsideSlider = ref new xaml_controls::Slider();
+            tickOutsideSlider->Header = "Tick Outside";
+            tickOutsideSlider->Value = 50;
+            tickOutsideSlider->TickPlacement = xaml_primitives::TickPlacement::Outside;
+            tickOutsideSlider->TickFrequency = 10;
+            tickOutsideSlider->Orientation = orientation;
+            ticksPlacementPanel->Children->Append(tickOutsideSlider);
+
+            topLeftTicksSlider = ref new xaml_controls::Slider();
+            topLeftTicksSlider->Header = "Ticks TopLeft";
+            topLeftTicksSlider->Value = 0;
+            topLeftTicksSlider->TickPlacement = xaml_primitives::TickPlacement::TopLeft;
+            topLeftTicksSlider->TickFrequency = 10;
+            topLeftTicksSlider->Orientation = orientation;
+            ticksPlacementPanel->Children->Append(topLeftTicksSlider);
+
+            bottomRightTicksSlider = ref new xaml_controls::Slider();
+            bottomRightTicksSlider->Header = "Ticks BottomRight";
+            bottomRightTicksSlider->Value = 100;
+            bottomRightTicksSlider->TickPlacement = xaml_primitives::TickPlacement::BottomRight;
+            bottomRightTicksSlider->TickFrequency = 10;
+            bottomRightTicksSlider->Orientation = orientation;
+            ticksPlacementPanel->Children->Append(bottomRightTicksSlider);
+
+#if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
+            // Header placement
+            leftHeaderSlider = ref new xaml_controls::Slider();
+            leftHeaderSlider->Header = "Left Header";
+            leftHeaderSlider->HeaderPlacement = xaml_controls::ControlHeaderPlacement::Left;
+            leftHeaderSlider->Value = 50;
+            leftHeaderSlider->Orientation = orientation;
+            headerPlacementPanel->Children->Append(leftHeaderSlider);
+#endif
+
+            TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VisualStateManager::GoToState(hoverSlider, "PointerOver", false);
+            VisualStateManager::GoToState(pressedSlider, "Pressed", false);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        return rootPanel;
+    }
+
+    void SliderIntegrationTestsUap::SetupEngagementTest(xaml_controls::Slider^* horizontalSlider, xaml_controls::Slider^* verticalSlider)
+    {
+        xaml_controls::Button^ buttonForFocus = nullptr;
+        xaml_controls::Slider^ horizontalSliderElement = nullptr;
+        xaml_controls::Slider^ verticalSliderElement = nullptr;
+
+        std::shared_ptr<Event> loadedEvent = std::make_shared<Event>();
+        auto loadedRegistration = CreateSafeEventRegistration(xaml_controls::StackPanel, Loaded);
+
+        RunOnUIThread([&]()
+        {
+            auto rootPanel = safe_cast<xaml_controls::StackPanel^>(xaml_markup::XamlReader::Load(
+               LR"(<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' HorizontalAlignment='Center' VerticalAlignment='Center'>
+                        <Button x:Name='buttonForFocus' Content='Initial focus here'/>
+                        <Slider x:Name='horizontalSlider' Maximum='20' Minimum='0' Value='10' Width='100' Height='100' StepFrequency='1'/>
+                        <Slider x:Name='verticalSlider' Orientation='Vertical' Maximum='20' Minimum='0' Value='10' Width='100' Height='100' StepFrequency='1'/>
+                </StackPanel>)"
+            ));
+
+            loadedRegistration.Attach(rootPanel, [&](){ loadedEvent->Set(); });
+
+            buttonForFocus = safe_cast<xaml_controls::Button^>(rootPanel->FindName(L"buttonForFocus"));
+            horizontalSliderElement = safe_cast<xaml_controls::Slider^>(rootPanel->FindName(L"horizontalSlider"));
+            verticalSliderElement = safe_cast<xaml_controls::Slider^>(rootPanel->FindName(L"verticalSlider"));
+
+            TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+        loadedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            buttonForFocus->Focus(xaml::FocusState::Programmatic);
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        *horizontalSlider = horizontalSliderElement;
+        *verticalSlider = verticalSliderElement;
+    }
+
+    void SliderIntegrationTestsUap::MoveDownAndEngageSlider(xaml_controls::Slider^ slider)
+    {
+        std::shared_ptr<Event> gotFocusEvent = std::make_shared<Event>();
+        auto gotFocusRegistration = CreateSafeEventRegistration(xaml_controls::Slider, GotFocus);
+        gotFocusRegistration.Attach(slider, [&](){ gotFocusEvent->Set(); });
+
+        std::shared_ptr<Event> focusEngagedEvent = std::make_shared<Event>();
+        auto focusEngagedRegistration = CreateSafeEventRegistration(xaml_controls::Slider, FocusEngaged);
+        focusEngagedRegistration.Attach(slider, [&](){ focusEngagedEvent->Set(); });
+
+        CommonInputHelper::Down(InputDevice::Gamepad);
+
+        gotFocusEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        CommonInputHelper::Accept(InputDevice::Gamepad);
+
+        focusEngagedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    void SliderIntegrationTestsUap::DisengageSlider(xaml_controls::Slider^ slider, InputDevice inputDevice)
+    {
+        std::shared_ptr<Event> focusDisengagedEvent = std::make_shared<Event>();
+        auto focusDisngagedRegistration = CreateSafeEventRegistration(xaml_controls::Slider, FocusDisengaged);
+        focusDisngagedRegistration.Attach(slider, [&](){ focusDisengagedEvent->Set(); });
+
+        CommonInputHelper::Cancel(inputDevice);
+
+        focusDisengagedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    void SliderIntegrationTestsUap::DoVerifyToolTipShowAndHide(InputDevice inputDevice, bool isFocusEngagementEnabledOnSlider, bool toolTipShouldOnlyShowWhenEngaged)
+    {
+        xaml_controls::Button^ buttonForFocus;
+        xaml_controls::Slider^ slider;
+        std::shared_ptr<Event> gotFocusEvent = std::make_shared<Event>();
+        auto gotFocusRegistration = CreateSafeEventRegistration(xaml_controls::Slider, GotFocus);
+
+        LOG_OUTPUT(L"DoVerifyToolTipShowAndHide inputDevice=%s, isFocusEngagementEnabledOnSlider=%d, toolTipShouldOnlyShowWhenEngaged=%d", inputDevice.ToString()->Data(), isFocusEngagementEnabledOnSlider, toolTipShouldOnlyShowWhenEngaged);
+
+        RunOnUIThread([&]()
+        {
+            auto rootPanel = safe_cast<xaml_controls::StackPanel^>(xaml_markup::XamlReader::Load(
+                LR"(<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' HorizontalAlignment='Center' VerticalAlignment='Center'>
+                        <Button x:Name='buttonForFocus' Content='Initial focus here'/>
+                        <Slider x:Name='slider' />
+                    </StackPanel>)"));
+            buttonForFocus = safe_cast<xaml_controls::Button^>(rootPanel->FindName(L"buttonForFocus"));
+            slider = safe_cast<xaml_controls::Slider^>(rootPanel->FindName(L"slider"));
+
+            slider->IsFocusEngagementEnabled = isFocusEngagementEnabledOnSlider;
+            gotFocusRegistration.Attach(slider, [&](){ gotFocusEvent->Set(); });
+
+            TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        ControlHelper::EnsureFocused(buttonForFocus);
+
+        // Move focus to slider using input device:
+        if (inputDevice == InputDevice::Keyboard)
+        {
+            TestServices::KeyboardHelper->Tab();
+        }
+        else
+        {
+            CommonInputHelper::Down(inputDevice);
+        }
+        gotFocusEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        if (toolTipShouldOnlyShowWhenEngaged)
+        {
+            VerifyNoOpenToolTips(slider);
+            EngageSlider(slider, inputDevice);
+            VerifyToolTipOpen(slider);
+            DisengageSlider(slider, inputDevice);
+            VerifyNoOpenToolTips(slider);
+        }
+        else
+        {
+            VerifyToolTipOpen(slider);
+        }
+
+        // Move focus away from Slider:
+        ControlHelper::EnsureFocused(buttonForFocus);
+
+        VerifyNoOpenToolTips(slider);
+    }
+
+    void SliderIntegrationTestsUap::VerifyNoOpenToolTips(xaml_controls::Slider^ slider)
+    {
+        RunOnUIThread([&]()
+        {
+            auto currentToolTip = TreeHelper::GetVisualChildByTypeFromOpenPopups<xaml_controls::ToolTip>(slider);
+            VERIFY_IS_TRUE(currentToolTip == nullptr, L"There should be no open ToolTips");
+        });
+    }
+
+    void SliderIntegrationTestsUap::EngageSlider(xaml_controls::Slider^ slider, InputDevice inputDevice)
+    {
+        std::shared_ptr<Event> focusEngagedEvent = std::make_shared<Event>();
+        auto focusEngagedRegistration = CreateSafeEventRegistration(xaml_controls::Slider, FocusEngaged);
+        focusEngagedRegistration.Attach(slider, [&](){ focusEngagedEvent->Set(); });
+
+        CommonInputHelper::Accept(inputDevice);
+
+        focusEngagedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    void SliderIntegrationTestsUap::VerifyToolTipOpen(xaml_controls::Slider^ slider)
+    {
+        RunOnUIThread([&]()
+        {
+            auto openPopups = xaml_media::VisualTreeHelper::GetOpenPopupsForXamlRoot(slider->XamlRoot);
+            VERIFY_ARE_EQUAL(1u, openPopups->Size, L"There should be exactly one open popup");
+            auto currentToolTip = TreeHelper::GetVisualChildByTypeFromOpenPopups<xaml_controls::ToolTip>(slider);
+            VERIFY_IS_TRUE(currentToolTip != nullptr, L"There should be an open ToolTip");
+        });
+    }
+
 
     bool SliderIntegrationTests::TestSetup()
     {
@@ -74,7 +391,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             });
     }
 
-    void SliderIntegrationTests::ValidateUIETreeVertical()
+    void SliderIntegrationTestsUap::ValidateUIETreeVertical()
     {
         ControlHelper::ValidateUIElementTree(
             wf::Size(400, 700),
@@ -286,7 +603,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void SliderIntegrationTests::ValidateDCompTreeWhenEngaged()
+    void SliderIntegrationTestsUap::ValidateDCompTreeWhenEngaged()
     {
         WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -368,7 +685,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void SliderIntegrationTests::ValidateThumbTooltip()
+    void SliderIntegrationTestsUap::ValidateThumbTooltip()
     {
         TestCleanupWrapper cleanup;
 
@@ -437,7 +754,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::WindowHelper->WaitForIdle();
     }
 
-    void SliderIntegrationTests::VerifyToolTipShowAndHideForKeyboardAndGamePad()
+    void SliderIntegrationTestsUap::VerifyToolTipShowAndHideForKeyboardAndGamePad()
     {
         TestCleanupWrapper cleanup;
 
@@ -581,64 +898,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         {
             VERIFY_ARE_EQUAL(slider->Value, 11);
         });
-    }
-
-    void SliderIntegrationTests::DoVerifyToolTipShowAndHide(InputDevice inputDevice, bool isFocusEngagementEnabledOnSlider, bool toolTipShouldOnlyShowWhenEngaged)
-    {
-        xaml_controls::Button^ buttonForFocus;
-        xaml_controls::Slider^ slider;
-        std::shared_ptr<Event> gotFocusEvent = std::make_shared<Event>();
-        auto gotFocusRegistration = CreateSafeEventRegistration(xaml_controls::Slider, GotFocus);
-
-        LOG_OUTPUT(L"DoVerifyToolTipShowAndHide inputDevice=%s, isFocusEngagementEnabledOnSlider=%d, toolTipShouldOnlyShowWhenEngaged=%d", inputDevice.ToString()->Data(), isFocusEngagementEnabledOnSlider, toolTipShouldOnlyShowWhenEngaged);
-
-        RunOnUIThread([&]()
-        {
-            auto rootPanel = safe_cast<xaml_controls::StackPanel^>(xaml_markup::XamlReader::Load(
-                LR"(<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' HorizontalAlignment='Center' VerticalAlignment='Center'>
-                        <Button x:Name='buttonForFocus' Content='Initial focus here'/>
-                        <Slider x:Name='slider' />
-                    </StackPanel>)"));
-            buttonForFocus = safe_cast<xaml_controls::Button^>(rootPanel->FindName(L"buttonForFocus"));
-            slider = safe_cast<xaml_controls::Slider^>(rootPanel->FindName(L"slider"));
-
-            slider->IsFocusEngagementEnabled = isFocusEngagementEnabledOnSlider;
-            gotFocusRegistration.Attach(slider, [&](){ gotFocusEvent->Set(); });
-
-            TestServices::WindowHelper->WindowContent = rootPanel;
-        });
-        TestServices::WindowHelper->WaitForIdle();
-        ControlHelper::EnsureFocused(buttonForFocus);
-
-        // Move focus to slider using input device:
-        if (inputDevice == InputDevice::Keyboard)
-        {
-            TestServices::KeyboardHelper->Tab();
-        }
-        else
-        {
-            CommonInputHelper::Down(inputDevice);
-        }
-        gotFocusEvent->WaitForDefault();
-        TestServices::WindowHelper->WaitForIdle();
-
-        if (toolTipShouldOnlyShowWhenEngaged)
-        {
-            VerifyNoOpenToolTips(slider);
-            EngageSlider(slider, inputDevice);
-            VerifyToolTipOpen(slider);
-            DisengageSlider(slider, inputDevice);
-            VerifyNoOpenToolTips(slider);
-        }
-        else
-        {
-            VerifyToolTipOpen(slider);
-        }
-
-        // Move focus away from Slider:
-        ControlHelper::EnsureFocused(buttonForFocus);
-
-        VerifyNoOpenToolTips(slider);
     }
 
     void SliderIntegrationTests::ValidateCanMoveSliderUsingKeyboardVertical()

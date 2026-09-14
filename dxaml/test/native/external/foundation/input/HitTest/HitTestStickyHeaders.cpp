@@ -36,9 +36,83 @@ Platform::String^ HitTestStickyHeaders::GetResourcesPath() const
 
 bool HitTestStickyHeaders::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool HitTestStickyHeadersUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool HitTestStickyHeadersUap::TestCleanup()
+{
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+Platform::String^ HitTestStickyHeadersUap::GetResourcesPath() const
+{
+    return GetPackageFolder() + L"resources\\native\\external\\foundation\\input\\HitTest\\";
+}
+
+void HitTestStickyHeadersUap::SetupStickyHeaders(xaml_controls::Grid^ rootGrid, int numGroups)
+{
+    int numItemsPerGroup = 5;
+
+    RunOnUIThread([&]()
+    {
+        xaml_data::CollectionViewSource^ cvs = safe_cast<xaml_data::CollectionViewSource^>(rootGrid->FindName(L"cvs"));
+        VERIFY_IS_NOT_NULL(cvs);
+
+        Platform::Collections::Vector<Platform::Object^>^ itemsSource = CreateGroupedData(numGroups, numItemsPerGroup);
+        VERIFY_IS_NOT_NULL(itemsSource);
+
+        cvs->Source = itemsSource;
+    });
+}
+
+std::vector<UIElement^> HitTestStickyHeadersUap::GetHeaderElements(xaml_controls::Grid^ rootGrid, int numGroups)
+{
+    std::vector<UIElement^> headers;
+    RunOnUIThread([&](){
+        xaml_controls::ListView^ listView = safe_cast<xaml_controls::ListView^>(rootGrid->FindName(L"listView"));
+        VERIFY_IS_NOT_NULL(listView);
+
+        // Unfortunately ListView has no API to retrieve group headers.
+        // The workaround is to dig into its ItemsStackPanel, which has everyone in a flat list.
+        // Headers are always stored first in the ItemsStackPanel collection, so we're interested
+        // in the first items.
+        for (int i = 0; i < numGroups; i++)
+        {
+            headers.push_back(safe_cast<UIElement^>(listView->ItemsPanelRoot->Children->GetAt(i)));
+            VERIFY_IS_NOT_NULL(headers[i]);
+        }
+    });
+    TestServices::WindowHelper->WaitForIdle();
+    return headers;
+}
+
+Platform::Collections::Vector<Platform::Object^>^ HitTestStickyHeadersUap::CreateGroupedData(int numGroups, int numItemsPerGroup)
+{
+    auto groupedData = ref new Platform::Collections::Vector<Platform::Object^>();
+
+    for (int i = 0; i < numGroups; i++)
+    {
+        auto group = ref new Microsoft::UI::Xaml::Tests::Common::GroupedHeader(L"Group: " + i);
+        VERIFY_IS_NOT_NULL(group);
+
+        for (int j = 0; j < numItemsPerGroup; j++)
+        {
+            group->Append(L"Item: " + j);
+        }
+        groupedData->Append(group);
+    }
+
+    return groupedData;
+}
+
 
 bool HitTestStickyHeaders::TestCleanup()
 {
@@ -46,7 +120,7 @@ bool HitTestStickyHeaders::TestCleanup()
     return true;
 }
 
-void HitTestStickyHeaders::NoTx3D()
+void HitTestStickyHeadersUap::NoTx3D()
 {
     TestCleanupWrapper cleanup([]()
     {

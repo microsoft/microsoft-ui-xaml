@@ -22,9 +22,27 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     //
     bool GridViewIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool GridViewIntegrationTestsWpf::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool GridViewIntegrationTestsWpf::TestCleanup()
+    {
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+String^ GridViewIntegrationTestsWpf::GetResourcesPath() const
+    {
+        return GetPackageFolder() + L"resources\\native\\enterprise\\listviewbase\\";
+    }
+
 
     bool GridViewIntegrationTests::ClassCleanup()
     {
@@ -37,7 +55,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         return true;
     }
 
-    void GridViewIntegrationTests::AnimateItemIntoViewWithGamepad()
+    void GridViewIntegrationTestsWpf::AnimateItemIntoViewWithGamepad()
     {
         TestCleanupWrapper cleanup;
 

@@ -146,10 +146,35 @@ Platform::String^ LoadedImageSurfaceTests::GetResourcesPath() const
 
 bool LoadedImageSurfaceTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
 
     return true;
 }
+
+    bool LoadedImageSurfaceTestsWpf::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool LoadedImageSurfaceTestsWpf::TestSetup()
+{
+    TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool LoadedImageSurfaceTestsWpf::TestCleanup()
+{
+    TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+Platform::String^ LoadedImageSurfaceTestsWpf::GetResourcesPath() const
+{
+    return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\image\\";
+}
+
 
 bool LoadedImageSurfaceTests::TestSetup()
 {
@@ -164,7 +189,7 @@ bool LoadedImageSurfaceTests::TestCleanup()
     return true;
 }
 
-void LoadedImageSurfaceTests::CreateFromUri()
+void LoadedImageSurfaceTestsWpf::CreateFromUri()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -480,7 +505,7 @@ void LoadedImageSurfaceTests::CloseCreatedFromStream()
     });
 }
 
-void LoadedImageSurfaceTests::CloseCreatedFromUri()
+void LoadedImageSurfaceTestsWpf::CloseCreatedFromUri()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -496,7 +521,7 @@ void LoadedImageSurfaceTests::CloseCreatedFromUri()
     });
 }
 
-void LoadedImageSurfaceTests::CloseAfterLoadCompleted()
+void LoadedImageSurfaceTestsWpf::CloseAfterLoadCompleted()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -518,7 +543,7 @@ void LoadedImageSurfaceTests::CloseAfterLoadCompleted()
     });
 }
 
-void LoadedImageSurfaceTests::DeviceLostRecover()
+void LoadedImageSurfaceTestsWpf::DeviceLostRecover()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -540,7 +565,7 @@ void LoadedImageSurfaceTests::DeviceLostRecover()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::AllSurfaces);
 }
 
-void LoadedImageSurfaceTests::DeviceLostInUse()
+void LoadedImageSurfaceTestsWpf::DeviceLostInUse()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -563,7 +588,7 @@ void LoadedImageSurfaceTests::DeviceLostInUse()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::AllSurfaces);
 }
 
-void LoadedImageSurfaceTests::DeviceLostInUseWindowHidden()
+void LoadedImageSurfaceTestsWpf::DeviceLostInUseWindowHidden()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -592,7 +617,7 @@ void LoadedImageSurfaceTests::DeviceLostInUseWindowHidden()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::AllSurfaces);
 }
 
-void LoadedImageSurfaceTests::DeviceLostWindowHiddenBeforeLoad()
+void LoadedImageSurfaceTestsWpf::DeviceLostWindowHiddenBeforeLoad()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -624,7 +649,7 @@ void LoadedImageSurfaceTests::DeviceLostWindowHiddenBeforeLoad()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::AllSurfaces);
 }
 
-void LoadedImageSurfaceTests::DeviceLostBeforeLoad()
+void LoadedImageSurfaceTestsWpf::DeviceLostBeforeLoad()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
     const auto& wh = TestServices::WindowHelper;
@@ -666,7 +691,7 @@ void LoadedImageSurfaceTests::DeviceLostBeforeLoad()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnlyCRC);
 }
 
-void LoadedImageSurfaceTests::NonExistingUri()
+void LoadedImageSurfaceTestsWpf::NonExistingUri()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -681,7 +706,7 @@ void LoadedImageSurfaceTests::NonExistingUri()
     verifier->WaitLoaded();
 }
 
-void LoadedImageSurfaceTests::InvalidFormatFromUri()
+void LoadedImageSurfaceTestsWpf::InvalidFormatFromUri()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -834,7 +859,7 @@ void LoadedImageSurfaceTests::ExceedPlateauScaleLimit()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::AllSurfaces, "800");
 }
 
-void LoadedImageSurfaceTests::PlateauScaleChangeMRT()
+void LoadedImageSurfaceTestsWpf::PlateauScaleChangeMRT()
 {
 #if 0
 // TAEF image tests cannot access MRT resources
@@ -872,7 +897,7 @@ void LoadedImageSurfaceTests::PlateauScaleChangeMRT()
 #endif
 }
 
-void LoadedImageSurfaceTests::JumboImageFromUri()
+void LoadedImageSurfaceTestsWpf::JumboImageFromUri()
 {
 #if 0
 // There is no reliable way to handle OOM in LoadedImageSurface
@@ -931,7 +956,7 @@ void LoadedImageSurfaceTests::LowMemoryStream()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::AllSurfaces);
 }
 
-void LoadedImageSurfaceTests::CreatePairFromSameUri()
+void LoadedImageSurfaceTestsWpf::CreatePairFromSameUri()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -967,7 +992,7 @@ void LoadedImageSurfaceTests::CreatePairFromSameUri()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);
 }
 
-void LoadedImageSurfaceTests::CreatePairFromSameUriWithSize()
+void LoadedImageSurfaceTestsWpf::CreatePairFromSameUriWithSize()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -1003,7 +1028,7 @@ void LoadedImageSurfaceTests::CreatePairFromSameUriWithSize()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);
 }
 
-void LoadedImageSurfaceTests::CreatePairFromSameUriWithAndWithoutSize()
+void LoadedImageSurfaceTestsWpf::CreatePairFromSameUriWithAndWithoutSize()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -1040,7 +1065,7 @@ void LoadedImageSurfaceTests::CreatePairFromSameUriWithAndWithoutSize()
 }
 
 
-void LoadedImageSurfaceTests::CreatePairFromDifferentUris()
+void LoadedImageSurfaceTestsWpf::CreatePairFromDifferentUris()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -1191,7 +1216,7 @@ void LoadedImageSurfaceTests::CreatePairForSameImageFromUriAndStream()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);
 }
 
-void LoadedImageSurfaceTests::UnofferDeviceBeforeImageResize()
+void LoadedImageSurfaceTestsWpf::UnofferDeviceBeforeImageResize()
 {
     TestCleanupWrapper cleanup;
 

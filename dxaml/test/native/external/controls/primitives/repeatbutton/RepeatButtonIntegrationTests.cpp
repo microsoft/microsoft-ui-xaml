@@ -22,9 +22,57 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool RepeatButtonIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool RepeatButtonIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool RepeatButtonIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool RepeatButtonIntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    xaml_primitives::RepeatButton^ RepeatButtonIntegrationTestsUap::SetupButtonTestUI(
+        UINT delay,
+        UINT interval,
+        xaml_controls::ClickMode mode,
+        SafeEventRegistrationType(xaml_primitives::RepeatButton, Click)& clickRegistration,
+        std::shared_ptr<Microsoft::UI::Xaml::Tests::Common::Event> clickEvent)
+    {
+        xaml_primitives::RepeatButton^ repeatButton = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            repeatButton = ref new xaml_primitives::RepeatButton();
+            repeatButton->Content = "RepeatContent";
+            repeatButton->Delay = delay;
+            repeatButton->Interval = interval;
+            repeatButton->ClickMode = mode;
+
+            clickRegistration.Attach(repeatButton, [clickEvent]()
+            {
+                LOG_OUTPUT(L"RepeatButton click event fired!");
+                clickEvent->Set();
+            });
+
+            TestServices::WindowHelper->WindowContent = repeatButton;
+        });
+        return repeatButton;
+    }
+
 
     bool RepeatButtonIntegrationTests::TestSetup()
     {
@@ -82,7 +130,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void RepeatButtonIntegrationTests::UIETree()
+    void RepeatButtonIntegrationTestsUap::UIETree()
     {
         ControlHelper::ValidateUIElementTree(
             wf::Size(400, 600),
@@ -285,7 +333,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         VERIFY_IS_TRUE(clickEvent->TimesFired() > 2);
     }
 
-    void RepeatButtonIntegrationTests::CanActivateWithSpaceKeyInput()
+    void RepeatButtonIntegrationTestsUap::CanActivateWithSpaceKeyInput()
     {
         TestCleanupWrapper cleanup;
         KeyboardInjectionIgnoreEventWaitOverride keyboardEventsOverride;

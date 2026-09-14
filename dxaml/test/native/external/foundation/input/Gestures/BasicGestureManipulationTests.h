@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Foundation { namespace Input { namespace Gestures {
@@ -16,6 +17,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
 
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89;3192b2bd-30c5-4c19-a6c1-9856b940df63")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -32,43 +34,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(DragARectangle)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates dragging with the mouse via the Touch Interaction Engine.")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // args->Cumulative.Translation.X mismatch
-                TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // Fix Gesture manipulation tests that were broken with lifting
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(DragARectangleInScrollViewer)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates dragging with the mouse via the Touch Interaction Engine within a ScrollViewer.")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(ScaleARectangleInScrollViewer)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates scaling with touch via the Touch Interaction Engine within a ScrollViewer.")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // GetForCurrentView no lonnger available in Desktop
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-             END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(ScaleARectangleInScrollViewerWithInertia)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates scaling with touch via the Touch Interaction Engine within a ScrollViewer with inertia.")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // GetForCurrentView no lonnger available in Desktop
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(SetSystemAndScaleInPointerPressed)
-                TEST_METHOD_PROPERTY(L"Description", L"Set up manipulation scaling within a ScrollViewer in PointerPressed handler.")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // GetForCurrentView no lonnger available in Desktop
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(ResetScaleInPointerPressed)
-                TEST_METHOD_PROPERTY(L"Description", L"Reset manipulation scaling in PointerPressed handler and zoom in ScrollViewer with DManip.")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // GetForCurrentView no lonnger available in Desktop
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(PanAZoomableRectangle)
@@ -122,6 +90,60 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 float errorMargin = 1.0f;
             };
             void RotateARectangleHelper(const RectRotateHelperData& data);
+        };
+
+        class BasicGestureManipulationTestsUap : public WEX::TestClass<BasicGestureManipulationTestsUap>
+        {
+        public:
+            BEGIN_TEST_CLASS(BasicGestureManipulationTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89;3192b2bd-30c5-4c19-a6c1-9856b940df63")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"BasicGestureManipulationTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+            TEST_CLASS_SETUP(ClassSetup)
+            TEST_METHOD_SETUP(TestSetup)
+            TEST_METHOD_CLEANUP(TestCleanup)
+
+            BEGIN_TEST_METHOD(DragARectangle)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates dragging with the mouse via the Touch Interaction Engine.")
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+                // args->Cumulative.Translation.X mismatch
+                TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // Fix Gesture manipulation tests that were broken with lifting
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ScaleARectangleInScrollViewer)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates scaling with touch via the Touch Interaction Engine within a ScrollViewer.")
+                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+                // GetForCurrentView no lonnger available in Desktop
+                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+             END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ScaleARectangleInScrollViewerWithInertia)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates scaling with touch via the Touch Interaction Engine within a ScrollViewer with inertia.")
+                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+                // GetForCurrentView no lonnger available in Desktop
+                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(SetSystemAndScaleInPointerPressed)
+                TEST_METHOD_PROPERTY(L"Description", L"Set up manipulation scaling within a ScrollViewer in PointerPressed handler.")
+                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+                // GetForCurrentView no lonnger available in Desktop
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ResetScaleInPointerPressed)
+                TEST_METHOD_PROPERTY(L"Description", L"Reset manipulation scaling in PointerPressed handler and zoom in ScrollViewer with DManip.")
+                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+                // GetForCurrentView no lonnger available in Desktop
+            END_TEST_METHOD()
+
+        private:
             void ScaleARectangleInScrollViewer(bool useInertia, bool setManipulationModeInPointerPressed);
         };
     } } }
