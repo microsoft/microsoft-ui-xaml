@@ -174,17 +174,24 @@ bool ModuleSetup()
 
             if (!ok)
             {
-                LOG_OUTPUT(L"FAIL: SwitcherMode=true requested but TrySetProcessEngine(System) did not engage (ok=%d)",
-                    static_cast<int>(ok));
-                return false;
+                // Non-fatal: ModuleSetup runs in the elevated, UNPACKAGED module fixture, where the
+                // CompositionEngine LAF cannot unlock and the class is not activatable (REGDB_E_CLASSNOTREG).
+                // Engagement for RunAs=UAP tests is done in the PACKAGED host process instead (taefhostapp
+                // App::OnLaunched, and SwitcherTests::ClassSetup). Log and continue so control reaches the
+                // packaged host rather than hard-failing (Blocked) the whole module here.
+                LOG_OUTPUT(L"SwitcherMode: ModuleSetup engagement not available in this (unpackaged) fixture "
+                    L"(ok=%d) - deferring to packaged host engagement.", static_cast<int>(ok));
             }
-            LOG_OUTPUT(L"SwitcherMode=true: switcher engaged process-wide via TrySetProcessEngine(System)");
+            else
+            {
+                LOG_OUTPUT(L"SwitcherMode=true: switcher engaged process-wide via TrySetProcessEngine(System)");
+            }
         }
         catch (Platform::Exception^ ex)
         {
-            LOG_OUTPUT(L"FAIL: SwitcherMode=true requested but CompositionEngine API not available (hr=0x%08x)",
-                ex->HResult);
-            return false;
+            // Non-fatal (see above): the packaged host performs the real engagement. Log and continue.
+            LOG_OUTPUT(L"SwitcherMode: ModuleSetup engagement threw in this (unpackaged) fixture (hr=0x%08x) "
+                L"- deferring to packaged host engagement.", ex->HResult);
         }
     }
 
