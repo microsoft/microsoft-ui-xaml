@@ -2009,6 +2009,247 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // =============================================================================================================
+        // Native-crash reproduction scenarios that specifically drive the cross-boundary peer fields converted from
+        // raw ctl::ComPtr to TrackerPtr (see the ListView/GridView/SplitView/ToggleSwitch/UIElement lifetime fix).
+        //
+        // A raw ctl::ComPtr peer field that outlives its owner (or is released from the wrong thread) is exactly the
+        // use-after-free / premature-native-peer-destruction class this suite exists to catch; the same field stored
+        // as a TrackerPtr participates in the tracker (GC) graph and is released safely. These scenarios churn the
+        // specific controls whose fields were converted, then drive the FINAL native release off the owning (UI)
+        // thread - finalize on the GC/finalizer thread, then settle the UI thread - so a regressed (raw-ComPtr) field
+        // faults here while the TrackerPtr form does not. They are gating (routed through RunNativeStress) and run the
+        // aggressive configuration only when AggressiveNativeReproEnabled is set (the scheduled soak / opt-in gate);
+        // in the light per-PR pass they do a small benign churn and cannot crash the shared pipeline.
+        // =============================================================================================================
+
+        // ListViewBase::m_spContainerBeingClicked (+ ModernCollectionBasePanel::m_spLayoutStrategy /
+        // m_spLayoutDataInfoProvider via the virtualizing backing panel). Churn a click-enabled, virtualizing ListView
+        // - swap the source and scroll both ends so containers are generated/recycled while item-click wiring holds a
+        // container reference - then drop the only managed reference and finalize off-thread so the native peer's
+        // final release runs on the finalizer thread.
+        [TestMethod]
+        public void StressListViewClickContainerChurnNative()
+        {
+            RunNativeStress("StressListViewClickContainerChurnNative", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+                int churn = AggressiveNativeReproEnabled ? 60 : 5;
+
+                SafeUI(() =>
+                {
+                    var listView = new ListView()
+                    {
+                        Width = 300,
+                        Height = 400,
+                        IsItemClickEnabled = true,
+                        SelectionMode = ListViewSelectionMode.Extended,
+                        ItemsSource = Enumerable.Range(0, 200).Select(i => string.Format("Item #{0}", i)).ToList(),
+                    };
+                    objects["ListView"] = new WeakReference(listView);
+
+                    Content = listView;
+                    Content.UpdateLayout();
+
+                    for (int c = 0; c < churn; c++)
+                    {
+                        listView.ItemsSource = Enumerable.Range(c * 50, 150).Select(i => string.Format("Item #{0}", i)).ToList();
+                        Content.UpdateLayout();
+
+                        if (listView.Items.Count > 0)
+                        {
+                            listView.SelectedIndex = c % listView.Items.Count;
+                            listView.ScrollIntoView(listView.Items[listView.Items.Count - 1]);
+                            Content.UpdateLayout();
+                            listView.ScrollIntoView(listView.Items[0]);
+                            Content.UpdateLayout();
+                        }
+                    }
+
+                    listView.ItemsSource = null;
+                    Content.UpdateLayout();
+                    Content = null;
+                });
+
+                // Off-thread final release of the native peer (the path where a cross-boundary raw ComPtr field faults).
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // GridView over ListViewBase / ModernCollectionBasePanel. Realize a virtualizing GridView, churn selection and
+        // add/remove its explicit containers (which drives the click-container and layout-strategy fields), then drop
+        // the only managed reference and finalize off-thread.
+        [TestMethod]
+        public void StressGridViewContainerChurnNative()
+        {
+            RunNativeStress("StressGridViewContainerChurnNative", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+                int churn = AggressiveNativeReproEnabled ? 60 : 5;
+
+                SafeUI(() =>
+                {
+                    var gridView = new GridView()
+                    {
+                        Width = 400,
+                        Height = 400,
+                        IsItemClickEnabled = true,
+                        SelectionMode = ListViewSelectionMode.Extended,
+                    };
+                    objects["GridView"] = new WeakReference(gridView);
+
+                    Content = gridView;
+                    Content.UpdateLayout();
+
+                    for (int c = 0; c < churn; c++)
+                    {
+                        var item = new GridViewItem() { Content = string.Format("Item {0}", c) };
+                        if (c == 0)
+                        {
+                            objects["FirstItem"] = new WeakReference(item);
+                        }
+                        gridView.Items.Add(item);
+                        Content.UpdateLayout();
+
+                        gridView.SelectedIndex = gridView.Items.Count - 1;
+                        gridView.ScrollIntoView(gridView.Items[gridView.Items.Count - 1]);
+                        Content.UpdateLayout();
+
+                        if (gridView.Items.Count > 8)
+                        {
+                            gridView.Items.RemoveAt(0);
+                            Content.UpdateLayout();
+                        }
+                    }
+
+                    gridView.Items.Clear();
+                    Content.UpdateLayout();
+                    Content = null;
+                });
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // SplitView light-dismiss layer (m_outerDismissLayerPopup / m_dismissHostElement / m_top/bottom/left/right
+        // DismissElement). Those fields are created when the pane opens in a light-dismiss (overlay) display mode.
+        // Repeatedly open/close the pane in an overlay mode with light dismiss on - standing the dismiss layer up and
+        // tearing it down each cycle - then drop the only managed reference and finalize off-thread.
+        [TestMethod]
+        public void StressSplitViewLightDismissChurnNative()
+        {
+            RunNativeStress("StressSplitViewLightDismissChurnNative", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+                int churn = AggressiveNativeReproEnabled ? 80 : 6;
+
+                SafeUI(() =>
+                {
+                    var paneList = new ListView() { ItemsSource = Enumerable.Range(0, 20) };
+                    var splitView = new SplitView()
+                    {
+                        Width = 500,
+                        Height = 400,
+                        Pane = paneList,
+                        Content = new TextBlock() { Text = "content" },
+                        DisplayMode = SplitViewDisplayMode.Overlay,
+                        LightDismissOverlayMode = LightDismissOverlayMode.On,
+                        IsPaneOpen = false,
+                    };
+                    objects["SplitView"] = new WeakReference(splitView);
+                    objects["PaneListView"] = new WeakReference(paneList);
+
+                    Content = splitView;
+                    Content.UpdateLayout();
+
+                    for (int c = 0; c < churn; c++)
+                    {
+                        // Open in a light-dismiss overlay mode: creates the dismiss-layer popup + dismiss elements.
+                        splitView.DisplayMode = (c % 2 == 0)
+                            ? SplitViewDisplayMode.Overlay
+                            : SplitViewDisplayMode.CompactOverlay;
+                        splitView.IsPaneOpen = true;
+                        Content.UpdateLayout();
+                        // Close: tears the dismiss layer back down.
+                        splitView.IsPaneOpen = false;
+                        Content.UpdateLayout();
+                    }
+
+                    splitView.Pane = null;
+                    splitView.Content = null;
+                    Content.UpdateLayout();
+                    Content = null;
+                });
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // ToggleSwitch::m_spKnobTransform / m_spCurtainTransform. These transform peers come from the control template,
+        // so they are created on OnApplyTemplate (first layout in a live tree) and released on teardown. Churn
+        // template-apply + IsOn toggles (which drive the curtain/knob transforms) across enter/leave, then drop the
+        // only managed reference and finalize off-thread.
+        [TestMethod]
+        public void StressToggleSwitchTransformChurnNative()
+        {
+            RunNativeStress("StressToggleSwitchTransformChurnNative", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+                int churn = AggressiveNativeReproEnabled ? 80 : 6;
+
+                SafeUI(() =>
+                {
+                    var host = new StackPanel();
+                    Content = host;
+                    host.UpdateLayout();
+
+                    for (int c = 0; c < churn; c++)
+                    {
+                        var toggle = new ToggleSwitch() { IsOn = false };
+                        if (c == 0)
+                        {
+                            objects["FirstToggle"] = new WeakReference(toggle);
+                        }
+
+                        host.Children.Add(toggle);
+                        host.UpdateLayout(); // OnApplyTemplate -> creates knob/curtain transform peers.
+
+                        toggle.IsOn = true;
+                        host.UpdateLayout();
+                        toggle.IsOn = false;
+                        host.UpdateLayout();
+
+                        host.Children.Remove(toggle);
+                        host.UpdateLayout();
+                    }
+
+                    Content = null;
+                });
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
         // Build a fresh instance of every WinUI control we want to torture. Each entry is a distinct control type so
         // a single iteration covers essentially the whole WinUI control surface.
         //
