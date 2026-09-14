@@ -33,6 +33,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"Verifies Lock() returns true first time, false thereafter")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(CollectionMoveNotificationsHasIndependentOptIn)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verifies collection Move notifications are disabled by default and use an independent, lockable opt-in")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(EnableChangeFailsAfterLock)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verifies EnableChange returns E_ILLEGAL_STATE_CHANGE after Lock for any changeId")
