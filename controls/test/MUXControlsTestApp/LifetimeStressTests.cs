@@ -100,6 +100,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             get { return GetEnvDouble("WINUI_LIFETIME_STRESS_MINUTES", 0.0); }
         }
 
+        // Opt-in "aggressive native repro" knob. When > 0, the native-crash-repro scenarios below run their most
+        // aggressive, most-likely-to-fault variant (many more off-thread final releases, deeper trees, more churn) -
+        // that is the configuration that actually provokes a latent native lifetime crash (use-after-free / premature
+        // native peer destruction / off-thread release). The scheduled soak pipeline (WinUI-LifetimeStress.yml) sets
+        // this; the per-PR gate deliberately leaves it UNSET so the gate runs only the light, benign variant and stays
+        // non-gating (it can never take the shared pipeline down). Reproducing the crash is the soak's job; the PR gate
+        // only needs the report pass.
+        private static bool AggressiveNativeReproEnabled
+        {
+            get { return GetEnvInt("WINUI_LIFETIME_STRESS_NATIVE", 0) > 0; }
+        }
+
         // Repeatedly create a broad set of controls, add each to the live visual tree, run layout (which forces the
         // native peer to be created and wired up), then unparent, drop the managed reference and collect. This is the
         // classic lifetime torture test: a bug in peer creation/destruction or ref-counting will fault here, and the
@@ -1609,6 +1621,255 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     selectorBar.SelectedItem = null;
                     selectorBar.Items.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // =============================================================================================================
+        // Native-crash reproduction scenarios.
+        //
+        // The scenarios above surface *managed*-observable lifetime problems (a leaked WeakReference, a thrown managed
+        // exception) and report them as non-gating warnings. The scenarios in THIS section instead target the native
+        // lifetime crash classes the managed harness cannot otherwise reach - use-after-free, premature native peer
+        // destruction, off-thread final release and enter/leave peer-wiring bugs in the 3-layer peer model - by driving
+        // the exact access patterns that historically fault natively (a hard fail-fast / stowed exception that no
+        // managed catch can intercept).
+        //
+        // They stay NON-GATING by construction:
+        //   * All managed-thread work goes through SafeUI / RunIterationReporting, so any thrown managed exception is
+        //     downgraded to a warning (never a Verify.Fail).
+        //   * The genuinely fatal, host-crashing step of each scenario is guarded behind AggressiveNativeReproEnabled
+        //     (WINUI_LIFETIME_STRESS_NATIVE), which ONLY the scheduled soak pipeline sets. In the per-PR gate the knob
+        //     is off, so the scenario runs a light benign pass and cannot crash the shared pipeline. The soak - itself
+        //     a CI build - runs the aggressive variant that actually reproduces the native crash, isolated in this
+        //     suite's own Helix work item so a host crash there does not take unrelated tests down.
+        //   * If a specific scenario becomes a KNOWN deterministic crasher even in the light pass, quarantine just that
+        //     one with [TestProperty("Ignore","True")] (see StressItemsRepeaterRealizationAndRecycling) until its
+        //     product bug is fixed - same convention the rest of the suite uses.
+        // =============================================================================================================
+
+        // Off-thread final peer release (Pillar C class). Create native-peer-heavy elements on the UI thread, wire them
+        // into the live tree so the native peer is created, then unparent and drop the ONLY managed reference WITHOUT
+        // collecting on the UI thread. The subsequent forced finalization runs the managed peer's finalizer on the
+        // GC/finalizer thread, so the FINAL native release originates off the owning (UI) thread and must be marshaled
+        // back through the UIAffinityReleaseQueue funnel. A bug in that off-thread release path faults here.
+        [TestMethod]
+        public void StressOffThreadPeerFinalRelease()
+        {
+            RunStress("StressOffThreadPeerFinalRelease", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+                int peers = AggressiveNativeReproEnabled ? 64 : 6;
+
+                SafeUI(() =>
+                {
+                    var host = new Grid();
+                    Content = host;
+                    host.UpdateLayout();
+
+                    for (int p = 0; p < peers; p++)
+                    {
+                        var child = new NavigationView() { PaneTitle = "peer" };
+                        if (p == 0)
+                        {
+                            objects["FirstPeer"] = new WeakReference(child);
+                        }
+                        host.Children.Add(child);
+                        host.UpdateLayout();
+                        host.Children.Clear();
+                        host.UpdateLayout();
+                    }
+
+                    Content = null;
+                });
+
+                // Drive the final release off-thread: finalize first (finalizer thread), then settle the UI thread so
+                // the marshaled release is actually drained on its owning thread.
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // Re-entrant teardown. Remove an element from the tree and, from inside its own Unloaded handler, synchronously
+        // mutate the tree again (null its content, clear its parent). Re-entering teardown while the native peer is
+        // mid-unlink is a classic use-after-free / premature-peer-destruction trigger.
+        [TestMethod]
+        public void StressReentrantUnloadTeardown()
+        {
+            RunStress("StressReentrantUnloadTeardown", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+                int churn = AggressiveNativeReproEnabled ? 60 : 5;
+
+                SafeUI(() =>
+                {
+                    var host = new StackPanel();
+                    Content = host;
+                    host.UpdateLayout();
+
+                    for (int c = 0; c < churn; c++)
+                    {
+                        var panel = new Border();
+                        var child = new Button() { Content = "x" };
+                        panel.Child = child;
+                        if (c == 0)
+                        {
+                            objects["FirstPanel"] = new WeakReference(panel);
+                        }
+
+                        child.Unloaded += (s, e) =>
+                        {
+                            panel.Child = null;
+                            host.Children.Clear();
+                        };
+
+                        host.Children.Add(panel);
+                        host.UpdateLayout();
+                        if (host.Children.Contains(panel))
+                        {
+                            host.Children.Remove(panel);
+                        }
+                        host.UpdateLayout();
+                    }
+
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // Native-backed event handler outliving its peer. Subscribe a native-backed event whose delegate closes over
+        // the element, remove and drop the element, force collection, then keep mutating the live tree so the framework
+        // pumps layout/size callbacks. If a revoked/native handler outlives the peer it dereferences freed native state.
+        [TestMethod]
+        public void StressEventHandlerAfterTeardown()
+        {
+            RunStress("StressEventHandlerAfterTeardown", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+                int churn = AggressiveNativeReproEnabled ? 60 : 5;
+
+                SafeUI(() =>
+                {
+                    var host = new StackPanel();
+                    Content = host;
+                    host.UpdateLayout();
+
+                    for (int c = 0; c < churn; c++)
+                    {
+                        var element = new Slider() { Minimum = 0, Maximum = 100 };
+                        if (c == 0)
+                        {
+                            objects["FirstElement"] = new WeakReference(element);
+                        }
+
+                        SizeChangedEventHandler handler = (s, e) => { _ = element.Value; };
+                        element.SizeChanged += handler;
+
+                        host.Children.Add(element);
+                        host.UpdateLayout();
+                        host.Children.Remove(element);
+                        element.SizeChanged -= handler;
+                        host.UpdateLayout();
+                    }
+
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // Rapid reparent across two live subtrees. Move the same element back and forth between two parents that are
+        // both in the live tree. Each move drives the native peer through leave-tree + enter-tree wiring; a bug in the
+        // enter/leave peer bookkeeping faults under this churn.
+        [TestMethod]
+        public void StressRapidReparentEnterLeave()
+        {
+            RunStress("StressRapidReparentEnterLeave", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+                int moves = AggressiveNativeReproEnabled ? 400 : 20;
+
+                SafeUI(() =>
+                {
+                    var root = new Grid();
+                    var left = new StackPanel();
+                    var right = new StackPanel();
+                    root.Children.Add(left);
+                    root.Children.Add(right);
+                    Content = root;
+                    root.UpdateLayout();
+
+                    var mover = new ComboBox() { ItemsSource = Enumerable.Range(0, 20) };
+                    objects["Mover"] = new WeakReference(mover);
+
+                    left.Children.Add(mover);
+                    root.UpdateLayout();
+
+                    Panel current = left;
+                    for (int m = 0; m < moves; m++)
+                    {
+                        Panel next = (current == left) ? right : left;
+                        current.Children.Remove(mover);
+                        next.Children.Add(mover);
+                        root.UpdateLayout();
+                        current = next;
+                    }
+
+                    left.Children.Clear();
+                    right.Children.Clear();
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // Deep visual-tree peer churn. Build a deeply nested chain of native-peer-bearing elements, realize it, then
+        // tear the whole chain down at once and collect. Deep nesting multiplies native peer create/destroy traffic and
+        // stresses the recursive leave-tree teardown path where premature-peer-destruction bugs live.
+        [TestMethod]
+        public void StressDeepVisualTreePeerChurn()
+        {
+            RunStress("StressDeepVisualTreePeerChurn", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+                int depth = AggressiveNativeReproEnabled ? 400 : 30;
+
+                SafeUI(() =>
+                {
+                    var root = new Border();
+                    Content = root;
+                    objects["Root"] = new WeakReference(root);
+
+                    Border cursor = root;
+                    for (int d = 0; d < depth; d++)
+                    {
+                        var next = new Border();
+                        cursor.Child = next;
+                        cursor = next;
+                    }
+                    cursor.Child = new TextBlock() { Text = "leaf" };
+
+                    root.UpdateLayout();
+                    root.Child = null;
                     Content = null;
                 });
 
