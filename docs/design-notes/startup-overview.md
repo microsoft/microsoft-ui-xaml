@@ -19,6 +19,9 @@ Note that UWP mode is not supported publicly, we only keep it running because te
 Refer to the [Startup Flow Diagram](#startup-flow-diagram) at the bottom of this page to see a graphical overview of the
 important steps in the initialization process.
 
+For the six ETW launch boundaries and their five canonical intervals, see
+[XAML launch boundary observations](launch-phase-markers.md).
+
 There are four pieces to startup:
   1. DXamlCore initialization (DirectUI::DXamlCore::InitializeImpl)
   2. CJupiterWindow initialization (DirectUI::DXamlCore::ConfigureJupiterWindow)
