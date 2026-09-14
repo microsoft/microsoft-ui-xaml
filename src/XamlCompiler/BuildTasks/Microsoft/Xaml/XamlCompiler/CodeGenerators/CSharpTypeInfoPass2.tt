@@ -11,14 +11,19 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-<#  if(!Model.GenerateTypeInfo)  #>
+<#  if(Model.IsPass1)
+    {
+        WriteLine(TypeInfoDefinition.CSharpPass1StubMarker);
+        WriteLine(TypeInfoDefinition.CSharpPass1WarningPragma);
+    }
+    if(!Model.GenerateTypeInfo)#>
 <#  {                                       #>
-// No local types.
+<#=TypeInfoDefinition.CSharpNoTypeInfoMarker#>
 <#  }                                       #>
 <#  else                                    #>
 <#  {                                       #>
 
-<#  if (!ProjectInfo.IsLibrary && Model.AppMetadataProviderNamespace != null) #>
+<#  if (!Model.IsPass1 && !ProjectInfo.IsLibrary && Model.AppMetadataProviderNamespace != null)#>
 <#  { #>
 namespace <#=Model.AppMetadataProviderNamespace#>
 {
@@ -36,8 +41,10 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#  if (ProjectInfo.GenerateFullXamlMetadataProvider) { #>
     [<#=Globalize(KnownNamespaces.XamlMarkup)#>.FullXamlMetadataProvider()]
 <#  } #>
-    public sealed partial class XamlMetaDataProvider : <#=Globalize(KnownTypes.IXamlMetadataProvider)#>
+    <#=TypeInfoDefinition.XamlMetadataProviderClassDeclaration#> : <#=Globalize(KnownTypes.IXamlMetadataProvider)#>
     {
+<#  if (!Model.IsPass1)#>
+<#  {#>
         private <#=Globalize(ProjectInfo.XamlTypeInfoNamespace)#>.XamlTypeInfoProvider _provider = null;
 
         private <#=Globalize(ProjectInfo.XamlTypeInfoNamespace)#>.XamlTypeInfoProvider Provider
@@ -63,13 +70,21 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
         }
 
 <#      }#>
+<#  }#>
         /// <summary>
         /// GetXamlType(Type)
         /// </summary>
         <#=OverloadAttribute#>
         <#=NotCLSCompliantAttribute#>public <#=Globalize(KnownTypes.IXamlType)#> GetXamlType(global::System.Type type)
         {
+<#  if (Model.IsPass1)#>
+<#  {#>
+            throw new global::System.NotImplementedException();
+<#  }#>
+<#  else#>
+<#  {#>
             return Provider.GetXamlTypeByType(type);
+<#  }#>
         }
 
         /// <summary>
@@ -77,7 +92,14 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
         /// </summary>
         <#=NotCLSCompliantAttribute#>public <#=Globalize(KnownTypes.IXamlType)#> GetXamlType(string fullName)
         {
+<#  if (Model.IsPass1)#>
+<#  {#>
+            throw new global::System.NotImplementedException();
+<#  }#>
+<#  else#>
+<#  {#>
             return Provider.GetXamlTypeByName(fullName);
+<#  }#>
         }
 
         /// <summary>
@@ -85,10 +107,19 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
         /// </summary>
         <#=NotCLSCompliantAttribute#>public <#=Globalize(KnownTypes.XmlnsDefinition)#>[] GetXmlnsDefinitions()
         {
+<#  if (Model.IsPass1)#>
+<#  {#>
+            throw new global::System.NotImplementedException();
+<#  }#>
+<#  else#>
+<#  {#>
             return new <#=Globalize(KnownTypes.XmlnsDefinition)#>[0];
+<#  }#>
         }
     }
 
+<#  if (!Model.IsPass1)#>
+<#  {#>
 <#    if(ProjectInfo.EnableTypeInfoReflection)#>
 <#    { #>
     <#=GeneratedCodeAttribute#>
@@ -602,6 +633,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
         }
     }
 <#  } //End of non-reflection type info provider #>
+<#  } // End of pass 2 implementation#>
 }
 <# } // End of both type info providers codegen#>
 <#+ #>
