@@ -35,6 +35,10 @@ parameters:
   displayName: "Run Static Analysis (e.g., PREFast, APIScan)"
   type: boolean
   default: false
+- name: CollectCodeCoverage
+  displayName: "Collect runtime code coverage (experimental)"
+  type: boolean
+  default: false
 
 variables:
 - template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
@@ -145,6 +149,7 @@ extends:
       - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
         parameters:
           pipelineKind: GitHubPR
+          collectCodeCoverage: ${{ parameters.CollectCodeCoverage }}
           buildScenarioApps: true
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
           runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
@@ -168,6 +173,7 @@ extends:
       - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
         parameters:
           pipelineKind: PR
+          collectCodeCoverage: ${{ parameters.CollectCodeCoverage }}
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml

@@ -10,6 +10,7 @@ parameters:
   testSuite: 'DevTestSuite' # Can be: DevTestSuite, ScenarioTestSuite
   rerunPassesRequiredToAvoidFailure: 5
   testPayloadArtifactName: 'TestPayload'
+  collectCodeCoverage: false
 # We run the bulk of our tests in Helix. But this Job runs tests directly on the Pipeline agents.
 # These Pipeline agents are running on a ni_release build of Windows which is not available in Helix.
 # This approach allows us to run tests on prerelease builds of Windows.
@@ -92,9 +93,23 @@ jobs:
     displayName: Run Tests
     timeoutInMinutes: 90
     inputs:
-      targetType: filePath
-      filePath: Helix\common\pipeline\RunTestPassSliceOnBuildAgent.ps1
-      arguments: -WorkItemProjFileNameFilter $(workItemsProjNameFilter) -WorkItemProjDir $(workItemsProjDir) -TestPayloadDir $(testPayloadDir) -UploadRoot $(uploadRootInner) -JobPositionInPhase $(System.JobPositionInPhase) -TotalJobsInPhase $(System.TotalJobsInPhase) -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }}
+      ${{ if eq(parameters.collectCodeCoverage, false) }}:
+        targetType: filePath
+        filePath: Helix\common\pipeline\RunTestPassSliceOnBuildAgent.ps1
+        arguments: -WorkItemProjFileNameFilter $(workItemsProjNameFilter) -WorkItemProjDir $(workItemsProjDir) -TestPayloadDir $(testPayloadDir) -UploadRoot $(uploadRootInner) -JobPositionInPhase $(System.JobPositionInPhase) -TotalJobsInPhase $(System.TotalJobsInPhase) -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }}
+      ${{ if eq(parameters.collectCodeCoverage, true) }}:
+        targetType: inline
+        script: |
+          & "$(Build.SourcesDirectory)\Helix\common\pipeline\coverage\Invoke-WithCodeCoverage.ps1" `
+            -PayloadDir "$(testPayloadDir)" `
+            -OutputFile "$(uploadRootInner)\coverage-$env:COMPUTERNAME-slice$(System.JobPositionInPhase).coverage" `
+            -RunTests {
+              & "$(Build.SourcesDirectory)\Helix\common\pipeline\RunTestPassSliceOnBuildAgent.ps1" `
+                -WorkItemProjFileNameFilter "$(workItemsProjNameFilter)" -WorkItemProjDir "$(workItemsProjDir)" `
+                -TestPayloadDir "$(testPayloadDir)" -UploadRoot "$(uploadRootInner)" `
+                -JobPositionInPhase $(System.JobPositionInPhase) -TotalJobsInPhase $(System.TotalJobsInPhase) `
+                -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }}
+            }
       errorActionPreference: stop
       workingDirectory: $(Build.SourcesDirectory)\build\PipelineScripts
 
