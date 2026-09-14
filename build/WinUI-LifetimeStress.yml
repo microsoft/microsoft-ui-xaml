@@ -7,12 +7,13 @@
 # Win8 era: build WinUI and then run the lifetime stress suite for an extended period, watching for object-lifetime
 # crashes (use-after-free / premature native peer destruction / ref-counting bugs in the 3-layer peer model).
 #
-# It reuses the normal Build + RunTests stages. The only difference from a Nightly run is the
-# WINUI_LIFETIME_STRESS_MINUTES variable below: it puts the LifetimeStressTestSuite tests
+# It reuses the normal Build + RunTests stages. The differences from a Nightly run are two variables set below:
+# WINUI_LIFETIME_STRESS_MINUTES puts the LifetimeStressTestSuite tests
 # (controls/test/MUXControlsTestApp/LifetimeStressTests.cs) into soak mode so each lifetime scenario loops on a
-# wall-clock budget instead of a fixed (gate) iteration count. Every other test still runs with its normal
-# behavior. The suite is isolated into its own TAEF/Helix work item, so a lifetime crash here does not cascade
-# into unrelated tests.
+# wall-clock budget instead of a fixed (gate) iteration count; WINUI_LIFETIME_STRESS_NATIVE turns on the aggressive
+# native-crash reproduction variant of the *Native scenarios (the configuration that actually provokes a latent
+# native lifetime crash). Every other test still runs with its normal behavior. The suite is isolated into its own
+# TAEF/Helix work item, so a lifetime crash here does not cascade into unrelated tests.
 #
 # NOTE: This pipeline must be registered in Azure DevOps and its schedule/soak duration tuned there. The value
 # below is the default soak duration (in minutes) per lifetime scenario.
@@ -53,6 +54,14 @@ variables:
 # scenario until the budget elapses instead of using its default gate iteration count.
 - name: WINUI_LIFETIME_STRESS_MINUTES
   value: ${{ parameters.lifetimeStressMinutes }}
+# Enables the aggressive native-crash reproduction variant of the LifetimeStressTestSuite *Native scenarios. The
+# harness reads this from the environment (AggressiveNativeReproEnabled) and, when > 0, runs each native-repro
+# scenario in its most aggressive, most-likely-to-fault configuration (many more off-thread final releases, deeper
+# trees, more reparent/enter-leave churn) - the configuration that actually provokes a latent native lifetime crash
+# (use-after-free / premature native peer destruction / off-thread final release). Only this scheduled soak sets it,
+# so the per-PR gate keeps running the light, non-gating variant and can never crash the shared pipeline.
+- name: WINUI_LIFETIME_STRESS_NATIVE
+  value: 1
 
 resources:
   repositories:
