@@ -97,6 +97,7 @@ public:
     _Check_return_ HRESULT GetBuiltInStyle(_Outptr_ CStyle **ppStyle);
 
     _Check_return_ HRESULT CreationComplete() override;
+    _Check_return_ HRESULT ApplyTemplate(_Out_ bool& fAddedVisuals) override;
     _Check_return_ HRESULT CoerceIsEnabled(_In_ bool bIsEnabled, _In_ bool bCoerceChildren) final;
 
     void SuppressIsEnabled(_In_ bool bSuppress);
@@ -208,6 +209,7 @@ protected:
         , m_fSuppressIsEnabled(FALSE)
         , m_fRequestTemplateBindingRefresh(FALSE)
         , m_fIsDefaultStyleApplying(FALSE)
+        , m_fCreationCompleteCalled(FALSE)
     {
         m_isTabStop = true;
     }
@@ -215,6 +217,7 @@ protected:
     ~CControl() override;
 
 private:
+    _Check_return_ HRESULT EnsureBuiltInStyleApplied();
     _Check_return_ HRESULT ApplyBuiltInStyle();
 
     _Check_return_ HRESULT PropagateInheritedProperty(_In_ CUIElement *pUIElement, _In_ const CDependencyProperty *pdp);
@@ -289,6 +292,7 @@ private:
     bool   m_fSuppressIsEnabled             : 1;
     bool   m_fRequestTemplateBindingRefresh : 1;   // Flag used by deferred element to signal that template bindings should be reevaluated after an element was realized in control template.
     bool   m_fIsDefaultStyleApplying        : 1;
+    bool   m_fCreationCompleteCalled        : 1;
 
 private:
     // Number of preallocated subscriptions in the vector.
