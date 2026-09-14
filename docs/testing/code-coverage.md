@@ -31,27 +31,98 @@ are unchanged.
 The focused YAML has both CI and PR triggers disabled. Adding the file does not
 register a pipeline, schedule a run, or grant resource access.
 
-## First pipeline test
+## Which tests contribute
 
-No new pipeline registration is required to test the port with the existing
-**WinUI-GitHub-PR (OneBranch)** pipeline.
+Coverage follows the binary that executes the product code, not the test's source
+directory. The following expectations come from the
+[test-job definitions](../../build/AzurePipelinesTemplates/WinUI-CreateTestPayload-Job.yml)
+and their deployment paths. They still need confirmation in a WinUI lab run with
+a working collector.
 
-1. In Azure DevOps, select **Run pipeline**, choose this PR's GitHub branch, and
-   leave **CollectCodeCoverage=false** and **runFullValidation=true**. Compare its
-   expanded stages/jobs and test task inputs with a base-branch run. There should
-   be no coverage build variable, instrumentation, collector, coverage symbol
-   download, or merge job.
-2. Queue the same commit again with **CollectCodeCoverage=true**. Confirm payload
-   instrumentation finds both runtime DLLs, copies each instrumented DLL and its
-   `static_covrun*.dll` runtime to every loose-DLL payload location, and bundles the collector.
-3. Check the test-output artifacts for nonempty `coverage-<machine>-slice<N>.coverage`
-   files and collector logs. Coverage setup/shutdown warnings indicate an incomplete
-   result even if the tests pass. Confirm no collector remains after each slice.
-4. Open the run's **Code Coverage** tab and the **MergeCodeCoverage** artifact.
-   Verify that `CodeCoverage/merged.cobertura.xml` and `CodeCoverage/merged.coverage`
-   are nonempty and contain coverage for both MUX and MUXC, not the test assemblies.
-   The binary report can be opened in Visual Studio.
-5. Repeat the default-off comparison for **WinUI-GitHub-Nightly**. For coverage-on
+| Test family | Expected contribution when coverage is enabled |
+| --- | --- |
+| Controls API tests under `controls/dev/.../APITests` | Yes. They compile into the loose `MUXControlsTestApp.dll`, which TAEF runs against instrumented runtime copies. |
+| Controls interaction tests under `controls/dev/.../InteractionTests` | Yes. `MUXControls.Test.dll` drives the unpackaged `MUXControlsTestApp.exe`. Product execution in the app counts; the test driver's own code does not. |
+| Other loose controls test apps, such as `TabViewTearOutApp` | Yes, when selected. Their co-located MUX/MUXC copies are instrumented too. |
+| Native integration tests under `dxaml/test/native/external` | Yes, for the selected UAP, WPF, and Win32Explicit groups. Their hosts consume loose payload files. |
+| Managed integration tests under `dxaml/test/managed` | Yes, for the selected WPF group. The pipeline does not schedule UAP-only managed tests. |
+| `Microsoft.UI.Xaml.Tests.Isolated.*` unit tests, including tests under `dxaml/xcp/components/.../unittests` | They run, but product code statically linked into their test DLLs is not instrumented. Only calls into an instrumented runtime DLL can contribute. |
+| `controls/test/IXMPTestApp` | No coverage for its embedded runtime copies. The self-contained `IXMPTestApp.appx` is left unchanged. |
+| Controls scenario/sample/Gallery tests | No. They run in the separate `ScenarioTestSuite` flow, which does not enable collection in this port. |
+
+A packaged host is not necessarily excluded. Controls API tests use TAEF's
+`PackagedCWA` host with loose payload files. The
+[native dxaml host project](../../dxaml/test/infra/taefhostapp/taefhostapp.vcxproj)
+also deploys its executable and dependencies as loose files, rather than deploying
+its built APPX. The uncovered case is a runtime copy inside an already-built
+APPX/MSIX package.
+
+Controls tests can cover both MUXC and the underlying MUX implementation. However,
+the metric includes only those two DLLs: test assemblies, compiler binaries,
+dependencies, and the separate `Microsoft.UI.Xaml.Controls.Tabular.dll` are not
+instrumented. Executing a statically linked copy of the same source code does not
+count as executing the instrumented runtime copy.
+
+Tests must also be built, enabled, and selected for the run's architecture, OS,
+hosting mode, and test query. The current coverage test jobs use x86 Debug.
+Ignored tests and tests filtered out for that configuration do not contribute.
+Collection is per slice, not per individual test, so a merged report does not
+identify which test covered a particular line.
+
+## Run coverage manually
+
+Use the existing
+[WinUI-GitHub-PR (OneBranch) pipeline](https://dev.azure.com/microsoft/WinUI/_build?definitionId=195405).
+It already reads this GitHub repository and does not require a new pipeline registration.
+
+1. Select **Run pipeline**, then choose the GitHub branch containing the coverage
+   change. Before the PR merges, choose its source branch, not `main`.
+2. Enable **Collect runtime code coverage (experimental)** (`CollectCodeCoverage`).
+3. Leave **Run full WinUI PR validation stages** (`runFullValidation`) enabled.
+   Keep the other parameters at their defaults and leave the stages selected.
+4. Select **Run**. This queues a real build and lab test pass, not a YAML-only preview.
+5. Follow the `Build` and `RunTests` stages. Within `RunTests`, expect payload
+   instrumentation, the OS test jobs, and a final `MergeCodeCoverage` job.
+6. Open the run's **Code Coverage** tab for the summary, or download
+   `CodeCoverage/merged.cobertura.xml` and `CodeCoverage/merged.coverage` from the
+   **MergeCodeCoverage** artifact. Inspect slice warnings as well as the summary.
+
+If the coverage checkbox is missing, confirm that the selected branch contains
+the updated `build/WinUI-GitHub-PR.yml`. Use **Run pipeline** to select new parameters;
+rerunning failed jobs from an old run does not select this change or enable coverage.
+If Azure DevOps requests resource authorization, a maintainer must authorize the
+required resource; do not change pipeline defaults or bypass the approval.
+
+Alternatively, with Azure CLI and the Azure DevOps extension authenticated:
+
+```powershell
+az pipelines run `
+    --org https://dev.azure.com/microsoft `
+    --project WinUI `
+    --id 195405 `
+    --branch "<branch-containing-this-change>" `
+    --parameters CollectCodeCoverage=true runFullValidation=true
+```
+
+The option applies only to this queued run. Normal PR validation and nightly
+defaults remain unchanged. This is the full PR pipeline, not the smaller focused
+pipeline described below.
+
+## Validate the initial port
+
+1. Use the manual steps above with **CollectCodeCoverage=false** first. Compare
+   the expanded stages/jobs and test task inputs with a base-branch run. There
+   should be no coverage build variable, instrumentation, collector, coverage
+   symbol download, or merge job.
+2. Queue the same commit with **CollectCodeCoverage=true**. Confirm instrumentation
+   finds both runtime DLLs, updates every loose copy, distributes `static_covrun*.dll`,
+   and bundles the collector.
+3. Check for nonempty per-slice `coverage-<machine>-slice<N>.coverage` files and
+   merged reports with source-line data for both MUX and MUXC, not test assemblies.
+   Collector warnings indicate incomplete results even if tests pass. Confirm no
+   collector remains after each slice. Open the binary report in Visual Studio
+   if needed, and account for the test-family limitations above.
+4. Repeat the default-off comparison for **WinUI-GitHub-Nightly**. For coverage-on
    runs, verify that the merge includes slices from all three OS jobs.
 
 Do not change pipeline defaults, schedules, or branch protection to test this feature.
