@@ -6,7 +6,7 @@
 #include "common.h"
 #include "TitleBarAutomationPeer.h"
 
-namespace winrt::Microsoft::UI::Xaml::Controls
+namespace winrt::Microsoft::UI::Xaml::Automation::Peers
 {
     CppWinRTActivatableClassWithBasicFactory(TitleBarAutomationPeer)
 }
