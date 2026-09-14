@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# Tests coverage-script behavior and failure paths with fixtures, without running WinUI tests.
+
 $script:coverageScripts = Split-Path $PSScriptRoot -Parent
 $script:fixtureRoot = Join-Path $PSScriptRoot ('.fixtures-' + [guid]::NewGuid().ToString('N'))
 $script:compiledTool = Join-Path $script:fixtureRoot 'CoverageToolFixture.exe'

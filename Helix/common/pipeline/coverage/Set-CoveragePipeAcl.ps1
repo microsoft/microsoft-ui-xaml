@@ -1,6 +1,9 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# Applies the experimental TAEF collector-pipe workaround on isolated lab agents.
+# Changes the DACL only, not integrity labels.
+
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
@@ -10,8 +13,6 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-# Preserve the experimental TAEF pipe-permission workaround. This changes only the
-# DACL, not integrity labels, and belongs only on an isolated lab agent.
 if (-not ('WinUI.Coverage.PipeAcl' -as [type]))
 {
     Add-Type -Namespace 'WinUI.Coverage' -Name 'PipeAcl' -MemberDefinition @'

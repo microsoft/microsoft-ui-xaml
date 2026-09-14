@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# Validates per-slice coverage data and merges it into Cobertura and Visual Studio reports.
+
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]

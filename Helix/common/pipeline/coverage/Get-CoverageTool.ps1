@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# Finds the VS native coverage console used to instrument DLLs and merge reports.
+
 [CmdletBinding()]
 param(
     [string]$CoverageToolPath

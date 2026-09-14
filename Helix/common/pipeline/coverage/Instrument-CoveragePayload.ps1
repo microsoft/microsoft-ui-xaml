@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# Instruments loose MUX/MUXC payload copies and bundles the collector for lab agents.
+
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]

@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# Collects coverage around one test slice, with bounded cleanup that preserves the test result.
+
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]

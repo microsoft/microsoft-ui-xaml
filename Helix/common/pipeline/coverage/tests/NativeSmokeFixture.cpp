@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+// Builds the tiny DLL probes and loader used by the real native coverage smoke test.
+
 #ifdef COVERAGE_TEST_DLL
 extern "C" __declspec(dllexport) __declspec(noinline) int CoverageProbe(int value)
 {

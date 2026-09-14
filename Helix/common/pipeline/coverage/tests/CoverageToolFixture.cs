@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+// Simulates the coverage console and vswhere with real process exits and controllable pipe stalls.
+
 using System;
 using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 
-// A process, rather than a PowerShell mock, exercises native arguments and LASTEXITCODE.
 internal static class CoverageToolFixture
 {
     private static string Option(string[] args, string name)

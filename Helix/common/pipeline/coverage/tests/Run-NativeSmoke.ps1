@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# Exercises real VS instrumentation, collection, and report validation using tiny native fixtures.
+
 [CmdletBinding()]
 param([string]$CoverageToolPath)
 

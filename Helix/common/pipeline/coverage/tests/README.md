@@ -1,3 +1,5 @@
+<!-- Explains how to run the standalone coverage regression suite and native smoke test. -->
+
 # Coverage script regression tests
 
 Run in a fresh process from the repository root:

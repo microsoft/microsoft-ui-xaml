@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# Runs the standalone Pester coverage regression suite and returns failure if any test fails.
 # Invoke in a fresh powershell.exe or pwsh.exe process because the tests load an inert ACL type.
 $ErrorActionPreference = 'Stop'
 Import-Module Pester -RequiredVersion 3.4.0
