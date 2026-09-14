@@ -100,6 +100,22 @@ namespace MUXControlsTestApp
             DisabledSplitButton.IsEnabled = false;
         }
 
+        private void ToggleSplitButtonEnableCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            if (ToggleSplitButton != null)
+            {
+                ToggleSplitButton.IsEnabled = true;
+            }
+        }
+
+        private void ToggleSplitButtonEnableCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (ToggleSplitButton != null)
+            {
+                ToggleSplitButton.IsEnabled = false;
+            }
+        }
+
         private void CanExecuteCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             if (TestExecuteCommand != null)
