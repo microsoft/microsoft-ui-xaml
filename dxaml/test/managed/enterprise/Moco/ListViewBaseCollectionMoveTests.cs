@@ -27,6 +27,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
     public partial class ListViewBaseTests
     {
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:false}")]
         public void CollectionMoveNotificationsAreDisabledByDefault()
         {
@@ -52,6 +53,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
         public void CollectionMoveSingleItemNotificationsAreCoherent()
         {
@@ -75,6 +77,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
         public void CollectionMoveRangeNotificationsAreCoherent()
         {
@@ -103,6 +106,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
         public void CollectionMoveDoesNotChangeOtherNotifications()
         {
@@ -110,6 +114,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:false}")]
         public void CollectionMoveDoesNotChangeOtherNotificationsWhenDisabled()
         {
@@ -117,6 +122,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
         public void CollectionMoveDoesNotEnumerateVirtualizedSource()
         {
@@ -169,6 +175,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
         public void CollectionMoveRejectsReentrantViewMutation()
         {
@@ -214,6 +221,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
         public void CollectionMoveReconcilesReentrantSourceMutation()
         {
@@ -221,9 +229,11 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
             {
                 UIExecutor.Execute(() =>
                 {
+                    const int changedState = unchecked((int)0x8000000C);
                     var source = new ObservableCollection<string>(new[] { "A", "B", "C" });
                     var viewSource = new CollectionViewSource { Source = source };
                     var view = viewSource.View;
+                    Verify.IsTrue(view.MoveCurrentToFirst());
                     var finalItems = new object[] { "B", "C", "A", "nested" };
                     int notifications = 0;
                     VectorChangedEventHandler<object> handler = (sender, args) =>
@@ -234,7 +244,6 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                         {
                             Verify.AreEqual(CollectionChange.ItemRemoved, args.CollectionChange);
                             source.Add("nested");
-                            const int changedState = unchecked((int)0x8000000C);
                             VerifyMoveFailure(() => { _ = view.Count; }, changedState);
                             VerifyMoveFailure(() => { _ = view[0]; }, changedState);
                             VerifyMoveFailure(() => view.IndexOf("B"), changedState);
@@ -257,7 +266,8 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                     view.VectorChanged += handler;
                     try
                     {
-                        source.Move(0, 2);
+                        // CollectionView also reads the invalidated view when updating its removed current item.
+                        VerifyMoveFailure(() => source.Move(0, 2), changedState);
                         Verify.AreEqual(2, notifications, "A reentrant source mutation must be reconciled by one Reset.");
                         VerifyMoveItems(view, finalItems, finalItems);
                     }
@@ -278,6 +288,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
         public void CollectionMovePreservesCallbackFailureAndRecovers()
         {
@@ -336,6 +347,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
         public void ListViewMovePreservesUnmovedItemState()
         {
@@ -343,6 +355,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
         public void GridViewMovePreservesUnmovedItemState()
         {
@@ -350,6 +363,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
         public void ListViewMoveIntoAndOutOfViewportPreservesUnmovedContainers()
         {
@@ -357,6 +371,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
         public void GridViewMoveIntoAndOutOfViewportPreservesUnmovedContainers()
         {
