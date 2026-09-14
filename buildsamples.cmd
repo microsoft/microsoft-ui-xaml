@@ -66,6 +66,9 @@ if ERRORLEVEL 1 goto:eof
 REM The C# packaged TableView app is a single-project MSIX app, so it only emits its .msix when published.
 call :buildSamplesSolution %reporoot%\Samples\TableViewApp\TableViewAppCsPackaged\TableViewAppCsPackaged.csproj /t:Publish /p:PublishProfile=win-%BUILDPLATFORM%.pubxml
 if ERRORLEVEL 1 goto:eof
+REM The ElementFactory / RecyclePool sample app is a single-project MSIX app, so it only emits its .msix when published.
+call :buildSamplesSolution %reporoot%\Samples\RecyclePoolSampleApp\RecyclePoolSampleApp\RecyclePoolSampleApp.csproj /t:Publish /p:PublishProfile=win-%BUILDPLATFORM%.pubxml
+if ERRORLEVEL 1 goto:eof
 
 exit /b 0
 
