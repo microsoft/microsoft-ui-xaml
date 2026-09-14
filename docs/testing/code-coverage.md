@@ -72,7 +72,7 @@ identify which test covered a particular line.
 ## Run coverage manually
 
 Use the existing
-[WinUI-GitHub-PR (OneBranch) pipeline](https://dev.azure.com/microsoft/WinUI/_build?definitionId=195405).
+[WinUI-GitHub-PR (OneBranch) pipeline](https://dev.azure.com/microsoft/WinUI/_build?definitionId=195405) (MS internal).
 It already reads this GitHub repository and does not require a new pipeline registration.
 
 1. Select **Run pipeline**, then choose the GitHub branch containing the coverage
@@ -93,7 +93,8 @@ rerunning failed jobs from an old run does not select this change or enable cove
 If Azure DevOps requests resource authorization, a maintainer must authorize the
 required resource; do not change pipeline defaults or bypass the approval.
 
-Alternatively, with Azure CLI and the Azure DevOps extension authenticated:
+Alternatively, with Azure CLI and the Azure DevOps extension authenticated to the
+Microsoft-internal WinUI project:
 
 ```powershell
 az pipelines run `
