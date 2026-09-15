@@ -158,6 +158,7 @@ public:
 #define SR_ResizeGripperName L"ResizeGripperName"
 #define SR_ResizeGripperNameFormat L"ResizeGripperNameFormat"
 #define SR_TableViewColumnWidthChanged L"TableViewColumnWidthChanged"
+#define SR_TableViewCellLocalizedControlType L"TableViewCellLocalizedControlType"
 #define SR_InkToolbarStrokeEraserLabel L"InkToolbarStrokeEraserLabel"
 #define SR_InkToolbarSmallEraserLabel L"InkToolbarSmallEraserLabel"
 #define SR_InkToolbarLargeEraserLabel L"InkToolbarLargeEraserLabel"
