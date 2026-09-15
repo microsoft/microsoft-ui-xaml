@@ -85,6 +85,19 @@ void AutoSuggestBoxHelper::OnAutoSuggestBoxLoaded(const winrt::IInspectable& sen
                     if (auto autoSuggestBox = autoSuggestBoxWeakRef.get())
                     {
                         UpdateCornerRadius(autoSuggestBox, /*IsDropDownOpen=*/true);
+
+                        auto revokers = autoSuggestBox.GetValue(AutoSuggestEventRevokersProperty()).as<AutoSuggestEventRevokers>();
+                        if (auto popupBorder = GetTemplateChildT<winrt::Border>(c_popupBorderName, autoSuggestBox))
+                        {
+                            revokers->m_popupBorderLayoutUpdatedRevoker = popupBorder.LayoutUpdated(winrt::auto_revoke,
+                                [autoSuggestBoxWeakRef](const winrt::IInspectable&, const winrt::IInspectable&)
+                                {
+                                    if (auto autoSuggestBox = autoSuggestBoxWeakRef.get())
+                                    {
+                                        UpdateCornerRadius(autoSuggestBox, /*IsDropDownOpen=*/true);
+                                    }
+                                });
+                        }
                     }
                 });
 
@@ -93,6 +106,9 @@ void AutoSuggestBoxHelper::OnAutoSuggestBoxLoaded(const winrt::IInspectable& sen
                 {
                     if (auto autoSuggestBox = autoSuggestBoxWeakRef.get())
                     {
+                        auto revokers = autoSuggestBox.GetValue(AutoSuggestEventRevokersProperty()).as<AutoSuggestEventRevokers>();
+                        revokers->m_popupBorderLayoutUpdatedRevoker.revoke();
+
                         UpdateCornerRadius(autoSuggestBox, /*IsDropDownOpen=*/false);
                     }
                 });
@@ -118,14 +134,28 @@ void AutoSuggestBoxHelper::UpdateCornerRadius(const winrt::AutoSuggestBox& autoS
         textBoxRadius = cornerRadiusConverter->Convert(textBoxRadius, textBoxRadiusFilter);
     }
 
+    auto areCornerRadiusEqual = [](const winrt::CornerRadius& c1, const winrt::CornerRadius& c2)
+    {
+        return c1.TopLeft == c2.TopLeft &&
+               c1.TopRight == c2.TopRight &&
+               c1.BottomRight == c2.BottomRight &&
+               c1.BottomLeft == c2.BottomLeft;
+    };
+
     if (auto popupBorder = GetTemplateChildT<winrt::Border>(c_popupBorderName, autoSuggestBox))
     {
-        popupBorder.CornerRadius(popupRadius);
+        if (!areCornerRadiusEqual(popupBorder.CornerRadius(), popupRadius))
+        {
+            popupBorder.CornerRadius(popupRadius);
+        }
     }
 
     if (auto textBox = GetTemplateChildT<winrt::TextBox>(c_textBoxName, autoSuggestBox))
     {
-        textBox.CornerRadius(textBoxRadius);
+        if (!areCornerRadiusEqual(textBox.CornerRadius(), textBoxRadius))
+        {
+            textBox.CornerRadius(textBoxRadius);
+        }
     }
 }
 
