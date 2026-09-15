@@ -1,0 +1,1 @@
+TYPE_ENUM;Microsoft.UI.Xaml.Settings.XamlChangeId;CHANGETYPE_ADDITION;TARGETTYPE_FIELD;CollectionMoveNotifications;VERSION_NO;;
