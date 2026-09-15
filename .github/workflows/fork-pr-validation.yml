@@ -1,0 +1,286 @@
+name: Fork PR validation
+
+# Validates a fork PR against the WinUI-GitHub-PR (OneBranch) pipeline.
+#
+# Fork PRs get no pipeline secrets, so the build fails at "Install Pipeline Tools"
+# with a 401. Credentials are restored deliberately, and only for code a maintainer
+# has read, by pushing the fork's IDENTICAL head commit to a validation/... branch
+# in this repo and building that. Because the commit object is the same, the
+# resulting status lands on the fork PR's head SHA and satisfies the required
+# check. See scripts/ValidateForkPRBranch.ps1.
+#
+# JOBS:
+#   * validate   (issue_comment)               a maintainer comments `/validate`
+#                                              to publish the reviewed head.
+#   * invalidate (pull_request_target,         a new commit landed; tear down the
+#                 synchronize)                 stale validation and ask for a
+#                                              fresh `/validate`.
+#   * cleanup    (pull_request_target, closed) remove the validation branch.
+#
+# SECURITY MODEL:
+#   * Every job runs in the base repo's default-branch context and only touches git
+#     objects and PR metadata. None of them check out or execute fork code, so
+#     holding GITHUB_TOKEN here is safe. Fork code runs later, in the credentialed
+#     pipeline — the maintainer-gated risk this design accepts.
+#   * The `/validate` comment IS the review acknowledgement: only OWNER, MEMBER or
+#     COLLABORATOR can trigger it.
+#   * Every new commit invalidates the previous result. Fork code is never
+#     published automatically.
+#   * Changes to build inputs need a SECOND, explicit acknowledgement. If the PR
+#     touches files that control how the build runs (build/, eng/, .github/,
+#     *.yml, *.props, *.targets, NuGet.config, ...), a plain `/validate` is
+#     refused and the maintainer must comment `/validate build-surface`. The
+#     pipeline is compiled from the commit being built, so a one-line edit there
+#     outweighs any amount of product code — and is the easiest thing to skim past.
+#
+# ENABLEMENT (once this is on the default branch). Do these IN ORDER: step 2 is
+# the only way a fork PR is built today, so removing it first leaves forks with no
+# path at all until step 1 is in place and proven.
+#   1. REQUIRED — the pipeline must start when a validation/* branch is pushed, and
+#      the trigger MUST be defined in the pipeline UI: Triggers > Continuous
+#      integration > "Override the YAML continuous integration trigger from here",
+#      with a branch filter of validation/*.
+#      Not in YAML: Azure DevOps evaluates a YAML trigger using the file in the
+#      branch that was pushed, and that branch carries the FORK's commit. A YAML
+#      trigger would therefore be absent for any PR branched from an older main,
+#      and a fork could delete it outright. A UI trigger is read from the
+#      definition and ignores the pushed commit. (The CI trigger in
+#      build/WinUI-GitHub-PR.yml is a declarative fallback, not the mechanism.)
+#      Verify with: ValidateForkPRBranch.ps1 -PrNumber 0 -CheckTrigger
+#      Without it the branch is pushed and nothing builds; `/validate` then fails
+#      loudly rather than reporting success.
+#      Until it is enabled, a maintainer can validate a fork PR from their own
+#      machine, which needs no pipeline change (their `az login` queues the build):
+#        ValidateForkPRBranch.ps1 -PrNumber <n> -Publish -IReviewedTheSha -QueueBuild -Wait
+#      A workflow runner cannot do this: the comment identifies the maintainer but
+#      carries no Azure DevOps credential, and GITHUB_TOKEN is not one.
+#   2. REQUIRED — turn OFF "Build pull requests from forks of this repository"
+#      (Triggers > Pull request validation). Otherwise a fork-PR build and the
+#      validation build report the SAME status context onto the SAME head SHA, and
+#      GitHub keeps only the most recent one per context: a doomed 401 fork build
+#      finishing last would overwrite a passing validation, and vice versa.
+#      Note this is not redundant with "require a team member's comment": that
+#      gates whether a build starts, not whether it receives credentials. With
+#      "Make secrets available to builds of forks" off, a commented fork build
+#      still fails at "Install Pipeline Tools".
+#      Turning this off also disables `/azp run` on fork PRs, so do it only after
+#      `/validate` has been exercised once on a real fork PR.
+#
+# This file must exist on the DEFAULT branch for its triggers to fire.
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_target:
+    types: [synchronize, closed]
+
+permissions:
+  contents: write        # push/delete the validation/... branch
+  pull-requests: write   # read PR metadata + comment
+  issues: write          # react to the command comment
+
+concurrency:
+  # Serialize lifecycle events per PR so an invalidate cannot race a running publish.
+  group: fork-validation-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    # Coarse gate: PR comments from maintainers that mention the command. The Detect
+    # step below does the exact-match check.
+    if: >-
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request != null &&
+      contains(github.event.comment.body, '/validate') &&
+      (github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'MEMBER' ||
+       github.event.comment.author_association == 'COLLABORATOR')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Detect command
+        id: detect
+        env:
+          # Passed via env (not inlined into the script) to avoid injection.
+          BODY: ${{ github.event.comment.body }}
+        run: |
+          # Accept only a line that is EXACTLY one of, ignoring surrounding whitespace:
+          #   /validate [<sha>]
+          #   /validate build-surface [<sha>]
+          # This rejects quoted replies ("> /validate"), inline mentions and
+          # suffixes ("/validate-x").
+          match=false
+          sha=
+          surface=false
+          while IFS= read -r line; do
+            if printf '%s' "$line" | grep -qE '^[[:space:]]*/validate[[:space:]]*$'; then
+              match=true
+            elif printf '%s' "$line" | grep -qE '^[[:space:]]*/validate[[:space:]]+[0-9a-fA-F]{7,40}[[:space:]]*$'; then
+              match=true
+              sha=$(printf '%s' "$line" | grep -oE '[0-9a-fA-F]{7,40}' | head -n1)
+            elif printf '%s' "$line" | grep -qE '^[[:space:]]*/validate[[:space:]]+build-surface[[:space:]]*$'; then
+              match=true
+              surface=true
+            elif printf '%s' "$line" | grep -qE '^[[:space:]]*/validate[[:space:]]+build-surface[[:space:]]+[0-9a-fA-F]{7,40}[[:space:]]*$'; then
+              match=true
+              surface=true
+              sha=$(printf '%s' "$line" | grep -oE '[0-9a-fA-F]{7,40}' | head -n1)
+            fi
+          done < <(printf '%s\n' "$BODY")
+          echo "match=$match" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "surface=$surface" >> "$GITHUB_OUTPUT"
+
+      - name: Acknowledge the command
+        if: steps.detect.outputs.match == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          gh api "repos/$REPO/issues/comments/$COMMENT_ID/reactions" \
+            -H "Accept: application/vnd.github+json" \
+            -f content='eyes' || true
+
+      - name: Checkout base repo (default branch)
+        if: steps.detect.outputs.match == 'true'
+        uses: actions/checkout@v4
+        with:
+          # Full history: publishing fetches the PR head and pushes it, and pushing
+          # from a shallow clone is not reliable. persist-credentials (default true)
+          # so that push authenticates.
+          fetch-depth: 0
+
+      - name: Publish fork head -> validation branch
+        id: publish
+        if: steps.detect.outputs.match == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.issue.number }}
+          PINNED_SHA: ${{ steps.detect.outputs.sha }}
+          SURFACE_OK: ${{ steps.detect.outputs.surface }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          # A pinned SHA must still match the PR head, so we publish exactly what was reviewed.
+          if ($env:PINNED_SHA) {
+            $head = (gh pr view $env:PR --repo $env:REPO --json headRefOid --jq '.headRefOid').Trim()
+            if (-not $head.StartsWith($env:PINNED_SHA) -and -not $env:PINNED_SHA.StartsWith($head)) {
+              throw "Pinned SHA '$($env:PINNED_SHA)' no longer matches PR head '$head'. Re-review and re-comment."
+            }
+          }
+
+          # The maintainer's comment is the review acknowledgement. -IReviewedTheBuildSurface is
+          # asserted ONLY for the explicit `/validate build-surface` form; with a plain `/validate`
+          # the script refuses any PR that touches build inputs, which is the point.
+          # Must be a HASHTABLE: splatting an array binds positionally.
+          $splat = @{
+            PrNumber        = [int]$env:PR
+            Repo            = $env:REPO
+            Publish         = $true
+            IReviewedTheSha = $true
+            ReuseBranch     = $true
+            # Fail rather than report success if the push starts no build in this window.
+            WaitForStartMinutes = 8
+          }
+          if ($env:SURFACE_OK -eq 'true') { $splat['IReviewedTheBuildSurface'] = $true }
+
+          # Distinguish "published but nothing built" (a pipeline misconfiguration) from a genuine
+          # refusal, so the comment can say which. Outputs survive the rethrow.
+          try {
+              ./scripts/ValidateForkPRBranch.ps1 @splat
+          } catch {
+              if ($_.Exception.Message -match 'check appeared') {
+                  "nobuild=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+              }
+              throw
+          }
+
+      - name: Report result
+        if: always() && steps.detect.outputs.match == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.issue.number }}
+          OUTCOME: ${{ steps.publish.outcome }}
+          NOBUILD: ${{ steps.publish.outputs.nobuild }}
+          SURFACE_OK: ${{ steps.detect.outputs.surface }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          # printf into a file, passed via --body-file, so every source line stays indented:
+          # a column-0 line would terminate this YAML block scalar.
+          if [ "$OUTCOME" = "success" ]; then
+            printf '%s\n\n%s\n' \
+              "✅ Published this fork PR's reviewed head to a validation branch in the base repo. The **WinUI-GitHub-PR (OneBranch)** build runs on the shared head SHA and will report back here automatically." \
+              "Any new commit pushed to this PR invalidates the result and needs a fresh \`/validate\`. [Workflow run]($RUN_URL)" > body.md
+          elif [ "$NOBUILD" = "true" ]; then
+            printf '%s\n\n%s\n' \
+              "❌ The validation branch was published, but **no build ever started**, so the required check would never arrive." \
+              "That is a pipeline configuration problem, not a problem with this PR: the CI trigger on \`validation/fork-pr/*\` is probably inactive. Please ping a maintainer. [Workflow run]($RUN_URL)" > body.md
+          elif [ "$SURFACE_OK" != "true" ]; then
+            printf '%s\n\n%s\n\n%s\n\n%s\n' \
+              "❌ Validation was refused. See the [workflow run]($RUN_URL)." \
+              "If it stopped because this PR changes **build or pipeline files** (\`build/\`, \`eng/\`, \`.github/\`, \`*.yml\`, \`*.props\`, \`*.targets\`, \`NuGet.config\`, …), that is deliberate: those files decide *how* the trusted build runs, so a plain \`/validate\` will not publish them." \
+              "Review those diffs line by line, then comment \`/validate build-surface\` to proceed." \
+              "Otherwise the likely cause is a new commit landing mid-run — just re-review and \`/validate\` again." > body.md
+          else
+            printf '%s\n' \
+              "❌ Fork-validation publish failed. See the [workflow run]($RUN_URL) for details (a new commit on the fork requires a fresh \`/validate\`)." > body.md
+          fi
+          gh pr comment "$PR" --repo "$REPO" --body-file body.md
+
+  invalidate:
+    # A new commit landed: tear down the stale validation and prompt for a fresh
+    # /validate. No-ops when there is no validation branch. Never auto-publishes.
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      github.event.action == 'synchronize' &&
+      github.event.pull_request.head.repo.fork == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout base repo (default branch)
+        uses: actions/checkout@v4
+        with:
+          # Deleting a ref sends no objects, so history is not needed.
+          fetch-depth: 1
+          sparse-checkout: scripts
+
+      - name: Invalidate stale validation + prompt re-/validate
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          NEW_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          ./scripts/ValidateForkPRBranch.ps1 -PrNumber ([int]$env:PR) -Repo $env:REPO `
+            -Invalidate -NewSha $env:NEW_SHA
+
+  cleanup:
+    # The fork PR was closed or merged. Remove the validation branch.
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      github.event.action == 'closed' &&
+      github.event.pull_request.head.repo.fork == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout base repo (default branch)
+        uses: actions/checkout@v4
+        with:
+          # Deleting a ref sends no objects, so history is not needed.
+          fetch-depth: 1
+          sparse-checkout: scripts
+
+      - name: Cleanup validation branch
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          ./scripts/ValidateForkPRBranch.ps1 -PrNumber ([int]$env:PR) -Repo $env:REPO -Cleanup
