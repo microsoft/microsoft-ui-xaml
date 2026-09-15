@@ -407,5 +407,5 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
 | Document                            | URL                                                                 |
 |-------------------------------------|---------------------------------------------------------------------|
 | Functional Specification            |                                                                     |
-| `ScrollPresenter` API Specification | [ScrollPresenter API spec](..\design-notes\ScrollPresenter-spec.md) |
-| `ScrollView` API Specification      | [ScrollView API spec](..\design-notes\ScrollView-spec.md)           |
+| `ScrollPresenter` API Specification | [ScrollPresenter API spec](../design-notes/ScrollPresenter-spec.md) |
+| `ScrollView` API Specification      | [ScrollView API spec](../design-notes/ScrollView-spec.md)           |
