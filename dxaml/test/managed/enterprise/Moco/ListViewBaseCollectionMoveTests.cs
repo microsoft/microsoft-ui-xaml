@@ -746,6 +746,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                 string anchorItem = source[1];
                 ListControl control = null;
                 ContentControl anchorContainer = null;
+                object anchorDataContext = null;
                 UIExecutor.Execute(() =>
                 {
                     control = CreateMoveControl(useGridView);
@@ -784,6 +785,8 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                 {
                     anchorContainer = (ContentControl)control.ContainerFromItem(anchorItem);
                     Verify.IsNotNull(anchorContainer);
+                    Verify.AreEqual(anchorItem, anchorContainer.Content);
+                    anchorDataContext = anchorContainer.DataContext;
                     Verify.IsNotNull(control.ContainerFromItem(movedItem));
                     Verify.IsNull(control.ContainerFromIndex(source.Count - 1), "The endpoint must start outside the realized viewport.");
                     Verify.IsTrue(anchorContainer.Focus(FocusState.Keyboard));
@@ -811,7 +814,8 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                     {
                         Verify.IsTrue(ReferenceEquals(anchorContainer, control.ContainerFromItem(anchorItem)));
                         Verify.IsTrue(ReferenceEquals(anchorContainer, control.ContainerFromIndex(source.IndexOf(anchorItem))));
-                        Verify.AreEqual(anchorItem, anchorContainer.DataContext);
+                        Verify.AreEqual(anchorItem, anchorContainer.Content);
+                        Verify.AreEqual(anchorDataContext, anchorContainer.DataContext, "An unmoved container's inherited DataContext changed.");
                         Verify.AreEqual(anchorItem, control.SelectedItem);
                         Verify.IsTrue(ReferenceEquals(anchorContainer, FocusManager.GetFocusedElement(control.XamlRoot)));
                         if (newIndex == source.Count - 1)
@@ -822,7 +826,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                         {
                             var movedContainer = (ContentControl)control.ContainerFromItem(movedItem);
                             Verify.IsNotNull(movedContainer, "The moved item entered the realized viewport.");
-                            Verify.AreEqual(movedItem, movedContainer.DataContext);
+                            Verify.AreEqual(movedItem, movedContainer.Content);
                         }
                     });
                 }
@@ -990,6 +994,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
             public readonly TextBox Editor;
             private readonly BindingExpression labelBinding;
             private readonly BindingExpression editorBinding;
+            private readonly object containerDataContext;
             private readonly string labelText;
             private readonly string editorText;
             private readonly int selectionStart;
@@ -1014,7 +1019,9 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                 editorText = Editor.Text;
                 selectionStart = Editor.SelectionStart;
                 selectionLength = Editor.SelectionLength;
-                Verify.IsTrue(ReferenceEquals(item, Container.DataContext));
+                containerDataContext = Container.DataContext;
+                // Generated containers hold the item in Content; template children bind to that item.
+                Verify.IsTrue(ReferenceEquals(item, Container.Content));
                 Verify.IsTrue(ReferenceEquals(item, Label.DataContext));
                 Verify.IsTrue(ReferenceEquals(item, Editor.DataContext));
             }
@@ -1025,6 +1032,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                 Verify.IsTrue(ReferenceEquals(Container, current.Container), "An unmoved item's container was replaced.");
                 Verify.IsTrue(ReferenceEquals(Label, current.Label));
                 Verify.IsTrue(ReferenceEquals(Editor, current.Editor));
+                Verify.AreEqual(containerDataContext, current.containerDataContext, "An unmoved container's inherited DataContext changed.");
                 Verify.AreEqual(labelBinding, current.labelBinding, "The unmoved item's label binding was replaced.");
                 Verify.AreEqual(editorBinding, current.editorBinding, "The unmoved item's editor binding was replaced.");
                 Verify.AreEqual(labelText, current.labelText);
