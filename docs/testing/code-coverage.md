@@ -18,8 +18,7 @@ build. This change does not enable or modify it.
 
 | Azure Pipelines YAML | Scope | Coverage default |
 | --- | --- | --- |
-| `build/WinUI-CodeCoverage.yml` | Manual x86 Debug build and DevTestSuite on Win11-25H2; no sample, scenario, or static test stages | Off |
-| `build/WinUI-GitHub-PR.yml` | Existing GitHub PR validation; coverage applies to DevTestSuite | Off |
+| `build/WinUI-GitHub-PR.yml` | Existing GitHub PR validation. Optional focused validation uses x86 Debug and Win11-25H2 runtime tests only. | Off |
 | `build/WinUI-Nightly.yml` | Existing nightly; coverage applies to DevTestSuite | Off |
 
 Set **CollectCodeCoverage** to **true** when manually queuing a run.
@@ -27,9 +26,6 @@ For the GitHub PR pipeline, leave **runFullValidation** enabled.
 When coverage is off, the coverage steps and merge job are omitted during template
 expansion. Existing build matrices, test commands, publishing steps, and triggers
 are unchanged.
-
-The focused YAML has both CI and PR triggers disabled. Adding the file does not
-register a pipeline, schedule a run, or grant resource access.
 
 ## Which tests contribute
 
@@ -79,7 +75,9 @@ It already reads this GitHub repository and does not require a new pipeline regi
    change. Before the PR merges, choose its source branch, not `main`.
 2. Enable **Collect runtime code coverage (experimental)** (`CollectCodeCoverage`).
 3. Leave **Run full WinUI PR validation stages** (`runFullValidation`) enabled.
-   Keep the other parameters at their defaults and leave the stages selected.
+   For a shorter run, enable **Run focused validation** (`runFocusedValidation`).
+   Focused validation builds x86 Debug and runs the Win11-25H2 runtime tests only;
+   it skips the other build flavors, final-release build, scenario tests, and static tests.
 4. Select **Run**. This queues a real build and lab test pass, not a YAML-only preview.
 5. Follow the `Build` and `RunTests` stages. Within `RunTests`, expect payload
    instrumentation, the OS test jobs, and a final `MergeCodeCoverage` job.
@@ -102,12 +100,11 @@ az pipelines run `
     --project WinUI `
     --id 195405 `
     --branch "<branch-containing-this-change>" `
-    --parameters CollectCodeCoverage=true runFullValidation=true
+    --parameters CollectCodeCoverage=true runFullValidation=true runFocusedValidation=true
 ```
 
 The option applies only to this queued run. Normal PR validation and nightly
-defaults remain unchanged. This is the full PR pipeline, not the smaller focused
-pipeline described below.
+defaults remain unchanged. Omit `runFocusedValidation=true` for the full PR pipeline.
 
 ## Interpreting the percentage
 
@@ -153,15 +150,6 @@ summary as the percentage shown at the top of the Azure Code Coverage tab.
 Do not change pipeline defaults, schedules, or branch protection to test this feature.
 The existing **WinUI-CodeCoverage-Experimental** pipeline (197783) is backed by the
 internal ADO repository, not this GitHub repository. Running it does not test this port.
-
-### Smaller optional run
-
-For a smaller test, register `build/WinUI-CodeCoverage.yml` as a new GitHub-backed
-Azure pipeline and select the PR branch. An authorized maintainer must grant it
-access to the same template repositories, variable groups, feeds, and test pools
-used by GitHub PR validation. Leave automatic triggers and schedules disabled.
-Run it once with coverage off and once with coverage on. It builds only x86 Debug
-and runs the Win11-25H2 test slices.
 
 Build-output reuse requires a coverage-enabled build and its matching product symbols.
 Standalone [script regression tests](../../Helix/common/pipeline/coverage/tests/README.md)
