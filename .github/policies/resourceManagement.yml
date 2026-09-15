@@ -108,7 +108,7 @@ configuration:
 
 
     - description: Add needs-triage to closed item if commented on by external user
-      if: 
+      if:
       - payloadType: Issue_Comment
       - not: isOpen
       - not:
