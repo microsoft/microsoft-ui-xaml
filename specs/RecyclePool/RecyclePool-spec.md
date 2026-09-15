@@ -84,6 +84,40 @@ _Spec note: the implementations live in `controls/dev/Repeater/ElementFactory.{h
 retrieval; `ValidateElementsHaveCorrectKeys` holds further key and error assertions but is
 currently disabled - it has no `[TestMethod]` attribute._
 
+## Parity with system XAML (`Windows.UI.Xaml`)
+
+The same four types exist in the system XAML copy of this file, `os.2020`
+`onecoreuap/windows/dxaml/controls/dev/Repeater/ItemsRepeater.idl` on `official/main`. That
+copy was compared member by member against the WinUI IDL under review: **no member is added,
+removed, or renamed on either side.** All 39 members line up exactly, including the
+`[method_name(...)]` overload projections on `RecyclePool` and the `overridable` `Core` members
+on `ElementFactory`, `RecyclePool`, and `RecyclingElementFactory`.
+
+The differences are entirely in how the two builds express the same shape:
+
+| Difference | System XAML (`os.2020`) | WinUI (this repo) |
+| --- | --- | --- |
+| Namespace of framework types | `Windows.UI.Xaml.*` | `Microsoft.UI.Xaml.*` |
+| Versioning attribute | `[WUXC_VERSION_PREVIEW]` | `[MUX_PREVIEW]` |
+| `ElementFactory` base | `IElementFactoryShim` (`[WUXC_VERSION_INTERNAL]`), or `Windows.UI.Xaml.IElementFactory` under `BUILD_WINDOWS` | `Microsoft.UI.Xaml.IElementFactory`, unconditionally |
+| `ElementFactoryGetArgs` / `ElementFactoryRecycleArgs` | declared locally in this IDL as `[WUXC_VERSION_MUXONLY]`, under `#ifndef BUILD_WINDOWS` | framework types on `WinUIContract 1`, declared in `microsoft.ui.xaml.coretypes.idl` |
+| `RecyclePool` attributes | none beyond `[webhosthidden]` | additionally `[MUX_OVERRIDE_ENSURE_PROPERTIES]` |
+
+Two points follow from this that matter to the review:
+
+* **The types are preview on both sides.** `WUXC_VERSION_PREVIEW` is the system XAML equivalent
+  of `[MUX_PREVIEW]`, so promoting them here does not contradict a shape that is already stable
+  elsewhere, and there is no existing system XAML contract version to match.
+* **`ElementFactoryGetArgs` and `ElementFactoryRecycleArgs` are already public in WinUI and are
+  not in system XAML.** In WinUI they are ordinary `WinUIContract 1` types, which is why they
+  appear in this spec as supporting context rather than as new API. The `IElementFactoryShim`
+  indirection that system XAML needs has no counterpart here.
+
+The remaining differences between the two files (`AnimationContext` and `ScrollAnchorProvider`
+in system XAML; `ItemCollectionTransition*`, `LinedFlowLayout*`, and `ItemsRepeaterScrollHost`
+in WinUI) belong to layout and animation, not to element creation, and are out of scope for
+this spec.
+
 # Conceptual pages (How To)
 
 ## The get / recycle contract
