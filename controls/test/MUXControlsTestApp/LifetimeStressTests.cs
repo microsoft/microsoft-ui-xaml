@@ -1719,13 +1719,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     for (int p = 0; p < peers; p++)
                     {
-                        var child = new NavigationView() { PaneTitle = "peer" };
+                        // A native-peer-heavy control, left POPULATED (open pane + menu items) so its cross-boundary
+                        // fields are live at release time rather than pre-quiesced.
+                        var child = new NavigationView() { PaneTitle = "peer", IsPaneOpen = true };
+                        child.MenuItems.Add(new NavigationViewItem() { Content = "a" });
+                        child.MenuItems.Add(new NavigationViewItem() { Content = "b" });
                         if (p == 0)
                         {
                             objects["FirstPeer"] = new WeakReference(child);
                         }
+
+                        // Re-enter teardown from Unloaded: mutate the pane (a converted cross-boundary field) while the
+                        // native peer is mid-unlink, so the field is touched during leave-tree instead of quiesced.
+                        bool reentered = false;
+                        child.Unloaded += (s, e) =>
+                        {
+                            if (reentered) { return; }
+                            reentered = true;
+                            child.IsPaneOpen = !child.IsPaneOpen;
+                        };
+
                         host.Children.Add(child);
                         host.UpdateLayout();
+
+                        // Unparent WITHOUT first nulling MenuItems / closing the pane: the converted peer fields are
+                        // still populated when the element leaves the tree and is dropped for off-thread finalization.
                         host.Children.Clear();
                         host.UpdateLayout();
                     }
@@ -1733,12 +1751,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                // Drive the final release off-thread: finalize first (finalizer thread), then settle the UI thread so
-                // the marshaled release is actually drained on its owning thread.
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-                SettleAndCollect();
+                FinalizeOffThread();
                 SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
@@ -1771,10 +1784,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             objects["FirstPanel"] = new WeakReference(panel);
                         }
 
+                        bool reentered = false;
                         child.Unloaded += (s, e) =>
                         {
+                            if (reentered) { return; }
+                            reentered = true;
+                            // Re-enter teardown while this peer is mid-unlink: drop the child, clear the host, and
+                            // force a synchronous layout so the native peer is re-walked during its own leave-tree.
                             panel.Child = null;
                             host.Children.Clear();
+                            host.UpdateLayout();
                         };
 
                         host.Children.Add(panel);
@@ -1789,7 +1808,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
+                FinalizeOffThread();
                 SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
@@ -1814,26 +1833,34 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     for (int c = 0; c < churn; c++)
                     {
-                        var element = new Slider() { Minimum = 0, Maximum = 100 };
+                        var element = new Slider() { Minimum = 0, Maximum = 100, Width = 120 };
                         if (c == 0)
                         {
                             objects["FirstElement"] = new WeakReference(element);
                         }
 
+                        // Native-backed handler left SUBSCRIBED across teardown: the delegate closes over the element
+                        // and keeps dereferencing its native peer as layout/size callbacks fire.
                         SizeChangedEventHandler handler = (s, e) => { _ = element.Value; };
                         element.SizeChanged += handler;
 
                         host.Children.Add(element);
                         host.UpdateLayout();
+
                         host.Children.Remove(element);
-                        element.SizeChanged -= handler;
                         host.UpdateLayout();
+
+                        // After-teardown access: the element has left the tree (native peer unlinked) but we still call
+                        // into it, forcing a size/layout pass that dereferences the just-unlinked peer.
+                        element.Width = 240;
+                        element.UpdateLayout();
+                        _ = element.ActualWidth;
                     }
 
                     Content = null;
                 });
 
-                SettleAndCollect();
+                FinalizeOffThread();
                 SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
@@ -1863,25 +1890,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     var mover = new ComboBox() { ItemsSource = Enumerable.Range(0, 20) };
                     objects["Mover"] = new WeakReference(mover);
 
+                    // Re-enter the enter/leave peer wiring: on first Loaded, synchronously reparent the element from
+                    // inside its own enter-tree callback so the native peer is unlinked while still mid-enter.
+                    bool reentered = false;
+                    mover.Loaded += (s, e) =>
+                    {
+                        if (reentered) { return; }
+                        reentered = true;
+                        if (left.Children.Contains(mover))
+                        {
+                            left.Children.Remove(mover);
+                            right.Children.Add(mover);
+                            root.UpdateLayout();
+                        }
+                    };
+
                     left.Children.Add(mover);
                     root.UpdateLayout();
 
-                    Panel current = left;
+                    Panel current = right.Children.Contains(mover) ? (Panel)right : (Panel)left;
                     for (int m = 0; m < moves; m++)
                     {
                         Panel next = (current == left) ? right : left;
-                        current.Children.Remove(mover);
+                        // Defensive against the reentrant Loaded move above having relocated the element already.
+                        left.Children.Remove(mover);
+                        right.Children.Remove(mover);
                         next.Children.Add(mover);
                         root.UpdateLayout();
                         current = next;
                     }
 
-                    left.Children.Clear();
-                    right.Children.Clear();
+                    // Unparent the whole tree WITHOUT first detaching the mover, so the peer is released with live
+                    // enter-tree bookkeeping rather than after a clean detach.
                     Content = null;
                 });
 
-                SettleAndCollect();
+                FinalizeOffThread();
                 SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
@@ -1905,20 +1949,39 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     objects["Root"] = new WeakReference(root);
 
                     Border cursor = root;
+                    Border midpoint = root;
                     for (int d = 0; d < depth; d++)
                     {
                         var next = new Border();
                         cursor.Child = next;
                         cursor = next;
+                        if (d == depth / 2) { midpoint = next; }
                     }
-                    cursor.Child = new TextBlock() { Text = "leaf" };
+                    var leaf = new TextBlock() { Text = "leaf" };
+                    cursor.Child = leaf;
+
+                    // Re-enter the recursive leave-tree teardown: when the midpoint leaves the tree, sever its own
+                    // Child so the lower half is unlinked while the upper half is still mid-teardown.
+                    bool reentered = false;
+                    midpoint.Unloaded += (s, e) =>
+                    {
+                        if (reentered) { return; }
+                        reentered = true;
+                        midpoint.Child = null;
+                    };
 
                     root.UpdateLayout();
-                    root.Child = null;
+
+                    // Unparent the whole deep chain at once WITHOUT pre-severing links, so the recursive native teardown
+                    // runs over a fully-populated chain, then off-thread finalize.
                     Content = null;
+
+                    // After-teardown access to the deep leaf now that its ancestors have left the tree.
+                    leaf.UpdateLayout();
+                    _ = leaf.ActualWidth;
                 });
 
-                SettleAndCollect();
+                FinalizeOffThread();
                 SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
@@ -1951,17 +2014,35 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             objects["FirstBlock"] = new WeakReference(block);
                             objects["FirstBox"] = new WeakReference(box);
                         }
+
+                        // Re-enter line-services layout: on the first size change, rewrap by mutating Text/Width from
+                        // inside the callback so break records are rebuilt while the previous set is being torn down.
+                        bool reentered = false;
+                        block.SizeChanged += (s, e) =>
+                        {
+                            if (reentered) { return; }
+                            reentered = true;
+                            block.Width = 90;
+                            block.Text = paragraph + paragraph;
+                            block.UpdateLayout();
+                        };
+
                         host.Children.Add(block);
                         host.Children.Add(box);
                         host.UpdateLayout();
+
+                        // Remove WITHOUT clearing text: the line/break records are still populated when the elements
+                        // leave the tree and are dropped for off-thread finalization (LsDestroyBreakRecord path).
                         host.Children.Clear();
                         host.UpdateLayout();
+
+                        _ = block.ActualHeight;
                     }
 
                     Content = null;
                 });
 
-                SettleAndCollect();
+                FinalizeOffThread();
                 SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
@@ -1984,6 +2065,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     var scroll = new ScrollView() { Width = 200, Height = 200 };
                     objects["ScrollView"] = new WeakReference(scroll);
+
+                    // Re-enter the scroll/DM service wiring: on the first size change, re-point the manipulated content
+                    // from inside the callback so the service is redirected while it is still being stood up.
+                    bool reentered = false;
+                    scroll.SizeChanged += (s, e) =>
+                    {
+                        if (reentered) { return; }
+                        reentered = true;
+                        var swap = new StackPanel();
+                        swap.Children.Add(new Button() { Content = "swap", Width = 400 });
+                        scroll.Content = swap;
+                        scroll.UpdateLayout();
+                    };
+
                     Content = scroll;
                     Content.UpdateLayout();
 
@@ -1996,14 +2091,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         }
                         scroll.Content = content;
                         scroll.UpdateLayout();
-                        scroll.Content = null;
-                        scroll.UpdateLayout();
                     }
 
+                    // Unparent the ScrollView with its large content STILL set (DM/scroll service live) instead of
+                    // pre-nulling the content, then off-thread finalize.
                     Content = null;
                 });
 
-                SettleAndCollect();
+                FinalizeOffThread();
                 SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
@@ -2048,9 +2143,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     };
                     objects["ListView"] = new WeakReference(listView);
 
+                    // Re-enter container recycling: on leave-tree, poke the selection and the container lookup (the
+                    // m_spContainerBeingClicked path) while the native peer is mid-unlink.
+                    bool reentered = false;
+                    listView.Unloaded += (s, e) =>
+                    {
+                        if (reentered) { return; }
+                        reentered = true;
+                        listView.SelectedIndex = -1;
+                        _ = listView.ContainerFromIndex(0);
+                    };
+
                     Content = listView;
                     Content.UpdateLayout();
 
+                    DependencyObject container = null;
                     for (int c = 0; c < churn; c++)
                     {
                         listView.ItemsSource = Enumerable.Range(c * 50, 150).Select(i => string.Format("Item #{0}", i)).ToList();
@@ -2063,19 +2170,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             Content.UpdateLayout();
                             listView.ScrollIntoView(listView.Items[0]);
                             Content.UpdateLayout();
+                            container = listView.ContainerFromIndex(0) ?? container;
                         }
                     }
 
-                    listView.ItemsSource = null;
-                    Content.UpdateLayout();
+                    // Unparent WITHOUT nulling ItemsSource: containers / click-container fields are still populated when
+                    // the peer is dropped for off-thread finalization.
                     Content = null;
+
+                    // After-teardown access to a generated container now that the list has left the tree.
+                    (container as ListViewItem)?.UpdateLayout();
                 });
 
-                // Off-thread final release of the native peer (the path where a cross-boundary raw ComPtr field faults).
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-                SettleAndCollect();
+                FinalizeOffThread();
                 SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
@@ -2103,15 +2210,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     };
                     objects["GridView"] = new WeakReference(gridView);
 
+                    bool reentered = false;
+                    gridView.Unloaded += (s, e) =>
+                    {
+                        if (reentered) { return; }
+                        reentered = true;
+                        gridView.SelectedIndex = -1;
+                        _ = gridView.ContainerFromIndex(0);
+                    };
+
                     Content = gridView;
                     Content.UpdateLayout();
 
+                    GridViewItem firstItem = null;
                     for (int c = 0; c < churn; c++)
                     {
                         var item = new GridViewItem() { Content = string.Format("Item {0}", c) };
                         if (c == 0)
                         {
                             objects["FirstItem"] = new WeakReference(item);
+                            firstItem = item;
                         }
                         gridView.Items.Add(item);
                         Content.UpdateLayout();
@@ -2127,15 +2245,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         }
                     }
 
-                    gridView.Items.Clear();
-                    Content.UpdateLayout();
+                    // Unparent WITHOUT clearing Items: explicit containers + selection are live when the peer is
+                    // dropped for off-thread finalization.
                     Content = null;
+
+                    // After-teardown access to an explicit container now that the grid has left the tree.
+                    firstItem?.UpdateLayout();
                 });
 
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-                SettleAndCollect();
+                FinalizeOffThread();
                 SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
@@ -2169,6 +2287,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     objects["SplitView"] = new WeakReference(splitView);
                     objects["PaneListView"] = new WeakReference(paneList);
 
+                    // Re-enter the dismiss-layer teardown: while the SplitView leaves the tree, flip the pane and touch
+                    // the Pane field (a converted cross-boundary field) mid-unlink.
+                    bool reentered = false;
+                    splitView.Unloaded += (s, e) =>
+                    {
+                        if (reentered) { return; }
+                        reentered = true;
+                        splitView.IsPaneOpen = !splitView.IsPaneOpen;
+                        _ = splitView.Pane;
+                    };
+
                     Content = splitView;
                     Content.UpdateLayout();
 
@@ -2185,16 +2314,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         Content.UpdateLayout();
                     }
 
-                    splitView.Pane = null;
-                    splitView.Content = null;
+                    // Leave the dismiss layer STANDING (pane open) and do NOT null Pane/Content before unparenting, so
+                    // the converted dismiss-layer fields (m_outerDismissLayerPopup et al.) are populated when the peer
+                    // is dropped for off-thread finalization.
+                    splitView.IsPaneOpen = true;
                     Content.UpdateLayout();
                     Content = null;
                 });
 
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-                SettleAndCollect();
+                FinalizeOffThread();
                 SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
@@ -2218,33 +2346,44 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = host;
                     host.UpdateLayout();
 
+                    ToggleSwitch firstToggle = null;
                     for (int c = 0; c < churn; c++)
                     {
                         var toggle = new ToggleSwitch() { IsOn = false };
                         if (c == 0)
                         {
                             objects["FirstToggle"] = new WeakReference(toggle);
+                            firstToggle = toggle;
                         }
+
+                        // Re-enter the curtain/knob transform update: flip IsOn once from inside Toggled so the
+                        // transform peers are re-driven while the previous toggle's visual state is still settling.
+                        bool reentered = false;
+                        toggle.Toggled += (s, e) =>
+                        {
+                            if (reentered) { return; }
+                            reentered = true;
+                            toggle.IsOn = !toggle.IsOn;
+                            toggle.UpdateLayout();
+                        };
 
                         host.Children.Add(toggle);
                         host.UpdateLayout(); // OnApplyTemplate -> creates knob/curtain transform peers.
 
                         toggle.IsOn = true;
                         host.UpdateLayout();
-                        toggle.IsOn = false;
-                        host.UpdateLayout();
-
-                        host.Children.Remove(toggle);
-                        host.UpdateLayout();
                     }
 
+                    // Unparent the host with the toggles' transforms STILL active (IsOn=true); do NOT remove each toggle
+                    // first, so the converted transform fields are populated when the peers are dropped for off-thread
+                    // finalization.
                     Content = null;
+
+                    // After-teardown access to a transform-bearing toggle now that it has left the tree.
+                    firstToggle?.UpdateLayout();
                 });
 
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-                SettleAndCollect();
+                FinalizeOffThread();
                 SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
@@ -2429,6 +2568,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             GC.WaitForPendingFinalizers();
             GC.Collect();
             IdleSynchronizer.Wait();
+        }
+
+        // Drive the FINAL native release off the owning (UI) thread: run the managed finalizer on the GC/finalizer
+        // thread first (so the last native Release originates off-thread and must be marshaled back through the
+        // UIAffinityReleaseQueue), then settle the UI thread so that marshaled release is actually drained. A peer
+        // whose cross-boundary field regressed from TrackerPtr to a raw ctl::ComPtr faults in exactly this window; the
+        // TrackerPtr form is released safely. This is the release funnel every native scenario ends with.
+        private static void FinalizeOffThread()
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+            SettleAndCollect();
         }
 
         private static void VerifyCollected(Dictionary<string, WeakReference> objects, bool failOnLeak)
