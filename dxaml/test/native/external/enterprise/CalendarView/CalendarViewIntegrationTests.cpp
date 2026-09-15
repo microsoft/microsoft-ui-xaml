@@ -107,9 +107,22 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool CalendarViewIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool CalendarViewIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool CalendarViewIntegrationTestsUap::TestCleanup()
+    {
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
     bool CalendarViewIntegrationTests::TestCleanup()
     {
@@ -2837,7 +2850,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, "HC");
     }
 
-    void CalendarViewIntegrationTests::ValidateDCompTree()
+    void CalendarViewIntegrationTestsUap::ValidateDCompTree()
     {
         WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
         TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
@@ -4330,7 +4343,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
     }
 
-    void CalendarViewIntegrationTests::ValidateChromeFocusDecade()
+    void CalendarViewIntegrationTestsUap::ValidateChromeFocusDecade()
     {
         TestCleanupWrapper cleanup;
 

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Foundation { namespace Input { namespace HitTest {
 
@@ -16,6 +17,7 @@ public:
 
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
         TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"aa6364d2-41fe-4bec-a849-584f1f309baf")
+        TEST_CLASS_HOSTING_MODE_DEFAULT()
     END_TEST_CLASS()
 
     TEST_CLASS_SETUP(ClassSetup)
@@ -161,18 +163,6 @@ public:
     END_TEST_METHOD()
 
     // ----- Begin WUC versions -------------
-    BEGIN_TEST_METHOD(DefaultCompositeAndPerspectiveWUC)
-        TEST_METHOD_PROPERTY(L"Description", L"CTx3D and PTx3D have default values")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // [DCPP-test] WPF tests are failing with E_INVALIDARG in CDirectManipulationService::ActivateDirectManipulationManager
-        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
-    END_TEST_METHOD()
-
-    BEGIN_TEST_METHOD(PerspectivePlusPopupScaledWUC)
-        TEST_METHOD_PROPERTY(L"Description", L"Perspective on HandOff Visual plus a rignt-aligned Popup and plateau scale")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Failure assigning Popup.Child - XamlRoot API?
-        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // [DCPPTest] Xaml tests are failing because Xaml no longer applies the plateau scale
-    END_TEST_METHOD()
-
     // Test CTx3D on an element, no chaining
     BEGIN_TEST_METHOD(ScaleXYSmallWUC)
         TEST_METHOD_PROPERTY(L"Description", L"CTx3D ScaleX/Y = 0.5, no PTx3D")
@@ -191,12 +181,6 @@ public:
     END_TEST_METHOD()
 
     // Test 2D/3D interop
-    BEGIN_TEST_METHOD(ScaleAndRenderTransformTranslateSameElementWUC)
-        TEST_METHOD_PROPERTY(L"Description", L"CTx3D ScaleX/Y = 0.5 & RenderTransform TranslateX/Y = 20")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // [DCPP-test] WPF tests are failing with E_INVALIDARG in CDirectManipulationService::ActivateDirectManipulationManager
-        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
-    END_TEST_METHOD()
-
     // - PTx3D -> CTx3D RotY45 -> ProjX45
     BEGIN_TEST_METHOD(PerspectiveOuterRotationInnerProjectionChildWUC)
         TEST_METHOD_PROPERTY(L"Description", L"Parent Grid Default PTx3D, Inner Grid CTx3D RotationY = 45, Child Button Projection RotationX = 45")
@@ -215,21 +199,59 @@ public:
     static bool CompareFloatsWithEpsilon(float a, float b, float epsilon);
 
 private:
-    inline Platform::String^ GetResourcesPath() const;
+    friend class HitTestTransform3DUap;
 
-    void DefaultCompositeAndPerspectiveInternal();
+    static Platform::String^ GetResourcesPath();
+    static Microsoft::UI::Xaml::Media::TranslateTransform^ GenerateRenderTransform();
+    static Microsoft::UI::Xaml::Media::Media3D::CompositeTransform3D^ GenerateScaleTransform3D(float scaleX, float scaleY, float scaleZ);
+    static Microsoft::UI::Xaml::Media::Media3D::CompositeTransform3D^ GenerateCompositeTransform3D(float scaleX, float scaleY, float scaleZ, float translateX, float translateY, float translateZ, float rotationX, float rotationY, float rotationZ);
+
     void ScaleXYSmallInternal();
     void TranslateXYInternal();
     void RotationXDefaultPerspectiveInternal();
-    void ScaleAndRenderTransformTranslateSameElementInternal();
     void PerspectiveOuterRotationInnerProjectionChildInternal(bool useTranslation, bool isWUCMode);
 
-    Microsoft::UI::Xaml::Media::TranslateTransform^ HitTestTransform3D::GenerateRenderTransform();
     Microsoft::UI::Xaml::Media::PlaneProjection^ GeneratePlaneProjection();
-    Microsoft::UI::Xaml::Media::Media3D::CompositeTransform3D^ GenerateScaleTransform3D(float scaleX, float scaleY, float scaleZ);
     Microsoft::UI::Xaml::Media::Media3D::CompositeTransform3D^ GenerateTranslateTransform3D(float translateX, float translateY, float translateZ);
     Microsoft::UI::Xaml::Media::Media3D::CompositeTransform3D^ GenerateRotationTransform3D(float rotationX, float rotationY, float rotationZ);
-    Microsoft::UI::Xaml::Media::Media3D::CompositeTransform3D^ GenerateCompositeTransform3D(float scaleX, float scaleY, float scaleZ, float translateX, float translateY, float translateZ, float rotationX, float rotationY, float rotationZ);
+};
+
+class HitTestTransform3DUap : public WEX::TestClass<HitTestTransform3DUap>
+{
+public:
+    BEGIN_TEST_CLASS(HitTestTransform3DUap)
+        TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+        TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+        TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+        TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"aa6364d2-41fe-4bec-a849-584f1f309baf")
+        TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"HitTestTransform3D")
+        TEST_CLASS_HOSTING_MODE(UAP)
+    END_TEST_CLASS()
+
+    TEST_CLASS_SETUP(ClassSetup)
+    TEST_METHOD_CLEANUP(TestCleanup)
+
+    BEGIN_TEST_METHOD(DefaultCompositeAndPerspectiveWUC)
+        TEST_METHOD_PROPERTY(L"Description", L"CTx3D and PTx3D have default values")
+        // [DCPP-test] WPF tests are failing with E_INVALIDARG in CDirectManipulationService::ActivateDirectManipulationManager
+        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(PerspectivePlusPopupScaledWUC)
+        TEST_METHOD_PROPERTY(L"Description", L"Perspective on HandOff Visual plus a rignt-aligned Popup and plateau scale")
+        // Failure assigning Popup.Child - XamlRoot API?
+        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // [DCPPTest] Xaml tests are failing because Xaml no longer applies the plateau scale
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ScaleAndRenderTransformTranslateSameElementWUC)
+        TEST_METHOD_PROPERTY(L"Description", L"CTx3D ScaleX/Y = 0.5 & RenderTransform TranslateX/Y = 20")
+        // [DCPP-test] WPF tests are failing with E_INVALIDARG in CDirectManipulationService::ActivateDirectManipulationManager
+        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+    END_TEST_METHOD()
+
+private:
+    void DefaultCompositeAndPerspectiveInternal();
+    void ScaleAndRenderTransformTranslateSameElementInternal();
 };
 
 } } } } } } }

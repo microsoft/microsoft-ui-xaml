@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Foundation { namespace Text {
@@ -16,6 +17,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89")
                 TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -43,12 +45,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(ValidateTextControlForegroundUpdate)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates foreground color update on Text Control.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(ValidateRichEditBoxTOMLargeFontSize)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates setting large fontsize through TOM Api")
             END_TEST_METHOD()
@@ -56,13 +52,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(TextControlSupportAlphaForegroundColor)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates user can set alpha value on Text color brush.")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(ValidateEmojiRendering)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates rendering of emoji character.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-                TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidateTextFormattersLowMemoryRelease)
@@ -80,6 +69,45 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                     && expected.A == actual.A);
             }
         };
+
+    class TextControlsRenderingTestsUap : public WEX::TestClass<TextControlsRenderingTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(TextControlsRenderingTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89")
+                TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"TextControlsRenderingTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        bool IsSameColor(::Windows::UI::Color expected, ::Windows::UI::Color actual)
+        {
+        return (expected.R == actual.R
+        && expected.G == actual.G
+        && expected.B == actual.B
+        && expected.A == actual.A);
+        }
+
+    public:
+        BEGIN_TEST_METHOD(ValidateTextControlForegroundUpdate)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates foreground color update on Text Control.")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateEmojiRendering)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates rendering of emoji character.")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
+    };
 
     } }
 } } } }

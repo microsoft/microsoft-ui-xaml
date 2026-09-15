@@ -39,9 +39,34 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         }
         bool RichTextBlockTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool RichTextBlockTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool RichTextBlockTestsUap::TestSetup()
+        {
+            TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool RichTextBlockTestsUap::TestCleanup()
+        {
+            TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+Platform::String^ RichTextBlockTestsUap::GetResourcesPath() const
+        {
+            return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\rendering\\";
+        }
+
 
         bool RichTextBlockTests::TestSetup()
         {
@@ -97,7 +122,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
              });
         }
 
-        void RichTextBlockTests::EmbeddedInlineElementPlacement()
+        void RichTextBlockTestsUap::EmbeddedInlineElementPlacement()
         {
             RunOnUIThread([&]()
             {
@@ -507,7 +532,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        void RichTextBlockTests::SelectionChangedEvent()
+        void RichTextBlockTestsUap::SelectionChangedEvent()
         {
             TestCleanupWrapper cleanup;
 
@@ -1062,7 +1087,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        void RichTextBlockTests::JupRtblXamlP0()
+        void RichTextBlockTestsUap::JupRtblXamlP0()
         {
             TestCleanupWrapper cleanup;
 
@@ -1253,7 +1278,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        void RichTextBlockTests::InlineUIContainerDirections()
+        void RichTextBlockTestsUap::InlineUIContainerDirections()
         {
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 

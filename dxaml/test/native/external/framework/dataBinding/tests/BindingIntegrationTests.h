@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 #include <memory>
 #include <CustomMetadataRegistrar.h>
@@ -17,6 +18,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
                 TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -215,11 +217,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(CanBindChildInDependencyObjectCollection)
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(CanBindToAnimation)
-                // WPF_HOSTING_MODE_FAILURE - Animates to incorrect value, needs investigation.
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(VerifyDataTemplateExtensions)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify that ExtensionInstance and IDataTemplateExtension function properly.")
             END_TEST_METHOD()
@@ -253,7 +250,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestBindingUpdatesOnDO)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(CanCombineDataContextChangedEventWithDataContextBindingOnSameElement)
@@ -355,6 +351,27 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         private:
         };
+
+    class BindingIntegrationTestsUap
+    {
+    public:
+        BEGIN_TEST_CLASS(BindingIntegrationTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"BindingIntegrationTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+
+        BEGIN_TEST_METHOD(CanBindToAnimation)
+        // WPF_HOSTING_MODE_FAILURE - Animates to incorrect value, needs investigation.
+        END_TEST_METHOD()
+    };
 
         private ref class LocalObject sealed
         {

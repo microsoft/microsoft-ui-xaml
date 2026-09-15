@@ -18,7 +18,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
     bool AccessKeyIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
 
         return true;
     }
@@ -30,6 +30,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     }
 
     bool AccessKeyIntegrationTests::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    bool AccessKeyIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+
+        return true;
+    }
+
+    bool AccessKeyIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool AccessKeyIntegrationTestsUap::TestCleanup()
     {
         test_infra::TestServices::WindowHelper->ShutdownXaml();
         TestServices::WindowHelper->VerifyTestCleanup();
@@ -85,7 +105,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     }
 
     // For this test to pass, the Euro symbol has to  correctly rendered as <80>. Make sure the file is in ANSI or UTF-BOM format before modifying it
-    void AccessKeyIntegrationTests::TextBoxAccessKeyIntegrationTest()
+    void AccessKeyIntegrationTestsUap::TextBoxAccessKeyIntegrationTest()
     {
         TestCleanupWrapper cleanup;
 
@@ -826,7 +846,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         }
     }
 
-    void AccessKeyIntegrationTests::DoNotEnterAKModeWhenNoAKElements()
+    void AccessKeyIntegrationTestsUap::DoNotEnterAKModeWhenNoAKElements()
     {
         Platform::Object^ aknavigationObject;
         auto isActiveChangedFired = std::make_shared<Event>();
@@ -879,7 +899,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         VERIFY_IS_FALSE(isActiveChangedFired->HasFired());
     }
 
-    void AccessKeyIntegrationTests::TabExitsAKMode()
+    void AccessKeyIntegrationTestsUap::TabExitsAKMode()
     {
         TestCleanupWrapper cleanup;
         xaml_controls::StackPanel^ rootPanel = nullptr;
@@ -951,7 +971,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         }
     }
 
-    void AccessKeyIntegrationTests::DirectionArrowsExitsAKMode()
+    void AccessKeyIntegrationTestsUap::DirectionArrowsExitsAKMode()
     {
         TestCleanupWrapper cleanup;
         xaml_controls::StackPanel^ rootPanel = nullptr;
@@ -1768,7 +1788,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         }
     }
 
-    void AccessKeyIntegrationTests::CanControlWhenAKModeExits()
+    void AccessKeyIntegrationTestsUap::CanControlWhenAKModeExits()
     {
         TestCleanupWrapper cleanup;
 
@@ -1924,7 +1944,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         noThrowEvent->WaitForDefault();
     }
 
-    void AccessKeyIntegrationTests::EnterAndSpaceExitAKMode()
+    void AccessKeyIntegrationTestsUap::EnterAndSpaceExitAKMode()
     {
         TestCleanupWrapper cleanup;
 

@@ -26,9 +26,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool TextRangeIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool TextRangeIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool TextRangeIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool TextRangeIntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
     bool TextRangeIntegrationTests::TestSetup()
     {
@@ -503,7 +523,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         VERIFY_FAILED(pUITextPattern->FindAttribute(attributeid, varData.Get(), TRUE, &spUIAutomationTextRange));
     }
 
-    void TextRangeIntegrationTests::VerifyFindAttribute()
+    void TextRangeIntegrationTestsUap::VerifyFindAttribute()
     {
         TestCleanupWrapper cleanup;
         MockUpProviderControl^ testTextRange = nullptr;

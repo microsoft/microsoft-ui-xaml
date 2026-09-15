@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 #include <CustomMetadataRegistrar.h>
 #include <memory>
@@ -22,6 +23,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"f62323d4-fd46-4c98-aa85-334db95ba8f6;0a9cdf5f-1e1b-4b1d-9659-b354bf5f4ca6")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -273,39 +275,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         BEGIN_TEST_METHOD(CanSetNullStyleSetterValue)
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(CanSetDefaultStyle)
-            TEST_METHOD_PROPERTY(L"Description",
-                L"Verifies the style of a custom control with DefaultStyleKey set")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(CanSetDefaultStyleResourceUri)
-            TEST_METHOD_PROPERTY(L"Description",
-                L"Verifies the style of a custom control with DefaultStyleResourceUri set")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(DefaultStyleResourceUriWithEmptyDefaultStyleKey)
-            TEST_METHOD_PROPERTY(L"Description",
-                L"Tests a custom control with a valid DefaultStyleResourceUri and an empty DefaultStyleKey")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(DefaultStyleResourceUriWithInvalidDefaultStyleKey)
-            TEST_METHOD_PROPERTY(L"Description",
-                L"Tests a custom control with a valid DefaultStyleResourceUri and an invalid DefaultStyleKey")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(PageThemeResourceCustomTargetProperty)
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(PageThemeResourceCustomSourceObject)
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(StyleSetterWithUid)
@@ -365,6 +335,54 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         void TestCanUseStyleWithNestedTemplateVSM(bool isExplicit);
         void TestCanUseStyleWithDeepNestedTemplateVSM(bool isExplicit);
         void TestCanCreateOptimizedStyle(bool useSetterTarget);
+    };
+
+    class StyleIntegrationTestsUap
+    {
+    public:
+        BEGIN_TEST_CLASS(StyleIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"f62323d4-fd46-4c98-aa85-334db95ba8f6;0a9cdf5f-1e1b-4b1d-9659-b354bf5f4ca6")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"StyleIntegrationTests")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        Microsoft::UI::Xaml::Controls::Canvas^ m_rootCanvas;
+
+    public:
+        BEGIN_TEST_METHOD(CanSetDefaultStyle)
+        TEST_METHOD_PROPERTY(L"Description",
+        L"Verifies the style of a custom control with DefaultStyleKey set")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(CanSetDefaultStyleResourceUri)
+        TEST_METHOD_PROPERTY(L"Description",
+        L"Verifies the style of a custom control with DefaultStyleResourceUri set")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DefaultStyleResourceUriWithEmptyDefaultStyleKey)
+        TEST_METHOD_PROPERTY(L"Description",
+        L"Tests a custom control with a valid DefaultStyleResourceUri and an empty DefaultStyleKey")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DefaultStyleResourceUriWithInvalidDefaultStyleKey)
+        TEST_METHOD_PROPERTY(L"Description",
+        L"Tests a custom control with a valid DefaultStyleResourceUri and an invalid DefaultStyleKey")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(PageThemeResourceCustomSourceObject)
+        END_TEST_METHOD()
     };
 } } } } } }
 

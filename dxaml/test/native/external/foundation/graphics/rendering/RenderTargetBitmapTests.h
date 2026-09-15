@@ -4,6 +4,7 @@
 #pragma once
 
 #include <WUCRenderingScopeGuard.h>
+#include <HostingModeTestClass.h>
 #include <Versioning.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Foundation { namespace Graphics {
@@ -17,6 +18,7 @@ public:
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
         TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e6d4a8e5-be97-431f-871b-4937e816c8b3;24aa2bdf-d1ac-40bb-bb77-63c409a5da27;d04573b8-e899-4822-bb72-9f4743c89d36")
         TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+        TEST_CLASS_HOSTING_MODE_DEFAULT()
     END_TEST_CLASS()
 
     TEST_CLASS_SETUP(ClassSetup)
@@ -34,12 +36,6 @@ public:
     BEGIN_TEST_METHOD(BasicRenderTargetBitmapWUCFull)
         TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for a simple visual tree and consumes the result in an Image.")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-    END_TEST_METHOD()
-
-    BEGIN_TEST_METHOD(PopupChildRTBWUCFull)
-        TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for a Popup child visual tree and consumes the result in an Image.")
-        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Crash - failed to assign Popup.Child
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(PopupRTBWUCFull)
@@ -84,12 +80,6 @@ public:
     BEGIN_TEST_METHOD(RenderToSizeWUCFull)
         TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap asking a specific size.")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-    END_TEST_METHOD()
-
-    BEGIN_TEST_METHOD(ScaledRenderWUCFull)
-        TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap after having changed the current scale factor and checks the effective rendered size.")
-        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Testing private API: XamlRenderingBackgroundTask.SetScalePercentage this is not supported in Island mode
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(BorderDiscardMaskOnResizeWUCFull)
@@ -260,5 +250,48 @@ private:
         int expectedHeight,
         bool verifyNonEmpty = true);
 };
+
+    class RenderTargetBitmapTestsUap : public WEX::TestClass<RenderTargetBitmapTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(RenderTargetBitmapTestsUap)
+        TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+        TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+        TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+        TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e6d4a8e5-be97-431f-871b-4937e816c8b3;24aa2bdf-d1ac-40bb-bb77-63c409a5da27;d04573b8-e899-4822-bb72-9f4743c89d36")
+        TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+        TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"RenderTargetBitmapTests")
+        TEST_CLASS_HOSTING_MODE(UAP)
+    END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        void PopupChildRTBInternal();
+        void ScaledRenderInternal();
+        void StackPanelTestHelper(
+        Platform::String^ fileName,
+        bool expectRTL = false,
+        bool useXCB = false,
+        bool expectCaptureAsync = false,
+        int renderCallCount = 1,
+        bool verifyIsTransparent = false);
+        inline Platform::String^ GetResourcesPath() const;
+
+    public:
+        BEGIN_TEST_METHOD(PopupChildRTBWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for a Popup child visual tree and consumes the result in an Image.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Crash - failed to assign Popup.Child
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ScaledRenderWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap after having changed the current scale factor and checks the effective rendered size.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Testing private API: XamlRenderingBackgroundTask.SetScalePercentage this is not supported in Island mode
+        END_TEST_METHOD()
+    };
 } } } } } }
 

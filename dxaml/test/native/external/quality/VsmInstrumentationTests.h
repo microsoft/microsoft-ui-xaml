@@ -4,6 +4,7 @@
 #pragma once
 
 #include <XamlTailored.h>
+#include <HostingModeTestClass.h>
 #include <TestEvent.h>
 #include <SafeEventRegistration.h>
 #include <TestCleanupWrapper.h>
@@ -26,6 +27,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
                             BEGIN_TEST_CLASS(VsmInstrumentationTests)
                                 TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
                                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
                             END_TEST_CLASS()
 
                             TEST_CLASS_SETUP(ClassSetup)

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <WUCRenderingScopeGuard.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Foundation { namespace Graphics {
@@ -18,6 +19,7 @@ public:
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
         TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"02f4717a-a120-494b-a28e-9a2cbd41ca58;bd1463b3-e5f2-4d54-9394-63a431c53a6e;b7d949c9-6779-44c5-b16b-1f51e18f3866")
         TEST_CLASS_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
     END_TEST_CLASS()
 
     TEST_CLASS_SETUP(ClassSetup)

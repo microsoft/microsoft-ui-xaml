@@ -31,9 +31,93 @@ Platform::String^ BorderTests::GetResourcesPath() const
 
 bool BorderTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool BorderTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool BorderTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool BorderTestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+Border^ BorderTestsUap::MakeBorder(Panel^ parent, float width, float height, float x, float y)
+{
+    Border^ border = ref new Border();
+    border->Width = width;
+    border->Height = height;
+    parent->Children->Append(border);
+    Canvas::SetLeft(border, x);
+    Canvas::SetTop(border, y);
+    return border;
+}
+
+void BorderTestsUap::AddBorderVariation(Panel^ parent, int x, xaml::Thickness thickness, xaml::CornerRadius cornerRadius, ImageBrush^ imageBrush)
+{
+    // Solid color border - collapsed nine grid
+    {
+        Border^ border = MakeBorder(parent, 100.0f, 60.0f, static_cast<float>(x), 0.0f);
+        border->BorderBrush = ref new SolidColorBrush(ColorHelper::FromArgb(255, 255, 0, 0));
+        border->BorderThickness = thickness;
+        border->CornerRadius = cornerRadius;
+    }
+
+    // Gradient border - uncollapsed nine grid
+    {
+        Border^ border = MakeBorder(parent, 100.0f, 60.0f, static_cast<float>(x), 70.0f);
+        border->BorderBrush = imageBrush;
+        border->BorderThickness = thickness;
+        border->CornerRadius = cornerRadius;
+    }
+
+    // Solid color background - collapsed nine grid
+    {
+        Border^ border = MakeBorder(parent, 100.0f, 60.0f, static_cast<float>(x), 140.0f);
+        border->Background = ref new SolidColorBrush(ColorHelper::FromArgb(255, 0, 255, 0));
+        border->BorderThickness = thickness;
+        border->CornerRadius = cornerRadius;
+    }
+
+    // Gradient background - no nine grid
+    {
+        Border^ border = MakeBorder(parent, 100.0f, 60.0f, static_cast<float>(x), 210.0f);
+        border->Background = imageBrush;
+        border->BorderThickness = thickness;
+        border->CornerRadius = cornerRadius;
+    }
+
+    // Solid color border + solid color background - collapsed nine grid for both
+    {
+        Border^ border = MakeBorder(parent, 100.0f, 60.0f, static_cast<float>(x), 280.0f);
+        border->BorderBrush = ref new SolidColorBrush(ColorHelper::FromArgb(255, 128, 0, 0));
+        border->Background = ref new SolidColorBrush(ColorHelper::FromArgb(255, 0, 128, 0));
+        border->BorderThickness = thickness;
+        border->CornerRadius = cornerRadius;
+    }
+
+    // Gradient border + solid color background - uncollapsed nine grid for border, no nine grid for background
+    {
+        Border^ border = MakeBorder(parent, 100.0f, 60.0f, static_cast<float>(x), 350.0f);
+        border->BorderBrush = imageBrush;
+        border->Background = ref new SolidColorBrush(ColorHelper::FromArgb(255, 0, 0, 255));
+        border->BorderThickness = thickness;
+        border->CornerRadius = cornerRadius;
+    }
+}
+
 
 bool BorderTests::TestSetup()
 {
@@ -375,7 +459,7 @@ void BorderTests::NineGridWithRoundedCorners()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);
 }
 
-void BorderTests::RoundedCornersLayoutRounding()
+void BorderTestsUap::RoundedCornersLayoutRounding()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
     TestServices::WindowHelper->SetWindowSizeOverrideWithWindowScale(wf::Size(400, 300), 1.5f);
@@ -408,7 +492,7 @@ void BorderTests::RoundedCornersLayoutRounding()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);
 }
 
-void BorderTests::RoundedCornersLayoutRounding2()
+void BorderTestsUap::RoundedCornersLayoutRounding2()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
     TestServices::WindowHelper->SetWindowSizeOverrideWithWindowScale(wf::Size(400, 300), 1.25f);
@@ -432,7 +516,7 @@ void BorderTests::RoundedCornersLayoutRounding2()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);
 }
 
-void BorderTests::RoundedCornersLayoutRounding3()
+void BorderTestsUap::RoundedCornersLayoutRounding3()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
     TestServices::WindowHelper->SetWindowSizeOverrideWithWindowScale(wf::Size(400, 300), 1.25f);
@@ -676,7 +760,7 @@ void BorderTests::AddBorderVariation(Panel^ parent, int x, xaml::Thickness thick
     }
 }
 
-void BorderTests::NineGridOptimization()
+void BorderTestsUap::NineGridOptimization()
 {
     auto wh = TestServices::WindowHelper;
     auto u = TestServices::Utilities;
@@ -872,7 +956,7 @@ void BorderTests::NineGridOptimization()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"4");
 }
 
-void BorderTests::NineGridOptimizationLayoutRounding()
+void BorderTestsUap::NineGridOptimizationLayoutRounding()
 {
     auto wh = TestServices::WindowHelper;
     auto u = TestServices::Utilities;

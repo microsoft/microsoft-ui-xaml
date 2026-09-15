@@ -3,6 +3,7 @@
 
 #pragma once
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 #include <AutomationClient\AutomationClientManager.h>
 
@@ -16,6 +17,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"IsolationLevel", L"Test") //DCPP: Crash in Microsoft.UI.Input.dll!UIAutomationIslandForwarder::EnsureAutomationHostProvider(HWND__ * hwnd)
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -24,13 +26,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(VerifyDefaultAutomationName)
             TEST_METHOD_PROPERTY(L"Description", L"Validates supported UIA patterns for RichEditBox..")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyRichEditBoxPlaceholderTextIsMovedToDescribedBy)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that placeholder text is moved to DescribedBy field.")
             TEST_CLASS_PROPERTY(L"TestPass:MinOSVer", WINDOWS_OS_VERSION_RS5) // RS4 Test Failure: RichEditBoxAutomationIntegrationTests::VerifyRichEditBoxPlaceholderTextIsMovedToDescribedBy
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(MoveEndpoint)

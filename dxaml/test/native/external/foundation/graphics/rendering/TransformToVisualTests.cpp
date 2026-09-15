@@ -33,7 +33,7 @@ Platform::String^ TransformToVisualTests::GetResourcesPath() const
 
 bool TransformToVisualTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
 

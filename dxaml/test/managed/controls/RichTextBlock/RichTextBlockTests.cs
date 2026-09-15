@@ -42,6 +42,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestMethod]
         [TestProperty("Description", "Validates textblock selection highlight on touch input")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void RichTextBlockHighlightGripperSelectionFlyoutOnTouch()
         {

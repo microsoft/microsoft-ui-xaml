@@ -237,6 +237,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
         [TestMethod]
         [Priority(1)]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void TestGroupedDataManipulationsAndScroll()
         {
             ListViewBase list = null; // List control under tests

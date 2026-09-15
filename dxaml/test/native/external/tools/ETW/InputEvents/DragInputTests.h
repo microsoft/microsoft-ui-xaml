@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Tools { namespace ETW { namespace InputEvents {
 
@@ -15,6 +16,7 @@ public:
         TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
 
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)

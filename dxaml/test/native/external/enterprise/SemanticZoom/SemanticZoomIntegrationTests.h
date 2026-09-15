@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 #include <TestEvent.h>
 #include "GroupedDataSource.h"
@@ -17,10 +18,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
 
-            TEST_CLASS_PROPERTY(L"Hosting:Mode", L"UAP") // DCPP NoCoreWindow mode - SemanticZoom tests fail get stuck "Waiting for BuildTreeService to finish..."
+            // DCPP NoCoreWindow mode - SemanticZoom tests fail get stuck "Waiting for BuildTreeService to finish..."
 
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"309fb554-f012-4ac9-bcf1-833e4a372493;375cd7bd-e448-4315-b2a1-bc02d75b0c4f;3302e9ea-a838-4b3c-9784-254de755a0bd")
+            TEST_CLASS_HOSTING_MODE(UAP)
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -47,12 +49,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(SezoBasicWithDefaultTemplateGrouped)
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(SezoBasicWithSezoTemplateGrouped)
             TEST_METHOD_PROPERTY(L"Description", L"Validates Sezo with Sezo template")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         TEST_METHOD(SezoBasicWithDefaultTemplateUnGrouped)
@@ -63,40 +63,33 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(SezoZovItemHitTestableWhenGroupIsEmpty)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we dont stomp on IsHitTestVisible property on Zoomed out view gridview item if group is empty")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateToggleActiveViewWithKeyboard)
             TEST_METHOD_PROPERTY(L"Description", L"Validates Sezo can be activated with Enter key on header or gamepad A")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateToggleActiveViewWithGamePad)
             TEST_METHOD_PROPERTY(L"Description", L"Validates Sezo can be activated with Enter key on header or gamepad A")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
 
         BEGIN_TEST_METHOD(ValidateToggleActiveViewWithHeaderTap)
             TEST_METHOD_PROPERTY(L"Description", L"Validates Sezo can be activated with tapping on header")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(SwitchActiveViewUsingUiaInvokePatternOnListView)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that ListView in Semantic Zoom can switch views using UIAutomation's Invoke Pattern.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(SwitchActiveViewUsingUiaInvokePatternOnGridView)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that GridView in Semantic Zoom can switch views using UIAutomation's Invoke Pattern.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(SetSkipFocusSubtreeOnEnteringVisualTree)
             TEST_METHOD_PROPERTY(L"Description", L"Ensure SkipFocusSubTree is set correctly when SemanticZoom leaves and enter the visual tree.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
     private:

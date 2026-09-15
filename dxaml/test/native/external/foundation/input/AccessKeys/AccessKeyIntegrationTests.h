@@ -6,6 +6,7 @@
 #include <Versioning.h>
 #include <TestEvent.h>
 #include <SafeEventRegistration.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace AccessKeys {
@@ -19,6 +20,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"1bb20c90-a558-491b-b76d-55bdb9a46911;57e0de30-efb3-4001-9ccc-b38032fd1974;bdc5c68b-03c1-4217-832c-4c09f99946f4")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -55,28 +57,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(InvokeAccessKeysOnMultipleButtonsOfAppBar)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that we can invoke on buttons inside AppBar using access keys.")
-            TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(InvokeAccessKeysOnMultipleButtonsOfContentDialog)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can invoke on buttons inside content dialog using access keys.")
             TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ComboBoxAccessKeyIntegrationTest)
             TEST_METHOD_PROPERTY(L"Description", L"Validates access key invocation on ComboBox.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"OneCore")
             TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(TextBoxAccessKeyIntegrationTest)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates text input while access key mode is active.")
-            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // UAP hosting required: display mode failure
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(AccessHotKeyIntegrationTest)
@@ -102,23 +91,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         BEGIN_TEST_METHOD(PointerInputExitsAccessKeyMode)
             TEST_METHOD_PROPERTY(L"Description", L"Verify pointer input causes accesskey mode to exit.")
             TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(DoNotEnterAKModeWhenNoAKElements)
-            TEST_METHOD_PROPERTY(L"Description", L"When nothing in the tree is using AccessKeys, do not enter AK mode")
-            TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(TabExitsAKMode)
-            TEST_METHOD_PROPERTY(L"Description", L"When we tab, we should exit ak mode and process the tab normally")
-            TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // UAP hosting required: cannot exit access key mode
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(DirectionArrowsExitsAKMode)
-            TEST_METHOD_PROPERTY(L"Description", L"When using the direction arrows, we should exit ak mode and process the input normally")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // UAP hosting required: cannot exit access key mode
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ElementEnteringTreeFiresAKEvents)
@@ -169,35 +141,19 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         BEGIN_TEST_METHOD(BackOutAcrossEmptyScope)
             TEST_METHOD_PROPERTY(L"Description", L"Back out across an empty scope.  Ensure we skip the empty scope and don't get stuck.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(BackOutAcrossEmptyScopeAndExit)
             TEST_METHOD_PROPERTY(L"Description", L"Back out across an empty scope and exit AccessKey DisplayMode entirely.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(AppBarExitsAKModeWhenESCPressed)
             TEST_METHOD_PROPERTY(L"Description", L"When we are on an appbar (which handles ESC) and it is the root scope, we should still exit ak mode")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(CanControlWhenAKModeExits)
-            TEST_METHOD_PROPERTY(L"Description", L"When the DismissAccessKeyOnInvoke property is set to true on a control, AKMode should dismiss when that control is invoked")
-            TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(OnlyNakedAltsEnterAKMode)
             TEST_METHOD_PROPERTY(L"Description", L"Verify that when other keys are pressed with alt, that AK mode does not enter.  If a non-modifier key is down when an alt down/up is pressed, still enter.")
             TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(EnterAndSpaceExitAKMode)
-            TEST_METHOD_PROPERTY(L"Description", L"Verify that when a space or enter is pressed while in access key mode, that we exit the mode and do not handle the enter or space.")
-            TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyThatErrorsThrownInInvalidScenarios)
@@ -231,6 +187,62 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     private:
         wf::IAsyncOperation<xaml_controls::ContentDialogResult>^ OpenContentDialog(xaml_controls::ContentDialog^);
         void PressKeyVerifyNoThrow(Platform::String^ keySequence, std::shared_ptr<Microsoft::UI::Xaml::Tests::Common::Event> noThrowEvent);
+    };
+
+    class AccessKeyIntegrationTestsUap : public WEX::TestClass<AccessKeyIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(AccessKeyIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"1bb20c90-a558-491b-b76d-55bdb9a46911;57e0de30-efb3-4001-9ccc-b38032fd1974;bdc5c68b-03c1-4217-832c-4c09f99946f4")
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"AccessKeyIntegrationTests")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+        BEGIN_TEST_METHOD(InvokeAccessKeysOnMultipleButtonsOfAppBar)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that we can invoke on buttons inside AppBar using access keys.")
+            TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(TextBoxAccessKeyIntegrationTest)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates text input while access key mode is active.")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+            // UAP hosting required: display mode failure
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoNotEnterAKModeWhenNoAKElements)
+            TEST_METHOD_PROPERTY(L"Description", L"When nothing in the tree is using AccessKeys, do not enter AK mode")
+            TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(TabExitsAKMode)
+            TEST_METHOD_PROPERTY(L"Description", L"When we tab, we should exit ak mode and process the tab normally")
+            TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+            // UAP hosting required: cannot exit access key mode
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DirectionArrowsExitsAKMode)
+            TEST_METHOD_PROPERTY(L"Description", L"When using the direction arrows, we should exit ak mode and process the input normally")
+            // UAP hosting required: cannot exit access key mode
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(CanControlWhenAKModeExits)
+            TEST_METHOD_PROPERTY(L"Description", L"When the DismissAccessKeyOnInvoke property is set to true on a control, AKMode should dismiss when that control is invoked")
+            TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+            TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(EnterAndSpaceExitAKMode)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that when a space or enter is pressed while in access key mode, that we exit the mode and do not handle the enter or space.")
+            TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+            TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
     };
 
 } } } } }

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <XamlMetadataProviderOverrider.h>
+#include <HostingModeTestClass.h>
 #include <vector>
 #include <Versioning.h>
 
@@ -17,6 +18,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -119,18 +121,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD_PROPERTY(L"Description", L"Verify that values can be set on simple properties through markup. Under a Velocity key because the only public simple properties are currently under Velocity.")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(ApplicationLoadComponentExpandsTemplatesUnderDesigner)
-            TEST_METHOD_PROPERTY(L"Description", L"Verifies that Application.LoadComponent expands templates (for validation purposes) when the designer is active.")
-            TEST_METHOD_PROPERTY(L"UAP:AppXManifest", L"AppxManifest.DesignMode.xml")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(ResourceDictionary_SourceExpandsTemplatesUnderDesigner)
-            TEST_METHOD_PROPERTY(L"Description", L"Verifies that loading markup via ResourceDictionary.Source expands templates (for validation purposes) when the designer is active.")
-            TEST_METHOD_PROPERTY(L"UAP:AppXManifest", L"AppxManifest.DesignMode.xml")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(CanDefineNamespaceOnMergedDictionary)
             TEST_METHOD_PROPERTY(L"Description", L"Verify that merged dictionaries can have custom XML namespace mappings.")
         END_TEST_METHOD()
@@ -182,5 +172,37 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         DependencyProperty^ dpSetPropertyPathOnCustomDP_DP;
         DependencyProperty^ dpSetBrushOnCustomDP_DP;
         DependencyProperty^ dpCanSetUriPropertyOnNonFrameworkElementObject_DP;
+    };
+
+    class ParserIntegrationTestsUap
+    {
+    public:
+        BEGIN_TEST_CLASS(ParserIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"ParserIntegrationTests")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        DependencyProperty^ dpSetPropertyPathOnCustomDP_DP;
+        DependencyProperty^ dpSetBrushOnCustomDP_DP;
+        DependencyProperty^ dpCanSetUriPropertyOnNonFrameworkElementObject_DP;
+
+    public:
+        BEGIN_TEST_METHOD(ApplicationLoadComponentExpandsTemplatesUnderDesigner)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies that Application.LoadComponent expands templates (for validation purposes) when the designer is active.")
+        TEST_METHOD_PROPERTY(L"UAP:AppXManifest", L"AppxManifest.DesignMode.xml")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ResourceDictionary_SourceExpandsTemplatesUnderDesigner)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies that loading markup via ResourceDictionary.Source expands templates (for validation purposes) when the designer is active.")
+        TEST_METHOD_PROPERTY(L"UAP:AppXManifest", L"AppxManifest.DesignMode.xml")
+        END_TEST_METHOD()
     };
 } } } } } }

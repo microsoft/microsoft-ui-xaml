@@ -23,10 +23,64 @@ namespace Microsoft { namespace UI { namespace Xaml {
                 namespace Quality {
                     bool SeZoZoomTrace::ClassSetup()
                     {
-                        CommonTestSetupHelper::CommonTestClassSetup();
+                        XAML_HOSTING_MODE_CLASS_SETUP();
 
                         return true;
                     }
+
+    bool SeZoZoomTraceWpf::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool SeZoZoomTraceWpf::TestCleanup()
+                    {
+                        TestServices::WindowHelper->VerifyTestCleanup();
+
+                        return true;
+                    }
+
+void SeZoZoomTraceWpf::SetUpPage(Grid^ &grid, SemanticZoom^ &seZo, GridView^ &innerView, GridView^ &outerView, GridViewItem^ &innerItem, GridViewItem^ &outerItem)
+                    {
+                        RunOnUIThread([&]()
+                        {
+                            LOG_OUTPUT(L"Initializing elements");
+
+                            grid = ref new Grid();
+                            Window::Current->Content = grid;
+
+                            seZo = ref new SemanticZoom();
+                            grid->Children->Append(seZo);
+
+                            //the gridview is defined via Xaml so the scrollchaining can be turned off easily
+                            Platform::String^ gridViewXaml =
+                                L"<GridView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
+                                L"          ScrollViewer.IsHorizontalScrollChainingEnabled='False' ScrollViewer.IsVerticalScrollChainingEnabled='False'>"
+                                L"</GridView>";
+
+                            innerView = dynamic_cast<xaml_controls::GridView^> (xaml_markup::XamlReader::Load(gridViewXaml));
+                            seZo->ZoomedInView = innerView;
+
+                            outerView = dynamic_cast<xaml_controls::GridView^> (xaml_markup::XamlReader::Load(gridViewXaml));
+                            seZo->ZoomedOutView = outerView;
+
+                            innerItem = ref new GridViewItem();
+                            innerItem->Content = "Inner";
+                            innerItem->Width = 300;
+                            innerItem->Height = 300;
+                            innerView->Items->Append(innerItem);
+
+                            outerItem = ref new GridViewItem();
+                            outerItem->Content = "Outer";
+                            outerItem->Width = 300;
+                            outerItem->Height = 300;
+                            outerView->Items->Append(outerItem);
+                        });
+
+                        TestServices::WindowHelper->WaitForIdle();
+                    }
+
 
                     bool SeZoZoomTrace::TestCleanup()
                     {
@@ -117,7 +171,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
                         TraceConsumer::VerifyEventTraced("SeZoZoom", 1);
                     }
 
-                    void SeZoZoomTrace::VerifyZoomingTracePinch()
+                    void SeZoZoomTraceWpf::VerifyZoomingTracePinch()
                     {
                         TestCleanupWrapper cleanup;
                         Grid^ grid = nullptr;

@@ -64,7 +64,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool ControlIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
 
@@ -125,7 +125,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void ControlIntegrationTests::CanSetNestedPopupControlTemplate()
+    bool ControlIntegrationTestsUAP::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ControlIntegrationTestsUAP::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool ControlIntegrationTestsUAP::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    void ControlIntegrationTestsUAP::CanSetNestedPopupControlTemplate()
     {
         TestCleanupWrapper cleanup;
 

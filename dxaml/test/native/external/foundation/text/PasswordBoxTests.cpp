@@ -41,9 +41,41 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
     bool PasswordBoxTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool PasswordBoxTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool PasswordBoxTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool PasswordBoxTestsUap::ClassCleanup()
+    {
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    bool PasswordBoxTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        return true;
+    }
+
+Platform::String^ PasswordBoxTestsUap::GetPathToFiles() const
+    {
+        // Get the deployment directory, and then append our test's directory to the end
+        auto deploymentDir = GetTestDeploymentDir();
+        return ref new Platform::String(deploymentDir + L"resources\\native\\foundation\\text\\");
+    }
+
 
     bool PasswordBoxTests::ClassCleanup()
     {
@@ -814,7 +846,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
     }
 
-    void PasswordBoxTests::CheckFiresManipulationEvents()
+    void PasswordBoxTestsUap::CheckFiresManipulationEvents()
     {
         TestCleanupWrapper cleanup;
         TextBoxGenericTests<xaml_controls::PasswordBox>::CanFireManipulationEvents();
@@ -1651,7 +1683,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         ValidatePasswordSetAndGet(L"0123456789ABCDEF0123456789ABCDEFG", passwordBox, textBlock); //33 chars
     }
 
-    void PasswordBoxTests::ValidatePasswordBoxPlaceholderVisibility()
+    void PasswordBoxTestsUap::ValidatePasswordBoxPlaceholderVisibility()
     {
         WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
         ::Windows::Foundation::Size size(400, 400);

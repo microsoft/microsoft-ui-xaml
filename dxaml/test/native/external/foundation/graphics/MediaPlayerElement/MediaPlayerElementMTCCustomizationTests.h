@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Foundation { namespace Graphics { namespace Media {
@@ -15,6 +16,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
                 TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -29,13 +31,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(ZoomButtonCustomizationTest)
                 TEST_METHOD_PROPERTY(L"Description", L"Checks that the MediaTransportControls able to Show/Hide and Enable/Disable the Zoom Control.")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(FullWindowButtonCustomizationTest)
-                TEST_METHOD_PROPERTY(L"Description", L"Checks that the MediaTransportControls able to Show/Hide and Enable/Disable the FullWindow Control")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Hiding fullscreen button for Xaml Islands
-                TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Port Full Screen work to WinAppSDK 1.x master
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(SeekProgressbarTest)
@@ -61,13 +56,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(StopTest)
                 TEST_METHOD_PROPERTY(L"Description", L"Checks that the MediaTransportControls able to Show/Hide and Enable/Disable the Stop button.")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(FullWindowAndZoomButtonsCustomizationTest)
-                TEST_METHOD_PROPERTY(L"Description", L"Checks that the MediaTransportControls able to Show/Hide and Enable/Disable the combinations of the FullWindow and Zoom Buttons.")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Hiding fullscreen button for Xaml Islands
-                TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Port Full Screen work to WinAppSDK 1.x master
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(SeekProgressbarAndVoumeButtonCustomizationTest)
@@ -100,13 +88,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(FullWindowModeShouldRestrictTabsToMTC)
-                TEST_METHOD_PROPERTY(L"Description", L"Verifies that tabs are confined to the MTC when in full-window mode (and only then)")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-                TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Port Full Screen work to WinAppSDK 1.x master
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(RepeatTest)
                 TEST_METHOD_PROPERTY(L"Description", L"Checks that the MediaTransportControls able to Show/Hide and Enable/Disable the Repeat button.")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
@@ -117,30 +98,67 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(ShowHideTest)
-                TEST_METHOD_PROPERTY(L"Description", L"Checks that the MediaTransportControls able to Show/Hide using APIs.")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(CompactOverlayTest)
-                TEST_METHOD_PROPERTY(L"Description", L"Checks that the MediaTransportControls able to Show/Hide and Enable/Disable the CompactOverlay button.")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-                TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Port Full Screen work to WinAppSDK 1.x master
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(CompactOverlayAndStopButtonCustomizationTest)
-                TEST_METHOD_PROPERTY(L"Description", L"Checks that the MediaTransportControls able to Show/Hide and Enable/Disable the combinations of the CompactOverlay button and stop button.")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-                TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Port Full Screen work to WinAppSDK 1.x master
-            END_TEST_METHOD()
-
         private:
             xaml_controls::MediaPlayerElement^ SetupMediaPlayerElementUI();
             
         };
+
+    class MediaPlayerElementMTCCustomizationTestsUap : public WEX::TestClass<MediaPlayerElementMTCCustomizationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(MediaPlayerElementMTCCustomizationTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"MediaPlayerElementMTCCustomizationTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        xaml_controls::MediaPlayerElement^ SetupMediaPlayerElementUI();
+
+    public:
+        BEGIN_TEST_METHOD(FullWindowButtonCustomizationTest)
+        TEST_METHOD_PROPERTY(L"Description", L"Checks that the MediaTransportControls able to Show/Hide and Enable/Disable the FullWindow Control")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Hiding fullscreen button for Xaml Islands
+        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Port Full Screen work to WinAppSDK 1.x master
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(FullWindowAndZoomButtonsCustomizationTest)
+        TEST_METHOD_PROPERTY(L"Description", L"Checks that the MediaTransportControls able to Show/Hide and Enable/Disable the combinations of the FullWindow and Zoom Buttons.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Hiding fullscreen button for Xaml Islands
+        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Port Full Screen work to WinAppSDK 1.x master
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(FullWindowModeShouldRestrictTabsToMTC)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies that tabs are confined to the MTC when in full-window mode (and only then)")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Port Full Screen work to WinAppSDK 1.x master
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ShowHideTest)
+        TEST_METHOD_PROPERTY(L"Description", L"Checks that the MediaTransportControls able to Show/Hide using APIs.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(CompactOverlayTest)
+        TEST_METHOD_PROPERTY(L"Description", L"Checks that the MediaTransportControls able to Show/Hide and Enable/Disable the CompactOverlay button.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Port Full Screen work to WinAppSDK 1.x master
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(CompactOverlayAndStopButtonCustomizationTest)
+        TEST_METHOD_PROPERTY(L"Description", L"Checks that the MediaTransportControls able to Show/Hide and Enable/Disable the combinations of the CompactOverlay button and stop button.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Port Full Screen work to WinAppSDK 1.x master
+        END_TEST_METHOD()
+    };
 
     } } }
 } } } }

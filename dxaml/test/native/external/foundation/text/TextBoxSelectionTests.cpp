@@ -36,9 +36,56 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             bool TextBoxSelectionTests::ClassSetup()
             {
-                CommonTestSetupHelper::CommonTestClassSetup();
+                XAML_HOSTING_MODE_CLASS_SETUP();
                 return true;
             }
+
+    bool TextBoxSelectionTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool TextBoxSelectionTestsUap::TestSetup()
+            {
+                test_infra::TestServices::WindowHelper->InitializeXaml();
+                return true;
+            }
+
+    bool TextBoxSelectionTestsUap::TestCleanup()
+            {
+                test_infra::TestServices::WindowHelper->ShutdownXaml();
+                TestServices::WindowHelper->VerifyTestCleanup();
+                return true;
+            }
+
+xaml::Shapes::Rectangle^ TextBoxSelectionTestsUap::GetGripperRect(UIElement^ textElement)
+            {
+                xaml::Shapes::Rectangle^ gripperRect;
+                const int waitforGripperRetry = 10;
+                for (int retry = 0; retry < waitforGripperRetry && gripperRect == nullptr; retry++)
+                {
+                    RunOnUIThread([&]()
+                    {
+                        auto popups = xaml_media::VisualTreeHelper::GetOpenPopupsForXamlRoot(textElement->XamlRoot);
+
+                        for (auto popup : popups)
+                        {
+                            auto popupChild = safe_cast<xaml::FrameworkElement^>(popup->Child);
+                            gripperRect = TreeHelper::GetVisualChildByType<xaml::Shapes::Rectangle>(popupChild);
+                            if (gripperRect != nullptr)
+                            {
+                                break;
+                            }
+                        }
+                    });
+                    TestServices::WindowHelper->WaitForIdle();
+                }
+
+                VERIFY_IS_NOT_NULL(gripperRect);
+                return gripperRect;
+            }
+
 
             bool TextBoxSelectionTests::ClassCleanup()
             {
@@ -804,7 +851,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TestServices::WindowHelper->WaitForIdle();
             }
 
-            void TextBoxSelectionTests::TextBoxSelectionHighlightColor()
+            void TextBoxSelectionTestsUap::TextBoxSelectionHighlightColor()
             {
                 TestCleanupWrapper cleanup;
                 WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
@@ -905,7 +952,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TestServices::WindowHelper->WaitForIdle();
             }
 
-            void TextBoxSelectionTests::RichEditBoxSelectionHighlightColor()
+            void TextBoxSelectionTestsUap::RichEditBoxSelectionHighlightColor()
             {
                 TestCleanupWrapper cleanup;
                 WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
@@ -1176,7 +1223,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             // light-dismiss layer should not do that for any control, however.
             // A bug that was fixed surrounded popups not being interactable through the TextCommandBarFlyout's
             // light-dismiss layer, and this test verifies that that has not regressed.
-            void TextBoxSelectionTests::VerifyTextBoxSelectionGrippersAreInteractibleWithTextCommandBarFlyout()
+            void TextBoxSelectionTestsUap::VerifyTextBoxSelectionGrippersAreInteractibleWithTextCommandBarFlyout()
             {
                 TestCleanupWrapper cleanup;
 
@@ -1280,7 +1327,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TestServices::WindowHelper->WaitForIdle();
             }
 
-            void TextBoxSelectionTests::VerifyTextBoxFocusAndSelectAll()
+            void TextBoxSelectionTestsUap::VerifyTextBoxFocusAndSelectAll()
             {
                 TestCleanupWrapper cleanup;
                 WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);

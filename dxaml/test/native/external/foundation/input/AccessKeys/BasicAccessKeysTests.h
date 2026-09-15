@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <CommonInputHelper.h>
 
 using namespace Microsoft::UI::Xaml::Tests::Common;
@@ -18,6 +19,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"1bb20c90-a558-491b-b76d-55bdb9a46911;57e0de30-efb3-4001-9ccc-b38032fd1974;bdc5c68b-03c1-4217-832c-4c09f99946f4")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -36,7 +38,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(EnterAccessKeyModeUsingEnterDisplayModeForXamlRoot)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates the entering access key mode behavior via EnterDisplayMode")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") 
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AccessKeyInvokedEvent)
@@ -131,31 +132,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(SettingAccessKeyOverridesFEAPAccessKey)
-                TEST_METHOD_PROPERTY(L"Description", L"When we set FrameworkElement.AccessKey and FEAP.AccessKeys does not have a value, ensure that the value is mapped")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(SettingAccessKeyDoesNotOverrideWhenSetOnFEAP)
-                TEST_METHOD_PROPERTY(L"Description", L"When we set FrameworkElement.AccessKey and FEAP.AccessKeys does has a value, use the value on AP")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(WindowMoveEndsAKSequence)
-                TEST_METHOD_PROPERTY(L"Description", L"Verifies that Access Key sequence terminates on Window move")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // crash due to window move
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(WindowResizeEndsAKSequence)
-                TEST_METHOD_PROPERTY(L"Description", L"Verifies that Access Key sequence terminates on Window resize")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // crash due to window move
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(AltKeyCodesDoNotFireAccessKeys)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that Alt-Numeric codes do not invoke access keys")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") //Or OneCore
@@ -165,5 +141,45 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         private:
             void BasicAccessKeysTests::VerifyEnterExitAccessKeyModeUsingKeyInput();
         };
+
+    class BasicAccessKeysTestsUap : public WEX::TestClass<BasicAccessKeysTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(BasicAccessKeysTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"1bb20c90-a558-491b-b76d-55bdb9a46911;57e0de30-efb3-4001-9ccc-b38032fd1974;bdc5c68b-03c1-4217-832c-4c09f99946f4")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"BasicAccessKeysTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+        BEGIN_TEST_METHOD(SettingAccessKeyOverridesFEAPAccessKey)
+        TEST_METHOD_PROPERTY(L"Description", L"When we set FrameworkElement.AccessKey and FEAP.AccessKeys does not have a value, ensure that the value is mapped")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(SettingAccessKeyDoesNotOverrideWhenSetOnFEAP)
+        TEST_METHOD_PROPERTY(L"Description", L"When we set FrameworkElement.AccessKey and FEAP.AccessKeys does has a value, use the value on AP")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowMoveEndsAKSequence)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies that Access Key sequence terminates on Window move")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // crash due to window move
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowResizeEndsAKSequence)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies that Access Key sequence terminates on Window resize")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // crash due to window move
+        END_TEST_METHOD()
+    };
     }
 } } } }

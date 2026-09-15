@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Foundation { namespace Graphics {
 
@@ -15,6 +16,7 @@ public:
         TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
         TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+        TEST_CLASS_HOSTING_MODE_DEFAULT()
     END_TEST_CLASS()
 
     TEST_CLASS_SETUP(ClassSetup)
@@ -26,12 +28,29 @@ public:
         TEST_METHOD_PROPERTY(L"Description", L"Call GetPointerPositionPropertySet")
     END_TEST_METHOD()
 
-    BEGIN_TEST_METHOD(TouchUpdate)
-        TEST_METHOD_PROPERTY(L"Description", L"Update the pointer position as the finger moves")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-    END_TEST_METHOD()
 };
+
+    class PointerPositionPropertySetTestsUap : public WEX::TestClass<PointerPositionPropertySetTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(PointerPositionPropertySetTestsUap)
+        TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+        TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+        TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+        TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+        TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"PointerPositionPropertySetTests")
+        TEST_CLASS_HOSTING_MODE(UAP)
+    END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+        BEGIN_TEST_METHOD(TouchUpdate)
+        TEST_METHOD_PROPERTY(L"Description", L"Update the pointer position as the finger moves")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+    };
 
 
 } } } } } }

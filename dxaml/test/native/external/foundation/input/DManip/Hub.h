@@ -4,6 +4,7 @@
 #pragma once
 
 #include <TestEvent.h>
+#include <HostingModeTestClass.h>
 #include <SafeEventRegistration.h>
 #include <Versioning.h>
 #include <RuntimeEnabledFeatureOverride.h>
@@ -19,6 +20,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
                 TEST_CLASS_PROPERTY(L"TestPass:MinOSVer", WINDOWS_OS_VERSION_RS5) // DCPP: RS4 test failure: DManip::HubTest::Basics fails due to crash in TraceConsumerSession
+            TEST_CLASS_HOSTING_MODE(UAP)
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -27,7 +29,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(Basics)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates Hub doesn't apply any DManip transforms to secondary content relationship Dependency Properties")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Intermittent test crash
+                // Intermittent test crash
             END_TEST_METHOD()
 
         private:

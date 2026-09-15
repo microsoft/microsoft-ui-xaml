@@ -23,9 +23,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 #if WI_IS_FEATURE_PRESENT(Feature_CommandingImprovements)
     bool CommandingContainerIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool CommandingContainerIntegrationTestsWpf::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool CommandingContainerIntegrationTestsWpf::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool CommandingContainerIntegrationTestsWpf::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
     bool CommandingContainerIntegrationTests::TestSetup()
     {
@@ -374,7 +394,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void CommandingContainerIntegrationTests::ValidateCommandingContainerTracksContext()
+    void CommandingContainerIntegrationTestsWpf::ValidateCommandingContainerTracksContext()
     {
         TestCleanupWrapper cleanup;
 

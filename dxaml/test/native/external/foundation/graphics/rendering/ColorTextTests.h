@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Foundation { namespace Graphics {
@@ -18,6 +19,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
                 TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -31,16 +33,39 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(PropertyChanges)
-                TEST_METHOD_PROPERTY(L"Description", L"Changes the ColorFont properties and verifies correct updated rendering.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Mismatched baseline png
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-                TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
-            END_TEST_METHOD()
-
         private:
             inline Platform::String^ GetResourcesPath() const;
         };
+
+    class ColorTextTestsUap : public WEX::TestClass<ColorTextTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(ColorTextTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"02f4717a-a120-494b-a28e-9a2cbd41ca58;bd1463b3-e5f2-4d54-9394-63a431c53a6e;b7d949c9-6779-44c5-b16b-1f51e18f3866")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+                TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"ColorTextTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        inline Platform::String^ GetResourcesPath() const;
+
+    public:
+        BEGIN_TEST_METHOD(PropertyChanges)
+        TEST_METHOD_PROPERTY(L"Description", L"Changes the ColorFont properties and verifies correct updated rendering.")
+        // Mismatched baseline png
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
+    };
 
     } }
 } } } }

@@ -72,9 +72,7 @@ elseif($HostingMode -eq "Win32Explicit")
     $testnameprefix = "Win32Explicit"
 }
 
-if ($HostingMode) {
-    $taefExtraParameters = "/p:HostingMode=$HostingMode"
-}
+# HostingMode filters and labels work items; each test declares its own host.
 
 $TestBinaryDirectoryPath = $TestBinaryPath
 
@@ -86,6 +84,5 @@ $TestBinaryDirectoryPath = $TestBinaryPath
     -WorkItemPrefix $WorkItemPrefix `
     -TaefBaseQuery $taefBaseQuery `
     -TestTimeout $testTimeout `
-    -TaefExtraParameters $taefExtraParameters `
     -TestNamePrefix $testnameprefix `
     -TaefExePath $TaefExePath

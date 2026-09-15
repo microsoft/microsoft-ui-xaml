@@ -26,9 +26,48 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool StackPanelIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool StackPanelIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool StackPanelIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool StackPanelIntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    xaml_shapes::Rectangle^ StackPanelIntegrationTestsUap::CreateRectangle(int width, int height, bool visible)
+    {
+        auto rectangle = ref new xaml_shapes::Rectangle();
+        rectangle->Fill = ref new SolidColorBrush(Microsoft::UI::Colors::Red);
+        rectangle->Width = width;
+        rectangle->Height = height;
+
+        if (visible)
+        {
+            rectangle->Visibility = Visibility::Visible;
+        }
+        else
+        {
+            rectangle->Visibility = Visibility::Collapsed;
+        }
+
+        return rectangle;
+    }
+
 
     bool StackPanelIntegrationTests::TestSetup()
     {
@@ -132,7 +171,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         PanelsHelper::VerifyItemPositions(stackPanel, expectedPositions);
     }
 
-    void StackPanelIntegrationTests::CanChangeOrientation()
+    void StackPanelIntegrationTestsUap::CanChangeOrientation()
     {
         TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
         WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
@@ -267,7 +306,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         PanelsHelper::VerifyPanelDesiredSize(stackPanel, 175.0f, 50.0f);
     }
 
-    void StackPanelIntegrationTests::ValidateSpacing()
+    void StackPanelIntegrationTestsUap::ValidateSpacing()
     {
         TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
         WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
@@ -327,7 +366,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, "4");
     }
 
-    void StackPanelIntegrationTests::VerifyBorderChrome()
+    void StackPanelIntegrationTestsUap::VerifyBorderChrome()
     {
         TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(600, 600));
         WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
@@ -602,7 +641,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::WindowHelper->WaitForIdle();
     }
 
-    void StackPanelIntegrationTests::VerifyContentClipping()
+    void StackPanelIntegrationTestsUap::VerifyContentClipping()
     {
         WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
         TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));

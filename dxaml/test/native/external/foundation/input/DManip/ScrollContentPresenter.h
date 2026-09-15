@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 #include <RuntimeEnabledFeatureOverride.h>
 
@@ -18,6 +19,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"aa6364d2-41fe-4bec-a849-584f1f309baf;df11dd90-2e1d-45ff-93cb-cd6c0b87e24d")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -29,24 +31,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Tests alignment of ScrollContentPresenter content with a Stretch alignment switched off and on within a plain ScrollViewer.")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(StretchAlignmentInListView)
-                TEST_METHOD_PROPERTY(L"Description", L"Tests alignment of ScrollContentPresenter content with a Stretch alignment switched off and on within a ListView.")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp node
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-#ifndef MUX_PRERELEASE
-                // Test disabled in release
-                // Investigate and enable StretchAlignmentInListView test in MUXFinalRelease
-                TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") 
-#endif
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(StretchAlignmentInFlyout)
-                TEST_METHOD_PROPERTY(L"Description", L"Tests alignment of ScrollContentPresenter content inside an unconstrained Flyout.")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"Desktop,WindowsCore") // MockDComp doesn't like content in windowed popups on desktop.
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Event timed out
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(StretchAlignmentWithTextControl)
@@ -72,6 +56,46 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 double height) const;
 
         };
+
+    class ScrollContentPresenterUap : public WEX::TestClass<ScrollContentPresenterUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(ScrollContentPresenterUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"aa6364d2-41fe-4bec-a849-584f1f309baf;df11dd90-2e1d-45ff-93cb-cd6c0b87e24d")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"ScrollContentPresenter")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        Platform::String^ GetPathToFiles() const;
+
+    public:
+        BEGIN_TEST_METHOD(StretchAlignmentInListView)
+        TEST_METHOD_PROPERTY(L"Description", L"Tests alignment of ScrollContentPresenter content with a Stretch alignment switched off and on within a ListView.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Missing comp node
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        #ifndef MUX_PRERELEASE
+        // Test disabled in release
+        // Investigate and enable StretchAlignmentInListView test in MUXFinalRelease
+        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
+        #endif
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(StretchAlignmentInFlyout)
+        TEST_METHOD_PROPERTY(L"Description", L"Tests alignment of ScrollContentPresenter content inside an unconstrained Flyout.")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"Desktop,WindowsCore") // MockDComp doesn't like content in windowed popups on desktop.
+        // Event timed out
+        END_TEST_METHOD()
+    };
 
     } } }
 } } } }

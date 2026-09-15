@@ -57,9 +57,61 @@ Platform::String^ SoftwareBitmapSourceTests::GetResourcesPath() const
 
 bool SoftwareBitmapSourceTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool SoftwareBitmapSourceTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool SoftwareBitmapSourceTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool SoftwareBitmapSourceTestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+Platform::String^ SoftwareBitmapSourceTestsUap::GetResourcesPath() const
+{
+    return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\image\\";
+}
+
+void SoftwareBitmapSourceTestsUap::WriteWriteableBitmap(
+    xaml_imaging::WriteableBitmap^ bitmap,
+    unsigned int width,
+    unsigned int height,
+    uint32_t colorValue1,
+    uint32_t colorValue2
+    )
+{
+    ComPtr<IUnknown> pBuffer(reinterpret_cast<IUnknown*>(bitmap->PixelBuffer));
+
+    ComPtr<IBufferByteAccess> pBufferByteAccess;
+    pBuffer.As(&pBufferByteAccess);
+
+    byte* pPixel;
+    pBufferByteAccess->Buffer(&pPixel);
+
+    CustomWicBitmap::InitializeWithGradientPattern(
+        reinterpret_cast<uint32_t*>(pPixel),
+        width,
+        height,
+        colorValue1,
+        colorValue2
+        );
+
+    bitmap->Invalidate();
+}
+
 
 bool SoftwareBitmapSourceTests::TestSetup()
 {
@@ -1371,7 +1423,7 @@ void SoftwareBitmapSourceTests::TFS_6246592()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);
 }
 
-void SoftwareBitmapSourceTests::WriteableBitmapSetSource()
+void SoftwareBitmapSourceTestsUap::WriteableBitmapSetSource()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -26,7 +26,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
 bool ThemeShadowTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
 
@@ -43,7 +43,31 @@ bool ThemeShadowTests::TestCleanup()
     return true;
 }
 
+bool ThemeShadowTestsUap::ClassSetup()
+{
+    XAML_HOSTING_MODE_CLASS_SETUP();
+    return true;
+}
+
+bool ThemeShadowTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+bool ThemeShadowTestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
 void ThemeShadowTests::ThemeShadowLoadTest()
+{
+    ThemeShadowLoadTestImpl();
+}
+
+void ThemeShadowTests::ThemeShadowLoadTestImpl()
 {
     auto wh = TestServices::WindowHelper;
     TestCleanupWrapper cleanup;
@@ -464,7 +488,7 @@ void ThemeShadowTests::ThemeShadowDropShadowTargetOfLTE()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
 }
 
-void ThemeShadowTests::ThemeShadowBasicPopup()
+void ThemeShadowTestsUap::ThemeShadowBasicPopup()
 {
     WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -785,10 +809,10 @@ void ThemeShadowTests::ThemeShadowBasicNonPopup()
     ThemeShadowBasicNonPopupInternal(false);
 }
 
-void ThemeShadowTests::ThemeShadowBasicNonPopupLTE()
+void ThemeShadowTestsUap::ThemeShadowBasicNonPopupLTE()
 {
     RuntimeEnabledFeatureOverride featureUseDropShadows(RuntimeFeatureBehavior::RuntimeEnabledFeature::ForceProjectedShadowsOnByDefault, true);
-    ThemeShadowBasicNonPopupInternal(true);
+    ThemeShadowTests::ThemeShadowBasicNonPopupInternal(true);
 }
 
 void ThemeShadowTests::ThemeShadowBasicNonPopupInternal(bool useLTE)
@@ -1582,7 +1606,7 @@ void ThemeShadowTests::EnsureRootCanvasCompNodeLateAdd()
     u->VerifyMockDCompOutput(SurfaceComparison::NoComparison, L"SharedShadow");
 }
 
-void ThemeShadowTests::EnsureRootCanvasCompNodeParentLessPopup()
+void ThemeShadowTestsUap::EnsureRootCanvasCompNodeParentLessPopup()
 {
     RuntimeEnabledFeatureOverride featureUseDropShadows(RuntimeFeatureBehavior::RuntimeEnabledFeature::ForceProjectedShadowsOnByDefault, true);
     WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
@@ -1988,17 +2012,17 @@ void ThemeShadowTests::ThemeShadowCasterFiltering_NestedPopups()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"Popup2_Filtered");
 }
 
-void ThemeShadowTests::ThemeShadowDropShadowLoadTest()
+void ThemeShadowTestsUap::ThemeShadowDropShadowLoadTest()
 {
-    ThemeShadowLoadTest();
+    ThemeShadowTests::ThemeShadowLoadTestImpl();
 }
 
-void ThemeShadowTests::ThemeShadowDropShadowBasicPopup()
+void ThemeShadowTestsUap::ThemeShadowDropShadowBasicPopup()
 {
     ThemeShadowBasicPopup();
 }
 
-void ThemeShadowTests::ThemeShadowDropShadowVerifyShadowPixels()
+void ThemeShadowTestsUap::ThemeShadowDropShadowVerifyShadowPixels()
 {
     WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -2064,7 +2088,7 @@ void ThemeShadowTests::ThemeShadowDropShadowVerifyShadowPixels()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::AllSurfaces);
 }
 
-void ThemeShadowTests::ThemeShadowDropShadowDynamicCornerRadius()
+void ThemeShadowTestsUap::ThemeShadowDropShadowDynamicCornerRadius()
 {
     WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -2102,7 +2126,7 @@ void ThemeShadowTests::ThemeShadowDropShadowDynamicCornerRadius()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, "Uneven_CR");
 }
 
-void ThemeShadowTests::ThemeShadowDropShadowDynamicCornerRadiusOnParent()
+void ThemeShadowTestsUap::ThemeShadowDropShadowDynamicCornerRadiusOnParent()
 {
     WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -2134,7 +2158,7 @@ void ThemeShadowTests::ThemeShadowDropShadowDynamicCornerRadiusOnParent()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, "10_CR");
 }
 
-void ThemeShadowTests::ThemeShadowDropShadowRoundedCornersTargetOfLTE()
+void ThemeShadowTestsUap::ThemeShadowDropShadowRoundedCornersTargetOfLTE()
 {
     WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -2156,7 +2180,7 @@ void ThemeShadowTests::ThemeShadowDropShadowRoundedCornersTargetOfLTE()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
 }
 
-void ThemeShadowTests::ThemeShadowDropShadowUseCachedBrush()
+void ThemeShadowTestsUap::ThemeShadowDropShadowUseCachedBrush()
 {
     WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -2213,7 +2237,7 @@ void ThemeShadowTests::ThemeShadowDropShadowUseCachedBrush()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
 }
 
-void ThemeShadowTests::ThemeShadowDropShadowSystemThemeRedrawRTB()
+void ThemeShadowTestsUap::ThemeShadowDropShadowSystemThemeRedrawRTB()
 {
     // The RenderTargetBitmap shadow output differs slightly between OS builds (no JPEG here),
     // so allow the small per-channel tolerance.
@@ -2318,7 +2342,7 @@ void ThemeShadowTests::ThemeShadowDropShadowSystemThemeRedrawRTB()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly, "Dark");
 }
 
-void ThemeShadowTests::ThemeShadowDropShadowCornerRoundingOnControl()
+void ThemeShadowTestsUap::ThemeShadowDropShadowCornerRoundingOnControl()
 {
     WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
 

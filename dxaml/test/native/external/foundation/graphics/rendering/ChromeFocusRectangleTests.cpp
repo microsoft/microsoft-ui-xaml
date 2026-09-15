@@ -109,14 +109,14 @@ public:
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Foundation {
     namespace Graphics {
-        Platform::String^ ChromeFocusRectangleTests::GetResourcesPath() const
+        Platform::String^ ChromeFocusRectangleTests::GetResourcesPath()
         {
             return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\rendering\\";
         }
 
         bool ChromeFocusRectangleTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
 
@@ -133,10 +133,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             return true;
         }
 
+        bool ChromeFocusRectangleTestsUap::ClassSetup()
+        {
+            XAML_HOSTING_MODE_CLASS_SETUP();
+            return true;
+        }
+
+        bool ChromeFocusRectangleTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+        bool ChromeFocusRectangleTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
         //------------------------------------------------------------------------
         // Test case: Renders a Button and a CheckBox to check the Focus properties on controls.
         //------------------------------------------------------------------------
-        void ChromeFocusRectangleTests::CheckFocusChromeVisuals()
+        void ChromeFocusRectangleTestsUap::CheckFocusChromeVisuals()
         {
             FocusRectSetupHelper helper(DCompRendering::WUCCompleteSynchronousCompTree, FocusVisualKind::DottedLine);
 
@@ -145,7 +164,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             const auto& ih = TestServices::InputHelper;
             const auto& u = TestServices::Utilities;
 
-            Panel^ root = safe_cast<Panel^>(LoadXamlFileOnUIThread(GetResourcesPath() + L"FocusChromeRectangleTests.xaml"));
+            Panel^ root = safe_cast<Panel^>(LoadXamlFileOnUIThread(ChromeFocusRectangleTests::GetResourcesPath() + L"FocusChromeRectangleTests.xaml"));
             Button^ noVisualButton = nullptr;
             Button^ treeEnterLeaveButton = nullptr;
             Grid^ contentGrid = nullptr;
@@ -543,10 +562,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, "DoubleNudge");
         }
 
-        void ChromeFocusRectangleTests::NudgeInsideVisibleBounds()
+        void ChromeFocusRectangleTestsUap::NudgeInsideVisibleBounds()
         {
             FocusRectSetupHelper helper(DCompRendering::WUCCompleteSynchronousCompTree, FocusVisualKind::HighVisibility);
-            NudgeInsideVisibleBoundsHelper();
+            ChromeFocusRectangleTests::NudgeInsideVisibleBoundsHelper();
         }
 
         void ChromeFocusRectangleTests::NudgeInsideVisibleBoundsHelper(const NudgeInsideArgs& args)
@@ -603,7 +622,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         }
 
 
-        void ChromeFocusRectangleTests::ShowFocusRectOnNewPage()
+        void ChromeFocusRectangleTestsUap::ShowFocusRectOnNewPage()
         {
             XamlRoot^ xamlRoot = nullptr;
             RunOnUIThread([&]()
@@ -1109,7 +1128,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             });
         }
 
-        void ChromeFocusRectangleTests::FocusOnCommandBar()
+        void ChromeFocusRectangleTestsUap::FocusOnCommandBar()
         {
             FocusRectSetupHelper helper(DCompRendering::WUCCompleteSynchronousCompTree, FocusVisualKind::HighVisibility, 400.0f, 400.0f);
 
@@ -1213,12 +1232,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             }
         }
 
-        void ChromeFocusRectangleTests::DoNotSuppressFocusRectangleOnDesktop()
+        void ChromeFocusRectangleTestsUap::DoNotSuppressFocusRectangleOnDesktop()
         {
             // DoNotSupressFocusRectangleOnDesktop and SupressFocusRectangleOnPhone could actually be the same
             // test method with different masters files.  However, to be explicit about the intended difference
             // of functionality, they are separated.  Same goes for the cases when BringIntoView is handled.
-            FocusRectangleSuppressionTest(false);
+            ChromeFocusRectangleTests::FocusRectangleSuppressionTest(false);
         }
 
         void ChromeFocusRectangleTests::SuppressFocusRectangleOnPhone()
@@ -1226,9 +1245,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             FocusRectangleSuppressionTest(true);
         }
 
-        void ChromeFocusRectangleTests::DoNotSuppressFocusRectangleOnDesktopBringIntoViewHandled()
+        void ChromeFocusRectangleTestsUap::DoNotSuppressFocusRectangleOnDesktopBringIntoViewHandled()
         {
-            FocusRectangleSuppressionTest(false, true);
+            ChromeFocusRectangleTests::FocusRectangleSuppressionTest(false, true);
         }
 
         void ChromeFocusRectangleTests::SuppressFocusRectangleOnPhoneBringIntoViewHandled()
@@ -1484,7 +1503,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"3");
         }
 
-        void ChromeFocusRectangleTests::StickyHeaders()
+        void ChromeFocusRectangleTestsUap::StickyHeaders()
         {
             FocusRectSetupHelper helper(DCompRendering::WUCCompleteSynchronousCompTree, FocusVisualKind::HighVisibility, 400.0f, 400.0f);
 

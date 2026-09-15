@@ -34,9 +34,137 @@ Platform::String^ PrimitiveTests::GetResourcesPath() const
 
 bool PrimitiveTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool PrimitiveTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool PrimitiveTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool PrimitiveTestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+void PrimitiveTestsUap::LoadAndVerify(Platform::String^ markupFile, bool bigWindow, bool waitForIdle, test_infra::LastInputDeviceType deviceType)
+{
+    auto wh = TestServices::WindowHelper;
+
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
+
+    if (bigWindow)
+    {
+        wh->SetWindowSizeOverride(wf::Size(5000, 5000));
+    }
+    else
+    {
+        wh->SetWindowSizeOverride(wf::Size(400, 400));
+    }
+
+    bool imageFound = false;
+    auto imageRegistration = CreateSafeEventRegistration(xaml_controls::Image, ImageOpened);
+    auto imageBrushRegistration = CreateSafeEventRegistration(xaml_media::ImageBrush, ImageOpened);
+    auto imageOpenedEvent = std::make_shared<Event>();
+
+    auto root = safe_cast<FrameworkElement^>(LoadXamlFileOnUIThread(GetResourcesPath() + markupFile));
+    RunOnUIThread([&]()
+    {
+        wh->WindowContent = root;
+    });
+
+    if (deviceType != test_infra::LastInputDeviceType::None)
+    {
+        wh->WaitForIdle();
+
+        XamlRoot^ xamlRoot = nullptr;
+        RunOnUIThread([&]()
+        {
+            xamlRoot = root->XamlRoot;
+        });
+
+        TestServices::WindowHelper->SetLastInputMethod(deviceType, xamlRoot);
+    }
+
+    RunOnUIThread([&]()
+    {
+        auto image = safe_cast<Image^>(root->FindName(L"myImage"));
+        if (image != nullptr)
+        {
+            imageFound = true;
+            imageRegistration.Attach(
+                image,
+                ref new xaml::RoutedEventHandler([imageOpenedEvent](Platform::Object^, xaml::RoutedEventArgs^)
+            {
+                LOG_OUTPUT(L"Image Opened event raised for Image element.");
+                imageOpenedEvent->Set();
+            }));
+        }
+
+        auto imageBrush = safe_cast<ImageBrush^>(root->FindName(L"myImageBrush"));
+        if (imageBrush != nullptr)
+        {
+            imageFound = true;
+            imageBrushRegistration.Attach(
+                imageBrush,
+                ref new xaml::RoutedEventHandler([imageOpenedEvent](Platform::Object^, xaml::RoutedEventArgs^)
+            {
+                LOG_OUTPUT(L"Image Opened event raised for ImageBrush element.");
+                imageOpenedEvent->Set();
+            }));
+        }
+    });
+
+    if (imageFound)
+    {
+        imageOpenedEvent->WaitForDefault();
+    }
+    // WaitForIdle will cause us to wait until animations complete, but some test files have animations that run forever.
+    if (waitForIdle)
+    {
+        wh->WaitForIdle();
+    }
+    else
+    {
+        wh->SynchronouslyTickUIThread(3);
+    }
+
+    RunOnUIThread([&]()
+    {
+        auto controlToFocus = safe_cast<Control^>(root->FindName(L"shouldReceiveFocus"));
+        if (controlToFocus != nullptr)
+        {
+            controlToFocus->Focus(FocusState::Keyboard);
+        }
+    });
+
+    // WaitForIdle will cause us to wait until animations complete, but some test files have animations that run forever.
+    if (waitForIdle)
+    {
+        wh->WaitForIdle();
+    }
+    else
+    {
+        wh->SynchronouslyTickUIThread(3);
+    }
+    TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+}
+
+Platform::String^ PrimitiveTestsUap::GetResourcesPath() const
+{
+    return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\rendering\\";
+}
+
 
 bool PrimitiveTests::ClassCleanup()
 {
@@ -174,42 +302,42 @@ void PrimitiveTests::SolidColor3()
     LoadAndVerify(L"SolidColor3.xaml");
 }
 
-void PrimitiveTests::Texture1()
+void PrimitiveTestsUap::Texture1()
 {
     LoadAndVerify(L"Texture1.xaml");
 }
 
-void PrimitiveTests::Texture2()
+void PrimitiveTestsUap::Texture2()
 {
     LoadAndVerify(L"Texture2.xaml");
 }
 
-void PrimitiveTests::Texture3()
+void PrimitiveTestsUap::Texture3()
 {
     LoadAndVerify(L"Texture3.xaml");
 }
 
-void PrimitiveTests::Texture4()
+void PrimitiveTestsUap::Texture4()
 {
     LoadAndVerify(L"Texture4.xaml");
 }
 
-void PrimitiveTests::Texture5()
+void PrimitiveTestsUap::Texture5()
 {
     LoadAndVerify(L"Texture5.xaml");
 }
 
-void PrimitiveTests::Texture6()
+void PrimitiveTestsUap::Texture6()
 {
     LoadAndVerify(L"Texture6.xaml");
 }
 
-void PrimitiveTests::Texture7()
+void PrimitiveTestsUap::Texture7()
 {
     LoadAndVerify(L"Texture7.xaml");
 }
 
-void PrimitiveTests::Texture8()
+void PrimitiveTestsUap::Texture8()
 {
     LoadAndVerify(L"Texture8.xaml");
 }
@@ -224,7 +352,7 @@ void PrimitiveTests::Texture10()
     LoadAndVerify(L"Texture10.xaml");
 }
 
-void PrimitiveTests::Texture11()
+void PrimitiveTestsUap::Texture11()
 {
     LoadAndVerify(L"Texture11.xaml");
 }
@@ -324,7 +452,7 @@ void PrimitiveTests::Element12()
     LoadAndVerify(L"Element12.xaml");
 }
 
-void PrimitiveTests::Element13()
+void PrimitiveTestsUap::Element13()
 {
     LoadAndVerify(L"Element13.xaml");
 }
@@ -354,7 +482,7 @@ void PrimitiveTests::Element19()
     LoadAndVerify(L"Element19.xaml");
 }
 
-void PrimitiveTests::Element20()
+void PrimitiveTestsUap::Element20()
 {
     LoadAndVerify(L"Element20.xaml");
 }
@@ -389,7 +517,7 @@ void PrimitiveTests::Element26()
     LoadAndVerify(L"Element26.xaml");
 }
 
-void PrimitiveTests::Element27()
+void PrimitiveTestsUap::Element27()
 {
     LoadAndVerify(L"Element27.xaml");
 }

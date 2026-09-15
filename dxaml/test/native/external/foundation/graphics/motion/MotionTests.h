@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <WUCRenderingScopeGuard.h>
 #include "FeatureFlags.h"
 #include <TestEvent.h>
@@ -19,6 +20,7 @@ public:
 
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
         TEST_CLASS_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
     END_TEST_CLASS()
 
     TEST_CLASS_SETUP(ClassSetup)

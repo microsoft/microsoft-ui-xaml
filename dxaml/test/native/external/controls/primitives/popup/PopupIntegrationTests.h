@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Controls { namespace Primitives { namespace Popup {
 
@@ -15,7 +16,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_METHOD_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"2b4b21d5-e5c0-4fad-bed4-62030fe191a1;eadeac67-1552-4876-a67e-dc1fcb8a6e25;bdc5c68b-03c1-4217-832c-4c09f99946f4")
-            TEST_CLASS_PROPERTY(L"ThreadingModel", L"MTA")
+            TEST_CLASS_HOSTING_MODE_DEFAULT_WITH_THREADING(L"MTA")
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -39,18 +40,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // Mouse injection is unreliable on OneCore
           END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(ReplayPointerUpdate_PopupClosedDuringReplay_DoesNotCrash)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that a popup synchronously closing a sibling popup during pointer-event replay does not free the XCPListNode the outer iterator is sitting on.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // Mouse injection is unreliable on OneCore
-          END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(ReplayPointerUpdate_PopupClosedDuringReplay_WithManyOpenPopups_DoesNotCrash)
-            TEST_METHOD_PROPERTY(L"Description", L"Same as ReplayPointerUpdate_PopupClosedDuringReplay_DoesNotCrash but with enough additional open popups (>typicalOpenPopupCount=4) to force the snapshot Jupiter::stack_vector in CPopupRoot::ReplayPointerUpdate to spill to the heap, validating the reentrant-close fix on the heap-allocated path.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // Mouse injection is unreliable on OneCore
-          END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(PopupTabStop)
             TEST_METHOD_PROPERTY(L"Description", L"Verify that tab/shift tab on a LightDismiss Popup will update the focus for its children.")
         END_TEST_METHOD()
@@ -69,72 +58,61 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(WindowedPopupOpenAndClose)
             TEST_METHOD_PROPERTY(L"Description", L"Verify windowed popup's open and close.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowedPopupParentCanvasCompNode)
             TEST_METHOD_PROPERTY(L"Description", L"Verify windowed popup with parent Canvas with CompNode renders correctly")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowedPopupHWNDBounds1UR)
             TEST_METHOD_PROPERTY(L"Description", L"Verify bounds of unparented windowed popup HWND with various properties on Popup.Child, Popup.Child = Rectangle")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowedPopupHWNDBounds1PR)
             TEST_METHOD_PROPERTY(L"Description", L"Verify bounds of parented windowed popup HWND with various properties on Popup.Child, Popup.Child = Rectangle")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowedPopupHWNDBounds1UC)
             TEST_METHOD_PROPERTY(L"Description", L"Verify bounds of unparented windowed popup HWND with various properties on Popup.Child, Popup.Child = Canvas")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowedPopupHWNDBounds1PC)
             TEST_METHOD_PROPERTY(L"Description", L"Verify bounds of parented windowed popup HWND with various properties on Popup.Child, Popup.Child = Canvas")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowedPopupHWNDBounds2UR)
             TEST_METHOD_PROPERTY(L"Description", L"Verify bounds of unparented windowed popup HWND with various properties on Popup, Popup.Child = Rectangle")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowedPopupHWNDBounds2PR)
             TEST_METHOD_PROPERTY(L"Description", L"Verify bounds of parented windowed popup HWND with various properties on Popup, Popup.Child = Rectangle")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowedPopupHWNDBounds2UC)
             TEST_METHOD_PROPERTY(L"Description", L"Verify bounds of unparented windowed popup HWND with various properties on Popup, Popup.Child = Canvas")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowedPopupHWNDBounds2PC)
             TEST_METHOD_PROPERTY(L"Description", L"Verify bounds of parented windowed popup HWND with various properties on Popup, Popup.Child = Canvas")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowedPopupHWNDBoundsNested)
             TEST_METHOD_PROPERTY(L"Description", L"Verify bounds of parented windowed popup HWND, nested Popups")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowedPopupHighDPI)
-            // TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // UAP has an extra transform at the root for the zoom scale
+            // UAP has an extra transform at the root for the zoom scale.
             // Note: Tests that care about DpiAwarenessContext must also make an explicit call to InitializeHost at the start of the test.
             // This test data isn't actually applied until the test method starts, so the test host won't be able to read their values when
             // it normally initializes.
@@ -143,46 +121,34 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(PopupInHolographicModeOpenAndClose)
-            TEST_METHOD_PROPERTY(L"Description", L"Verify popup's open and close in Holographic mode, windowed mode is disabled.")
-            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Visual tree is different when WPF-hosted.
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(WindowedPopupInput)
             TEST_METHOD_PROPERTY(L"Description", L"Verify Input in windowed popup's content.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowedPopupPointerInputCoords)
             TEST_METHOD_PROPERTY(L"Description", L"Verify pointer input coordinates in windowed popup's content.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowedPopupPointerInputCoordsRTL)
             TEST_METHOD_PROPERTY(L"Description", L"Verify pointer input coordinates in RTL windowed popup's content.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowedPopupUIATree)
             TEST_METHOD_PROPERTY(L"Description", L"Verify windowed popup's UIA tree.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowedPopupRTL)
             TEST_METHOD_PROPERTY(L"Description", L"Verify windowed popup renders correctly in RTL flow")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowedPopupMoveSize)
             TEST_METHOD_PROPERTY(L"Description", L"Verify windowed popup renders correctly after moving and resizing")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
@@ -218,11 +184,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that an app can change the value of LightDismissOverlayMode while a popup is open.")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(DoesOverlaySizeWithWindow)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that the overlay sizes with the window.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")  // Test uses Window.Current, which is null in wpf hosting mode.
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(CanSetChildWhileOpenWithOverlayEnabled)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that setting the popup's child while it is open and the overlay is enabled correctly inserts the overlay and child under the popup root.")
         END_TEST_METHOD()
@@ -230,14 +191,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateOverlayDCompTree)
             TEST_METHOD_PROPERTY(L"Description", L"Validates DComp tree with an overlay-enabled popup.")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(ValidateOverlayUIETree)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates UIElement tree with an overlay-enabled popup.")
-            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Fails when WPF-hosted because Xaml has Popup IsOpen="true",
-                                                            // but when I fix this the baseline file can't be compared.
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(OpenPopupUnderCollapsedParent)
@@ -253,7 +206,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(HostBackdropBrushWindowed)
             TEST_METHOD_PROPERTY(L"Description", L"Ensure a Windowed Popup with HostBackdropBrush renders correctly")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // [DCPP-test] Delete TIE and HostBackdrop tests
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
@@ -304,8 +256,58 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         void WindowedPopupHWNDBounds1Helper(bool isParented, bool popupChildIsCanvas);
         void WindowedPopupHWNDBounds2Helper(bool isParented, bool popupChildIsCanvas);
         void WindowedPopupPointerInputCoordsHelper(bool isRTL);
+    };
+
+    class PopupIntegrationTestsUap : public WEX::TestClass<PopupIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(PopupIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"PopupIntegrationTests")
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_METHOD_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"2b4b21d5-e5c0-4fad-bed4-62030fe191a1;eadeac67-1552-4876-a67e-dc1fcb8a6e25;bdc5c68b-03c1-4217-832c-4c09f99946f4")
+            TEST_CLASS_PROPERTY(L"ThreadingModel", L"MTA")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
         void ReplayPointerUpdate_PopupClosedDuringReplay_DoesNotCrashHelper(size_t extraOpenPopupCount);
+        void WindowedPopupOpenAndCloseHelper();
+
+    public:
+        BEGIN_TEST_METHOD(ReplayPointerUpdate_PopupClosedDuringReplay_DoesNotCrash)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a popup synchronously closing a sibling popup during pointer-event replay does not free the XCPListNode the outer iterator is sitting on.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // Mouse injection is unreliable on OneCore
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ReplayPointerUpdate_PopupClosedDuringReplay_WithManyOpenPopups_DoesNotCrash)
+            TEST_METHOD_PROPERTY(L"Description", L"Same as ReplayPointerUpdate_PopupClosedDuringReplay_DoesNotCrash but with enough additional open popups (>typicalOpenPopupCount=4) to force the snapshot Jupiter::stack_vector in CPopupRoot::ReplayPointerUpdate to spill to the heap, validating the reentrant-close fix on the heap-allocated path.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // Mouse injection is unreliable on OneCore
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(PopupInHolographicModeOpenAndClose)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify popup's open and close in Holographic mode, windowed mode is disabled.")
+            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+            // Visual tree is different when WPF-hosted.
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesOverlaySizeWithWindow)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that the overlay sizes with the window.")
+            // Test uses Window.Current, which is null in wpf hosting mode.
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateOverlayUIETree)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates UIElement tree with an overlay-enabled popup.")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+            // Fails when WPF-hosted because Xaml has Popup IsOpen="true",
+            // but when I fix this the baseline file can't be compared.
+        END_TEST_METHOD()
     };
 
 } } } } } } }
-

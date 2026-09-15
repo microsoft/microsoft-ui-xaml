@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <RuntimeEnabledFeatureOverride.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Controls { namespace SplitView {
@@ -17,6 +18,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"1bb20c90-a558-491b-b76d-55bdb9a46911")
             TEST_CLASS_PROPERTY(L"IsolationLevel", L"Test") //DCPP: Crash in Microsoft.UI.Input.dll!UIAutomationIslandForwarder::EnsureAutomationHostProvider(HWND__ * hwnd)
+
+            TEST_CLASS_HOSTING_MODE(UAP) // WPF_HOSTING_MODE_FAILURE: can't find "PaneRoot"/"LightDismiss" elements
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -31,12 +34,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateLightDismissWindowPattern)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the SplitView control Overlay and CompactOverlay modes support window pattern, whereas Inline and CompactInline modes do not.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // WPF_HOSTING_MODE_FAILURE: Can't find element "PaneRoot"
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateLightDismissCloseButton)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the SplitView control Overlay and CompactOverlay modes support lightdismiss button, whereas Inline and CompactInline modes do not.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // WPF_HOSTING_MODE_FAILURE: Can't find element "LightDismiss"
         END_TEST_METHOD()
 
     private:

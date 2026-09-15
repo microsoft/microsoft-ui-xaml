@@ -80,10 +80,32 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool VsmIntegrationTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
 
             return true;
         }
+
+    bool VsmIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool VsmIntegrationTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml(ref new MetadataProvider(), ref new CustomMetadataRegistrar<ControlWithAttachedProperty>());
+            return true;
+        }
+
+    bool VsmIntegrationTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
 
         bool VsmIntegrationTests::TestSetup()
         {
@@ -971,7 +993,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             return ref new Platform::String(deploymentDir + L"resources\\framework\\");
         }
 
-        void VsmIntegrationTests::VerifyGeneratedTransitionBetweenEmptyAndSetter()
+        void VsmIntegrationTestsUap::VerifyGeneratedTransitionBetweenEmptyAndSetter()
         {
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
             TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
@@ -1070,7 +1092,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        void VsmIntegrationTests::VerifyGeneratedTransitionBetweenSetterAndSetter()
+        void VsmIntegrationTestsUap::VerifyGeneratedTransitionBetweenSetterAndSetter()
         {
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
             TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
@@ -1175,7 +1197,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        void VsmIntegrationTests::VerifyGeneratedTransitionBetweenSetterAndStoryboard()
+        void VsmIntegrationTestsUap::VerifyGeneratedTransitionBetweenSetterAndStoryboard()
         {
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
             TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));

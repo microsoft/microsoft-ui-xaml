@@ -23,9 +23,36 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Foundation { namespace Text {
         bool TextControlsSizingTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool TextControlsSizingTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool TextControlsSizingTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool TextControlsSizingTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+Platform::String^ TextControlsSizingTestsUap::GetPathToFiles() const
+        {
+            // Get the deployment directory, and then append our test's directory to the end
+            auto deploymentDir = GetTestDeploymentDir();
+            return ref new Platform::String(deploymentDir + L"resources\\native\\foundation\\text\\");
+        }
+
 
         bool TextControlsSizingTests::ClassCleanup()
         {
@@ -57,7 +84,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         // focuses each control, temporarily adds a space to each empty control,
         // to make sure their size does not change.
         //------------------------------------------------------------------------
-        void TextControlsSizingTests::ValidateInitialTextBoxSizes()
+        void TextControlsSizingTestsUap::ValidateInitialTextBoxSizes()
         {
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
 

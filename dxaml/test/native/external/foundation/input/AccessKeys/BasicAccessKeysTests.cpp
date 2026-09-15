@@ -17,9 +17,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool BasicAccessKeysTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool BasicAccessKeysTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool BasicAccessKeysTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool BasicAccessKeysTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
 
         bool BasicAccessKeysTests::TestSetup()
         {
@@ -1086,7 +1106,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             VERIFY_IS_FALSE(buttonAccessKeyHiddenEvent->HasFired());
         }
 
-        void BasicAccessKeysTests::SettingAccessKeyOverridesFEAPAccessKey()
+        void BasicAccessKeysTestsUap::SettingAccessKeyOverridesFEAPAccessKey()
         {
             TestCleanupWrapper cleanup;
 
@@ -1114,7 +1134,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void BasicAccessKeysTests::SettingAccessKeyDoesNotOverrideWhenSetOnFEAP()
+        void BasicAccessKeysTestsUap::SettingAccessKeyDoesNotOverrideWhenSetOnFEAP()
         {
             TestCleanupWrapper cleanup;
 
@@ -1139,7 +1159,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void BasicAccessKeysTests::WindowMoveEndsAKSequence()
+        void BasicAccessKeysTestsUap::WindowMoveEndsAKSequence()
         {
             TestCleanupWrapper cleanup;
 
@@ -1198,7 +1218,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             accessKeyHiddenEvent->WaitForDefault();
         }
 
-        void BasicAccessKeysTests::WindowResizeEndsAKSequence()
+        void BasicAccessKeysTestsUap::WindowResizeEndsAKSequence()
         {
             TestCleanupWrapper cleanup;
 

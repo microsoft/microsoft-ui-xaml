@@ -56,6 +56,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ValidateDefaultChildrenCollectionDuringTabNavigation()
         {
             Grid root = null;
@@ -99,6 +100,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ValidateCustomChildrenCollectionDuringTabNavigation()
         {
             StackPanel root = null;

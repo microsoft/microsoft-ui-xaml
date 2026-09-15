@@ -35,10 +35,133 @@ Platform::String^ DoubleAnimationTests::GetResourcesPath() const
 
 bool DoubleAnimationTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
 
     return true;
 }
+
+    bool DoubleAnimationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool DoubleAnimationTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool DoubleAnimationTestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+void DoubleAnimationTestsUap::TransformAnimationRealizationsHelper(bool animateRootGrid)
+{
+    const auto& wh = TestServices::WindowHelper;
+    const auto& u = TestServices::Utilities;
+
+    TestServices::WindowHelper->SetWindowSizeOverrideWithWindowScale(wf::Size(400, 400), 1.5f);
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
+
+    Grid^ rootGrid;
+    ScaleTransform^ scale;
+    TextBlock^ textBlock;
+    Storyboard^ sb;
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Creating elements");
+        rootGrid = ref new Grid();
+        scale = ref new ScaleTransform();
+
+        textBlock = ref new TextBlock();
+        textBlock->Foreground = ref new SolidColorBrush(Microsoft::UI::Colors::Red);
+        textBlock->Text = L"123";
+
+        if (animateRootGrid)
+        {
+            rootGrid->RenderTransform = scale;
+
+            // Also keep the CompNode for this element around to get additional code coverage in the RenderWalk
+            rootGrid->CompositeMode = ElementCompositeMode::SourceOver;
+        }
+        else
+        {
+            textBlock->RenderTransform = scale;
+        }
+
+        rootGrid->Children->Append(textBlock);
+        wh->WindowContent = rootGrid;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+
+    RunOnUIThread([&]()
+    {
+        // Setup animation that takes the Grid or TextBlock from 1x to 2x scale
+        LOG_OUTPUT(L"Starting scale animation");
+        ::Windows::Foundation::TimeSpan span; span.Duration = 1000000000L;   // 100 seconds
+
+        DoubleAnimation^ daScaleX = ref new DoubleAnimation();
+        daScaleX->From = 1.0;
+        daScaleX->To = 2.0;
+        daScaleX->Duration = DurationHelper::FromTimeSpan(span);
+        Storyboard::SetTarget(daScaleX, scale);
+        Storyboard::SetTargetProperty(daScaleX, L"ScaleX");
+
+        DoubleAnimation^ daScaleY = ref new DoubleAnimation();
+        daScaleY->From = 1.0;
+        daScaleY->To = 2.0;
+        daScaleY->Duration = DurationHelper::FromTimeSpan(span);
+        Storyboard::SetTarget(daScaleY, scale);
+        Storyboard::SetTargetProperty(daScaleY, L"ScaleY");
+
+        sb = ref new Storyboard();
+        sb->Children->Append(daScaleX);
+        sb->Children->Append(daScaleY);
+
+        sb->Begin();
+    });
+
+    // Tick the animation for a couple frames, the realization should stay at base scale
+    wh->SynchronouslyTickUIThread(1);
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
+
+    wh->SynchronouslyTickUIThread(1);
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Seeking animation");
+        ::Windows::Foundation::TimeSpan span; span.Duration = 500000000L;   // 50 seconds, or halfway through the animation
+        sb->Seek(span);
+    });
+    wh->SynchronouslyTickUIThread(1);
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2Seek");
+
+    RunOnUIThread([&]()
+    {
+        // Even if we dirty the element while it's animating, it should not change realization scale
+        LOG_OUTPUT(L"Changing brush color to dirty element during animation");
+        textBlock->Foreground = ref new SolidColorBrush(Microsoft::UI::Colors::Green);
+    });
+    wh->SynchronouslyTickUIThread(1);
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"3");
+
+    RunOnUIThread([&]()
+    {
+        // Finish the animation, the realization should jump to final scale
+        LOG_OUTPUT(L"Finish the animation");
+        sb->SkipToFill();
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"4");
+}
+
 
 bool DoubleAnimationTests::TestSetup()
 {
@@ -4053,12 +4176,12 @@ void DoubleAnimationTests::TransformAnimationRealizationsHelper(bool animateRoot
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"4");
 }
 
-void DoubleAnimationTests::TransformAnimationRealizations1WUCFull()
+void DoubleAnimationTestsUap::TransformAnimationRealizations1WUCFull()
 {
     TransformAnimationRealizationsHelper(false /*animateRootGrid*/);
 }
 
-void DoubleAnimationTests::TransformAnimationRealizations2WUCFull()
+void DoubleAnimationTestsUap::TransformAnimationRealizations2WUCFull()
 {
     TransformAnimationRealizationsHelper(true /*animateRootGrid*/);
 }
@@ -4683,7 +4806,7 @@ void DoubleAnimationTests::RTLAnimationWUC()
     RTLAnimation(DCompRendering::WUCCompleteSynchronousCompTree);
 }
 
-void DoubleAnimationTests::DeviceLostDuringAnimationWUCFull()
+void DoubleAnimationTestsUap::DeviceLostDuringAnimationWUCFull()
 {
     const auto& wh = TestServices::WindowHelper;
     const auto& u = TestServices::Utilities;

@@ -19,6 +19,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [TestProperty("BinaryUnderTest", "Microsoft.UI.Xaml.dll")]
         [TestProperty("RunAs", "UAP")]
         [TestProperty("Hosting:Mode", "UAP")] // DCPP NoCoreWindow mode - SemanticZoom tests fail get stuck "Waiting for BuildTreeService to finish..."
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Classification", "Integration")]
         [TestProperty("UAP:Praid", "XamlManagedTAEFTests")]
         [TestProperty("HelixWorkItemCreation", "CreateWorkItemPerTestClass")]

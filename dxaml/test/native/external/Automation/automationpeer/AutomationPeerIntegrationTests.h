@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <AutomationClient\AutomationClientManager.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Automation { namespace AutomationPeer {
@@ -18,17 +19,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
             TEST_CLASS_PROPERTY(L"IsolationLevel", L"Test") //DCPP: Crash in Microsoft.UI.Input.dll!UIAutomationIslandForwarder::EnsureAutomationHostProvider(HWND__ * hwnd)
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
         TEST_METHOD_SETUP(TestSetup)
         TEST_METHOD_CLEANUP(TestCleanup)
-
-        BEGIN_TEST_METHOD(VerifyCommonUiaPropertyChangesBeingRaised)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates if common UIA property change events are being raised on layout update.")
-            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")//WPF_HOSTING_MODE_FAILURE: When WPF-hosted, automation change event isn't raised as expected.
-        END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyControllerForPropertyChanged)
             TEST_METHOD_PROPERTY(L"Description", L"Validates ControllerFor UIA property change events.")
@@ -96,12 +92,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates Focus can be queried/set.")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(VerifyPeerFromPointWithNon100DpiIsCorrect)
-            TEST_METHOD_PROPERTY(L"Description", L"Verifies that retrieving an automation peer from a point when DPI is something other than 100% retrieves the correct peer.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP,WPF")
-            TEST_METHOD_PROPERTY(L"Ignore", L"True")
-        END_TEST_METHOD()
-
     private:
 
         ref class CustomButtonAP sealed : public xaml_automation_peers::ButtonAutomationPeer
@@ -144,5 +134,34 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         void VerifyContainerWithLabeledByHasUiaElement(const Automation::AutomationClient::UIAElementInfo& uiaInfo);
     };
 
-} } } } } }
+    class AutomationPeerIntegrationTestsUap : public WEX::TestClass<AutomationPeerIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(AutomationPeerIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"dd3493a5-54ef-4337-93bc-89b726406385")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+            TEST_CLASS_PROPERTY(L"IsolationLevel", L"Test") //DCPP: Crash in Microsoft.UI.Input.dll!UIAutomationIslandForwarder::EnsureAutomationHostProvider(HWND__ * hwnd)
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"AutomationPeerIntegrationTests")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
 
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+        BEGIN_TEST_METHOD(VerifyCommonUiaPropertyChangesBeingRaised)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates if common UIA property change events are being raised on layout update.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        //WPF_HOSTING_MODE_FAILURE: When WPF-hosted, automation change event isn't raised as expected.
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyPeerFromPointWithNon100DpiIsCorrect)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies that retrieving an automation peer from a point when DPI is something other than 100% retrieves the correct peer.")
+        TEST_METHOD_PROPERTY(L"Ignore", L"True")
+        END_TEST_METHOD()
+    };
+
+} } } } } }

@@ -19,9 +19,50 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool RangeSelectionIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool RangeSelectionIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool RangeSelectionIntegrationTestsUap::TestCleanup()
+    {
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+xaml_controls::ListView^ RangeSelectionIntegrationTestsUap::SetupEnvironment(unsigned int size)
+    {
+        xaml_controls::ListView^ listView = nullptr;
+        Platform::Collections::Vector<int>^ items = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            listView = dynamic_cast<xaml_controls::ListView^> (xaml_markup::XamlReader::Load(
+                L"<ListView Height='500' Width='200' SelectionMode='Extended' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' />"));
+            VERIFY_IS_NOT_NULL(listView);
+
+            items = ref new Platform::Collections::Vector<int>(size);
+            VERIFY_IS_NOT_NULL(items);
+
+            int count = 0;
+            for (auto i : items)
+            {
+                i = count++;
+            }
+
+            listView->ItemsSource = items;
+            TestServices::WindowHelper->WindowContent = listView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        return listView;
+    }
+
 
     bool RangeSelectionIntegrationTests::TestCleanup()
     {
@@ -145,7 +186,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void RangeSelectionIntegrationTests::ValidateSelectRange()
+    void RangeSelectionIntegrationTestsUap::ValidateSelectRange()
     {
         TestCleanupWrapper cleanup;
 
@@ -216,7 +257,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void RangeSelectionIntegrationTests::CanRangeSelectUnrealizedItemsWithShift()
+    void RangeSelectionIntegrationTestsUap::CanRangeSelectUnrealizedItemsWithShift()
     {
         TestCleanupWrapper cleanup;
 

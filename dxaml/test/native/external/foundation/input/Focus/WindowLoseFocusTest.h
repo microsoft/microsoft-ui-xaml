@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
+
+#include <HostingModeTestClass.h>
 namespace Microsoft { namespace UI { namespace Xaml {
             namespace Tests {
                 namespace Foundation {
@@ -19,6 +21,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
                                     TEST_CLASS_PROPERTY(L"Tailored:Host", L"Xaml")
                                     TEST_CLASS_PROPERTY(L"__ExecutionUnit", L";56BA1601-E088-49C5-BBB5-D90F33504A2F")
                                     TEST_CLASS_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
                                 END_TEST_CLASS()
 
                                 TEST_CLASS_SETUP(ClassSetup)

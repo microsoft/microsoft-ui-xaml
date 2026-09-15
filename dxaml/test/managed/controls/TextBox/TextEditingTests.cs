@@ -51,6 +51,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestProperty("Description", "Verifies the properties and methods of a large set of text controls.")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void TextControlPropertyAndMethodTests()
         {
             using (RuntimeFeature.Enable(15 /*DisableTextBoxCaret*/))
@@ -141,6 +142,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestProperty("Description", "Verifies that text controls can accept return in various cases.")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void DoTextControlAcceptReturnTests()
         {
@@ -213,6 +215,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestProperty("Description", "Verifies that richeditbox can accept return and wrap in various cases.")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void DoRichEditBoxControlAcceptReturnTests()
         {
@@ -286,6 +289,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestProperty("Description", "Verifies programmatic content set in RichEditBoxes.")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void ProgrammaticRichEditBoxContentTests()
         {

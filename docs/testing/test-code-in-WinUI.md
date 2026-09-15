@@ -87,25 +87,53 @@ The specific manifest used depends on the test metadata (specifically `UAP:AppXM
 The tests can execute in either a UWP or a WPF host. The WPF host consists of a single Xaml Island contained inside a
 WPF application.
 
-`Hosting:Mode` allows a test to declare which hosting mode to use and can be set to either `"UAP"`, or `"WPF"`. 
-There is also the option of `"Win32Explicit"` for Xaml islands tests.
+Each native external test class declares exactly one hosting mode. Use
+`TEST_CLASS_HOSTING_MODE_DEFAULT()` for general tests. It currently maps to WPF.
+Use `TEST_CLASS_HOSTING_MODE(UAP)` for tests that require UWP, or
+`TEST_CLASS_HOSTING_MODE(Win32Explicit)` for tests that create their own Xaml islands.
+Tests that specifically verify the WPF host can use `TEST_CLASS_HOSTING_MODE(WPF)`.
+If a default-hosted class requires MTA, use
+`TEST_CLASS_HOSTING_MODE_DEFAULT_WITH_THREADING(L"MTA")` instead of adding a second
+`ThreadingModel` property. The ordinary default macro uses STA.
 
 > Note: "UAP" is an old name for "UWP".
 
-> Note: `"Hosting:Mode"` is not something that is built into TAEF or that it understands. This is custom metadata that
-> we use when creating queries to execute tests.
+The macros in `dxaml\test\native\inc\HostingModeTestClass.h` set `Hosting:Mode` for test
+selection and set the TAEF host, manifest, and apartment metadata needed to launch the class.
 
 > Note: WinUI3 no longer supports UWP mode. But it can be re-enabled with the `EnableUWPWindow` registry key. This is not something that is publicly supported.
 
-By default, when a test is executed in TAEF, we will use the UAP host.
-To run a test in the WPF host, pass `/p:HostingMode=WPF` as an argument to `te.exe`.
-The `/p` switch to `te.exe` allows you to pass extra runtime parameters to the test code from the command line.
+Classes that use `TestServices` also call `XAML_HOSTING_MODE_CLASS_SETUP()` from their
+class setup method. This reads the class declaration and initializes the matching host.
 
-> Note: `/p:HostingMode=WPF` is NOT something that TAEF understands. It is something that our test infrastructure
-> consumes at runtime that controls whether it creates a UAP host or a WPF host.
+```cpp
+BEGIN_TEST_CLASS(MyTests)
+    TEST_CLASS_HOSTING_MODE_DEFAULT()
+END_TEST_CLASS()
 
-So there are two pieces to this, the `Hosting:Mode` test metadata which allows a test to declare which hosting modes it
-supports and the `/p:HostingMode` runtime parameter to te.exe which controls which host to run in.
+bool MyTests::ClassSetup()
+{
+    XAML_HOSTING_MODE_CLASS_SETUP();
+    return true;
+}
+```
+
+Run tests with `runtests.cmd <testname>` or `te.exe <testdll>` without `/p:HostingMode`.
+A single invocation can select classes with different hosting modes. The optional
+`runtests.cmd -HostingMode WPF <testname>` argument only filters which tests run.
+
+Do not override `Hosting:Mode` on a test method. If methods need different modes,
+put them in separate classes and give each class its own declaration and setup.
+On a split sibling, add `TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"OriginalClassName")`
+to preserve the original names of XML and image master files and their generated output.
+This alias does not change the test's name in TAEF results.
+Managed tests use their existing WPF-only host configuration without a runtime parameter.
+Managed tests that still declare UAP are marked `Ignore` because the managed runtime
+does not support that host. Their UAP declarations remain in place for future migration;
+do not use `/runIgnoredTests` to run these tests in WPF.
+
+Run the runner regression checks with
+`powershell -NoProfile -File .\test\scripts\tests\HostingMode.Tests.ps1` from the repository root.
 
 ### Host app
 
@@ -129,6 +157,8 @@ However, this convenience becomes a limitation for Xaml island tests. Island tes
 windows, and DesktopWindowXamlSources. These tests use the `Win32Explicit` hosting mode, and they explicitly create
 their own hosting environments. Note that `Win32Explicit` isn't interoperable with `UAP` or `WPF`. A test written for
 other hosting modes won't have code to set up its DWXS, and can't run in `Win32Explicit`.
+The Win32Explicit declaration isolates each class in a separate process so that classes
+can create independent `Application` instances when selected in one test run.
 
 ### Test Infra: "Private.Infrastructure"
 

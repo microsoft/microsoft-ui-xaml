@@ -72,12 +72,60 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         // input from being routed to the app. It will also wait for the
         // debugger to attach when the waitForDebugger runtime parameter is
         // specified.
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
 
         m_VsmNameScopingXaml = loaderTask.get();
 
         return true;
     }
+
+    bool ParserIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ParserIntegrationTestsUap::TestSetup()
+        {
+            // Initialize the framework before anything else. We need to make sure the test
+            // is in a good state in case the framework was shut down after the previous test.
+            // We pass in our registar to inform the WindowHelper that there is custom metadata
+            // that needs to be initialized and subsequently cleared when we call ShutdownXaml.
+            // Without the custom metadata provider types would not be activatable from XAML and certain
+            // parts of Jupiter would fail to function (Jupiter will sometimes look up
+            // properties by name, without this metadata that lookup will fail and create
+            // lots of HRESULT spew).
+            test_infra::TestServices::WindowHelper->InitializeXaml(
+                ref new MetadataProvider(),
+                // Note here that this is a templated ref class. Your custom types need to have static methods
+                // for registering and clearing dependency properties. These must be named RegisterDependencyProperties
+                // and ClearDependencyProperties.
+                ref new CustomMetadataRegistrar<::Tests::Native::External::Framework::Parser::Primitive::CustomButton>());
+
+            RunOnUIThread([&]()
+            {
+                dpSetPropertyPathOnCustomDP_DP = DependencyProperty::RegisterAttached(L"SetPropertyPathOnCustomDP_DP", PropertyPath::typeid, Border::typeid, nullptr);
+                dpSetBrushOnCustomDP_DP = DependencyProperty::RegisterAttached(L"SetBrushOnCustomDP_DP", Brush::typeid, Border::typeid, nullptr);
+                dpCanSetUriPropertyOnNonFrameworkElementObject_DP = DependencyProperty::RegisterAttached(L"CanSetUriPropertyOnNonFrameworkElementObject_DP", Uri::typeid, SolidColorBrush::typeid, nullptr);
+            });
+
+            return true;
+        }
+
+    bool ParserIntegrationTestsUap::TestCleanup()
+    {
+        RunOnUIThread([&]()
+        {
+            dpSetPropertyPathOnCustomDP_DP = nullptr;
+            dpSetBrushOnCustomDP_DP = nullptr;
+            dpCanSetUriPropertyOnNonFrameworkElementObject_DP = nullptr;
+        });
+
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
         bool ParserIntegrationTests::TestSetup()
         {
@@ -982,7 +1030,7 @@ L"<Control xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
         });
     }
 
-    void ParserIntegrationTests::ApplicationLoadComponentExpandsTemplatesUnderDesigner()
+    void ParserIntegrationTestsUap::ApplicationLoadComponentExpandsTemplatesUnderDesigner()
     {
         TestCleanupWrapper cleanup;
         RuntimeEnabledFeatureOverride featureEnforceXbfV2Stream(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnforceXbfV2Stream, false);
@@ -998,7 +1046,7 @@ L"<Control xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
         });
     }
 
-    void ParserIntegrationTests::ResourceDictionary_SourceExpandsTemplatesUnderDesigner()
+    void ParserIntegrationTestsUap::ResourceDictionary_SourceExpandsTemplatesUnderDesigner()
     {
         TestCleanupWrapper cleanup;
         RuntimeEnabledFeatureOverride featureEnforceXbfV2Stream(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnforceXbfV2Stream, false);

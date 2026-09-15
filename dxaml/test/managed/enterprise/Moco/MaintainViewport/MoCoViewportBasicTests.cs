@@ -410,6 +410,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
         [TestMethod]
         [Priority(1)]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void TestGroupedDataManipulations()
         {
             ListViewBase list = null; // List control under tests
@@ -690,6 +691,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void CanKeepLastItemInViewAfterBulkAddDelete()
         {
             ListView list = null;
@@ -906,6 +908,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void CanStayScrolledToTheBottomAfterResetWithKeepLastItemInView()
         {
             ListView list = null;
@@ -963,6 +966,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]   // DCPP: Tests are failing during shutdown on WPF due to outstanding animations
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void CanTrackGroupHeaderInNonContiguousForwardSituation()
         {
             ListView list = null;
@@ -1037,6 +1041,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void CanTrackGroupHeaderInNonContiguousBackwardSituation()
         {
             ListView list = null;

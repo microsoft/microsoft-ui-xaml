@@ -34,7 +34,7 @@ Platform::String^ CompNodeTests::GetResourcesPath() const
 
 bool CompNodeTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
 

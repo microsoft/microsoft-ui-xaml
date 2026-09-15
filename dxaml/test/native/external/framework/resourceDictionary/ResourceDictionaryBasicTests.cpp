@@ -33,9 +33,7 @@ namespace
 {
     bool IsInWPFHostingMode()
     {
-        WEX::Common::String hostingMode;
-        WEX::TestExecution::RuntimeParameters::TryGetValue(L"HostingMode", hostingMode);
-        return hostingMode.CompareNoCase(L"WPF") == 0;
+        return TestServices::Utilities->IsWPF;
     }
 
     void VerifyXamlResourceReferenceTraceHelper(Platform::String^ xamlString, Platform::String^ expectedMessage, Platform::String^ expectedMessage2, bool exceptionExpected = true)
@@ -138,10 +136,347 @@ namespace Microsoft { namespace UI { namespace Xaml {
             // input from being routed to the app. It will also wait for the
             // debugger to attach when the waitForDebugger runtime parameter is
             // specified.
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
 
             return true;
         }
+
+    bool ResourceDictionaryBasicTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ResourceDictionaryBasicTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml(ref new MetadataProvider());
+            return true;
+        }
+
+    bool ResourceDictionaryBasicTestsUap::TestCleanup()
+        {
+            // It's very important to have your test clean up the window contents
+            // when it completes. When creating new tests be sure to copy this
+            // method over or implement it in a similar way. By cleaning
+            // up the window content and waiting for the page to go idle you ensure
+            // that if your test fails while the UI element tree is being torn down
+            // that the failure is associated with your test and doesn't occur
+            // nondeterministically in the future. By waiting for the page to go
+            // idle you ensure that all transitions have completed and that jupiter
+            // is in a 'tabula rasa' state for the next test.
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+void ResourceDictionaryBasicTestsUap::MergedDictionariesInThemeDictionariesTest()
+        {
+            TestCleanupWrapper cleanup;
+            ApplicationThemeOverrider themeGuard;
+            auto cleanupAppResources = wil::scope_exit([]{
+                RunOnUIThread([]()
+                {
+                    Application::Current->Resources->Clear();
+                });
+            });
+            auto initAppResources = []()
+            {
+                Platform::String^ xamlString =
+                    L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
+                    L"                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                    L"  <ResourceDictionary.ThemeDictionaries>"
+                    L"    <ResourceDictionary x:Key='Light'>"
+                    L"        <ResourceDictionary.MergedDictionaries>"
+                    L"           <ResourceDictionary>"
+                    L"              <Color x:Key='MyThemeColor'>#FF0000FF</Color>"
+                    L"              <SolidColorBrush x:Key='MyThemeBrush' Color='{ThemeResource MyThemeColor}' />"
+                    L"           </ResourceDictionary>"
+                    L"        </ResourceDictionary.MergedDictionaries>"
+                    L"    </ResourceDictionary>"
+                    L"    <ResourceDictionary x:Key='Dark'>"
+                    L"        <ResourceDictionary.MergedDictionaries>"
+                    L"           <ResourceDictionary>"
+                    L"              <Color x:Key='MyThemeColor'>#FFFF0000</Color>"
+                    L"              <SolidColorBrush x:Key='MyThemeBrush' Color='{ThemeResource MyThemeColor}' />"
+                    L"           </ResourceDictionary>"
+                    L"        </ResourceDictionary.MergedDictionaries>"
+                    L"    </ResourceDictionary>"
+                    L"  </ResourceDictionary.ThemeDictionaries>"
+                    L"</ResourceDictionary>";
+
+                auto resources = safe_cast<ResourceDictionary^>(XamlReader::Load(xamlString));
+                Application::Current->Resources = resources;
+            };
+
+            Page^ page = nullptr;
+            RunOnUIThread([&]()
+            {
+                TestServices::ThemingHelper->SetApplicationRequestedTheme(ApplicationTheme::Light);
+                initAppResources();
+
+                Platform::String^ xamlString =
+                    L"<Page xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
+                    L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                    L"    <Page.Resources>"
+                    L"      <ResourceDictionary>"
+                    L"        <ResourceDictionary.ThemeDictionaries>"
+                    L"          <ResourceDictionary x:Key='Light'>"
+                    L"            <ResourceDictionary.MergedDictionaries>"
+                    L"               <ResourceDictionary>"
+                    L"                  <Color x:Key='MyPageThemeColor'>Yellow</Color>"
+                    L"                  <SolidColorBrush x:Key='MyPageThemeBrush' Color='{ThemeResource MyPageThemeColor}' />"
+                    L"               </ResourceDictionary>"
+                    L"            </ResourceDictionary.MergedDictionaries>"
+                    L"          </ResourceDictionary>"
+                    L"          <ResourceDictionary x:Key='Dark'>"
+                    L"             <ResourceDictionary.MergedDictionaries>"
+                    L"                <ResourceDictionary>"
+                    L"                   <Color x:Key='MyPageThemeColor'>Orange</Color>"
+                    L"                   <SolidColorBrush x:Key='MyPageThemeBrush' Color='{ThemeResource MyPageThemeColor}' />"
+                    L"                </ResourceDictionary>"
+                    L"             </ResourceDictionary.MergedDictionaries>"
+                    L"          </ResourceDictionary>"
+                    L"        </ResourceDictionary.ThemeDictionaries>"
+                    L"        <Style TargetType='Button'>"
+                    L"          <Setter Property='Foreground' Value='{ThemeResource MyPageThemeBrush}' />"
+                    L"          <Setter Property='Background' Value='{ThemeResource MyThemeBrush}' />"
+                    L"        </Style>"
+                    L"      </ResourceDictionary>"
+                    L"    </Page.Resources>"
+                    L"    <StackPanel>"
+                    L"      <Button />"
+                    L"      <Button RequestedTheme='Light' />"
+                    L"      <Button />"
+                    L"      <Button RequestedTheme='Dark' />"
+                    L"      <Button />"
+                    L"    </StackPanel>"
+                    L"</Page>";
+
+                page = safe_cast<Page^>(XamlReader::Load(xamlString));
+                TestServices::WindowHelper->WindowContent = page;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            Button ^button1, ^button2, ^button3, ^button4, ^button5;
+            SolidColorBrush ^brush1, ^brush2, ^brush3, ^brush4, ^brush5;
+
+            RunOnUIThread([&]()
+            {
+                auto panel = safe_cast<StackPanel^>(page->Content);
+
+                button1 = safe_cast<Button^>(panel->Children->GetAt(0));
+                brush1 = safe_cast<SolidColorBrush^>(button1->Background);
+                button2 = safe_cast<Button^>(panel->Children->GetAt(1));
+                brush2 = safe_cast<SolidColorBrush^>(button2->Background);
+                button3 = safe_cast<Button^>(panel->Children->GetAt(2));
+                brush3 = safe_cast<SolidColorBrush^>(button3->Background);
+                button4 = safe_cast<Button^>(panel->Children->GetAt(3));
+                brush4 = safe_cast<SolidColorBrush^>(button4->Background);
+                button5 = safe_cast<Button^>(panel->Children->GetAt(4));
+                brush5 = safe_cast<SolidColorBrush^>(button5->Background);
+
+                LOG_OUTPUT(L"Verify Application resources");
+                VERIFY_ARE_EQUAL(Colors::Blue, brush1->Color);
+                VERIFY_ARE_EQUAL(Colors::Blue, brush2->Color);
+                VERIFY_ARE_EQUAL(Colors::Blue, brush3->Color);
+                VERIFY_ARE_EQUAL(Colors::Red, brush4->Color);
+                VERIFY_ARE_EQUAL(Colors::Blue, brush5->Color);
+
+                brush1 = safe_cast<SolidColorBrush^>(button1->Foreground);
+                brush2 = safe_cast<SolidColorBrush^>(button2->Foreground);
+                brush3 = safe_cast<SolidColorBrush^>(button3->Foreground);
+                brush4 = safe_cast<SolidColorBrush^>(button4->Foreground);
+                brush5 = safe_cast<SolidColorBrush^>(button5->Foreground);
+
+                LOG_OUTPUT(L"Verify page resources");
+                VERIFY_ARE_EQUAL(Colors::Yellow, brush1->Color);
+                VERIFY_ARE_EQUAL(Colors::Yellow, brush2->Color);
+                VERIFY_ARE_EQUAL(Colors::Yellow, brush3->Color);
+                VERIFY_ARE_EQUAL(Colors::Orange, brush4->Color);
+                VERIFY_ARE_EQUAL(Colors::Yellow, brush5->Color);
+            });
+
+            RunOnUIThread([&]()
+            {
+                TestServices::ThemingHelper->SetApplicationRequestedTheme(ApplicationTheme::Dark);
+            });
+
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                brush1 = safe_cast<SolidColorBrush^>(button1->Background);
+                brush2 = safe_cast<SolidColorBrush^>(button2->Background);
+                brush3 = safe_cast<SolidColorBrush^>(button3->Background);
+                brush4 = safe_cast<SolidColorBrush^>(button4->Background);
+                brush5 = safe_cast<SolidColorBrush^>(button5->Background);
+
+                LOG_OUTPUT(L"Verify Application resources after theme change");
+                VERIFY_ARE_EQUAL(Colors::Red, brush1->Color);
+                VERIFY_ARE_EQUAL(Colors::Blue, brush2->Color);
+                VERIFY_ARE_EQUAL(Colors::Red, brush3->Color);
+                VERIFY_ARE_EQUAL(Colors::Red, brush4->Color);
+                VERIFY_ARE_EQUAL(Colors::Red, brush5->Color);
+
+                brush1 = safe_cast<SolidColorBrush^>(button1->Foreground);
+                brush2 = safe_cast<SolidColorBrush^>(button2->Foreground);
+                brush3 = safe_cast<SolidColorBrush^>(button3->Foreground);
+                brush4 = safe_cast<SolidColorBrush^>(button4->Foreground);
+                brush5 = safe_cast<SolidColorBrush^>(button5->Foreground);
+
+                LOG_OUTPUT(L"Verify page resources after theme change");
+                VERIFY_ARE_EQUAL(Colors::Orange, brush1->Color);
+                VERIFY_ARE_EQUAL(Colors::Yellow, brush2->Color);
+                VERIFY_ARE_EQUAL(Colors::Orange, brush3->Color);
+                VERIFY_ARE_EQUAL(Colors::Orange, brush4->Color);
+                VERIFY_ARE_EQUAL(Colors::Orange, brush5->Color);
+
+            });
+        }
+
+void ResourceDictionaryBasicTestsUap::ThemeRefInThemeResourceTest()
+        {
+            TestCleanupWrapper cleanup;
+
+            {
+                Page^ page = nullptr;
+                RunOnUIThread([&]()
+                {
+                    Platform::String^ xamlString =
+                        L"<Page xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
+                        L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                        L"    <Page.Resources>"
+                        L"      <ResourceDictionary>"
+                        L"        <ResourceDictionary.ThemeDictionaries>"
+                        L"          <ResourceDictionary x:Key='Light'>"
+                        L"            <Color x:Key='MyThemeColor'>#FF0000FF</Color>"
+                        L"            <SolidColorBrush x:Key='MyThemeBrush' Color='{ThemeResource MyThemeColor}' />"
+                        L"          </ResourceDictionary>"
+                        L"          <ResourceDictionary x:Key='Dark'>"
+                        L"            <Color x:Key='MyThemeColor'>#FFFF0000</Color>"
+                        L"            <SolidColorBrush x:Key='MyThemeBrush' Color='{ThemeResource MyThemeColor}' />"
+                        L"          </ResourceDictionary>"
+                        L"        </ResourceDictionary.ThemeDictionaries>"
+                        L"        <SolidColorBrush x:Key='MyThemeBrush_WillChange' Color='{ThemeResource MyThemeColor}' />"
+                        L"      </ResourceDictionary>"
+                        L"    </Page.Resources>"
+                        L"    <StackPanel>"
+                        L"      <StackPanel RequestedTheme='Dark'>"
+                        L"        <Button Background='{ThemeResource MyThemeBrush}' />"
+                        L"      </StackPanel>"
+                        L"      <StackPanel RequestedTheme='Light'>"
+                        L"        <Button Background='{ThemeResource MyThemeBrush}' />"
+                        L"        <Button Background='{ThemeResource MyThemeBrush}' />"
+                        L"        <Button Background='{ThemeResource MyThemeBrush_WillChange}' />"
+                        L"      </StackPanel>"
+                        L"    </StackPanel>"
+                        L"</Page>";
+
+                    page = safe_cast<Page^>(XamlReader::Load(xamlString));
+                    TestServices::WindowHelper->WindowContent = page;
+                });
+                TestServices::WindowHelper->WaitForIdle();
+                RunOnUIThread([&]()
+                {
+                    auto topPanel = safe_cast<StackPanel^>(page->Content);
+
+                    auto panel1 = safe_cast<StackPanel^>(topPanel->Children->GetAt(0));
+                    VERIFY_ARE_EQUAL(ElementTheme::Dark, panel1->RequestedTheme);
+                    auto panel2 = safe_cast<StackPanel^>(topPanel->Children->GetAt(1));
+                    VERIFY_ARE_EQUAL(ElementTheme::Light, panel2->RequestedTheme);
+
+                    auto button1 = safe_cast<Button^>(panel1->Children->GetAt(0));
+                    auto button2 = safe_cast<Button^>(panel2->Children->GetAt(0));
+                    auto button3 = safe_cast<Button^>(panel2->Children->GetAt(1));
+
+                    // We expect the background on button4 to change since the brush itself is not inside
+                    // a theme dictionary because otherwise we'd have to keep multiple instances of the brush
+                    // around. Developers are encouraged to put the brush inside the ThemeDictionary
+                    auto button4_backgroundshouldchange = safe_cast<Button^>(panel2->Children->GetAt(2));
+
+                    auto brush = safe_cast<SolidColorBrush^>(button1->Background);
+                    VERIFY_ARE_EQUAL(Colors::Red, brush->Color);
+                    brush = safe_cast<SolidColorBrush^>(button2->Background);
+                    VERIFY_ARE_EQUAL(Colors::Blue, brush->Color);
+                    brush = safe_cast<SolidColorBrush^>(button3->Background);
+                    VERIFY_ARE_EQUAL(Colors::Blue, brush->Color);
+                    brush = safe_cast<SolidColorBrush^>(button4_backgroundshouldchange->Background);
+                    VERIFY_ARE_EQUAL(Colors::Blue, brush->Color);
+
+                    page->RequestedTheme = ElementTheme::Dark;
+
+                    brush = safe_cast<SolidColorBrush^>(button1->Background);
+                    VERIFY_ARE_EQUAL(Colors::Red, brush->Color);
+                    brush = safe_cast<SolidColorBrush^>(button2->Background);
+                    VERIFY_ARE_EQUAL(Colors::Blue, brush->Color);
+                    brush = safe_cast<SolidColorBrush^>(button3->Background);
+                    VERIFY_ARE_EQUAL(Colors::Blue, brush->Color);
+                    brush = safe_cast<SolidColorBrush^>(button4_backgroundshouldchange->Background);
+                    VERIFY_ARE_EQUAL(Colors::Red, brush->Color, L"This should update with the theme change");
+                });
+            }
+
+            {
+                Page^ page = nullptr;
+                RunOnUIThread([&]()
+                {
+                    Platform::String^ xamlString =
+                        L"<Page xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
+                        L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                        L"    <Page.Resources>"
+                        L"      <ResourceDictionary>"
+                        L"        <ResourceDictionary.ThemeDictionaries>"
+                        L"          <ResourceDictionary x:Key='Light'>"
+                        L"            <Color x:Key='MyThemeColor'>#FF0000FF</Color>"
+                        L"            <SolidColorBrush x:Key='MyThemeBrush' Color='{ThemeResource MyThemeColor}' />"
+                        L"          </ResourceDictionary>"
+                        L"          <ResourceDictionary x:Key='Dark'>"
+                        L"            <Color x:Key='MyThemeColor'>#FFFF0000</Color>"
+                        L"            <SolidColorBrush x:Key='MyThemeBrush' Color='{ThemeResource MyThemeColor}' />"
+                        L"          </ResourceDictionary>"
+                        L"        </ResourceDictionary.ThemeDictionaries>"
+                        L"      </ResourceDictionary>"
+                        L"    </Page.Resources>"
+                        L"    <StackPanel>"
+                        L"      <StackPanel RequestedTheme='Dark'>"
+                        L"        <Button Background='{ThemeResource MyThemeBrush}' />"
+                        L"      </StackPanel>"
+                        L"      <StackPanel RequestedTheme='Light'>"
+                        L"        <Button Background='{ThemeResource MyThemeBrush}' />"
+                        L"      </StackPanel>"
+                        L"    </StackPanel>"
+                        L"</Page>";
+
+                    page = safe_cast<Page^>(XamlReader::Load(xamlString));
+                    TestServices::WindowHelper->WindowContent = page;
+                });
+                TestServices::WindowHelper->WaitForIdle();
+                RunOnUIThread([&]()
+                {
+                    auto topPanel = safe_cast<StackPanel^>(page->Content);
+
+                    auto panel1 = safe_cast<StackPanel^>(topPanel->Children->GetAt(0));
+                    VERIFY_ARE_EQUAL(ElementTheme::Dark, panel1->RequestedTheme);
+                    auto panel2 = safe_cast<StackPanel^>(topPanel->Children->GetAt(1));
+                    VERIFY_ARE_EQUAL(ElementTheme::Light, panel2->RequestedTheme);
+
+                    auto button1 = safe_cast<Button^>(panel1->Children->GetAt(0));
+                    auto button2 = safe_cast<Button^>(panel2->Children->GetAt(0));
+
+                    auto brush = safe_cast<SolidColorBrush^>(button1->Background);
+                    VERIFY_ARE_EQUAL(Colors::Red, brush->Color);
+                    brush = safe_cast<SolidColorBrush^>(button2->Background);
+                    VERIFY_ARE_EQUAL(Colors::Blue, brush->Color);
+
+                    page->RequestedTheme = ElementTheme::Dark;
+
+                    brush = safe_cast<SolidColorBrush^>(button1->Background);
+                    VERIFY_ARE_EQUAL(Colors::Red, brush->Color);
+                    brush = safe_cast<SolidColorBrush^>(button2->Background);
+                    VERIFY_ARE_EQUAL(Colors::Blue, brush->Color);
+                });
+            }
+        }
+
 
         bool ResourceDictionaryBasicTests::TestSetup()
         {
@@ -3092,7 +3427,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
             });
         }
 
-        void ResourceDictionaryBasicTests::VSLooseGenericXaml()
+        void ResourceDictionaryBasicTestsUap::VSLooseGenericXaml()
         {
             TestCleanupWrapper cleanup;
             RuntimeEnabledFeatureOverride featureEnforceXbfV2Stream(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnforceXbfV2Stream, false);
@@ -3413,7 +3748,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
             });
         }
 
-        void ResourceDictionaryBasicTests::MergedDictionariesInThemeDictionaries()
+        void ResourceDictionaryBasicTestsUap::MergedDictionariesInThemeDictionaries()
         {
             MergedDictionariesInThemeDictionariesTest();
         }
@@ -3981,7 +4316,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
             }
         }
 
-        void ResourceDictionaryBasicTests::ThemeRefInThemeResource()
+        void ResourceDictionaryBasicTestsUap::ThemeRefInThemeResource()
         {
             ThemeRefInThemeResourceTest();
         }
@@ -5407,7 +5742,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        void ResourceDictionaryBasicTests::CorrectThemeChangesForMergedDictionaryInAppResources()
+        void ResourceDictionaryBasicTestsUap::CorrectThemeChangesForMergedDictionaryInAppResources()
         {
             TestCleanupWrapper cleanup([&]{
                 RunOnUIThread([&]()
@@ -5721,7 +6056,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
             });
         }
 
-        void ResourceDictionaryBasicTests::FollowPopupsInThemeResourceResolution()
+        void ResourceDictionaryBasicTestsUap::FollowPopupsInThemeResourceResolution()
         {
             TestCleanupWrapper cleanup;
 

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 #include "DataVirtualizationDataSourceHelper.h"
 
@@ -23,6 +24,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"309fb554-f012-4ac9-bcf1-833e4a372493;375cd7bd-e448-4315-b2a1-bc02d75b0c4f")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)

@@ -86,9 +86,34 @@ Platform::String^ AnimatedImageTests::GetImagePath(Platform::String ^imageFileNa
 
 bool AnimatedImageTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool AnimatedImageTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool AnimatedImageTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool AnimatedImageTestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+Platform::String^ AnimatedImageTestsUap::GetImagePath(Platform::String ^imageFileName) const
+{
+    return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\image\\" + imageFileName;
+}
+
 
 bool AnimatedImageTests::TestSetup()
 {
@@ -160,7 +185,7 @@ void AnimatedImageTests::NoAutoPlay()
     });
 }
 
-void AnimatedImageTests::SimpleImageElement()
+void AnimatedImageTestsUap::SimpleImageElement()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -228,7 +253,7 @@ void AnimatedImageTests::AnimatedSetUri()
     VerifyUIThreadTicking();
 }
 
-void AnimatedImageTests::AnimatedSetSource()
+void AnimatedImageTestsUap::AnimatedSetSource()
 {
     TestCleanupWrapper cleanup;
 
@@ -256,7 +281,7 @@ void AnimatedImageTests::AnimatedSetSource()
     VerifyUIThreadTicking();
 }
 
-void AnimatedImageTests::AnimatedSetSourceNotInTree()
+void AnimatedImageTestsUap::AnimatedSetSourceNotInTree()
 {
     TestCleanupWrapper cleanup;
 
@@ -283,7 +308,7 @@ void AnimatedImageTests::AnimatedSetSourceNotInTree()
     VerifyUIThreadTicking();
 }
 
-void AnimatedImageTests::AnimatedSetSourceAsyncPreLiveTree()
+void AnimatedImageTestsUap::AnimatedSetSourceAsyncPreLiveTree()
 {
     TestCleanupWrapper cleanup;
 
@@ -326,7 +351,7 @@ void AnimatedImageTests::AnimatedSetSourceAsyncPreLiveTree()
     VerifyUIThreadTicking();
 }
 
-void AnimatedImageTests::AnimatedSetSourceAsyncPostLiveTree()
+void AnimatedImageTestsUap::AnimatedSetSourceAsyncPostLiveTree()
 {
     TestCleanupWrapper cleanup;
 
@@ -390,7 +415,7 @@ void AnimatedImageTests::AnimatedSWBrush()
     VerifyUIThreadTicking();
 }
 
-void AnimatedImageTests::PlateauScale()
+void AnimatedImageTestsUap::PlateauScale()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
     TestServices::Utilities->SetMockDCompSurfaceIdMode(MockDComp::SurfaceIdMode::CRC);

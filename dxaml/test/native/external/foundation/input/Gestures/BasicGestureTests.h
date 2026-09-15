@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Foundation { namespace Input { namespace Gestures {
 
@@ -16,21 +17,12 @@ public:
         TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
 
         TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89;3192b2bd-30c5-4c19-a6c1-9856b940df63")
+        TEST_CLASS_HOSTING_MODE_DEFAULT()
     END_TEST_CLASS()
 
     TEST_CLASS_SETUP(ClassSetup)
     TEST_METHOD_SETUP(TestSetup)
     TEST_METHOD_CLEANUP(TestCleanup)
-
-    BEGIN_TEST_METHOD(TapEmptyTree)
-        TEST_METHOD_PROPERTY(L"Description", L"Call TouchHitTestingHandler::OnTouchHitTesting without a tree. Don't crash.")
-        // This test tears down the tree and recovers by shutting down and reinitializing Xaml. ShutdownXaml is skipped for non-desktop SKUs
-        // due to a stale DComp tree associated with the window after the DComp device is recreated. See comment
-        // in WindowHelper::ShutdownXaml.
-        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Window stuck at alt menu
-    END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(TapARectangle)
         TEST_METHOD_PROPERTY(L"Description", L"Validates the tap gesture on a Rectangle via the Touch Interaction Engine.")
@@ -77,5 +69,37 @@ public:
 private:
     void SetupElements(_Out_ Microsoft::UI::Xaml::Shapes::Rectangle^* pRect, _Out_opt_ Microsoft::UI::Xaml::Controls::Canvas^* pCanvas = nullptr);
 };
+
+    class BasicGestureTestsUap : public WEX::TestClass<BasicGestureTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(BasicGestureTestsUap)
+        TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+        TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+        TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+
+        TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89;3192b2bd-30c5-4c19-a6c1-9856b940df63")
+        TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"BasicGestureTests")
+        TEST_CLASS_HOSTING_MODE(UAP)
+    END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        void SetupElements(_Out_ Microsoft::UI::Xaml::Shapes::Rectangle^* pRect, _Out_opt_ Microsoft::UI::Xaml::Controls::Canvas^* pCanvas = nullptr);
+
+    public:
+        BEGIN_TEST_METHOD(TapEmptyTree)
+        TEST_METHOD_PROPERTY(L"Description", L"Call TouchHitTestingHandler::OnTouchHitTesting without a tree. Don't crash.")
+        // This test tears down the tree and recovers by shutting down and reinitializing Xaml. ShutdownXaml is skipped for non-desktop SKUs
+        // due to a stale DComp tree associated with the window after the DComp device is recreated. See comment
+        // in WindowHelper::ShutdownXaml.
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Window stuck at alt menu
+        END_TEST_METHOD()
+    };
 
 } } } } } } }

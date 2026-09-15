@@ -75,9 +75,47 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         // input from being routed to the app. It will also wait for the
         // debugger to attach when the waitForDebugger runtime parameter is
         // specified.
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool StyleIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool StyleIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml(ref new MetadataProvider(), ref new CustomMetadataRegistrar<MultiClassRegistrator>());
+
+        RunOnUIThread([&]()
+        {
+            // Ensure we have a chance to set the window content, so that future loads don't suffer
+            // from timing issues
+            m_rootCanvas = safe_cast<Canvas^>(XamlReader::Load(
+                L"<Canvas  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
+                L"         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>\r\n"
+                L"</Canvas>"
+                ));
+
+            TestServices::WindowHelper->WindowContent = m_rootCanvas;
+        });
+
+        return true;
+    }
+
+    bool StyleIntegrationTestsUap::TestCleanup()
+    {
+        // Release our root element, then drain the UI affinity release queue
+        m_rootCanvas = nullptr;
+        test_infra::TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
     bool StyleIntegrationTests::TestSetup()
     {
@@ -2940,7 +2978,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         });
     }
 
-    void StyleIntegrationTests::CanSetDefaultStyle()
+    void StyleIntegrationTestsUap::CanSetDefaultStyle()
     {
         TestCleanupWrapper cleanup;
 
@@ -2956,7 +2994,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         TestServices::Utilities->VerifyUIElementTree();
     }
 
-    void StyleIntegrationTests::CanSetDefaultStyleResourceUri()
+    void StyleIntegrationTestsUap::CanSetDefaultStyleResourceUri()
     {
         TestCleanupWrapper cleanup;
         TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
@@ -2972,7 +3010,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         TestServices::Utilities->VerifyUIElementTree();
     }
 
-    void StyleIntegrationTests::DefaultStyleResourceUriWithEmptyDefaultStyleKey()
+    void StyleIntegrationTestsUap::DefaultStyleResourceUriWithEmptyDefaultStyleKey()
     {
         TestCleanupWrapper cleanup;
         TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
@@ -2988,7 +3026,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         TestServices::Utilities->VerifyUIElementTree();
     }
 
-    void StyleIntegrationTests::DefaultStyleResourceUriWithInvalidDefaultStyleKey()
+    void StyleIntegrationTestsUap::DefaultStyleResourceUriWithInvalidDefaultStyleKey()
     {
         TestCleanupWrapper cleanup;
         TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
@@ -3468,7 +3506,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         });
     }
 
-    void StyleIntegrationTests::PageThemeResourceCustomSourceObject()
+    void StyleIntegrationTestsUap::PageThemeResourceCustomSourceObject()
     {
         TestCleanupWrapper cleanup;
 

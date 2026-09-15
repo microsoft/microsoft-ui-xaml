@@ -30,7 +30,7 @@ Platform::String^ ColorAnimationTests::GetResourcesPath() const
 
 bool ColorAnimationTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
 

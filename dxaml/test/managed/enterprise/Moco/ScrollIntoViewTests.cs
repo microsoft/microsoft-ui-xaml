@@ -235,6 +235,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ScrollGroupIntoViewAndDeleteGroupBeforeLayoutRuns()
         {
             ListView lv = null;

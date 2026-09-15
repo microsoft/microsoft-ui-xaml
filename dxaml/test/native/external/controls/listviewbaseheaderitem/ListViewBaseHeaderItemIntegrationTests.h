@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 #include <RuntimeEnabledFeatureOverride.h>
 
@@ -18,6 +19,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"1bb20c90-a558-491b-b76d-55bdb9a46911;eadeac67-1552-4876-a67e-dc1fcb8a6e25")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)

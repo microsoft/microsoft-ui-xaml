@@ -36,7 +36,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         bool StateTriggersIntegrationTests::ClassSetup()
         {
             LOG_OUTPUT(L"ClassSetup()");
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
 
             textBlockName = "VisualStateName";
             return true;

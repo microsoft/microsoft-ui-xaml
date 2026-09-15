@@ -21,7 +21,7 @@ namespace Microsoft::UI::Xaml::Tests::DesktopWindow {
 
         bool DesktopWindowTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
 

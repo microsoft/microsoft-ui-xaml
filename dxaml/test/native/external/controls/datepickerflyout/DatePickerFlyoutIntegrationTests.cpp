@@ -30,9 +30,52 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool DatePickerFlyoutIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool DatePickerFlyoutIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool DatePickerFlyoutIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool DatePickerFlyoutIntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    void DatePickerFlyoutIntegrationTestsUap::SetupDatePickerFlyoutTest(xaml_controls::Button^& target, xaml_controls::DatePickerFlyout^& datePickerFlyout)
+    {
+        RunOnUIThread([&]()
+        {
+            auto rootPanel = safe_cast<xaml_controls::Grid^> (xaml_markup::XamlReader::Load(
+                LR"(<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" >
+                      <Button x:Name="button" Content="Test DatePickerFlyout" >
+                        <Button.Flyout>
+                          <DatePickerFlyout />
+                        </Button.Flyout>
+                      </Button>
+                    </Grid>)"));
+            TestServices::WindowHelper->WindowContent = rootPanel;
+
+            target = safe_cast<xaml_controls::Button^>(rootPanel->FindName(L"button"));
+            THROW_IF_NULL(target);
+
+            datePickerFlyout = safe_cast<xaml_controls::DatePickerFlyout^>(target->Flyout);
+            THROW_IF_NULL(datePickerFlyout);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
 
     bool DatePickerFlyoutIntegrationTests::TestSetup()
     {
@@ -1067,7 +1110,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         FlyoutHelper::HideFlyout(datePickerFlyout);
     }
 
-    void DatePickerFlyoutIntegrationTests::ValidateAcceptDismissButtonsAreHiddenWithGamepad()
+    void DatePickerFlyoutIntegrationTestsUap::ValidateAcceptDismissButtonsAreHiddenWithGamepad()
     {
         TestCleanupWrapper cleanup;
 

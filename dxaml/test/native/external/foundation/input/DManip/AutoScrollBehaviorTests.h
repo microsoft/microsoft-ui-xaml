@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Foundation { namespace Input { namespace DManip {
@@ -14,6 +15,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
                 TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_HOSTING_MODE(UAP)
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -24,7 +26,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Auto-scrolls the content of a horizontal GridView with touch.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: Test shutdown assert on WPF - ~CDirectManipulationService still has m_mapViewports
+                // DCPP: Test shutdown assert on WPF - ~CDirectManipulationService still has m_mapViewports
                 TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
             END_TEST_METHOD()
 
@@ -32,22 +34,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Scroll with mouse-wheel while auto-scrolling the content of a horizontal GridView with touch.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: Test shutdown assert on WPF - ~CDirectManipulationService still has m_mapViewports
+                // DCPP: Test shutdown assert on WPF - ~CDirectManipulationService still has m_mapViewports
                 TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
             END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(AutoScrollVerticallyInListView)
-                TEST_METHOD_PROPERTY(L"Description", L"Auto-scrolls the content of a vertical ListView with mouse.")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
-                TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
-           END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(MouseWheelScrollDuringMouseAutoScroll)
                 TEST_METHOD_PROPERTY(L"Description", L"Scroll with mouse-wheel while auto-scrolling the content of a vertical ListView with mouse.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Converting to WPF Mode leads to Error: Verify: IsGreaterThan(alsoScrollWithMouseWheel ? 200.0 : 1400.0, scrollViewer->VerticalOffset) - Values (200.000000l, 222.000000l)
+                // Converting to WPF Mode leads to Error: Verify: IsGreaterThan(alsoScrollWithMouseWheel ? 200.0 : 1400.0, scrollViewer->VerticalOffset) - Values (200.000000l, 222.000000l)
                 TEST_METHOD_PROPERTY(L"Ignore", L"True")
             END_TEST_METHOD()
 
@@ -55,6 +50,33 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             Platform::String^ GetPathToFiles() const;
 
             void AutoScrollHorizontallyInGridView(bool alsoScrollWithMouseWheel, INT firstItemCenterX);
+            void AutoScrollVerticallyInListView(bool alsoScrollWithMouseWheel);
+        };
+
+        class AutoScrollBehaviorTestsWpf : public WEX::TestClass<AutoScrollBehaviorTestsWpf>
+        {
+        public:
+            BEGIN_TEST_CLASS(AutoScrollBehaviorTestsWpf)
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"AutoScrollBehaviorTests")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
+            END_TEST_CLASS()
+
+            TEST_CLASS_SETUP(ClassSetup)
+            TEST_METHOD_SETUP(TestSetup)
+            TEST_METHOD_CLEANUP(TestCleanup)
+
+            BEGIN_TEST_METHOD(AutoScrollVerticallyInListView)
+                TEST_METHOD_PROPERTY(L"Description", L"Auto-scrolls the content of a vertical ListView with mouse.")
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+                TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+           END_TEST_METHOD()
+
+        private:
+            Platform::String^ GetPathToFiles() const;
+
             void AutoScrollVerticallyInListView(bool alsoScrollWithMouseWheel);
         };
     } } }

@@ -27,8 +27,87 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool TimePickerIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
+    }
+
+    bool TimePickerIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool TimePickerIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool TimePickerIntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    xaml_controls::TimePicker^ TimePickerIntegrationTestsUap::SetupTimePickerTest()
+    {
+        xaml_controls::TimePicker^ timePicker = nullptr;
+
+        auto loadedRegistration = CreateSafeEventRegistration(xaml_controls::TimePicker, Loaded);
+        auto loadedEvent = std::make_shared<Event>();
+
+        RunOnUIThread([&]()
+        {
+            auto rootGrid = ref new xaml_controls::Grid();
+            rootGrid->Background = ref new SolidColorBrush(Microsoft::UI::Colors::White);
+            TestServices::WindowHelper->WindowContent = rootGrid;
+
+            timePicker = ref new xaml_controls::TimePicker();
+            timePicker->Header = L"TimePickerTest";
+
+            loadedRegistration.Attach(timePicker, ref new xaml::RoutedEventHandler([loadedEvent](Platform::Object^ sender, xaml::RoutedEventArgs^)
+            {
+                LOG_OUTPUT(L"TimePickerIntegrationTests: Loaded TimePicker.");
+                loadedEvent->Set();
+            }));
+
+            rootGrid->Children->Append(timePicker);
+        });
+
+        loadedEvent->WaitForDefault();
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        return timePicker;
+    }
+
+    wf::TimeSpan TimePickerIntegrationTestsUap::CreateTimeSpan(int hours, int minutes, int seconds, int period)
+    {
+        WEX::Common::Throw::If(period != 1 && period != 2, E_FAIL, L"period must be 1 (AM) or 2 (PM)");
+        wf::TimeSpan timeSpan = {};
+
+        // Conver to 24 hours
+        if (hours == 12)
+        {
+            if (period == 1)
+            {
+                hours = 0;
+            }
+            else
+            {
+                hours = 12;
+            }
+        }
+        else if (period == 2)
+        {
+            hours += 12;
+        }
+        timeSpan.Duration = (int64)10000000 * ((hours * 60 + minutes) * 60 + seconds);
+
+        LOG_OUTPUT(L"CreateTimeSpan period=%d hours=%d minutes=%d seconds=%d timeDuration=%llu", period, hours, minutes, seconds, timeSpan.Duration);
+
+        return timeSpan;
     }
 
     bool TimePickerIntegrationTests::TestSetup()
@@ -275,18 +354,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             });
     }
 
-    void TimePickerIntegrationTests::CanOpenAndCloseUsingKeyboardProjectedShadow()
+    void TimePickerIntegrationTestsUap::CanOpenAndCloseUsingKeyboardProjectedShadow()
     {
         RuntimeEnabledFeatureOverride featureUseDropShadows(RuntimeFeatureBehavior::RuntimeEnabledFeature::ForceProjectedShadowsOnByDefault, true);
         CanOpenAndCloseUsingKeyboard();
     }
 
-    void TimePickerIntegrationTests::CanOpenAndCloseUsingKeyboardDropShadow()
+    void TimePickerIntegrationTestsUap::CanOpenAndCloseUsingKeyboardDropShadow()
     {
         CanOpenAndCloseUsingKeyboard();
     }
 
-    void TimePickerIntegrationTests::CanOpenAndCloseUsingKeyboard()
+    void TimePickerIntegrationTestsUap::CanOpenAndCloseUsingKeyboard()
     {
         WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -387,7 +466,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void TimePickerIntegrationTests::ValidateFlyoutPositioningAndSizing()
+    void TimePickerIntegrationTestsUap::ValidateFlyoutPositioningAndSizing()
     {
         TestCleanupWrapper cleanup;
         DateTimePickerHelper::ValidateDateTimePickerFlyoutPositioningAndSizing<xaml_controls::TimePicker>();
@@ -407,7 +486,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         VerifyHasPlaceholder(timePicker);
     }
 
-    void TimePickerIntegrationTests::SelectingTimeSetsSelectedTime()
+    void TimePickerIntegrationTestsUap::SelectingTimeSetsSelectedTime()
     {
         TestCleanupWrapper cleanup;
 
@@ -494,7 +573,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         VerifyHasPlaceholder(timePicker);
     }
 
-    void TimePickerIntegrationTests::ValidateMinuteIncrementProperty()
+    void TimePickerIntegrationTestsUap::ValidateMinuteIncrementProperty()
     {
         TestCleanupWrapper cleanup;
 

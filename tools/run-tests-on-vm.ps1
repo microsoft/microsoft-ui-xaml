@@ -5,7 +5,7 @@
 #
 # Usage:
 #   .\run-tests-on-vm.ps1 -VMName "MyVM" "MyTestName"
-#   .\run-tests-on-vm.ps1 -VMName "MyVM" "Button*" -HostingMode WPF
+#   .\run-tests-on-vm.ps1 -VMName "MyVM" "Button*"
 #   .\run-tests-on-vm.ps1 -VMName "MyVM" "MyTest" -SkipPayload
 #   .\run-tests-on-vm.ps1 -VMName "MyVM" "MyTest" -FullCopy
 #   .\run-tests-on-vm.ps1 -VMName "MyVM" -Stop
@@ -526,7 +526,7 @@ function Invoke-TestsOnVM {
     # session 0 (non-interactive), so we launch tests via a scheduled task
     # on the VM's active desktop. We tail the log file to stream output
     # back to the host in near-real-time.
-    $exitCode = Invoke-Command -Session $Session -ScriptBlock {
+    $runResult = Invoke-Command -Session $Session -ScriptBlock {
         param($dir, [string[]]$testArgs, $taskUser)
 
         # Escape an argument for safe embedding in a .cmd file.
@@ -538,14 +538,17 @@ function Invoke-TestsOnVM {
         }
 
         $argsString = ($testArgs | ForEach-Object { Escape-CmdArg $_ }) -join ' '
+        $argsString += ' /enablewttlogging'
 
         $taskName = "WinUI-RunTests"
         $logFile  = "$dir\testrun-output.log"
         $exitFile = "$dir\testrun-exitcode.txt"
+        $wtlFile  = "$dir\te.wtl"
 
         # Clean up from previous run
         Remove-Item $logFile -ErrorAction SilentlyContinue
         Remove-Item $exitFile -ErrorAction SilentlyContinue
+        Remove-Item $wtlFile -ErrorAction SilentlyContinue
         Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction SilentlyContinue
 
         # Build a wrapper script that captures the exit code.
@@ -605,6 +608,102 @@ echo %ERRORLEVEL% > "$exitFile"
             } catch {}
         }
 
+        function Get-WtlSummary {
+            param([string]$Path)
+
+            $summary = [PSCustomObject]@{
+                Total = 0; Passed = 0; Failed = 0; Skipped = 0
+                Present = $false; Complete = $false; Errors = 0
+            }
+            if (Test-Path $Path) {
+                $summary.Present = $true
+                $document = New-Object System.Xml.XmlDocument
+                $document.XmlResolver = $null
+                $settings = New-Object System.Xml.XmlReaderSettings
+                $settings.DtdProcessing = [System.Xml.DtdProcessing]::Prohibit
+                $reader = $null
+                try {
+                    $reader = [System.Xml.XmlReader]::Create($Path, $settings)
+                    $document.Load($reader)
+                } catch [System.Xml.XmlException] {
+                    Write-Warning "The WTL result file is incomplete or invalid: $($_.Exception.Message)"
+                    return $summary
+                } finally {
+                    if ($reader) { $reader.Dispose() }
+                }
+
+                $starts = @($document.SelectNodes('/WTT-Logger/StartTest'))
+                $results = @($document.SelectNodes('/WTT-Logger/EndTest'))
+                foreach ($result in $results) {
+                    $summary.Total++
+                    switch ($result.GetAttribute('Result')) {
+                        'Pass'    { $summary.Passed++ }
+                        'Skipped' { $summary.Skipped++ }
+                        default   { $summary.Failed++ }
+                    }
+                }
+                $summary.Errors = $document.SelectNodes('/WTT-Logger/Error').Count
+                $summary.Errors += $document.SelectNodes('/WTT-Logger/Msg/Data/EndGroup[@Result="Failed" or @Result="Blocked"]').Count
+                $rollups = @($document.SelectNodes('/WTT-Logger/PFRollup'))
+                $rollupTotal = 0
+                if ($rollups.Count -eq 1 -and
+                    [int]::TryParse($rollups[0].GetAttribute('Total'), [ref]$rollupTotal)) {
+                    $summary.Complete = $starts.Count -eq $results.Count -and $rollupTotal -eq $results.Count
+                    $startNames = @($starts | ForEach-Object { $_.GetAttribute('Title') } | Sort-Object)
+                    $endNames = @($results | ForEach-Object { $_.GetAttribute('Title') } | Sort-Object)
+                    if ($startNames.Count -gt 0 -and $endNames.Count -gt 0 -and
+                        @(Compare-Object $startNames $endNames).Count -gt 0) {
+                        $summary.Complete = $false
+                    }
+                    foreach ($attribute in @('Failed', 'Blocked')) {
+                        $failures = 0
+                        if (-not [int]::TryParse($rollups[0].GetAttribute($attribute), [ref]$failures) -or $failures -lt 0) {
+                            $summary.Complete = $false
+                        } elseif ($failures -gt 0) {
+                            $summary.Errors++
+                        }
+                    }
+                }
+            }
+            return $summary
+        }
+
+        function Get-TestRunResult {
+            param($WtlSummary, [string[]]$ConsoleLines, [int]$ExitCode)
+
+            $summary = $WtlSummary
+            $reason = ''
+            $summaryLine = $ConsoleLines | Where-Object { $_ -match '^Summary:\s+Total=\d+' } | Select-Object -Last 1
+            if ($summaryLine -match 'Total=(\d+),\s*Passed=(\d+),\s*Failed=(\d+),\s*Blocked=(\d+),\s*Not\s*Run=(\d+),\s*Skipped=(\d+)') {
+                $summary = [PSCustomObject]@{
+                    Total = [int]$Matches[1]
+                    Passed = [int]$Matches[2]
+                    Failed = [int]$Matches[3] + [int]$Matches[4] + [int]$Matches[5]
+                    Skipped = [int]$Matches[6]
+                }
+                if ($summary.Total -ne $summary.Passed + $summary.Failed + $summary.Skipped -or
+                    ($WtlSummary.Present -and ($summary.Total -ne $WtlSummary.Total -or
+                        $summary.Passed -ne $WtlSummary.Passed -or $summary.Failed -ne $WtlSummary.Failed -or
+                        $summary.Skipped -ne $WtlSummary.Skipped))) {
+                    $reason = 'The console and WTL result counts are incomplete or inconsistent.'
+                }
+            } elseif ($summaryLine) {
+                $reason = 'The final console summary is incomplete.'
+            } elseif (-not $WtlSummary.Present) {
+                $reason = 'No WTL results or final console summary were found.'
+            }
+
+            if ($WtlSummary.Present -and -not $WtlSummary.Complete) {
+                $reason = 'The WTL file does not contain a complete test run.'
+            } elseif ($WtlSummary.Errors -gt 0) {
+                $reason = 'The WTL file reports errors, including possible setup or cleanup failures.'
+            }
+            if ($reason -or $summary.Failed -gt 0 -or $WtlSummary.Failed -gt 0 -or $summary.Passed -eq 0) {
+                $ExitCode = 1
+            }
+            return [PSCustomObject]@{ ExitCode = $ExitCode; Summary = $summary; Reason = $reason }
+        }
+
         do {
             Start-Sleep -Seconds $pollInterval
             Read-LogTail $logFile ([ref]$linesSeen)
@@ -627,30 +726,29 @@ echo %ERRORLEVEL% > "$exitFile"
             }
         }
 
-        # te.exe returns 0 even when tests fail. Parse the TAEF summary line.
-        if ($exitCode -eq 0 -and (Test-Path $logFile)) {
-            $logLines = Read-NormalizedLog $logFile
-            $summaryLine = $logLines | Where-Object { $_ -match 'Summary:\s+Total=\d+' } | Select-Object -Last 1
-            if ($summaryLine -match 'Failed=(\d+)') {
-                if ([int]$Matches[1] -gt 0) { $exitCode = 1 }
-            }
-        }
+        # Verify results independently of exit-code propagation through the wrappers.
+        $summary = Get-WtlSummary $wtlFile
+        $result = Get-TestRunResult $summary (Read-NormalizedLog $logFile) $exitCode
 
         # Clean up
         Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction SilentlyContinue
         Remove-Item $wrapperPath -ErrorAction SilentlyContinue
 
-        $exitCode
+        $result
     } -ArgumentList $RemoteTestDir, (, $TestArgs), $TaskUser
 
     Write-Host "--------------------------------------------" -ForegroundColor DarkGray
-    if ($exitCode -eq 0) {
-        Write-Host "Tests PASSED." -ForegroundColor Green
+    $summary = $runResult.Summary
+    if ($summary.Total -eq 0) {
+        Write-Host "No test results were verified. Check the TAEF log; this run is not a pass." -ForegroundColor Red
+    } elseif ($runResult.ExitCode -eq 0) {
+        Write-Host "Tests PASSED. (Total=$($summary.Total), Passed=$($summary.Passed), Skipped=$($summary.Skipped))" -ForegroundColor Green
     } else {
-        Write-Host "Tests FAILED (exit code $exitCode)." -ForegroundColor Red
+        Write-Host "Tests FAILED (exit code $($runResult.ExitCode)). (Total=$($summary.Total), Passed=$($summary.Passed), Failed=$($summary.Failed), Skipped=$($summary.Skipped))" -ForegroundColor Red
     }
+    if ($runResult.Reason) { Write-Host $runResult.Reason -ForegroundColor Red }
 
-    return $exitCode
+    return $runResult.ExitCode
 }
 
 # =========================================================================

@@ -23,9 +23,37 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool AppBarButtonIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool AppBarButtonIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool AppBarButtonIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool AppBarButtonIntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    xaml_input::KeyboardAccelerator^ AppBarButtonIntegrationTestsUap::CreateKeyboardAccelerator(::Windows::System::VirtualKey key, ::Windows::System::VirtualKeyModifiers modifiers)
+    {
+        auto keyboardAccelerator = ref new xaml_input::KeyboardAccelerator();
+        keyboardAccelerator->Key = key;
+        keyboardAccelerator->Modifiers = modifiers;
+        return keyboardAccelerator;
+    }
+
 
     bool AppBarButtonIntegrationTests::TestSetup()
     {
@@ -259,7 +287,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             xaml_controls::AppBarButton::IconProperty);
     }
 
-    void AppBarButtonIntegrationTests::ValidateUIElementTree()
+    void AppBarButtonIntegrationTestsUap::ValidateUIElementTree()
     {
         ControlHelper::ValidateUIElementTree(
             wf::Size(400, 600),
@@ -636,7 +664,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void AppBarButtonIntegrationTests::LabelOnRightStyleIsDisabled()
+    void AppBarButtonIntegrationTestsUap::LabelOnRightStyleIsDisabled()
     {
         ControlHelper::ValidateUIElementTree(
             wf::Size(400, 600),
@@ -688,14 +716,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             return rootGrid;
         }
         );
-    }
-
-    xaml_input::KeyboardAccelerator^ AppBarButtonIntegrationTests::CreateKeyboardAccelerator(::Windows::System::VirtualKey key, ::Windows::System::VirtualKeyModifiers modifiers)
-    {
-        auto keyboardAccelerator = ref new xaml_input::KeyboardAccelerator();
-        keyboardAccelerator->Key = key;
-        keyboardAccelerator->Modifiers = modifiers;
-        return keyboardAccelerator;
     }
 
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::AppBarButton

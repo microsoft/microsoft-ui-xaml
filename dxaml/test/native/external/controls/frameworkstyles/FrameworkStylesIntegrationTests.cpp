@@ -19,9 +19,48 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool FrameworkStylesIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool FrameworkStylesIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool FrameworkStylesIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool FrameworkStylesIntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    void FrameworkStylesIntegrationTestsUap::VerifyUseSystemFocusVisualsHelper(
+        xaml_controls::Grid^ root, bool expectedUseSystemFocusVisuals, Platform::String^ elementName, Platform::String^ innerChildToo)
+    {
+        LOG_OUTPUT(L"Checking UseSystemFocusVisuals = %d on %s", expectedUseSystemFocusVisuals, elementName->Data());
+        auto control = safe_cast<xaml_controls::Control^>(root->FindName(elementName));
+        VERIFY_IS_NOT_NULL(control);
+
+        VERIFY_IS_TRUE(control->UseSystemFocusVisuals == expectedUseSystemFocusVisuals);
+
+        if (innerChildToo)
+        {
+            LOG_OUTPUT(L"Also verifying on child %s", innerChildToo->Data());
+            auto child = safe_cast<xaml_controls::Control^>(TreeHelper::GetVisualChildByName(control, innerChildToo));
+            VERIFY_IS_NOT_NULL(child);
+
+            VERIFY_IS_TRUE(child->UseSystemFocusVisuals == expectedUseSystemFocusVisuals);
+        }
+    }
+
 
     bool FrameworkStylesIntegrationTests::TestSetup()
     {
@@ -120,7 +159,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             });
     }
 
-    void FrameworkStylesIntegrationTests::ValidateUseSystemFocusVisualsDefaults()
+    void FrameworkStylesIntegrationTestsUap::ValidateUseSystemFocusVisualsDefaults()
     {
         Microsoft::UI::Xaml::FocusVisualKind oldFocusVisualKind = Microsoft::UI::Xaml::FocusVisualKind::HighVisibility;
 
@@ -197,22 +236,5 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         return GetPackageFolder() + L"resources\\native\\controls\\frameworkstyles\\";
     }
 
-    void FrameworkStylesIntegrationTests::VerifyUseSystemFocusVisualsHelper(
-        xaml_controls::Grid^ root, bool expectedUseSystemFocusVisuals, Platform::String^ elementName, Platform::String^ innerChildToo)
-    {
-        LOG_OUTPUT(L"Checking UseSystemFocusVisuals = %d on %s", expectedUseSystemFocusVisuals, elementName->Data());
-        auto control = safe_cast<xaml_controls::Control^>(root->FindName(elementName));
-        VERIFY_IS_NOT_NULL(control);
 
-        VERIFY_IS_TRUE(control->UseSystemFocusVisuals == expectedUseSystemFocusVisuals);
-
-        if (innerChildToo)
-        {
-            LOG_OUTPUT(L"Also verifying on child %s", innerChildToo->Data());
-            auto child = safe_cast<xaml_controls::Control^>(TreeHelper::GetVisualChildByName(control, innerChildToo));
-            VERIFY_IS_NOT_NULL(child);
-
-            VERIFY_IS_TRUE(child->UseSystemFocusVisuals == expectedUseSystemFocusVisuals);
-        }
-    }
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::FrameworkStyles

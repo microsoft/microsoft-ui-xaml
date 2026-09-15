@@ -33,9 +33,130 @@ Platform::String^ ThemeAnimationTests::GetResourcesPath() const
 
 bool ThemeAnimationTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool ThemeAnimationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ThemeAnimationTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool ThemeAnimationTestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+void ThemeAnimationTestsUap::PointerThemeAnimationTest(
+    Platform::String^ fileName,
+    Platform::String^ storyboardName,
+    Platform::String^ variationName
+    )
+{
+    auto wh = TestServices::WindowHelper;
+    auto u = TestServices::Utilities;
+    auto ih = TestServices::InputHelper;
+    XamlRoot^ xamlRoot = nullptr;
+
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+    RuntimeEnabledFeatureScopeGuard<RuntimeFeatureBehavior::RuntimeEnabledFeature::SlowDownAnimations> slowDownAnimations;
+
+    Canvas^ rootCanvas = safe_cast<Canvas^>(LoadXamlFileOnUIThread(GetResourcesPath() + fileName));
+    Storyboard^ sb;
+    Microsoft::UI::Xaml::Shapes::Rectangle^ target;
+
+    RunOnUIThread([&]()
+    {
+        wh->WindowContent = rootCanvas;
+        target = safe_cast<Microsoft::UI::Xaml::Shapes::Rectangle^>(rootCanvas->FindName(L"r"));
+        sb = safe_cast<Storyboard^>(rootCanvas->FindName(storyboardName));
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        xamlRoot = rootCanvas->XamlRoot;
+    });
+
+    ::Windows::Foundation::Point overridePoint(5.0f, 145.0f);
+    wh->SetPrimaryPointerLastPositionOverride(overridePoint, xamlRoot);
+
+    TestCleanupWrapper cleanup([wh, xamlRoot]()
+    {
+        wh->ClearPrimaryPointerLastPositionOverride(xamlRoot);
+    });
+
+    RunOnUIThread([&]()
+    {
+        sb->Begin();
+    });
+
+    // Wait several frames before taking the DComp snapshot. PointerDownThemeAnimation will transform the global point down the
+    // tree to the element, then apply a tilt on the element depending on where the click was. Apply this tilt changes the
+    // transform on the element, which means on the next frame, the same global point will transform down to a _different_ local
+    // point, and the tilt will be different. Allow plenty of frames to let this feedback loop stabilize.
+    TestServices::WindowHelper->SynchronouslyTickUIThread(10);
+
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, variationName);
+
+    RunOnUIThread([&]()
+    {
+        sb->Stop();
+    });
+}
+
+void ThemeAnimationTestsUap::ThemeAnimationTest(
+    Platform::String^ fileName,
+    Platform::String^ storyboardName,
+    Platform::String^ variationName,
+    DCompRendering dcompRendering
+    )
+{
+    WUCRenderingScopeGuard wuc(dcompRendering);
+    RuntimeEnabledFeatureScopeGuard<RuntimeFeatureBehavior::RuntimeEnabledFeature::SlowDownAnimations> slowDownAnimations;
+
+    Canvas^ rootCanvas = safe_cast<Canvas^>(LoadXamlFileOnUIThread(GetResourcesPath() + fileName));
+    Storyboard^ sb;
+    RunOnUIThread([&]()
+    {
+        TestServices::WindowHelper->WindowContent = rootCanvas;
+        sb = safe_cast<Storyboard^>(rootCanvas->FindName(storyboardName));
+    });
+
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        sb->Begin();
+    });
+
+    TestServices::WindowHelper->SynchronouslyTickUIThread(1);
+    TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, variationName);
+
+    RunOnUIThread([&]()
+    {
+        sb->Stop();
+        sb->Begin();
+    });
+
+    TestServices::WindowHelper->SynchronouslyTickUIThread(1);
+    TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, variationName);
+}
+
+Platform::String^ ThemeAnimationTestsUap::GetResourcesPath() const
+{
+    return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\animation\\";
+}
+
 
 bool ThemeAnimationTests::TestSetup()
 {
@@ -176,7 +297,7 @@ void ThemeAnimationTests::PointerDownThemeAnimation()
     PointerThemeAnimationTest(L"ThemeAnimationTests-ThemeAnimations.xaml", L"_pointerDown", L"PointerDown");
 }
 
-void ThemeAnimationTests::PointerDownThemeAnimationWithTransformGroup()
+void ThemeAnimationTestsUap::PointerDownThemeAnimationWithTransformGroup()
 {
     PointerThemeAnimationTest(L"ThemeAnimationTests-PointerDownWithTargetTransformGroup.xaml", L"_pointerDownWithTransform", L"PointerDownWithTransform");
 }
@@ -222,12 +343,12 @@ void ThemeAnimationTests::SplitCloseThemeAnimationWUC()
     ThemeAnimationTest(L"ThemeAnimationTests-SplitThemeAnimations.xaml", L"_splitClose", L"SplitClose");
 }
 
-void ThemeAnimationTests::DrillInThemeAnimation()
+void ThemeAnimationTestsUap::DrillInThemeAnimation()
 {
     ThemeAnimationTest(L"ThemeAnimationTests-DrillThemeAnimations.xaml", L"_drillIn", L"DrillIn");
 }
 
-void ThemeAnimationTests::DrillOutThemeAnimation()
+void ThemeAnimationTestsUap::DrillOutThemeAnimation()
 {
     ThemeAnimationTest(L"ThemeAnimationTests-DrillThemeAnimations.xaml", L"_drillOut", L"DrillOut");
 }
@@ -515,7 +636,7 @@ void ThemeAnimationTests::TiltAnimationTest(bool mouseIsPresent)
     }
 }
 
-void ThemeAnimationTests::FadeOutThemeAnimationNoDurationWUCFull()
+void ThemeAnimationTestsUap::FadeOutThemeAnimationNoDurationWUCFull()
 {
     // This test currently covers the fix for [PC AppCompat][Settings]:-[SystemSettings.exe crashes on browsing 'Personalization' setting tabs].
     // It also covers: Xaml objects can be marked as having an independent animation when they don't anymore

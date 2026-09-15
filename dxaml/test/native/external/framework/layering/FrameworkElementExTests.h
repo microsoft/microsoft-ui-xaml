@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <RuntimeEnabledFeatureOverride.h>
 #include <TestEvent.h>
 #include <SafeEventRegistration.h>
@@ -22,6 +23,36 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+        BEGIN_TEST_METHOD(DoesPerformLayout)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that the FrameworkElementEx's children performs layout.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesRespectMinSize)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that the FrameworkElementEx respects its min size.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesRespectMaxSize)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that the FrameworkElementEx respects its max size.")
+        END_TEST_METHOD()
+
+    };
+
+    class FrameworkElementExTestsWpf : public WEX::TestClass<FrameworkElementExTestsWpf>
+    {
+    public:
+        BEGIN_TEST_CLASS(FrameworkElementExTestsWpf)
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"FrameworkElementExTests")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -29,26 +60,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TEST_METHOD_CLEANUP(TestCleanup)
 
         BEGIN_TEST_METHOD(CanAccessProtectedChildrenProperty)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that developers can access the protected children property.")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(DoesPerformLayout)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that the FrameworkElementEx's children performs layout.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(DoesRespectMinSize)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that the FrameworkElementEx respects its min size.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(DoesRespectMaxSize)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that the FrameworkElementEx respects its max size.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that developers can access the protected children property.")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(DoesRespectMargin)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that the FrameworkElementEx respects its margin.")
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the FrameworkElementEx respects its margin.")
         END_TEST_METHOD()
     };
 #endif // WI_IS_FEATURE_PRESENT(Feature_Xaml2018)

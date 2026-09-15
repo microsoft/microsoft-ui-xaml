@@ -30,9 +30,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     };
     bool LayoutManagerIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool LayoutManagerIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool LayoutManagerIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool LayoutManagerIntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
     bool LayoutManagerIntegrationTests::TestSetup()
     {
@@ -47,7 +67,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         return true;
     }
 
-    void LayoutManagerIntegrationTests::ValidateEffectiveViewportChanged()
+    void LayoutManagerIntegrationTestsUap::ValidateEffectiveViewportChanged()
     {
         TestCleanupWrapper cleanup;
         TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));

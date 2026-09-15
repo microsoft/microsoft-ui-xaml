@@ -186,7 +186,7 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         bool BasicDragDropTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
 

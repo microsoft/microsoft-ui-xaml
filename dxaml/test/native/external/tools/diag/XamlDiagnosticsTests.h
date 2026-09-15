@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <memory>
 #include <map>
 #include <tuple>
@@ -31,6 +32,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e22a917c-ad18-4a09-bff9-d3ca3e5ee0b8")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -67,43 +69,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             BEGIN_TEST_METHOD(TestGetHandlesAndIInspectables)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully call into XamlDiagnostics and get and IInspectables.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(TestHitTest)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully call into XamlDiagnostics and hit test the tree.")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // HITTest API deprecated for IslandsOnly initialization type
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(TestHitTestReturnsInvisibleElements)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates that we hit testing returns invisible elements.")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // HITTest API deprecated for IslandsOnly initialization type
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(TestHitTestReturnsDisabledElements)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates that hit testing returns disabled elements.")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // HITTest API deprecated for IslandsOnly initialization type
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(TestHitTestDoesntReturnElementsNotInTree)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates that hit testing doesn't return elements that aren't in the live tree.")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // HITTest API deprecated for IslandsOnly initialization type
-                END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(TestHitTestDoesntReturnCollapsedElements)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates that hit testing doesn't return elements that are collapsed.")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // HITTest API deprecated for IslandsOnly initialization type
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(TestHitTestAfterChangingVisiblity)
-                TEST_METHOD_PROPERTY(L"Description", L"This test get's a little fancy. We are going to make sure that once an element goes "
-                                     L"from collapsed to visible, that we can now hit test it.")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // HITTest API deprecated for IslandsOnly initialization type
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestRegisterInstance)
@@ -188,12 +153,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             BEGIN_TEST_METHOD(TestCreateColorAndSetToBrushProperty)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully create a Windows.UI.Color object and set it to a brush handle.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(TestReturnCorrectRootsInUAP)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates that we don't return the PrintRoot, TransitionRoot, or VisualDiagnosticsRoot to the callback.")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestReturnCorrectRootsInWPF)
@@ -301,12 +260,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(TestAddNewSetterInStyle)
-                TEST_METHOD_PROPERTY(L"Description", L"Verifies that modifying a Style with SetProperty that should add a Setter does")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // WPF_HOSTING_MODE_FAILURE - Error: Verify: IsTrue(wcscmp(colorProperty.Value, L"Yellow") == 0)
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(TestChangeSetterProperty)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that modifying the Property of a Style Setter works as expected")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
@@ -405,11 +358,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(VerifyMutationEvents)
-               TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-               TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")    // WPF_HOSTING_MODE_FAILURE - Fails because it loads Xaml with Popup IsOpen="true"
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(VerifyGetCallbackWhenNoDispatcherQueues)
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // DCPP: XamlDiagnosticsTests::VerifyGetCallbackWhenNoDispatcherQueues leaks
@@ -429,5 +377,83 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             void TestReturnCorrectRootsHelper(unsigned numberOfRoots);
 
         };
+
+    class XamlDiagnosticsTestsUap : public BaseTestClass<XamlDiagnosticsTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(XamlDiagnosticsTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"ArtifactUnderTest", L"sdk\\inc\\xamlom.idl")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e22a917c-ad18-4a09-bff9-d3ca3e5ee0b8")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"XamlDiagnosticsTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        std::vector<InstanceHandle> DoHitTest(const RECT& rect);
+        Microsoft::UI::Xaml::Tests::Common::TestCleanupWrapper LoadXamlFromFunction(const std::function<UIElement^()> func, wrl::ComPtr<Microsoft::UI::Xaml::Tests::Common::VisualTreeServiceCallback>& callback);
+        void TestReturnCorrectRootsHelper(unsigned numberOfRoots);
+
+    public:
+        BEGIN_TEST_METHOD(TestHitTest)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully call into XamlDiagnostics and hit test the tree.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        // HITTest API deprecated for IslandsOnly initialization type
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(TestHitTestReturnsInvisibleElements)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that we hit testing returns invisible elements.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        // HITTest API deprecated for IslandsOnly initialization type
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(TestHitTestReturnsDisabledElements)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that hit testing returns disabled elements.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        // HITTest API deprecated for IslandsOnly initialization type
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(TestHitTestDoesntReturnElementsNotInTree)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that hit testing doesn't return elements that aren't in the live tree.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        // HITTest API deprecated for IslandsOnly initialization type
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(TestHitTestDoesntReturnCollapsedElements)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that hit testing doesn't return elements that are collapsed.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        // HITTest API deprecated for IslandsOnly initialization type
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(TestHitTestAfterChangingVisiblity)
+        TEST_METHOD_PROPERTY(L"Description", L"This test get's a little fancy. We are going to make sure that once an element goes "
+        L"from collapsed to visible, that we can now hit test it.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        // HITTest API deprecated for IslandsOnly initialization type
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(TestReturnCorrectRootsInUAP)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that we don't return the PrintRoot, TransitionRoot, or VisualDiagnosticsRoot to the callback.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(TestAddNewSetterInStyle)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies that modifying a Style with SetProperty that should add a Setter does")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        // WPF_HOSTING_MODE_FAILURE - Error: Verify: IsTrue(wcscmp(colorProperty.Value, L"Yellow") == 0)
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyMutationEvents)
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        // WPF_HOSTING_MODE_FAILURE - Fails because it loads Xaml with Popup IsOpen="true"
+        END_TEST_METHOD()
+    };
     }
 } } } } }

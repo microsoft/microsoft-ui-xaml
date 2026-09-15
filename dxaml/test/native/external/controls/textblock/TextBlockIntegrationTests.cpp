@@ -19,7 +19,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool TextBlockIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
 

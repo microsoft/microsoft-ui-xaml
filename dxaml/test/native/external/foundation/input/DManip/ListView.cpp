@@ -22,9 +22,79 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool ListViewTest::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool ListViewTestWpf::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ListViewTestWpf::TestCleanup()
+        {
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+String^ ListViewTestWpf::GetResourcesPath() const
+        {
+            return GetPackageFolder() + L"resources\\native\\external\\foundation\\input\\dmanip\\";
+        }
+
+xaml_controls::ScrollViewer^ ListViewTestWpf::SetupUI(
+            _In_ Platform::String^ filename,
+            _In_ std::shared_ptr<Event>& viewChangedEvent,
+            _In_ SafeEventRegistrationType(ScrollViewer, ViewChanging)& viewChangingRegistration,
+            _In_ SafeEventRegistrationType(ScrollViewer, ViewChanged)& viewChangedRegistration)
+        {
+            ScrollViewer^ sv = nullptr;
+
+            auto root = safe_cast<FrameworkElement^>(LoadXamlFileOnUIThread(filename));
+
+            RunOnUIThread([&]()
+            {
+                TestServices::WindowHelper->WindowContent = root;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                ListView^ listView = safe_cast<ListView^>(root->FindName(L"myListView"));
+                auto controlTemplateRoot = safe_cast<FrameworkElement^>(VisualTreeHelper::GetChild(listView, 0));
+                sv = safe_cast<ScrollViewer^>(controlTemplateRoot->FindName(L"ScrollViewer"));
+                sv->IsScrollInertiaEnabled = false;
+                sv->IsZoomInertiaEnabled = false;
+
+                viewChangedRegistration.Attach(sv, ref new wf::EventHandler<ScrollViewerViewChangedEventArgs^>(
+                    [viewChangedEvent, sv](Platform::Object^, ScrollViewerViewChangedEventArgs^ args)
+                {
+                    LOG_OUTPUT(L"ViewChanged raised. View=(%.3f, %.3f, %.3f), IsIntermediate=%d.",
+                        sv->HorizontalOffset, sv->VerticalOffset, sv->ZoomFactor, args->IsIntermediate);
+                    if (!args->IsIntermediate)
+                    {
+                        viewChangedEvent->Set();
+                    }
+                }));
+
+                viewChangingRegistration.Attach(sv, ref new wf::EventHandler<ScrollViewerViewChangingEventArgs^>(
+                    [](Platform::Object^ sender, ScrollViewerViewChangingEventArgs^ args)
+                {
+                    LOG_OUTPUT(L"ViewChanging, NextView: %f, %f, %f, FinalView: %f, %f, %f, IsInertial: %d",
+                        args->NextView->HorizontalOffset,
+                        args->NextView->VerticalOffset,
+                        args->NextView->ZoomFactor,
+                        args->FinalView->HorizontalOffset,
+                        args->FinalView->VerticalOffset,
+                        args->FinalView->ZoomFactor,
+                        args->IsInertial);
+                }));
+            });
+
+            return sv;
+        }
+
 
         bool ListViewTest::ClassCleanup()
         {
@@ -94,7 +164,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             return sv;
         }
 
-        void ListViewTest::Basics()
+        void ListViewTestWpf::Basics()
         {
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
 

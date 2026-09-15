@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <TestEvent.h>
 #include <SafeEventRegistration.h>
 
@@ -21,6 +22,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"1bb20c90-a558-491b-b76d-55bdb9a46911;eadeac67-1552-4876-a67e-dc1fcb8a6e25;bdc5c68b-03c1-4217-832c-4c09f99946f4")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -93,11 +95,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore") 
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(ValidateTraverseRadioButtonGroupByKeyboard)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates traversing through a named group of RadioButtons with keyboard input.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // WPF_HOSTING_MODE_FAILURE - up/down arrow keys don't seem to have an effect
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(CanInteractWithRadioButtonsOnAPage)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can key through and check RadioButtons on a page, which we can navigate to and from.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
@@ -137,6 +134,41 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             xaml_controls::StackPanel^ panel = nullptr);
 
         void PerformValidateFocusShift(bool shouldRenameGroup, bool shouldRemove, bool focusShifts);
+        void PerformValidateTraverseRadioButtonGroup(bool isNamedGroup, InputDevice inputDevice, bool moveForwardFirst, bool useLeftRightkeys);
+    };
+
+    class RadioButtonIntegrationTestsUap : public WEX::TestClass<RadioButtonIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(RadioButtonIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"RadioButtonIntegrationTests")
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"1bb20c90-a558-491b-b76d-55bdb9a46911;eadeac67-1552-4876-a67e-dc1fcb8a6e25;bdc5c68b-03c1-4217-832c-4c09f99946f4")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+        BEGIN_TEST_METHOD(ValidateTraverseRadioButtonGroupByKeyboard)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates traversing through a named group of RadioButtons with keyboard input.")
+            // WPF_HOSTING_MODE_FAILURE - up/down arrow keys don't seem to have an effect
+        END_TEST_METHOD()
+
+    private:
+        xaml_controls::StackPanel^ AddRadioButtonsToPanel(
+            bool isNamedGroup,
+            std::vector<xaml_controls::RadioButton^> & radioButtons,
+            xaml_controls::StackPanel^ panel = nullptr);
+        xaml_controls::StackPanel^ AddRadioButtonsToPanelWithFocusedHandler(
+            bool isNamedGroup,
+            std::vector<xaml_controls::RadioButton^> & radioButtons,
+            std::vector<SafeEventRegistrationType(xaml_controls::RadioButton, GotFocus)>& focusedRegistrations,
+            xaml::RoutedEventHandler^ gotFocusHandler,
+            xaml_controls::StackPanel^ panel = nullptr);
         void PerformValidateTraverseRadioButtonGroup(bool isNamedGroup, InputDevice inputDevice, bool moveForwardFirst, bool useLeftRightkeys);
     };
 

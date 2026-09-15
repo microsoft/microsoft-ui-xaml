@@ -6,6 +6,7 @@
 #include <Versioning.h>
 
 #include <CommonInputHelper.h>
+#include <HostingModeTestClass.h>
 
 using namespace Microsoft::UI::Xaml::Tests::Common;
 
@@ -25,6 +26,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"b914a3e3-0d78-4274-88b9-46a4773bb21b;65d77a94-832e-4d74-af02-4e3b3f5180cc;b34da8d2-333d-40a9-a19c-94b1f9785580")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -82,7 +84,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateShowAtTargetPositionForPen)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the positioning of the MenuFlyout opened with Pen under a range of cases (value of point passed to ShowAt, FlowDirection, input type).")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore, OneCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Move windowed popups to lifted input
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // For menuflyout placement with pen, the placement logic assumes left-handedness
         END_TEST_METHOD()
@@ -93,13 +94,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(TallMenuFlyoutShouldAlignToTopOfScreen)
             TEST_METHOD_PROPERTY(L"Description", L"If a MenuFlyout is too tall to vertically align to the point passed to ShowAt, it will open aligned to the top of the screen.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Move windowed popups to lifted input
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(WideMenuFlyoutShouldAlignToLeftOfScreen)
-            TEST_METHOD_PROPERTY(L"Description", L"If a MenuFlyout is too wide to horizontally align to the point passed to ShowAt, it will open aligned to the left of the screen.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // x-coordinate of flyout is 7.5 pixels off
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateOnlyOneSubMenuItemIsOpenAtATimeByTouch)
@@ -124,24 +119,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(ValidateNestedSubMenuItemPosition)
-            TEST_METHOD_PROPERTY(L"Description", L"Validate the position of a tall nested sub menu.")
-            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore,Santorini")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // WindowHelper->WindowBounds is (-7.5,-7.5), 1040.5 x 736.5
-                                                            // Test expects width to be 1024 and height 768
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(ValidateNestedSplitMenuItemPosition)
-            TEST_METHOD_PROPERTY(L"Description", L"Validate the position of a tall nested split menu.")
-            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore,Santorini")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // WindowHelper->WindowBounds is (-7.5,-7.5), 1040.5 x 736.5
-                                                            // Test expects width to be 1024 and height 768
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(ValidateSubMenuItemUIElementTree)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the UIElement tree of the MenuFlyoutSubItem.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Move windowed popups to lifted input
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
@@ -149,7 +129,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateUIElementTree)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the UI element tree of MenuFlyout in various visual states ")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Move windowed popups to lifted input
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
@@ -191,7 +170,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateThatLayoutTransitionsDoRun)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that when we open/close a MenuFlyout, theme transitions run.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Move windowed popups to lifted input
         END_TEST_METHOD()
 
@@ -271,7 +249,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidatePopupWindowedPositionInSimulatedHolographic)
             TEST_METHOD_PROPERTY(L"Description", L"Verify the Popup windowed position (with simulated Holographic shell).")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"Desktop") // This test tests popup positions within a window, which doesn't apply with windowed popups.
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Move windowed popups to lifted input
         END_TEST_METHOD()
 
@@ -313,7 +290,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidatePopupWindowedPosition)
             TEST_METHOD_PROPERTY(L"Description", L"Validate the Popup windowed position.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // Windowed Popup isn't supported on Phone and OneCore.
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Move windowed popups to lifted input
         END_TEST_METHOD()
 
@@ -357,7 +333,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidatePopupWindowedScrollingWithMouse)
             TEST_METHOD_PROPERTY(L"Description", L"Validates scrolling content of windowed MenuFlyout using the mouse.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // Windowed Popup isn't supported on Phone and OneCore.
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Move windowed popups to lifted input
         END_TEST_METHOD()
 
@@ -395,11 +370,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(CanDetectChangesToCanExecuteWithoutBeingInVisualTree)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we properly pick up changes to a command's CanExecute property that occur when we're out of the visual tree once we're added back to the visual tree.")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(MenuFlyoutRemainsInBoundsWhenShownTwice)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that a MenuFlyout remains within the screen's boundaries when its ShowAt method is called twice in a row.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // y coordinate of flyout is about 8 pixels off.
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateSettingKeyboardAcceleratorCreatesDefaultItemKeyboardAcceleratorText)
@@ -614,4 +584,65 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         static const UINT m_subMenuOverlapPixels;
     };
 
+
+    class MenuFlyoutIntegrationTestsUap : public WEX::TestClass<MenuFlyoutIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(MenuFlyoutIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"MenuFlyoutIntegrationTests")
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"b914a3e3-0d78-4274-88b9-46a4773bb21b;65d77a94-832e-4d74-af02-4e3b3f5180cc;b34da8d2-333d-40a9-a19c-94b1f9785580")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+        BEGIN_TEST_METHOD(WideMenuFlyoutShouldAlignToLeftOfScreen)
+            TEST_METHOD_PROPERTY(L"Description", L"If a MenuFlyout is too wide to horizontally align to the point passed to ShowAt, it will open aligned to the left of the screen.")
+            // x-coordinate of flyout is 7.5 pixels off
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateNestedSubMenuItemPosition)
+            TEST_METHOD_PROPERTY(L"Description", L"Validate the position of a tall nested sub menu.")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore,Santorini")
+            // WindowHelper->WindowBounds is (-7.5,-7.5), 1040.5 x 736.5
+            // Test expects width to be 1024 and height 768
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateNestedSplitMenuItemPosition)
+            TEST_METHOD_PROPERTY(L"Description", L"Validate the position of a tall nested split menu.")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore,Santorini")
+            // WindowHelper->WindowBounds is (-7.5,-7.5), 1040.5 x 736.5
+            // Test expects width to be 1024 and height 768
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MenuFlyoutRemainsInBoundsWhenShownTwice)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a MenuFlyout remains within the screen's boundaries when its ShowAt method is called twice in a row.")
+            // y coordinate of flyout is about 8 pixels off.
+        END_TEST_METHOD()
+
+    private:
+        enum class InputMethod
+        {
+            Gamepad,
+            Keyboard,
+            Mouse,
+            Remote,
+            Touch,
+            Pen,
+        };
+
+        void ShowMenuFlyout(xaml_controls::MenuFlyout^ menuFlyout, xaml::UIElement^ relativeTo, float horizontalOffset, float verticalOffset, bool forceTapAsPreviousInputMessage = true);
+        void TapSubMenuItem(xaml_controls::MenuFlyoutSubItem^ subItem);
+        void TapSplitMenuItemSecondary(xaml_controls::SplitMenuFlyoutItem^ splitItem);
+        xaml_controls::MenuFlyoutSubItem^ GetSubItem(wfc::IVector<xaml_controls::MenuFlyoutItemBase^>^ items);
+        xaml_controls::MenuFlyoutSubItem^ GetSubItem(wfc::IVector<xaml_controls::MenuFlyoutItemBase^>^ items, int index);
+        xaml_controls::MenuFlyoutPresenter^ GetCurrentPresenter();
+        xaml_controls::Canvas^ SetupRootPanelForSubMenuTest();
+        void InjectInput(InputMethod inputMethod);
+    };
 } } } } } }

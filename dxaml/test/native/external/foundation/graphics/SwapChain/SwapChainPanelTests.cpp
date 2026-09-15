@@ -42,9 +42,34 @@ Platform::String^ SwapChainPanelTests::GetPathToFiles() const
 
 bool SwapChainPanelTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool SwapChainPanelTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool SwapChainPanelTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool SwapChainPanelTestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    test_infra::TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+Platform::String^ SwapChainPanelTestsUap::GetPathToFiles() const
+{
+    return GetPackageFolder() + L"resources\\native\\foundation\\graphics\\swapchain\\";
+}
+
 
 bool SwapChainPanelTests::ClassCleanup()
 {
@@ -1274,7 +1299,7 @@ void SwapChainPanelTests::HitTestOverlaySwapChainPanelWUCFull()
     TestServices::Utilities->VerifyMockDCompOutput(SurfaceComparison::NoComparison, L"2");
 }
 
-void SwapChainPanelTests::HitTestPopup()
+void SwapChainPanelTestsUap::HitTestPopup()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
     SwapChainPanelTestWrapper swapChainTestWrapper;

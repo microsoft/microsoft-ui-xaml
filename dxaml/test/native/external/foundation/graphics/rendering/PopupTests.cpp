@@ -40,9 +40,84 @@ Platform::String^ PopupTests::GetResourcesPath() const
 
 bool PopupTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool PopupTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool PopupTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool PopupTestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+Microsoft::UI::Xaml::Controls::Primitives::Popup^ PopupTestsUap::MakeRTLPopupInLTRTree()
+{
+    const auto& wh = TestServices::WindowHelper;
+
+    // Grid1[compnode]-Grid2-Canvas3[RTL]-Popup[RTL]-Rectangle[RTL]
+    Grid^ grid1;
+    Grid^ grid2;
+    Canvas^ canvas3;
+    Popup^ popup;
+    xaml_shapes::Rectangle^ rectangle;
+
+    RunOnUIThread([&]()
+    {
+        rectangle = ref new xaml_shapes::Rectangle();
+        rectangle->FlowDirection = FlowDirection::RightToLeft;
+        rectangle->Width = 100;
+        rectangle->Height = 100;
+        rectangle->Fill = ref new SolidColorBrush(Microsoft::UI::Colors::Green);
+
+        popup = ref new Popup();
+        popup->FlowDirection = FlowDirection::RightToLeft;
+        popup->Width = 100;
+        popup->Height = 100;
+        popup->Child = rectangle;
+        Canvas::SetLeft(popup, 50.0);
+        Canvas::SetTop(popup, 50.0);
+
+        canvas3 = ref new Canvas();
+        canvas3->FlowDirection = FlowDirection::RightToLeft;
+        canvas3->Width = 200;
+        canvas3->Height = 200;
+        canvas3->Children->Append(popup);
+
+        grid2 = ref new Grid();
+        grid2->FlowDirection = FlowDirection::LeftToRight;
+        grid2->Width = 200;
+        grid2->Height = 200;
+        grid2->Children->Append(canvas3);
+
+        grid1 = ref new Grid();
+        grid1->FlowDirection = FlowDirection::LeftToRight;
+        grid1->Width = 200;
+        grid1->Height = 200;
+        grid1->CompositeMode = ElementCompositeMode::SourceOver;
+        grid1->Children->Append(grid2);
+
+        wh->WindowContent = grid1;
+    });
+
+    // Let the tree render before opening the popup. Otherwise, the popup could be incorrectly detected as a parentless popup.
+    wh->WaitForIdle();
+
+    return popup;
+}
+
 
 bool PopupTests::TestSetup()
 {
@@ -217,7 +292,7 @@ void PopupTests::ParentedPopup_ValidateRequestedThemePropagation()
     });
 }
 
-void PopupTests::ParentedPopup_RTLSubtreeInLTRTreeWUC()
+void PopupTestsUap::ParentedPopup_RTLSubtreeInLTRTreeWUC()
 {
     const auto& wh = TestServices::WindowHelper;
     const auto& u = TestServices::Utilities;
@@ -235,7 +310,7 @@ void PopupTests::ParentedPopup_RTLSubtreeInLTRTreeWUC()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
 }
 
-void PopupTests::ParentedPopup_RTLSubtreeInLTRTreeWUC_AnimatedOffset()
+void PopupTestsUap::ParentedPopup_RTLSubtreeInLTRTreeWUC_AnimatedOffset()
 {
     const auto& wh = TestServices::WindowHelper;
     const auto& u = TestServices::Utilities;
@@ -268,7 +343,7 @@ void PopupTests::ParentedPopup_RTLSubtreeInLTRTreeWUC_AnimatedOffset()
     wh->WaitForIdle();
 }
 
-void PopupTests::ParentedPopup_RTLSubtreeInLTRTreeWUC_HandoffVisual()
+void PopupTestsUap::ParentedPopup_RTLSubtreeInLTRTreeWUC_HandoffVisual()
 {
     const auto& wh = TestServices::WindowHelper;
     const auto& u = TestServices::Utilities;

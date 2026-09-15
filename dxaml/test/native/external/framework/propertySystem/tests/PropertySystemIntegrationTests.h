@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Framework { namespace PropertySystem {
@@ -16,6 +17,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"IsolationLevel", L"Method") 
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -141,37 +143,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         BEGIN_TEST_METHOD(GradientColorPropertyConvertsStringsToColor)
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(VerifyThreadException_DependencyObject)
-            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"OneCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Uses multiple UWP views
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(VerifyThreadException_MultiParentShareableDO)
-            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"OneCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Uses multiple UWP views
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(VerifyThreadException_ShareableDO)
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Uses multiple UWP views
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(VerifyThreadException_NoParentShareableDO)
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Uses multiple UWP views
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(VerifyThreadException_DataBinding)
-            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"OneCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Uses multiple UWP views
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(VerifyThreadException_ContentControlContent)
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Uses multiple UWP views
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(VerifyThreadException_CustomDependencyProperty)
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Uses multiple UWP views
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(CanSetNullableProperty)
             TEST_METHOD_PROPERTY(L"Description", L"Verify that we can set a value on a nullable property.")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Failed to create a 'Windows.Foundation.IReference`1<Double>' from the text '5'
@@ -183,6 +154,55 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         END_TEST_METHOD()
 
         TEST_METHOD(CompactEnumConversion)
+    };
+
+    class PropertySystemIntegrationTestsUap
+    {
+    public:
+        BEGIN_TEST_CLASS(PropertySystemIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"IsolationLevel", L"Method")
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"PropertySystemIntegrationTests")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+
+        BEGIN_TEST_METHOD(VerifyThreadException_DependencyObject)
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"OneCore")
+        // Uses multiple UWP views
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyThreadException_MultiParentShareableDO)
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"OneCore")
+        // Uses multiple UWP views
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyThreadException_ShareableDO)
+        // Uses multiple UWP views
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyThreadException_NoParentShareableDO)
+        // Uses multiple UWP views
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyThreadException_DataBinding)
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"OneCore")
+        // Uses multiple UWP views
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyThreadException_ContentControlContent)
+        // Uses multiple UWP views
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyThreadException_CustomDependencyProperty)
+        // Uses multiple UWP views
+        END_TEST_METHOD()
     };
 
     ref class MyItemTemplateSelector : public Microsoft::UI::Xaml::Controls::DataTemplateSelector

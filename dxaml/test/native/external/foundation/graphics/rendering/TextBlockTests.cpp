@@ -47,9 +47,82 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         }
         bool TextBlockTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool TextBlockTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool TextBlockTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool TextBlockTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+void TextBlockTestsUap::DCompValidationHelper(
+            Platform::String^ filename,
+            float scale,
+            MockDComp::SurfaceComparison comparisonMode,
+            float fontScale,
+            DCompRendering dcompRendering)
+        {
+            // Clear out the current window content before injecting MockDComp, to
+            // MockDComp doesn't capture an image for anything currently in the content,
+            // since that will interfere with the expected surface counts.
+            RunOnUIThread([&]()
+            {
+                TestServices::WindowHelper->WindowContent = nullptr;
+            });
+
+            // All TextBlocks rendered should be in green color, that means they are using DWriteTextLayout for measure/arrange.
+            RuntimeEnabledFeatureOverride featureDrawDWriteTextLayoutInGreen(RuntimeFeatureBehavior::RuntimeEnabledFeature::DrawDWriteTextLayoutInGreen, true);
+
+            WUCRenderingScopeGuard guard(dcompRendering, false /*resizeWindow*/);
+            TestServices::WindowHelper->SetWindowSizeOverrideWithWindowScale(wf::Size(800, 600), scale);
+
+            Panel^ root = safe_cast<Panel^>(LoadXamlFileOnUIThread(GetResourcesPath() + filename));
+            RunOnUIThread([&]()
+            {
+                TestServices::WindowHelper->WindowContent = root;
+            });
+
+            TestServices::WindowHelper->WaitForIdle();
+
+            FontScaleOverride fontScaleOverride(fontScale);
+
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                Popup^ popup = safe_cast<Popup^>(root->FindName(L"myPopup"));
+                if (popup)
+                {
+                    popup->IsOpen = true;
+                }
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            TestServices::Utilities->VerifyMockDCompOutput(comparisonMode);
+
+            TestServices::WindowHelper->WaitForIdle();
+        }
+
+Platform::String^ TextBlockTestsUap::GetResourcesPath() const
+        {
+            return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\rendering\\";
+        }
+
 
         bool TextBlockTests::TestSetup()
         {
@@ -330,7 +403,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         //------------------------------------------------------------------------
         // Test case: test fast path with high dpi.
         //------------------------------------------------------------------------
-        void TextBlockTests::PlateauScaleTestWUCFull()
+        void TextBlockTestsUap::PlateauScaleTestWUCFull()
         {
             DCompValidationHelper(L"SimpleTextBlock.xaml", 1.8f, MockDComp::SurfaceComparison::ReferencedOnly, 1.0f, DCompRendering::WUCCompleteSynchronousCompTree);
         }
@@ -554,7 +627,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         }
 
 
-        void TextBlockTests::GetUIAAttributesFromEmptyTextRange()
+        void TextBlockTestsUap::GetUIAAttributesFromEmptyTextRange()
         {
             TestCleanupWrapper cleanup;
 
@@ -1089,7 +1162,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        void TextBlockTests::DisableTextSelection()
+        void TextBlockTestsUap::DisableTextSelection()
         {
             TestCleanupWrapper cleanup;
 

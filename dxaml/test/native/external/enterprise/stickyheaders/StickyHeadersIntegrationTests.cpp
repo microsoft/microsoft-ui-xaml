@@ -20,9 +20,297 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool StickyHeadersIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool StickyHeadersIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool StickyHeadersIntegrationTestsUap::TestCleanup()
+    {
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+xaml_controls::ListView^ StickyHeadersIntegrationTestsUap::SetupGroupedListViewWithInlineHeaders(Platform::String^ panelStringValue)
+    {
+        xaml_controls::ListView^ listView = nullptr;
+        xaml_data::CollectionViewSource^ cvs = nullptr;
+        Platform::Collections::Vector<Platform::Object^>^ itemsSource = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            auto rootPanel = dynamic_cast<xaml_controls::Grid^> (xaml_markup::XamlReader::Load(
+                L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='root'>"
+                L"    <Grid.Resources>"
+                L"      <CollectionViewSource x:Name='cvs'/>"
+                L"    </Grid.Resources>"
+                L"    <ListView x:Name='listView' Height='500' Width='500' ItemsSource='{Binding Source={StaticResource cvs}}'>"
+                L"        <ListView.ItemsPanel>"
+                L"            <ItemsPanelTemplate>"
+                                   + panelStringValue +
+                L"            </ItemsPanelTemplate>"
+                L"        </ListView.ItemsPanel>"
+                L"        <ListView.ItemTemplate>"
+                L"            <DataTemplate>"
+                L"                <TextBlock Text='{Binding}'/>"
+                L"            </DataTemplate>"
+                L"        </ListView.ItemTemplate>"
+                L"        <ListView.GroupStyle>"
+                L"          <GroupStyle>"
+                L"           <GroupStyle.HeaderContainerStyle>"
+                L"                  <Style TargetType='ListViewHeaderItem'>"
+                L"                      <Setter Property='HorizontalAlignment' Value='Stretch' />"
+                L"                      <Setter Property='VerticalAlignment' Value = 'Stretch' />"
+                L"                      <Setter Property='Background' Value='Red' />"
+                L"                  </Style>"
+                L"            </GroupStyle.HeaderContainerStyle>"
+                L"            <GroupStyle.HeaderTemplate>"
+                L"                <DataTemplate>"
+                L"                    <Grid Background='Blue' >"
+                L"                        <TextBlock Text='{Binding}' Foreground='White' FontSize='20'/>"
+                L"                    </Grid>"
+                L"                </DataTemplate>"
+                L"            </GroupStyle.HeaderTemplate>"
+                L"            <GroupStyle.ContainerStyle>"
+                L"                <Style TargetType='GroupItem'>"
+                L"                    <Setter Property='BorderBrush' Value='White'/>"
+                L"                    <Setter Property='BorderThickness' Value='3'/>"
+                L"                </Style>"
+                L"            </GroupStyle.ContainerStyle>"
+                L"        </GroupStyle>"
+                L"    </ListView.GroupStyle>"
+                L"  </ListView>"
+                L"</Grid>"));
+            VERIFY_IS_NOT_NULL(rootPanel);
+
+            listView = safe_cast<xaml_controls::ListView^>(rootPanel->FindName(L"listView"));
+            VERIFY_IS_NOT_NULL(listView);
+
+            cvs = safe_cast<xaml_data::CollectionViewSource^>(rootPanel->FindName(L"cvs"));
+            VERIFY_IS_NOT_NULL(cvs);
+
+            itemsSource = GetGroupedData();
+            VERIFY_IS_NOT_NULL(itemsSource);
+
+            cvs->Source = itemsSource;
+            cvs->IsSourceGrouped = true;
+
+            TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        return listView;
+    }
+
+xaml_controls::GridView^ StickyHeadersIntegrationTestsUap::SetupGroupedGridViewWithInlineHeaders(Platform::String^ panelStringValue)
+    {
+        xaml_controls::GridView^ gridView = nullptr;
+        xaml_data::CollectionViewSource^ cvs = nullptr;
+        Platform::Collections::Vector<Platform::Object^>^ itemsSource = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            auto rootPanel = dynamic_cast<xaml_controls::Grid^> (xaml_markup::XamlReader::Load(
+                L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='root'>"
+                L"    <Grid.Resources>"
+                L"      <CollectionViewSource x:Name='cvs'/>"
+                L"    </Grid.Resources>"
+                L"    <GridView x:Name='gridView' Height='500' Width='500' ItemsSource='{Binding Source={StaticResource cvs}}'>"
+                L"        <GridView.ItemsPanel>"
+                L"            <ItemsPanelTemplate>"
+                                  + panelStringValue +
+                L"            </ItemsPanelTemplate>"
+                L"        </GridView.ItemsPanel>"
+                L"        <GridView.ItemTemplate>"
+                L"            <DataTemplate>"
+                L"                <TextBlock Text='{Binding}'/>"
+                L"            </DataTemplate>"
+                L"        </GridView.ItemTemplate>"
+                L"        <GridView.GroupStyle>"
+                L"          <GroupStyle>"
+                L"           <GroupStyle.HeaderContainerStyle>"
+                L"                  <Style TargetType='GridViewHeaderItem'>"
+                L"                      <Setter Property='HorizontalAlignment' Value='Stretch' />"
+                L"                      <Setter Property='VerticalAlignment' Value = 'Stretch' />"
+                L"                      <Setter Property='Background' Value='Red' />"
+                L"                  </Style>"
+                L"            </GroupStyle.HeaderContainerStyle>"
+                L"            <GroupStyle.HeaderTemplate>"
+                L"                <DataTemplate>"
+                L"                    <Grid Background='Blue' >"
+                L"                        <TextBlock Text='{Binding}' Foreground='White' FontSize='20'/>"
+                L"                    </Grid>"
+                L"                </DataTemplate>"
+                L"            </GroupStyle.HeaderTemplate>"
+                L"            <GroupStyle.ContainerStyle>"
+                L"                <Style TargetType='GroupItem'>"
+                L"                    <Setter Property='BorderBrush' Value='White'/>"
+                L"                    <Setter Property='BorderThickness' Value='3'/>"
+                L"                </Style>"
+                L"            </GroupStyle.ContainerStyle>"
+                L"        </GroupStyle>"
+                L"    </GridView.GroupStyle>"
+                L"  </GridView>"
+                L"</Grid>"));
+            VERIFY_IS_NOT_NULL(rootPanel);
+
+            gridView = safe_cast<xaml_controls::GridView^>(rootPanel->FindName(L"gridView"));
+            VERIFY_IS_NOT_NULL(gridView);
+
+            cvs = safe_cast<xaml_data::CollectionViewSource^>(rootPanel->FindName(L"cvs"));
+            VERIFY_IS_NOT_NULL(cvs);
+
+            itemsSource = GetGroupedData();
+            VERIFY_IS_NOT_NULL(itemsSource);
+
+            cvs->Source = itemsSource;
+            cvs->IsSourceGrouped = true;
+
+            TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        return gridView;
+    }
+
+xaml_controls::ListView^ StickyHeadersIntegrationTestsUap::SetupGroupedListView(Platform::String^ areStickyGroupHeadersEnabledStringValue)
+    {
+        xaml_controls::Grid^ rootPanel = nullptr;
+        xaml_controls::ListView^ listView = nullptr;
+        xaml_data::CollectionViewSource^ cvs = nullptr;
+        Platform::Collections::Vector<Platform::Object^>^ itemsSource = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            rootPanel = dynamic_cast<xaml_controls::Grid^> (xaml_markup::XamlReader::Load(
+                L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='root'>"
+                L"    <Grid.Resources>"
+                L"        <CollectionViewSource x:Name='cvs'/>"
+                L"        <Style TargetType='ListViewItem' x:Key='MyListViewItemStyle'>"
+                L"            <Setter Property='Margin' Value='0,0,0,0' />"
+                L"        </Style>"
+                L"    </Grid.Resources>"
+                L"    <ListView x:Name='listView' Height='400' Width='400' ItemsSource='{Binding Source={StaticResource cvs}}' ItemContainerStyle='{StaticResource MyListViewItemStyle}'>"
+                L"       <ListView.Resources>"
+                L"           <x:Double x:Key='ListViewItemMinHeight'>44</x:Double>"
+                L"       </ListView.Resources>"
+                L"        <ListView.ItemsPanel>"
+                L"            <ItemsPanelTemplate>"
+                L"                <ItemsStackPanel CacheLength='0' AreStickyGroupHeadersEnabled='" + areStickyGroupHeadersEnabledStringValue + L"'/>"
+                L"            </ItemsPanelTemplate>"
+                L"        </ListView.ItemsPanel>"
+                L"        <ListView.ItemTemplate>"
+                L"            <DataTemplate>"
+                L"                <TextBlock Text='{Binding}'/>"
+                L"            </DataTemplate>"
+                L"        </ListView.ItemTemplate>"
+                L"        <ListView.GroupStyle>"
+                L"          <GroupStyle>"
+                L"            <GroupStyle.Panel>"
+                L"                <ItemsPanelTemplate>"
+                L"                    <VariableSizedWrapGrid Orientation='Horizontal'/>"
+                L"                </ItemsPanelTemplate>"
+                L"            </GroupStyle.Panel>"
+                L"            <GroupStyle.HeaderTemplate>"
+                L"                <DataTemplate>"
+                L"                    <Grid Background='Blue'>"
+                L"                        <TextBlock Text='{Binding}' Foreground='White' FontSize='20'/>"
+                L"                    </Grid>"
+                L"                </DataTemplate>"
+                L"            </GroupStyle.HeaderTemplate>"
+                L"            <GroupStyle.ContainerStyle>"
+                L"                <Style TargetType='GroupItem'>"
+                L"                    <Setter Property='BorderBrush' Value='White'/>"
+                L"                    <Setter Property='BorderThickness' Value='3'/>"
+                L"                </Style>"
+                L"            </GroupStyle.ContainerStyle>"
+                L"        </GroupStyle>"
+                L"    </ListView.GroupStyle>"
+                L"  </ListView>"
+                L"</Grid>"));
+            VERIFY_IS_NOT_NULL(rootPanel);
+            TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            listView = safe_cast<xaml_controls::ListView^>(rootPanel->FindName(L"listView"));
+            VERIFY_IS_NOT_NULL(listView);
+
+            cvs = safe_cast<xaml_data::CollectionViewSource^>(rootPanel->FindName(L"cvs"));
+            VERIFY_IS_NOT_NULL(cvs);
+
+            itemsSource = GetGroupedData();
+            VERIFY_IS_NOT_NULL(itemsSource);
+
+            cvs->Source = itemsSource;
+            cvs->IsSourceGrouped = true;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        return listView;
+    }
+
+Platform::Collections::Vector<Platform::Object^>^ StickyHeadersIntegrationTestsUap::GetGroupedData()
+    {
+        auto groupedData = ref new Platform::Collections::Vector<Platform::Object^>();
+
+        for (unsigned int i = 0; i < 3; ++i)
+        {
+            Microsoft::UI::Xaml::Tests::Common::GroupedHeader^ group = nullptr;
+
+            switch (i)
+            {
+            case 0:
+                group = ref new Microsoft::UI::Xaml::Tests::Common::GroupedHeader(L"Tennis");
+                VERIFY_IS_NOT_NULL(group);
+
+                group->Append(L"Roger Federer");
+                group->Append(L"Rafael Nadal");
+                group->Append(L"Novak Djokovic");
+                group->Append(L"Andy Murray");
+                group->Append(L"Grigor Dimitrov");
+                break;
+
+            case 1:
+                group = ref new Microsoft::UI::Xaml::Tests::Common::GroupedHeader(L"Soccer");
+                VERIFY_IS_NOT_NULL(group);
+
+                group->Append(L"Cristiano Ronaldo");
+                group->Append(L"Lionel Messi");
+                group->Append(L"Neymar");
+                group->Append(L"Andres Iniesta");
+                group->Append(L"Gareth Bale");
+                group->Append(L"Xavi");
+                group->Append(L"James Rodriguez");
+                group->Append(L"Ronaldinho");
+                group->Append(L"Arjen Robben");
+                break;
+
+            case 2:
+                group = ref new Microsoft::UI::Xaml::Tests::Common::GroupedHeader(L"Basketball");
+                VERIFY_IS_NOT_NULL(group);
+
+                group->Append(L"Allen Iverson");
+                group->Append(L"Dwayne Wade");
+                group->Append(L"LeBron James");
+                group->Append(L"Kevin Durant");
+                group->Append(L"Kobe Bryant");
+                break;
+            }
+
+            groupedData->Append(group);
+        }
+
+        return groupedData;
+    }
+
 
     bool StickyHeadersIntegrationTests::TestCleanup()
     {
@@ -54,7 +342,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::WindowHelper->WaitForIdle();
     }
 
-    void StickyHeadersIntegrationTests::StickyGroupHeadersListHeaderResized()
+    void StickyHeadersIntegrationTestsUap::StickyGroupHeadersListHeaderResized()
     {
         WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
         TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400.0f, 600.0f));
@@ -151,7 +439,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::InputHelper->DynamicRelease(PointerFinger::Finger1);
     }
 
-    void StickyHeadersIntegrationTests::ValidateHeaderStretchInItemsStackPanel()
+    void StickyHeadersIntegrationTestsUap::ValidateHeaderStretchInItemsStackPanel()
     {
         TestCleanupWrapper cleanup;
         auto listView = SetupGroupedListViewWithInlineHeaders(L"<ItemsStackPanel Orientation='Vertical' GroupHeaderPlacement='Top'/>");
@@ -177,7 +465,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void StickyHeadersIntegrationTests::ValidateHeaderStretchInItemsWrapGrid()
+    void StickyHeadersIntegrationTestsUap::ValidateHeaderStretchInItemsWrapGrid()
     {
         TestCleanupWrapper cleanup;
         auto gridView = SetupGroupedGridViewWithInlineHeaders(L"<ItemsWrapGrid Orientation='Vertical' GroupHeaderPlacement='Left'/>");

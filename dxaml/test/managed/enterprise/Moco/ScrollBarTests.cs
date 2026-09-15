@@ -71,6 +71,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
+        // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Hosting:Mode", "UAP")]
         [TestProperty("Ignore", "True")] // DCPP: Unreliable test: Controls.ScrollBarTests.ScrollBarExpandCollapseWithoutAnimation
         public void ScrollBarExpandCollapseWithoutAnimations()

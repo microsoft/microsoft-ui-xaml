@@ -25,12 +25,70 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool AppBarIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
 
         // Disable control state transitions to reduce test execution time.
         featureDisableTransitionsForTest.Initialize(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableTransitionsForTest, true);
         return true;
     }
+
+    bool AppBarIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        featureDisableTransitionsForTest.Initialize(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableTransitionsForTest, true);
+        return true;
+    }
+
+    bool AppBarIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool AppBarIntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    xaml_controls::Page^ AppBarIntegrationTestsUap::SetupTopBottomInlineAppBarsPage()
+    {
+        xaml_controls::Page^ page = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            auto topAppBar = ref new xaml_controls::AppBar();
+            auto bottomAppBar = ref new xaml_controls::AppBar();
+
+            auto panel = safe_cast<xaml_controls::StackPanel^>(xaml_markup::XamlReader::Load(
+                LR"(<StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                        <AppBar x:Name="inlineAppBar" VerticalAlignment="Center">
+                            <Rectangle Width="100" Height="60" HorizontalAlignment="Left" VerticalAlignment="Top" Fill="Orange"/>
+                        </AppBar>
+                    </StackPanel>)"));
+
+            page = TestServices::WindowHelper->SetupSimulatedAppPage();
+            page->TopAppBar = topAppBar;
+            page->BottomAppBar = bottomAppBar;
+            page->Content = panel;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        return page;
+    }
+
+    void AppBarIntegrationTestsUap::AttachOpenedAndClosedHandlers(
+        xaml_controls::AppBar^& appbar,
+        std::shared_ptr<Microsoft::UI::Xaml::Tests::Common::Event>& openedEvent,
+        SafeEventRegistrationType(xaml_controls::AppBar, Opened)& openedRegistration,
+        std::shared_ptr<Microsoft::UI::Xaml::Tests::Common::Event>& closedEvent,
+        SafeEventRegistrationType(xaml_controls::AppBar, Closed)& closedRegistration)
+    {
+        openedRegistration.Attach(appbar, [&](){ openedEvent->Set(); });
+        closedRegistration.Attach(appbar, [&](){ closedEvent->Set(); });
+    }
+
 
     bool AppBarIntegrationTests::TestSetup()
     {
@@ -210,7 +268,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void AppBarIntegrationTests::CanOpenAndCloseUsingKeyboard()
+    void AppBarIntegrationTestsUap::CanOpenAndCloseUsingKeyboard()
     {
         TestCleanupWrapper cleanup;
 

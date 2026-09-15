@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Foundation { namespace Input { namespace HitTest {
 
@@ -16,6 +17,7 @@ public:
 
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
         TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"aa6364d2-41fe-4bec-a849-584f1f309baf")
+        TEST_CLASS_HOSTING_MODE_DEFAULT()
     END_TEST_CLASS()
 
     TEST_CLASS_SETUP(ClassSetup)
@@ -40,7 +42,7 @@ public:
     TEST_METHOD(FindElementsInHostCoordinates3D)
 
     BEGIN_TEST_METHOD(FindElementsInHostCoordinatesWPF)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // By design - Tests that API throws without an explicit root element on WPF
+        // By design - Tests that API throws without an explicit root element on WPF
     END_TEST_METHOD()
 
     TEST_METHOD(GetGlobalBounds_LTEEscapesClips)
@@ -52,15 +54,35 @@ public:
 
     TEST_METHOD(ProjectionMakesConcavePolygon)
 
-    BEGIN_TEST_METHOD(FindElementsInHostCoordinates_SwapChainPanel)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Crash in test code
-    END_TEST_METHOD()
-    
     TEST_METHOD(FindElementsInHostCoordinates_BaseItemChrome)
     
 private:
     void CompareElementIterators(std::vector<UIElement^>& expected, ::Windows::Foundation::Collections::IIterable<UIElement^>^ actual);
     void FindElementsInHostCoordinatesCommon(bool include3D);
+};
+
+class GlobalBoundsTestsUap : public WEX::TestClass<GlobalBoundsTestsUap>
+{
+public:
+    BEGIN_TEST_CLASS(GlobalBoundsTestsUap)
+        TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+        TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+        TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+        TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"aa6364d2-41fe-4bec-a849-584f1f309baf")
+        TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"GlobalBoundsTests")
+        TEST_CLASS_HOSTING_MODE(UAP)
+    END_TEST_CLASS()
+
+    TEST_CLASS_SETUP(ClassSetup)
+    TEST_METHOD_SETUP(TestSetup)
+    TEST_METHOD_CLEANUP(TestCleanup)
+
+    BEGIN_TEST_METHOD(FindElementsInHostCoordinates_SwapChainPanel)
+        // Crash in test code
+    END_TEST_METHOD()
+
+private:
+    void CompareElementIterators(std::vector<UIElement^>& expected, ::Windows::Foundation::Collections::IIterable<UIElement^>^ actual);
 };
 
 } } } } } } }

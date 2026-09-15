@@ -48,10 +48,80 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             // input from being routed to the app. It will also wait for the
             // debugger to attach when the waitForDebugger runtime parameter is
             // specified.
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
 
             return true;
         }
+
+    bool NamingIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool NamingIntegrationTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml(ref new MetadataProvider());
+            return true;
+        }
+
+    bool NamingIntegrationTestsUap::TestCleanup()
+        {
+                test_infra::TestServices::WindowHelper->ShutdownXaml();
+                return true;
+        }
+
+void NamingIntegrationTestsUap::ItemsPanelTemplateNamescopeMemberNamRegistrationTest(bool shouldRegister)
+        {
+            TestCleanupWrapper cleanup;
+            GridView^ gridView = nullptr;
+
+            RunOnUIThread([&]()
+            {
+                auto page1 = ref new MyPage();
+                Application::LoadComponent(
+                    page1,
+                    ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/framework/naming/NamingPage.xaml"),
+                    Primitives::ComponentResourceLocation::Application);
+
+                TestServices::WindowHelper->WindowContent = page1;
+
+                gridView = safe_cast<GridView^>(page1->FindName(L"MyGridView"));
+                VERIFY_IS_NOT_NULL(gridView);
+            });
+
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                auto border = static_cast<FrameworkElement^>(VisualTreeHelper::GetChild(gridView, 0));
+                VERIFY_IS_NOT_NULL(border);
+                auto scrollViewer = static_cast<FrameworkElement^>(VisualTreeHelper::GetChild(border, 0));
+                VERIFY_IS_NOT_NULL(scrollViewer);
+                auto scrollViewerBorder = static_cast<FrameworkElement^>(VisualTreeHelper::GetChild(scrollViewer, 0));
+                VERIFY_IS_NOT_NULL(scrollViewerBorder);
+                auto scrollViewerGrid = static_cast<FrameworkElement^>(VisualTreeHelper::GetChild(scrollViewerBorder, 0));
+                VERIFY_IS_NOT_NULL(scrollViewerGrid);
+                auto scrollViewerContentPresenter = static_cast<FrameworkElement^>(VisualTreeHelper::GetChild(scrollViewerGrid, 0));
+                VERIFY_IS_NOT_NULL(scrollViewerContentPresenter);
+                auto itemsPresenter = static_cast<FrameworkElement^>(VisualTreeHelper::GetChild(scrollViewerContentPresenter, 0));
+                VERIFY_IS_NOT_NULL(itemsPresenter);
+                auto itemsPanel = static_cast<FrameworkElement^>(VisualTreeHelper::GetChild(itemsPresenter, 1));
+                VERIFY_IS_NOT_NULL(itemsPanel);
+                VERIFY_ARE_STRINGS_EQUAL(L"itemPanel", itemsPanel->Name->Data());
+
+                if (shouldRegister)
+                {
+                    VERIFY_IS_NOT_NULL(itemsPanel->FindName("itemPanel"));
+                }
+                else
+                {
+                    // Verify we can't find itemPanel when we search within itemPanel.
+                    VERIFY_IS_NULL(itemsPanel->FindName("itemPanel"));
+                }
+            });
+        }
+
 
         bool NamingIntegrationTests::TestSetup()
         {
@@ -424,7 +494,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             });
         }
 
-        void NamingIntegrationTests::UserControlWithinDataTemplateCanStillFindItsElements()
+        void NamingIntegrationTestsUap::UserControlWithinDataTemplateCanStillFindItsElements()
         {
             TestCleanupWrapper cleanup;
             FrameworkElement^ control = nullptr;
@@ -457,7 +527,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             });
         }
 
-        void NamingIntegrationTests::StoryboardCanResolveNamescopeOwnerViaMentor()
+        void NamingIntegrationTestsUap::StoryboardCanResolveNamescopeOwnerViaMentor()
         {
             TestCleanupWrapper cleanup;
             MyPage^ page1 = nullptr;
@@ -571,7 +641,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             });
         }
 
-        void NamingIntegrationTests::ItemsPanelTemplateNamescopeMembersDoRegisterTheirName()
+        void NamingIntegrationTestsUap::ItemsPanelTemplateNamescopeMembersDoRegisterTheirName()
         {
             ItemsPanelTemplateNamescopeMemberNamRegistrationTest(true);
         }

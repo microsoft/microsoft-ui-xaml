@@ -236,9 +236,41 @@ Platform::String^ VSISTests::GetResourcesPath() const
 
 bool VSISTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool VSISTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool VSISTestsUap::TestSetup()
+{
+    TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool VSISTestsUap::TestCleanup()
+{
+    TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+unsigned int VSISTestsUap::VerifySpriteVisualsCleanedUp(MockDComp::IMockDCompDevice2^ mockDevice2, unsigned int expected)
+{
+    unsigned int actual;
+    RunOnUIThread([&]()
+    {
+        mockDevice2->GetWUCSpriteVisualsEverUnparentedCount(&actual);
+        VERIFY_ARE_EQUAL(expected, actual);
+        LOG_OUTPUT(L">");
+    });
+    return actual;
+}
+
 
 bool VSISTests::TestSetup()
 {
@@ -468,7 +500,7 @@ void VSISTests::NegativeCases()
     });
 }
 
-void VSISTests::RegenerateVisual()
+void VSISTestsUap::RegenerateVisual()
 {
     auto wh = TestServices::WindowHelper;
     auto u = TestServices::Utilities;

@@ -50,7 +50,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool CaretBrowsingTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
 
@@ -67,12 +67,31 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             return true;
         }
 
-        void CaretBrowsingTests::TurnCaretBrowsingOffAndClicking()
+        bool CaretBrowsingTestsWpf::ClassSetup()
+        {
+            XAML_HOSTING_MODE_CLASS_SETUP();
+            return true;
+        }
+
+        bool CaretBrowsingTestsWpf::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+        bool CaretBrowsingTestsWpf::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+        void CaretBrowsingTestsWpf::TurnCaretBrowsingOffAndClicking()
         {
             TestCleanupWrapper cleanup;
             TextBlock^ textBlock;
             TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(800, 600));
-            CreateSingleLineTextBlock(textBlock);
+            CaretBrowsingTests::CreateSingleLineTextBlock(textBlock);
             TestServices::InputHelper->LeftMouseClick(textBlock);
             TestServices::WindowHelper->WaitForIdle();
 
@@ -99,7 +118,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void CaretBrowsingTests::TurnCaretBrowsingOnAndClicking()
+        void CaretBrowsingTestsWpf::TurnCaretBrowsingOnAndClicking()
         {
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
             auto testGuard = wil::scope_exit([] {
@@ -108,17 +127,17 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TextBlock^ textBlock;
             RichTextBlock^ richTextBlock;
             TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(800, 600));
-            CreateTextBlockAndRichTextBlock(richTextBlock, textBlock);
+            CaretBrowsingTests::CreateTextBlockAndRichTextBlock(richTextBlock, textBlock);
             TestServices::WindowHelper->WaitForIdle();
             TestServices::WindowHelper->SetCaretBrowsingModeGlobal(true, false);
             TestServices::InputHelper->LeftMouseClick(textBlock);
             TestServices::WindowHelper->WaitForIdle();
-            VerifyTextBlockCaretPosition(textBlock, 8);
+            CaretBrowsingTests::VerifyTextBlockCaretPosition(textBlock, 8);
             TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
 
             TestServices::InputHelper->LeftMouseClick(richTextBlock);
             TestServices::WindowHelper->WaitForIdle();
-            VerifyRichTextBlockCaretPosition(richTextBlock, 14);
+            CaretBrowsingTests::VerifyRichTextBlockCaretPosition(richTextBlock, 14);
             TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
         }
 
@@ -172,7 +191,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void CaretBrowsingTests::TurnCaretBrowsingOnAndClickingNonSelectable()
+        void CaretBrowsingTestsWpf::TurnCaretBrowsingOnAndClickingNonSelectable()
         {
             TestCleanupWrapper cleanup;
             auto testGuard = wil::scope_exit([] {
@@ -181,7 +200,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TextBlock^ textBlock;
             RichTextBlock^ richTextBlock;
             TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(800, 600));
-            CreateNonSelectableTBAndSelectableRTB(richTextBlock, textBlock);
+            CaretBrowsingTests::CreateNonSelectableTBAndSelectableRTB(richTextBlock, textBlock);
             TestServices::WindowHelper->SetCaretBrowsingModeGlobal(true, false);
             TestServices::InputHelper->LeftMouseClick(textBlock);
             TestServices::WindowHelper->WaitForIdle();
@@ -192,7 +211,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
             TestServices::InputHelper->LeftMouseClick(richTextBlock);
             TestServices::WindowHelper->WaitForIdle();
-            VerifyRichTextBlockCaretPosition(richTextBlock, 14);
+            CaretBrowsingTests::VerifyRichTextBlockCaretPosition(richTextBlock, 14);
         }
 
         void CaretBrowsingTests::TurnCaretBrowsingOnAndTabbingNonSelectable()
@@ -216,7 +235,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void CaretBrowsingTests::ShowCaretBrowsingDialogViaF7()
+        void CaretBrowsingTestsWpf::ShowCaretBrowsingDialogViaF7()
         {
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
             auto testGuard = wil::scope_exit([] {
@@ -273,10 +292,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             TestServices::InputHelper->LeftMouseClick(textBlock);
             TestServices::WindowHelper->WaitForIdle();
-            VerifyTextBlockCaretPosition(textBlock, 8);
+            CaretBrowsingTests::VerifyTextBlockCaretPosition(textBlock, 8);
         }
 
-        void CaretBrowsingTests::CaretBrowsingPermDisableViaF7Checkbox()
+        void CaretBrowsingTestsWpf::CaretBrowsingPermDisableViaF7Checkbox()
         {
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
             auto testGuard = wil::scope_exit([] {
@@ -960,7 +979,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         }
 
 
-        void CaretBrowsingTests::RemoveSelectionShowCaret()
+        void CaretBrowsingTestsWpf::RemoveSelectionShowCaret()
         {
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
             auto testGuard = wil::scope_exit([] {
@@ -968,7 +987,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
             TextBlock^ textBlock;
             TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(800, 600));
-            CreateSingleLineTextBlock(textBlock);
+            CaretBrowsingTests::CreateSingleLineTextBlock(textBlock);
             TestServices::WindowHelper->SetCaretBrowsingModeGlobal(true, false);
             TestServices::InputHelper->LeftMouseClick(textBlock);
             TestServices::WindowHelper->WaitForIdle();
@@ -988,7 +1007,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
             TestServices::KeyboardHelper->Left();
             TestServices::WindowHelper->WaitForIdle();
-            VerifyTextBlockCaretPosition(textBlock, savedOffset);
+            CaretBrowsingTests::VerifyTextBlockCaretPosition(textBlock, savedOffset);
             TestServices::WindowHelper->WaitForIdle();
             TestServices::KeyboardHelper->PressKeySequence(L"$d$_shift#$d$_right#$u$_right#$u$_shift");
             TestServices::WindowHelper->WaitForIdle();
@@ -996,7 +1015,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
             TestServices::KeyboardHelper->Right();
             TestServices::WindowHelper->WaitForIdle();
-            VerifyTextBlockCaretPosition(textBlock, savedOffset + 2);
+            CaretBrowsingTests::VerifyTextBlockCaretPosition(textBlock, savedOffset + 2);
             TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
         }
 
@@ -1072,7 +1091,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"18start"); // verify caret rendering at 18 start of line
         }
 
-        void CaretBrowsingTests::CaretMovingInTextBlockHyperLink()
+        void CaretBrowsingTestsWpf::CaretMovingInTextBlockHyperLink()
         {
             TestCleanupWrapper cleanup;
             auto testGuard = wil::scope_exit([] {
@@ -1105,15 +1124,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::InputHelper->LeftMouseClick(textBlock);
             TestServices::WindowHelper->WaitForIdle();
 
-            VerifyTextBlockCaretPosition(textBlock, 20);
+            CaretBrowsingTests::VerifyTextBlockCaretPosition(textBlock, 20);
             TestServices::KeyboardHelper->PressKeySequence(CTRL_HOME_KEY);   // move to home
             TestServices::WindowHelper->WaitForIdle();
-            VerifyTextBlockCaretPosition(textBlock, 2);
+            CaretBrowsingTests::VerifyTextBlockCaretPosition(textBlock, 2);
 
             for (int i = 0; i < 10; i++){  //moving
                 TestServices::KeyboardHelper->Right();
                 TestServices::WindowHelper->WaitForIdle();
-                VerifyTextBlockCaretPosition(textBlock, i + 3);
+                CaretBrowsingTests::VerifyTextBlockCaretPosition(textBlock, i + 3);
             }
             TestServices::KeyboardHelper->Tab();
             TestServices::WindowHelper->WaitForIdle();
@@ -1135,7 +1154,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
             TestServices::KeyboardHelper->Right();
             TestServices::WindowHelper->WaitForIdle();
-            VerifyTextBlockCaretPosition(textBlock, 52);
+            CaretBrowsingTests::VerifyTextBlockCaretPosition(textBlock, 52);
         }
 
         void CaretBrowsingTests::PopContentDialogTurnOnCaretBrowsing()

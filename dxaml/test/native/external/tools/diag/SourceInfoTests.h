@@ -4,6 +4,7 @@
 #pragma once
 
 #include "XamlDiagnosticsTestBase.h"
+#include <HostingModeTestClass.h>
 
 using namespace Microsoft::UI::Xaml::Controls;
 namespace wrl = Microsoft::WRL;
@@ -19,8 +20,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e22a917c-ad18-4a09-bff9-d3ca3e5ee0b8")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"IsolationLevel", L"Class")
-                TEST_CLASS_PROPERTY(L"Hosting:Mode", L"UAP")
                 TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+            TEST_CLASS_HOSTING_MODE(UAP)
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -32,7 +33,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             BEGIN_TEST_METHOD(TestSourceInfo)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully call into XamlDiagnostics and get source info.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // issue with adding Canvas to island and Enter does not gets called
+                // issue with adding Canvas to island and Enter does not gets called
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestSourceInfoOnEmptyElements)

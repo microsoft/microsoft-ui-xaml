@@ -19,9 +19,58 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool RegressionTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool RegressionTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool RegressionTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool RegressionTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+void RegressionTestsUap::ValidateAutomationFocus(Automation::AutomationClient::UIAElementInfo uiaInfo, wrl::ComPtr<AutomationClient::AutomationFocusChangeHandler> spAutomationFocusChangeHandler, bool waitingFocusChange)
+    {
+        // Gets automation properties from the UIAElemenInfo and the AutomationFocusChangeHandler to validate focus is on the provided UIAElement
+        wrl::ComPtr<IUIAutomationElement> spUIAutomationElement;
+        wrl::ComPtr<IUIAutomation> spUIAutomation;
+
+        auto spAutomationClientManager = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(uiaInfo);
+
+        spAutomationClientManager->GetAutomation(&spUIAutomation);
+        spAutomationClientManager->GetCurrentUIAutomationElement(&spUIAutomationElement);
+
+        if (waitingFocusChange)
+        {
+            spAutomationFocusChangeHandler->Confirm();
+        }
+
+        Common::AutoVariant autoVar;
+        Platform::String^ buttonName = nullptr;
+        Platform::String^ focusedElementName = nullptr;
+
+        spUIAutomationElement->GetCurrentPropertyValue(UIA_NamePropertyId, autoVar.ReleaseAndGetAddressOf());
+        buttonName = UIAutomationHelper::StringFromVariant(autoVar.Storage());
+
+        spAutomationFocusChangeHandler->GetLastFocusedElement()->GetCurrentPropertyValue(UIA_NamePropertyId, autoVar.ReleaseAndGetAddressOf());
+        focusedElementName = UIAutomationHelper::StringFromVariant(autoVar.Storage());
+
+        VERIFY_ARE_EQUAL(buttonName, focusedElementName);
+    }
+
 
     bool RegressionTests::TestSetup()
     {
@@ -113,7 +162,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void RegressionTests::VerifyAutomationFocusAfterSuspend()
+    void RegressionTestsUap::VerifyAutomationFocusAfterSuspend()
     {
         TestCleanupWrapper cleanup;
 
@@ -259,7 +308,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         ValidateAutomationFocus(uiaInfo3, spAutomationFocusChangeHandler, true);
     }
 
-    void RegressionTests::ValidateAutomationPeerHasFocusInAutomationFocusChangedEvent()
+    void RegressionTestsUap::ValidateAutomationPeerHasFocusInAutomationFocusChangedEvent()
     {
         // We want to verify the case where a control has a fully custom AutomationPeer (i.e. not derrived from FrameworkElementAutomationPeer).
         // When that AutomationPeer raises its AutomationFocusChanged in response to a call to SetFocus, it should report that it has focus

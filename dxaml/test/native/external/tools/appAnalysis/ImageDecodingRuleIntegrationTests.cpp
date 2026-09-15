@@ -83,10 +83,111 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool ImageDecodingRuleIntegrationTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
 
             return true;
         }
+
+    bool ImageDecodingRuleIntegrationTestsWpf::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ImageDecodingRuleIntegrationTestsWpf::TestSetup()
+        {
+            TestServices::WindowHelper->InitializeXaml(ref new MetadataProvider(), ref new CustomMetadataRegistrar<shared_types::CustomUserControl>());
+
+            return true;
+        }
+
+    bool ImageDecodingRuleIntegrationTestsWpf::TestCleanup()
+        {
+            TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+void ImageDecodingRuleIntegrationTestsWpf::MultipleImagesTestHelper(Platform::String^ pXamlPath, Platform::String^ pImagePath)
+        {
+            TestCleanupWrapper cleanup;
+
+            ::Windows::Foundation::Size size(400, 300);
+            TestServices::WindowHelper->SetWindowSizeOverride(size);
+
+            auto rootGrid = AppAnalysisTestHelpers::LoadXaml<Grid>(pXamlPath, AppAnalysisTestHelpers::LoadComponentOptions::DoNotPlaceInTree);
+            VERIFY_IS_NOT_NULL(rootGrid);
+
+            auto openedRegistration1 = CreateSafeEventRegistration(BitmapImage, ImageOpened);
+            auto openedRegistration2 = CreateSafeEventRegistration(BitmapImage, ImageOpened);
+            auto bitmapImage1OpenedEvent = std::make_shared<Event>();
+            auto bitmapImage2OpenedEvent = std::make_shared<Event>();
+
+            ::Windows::Foundation::Uri^ testUri;
+
+            RunOnUIThread([&]()
+            {
+                TestServices::WindowHelper->WindowContent = rootGrid;
+                auto testImage2 = safe_cast<Microsoft::UI::Xaml::Controls::Image^>(rootGrid->FindName(L"imageElement2"));
+                VERIFY_IS_NOT_NULL(testImage2);
+
+                testImage2->Stretch = Stretch::Fill;
+
+                auto bitmapImage2 = ref new BitmapImage();
+                VERIFY_IS_NOT_NULL(bitmapImage2);
+
+                testImage2->Source = bitmapImage2;
+
+                testUri = ref new Uri(pImagePath);
+                VERIFY_IS_NOT_NULL(testUri);
+
+                openedRegistration2.Attach(
+                    bitmapImage2,
+                    ref new xaml::RoutedEventHandler([bitmapImage2OpenedEvent](Platform::Object^ sender, xaml::RoutedEventArgs^)
+                {
+                    LOG_OUTPUT(L"BitmapImage2 Opened Event Fired");
+                    bitmapImage2OpenedEvent->Set();
+                }));
+
+                bitmapImage2->UriSource = testUri;
+            });
+
+            bitmapImage2OpenedEvent->WaitForDefault();
+
+            RunOnUIThread([&]()
+            {
+                auto testImage1 = safe_cast<Microsoft::UI::Xaml::Controls::Image^>(rootGrid->FindName(L"imageElement1"));
+                VERIFY_IS_NOT_NULL(testImage1);
+
+                testImage1->Stretch = Stretch::Fill;
+
+                auto bitmapImage1 = ref new BitmapImage();
+                VERIFY_IS_NOT_NULL(bitmapImage1);
+
+                testImage1->Source = bitmapImage1;
+
+                openedRegistration1.Attach(
+                    bitmapImage1,
+                    ref new xaml::RoutedEventHandler([bitmapImage1OpenedEvent](Platform::Object^ sender, xaml::RoutedEventArgs^)
+                {
+                    LOG_OUTPUT(L"BitmapImage1 Opened Event Fired");
+                    bitmapImage1OpenedEvent->Set();
+                }));
+
+                bitmapImage1->UriSource = testUri;
+            });
+
+            bitmapImage1OpenedEvent->WaitForDefault();
+
+
+            TestServices::WindowHelper->WaitForIdle();
+        }
+
+Platform::String^ ImageDecodingRuleIntegrationTestsWpf::GetResourcesPath() const
+        {
+            return "ms-appx:///resources/native/external/foundation/graphics/image/";
+        }
+
 
         bool ImageDecodingRuleIntegrationTests::ClassCleanup()
         {
@@ -196,7 +297,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         // catch the case where an image brush is used to fill an ellipse, but the
         // user specified the decode params
         //------------------------------------------------------------------------
-        void ImageDecodingRuleIntegrationTests::VerifyNoFireImageBrushInEllipseWithDecodeSize()
+        void ImageDecodingRuleIntegrationTestsWpf::VerifyNoFireImageBrushInEllipseWithDecodeSize()
         {
             TestCleanupWrapper cleanup;
 
@@ -388,7 +489,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         }
 
 
-        void ImageDecodingRuleIntegrationTests::VerifyMultipleImagesDifferentSizeSameUri()
+        void ImageDecodingRuleIntegrationTestsWpf::VerifyMultipleImagesDifferentSizeSameUri()
         {
             TestCleanupWrapper cleanup;
 

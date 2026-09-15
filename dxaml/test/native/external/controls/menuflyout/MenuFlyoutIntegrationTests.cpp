@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -33,7 +33,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool MenuFlyoutIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
 
         return true;
     }
@@ -45,6 +45,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     }
 
     bool MenuFlyoutIntegrationTests::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    bool MenuFlyoutIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+
+        return true;
+    }
+
+    bool MenuFlyoutIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool MenuFlyoutIntegrationTestsUap::TestCleanup()
     {
         test_infra::TestServices::WindowHelper->ShutdownXaml();
         TestServices::WindowHelper->VerifyTestCleanup();
@@ -1130,7 +1150,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         FlyoutHelper::HideFlyout(menuFlyout);
     }
 
-    void MenuFlyoutIntegrationTests::WideMenuFlyoutShouldAlignToLeftOfScreen()
+    void MenuFlyoutIntegrationTestsUap::WideMenuFlyoutShouldAlignToLeftOfScreen()
     {
         TestCleanupWrapper cleanup;
 
@@ -1928,7 +1948,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         FlyoutHelper::HideFlyout(menuFlyout);
     }
 
-    void MenuFlyoutIntegrationTests::ValidateNestedSubMenuItemPosition()
+    void MenuFlyoutIntegrationTestsUap::ValidateNestedSubMenuItemPosition()
     {
         TestCleanupWrapper cleanup;
 
@@ -2030,7 +2050,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         FlyoutHelper::HideFlyout(menuFlyout);
     }
 
-    void MenuFlyoutIntegrationTests::ValidateNestedSplitMenuItemPosition()
+    void MenuFlyoutIntegrationTestsUap::ValidateNestedSplitMenuItemPosition()
     {
         TestCleanupWrapper cleanup;
 
@@ -6512,7 +6532,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     // Shows the same MenuFlyout twice in a row, without closing it, attempting to position it beyond the screen's boundaries.
     // Ensures it is moved within the screen's boundaries.
-    void MenuFlyoutIntegrationTests::MenuFlyoutRemainsInBoundsWhenShownTwice()
+    void MenuFlyoutIntegrationTestsUap::MenuFlyoutRemainsInBoundsWhenShownTwice()
     {
         TestCleanupWrapper cleanup;
 
@@ -8515,6 +8535,204 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             
             menuFlyout->Hide();
         });
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+
+    // ---- Copied helpers for MenuFlyoutIntegrationTestsUap ----
+
+    void MenuFlyoutIntegrationTestsUap::InjectInput(InputMethod inputMethod) {
+        xaml::FrameworkElement^ rootPanel;
+        RunOnUIThread([&]()
+            {
+                rootPanel = safe_cast<xaml::FrameworkElement^>(TestServices::WindowHelper->WindowContent);
+            });
+
+        // Send some input of the appropriate type to the app.
+        // The placement of the menuflyout is affected by the most recently used input device type.
+        // Note: it is NOT sufficient at this time to simply set the last input type.  This is becuase the flyout present will explicitly query
+        //       the popup window to determine whether the keyboard focus or accelerators are being shown.  If they are, last input type is forced
+        //       to keyboard and if they aren't and last input type is keyboard, it will be changed to none.  So, make sure we do real input.
+        if (inputMethod == InputMethod::Mouse)
+        {
+            LOG_OUTPUT(L"Calling InputHelper->LeftMouseClick");
+            TestServices::InputHelper->LeftMouseClick(rootPanel);
+        }
+        else if (inputMethod == InputMethod::Touch)
+        {
+            LOG_OUTPUT(L"Calling InputHelper->Tap");
+            TestServices::InputHelper->Tap(rootPanel);
+        }
+        else if (inputMethod == InputMethod::Keyboard)
+        {
+            LOG_OUTPUT(L"Calling KeyboardHelper->PressKeySequence");
+            TestServices::KeyboardHelper->PressKeySequence(" ");
+        }
+        else if (inputMethod == InputMethod::Pen)
+        {
+            LOG_OUTPUT(L"Calling InputHelper->PenTap");
+            TestServices::InputHelper->PenTap(rootPanel);
+        }
+        else
+        {
+            WEX::Common::Throw::Exception(E_NOTIMPL);
+        }
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    xaml_controls::Canvas^ MenuFlyoutIntegrationTestsUap::SetupRootPanelForSubMenuTest()
+    {
+        xaml_controls::Canvas^ rootPanel = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            rootPanel = safe_cast<xaml_controls::Canvas^>(xaml_markup::XamlReader::Load(
+                L"<Canvas Background='RoyalBlue' "
+                L" xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' >"
+                L"    <Button x:Name='button1' Content='Button' Width='100' Height='50' Canvas.Left='50' Canvas.Top='50' />"
+                L"</Canvas>"));
+
+            TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        return rootPanel;
+    }
+
+    void MenuFlyoutIntegrationTestsUap::TapSubMenuItem(xaml_controls::MenuFlyoutSubItem^ subItem)
+    {
+        xaml_controls::MenuFlyoutPresenter^ menuFlyoutPresenter = nullptr;
+
+        auto lostFocusEvent = std::make_shared<Event>();
+        auto lostFocusRegistration = CreateSafeEventRegistration(xaml_controls::MenuFlyoutPresenter, LostFocus);
+
+        RunOnUIThread([&]()
+        {
+            menuFlyoutPresenter = GetCurrentPresenter();
+
+            lostFocusRegistration.Attach(
+                menuFlyoutPresenter,
+                ref new xaml::RoutedEventHandler(
+                [lostFocusEvent](Platform::Object^ sender, xaml::IRoutedEventArgs^)
+            {
+                lostFocusEvent->Set();
+            }));
+        });
+
+        TestServices::InputHelper->Tap(subItem);
+
+        lostFocusEvent->WaitForDefault();
+
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    // Navigate in and out of submenu using both directional and Space/Escape keys.
+    // Also test Gamepad functionality (using the internal Gamepad -> kb mapping).
+
+    void MenuFlyoutIntegrationTestsUap::TapSplitMenuItemSecondary(xaml_controls::SplitMenuFlyoutItem^ splitItem)
+    {
+        xaml_controls::MenuFlyoutPresenter^ menuFlyoutPresenter = nullptr;
+        xaml_controls::Button^ secondaryButton = nullptr;
+
+        auto lostFocusEvent = std::make_shared<Event>();
+        auto lostFocusRegistration = CreateSafeEventRegistration(xaml_controls::MenuFlyoutPresenter, LostFocus);
+
+        RunOnUIThread([&]()
+        {
+            menuFlyoutPresenter = GetCurrentPresenter();
+
+            lostFocusRegistration.Attach(
+                menuFlyoutPresenter,
+                ref new xaml::RoutedEventHandler(
+                [lostFocusEvent](Platform::Object^ sender, xaml::IRoutedEventArgs^)
+            {
+                lostFocusEvent->Set();
+            }));
+
+            // Find the secondary button in the visual tree
+            secondaryButton = dynamic_cast<xaml_controls::Button^>(TreeHelper::GetVisualChildByName(splitItem, L"SecondaryButton"));
+            VERIFY_IS_NOT_NULL(secondaryButton);
+        });
+
+        // Tap on the secondary button
+        TestServices::InputHelper->Tap(secondaryButton);
+
+        lostFocusEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    xaml_controls::MenuFlyoutSubItem^ MenuFlyoutIntegrationTestsUap::GetSubItem(wfc::IVector<xaml_controls::MenuFlyoutItemBase^>^ items)
+    {
+        xaml_controls::MenuFlyoutSubItem^  subItem = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            subItem = GetSubItem(items, items->Size - 1);
+        });
+
+        return subItem;
+    }
+
+    xaml_controls::MenuFlyoutSubItem^ MenuFlyoutIntegrationTestsUap::GetSubItem(wfc::IVector<xaml_controls::MenuFlyoutItemBase^>^ items, int index)
+    {
+        xaml_controls::MenuFlyoutSubItem^  subItem = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            subItem = safe_cast<xaml_controls::MenuFlyoutSubItem^>(items->GetAt(index));
+        });
+
+        return subItem;
+    }
+
+    xaml_controls::MenuFlyoutPresenter^ MenuFlyoutIntegrationTestsUap::GetCurrentPresenter()
+    {
+        xaml_controls::MenuFlyoutPresenter^ menuFlyoutPresenter = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            wfc::IVectorView<xaml_primitives::Popup^>^ popups = xaml_media::VisualTreeHelper::GetOpenPopupsForXamlRoot(
+                TestServices::WindowHelper->WindowContent->XamlRoot);
+
+            auto popup = popups->GetAt(0);
+            menuFlyoutPresenter = dynamic_cast<xaml_controls::MenuFlyoutPresenter^>(popup->Child);
+        });
+
+        return menuFlyoutPresenter;
+    }
+
+    void MenuFlyoutIntegrationTestsUap::ShowMenuFlyout(xaml_controls::MenuFlyout^ menuFlyout, xaml::UIElement^ relativeTo, float horizontalOffset, float verticalOffset, bool forceTapAsPreviousInputMessage)
+    {
+        auto openedEvent = std::make_shared<Event>();
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::MenuFlyout, Opened);
+
+        if (forceTapAsPreviousInputMessage)
+        {
+            XamlRoot^ xamlRoot = nullptr;
+            RunOnUIThread([&]()
+            {
+                xamlRoot = TestServices::WindowHelper->WindowContent->XamlRoot;
+            });
+
+            // Inject a tap. MenuFlyout looks different depending on how it was opened (mouse gives narrower padding than touch). We're
+            // opening a flyout with ShowAt, which just grabs the last input device type and uses that. Set it explicitly to tap so that
+            // the previous test doesn't mess up the state for this test. Use a test hook for this - tapping at arbitrary places can mess
+            // up focus and flyout state.
+            InjectInput(InputMethod::Touch);
+        }
+
+        RunOnUIThread([&]()
+        {
+            openedRegistration.Attach(menuFlyout, ref new wf::EventHandler<Platform::Object^>([openedEvent](Platform::Object^, Platform::Object^)
+            {
+                openedEvent->Set();
+            }));
+
+            menuFlyout->XamlRoot = TestServices::WindowHelper->WindowContent->XamlRoot;
+            menuFlyout->ShowAt(relativeTo, wf::Point(horizontalOffset, verticalOffset));
+        });
+
+        openedEvent->WaitForDefault();
         TestServices::WindowHelper->WaitForIdle();
     }
 

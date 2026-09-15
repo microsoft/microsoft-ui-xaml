@@ -24,9 +24,30 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool TextBoxPointerTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool TextBoxPointerTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool TextBoxPointerTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool TextBoxPointerTestsUap::TestCleanup()
+        {
+            TestServices::WindowHelper->WaitForIdle();
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
 
         bool TextBoxPointerTests::ClassCleanup()
         {
@@ -630,7 +651,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        void TextBoxPointerTests::CheckFiresManipulationEvents()
+        void TextBoxPointerTestsUap::CheckFiresManipulationEvents()
         {
             TestCleanupWrapper cleanup;
             TextBoxGenericTests<xaml_controls::TextBox>::CanFireManipulationEvents();

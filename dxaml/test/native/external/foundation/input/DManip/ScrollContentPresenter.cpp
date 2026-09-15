@@ -41,9 +41,36 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool ScrollContentPresenter::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool ScrollContentPresenterUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ScrollContentPresenterUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool ScrollContentPresenterUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+Platform::String^ ScrollContentPresenterUap::GetPathToFiles() const
+        {
+            // Get the deployment directory, and then append our test's directory to the end
+            auto deploymentDir = GetTestDeploymentDir();
+            return ref new Platform::String(deploymentDir + L"resources\\native\\external\\foundation\\input\\dmanip\\");
+        }
+
 
         bool ScrollContentPresenter::ClassCleanup()
         {
@@ -180,7 +207,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         // Test case: Tests alignment of ScrollContentPresenter content with a
         // Stretch alignment switched off and on within a ListView.
         //------------------------------------------------------------------------
-        void ScrollContentPresenter::StretchAlignmentInListView()
+        void ScrollContentPresenterUap::StretchAlignmentInListView()
         {
             WUCRenderingScopeGuardWithDManipHitTestVisual guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -268,7 +295,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         // Test case: Tests alignment of ScrollContentPresenter content inside an
         // unconstrained Flyout.
         //------------------------------------------------------------------------
-        void ScrollContentPresenter::StretchAlignmentInFlyout()
+        void ScrollContentPresenterUap::StretchAlignmentInFlyout()
         {
             WUCRenderingScopeGuardWithDManipHitTestVisual guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
 
