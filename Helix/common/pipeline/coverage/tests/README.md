@@ -18,9 +18,10 @@ inside this directory. A small executable replaces the coverage tool and
 vswhere. It records arguments, returns native exit codes, and creates fixture
 binaries, runtimes, and reports. Each run removes only its own fixture root.
 
-Most collector process operations, time, and pipe readiness are mocked. Three
-shutdown tests use owned native fixture processes and a unique pipe that withholds
-its reply, verifying wall-clock timeout, cleanup, and test-result preservation. An inert
+Collector startup and pipe readiness are mocked in most tests. Shutdown clients
+run as real processes to exercise Windows PowerShell exit-code handling and log
+capture. Three shutdown tests also run a collector fixture with a unique pipe that
+withholds its reply, verifying wall-clock timeout, cleanup, and test-result preservation. An inert
 `WinUI.Coverage.PipeAcl` type records ACL requests without loading Win32 code or
 changing any permissions. Always use a fresh process, not an existing collector
 session.

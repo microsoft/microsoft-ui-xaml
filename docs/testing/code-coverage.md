@@ -173,7 +173,9 @@ the .NET CLI installed. Build and merge images must provide the VS coverage tool
 Each slice starts a collector, invokes the unchanged test runner, and shuts down
 the collector in `finally`, including when tests throw. Shutdown has a 60-second
 wall-clock budget covering both the client and collector; stalled owned processes
-are terminated without replacing the test result. Collector failures produce
+are terminated without replacing the test result. The shutdown client uses
+`.NET Process.Start` to retain its exit code on Windows PowerShell, and both log
+streams are drained while it runs. Collector failures produce
 warnings and do not prevent test execution. Missing or empty merge input fails the
 coverage job rather than publishing an empty success report. A partial report can
 still be published when only some slices produce data; inspect all slice warnings.

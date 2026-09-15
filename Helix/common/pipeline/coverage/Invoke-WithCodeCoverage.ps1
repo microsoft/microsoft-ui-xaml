@@ -79,12 +79,21 @@ finally
     if ($collector)
     {
         $shutdown = $null
+        $shutdownOutput = $null
+        $shutdownError = $null
         try
         {
-            # The shutdown client can itself hang waiting for a collector response.
+            # Process.Start retains the handle; Windows PowerShell's Start-Process
+            # can lose ExitCode when the child exits before WaitForExit.
             $shutdownClock = [Diagnostics.Stopwatch]::StartNew()
-            $shutdown = Start-Process -FilePath $tool -ArgumentList @('shutdown', $sessionId) `
-                -PassThru -NoNewWindow -RedirectStandardOutput "$OutputFile.shutdown.log" -RedirectStandardError "$OutputFile.shutdown.err"
+            $startInfo = [Diagnostics.ProcessStartInfo]::new($tool, "shutdown $sessionId")
+            $startInfo.UseShellExecute = $false
+            $startInfo.CreateNoWindow = $true
+            $startInfo.RedirectStandardOutput = $true
+            $startInfo.RedirectStandardError = $true
+            $shutdown = [Diagnostics.Process]::Start($startInfo)
+            $shutdownOutput = $shutdown.StandardOutput.ReadToEndAsync()
+            $shutdownError = $shutdown.StandardError.ReadToEndAsync()
             if (-not $shutdown.WaitForExit($ShutdownTimeoutSeconds * 1000))
             {
                 throw "Coverage shutdown did not finish within $ShutdownTimeoutSeconds seconds."
@@ -117,8 +126,27 @@ finally
                     {
                         Stop-Process -Id $process.Id -ErrorAction Continue
                     }
-                    $process.Dispose()
                 }
+            }
+            try
+            {
+                if ($shutdownOutput -and $shutdownError)
+                {
+                    if (-not [Threading.Tasks.Task]::WaitAll([Threading.Tasks.Task[]]@($shutdownOutput, $shutdownError), 1000))
+                    {
+                        throw 'Coverage shutdown log streams did not close.'
+                    }
+                    [IO.File]::WriteAllText("$OutputFile.shutdown.log", $shutdownOutput.Result)
+                    [IO.File]::WriteAllText("$OutputFile.shutdown.err", $shutdownError.Result)
+                }
+            }
+            catch
+            {
+                Write-Host "##vso[task.logissue type=warning]Could not save coverage shutdown logs: $($_.Exception.Message)"
+            }
+            foreach ($process in @($shutdown, $collector))
+            {
+                if ($process) { $process.Dispose() }
             }
         }
     }

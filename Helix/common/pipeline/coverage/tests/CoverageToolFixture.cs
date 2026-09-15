@@ -21,6 +21,8 @@ internal static class CoverageToolFixture
         string root = Environment.GetEnvironmentVariable("WINUI_COVERAGE_TEST_ROOT");
         string mode = Environment.GetEnvironmentVariable("WINUI_COVERAGE_TEST_MODE");
         File.AppendAllText(Path.Combine(root, "calls.txt"), string.Join("\t", args) + Environment.NewLine);
+        if (args[0] == "shutdown")
+            File.WriteAllText(Path.Combine(root, "shutdown.pid"), System.Diagnostics.Process.GetCurrentProcess().Id.ToString());
 
         if (args[0] == "-latest")
         {
@@ -92,7 +94,12 @@ internal static class CoverageToolFixture
         }
 
         if (args[0] == "shutdown")
+        {
+            Console.Write(mode == "verbose-shutdown" ? new string('o', 262144) : "shutdown completed");
+            Console.Error.Write(mode == "verbose-shutdown" ? new string('e', 262144) :
+                mode == "fail-shutdown" ? "fixture shutdown failure" : "");
             return mode == "fail-shutdown" ? 26 : 0;
+        }
 
         if (args[0] == "test")
             return int.Parse(args[1]);
