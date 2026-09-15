@@ -144,6 +144,7 @@ namespace DirectUI
         void OnSetFocus();
         void RegisterDesktopWindowClass();
         void CreateDesktopWindow();
+        _Check_return_ HRESULT UpdateWindowWeakReference();
         _Check_return_ HRESULT RaiseWindowSizeChangedEvent();
         _Check_return_ HRESULT RaiseWindowActivatedEvent(_In_ const xaml::WindowActivationState state);
         _Check_return_ HRESULT RaiseWindowVisibilityChangedEvent(_In_ const BOOLEAN visible);
@@ -211,6 +212,9 @@ namespace DirectUI
         bool m_bIsClosed = false;
         bool m_bIsClosing = false;
         Window* m_dxamlWindowInstance = nullptr;
+        // Captured from the controlling owner when an event handler is registered.
+        wil::critical_section m_weakWindowLock;
+        ctl::WeakRefPtr m_weakWindow;
         DXamlCore* m_dxamlCoreNoRef = nullptr;
         bool m_bMinimizedOrHidden = false;
         bool m_bInitialWindowActivation = true;
