@@ -11,6 +11,8 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Microsoft.UI.Composition;
+using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.Web.WebView2.Core;
 
 using System;
@@ -204,6 +206,7 @@ namespace MUXControlsTestApp
             DragFromWebView2_DropTextTest,
             DragFromWebView2_DropLinkTest,
             DragFromWebView2_DropImageTest,
+            TransparentAcrylicBackdropTest,
             CustomConfiguration_BasicTest,
             CustomConfiguration_EnsureAgainAfterDefaultTest,
             CustomConfiguration_EnsureAgainAfterCustomTest
@@ -307,6 +310,48 @@ namespace MUXControlsTestApp
         bool _areWebviewElementsCleanedUp = false;
         bool _isApplicationLanguageOverrideSet = false;
         string _customUserDataFolder = string.Empty;
+        SystemBackdrop _previousWindowBackdrop;
+        DesktopAcrylicBackdrop _transparentAcrylicBackdrop;
+
+        const string TransparentAcrylicBackdropTestTitle = "Transparent Acrylic Backdrop Test";
+        const string TransparentAcrylicBackdropHtml = @"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>Transparent Acrylic Backdrop Test</title>
+    <style>
+        html, body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            overflow: hidden;
+            font-family: sans-serif;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .message {
+            padding: 16px 24px;
+            border: 2px solid rgba(255, 255, 255, 0.85);
+            border-radius: 12px;
+            color: white;
+            background: rgba(0, 0, 0, 0.2);
+            font-size: 28px;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(0px);
+        }
+    </style>
+</head>
+<body>
+    <div class='message'>Acrylic should be visible through this WebView2</div>
+</body>
+</html>";
 
         double _originalHeight;
         double _originalWidth;
@@ -549,8 +594,10 @@ namespace MUXControlsTestApp
             AnaheimFocusTextBox.Text = string.Empty;
         }
 
-        private void TestNameComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void TestNameComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            ResetTransparentAcrylicBackdropTest();
+
             // if there are more webviews than just default one, remove them
             if (WebView2Collection.Children.Count > 1)
             {
@@ -799,6 +846,12 @@ namespace MUXControlsTestApp
                     }
                     break;
 
+                case TestList.TransparentAcrylicBackdropTest:
+                    {
+                        await ConfigureTransparentAcrylicBackdropTestAsync(MyWebView2);
+                    }
+                    break;
+
                 case TestList.CustomConfiguration_BasicTest:
                 case TestList.CustomConfiguration_EnsureAgainAfterCustomTest:
                     {
@@ -943,6 +996,46 @@ namespace MUXControlsTestApp
             }
         } 
 
+        Color GetDefaultWebViewBackgroundColor()
+        {
+            ApplicationTheme appTheme = Application.Current.RequestedTheme;
+            return (appTheme == ApplicationTheme.Light) ? Colors.White : Colors.Black;
+        }
+
+        async Task ConfigureTransparentAcrylicBackdropTestAsync(WebView2 webView)
+        {
+            if (!ReferenceEquals(App.CurrentWindow.SystemBackdrop, _transparentAcrylicBackdrop))
+            {
+                _previousWindowBackdrop = App.CurrentWindow.SystemBackdrop;
+            }
+
+            _transparentAcrylicBackdrop ??= new DesktopAcrylicBackdrop();
+            App.CurrentWindow.SystemBackdrop = _transparentAcrylicBackdrop;
+
+            webView.DefaultBackgroundColor = Colors.Transparent;
+            await webView.EnsureCoreWebView2Async();
+            webView.NavigateToString(TransparentAcrylicBackdropHtml);
+
+            Status1.Text = "Window backdrop: Acrylic";
+            Status2.Text = "WebView background: Transparent";
+            Status3.Text = "Acrylic should be visible";
+        }
+
+        void ResetTransparentAcrylicBackdropTest()
+        {
+            var myWebView2 = FindName("MyWebView2") as WebView2;
+            if (myWebView2 != null)
+            {
+                myWebView2.DefaultBackgroundColor = GetDefaultWebViewBackgroundColor();
+            }
+
+            if (ReferenceEquals(App.CurrentWindow.SystemBackdrop, _transparentAcrylicBackdrop) || _previousWindowBackdrop != null)
+            {
+                App.CurrentWindow.SystemBackdrop = _previousWindowBackdrop;
+                _previousWindowBackdrop = null;
+            }
+        }
+
         void AddWebViewControl(string webviewName)
         {
             if (FindName(webviewName) != null)
@@ -975,13 +1068,11 @@ namespace MUXControlsTestApp
             stackPanelText.Children.Add(textBlock);
             stackPanelText.Children.Add(toggleSwitch);
 
-            ApplicationTheme appTheme = Application.Current.RequestedTheme;
-            Color backgroundColor = (appTheme == ApplicationTheme.Light) ? Colors.White : Colors.Black;
             var webView2 = new WebView2()
             {
                 Name = webviewName,
                 Margin = new Thickness(8, 8, 8, 8),
-                DefaultBackgroundColor = backgroundColor
+                DefaultBackgroundColor = GetDefaultWebViewBackgroundColor()
             };
             AutomationProperties.SetName(webView2, webviewName);
 
@@ -2073,6 +2164,17 @@ namespace MUXControlsTestApp
                         }
                         break;
 
+                    case TestList.TransparentAcrylicBackdropTest:
+                        {
+                            logger.Verify(MyWebView2.DefaultBackgroundColor == Colors.Transparent,
+                                string.Format("Test {0}: Failed, expected MyWebView2.DefaultBackgroundColor to be Transparent.", selectedTest));
+                            logger.Verify(App.CurrentWindow.SystemBackdrop is DesktopAcrylicBackdrop,
+                                string.Format("Test {0}: Failed, expected App.CurrentWindow.SystemBackdrop to be DesktopAcrylicBackdrop.", selectedTest));
+                            logger.Verify(GetDocumentTitle(MyWebView2) == TransparentAcrylicBackdropTestTitle,
+                                string.Format("Test {0}: Failed, expected document title to be {1}.", selectedTest, TransparentAcrylicBackdropTestTitle));
+                        }
+                        break;
+
                     case TestList.CustomConfiguration_BasicTest:
                         {
                             // Create a custom environment
@@ -2401,6 +2503,8 @@ namespace MUXControlsTestApp
 
         async public void CleanupCurrentTest(object sender, RoutedEventArgs args)
         {
+            ResetTransparentAcrylicBackdropTest();
+
             // Ensure any WebViewElements are destroyed + removed from UIA tree prior to signaling test completion 
             // to avoid impacting next test.
             await CleanupWebViewElements();
