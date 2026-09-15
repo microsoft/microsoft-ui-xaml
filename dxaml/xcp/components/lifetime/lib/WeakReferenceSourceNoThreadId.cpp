@@ -906,11 +906,7 @@ WeakReferenceSourceNoThreadId::UnregisterPtr(DirectUI::TrackerTargetReference* p
         m_trackers->erase(std::find(m_trackers->begin(), m_trackers->end(), pTrackerPtr));
 
 #if XCP_MONITOR
-        auto itr = std::find_if(m_trackers->begin(), m_trackers->end(), [](DirectUI::TrackerTargetReference* ptr) {
-            return ptr && ptr->IsSet();
-        });
-
-        if (itr == m_trackers->end())
+        if (m_trackers->empty())
         {
             m_trackers.reset();
         }
