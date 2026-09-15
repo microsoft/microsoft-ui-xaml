@@ -47,7 +47,7 @@ configuration:
     eventResponderTasks:
 
     - description: Declined PR
-      if:
+      if: 
       - payloadType: Pull_Request
       - labelAdded:
           label: declined
@@ -107,8 +107,8 @@ configuration:
           label: needs-triage
 
 
-    - description: Add needs-triage to closed item if commented on by external user
-      if: 
+      description: Add needs-triage to closed item if commented on by external user
+    - if: 
       - payloadType: Issue_Comment
       - not: isOpen
       - not:
@@ -119,22 +119,6 @@ configuration:
               permission: Admin
       then:
       - addLabel:
-          label: needs-triage
-
-
-    - description: Remove needs-triage from closed item if commented on by a maintainer
-      if:
-      - payloadType: Issue_Comment
-      - not: isOpen
-      - hasLabel:
-          label: needs-triage
-      - or:
-        - activitySenderHasPermission:
-            permission: Write
-        - activitySenderHasPermission:
-            permission: Admin
-      then:
-      - removeLabel:
           label: needs-triage
 
 
@@ -183,6 +167,23 @@ configuration:
       then:
       - addLabel:
           label: needs-triage
+      
+
+    - description: Remove needs-author-feedback after comment from author and add needs-triage
+      if:
+      - payloadType: Issue_Comment
+      - isAction:
+          action: Created
+      - isActivitySender:
+          issueAuthor: True
+      - hasLabel:
+          label: needs-author-feedback
+      - isOpen
+      then:
+      - addLabel:
+          label: needs-triage
+      - removeLabel:
+          label: needs-author-feedback
       
 
     - description: Remove no-recent-activity from issue

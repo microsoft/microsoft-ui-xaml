@@ -66,7 +66,7 @@ We also need to monitor:
 ## Bot rules
 
 1. New and re-opened issues get `needs-triage` label added
-1. Changing `team-...` labels does not add `needs-triage`; triage status is managed explicitly by the issue lifecycle rules.
+1. `needs-triage` label is added whenever `team-...` labels change so that the new team sees the status change on the issue.
 1. If `feature proposal` is added or removed it gets added/removed from the feature tracking project board accordingly.
 1. If `declined` is added, bot adds a friendly message and closes.
 1. Tags issues/PR with release announcement.
@@ -76,3 +76,4 @@ We also need to monitor:
 1. Remove `needs-triage` label when an issue is closed.
 1. Remove `needs-triage` when a closed issue has a reply by someone with write access to the repo.
 1. Replace `needs-author-feedback` label with `needs-assignee-attention` (if assigned) or `needs-triage` (if unassigned).
+
