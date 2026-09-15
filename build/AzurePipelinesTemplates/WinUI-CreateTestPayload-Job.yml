@@ -176,8 +176,10 @@ jobs:
       inputs:
         targetType: inline
         script: |
-          # Test apps can carry an earlier link from the component package.
-          # Use the final product DLLs that match this build's published symbols.
+          # Test apps can carry component-package DLLs from an earlier link.
+          # Even with identical machine code, their PDB GUID/age can differ.
+          # Coverage downloads only the final product PDBs, so use their matching
+          # DLLs for every loose payload copy before instrumentation.
           foreach ($module in @('Microsoft.ui.xaml.dll', 'Microsoft.UI.Xaml.Controls.dll'))
           {
               $source = Get-Item -LiteralPath "$(artifactsDir)\drop\$(buildFlavor)\Product\$module"
