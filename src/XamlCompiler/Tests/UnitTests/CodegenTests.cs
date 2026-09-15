@@ -29,50 +29,50 @@ namespace UnitTests
             _testHelper = new TestHelper();
         }
 
-        private static void DiffFiles(string codegenFile, string masterFile, List<string> forbiddenLines)
+        private static void DiffFiles(string actualFile, string expectedFile, List<string> forbiddenLines)
         {
-            string diffCommand = $"bcomp \"{codegenFile}\" \"{masterFile}\"";
+            string diffCommand = $"bcomp \"{actualFile}\" \"{expectedFile}\"";
 
-            FileInfo codegenFileInfo = new FileInfo(codegenFile);
-            FileInfo masterFileInfo = new FileInfo(masterFile);
+            FileInfo actualFileInfo = new FileInfo(actualFile);
+            FileInfo expectedFileInfo = new FileInfo(expectedFile);
 
-            using (var codegenReader = codegenFileInfo.OpenText())
+            using (var actualReader = actualFileInfo.OpenText())
             {
-                using (var masterReader = masterFileInfo.OpenText())
+                using (var expectedReader = expectedFileInfo.OpenText())
                 {
-                    string codegenLine;
-                    string masterLine;
+                    string actualLine;
+                    string expectedLine;
                     do
                     {
-                        if (codegenReader.EndOfStream || masterReader.EndOfStream)
+                        if (actualReader.EndOfStream || expectedReader.EndOfStream)
                         {
                             // If one of them is EOS, then both should be EOS.
-                            Assert.AreEqual(codegenReader.EndOfStream, masterReader.EndOfStream,
+                            Assert.AreEqual(expectedReader.EndOfStream, actualReader.EndOfStream,
                                 $"File lengths differ: {diffCommand}");
                             break;
                         }
 
-                        codegenLine = codegenReader.ReadLine();
-                        masterLine = masterReader.ReadLine();
+                        actualLine = actualReader.ReadLine();
+                        expectedLine = expectedReader.ReadLine();
 
-                        if (codegenLine != masterLine && !IsException(codegenLine))
+                        if (actualLine != expectedLine && !IsException(actualLine))
                         {
-                            Assert.AreEqual(codegenLine, masterLine, 
+                            Assert.AreEqual(expectedLine, actualLine,
                                 $"Files are different: {diffCommand}");
                         }
 
-                        if (forbiddenLines != null && codegenLine != null)
+                        if (forbiddenLines != null && actualLine != null)
                         {
                             foreach (string forbiddenLine in forbiddenLines)
                             {
-                                if (codegenLine.Contains(forbiddenLine))
+                                if (actualLine.Contains(forbiddenLine))
                                 {
-                                    Assert.Fail($"File {codegenFile} contains version-forbidden string '{forbiddenLine}'. {diffCommand}");
+                                    Assert.Fail($"File {actualFile} contains version-forbidden string '{forbiddenLine}'. {diffCommand}");
                                 }
                             }
                         }
                     }
-                    while (codegenLine != null);
+                    while (actualLine != null);
                 }
             }
         }
@@ -131,41 +131,163 @@ namespace UnitTests
 
         private static void DiffCodegen(string targetDir, List<string> forbiddenLines = null)
         {
-            /* This method is passed in a subdirectory to diff all codegenned files against (including its own children directories).
-             * The path is relative to XAMLCompiler\Tests.  E.g. to diff BindTestbedCS's Debug x86 build, targetDir would be
-             * "RegressionProjects\Features\CompiledBinding\BindTestbedCS\obj\x86\Debug".  This method would then check the generated files there against
-             * the corresponding masters in XAMLCompiler\TestMasters\RegressionProjects\Features\CompiledBinding\BindTestbedCS\obj\x86\Debug.
+            /* targetDir is the master-path key in CodegenTargets.txt. The manifest maps it to the
+             * independent $(GeneratedFilesDir) path used by this test and copynewmasters.cmd.
              */
+            string masterDir = NormalizePath(targetDir);
 
-            //Get the directory where the solution is located (XAMLCompiler).  Tests are run from XAMLCompiler\Tests\UnitTests\UnitTestingBin,
-            //so we need to get the great-grandparent of the current directory to get there.
-            var solutionDir = FindSolutionDir(new DirectoryInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)));
-            Assert.AreEqual(solutionDir.Name, "XAMLCompiler", true);
+            string codegenDir;
+            Assert.IsTrue(CodegenTargets.Value.TryGetValue(masterDir, out codegenDir),
+                $"'{masterDir}' is not listed in {CodegenTargetsFileName}. Add it there, so that this " +
+                "test and copynewmasters.cmd agree on where its codegen is written.");
 
-            string codegenDir = Path.Combine(solutionDir.FullName, "Tests", targetDir);
-            string mastersDir = Path.Combine(solutionDir.FullName, "TestMasters", targetDir);
+            string codegenPath = Path.Combine(CodegenRoot.Value, codegenDir);
+            string mastersPath = Path.Combine(MastersRoot.Value, masterDir);
 
-            DiffCodegenDirs(codegenDir, mastersDir, forbiddenLines);
+            // Require codegen to actually be there. Without this, a project that failed to build
+            // leaves an empty directory behind and the diff below passes over nothing at all,
+            // turning a broken build into a green test. copynewmasters.cmd makes the same check
+            // before it accepts a target.
+            Assert.IsTrue(Directory.Exists(codegenPath) && Directory.EnumerateFiles(codegenPath, "*.g.*", SearchOption.AllDirectories).Any(),
+                $"No codegen in '{codegenPath}'. Build the project behind '{masterDir}' before running this test.");
+
+            DiffCodegenDirs(codegenPath, mastersPath, forbiddenLines);
         }
 
-        private static DirectoryInfo FindSolutionDir(DirectoryInfo currentDirectory)
+        private const string CodegenTargetsFileName = "CodegenTargets.txt";
+
+        private static readonly Lazy<Dictionary<string, string>> CodegenTargets =
+            new Lazy<Dictionary<string, string>>(LoadCodegenTargets);
+
+        private static readonly Lazy<BuildOutputLocation> BuildOutput =
+            new Lazy<BuildOutputLocation>(() =>
+            {
+                BuildOutputLocation location = FindBuildOutput();
+                Assert.IsNotNull(location,
+                    $"Cannot locate BuildOutput above '{TestBinDir}'; the codegen tests need a built enlistment.");
+                return location;
+            });
+
+        /// <summary>
+        /// Where the regression projects' codegen is, for the flavor this test assembly belongs to.
+        /// It is derived from the test assembly's own path rather than from the build environment,
+        /// which is not set under every test runner. Codegen always lives under BuildOutput\obj, even
+        /// when the test assembly itself was binplaced to BuildOutput\bin.
+        /// </summary>
+        private static readonly Lazy<string> CodegenRoot = new Lazy<string>(() =>
+            Path.Combine(BuildOutput.Value.BuildOutputDir, "obj", BuildOutput.Value.Flavor));
+
+        /// <summary>
+        /// The masters in the enlistment are preferred, so that a copynewmasters.cmd run takes effect
+        /// without rebuilding this project. The copy staged next to the test assembly is the fallback,
+        /// and is what a test payload on another machine has.
+        /// </summary>
+        private static readonly Lazy<string> MastersRoot = new Lazy<string>(() =>
+            Path.Combine(
+                FindInEnlistmentOrNextToTests(@"src\XamlCompiler\TestMasters", "TestMasters", Directory.Exists),
+                "RegressionProjects",
+                GetBuildType(BuildOutput.Value.Flavor)));
+
+        private static Dictionary<string, string> LoadCodegenTargets()
         {
-            if (currentDirectory == null)
+            string targetsFile = FindInEnlistmentOrNextToTests(
+                @"src\XamlCompiler\Tests\UnitTests\" + CodegenTargetsFileName, CodegenTargetsFileName, File.Exists);
+
+            var targets = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (string rawLine in File.ReadAllLines(targetsFile))
             {
-                throw new ArgumentNullException("Cannot find the XamlCompiler sollution directory");
+                string line = rawLine.Trim();
+                if (line.Length == 0 || line.StartsWith("#"))
+                {
+                    continue;
+                }
+
+                int separator = line.IndexOf('|');
+                Assert.AreNotEqual(-1, separator, $"Malformed line in '{targetsFile}': '{rawLine}'");
+                targets[NormalizePath(line.Substring(0, separator))] = NormalizePath(line.Substring(separator + 1));
             }
-            if (currentDirectory.GetFiles("XamlCompiler.sln").Length > 0)
+
+            return targets;
+        }
+
+        private static string FindInEnlistmentOrNextToTests(string enlistmentRelativePath, string localName, Func<string, bool> exists)
+        {
+            BuildOutputLocation location = FindBuildOutput();
+            if (location != null)
             {
-                return currentDirectory;
+                string enlisted = Path.Combine(location.EnlistmentRoot, enlistmentRelativePath);
+                if (exists(enlisted))
+                {
+                    return enlisted;
+                }
             }
-            return FindSolutionDir(currentDirectory.Parent);
+
+            string staged = Path.Combine(TestBinDir, localName);
+            Assert.IsTrue(exists(staged),
+                $"Cannot find '{enlistmentRelativePath}' in the enlistment, nor '{localName}' next to the test assembly.");
+            return staged;
+        }
+
+        private sealed class BuildOutputLocation
+        {
+            public string EnlistmentRoot { get; set; }
+            public string BuildOutputDir { get; set; }
+            public string Flavor { get; set; }
+        }
+
+        private static BuildOutputLocation FindBuildOutput()
+        {
+            var directory = new DirectoryInfo(TestBinDir);
+            while (directory != null)
+            {
+                DirectoryInfo parent = directory.Parent;
+                if (parent != null && parent.Parent != null &&
+                    string.Equals(parent.Parent.Name, "BuildOutput", StringComparison.OrdinalIgnoreCase) &&
+                    (string.Equals(parent.Name, "obj", StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(parent.Name, "bin", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return new BuildOutputLocation
+                    {
+                        EnlistmentRoot = parent.Parent.Parent.FullName,
+                        BuildOutputDir = parent.Parent.FullName,
+                        Flavor = directory.Name,
+                    };
+                }
+
+                directory = parent;
+            }
+
+            return null;
+        }
+
+        private static string TestBinDir
+        {
+            get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); }
+        }
+
+        private static string NormalizePath(string path)
+        {
+            return path.Trim().Replace('/', '\\').Trim('\\');
+        }
+
+        private static string GetBuildType(string flavor)
+        {
+            string buildType = flavor.Length >= 3 ? flavor.Substring(flavor.Length - 3) : string.Empty;
+            Assert.IsTrue(
+                string.Equals(buildType, "chk", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(buildType, "fre", StringComparison.OrdinalIgnoreCase),
+                $"Build output flavor '{flavor}' does not end in chk or fre.");
+            return buildType.ToLowerInvariant();
         }
 
         private static bool IsException(string line)
         {
-            // This line contains a path which is ok to be different.
+            // Lines that legitimately differ from their master, because they carry a checksum or a
+            // tool version. tools\fixmasters\fixmasters.cs truncates the same set when a master is
+            // taken, so the two must be kept in agreement.
             if (line.StartsWith("#pragma checksum \"") ||
-                line.StartsWith("#ExternalChecksum(\""))
+                line.StartsWith("#ExternalChecksum(\"") ||
+                line.StartsWith("// WARNING: Please don't edit this file"))
             {
                 return true;
             }
@@ -177,38 +299,27 @@ namespace UnitTests
         //
 
         [TestMethod]
-        [Ignore]
         public void Codegen_BasicCppWinRT()
         {
-            DiffCodegen(@"RegressionProjects\Basic\CppWinRT\Simple\Generated Files");
+            DiffCodegen(@"Basic\CppWinRT\Simple\Generated Files");
         }
 
-        [Ignore]
         [TestMethod]
         public void Codegen_BasicCS()
         {
-            DiffCodegen(@"RegressionProjects\Basic\CSharp\Simple\obj\x86\Debug");
+            DiffCodegen(@"Basic\CSharp\Simple\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
-        public void Codegen_BasicCX()
+        public void Codegen_EventHandlingCppWinRT()
         {
-            DiffCodegen(@"RegressionProjects\Basic\VC\Simple\Generated Files");
+            DiffCodegen(@"Basic\CppWinRT\EventHandling_968976\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
-        public void Codegen_EventHandlingCX()
+        public void Codegen_NonStandardCppWinRT()
         {
-            DiffCodegen(@"RegressionProjects\Basic\VC\EventHandling_968976\Generated Files");
-        }
-
-        [TestMethod]
-        [Ignore]
-        public void Codegen_BasicVB()
-        {
-            DiffCodegen(@"RegressionProjects\Basic\VisualBasic\Simple\obj\x86\Debug");
+            DiffCodegen(@"NonStandard\NonStandardCppWinRT\NonStandardCppWinRT\Generated Files");
         }
 
         //
@@ -216,67 +327,33 @@ namespace UnitTests
         //
 
         [TestMethod]
-        [Ignore]
-        // Behaviors SDK no longer ships with VS 2017
-        public void Codegen_VC_Old_Behaviors_SDK()
-        {
-            DiffCodegen(@"RegressionProjects\Basic\OldPlatformsReferences\VC_Old_Behaviors_SDK\VC_Exe\Generated Files");
-        }
-
-        [TestMethod]
-        [Ignore]
         public void Codegen_References_CSExe()
         {
-            DiffCodegen(@"RegressionProjects\Basic\References\CSharpExe\obj\x86\Debug");
+            DiffCodegen(@"Basic\References\CSharpExe\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_References_CSLib()
         {
-            DiffCodegen(@"RegressionProjects\Basic\References\CSharpLib\obj\x86\Debug");
+            DiffCodegen(@"Basic\References\CSharpLib\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_References_CSWinRT()
         {
-            DiffCodegen(@"RegressionProjects\Basic\References\CSharpWinrtComponent\obj\x86\Debug");
+            DiffCodegen(@"Basic\References\CSharpWinrtComponent\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
-        public void Codegen_References_VBExe()
+        public void Codegen_References_CppWinRTExe()
         {
-            DiffCodegen(@"RegressionProjects\Basic\References\VBExe\obj\x86\Debug");
+            DiffCodegen(@"Basic\References\CppWinRTExe\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
-        public void Codegen_References_VBLib()
+        public void Codegen_References_CppWinRTComponent()
         {
-            DiffCodegen(@"RegressionProjects\Basic\References\VBLib\obj\x86\Debug");
-        }
-
-        [TestMethod]
-        [Ignore]
-        public void Codegen_References_VBWinRT()
-        {
-            DiffCodegen(@"RegressionProjects\Basic\References\VBWinrtComponent\obj\x86\Debug");
-        }
-
-        [TestMethod]
-        [Ignore]
-        public void Codegen_References_CXExe()
-        {
-            DiffCodegen(@"RegressionProjects\Basic\References\VCExe\Generated Files");
-        }
-
-        [TestMethod]
-        [Ignore]
-        public void Codegen_References_CXWinRT()
-        {
-            DiffCodegen(@"RegressionProjects\Basic\References\VCWinrtComponent\Generated Files");
+            DiffCodegen(@"Basic\References\CppWinRTComponent\Generated Files");
         }
 
         //
@@ -284,76 +361,27 @@ namespace UnitTests
         //
 
         [TestMethod]
-        [Ignore]
         public void Codegen_BindtestbedCS()
         {
-            DiffCodegen(@"RegressionProjects\Features\CompiledBinding\BindTestbedCS\obj\x86\Debug");
+            DiffCodegen(@"Features\CompiledBinding\BindTestbedCS\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
-        public void Codegen_BindtestbedVB()
-        {
-            DiffCodegen(@"RegressionProjects\Features\CompiledBinding\BindTestbedVB\obj\x86\Debug");
-        }
-
-        [TestMethod]
-        [Ignore]
-        public void Codegen_BindtestbedCX()
-        {
-            DiffCodegen(@"RegressionProjects\Features\CompiledBinding\BindTestbedCX\Generated Files");
-        }
-
-        [TestMethod]
-        [Ignore]
-        public void Codegen_BindtestbedCXIncremental()
-        {
-            DiffCodegen(@"RegressionProjects\Features\CompiledBinding\BindTestbedCX\Incremental\Generated Files");
-        }
-
-        [TestMethod]
-        [Ignore]
         public void Codegen_BindtestbedCppWinRT()
         {
-            DiffCodegen(@"RegressionProjects\Features\CompiledBinding\BindTestbedCppWinRT\Generated Files");
+            DiffCodegen(@"Features\CompiledBinding\BindTestbedCppWinRT\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_BindTestbedCppWinRTIncremental()
         {
-            DiffCodegen(@"RegressionProjects\Features\CompiledBinding\BindTestbedCppWinRT\Incremental\Generated Files");
+            DiffCodegen(@"Features\CompiledBinding\BindTestbedCppWinRT\Incremental\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
-        public void Codegen_BindPhasingTestbedCX()
+        public void Codegen_BindPhasingTestbedCppWinRT()
         {
-            DiffCodegen(@"RegressionProjects\Features\BindPhasingTestBedCpp\BindPhasingTestBedCpp\Generated Files");
-        }
-
-        //
-        // BindTestbed backcompat RS1 tests
-        //
-        [TestMethod]
-        [Ignore]
-        public void Codegen_BindtestbedCS_RS1()
-        {
-            DiffCodegen(@"RegressionProjects\Features\CompiledBinding\BindTestbedBackcompat\RS1\BindTestbedCS\obj\x86\Debug", ForbiddenCodegen.RS1);
-        }
-
-        [TestMethod]
-        [Ignore]
-        public void Codegen_BindtestbedVB_RS1()
-        {
-            DiffCodegen(@"RegressionProjects\Features\CompiledBinding\BindTestbedBackcompat\RS1\BindTestbedVB\obj\x86\Debug", ForbiddenCodegen.RS1);
-        }
-
-        [TestMethod]
-        [Ignore]
-        public void Codegen_BindtestbedCX_RS1()
-        {
-            DiffCodegen(@"RegressionProjects\Features\CompiledBinding\BindTestbedBackcompat\RS1\BindTestbedCX\Generated Files", ForbiddenCodegen.RS1);
+            DiffCodegen(@"Features\BindPhasingTestBedCppWinRT\BindPhasingTestBedCppWinRT\Generated Files");
         }
 
         //
@@ -361,143 +389,93 @@ namespace UnitTests
         //
 
         [TestMethod]
-        [Ignore]
         public void Codegen_DeferLoadStrategyCS()
         {
-            DiffCodegen(@"RegressionProjects\Features\DeferLoadStrategy\CSharp\obj\x86\Debug");
+            DiffCodegen(@"Features\DeferLoadStrategy\CSharp\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
-        public void Codegen_DeferLoadStrategyVB()
+        public void Codegen_DeferLoadStrategyCppWinRT()
         {
-            DiffCodegen(@"RegressionProjects\Features\DeferLoadStrategy\VisualBasic\obj\x86\Debug");
+            DiffCodegen(@"Features\DeferLoadStrategy\CppWinRT\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
-        public void Codegen_DeferLoadStrategyCX()
+        public void Codegen_MetadataTestbedCppWinRT()
         {
-            DiffCodegen(@"RegressionProjects\Features\DeferLoadStrategy\VC\Generated Files");
+            DiffCodegen(@"Features\Metadata\MetadataTestbedCppWinRT\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_ReduceProviderLoading_ConsumerCS()
         {
-            DiffCodegen(@"RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ConsumerCs\obj\x86\Debug");
+            DiffCodegen(@"Features\ReduceProviderLoading\ConsumerProvider\ConsumerCs\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
-        public void Codegen_ReduceProviderLoading_ConsumerVB()
-        {
-            DiffCodegen(@"RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ConsumerCpp\Generated Files");
-        }
-
-        [TestMethod]
-        [Ignore]
-        public void Codegen_ReduceProviderLoading_ConsumerCX()
-        {
-            DiffCodegen(@"RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ConsumerCs\obj\x86\Debug");
-        }
-
-        [TestMethod]
-        [Ignore]
         public void Codegen_ReduceProviderLoading_ProviderCS()
         {
-            DiffCodegen(@"RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ProviderCs\obj\x86\Debug");
+            DiffCodegen(@"Features\ReduceProviderLoading\ConsumerProvider\ProviderCs\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
-        public void Codegen_ReduceProviderLoading_ProviderVB()
+        public void Codegen_ReduceProviderLoading_ProviderCppWinRT()
         {
-            DiffCodegen(@"RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ProviderCpp\Generated Files");
+            DiffCodegen(@"Features\ReduceProviderLoading\ConsumerProvider\ProviderCppWinRT\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
-        public void Codegen_ReduceProviderLoading_ProviderCX()
+        public void Codegen_ReduceProviderLoading_ConsumerCppWinRT()
         {
-            DiffCodegen(@"RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ProviderCs\obj\x86\Debug");
+            DiffCodegen(@"Features\ReduceProviderLoading\ConsumerProvider\ConsumerCppWinRT\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
-        public void Codegen_MultipleViewsCX()
+        public void Codegen_MultipleViewsCppWinRT()
         {
-            DiffCodegen(@"RegressionProjects\Features\MultiXamlFiles\MultipleViewsTestbedCPP\Generated Files");
+            DiffCodegen(@"Features\MultiXamlFiles\MultipleViewsTestbedCppWinRT\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_MultipleViewsCS()
         {
-            DiffCodegen(@"RegressionProjects\Features\MultiXamlFiles\MultipleViewsTestbed\obj\x86\Debug");
+            DiffCodegen(@"Features\MultiXamlFiles\MultipleViewsTestbed\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
-        public void Codegen_MultipleViewsVB()
-        {
-            DiffCodegen(@"RegressionProjects\Features\MultiXamlFiles\MultipleViewsTestbedVB\obj\x86\Debug");
-        }
-
-        [TestMethod]
-        [Ignore]
         public void Codegen_ConditionalControls()
         {
-            DiffCodegen(@"RegressionProjects\Features\Conditionals\ConditionalControls\obj\x86\Debug");
+            DiffCodegen(@"Features\Conditionals\ConditionalControls\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_ConditionalsModel()
         {
-            DiffCodegen(@"RegressionProjects\Features\Conditionals\ConditionalsModel\obj\x86\Debug");
+            DiffCodegen(@"Features\Conditionals\ConditionalsModel\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
         public void Codegen_ConditionalsCS()
         {
-            DiffCodegen(@"RegressionProjects\Features\Conditionals\ConditionalsCS\obj\x86\Debug");
+            DiffCodegen(@"Features\Conditionals\ConditionalsCS\obj\x86\Debug");
         }
 
         [TestMethod]
-        [Ignore]
-        public void Codegen_ConditionalsVB()
+        public void Codegen_ConditionalsCppWinRT()
         {
-            DiffCodegen(@"RegressionProjects\Features\Conditionals\ConditionalsVB\obj\x86\Debug");
+            DiffCodegen(@"Features\Conditionals\ConditionalsCppWinRT\Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
-        public void Codegen_ConditionalsCX()
+        public void Codegen_MarkupExtensionsCppWinRT()
         {
-            DiffCodegen(@"RegressionProjects\Features\Conditionals\ConditionalsCX\Generated Files");
+            DiffCodegen(@"Features/MarkupExtensions/MarkupExtensionsCppWinRT/Generated Files");
         }
 
         [TestMethod]
-        [Ignore]
-        public void Codegen_MarkupExtensionsCX()
-        {
-            DiffCodegen(@"RegressionProjects/Features/MarkupExtensions/MarkupExtensionsCX/Generated Files");
-        }
-
-        [TestMethod]
-        [Ignore]
         public void Codegen_MarkupExtensionsCS()
         {
-            DiffCodegen(@"RegressionProjects/Features/MarkupExtensions/MarkupExtensionsCS/obj/x86/Debug");
-        }
-
-        [TestMethod]
-        [Ignore]
-        public void Codegen_MarkupExtensionsVB()
-        {
-            DiffCodegen(@"RegressionProjects/Features/MarkupExtensions/MarkupExtensionsVB/obj/x86/Debug");
+            DiffCodegen(@"Features/MarkupExtensions/MarkupExtensionsCS/obj/x86/Debug");
         }
     }
 }

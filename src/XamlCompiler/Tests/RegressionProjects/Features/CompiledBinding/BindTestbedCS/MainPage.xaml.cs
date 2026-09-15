@@ -13,8 +13,6 @@ namespace BindTestbed
         public BindTestbedModel.DataModel Model { get; set; }
         public BindTestbedModel.DOModel DOModel { get; set; }
         public LanguageSpecific LanguageModel { get; set; }
-        //// TODO: Convert BindTestbedModelCX to C++/WinRT
-        //public BindTestbedCXModel.ModelCX ModelCX { get; set; }
 
         public MainPage()
         {
@@ -23,8 +21,6 @@ namespace BindTestbed
             this.Model = App.Model;
             this.DOModel = App.DOModel;
             this.LanguageModel = App.LanguageModel;
-            // TODO: Convert BindTestbedModelCX to C++/WinRT
-            //this.ModelCX = App.ModelCX;
 
             this.InitializeComponent();
             InitializeValues();
@@ -36,8 +32,6 @@ namespace BindTestbed
             this.Model.InitializeValues();
             this.DOModel.UpdateValues();
             this.LanguageModel.InitializeValues();
-            // TODO: Convert BindTestbedModelCX to C++/WinRT
-            //this.ModelCX.InitializeValues();
         }
 
         private void DetectLeaks_Click(object sender, RoutedEventArgs e)

@@ -4,7 +4,7 @@ using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace ConditionalControls
+namespace ConditionalControlsV2
 {
     public sealed partial class Button1 : UserControl, IVersionedProperties
     {

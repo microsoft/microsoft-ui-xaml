@@ -102,6 +102,16 @@ namespace UnitTests
             TestParseConditionalNamespaceExpectSuccess("xmlns:rs1='http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsTypeNotPresent(\"Foo\")'",
                 "<rs1:TextBlock Text='Foo'/>"
                 );
+
+            // Unrecognized names are assumed to be custom predicates.
+            TestParseConditionalNamespaceExpectSuccess("xmlns:rs1='http://schemas.microsoft.com/winfx/2006/xaml/presentation?FooBar(Windows.Foundation.UniversalApiContract,3,0)'",
+                "<rs1:TextBlock Text='Foo'/>"
+                );
+            // Note this is also a casing mismatch of IsApiContractPresent ("API" vs "Api"), which is
+            // itself enough to make it a custom predicate - see _CaseMissmatchErrors.
+            TestParseConditionalNamespaceExpectSuccess("xmlns:rs1='http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsAPIContractPresent(,,)'",
+                "<rs1:TextBlock Text='Foo'/>"
+                );
         }
 
         [TestMethod]
@@ -134,18 +144,6 @@ namespace UnitTests
                     }
                 );
             // Other syntax errors(
-            TestParseConditionalNamespaceExpectErrors(
-                "xmlns:rs1='http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsAPIContractPresent(,,)'",
-                "<rs1:TextBlock Text='Foo'/>",
-                new[] {
-                    "WMC0916",
-                    "WMC0001"
-                    },
-                new[] {
-                    "Syntax error at '<EOF>'. while parsing conditional namespace expression 'http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsAPIContractPresent(,,)'",
-                    null
-                    }
-                );
         }
 
         [TestMethod]
@@ -176,18 +174,6 @@ namespace UnitTests
         [TestMethod]
         public void Conditionals_ParseConditionalNamespace_SchemaErrors()
         {
-            // Invalid Api Information Method
-            TestParseConditionalNamespaceExpectErrors("xmlns:rs1='http://schemas.microsoft.com/winfx/2006/xaml/presentation?FooBar(Windows.Foundation.UniversalApiContract,3,0)'",
-                "<rs1:TextBlock Test='Foo'/>",
-                new[] {
-                    "WMC0916",
-                    "WMC0001"
-                    },
-                new[] {
-                    "Unrecognized API information 'FooBar'. while parsing conditional namespace expression 'http://schemas.microsoft.com/winfx/2006/xaml/presentation?FooBar(Windows.Foundation.UniversalApiContract,3,0)'",
-                    null
-                    }
-                );
             // More params than needed
             TestParseConditionalNamespaceExpectErrors("xmlns:rs1='http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,3,0,4)'",
                 "<rs1:TextBlock Test='Foo'/>",

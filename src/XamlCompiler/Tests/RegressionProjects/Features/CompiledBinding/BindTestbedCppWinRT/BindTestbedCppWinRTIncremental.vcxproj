@@ -1,128 +1,38 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
  Licensed under the MIT License. -->
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" />
-  <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|ARM64">
-      <Configuration>Debug</Configuration>
-      <Platform>ARM64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|ARM64">
-      <Configuration>Release</Configuration>
-      <Platform>ARM64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-  </ItemGroup>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
-    <CppWinRTVerbosity>High</CppWinRTVerbosity>
-    <_Reference_Debug>true</_Reference_Debug>
-    <ProjectName>BindTestbedCppWinRTIncremental</ProjectName>
     <ProjectGuid>{2821AD7B-C730-4384-B24C-52ACB3387913}</ProjectGuid>
+    <ProjectName>BindTestbedCppWinRTIncremental</ProjectName>
     <RootNamespace>BindTestbed</RootNamespace>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
-    <AppContainerApplication>true</AppContainerApplication>
-    <CppWinRTEnabled>true</CppWinRTEnabled>
-    <CppWinRTOptimized>true</CppWinRTOptimized>
-    <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
-    <ApplicationType>Windows Store</ApplicationType>
-    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
-    <EnableDotNetNativeCompatibleProfile>true</EnableDotNetNativeCompatibleProfile>
-    <AppxOSMinVersion>6.3.0</AppxOSMinVersion>
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
     <XamlCodeGenerationControlFlags>IncrementalTypeInfoCodeGen</XamlCodeGenerationControlFlags>
     <SuppressXamlWarnings>1004</SuppressXamlWarnings>
+    <!-- Isolate generated files from BindTestbedCppWinRT.vcxproj, which shares this source
+         directory. -->
+    <GeneratedFilesSubdirectory>BindTestbedCppWinRTIncremental</GeneratedFilesSubdirectory>
+    <!--
+      Win32 desktop app model. AppContainerApplication=false is what makes the produced
+      binary a desktop app; the AppContainer ("WinUI 3 in UWP") app model is not supported.
+      ApplicationType selects the C++ toolset flavor that provides WinRT metadata, XAML and
+      MSIX support - it is required by every C++/WinRT XAML project in this repo and does
+      not by itself imply an app container.
+    -->
+    <AppContainerApplication>false</AppContainerApplication>
+    <DesktopCompatible>true</DesktopCompatible>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+
+    <!--
+      Must match BindTestbedCppWinRT.vcxproj: this project compiles the same sources, and those
+      sources include the C++/WinRT component headers by their directory-form names
+      ("subfolder/SubDictionary.g.h"). See the longer explanation in that project.
+    -->
+    <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
   </PropertyGroup>
-  <PropertyGroup>
-    <OutputPath>bin</OutputPath>
-  </PropertyGroup>
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <PropertyGroup>
-    <GeneratedFilesDir>$(BaseIntermediateOutputPath)\BindTestbedCppWinRTIncremental\generated\</GeneratedFilesDir>
-  </PropertyGroup>
-  <ImportGroup Label="ExtensionSettings">
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
-  <PropertyGroup>
-    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
-    <AppxBundle>Always</AppxBundle>
-    <AppxBundlePlatforms>x86|x64|ARM64</AppxBundlePlatforms>
-  </PropertyGroup>
-  <ItemDefinitionGroup>
-    <ClCompile>
-      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <WarningLevel>Level4</WarningLevel>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <WarningLevel>Level4</WarningLevel>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <DisableSpecificWarnings>4447;4453;4996;4100;4651</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(GeneratedFilesDir);$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>WindowsApp.lib;Ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-  </ItemDefinitionGroup>
+  <Import Project="$(CommonFilesPath)AppPreamble.vcxproj" />
   <ItemGroup>
     <ClInclude Include="BasicTests.h">
       <DependentUpon>BasicTests.xaml</DependentUpon>
@@ -156,7 +66,6 @@
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="ObservableVector.h" />
-    <ClInclude Include="pch.h" />
     <ClInclude Include="App.h">
       <DependentUpon>App.xaml</DependentUpon>
     </ClInclude>
@@ -187,6 +96,15 @@
     </ClInclude>
     <ClInclude Include="CastingModel.h" />
     <ClInclude Include="MainModel.h" />
+    <ClInclude Include="DisableXBindTests.h">
+      <DependentUpon>DisableXBindTests.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="NamedRootsPage\NamedPageRootWithCompiledBindingUserChild.h">
+      <DependentUpon>NamedRootsPage\NamedPageRootWithCompiledBindingUserChild.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="xPropertiesTest.h">
+      <DependentUpon>xPropertiesTest.xaml</DependentUpon>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -225,11 +143,18 @@
     </Page>
     <Page Include="TestsPage2.xaml" />
     <Page Include="TwoWayTests.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <AppxManifest Include="Package.appxmanifest">
+    <Page Include="DisableXBindTests.xaml">
       <SubType>Designer</SubType>
-    </AppxManifest>
+    </Page>
+    <Page Include="MainPage.Portrait.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="NamedRootsPage\NamedPageRootWithCompiledBindingUserChild.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="xPropertiesTest.xaml">
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Icon.png" />
@@ -242,9 +167,6 @@
     <Image Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="App.cpp">
       <DependentUpon>App.xaml</DependentUpon>
     </ClCompile>
@@ -284,14 +206,6 @@
       <DependentUpon>NullableTests.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="PhasingTests.cpp">
       <DependentUpon>PhasingTests.xaml</DependentUpon>
     </ClCompile>
@@ -313,18 +227,15 @@
     <ClCompile Include="TwoWayTests.cpp">
       <DependentUpon>TwoWayTests.xaml</DependentUpon>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\BindTestbedCXModel\BindTestbedCXModel.vcxproj">
-      <Project>{6eb67720-b6ed-486b-9bed-98a4c3696cec}</Project>
-      <Name>BindTestbedCXModel</Name>
-      <Private>true</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\BindTestbedModel\BindTestbedModel.csproj">
-      <Project>{0748b16e-2455-494b-9d33-0231960ff58a}</Project>
-      <Name>BindTestbedModel</Name>
-      <Private>true</Private>
-    </ProjectReference>
+    <ClCompile Include="DisableXBindTests.cpp">
+      <DependentUpon>DisableXBindTests.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="NamedRootsPage\NamedPageRootWithCompiledBindingUserChild.cpp">
+      <DependentUpon>NamedRootsPage\NamedPageRootWithCompiledBindingUserChild.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="xPropertiesTest.cpp">
+      <DependentUpon>xPropertiesTest.xaml</DependentUpon>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="BindTestbed.idl">
@@ -337,21 +248,19 @@
       <DllDataFileName>nul</DllDataFileName>
       <InterfaceIdentifierFileName>nul</InterfaceIdentifierFileName>
       <ProxyFileName>nul</ProxyFileName>
-      <TypeLibraryName />
+      <TypeLibraryName></TypeLibraryName>
     </Midl>
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="packages.config" />
+    <!--
+      Same model reference as the sibling BindTestbedCppWinRT project: pch.h includes
+      winrt/BindTestbedModel.h, so this project needs the component's metadata too.
+    -->
+    <ProjectReference Include="..\BindTestbedModel\BindTestbedModel.csproj">
+      <Private>false</Private>
+    </ProjectReference>
   </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" />
-  </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\..\..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\..\..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets'))" />
-  </Target>
+
+  <Import Project="$(CommonFilesPath)RuntimeComponentPostamble.vcxproj" />
 </Project>
