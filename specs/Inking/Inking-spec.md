@@ -3,7 +3,7 @@ Inking (InkCanvas, InkPresenter, InkToolbar)
 
 # Background
 
-This API spec introduces `InkCanvas` to WinUI 3, closing a known feature gap with WinUI 2 / UWP. Ink
+This API spec introduces `InkCanvas` to WinUI 3, closing a known feature gap with UWP. Ink
 support has been a commonly requested capability, and today developers must either build substantial
 functionality on top of the DirectInk APIs or adopt alternative solutions to provide handwriting,
 annotation, markup, and signature capture experiences. Bringing `InkCanvas` to WinUI 3 enables these
@@ -46,20 +46,6 @@ Put the **InkToolbar** above the **InkCanvas** and point it at the canvas with `
 </Grid>
 ```
 
-By default the presenter accepts **pen input only**, matching UWP. `InputDeviceTypes` is a flags mask
-that supports incremental updates, so add or remove a device type without restating the others:
-
-```csharp
-// Add mouse input, keeping pen.
-InkSurface.InkPresenter.InputDeviceTypes |= Windows.UI.Core.CoreInputDeviceTypes.Mouse;
-
-// Remove touch input, keeping everything else.
-InkSurface.InkPresenter.InputDeviceTypes &= ~Windows.UI.Core.CoreInputDeviceTypes.Touch;
-```
-
-Drawing with the active pen renders a stroke; selecting the eraser and dragging over a stroke removes
-it.
-
 ### Configuring the InkPresenter
 
 All ink configuration flows through `InkCanvas.InkPresenter`, exactly as in UWP:
@@ -77,6 +63,17 @@ var attributes = presenter.CopyDefaultDrawingAttributes();
 attributes.Color = Microsoft.UI.Colors.MediumPurple;
 attributes.Size = new Windows.Foundation.Size(6, 6);
 presenter.UpdateDefaultDrawingAttributes(attributes);
+```
+
+`InputDeviceTypes` is a flags mask that supports incremental updates, so add or remove a device type
+without restating the others:
+
+```csharp
+// Add mouse input, keeping pen.
+InkSurface.InkPresenter.InputDeviceTypes |= Windows.UI.Core.CoreInputDeviceTypes.Mouse;
+
+// Remove touch input, keeping everything else.
+InkSurface.InkPresenter.InputDeviceTypes &= ~Windows.UI.Core.CoreInputDeviceTypes.Touch;
 ```
 
 ### Handling stroke input events
@@ -155,30 +152,26 @@ grid.Children().Append(canvas);
 
 ### Remarks
 
-- **Rendering and the compositor**: using `InkCanvas` with the **system compositor** (via the
-  compositor Switcher) is the recommended configuration. With the system compositor the canvas is free
-  of the lifted compositor's rendering constraints. If an app does not opt in to the system compositor,
-  `InkCanvas` presents its ink through lifted external content and is therefore subject to the Visual
-  Layer [external content](https://learn.microsoft.com/windows/apps/develop/composition/visual-layer#external-content)
-  limitations: XAML clipping, transforms, and opacity apply to the surface, but **z-order does not**.
-  The ink surface is composed above the app's XAML content, so a XAML element placed over the canvas
-  (an `InkToolbar` positioned on top of it, for example) is neither drawn above the ink nor able to
-  receive pointer input where it overlaps the canvas. Lay overlapping UI out beside the canvas rather
-  than on top of it, or opt in to the system compositor. Effects that need to read the ink pixels back
-  (a XAML effect brush sampling the surface, or a `RenderTargetBitmap` capture of the ink) likewise do
-  not compose over the ink. To snapshot ink in that configuration, render the strokes yourself from the
-  `InkStrokeContainer` rather than capturing the surface.
+- **Compositor choice**: using `InkCanvas` with the **system compositor** (via the
+  [Compositor Switcher](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.composition.compositionengine?view=windows-app-sdk-2.0))
+  is the recommended configuration. If an app does not opt in to the system compositor, `InkCanvas`
+  renders ink as lifted external content. In that case, rendering is subject to the Visual Layer
+  [external content](https://learn.microsoft.com/windows/apps/develop/composition/visual-layer#external-content)
+  limitations.
 
 ## Custom drying (app-rendered dry ink)
 
-By default the `InkPresenter` renders committed ("dry") strokes for you. **Custom drying** hands that
-job to the app: you receive each stroke the moment the presenter commits it and draw it into your own
-visual. This is what a note-taking or document app uses to apply a custom brush, run ink through its
-own document model, or composite ink with other content.
+By default, `InkPresenter` renders dry ink strokes. To take control of rendering committed strokes, an
+app can enable custom drying by calling `InkPresenter.ActivateCustomDrying()`. Custom drying allows the
+app to receive committed strokes and render them using its own visual representation, enabling
+scenarios such as custom brushes, document-model integration, or composition with other application
+content.
 
-Turn it on once, before the first stroke, by calling `InkPresenter.ActivateCustomDrying()`. It returns
-an `InkSynchronizer`. From then on, handle `StrokesCollected` and bracket your rendering with
-`BeginDry` / `EndDry`:
+`ActivateCustomDrying()` must be called before ink collection begins. The method returns an
+`InkSynchronizer`, which coordinates the transfer of committed strokes from `InkPresenter` to the
+application. After custom drying is activated, the app should handle the `StrokesCollected` event and
+use `InkSynchronizer.BeginDry()` and `InkSynchronizer.EndDry()` to bracket rendering of committed
+strokes.
 
 ```csharp
 // Once, at setup - before any stroke is drawn.
@@ -202,32 +195,38 @@ presenter.StrokesCollected += (s, e) =>
 ```
 
 > [!NOTE]
-> Call `ActivateCustomDrying()` before the first stroke is collected. `BeginDry` is only valid from
-> inside the `StrokesCollected` handler (it runs in context on the presenter's commit), and every
-> `BeginDry` must be paired with an `EndDry`. If you never activate custom drying, the presenter dries
-> ink for you and none of this is needed.
+> `ActivateCustomDrying` must be called before the `InkPresenter` begins collecting ink. Once the
+> `InkPresenter` has been initialized for either custom drying or default drying, the drying mode
+> cannot be changed for the lifetime of the associated `InkCanvas`.
+>
+> When custom drying is enabled, `BeginDry` may only be called from within the `StrokesCollected`
+> event handler. Each call to `BeginDry` must be paired with a corresponding call to `EndDry`.
+>
+> If `ActivateCustomDrying()` is not called, the `InkPresenter` uses the default drying behavior and
+> renders committed (dry) strokes automatically.
 
 ![Custom drying: app-rendered dry strokes next to default drying](./inking-customdry.png)
 
 # API Pages
 
-## Differences from WinUI 2 (UWP)
+## Differences from UWP
 
-This section is the complete list of differences between this API and the WinUI 2 / UWP inking surface.
+This section is the complete list of differences between this API and the UWP inking surface.
 **Anything not called out here is exactly the same** - same type name, same member names, same
 signatures, and same behavior.
 
 ### Why there is a difference at all
 
-In UWP the whole inking stack ran inside the app's view process, and apps talked to the OS ink objects
-directly. In WinUI 3 the underlying OS ink objects (`Windows.UI.Input.Inking.InkPresenter` and
-everything reached through it) are thread-affine to a dedicated **ink thread** that is not the XAML UI
-thread. A XAML control cannot hand those objects to app code on the UI thread.
+In UWP, applications can access `Windows.UI.Input.Inking` objects, including `InkPresenter` and related
+inking APIs, directly from the UI thread.
 
-So `InkPresenter`, `InkStrokeContainer`, `InkStrokeInput`, `InkUnprocessedInput`, `InkSynchronizer`,
-and the input-configuration types are re-declared in `Microsoft.UI.Xaml.Controls` as thin, UI-thread
-accessible **mirrors**. Each mirror marshals calls to the ink thread and re-raises events back on the
-UI thread. The member shapes are unchanged; only the declaring type and namespace differ.
+In WinUI 3, `InkPresenter` and its associated OS inking objects are hosted on a dedicated **InkHost
+thread** and are not directly accessible from the XAML UI thread. To enable use of inking functionality
+from UI-thread code, WinUI 3 provides proxy objects for selected APIs.
+
+These proxies are exposed only where necessary to surface `Windows.UI.Input.Inking` types or
+functionality through the WinUI 3 API surface. The member shapes are unchanged; only the declaring type
+and namespace differ.
 
 Leaf data types that are already thread-agnostic are **reused from `Windows.UI.Input.Inking`
 unchanged**: `InkStroke`, `InkDrawingAttributes`, `InkStrokeBuilder`, `InkPresenterRuler`,
@@ -237,7 +236,7 @@ reused, serialization (ISF / GIF) and `InkStrokeBuilder` interop behave identica
 
 ### Type mapping
 
-| WinUI 3 type | WinUI 2 / UWP type | Difference |
+| WinUI 3 type | UWP type | Difference |
 |---|---|---|
 | `Microsoft.UI.Xaml.Controls.InkCanvas` | `Windows.UI.Xaml.Controls.InkCanvas` | Namespace only |
 | `Microsoft.UI.Xaml.Controls.InkToolbar` and all toolbar button types | `Windows.UI.Xaml.Controls.*` | Namespace only |
@@ -253,7 +252,7 @@ reused, serialization (ISF / GIF) and `InkStrokeBuilder` interop behave identica
 
 ### Functionality gaps
 
-| Area | WinUI 2 / UWP | WinUI 3 | Why |
+| Area | UWP | WinUI 3 | Why |
 |---|---|---|---|
 | `InkPresenter.StrokeContainer` | get / set | get only | The presenter owns its container; strokes are added and removed through the container's own methods. |
 | `InkInputConfiguration.IsPenHapticFeedbackEnabled` | Available | Not available | No haptic feedback support. |
@@ -424,7 +423,7 @@ The toolbar's buttons form a small hierarchy:
 toolbar. The toolbar's buttons have dedicated peers: `InkToolbarToolButtonAutomationPeer` and
 `InkToolbarMenuButtonAutomationPeer` implement `IExpandCollapseProvider` (expand / collapse the tool
 flyout), and `InkToolbarFlyoutItemAutomationPeer` implements `IInvokeProvider`. Keyboard and
-automation behavior match the WinUI 2 toolbar.
+automation behavior match the UWP toolbar.
 
 # API Details
 
