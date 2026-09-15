@@ -396,7 +396,7 @@ namespace AppCS.LinkedMdAppCS_XamlTypeInfo
                     otherProviders.Add(provider); 
                     provider = new global::LinkedMDSubControlsCppWinRT.XamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
-                    provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsChartsXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
+                    provider = new global::Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsTabularXamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
                     provider = new global::SubControlsCS.LinkedMdSubControlsCS_XamlTypeInfo.XamlMetaDataProvider() as global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider;
                     otherProviders.Add(provider); 
