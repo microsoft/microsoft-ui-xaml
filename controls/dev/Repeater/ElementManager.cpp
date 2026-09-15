@@ -347,10 +347,71 @@ void ElementManager::DataSourceChanged(const winrt::IInspectable& /*source*/, wi
             break;
 
         case winrt::NotifyCollectionChangedAction::Move:
-            int size = args.OldItems() != NULL ? args.OldItems().Size() : 1;
-            OnItemsRemoved(args.OldStartingIndex(), size);
-            OnItemsAdded(args.NewStartingIndex(), size);
-            break;
+        {
+            const int count = args.OldItems() != NULL ? static_cast<int>(args.OldItems().Size()) : 1;
+            const int oldStartIndex = args.OldStartingIndex();
+            const int newStartIndex = args.NewStartingIndex();
+
+            if (oldStartIndex != newStartIndex && count > 0)
+            {
+                const bool isOldRangeRealized = IsDataIndexRealized(oldStartIndex) && IsDataIndexRealized(oldStartIndex + count - 1);
+                const bool isNewRangeRealized = IsDataIndexRealized(newStartIndex) && IsDataIndexRealized(newStartIndex + count - 1);
+
+                if (isOldRangeRealized && isNewRangeRealized)
+                {
+                    // Move within the realized range: shift elements without recycling
+                    const int oldRangeStart = GetRealizedRangeIndexFromDataIndex(oldStartIndex);
+                    const int newRangeStart = GetRealizedRangeIndexFromDataIndex(newStartIndex);
+
+                    if (oldRangeStart < newRangeStart)
+                    {
+                        std::rotate(
+                            m_realizedElements.begin() + oldRangeStart,
+                            m_realizedElements.begin() + oldRangeStart + count,
+                            m_realizedElements.begin() + newRangeStart + count);
+
+                        if (m_useLayoutBounds)
+                        {
+                            std::rotate(
+                                m_realizedElementLayoutBounds.begin() + oldRangeStart,
+                                m_realizedElementLayoutBounds.begin() + oldRangeStart + count,
+                                m_realizedElementLayoutBounds.begin() + newRangeStart + count);
+                        }
+                    }
+                    else
+                    {
+                        std::rotate(
+                            m_realizedElements.begin() + newRangeStart,
+                            m_realizedElements.begin() + oldRangeStart,
+                            m_realizedElements.begin() + oldRangeStart + count);
+
+                        if (m_useLayoutBounds)
+                        {
+                            std::rotate(
+                                m_realizedElementLayoutBounds.begin() + newRangeStart,
+                                m_realizedElementLayoutBounds.begin() + oldRangeStart,
+                                m_realizedElementLayoutBounds.begin() + oldRangeStart + count);
+                        }
+                    }
+
+                    if (m_useLayoutBounds)
+                    {
+                        const int affectedStart = std::min(oldRangeStart, newRangeStart);
+                        const int affectedEnd = std::max(oldRangeStart, newRangeStart) + count;
+                        for (int i = affectedStart; i < affectedEnd; ++i)
+                        {
+                            m_realizedElementLayoutBounds[i] = InvalidBounds;
+                        }
+                    }
+                }
+                else
+                {
+                    OnItemsRemoved(oldStartIndex, count);
+                    OnItemsAdded(newStartIndex, count);
+                }
+            }
+        }
+        break;
         }
     }
 }
