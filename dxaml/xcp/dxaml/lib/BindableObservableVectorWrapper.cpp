@@ -102,6 +102,7 @@ IFACEMETHODIMP BindableObservableVectorWrapper::get_Size(_Out_ unsigned *size)
 IFACEMETHODIMP BindableObservableVectorWrapper::GetView(
     _Outptr_result_maybenull_ wfc::IVectorView<IInspectable *> **view)
 {
+    // Only INCC can emit Move; preserve the source's own view for IBindableObservableVector-only sources.
     if (!m_tpINCC || !OptionalChangeState::IsCollectionMoveNotificationsEnabled())
     {
         return BindableVectorWrapper::GetView(view);
@@ -154,6 +155,8 @@ IFACEMETHODIMP BindableObservableVectorWrapper::IndexOf(
 
 IFACEMETHODIMP BindableObservableVectorWrapper::First(_Outptr_ wfc::IIterator<IInspectable *> **value)
 {
+    // This wrapper also handles IBindableObservableVector without INCC. Such sources cannot
+    // emit Move and must retain their original iterator semantics, even with the opt-in enabled.
     if (!m_tpINCC || !OptionalChangeState::IsCollectionMoveNotificationsEnabled())
     {
         return BindableVectorWrapper::First(value);
@@ -631,5 +634,4 @@ Cleanup:
 
     RRETURN( hr );
 }
-
 
