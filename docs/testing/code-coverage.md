@@ -109,6 +109,30 @@ The option applies only to this queued run. Normal PR validation and nightly
 defaults remain unchanged. This is the full PR pipeline, not the smaller focused
 pipeline described below.
 
+## Interpreting the percentage
+
+Use the top-level **Code Coverage** summary when comparing results in Azure
+DevOps. Its source-line percentage can differ from the `line-rate` attribute
+stored at the root of the native collector's Cobertura XML.
+
+The XML root and package summaries count method-level line entries. A source line can appear in
+multiple methods or C++ template instantiations, and in both runtime DLLs.
+The Azure summary combines entries by source-file path and line number, and
+counts that location as covered if any of its entries has a hit.
+
+For [run 157562703](https://dev.azure.com/microsoft/WinUI/_build/results?buildId=157562703&view=codecoverage-tab)
+(MS internal), both calculations can be reproduced from the same merged XML:
+
+| Measurement | Covered / total | Coverage |
+| --- | ---: | ---: |
+| Azure summary: unique source-file/line locations across both DLLs | 436,733 / 586,231 | 74.50% |
+| Raw XML summary: method-level line entries, including repeated locations | 962,702 / 1,936,708 | 49.71% |
+
+These are different counting rules, not different test runs or missing merge
+inputs. A covered source line does not imply that every compiled instance of it
+was exercised. Compare the same metric across runs; do not label the raw XML
+summary as the percentage shown at the top of the Azure Code Coverage tab.
+
 ## Validate the initial port
 
 1. Use the manual steps above with **CollectCodeCoverage=false** first. Compare
