@@ -44,6 +44,8 @@ static int GetBitIndex(xaml_settings::XamlChangeId id)
         return OptionalChangeState::BitIndex_DefaultStyleOptimizations;
     case xaml_settings::XamlChangeId_DeferContextFlyoutInit:
         return OptionalChangeState::BitIndex_DeferContextFlyoutInit;
+    case xaml_settings::XamlChangeId_SkipWindowRedirectionSurface:
+        return OptionalChangeState::BitIndex_SkipWindowRedirectionSurface;
     default:
         return -1;
     }
