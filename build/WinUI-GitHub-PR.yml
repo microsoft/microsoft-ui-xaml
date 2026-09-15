@@ -35,8 +35,8 @@ parameters:
   displayName: "Run Static Analysis (e.g., PREFast, APIScan)"
   type: boolean
   default: false
-- name: QuickBuild
-  displayName: "Quick build: x86chk only, skip scenario tests"
+- name: runQuickValidation
+  displayName: "Run quick WinUI PR validation (x86chk only, skip scenario tests)"
   type: boolean
   default: false
 
@@ -145,10 +145,10 @@ extends:
 
               Write-Host "GitHub PR context validation completed."
 
-    - ${{ if eq(parameters.runFullValidation, true) }}:
+    - ${{ if or(eq(parameters.runFullValidation, true), eq(parameters.runQuickValidation, true)) }}:
       - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
         parameters:
-          ${{ if eq(parameters.QuickBuild, true) }}:
+          ${{ if eq(parameters.runQuickValidation, true) }}:
             pipelineKind: QuickPR
             buildScenarioApps: false
           ${{ else }}:
@@ -160,7 +160,7 @@ extends:
           buildProductOnly: false
           dependsOn: ValidateGitHubPrContext
 
-    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false), eq(parameters.QuickBuild, false)) }}:
+    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false), eq(parameters.runQuickValidation, false)) }}:
       - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
         parameters:
           stageName: Build_MUXFinalRelease
@@ -172,20 +172,20 @@ extends:
           buildProductOnly: true
           dependsOn: ValidateGitHubPrContext
 
-    - ${{ if eq(parameters.runFullValidation, true) }}:
+    - ${{ if or(eq(parameters.runFullValidation, true), eq(parameters.runQuickValidation, true)) }}:
       - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
         parameters:
-          ${{ if eq(parameters.QuickBuild, true) }}:
+          ${{ if eq(parameters.runQuickValidation, true) }}:
             pipelineKind: QuickPR
           ${{ else }}:
             pipelineKind: PR
 
-    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.QuickBuild, false)) }}:
+    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.runQuickValidation, false)) }}:
       - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml
         parameters:
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
 
-    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.QuickBuild, false)) }}:
+    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.runQuickValidation, false)) }}:
       - template: AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml
         parameters:
           pipelineKind: GitHubPR
