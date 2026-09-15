@@ -826,7 +826,7 @@ std::vector<::winrt::Microsoft::UI::Xaml::Markup::IXamlMetadataProvider> const& 
     {
         _otherProviders.push_back(::winrt::Microsoft::UI::Xaml::XamlTypeInfo::XamlControlsXamlMetaDataProvider());
         _otherProviders.push_back(::winrt::ConditionalControls::ConditionalsModel_XamlTypeInfo::XamlMetaDataProvider());
-        _otherProviders.push_back(::winrt::Microsoft::UI::Xaml::XamlTypeInfo::XamlControlsChartsXamlMetaDataProvider());
+        _otherProviders.push_back(::winrt::Microsoft::UI::Xaml::XamlTypeInfo::XamlControlsTabularXamlMetaDataProvider());
     }
     return _otherProviders;
 }
