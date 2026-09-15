@@ -39,10 +39,6 @@ parameters:
   displayName: "Collect runtime code coverage (experimental)"
   type: boolean
   default: false
-- name: runFocusedValidation
-  displayName: "Run focused validation (x86 Debug + Win11-25H2 runtime tests only)"
-  type: boolean
-  default: false
 
 variables:
 - template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
@@ -152,14 +148,8 @@ extends:
     - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
         parameters:
-          # Focused validation is opt-in. The default remains the existing
-          # GitHubPR matrix and scenario-app build.
-          ${{ if eq(parameters.runFocusedValidation, true) }}:
-            pipelineKind: QuickPR
-            buildScenarioApps: false
-          ${{ else }}:
-            pipelineKind: GitHubPR
-            buildScenarioApps: true
+          pipelineKind: GitHubPR
+          buildScenarioApps: true
           collectCodeCoverage: ${{ parameters.CollectCodeCoverage }}
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
           runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
@@ -167,7 +157,7 @@ extends:
           buildProductOnly: false
           dependsOn: ValidateGitHubPrContext
 
-    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.runFocusedValidation, false), eq(parameters.MUXFinalRelease, false)) }}:
+    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false)) }}:
       - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
         parameters:
           stageName: Build_MUXFinalRelease
@@ -182,18 +172,15 @@ extends:
     - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
         parameters:
-          ${{ if eq(parameters.runFocusedValidation, true) }}:
-            pipelineKind: QuickPR
-          ${{ else }}:
-            pipelineKind: PR
+          pipelineKind: PR
           collectCodeCoverage: ${{ parameters.CollectCodeCoverage }}
 
-    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.runFocusedValidation, false)) }}:
+    - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml
         parameters:
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
 
-    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.runFocusedValidation, false)) }}:
+    - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml
         parameters:
           pipelineKind: GitHubPR

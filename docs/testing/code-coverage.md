@@ -18,11 +18,12 @@ build. This change does not enable or modify it.
 
 | Azure Pipelines YAML | Scope | Coverage default |
 | --- | --- | --- |
-| `build/WinUI-GitHub-PR.yml` | Existing GitHub PR validation. Optional focused validation uses x86 Debug and Win11-25H2 runtime tests only. | Off |
+| `build/WinUI-GitHub-PR.yml` | Existing GitHub PR validation; coverage applies to DevTestSuite | Off |
 | `build/WinUI-Nightly.yml` | Existing nightly; coverage applies to DevTestSuite | Off |
 
 Set **CollectCodeCoverage** to **true** when manually queuing a run.
-For the GitHub PR pipeline, leave **runFullValidation** enabled.
+Coverage does not change which build flavors, OSes, or tests run.
+For the GitHub PR pipeline, leave the existing **runFullValidation** option enabled.
 When coverage is off, the coverage steps and merge job are omitted during template
 expansion. Existing build matrices, test commands, publishing steps, and triggers
 are unchanged.
@@ -75,9 +76,7 @@ It already reads this GitHub repository and does not require a new pipeline regi
    change. Before the PR merges, choose its source branch, not `main`.
 2. Enable **Collect runtime code coverage (experimental)** (`CollectCodeCoverage`).
 3. Leave **Run full WinUI PR validation stages** (`runFullValidation`) enabled.
-   For a shorter run, enable **Run focused validation** (`runFocusedValidation`).
-   Focused validation builds x86 Debug and runs the Win11-25H2 runtime tests only;
-   it skips the other build flavors, final-release build, scenario tests, and static tests.
+   This existing option controls whether the product build and test stages run.
 4. Select **Run**. This queues a real build and lab test pass, not a YAML-only preview.
 5. Follow the `Build` and `RunTests` stages. Within `RunTests`, expect payload
    instrumentation, the OS test jobs, and a final `MergeCodeCoverage` job.
@@ -100,11 +99,11 @@ az pipelines run `
     --project WinUI `
     --id 195405 `
     --branch "<branch-containing-this-change>" `
-    --parameters CollectCodeCoverage=true runFullValidation=true runFocusedValidation=true
+    --parameters CollectCodeCoverage=true runFullValidation=true
 ```
 
 The option applies only to this queued run. Normal PR validation and nightly
-defaults remain unchanged. Omit `runFocusedValidation=true` for the full PR pipeline.
+defaults remain unchanged.
 
 ## Interpreting the percentage
 
