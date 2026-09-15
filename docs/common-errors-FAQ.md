@@ -82,7 +82,7 @@ After the build is successful, launch MuxControlsTestApp again.
 
 ## Building WinUI Gallery
 
-If the build fails with missing nuget depdendencies, do `nuget restore WinUIGallery.slnx` (actual solution's name) 
+If the build fails with missing nuget dependencies, do `nuget restore WinUIGallery.slnx` (actual solution's name) 
 to restore all the missing nuget files.
 
 For a crash with stowed exceptions (top of call stack contains `Microsoft_UI_Xaml!FailFastWithStowedExceptions`), try setting a 

@@ -204,7 +204,7 @@ For more info, see the
 ## Inputs and Accessibility 
 
 ## UI Automation
-Breadcrumb is identified as a [UIA Navigation Landmark](https://docs.microsoft.com/windows/win32/winauto/landmark-type-identifiers). Each BreadcrumbItem will use a [InvokePattern](!https://docs.microsoft.com/dotnet/framework/ui-automation/implementing-the-ui-automation-invoke-control-pattern) with control type [Button](https://docs.microsoft.com/windows/win32/winauto/uiauto-supportbuttoncontroltype). 
+Breadcrumb is identified as a [UIA Navigation Landmark](https://docs.microsoft.com/windows/win32/winauto/landmark-type-identifiers). Each BreadcrumbItem will use a [InvokePattern](https://docs.microsoft.com/dotnet/framework/ui-automation/implementing-the-ui-automation-invoke-control-pattern) with control type [Button](https://docs.microsoft.com/windows/win32/winauto/uiauto-supportbuttoncontroltype). 
 
 ## Keyboard
 
