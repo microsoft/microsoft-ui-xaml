@@ -5,6 +5,7 @@ using System;
 using Common;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
 using Microsoft.UI.Xaml.Markup;
 
@@ -136,6 +137,76 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var offscreenBounds = offscreenPeer.GetBoundingRectangle();
                 Log.Comment($"Offscreen bounding rectangle: {offscreenBounds.X},{offscreenBounds.Y} {offscreenBounds.Width}x{offscreenBounds.Height}");
                 Verify.IsTrue(offscreenPeer.IsOffscreen(), "An InkCanvas positioned outside the content area should report itself as offscreen.");
+            });
+        }
+
+        // A canvas is routinely larger than the viewport that scrolls it. The reported rectangle has
+        // to be the visible part, not the full layout size, otherwise assistive technology highlights
+        // an area far bigger than the user can actually see.
+        [TestMethod]
+        public void InkCanvasAutomationPeerClipsBoundsToScrollViewport()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var inkCanvas = new InkCanvas { Width = 400, Height = 2000 };
+                var scrollViewer = new ScrollViewer
+                {
+                    Width = 300,
+                    Height = 200,
+                    Content = inkCanvas
+                };
+
+                Content = scrollViewer;
+                Content.UpdateLayout();
+
+                var canvasPeer = FrameworkElementAutomationPeer.CreatePeerForElement(inkCanvas);
+                var scrollPeer = FrameworkElementAutomationPeer.CreatePeerForElement(scrollViewer);
+                Verify.IsNotNull(canvasPeer, "InkCanvas should create an automation peer.");
+                Verify.IsNotNull(scrollPeer, "ScrollViewer should create an automation peer.");
+
+                var canvasBounds = canvasPeer.GetBoundingRectangle();
+                var scrollBounds = scrollPeer.GetBoundingRectangle();
+                Log.Comment($"Canvas bounds: {canvasBounds.Width}x{canvasBounds.Height}, viewport bounds: {scrollBounds.Width}x{scrollBounds.Height}");
+
+                // Both rectangles come back in the same physical units, so comparing them keeps this
+                // assertion independent of the display scale the test happens to run at.
+                Verify.IsLessThanOrEqual(canvasBounds.Height, scrollBounds.Height + 1.0, "Reported height should be clipped to the scroll viewport.");
+                Verify.IsLessThanOrEqual(canvasBounds.Width, scrollBounds.Width + 1.0, "Reported width should be clipped to the scroll viewport.");
+                Verify.IsGreaterThan(canvasBounds.Height, 0.0, "A partially visible canvas should still report bounds.");
+                Verify.IsFalse(canvasPeer.IsOffscreen(), "A partially visible InkCanvas should not report itself as offscreen.");
+            });
+        }
+
+        // The clip case Harshit asked about: the canvas is inside the tree and visible by its own
+        // Visibility, but an ancestor clip excludes it entirely, so it must report offscreen.
+        [TestMethod]
+        public void InkCanvasAutomationPeerReportsOffscreenWhenClippedOut()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var inkCanvas = new InkCanvas { Width = 400, Height = 300 };
+                var host = new Grid
+                {
+                    Width = 400,
+                    Height = 300,
+                    // Clip to a region the canvas cannot reach.
+                    Clip = new RectangleGeometry { Rect = new Windows.Foundation.Rect(0, 0, 0, 0) }
+                };
+
+                host.Children.Add(inkCanvas);
+
+                Content = host;
+                Content.UpdateLayout();
+
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(inkCanvas);
+                Verify.IsNotNull(peer, "InkCanvas should create an automation peer.");
+
+                var bounds = peer.GetBoundingRectangle();
+                Log.Comment($"Clipped bounding rectangle: {bounds.X},{bounds.Y} {bounds.Width}x{bounds.Height}");
+
+                Verify.IsTrue(peer.IsOffscreen(), "An InkCanvas clipped out by an ancestor should report itself as offscreen.");
+                Verify.AreEqual(0.0, bounds.Width, "An offscreen InkCanvas should report an empty rectangle.");
+                Verify.AreEqual(0.0, bounds.Height, "An offscreen InkCanvas should report an empty rectangle.");
             });
         }
 

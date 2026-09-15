@@ -15,4 +15,8 @@ public:
     winrt::AutomationControlType GetAutomationControlTypeCore();
     winrt::Rect GetBoundingRectangleCore();
     bool IsOffscreenCore();
+
+private:
+    // Bounds in root coordinates, clipped the way the framework clips them. Empty when not visible.
+    winrt::Rect GetClippedBoundsInRoot();
 };
