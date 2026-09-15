@@ -82,15 +82,42 @@ if ($isLifetimeStress)
     Write-Host "=== Lifetime stress suite detected: running as a NON-GATING report. Failures or a native TAEF-host crash will be captured in the log / te_original.wtl but will NOT fail the pipeline. ==="
 
     # Ensure the aggressive native-repro variant actually runs. The harness (LifetimeStressTests.cs) reads
-    # WINUI_LIFETIME_STRESS_NATIVE from te.exe's own process environment (GetEnvInt). Pipeline-root variables do
-    # NOT automatically propagate into the test host, so set it here (scoped to this lifetime work item, inherited
-    # by the child te.exe) unless a pipeline already provided an explicit value. Because native crashes are now
-    # surfaced as non-gating warnings, running the aggressive variant on every pipeline - including the per-PR
-    # gate - is safe and keeps the stage green.
+    # WINUI_LIFETIME_STRESS_NATIVE via GetEnvInt (Environment.GetEnvironmentVariable) from te's OWN process
+    # environment. A previous attempt set only the Process-scope $env: on this launcher shell, but that did NOT
+    # reach the harness: the unpackaged managed test runs in te.processhost.exe, which TAEF spawns via a broker so
+    # it does NOT inherit this shell's process environment block - it is seeded from the User/Machine registry
+    # environment at creation instead (that is why only registry-backed vars like TEMP/SystemRoot were visible to
+    # tests). So write the value into the User (and, best-effort, Machine) registry environment BEFORE launching te
+    # so the broker-spawned te.processhost picks it up at creation. Keep the Process-scope $env: too for any
+    # direct-child te.exe case and for local dev. Only set it when a pipeline did not already provide a value.
+    # Because native crashes are now surfaced as non-gating warnings, running the aggressive variant on every
+    # pipeline - including the per-PR gate - is safe and keeps the stage green.
     if (-not $env:WINUI_LIFETIME_STRESS_NATIVE)
     {
         $env:WINUI_LIFETIME_STRESS_NATIVE = "1"
     }
+
+    # Registry-backed scopes so the broker-spawned te.processhost.exe inherits it at process creation.
+    try
+    {
+        [Environment]::SetEnvironmentVariable("WINUI_LIFETIME_STRESS_NATIVE", $env:WINUI_LIFETIME_STRESS_NATIVE, "User")
+        Write-Host "Lifetime stress: set WINUI_LIFETIME_STRESS_NATIVE at User scope."
+    }
+    catch
+    {
+        Write-Host "Lifetime stress: WARNING - failed to set WINUI_LIFETIME_STRESS_NATIVE at User scope: $($_.Exception.Message)"
+    }
+    try
+    {
+        [Environment]::SetEnvironmentVariable("WINUI_LIFETIME_STRESS_NATIVE", $env:WINUI_LIFETIME_STRESS_NATIVE, "Machine")
+        Write-Host "Lifetime stress: set WINUI_LIFETIME_STRESS_NATIVE at Machine scope."
+    }
+    catch
+    {
+        # Machine scope requires elevation; not fatal - User scope (and Process scope) still apply.
+        Write-Host "Lifetime stress: NOTE - could not set WINUI_LIFETIME_STRESS_NATIVE at Machine scope (needs elevation): $($_.Exception.Message)"
+    }
+
     Write-Host "Lifetime stress: WINUI_LIFETIME_STRESS_NATIVE=$($env:WINUI_LIFETIME_STRESS_NATIVE) (1 = aggressive native repro)."
 }
 
