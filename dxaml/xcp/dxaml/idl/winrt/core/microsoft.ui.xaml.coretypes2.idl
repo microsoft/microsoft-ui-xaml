@@ -2326,6 +2326,14 @@ namespace Microsoft.UI.Xaml.Hosting
             event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Hosting.WindowsXamlManager,Microsoft.UI.Xaml.Hosting.XamlShutdownCompletedOnThreadEventArgs> XamlShutdownCompletedOnThread;
             static Microsoft.UI.Xaml.Hosting.WindowsXamlManager GetForCurrentThread();
         }
+    
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        [feature(Feature_ExperimentalApi)]
+        [static_name("Microsoft.UI.Xaml.Hosting.IWindowsXamlManagerStaticsFeature_ExperimentalApi")]
+        {
+            static event Windows.Foundation.EventHandler<Object> WinUIProcessShutdownStarting;
+            static event Windows.Foundation.EventHandler<Object> WinUIProcessShutdownCompleted;
+        }
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 5)]

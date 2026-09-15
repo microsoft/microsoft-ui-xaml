@@ -5,6 +5,7 @@
 #include "common.h"
 #include "XamlMetadataProvider.h"
 #include "MUXControlsFactory.h"
+#include <mutex>
 
 #ifdef MATERIALS_INCLUDED
 #ifdef MUX_PRERELEASE
@@ -14,10 +15,22 @@
 
 #include "XamlControlsXamlMetaDataProvider.g.cpp"
 
+extern "C" void __stdcall DeinitializeMUXC();
+
 bool MUXControlsFactory::s_initialized{ false };
 
 void MUXControlsFactory::EnsureInitialized()
 {
+    static std::once_flag processShutdownSubscription;
+    std::call_once(processShutdownSubscription, []()
+    {
+        winrt::Microsoft::UI::Xaml::Hosting::WindowsXamlManager::WinUIProcessShutdownStarting(
+            [](const auto&, const auto&)
+            {
+                DeinitializeMUXC();
+            });
+    });
+
     if (!s_initialized)
     {
         // Need to register here the DPs of types which are not referenced in our XAML but whose attached properties are.

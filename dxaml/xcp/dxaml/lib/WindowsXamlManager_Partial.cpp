@@ -28,6 +28,59 @@ using namespace DirectUI;
 
 namespace DirectUI {
 
+namespace
+{
+class WinUIProcessShutdownEvents
+{
+public:
+    using HandlerType = wf::IEventHandler<IInspectable*>;
+
+    _Check_return_ HRESULT AddStartingHandler(
+        _In_ HandlerType* handler,
+        _Out_ EventRegistrationToken* token)
+    {
+        return m_startingEventSource.Add(handler, token);
+    }
+
+    _Check_return_ HRESULT RemoveStartingHandler(EventRegistrationToken token)
+    {
+        return m_startingEventSource.Remove(token);
+    }
+
+    _Check_return_ HRESULT AddCompletedHandler(
+        _In_ HandlerType* handler,
+        _Out_ EventRegistrationToken* token)
+    {
+        return m_completedEventSource.Add(handler, token);
+    }
+
+    _Check_return_ HRESULT RemoveCompletedHandler(EventRegistrationToken token)
+    {
+        return m_completedEventSource.Remove(token);
+    }
+
+    void RaiseStarting()
+    {
+        IGNOREHR(m_startingEventSource.InvokeAll(nullptr, nullptr));
+    }
+
+    void RaiseCompleted()
+    {
+        IGNOREHR(m_completedEventSource.InvokeAll(nullptr, nullptr));
+    }
+
+private:
+    Microsoft::WRL::EventSource<HandlerType> m_startingEventSource;
+    Microsoft::WRL::EventSource<HandlerType> m_completedEventSource;
+};
+
+WinUIProcessShutdownEvents& GetWinUIProcessShutdownEvents()
+{
+    static WinUIProcessShutdownEvents events;
+    return events;
+}
+}
+
 // This class implements the "legacy" shutdown mode, which was the mode for WinAppSDK 1.4.
 // There's a private API to re-enable this.  In the future, we'll delete this.
 // It keeps track of all the non-Closed WindowsXamlManagers on the thread, and when
@@ -132,11 +185,17 @@ public:
         _In_ msy::IDispatcherQueueShutdownStartingEventArgs* args) override
     {
         auto managerStrongRef = m_manager;
+        auto core = WindowsXamlManager::tls_xamlCore;
+        bool shouldRaiseProcessShutdownEvents = false;
 
-        // WARNING: "this" will be invalid after Close() returns!
-        this->Close();
+        IGNOREHR(core->Close(&shouldRaiseProcessShutdownEvents));
 
         managerStrongRef->RaiseXamlShutdownCompletedOnThreadEvent(args);
+
+        if (shouldRaiseProcessShutdownEvents)
+        {
+            core->RaiseProcessShutdownEvents();
+        }
 
         return S_OK;
     }
@@ -219,6 +278,36 @@ _Check_return_ HRESULT WindowsXamlManagerFactory::GetForCurrentThreadImpl(_Outpt
     return S_OK;
 }
 
+IFACEMETHODIMP WindowsXamlManagerFactory::add_WinUIProcessShutdownStarting(
+    _In_ wf::IEventHandler<IInspectable*>* value,
+    _Out_ EventRegistrationToken* token)
+{
+    ARG_VALIDRETURNPOINTER(token);
+    ARG_NOTNULL_RETURN(value, "value");
+
+    return GetWinUIProcessShutdownEvents().AddStartingHandler(value, token);
+}
+
+IFACEMETHODIMP WindowsXamlManagerFactory::remove_WinUIProcessShutdownStarting(EventRegistrationToken token)
+{
+    return GetWinUIProcessShutdownEvents().RemoveStartingHandler(token);
+}
+
+IFACEMETHODIMP WindowsXamlManagerFactory::add_WinUIProcessShutdownCompleted(
+    _In_ wf::IEventHandler<IInspectable*>* value,
+    _Out_ EventRegistrationToken* token)
+{
+    ARG_VALIDRETURNPOINTER(token);
+    ARG_NOTNULL_RETURN(value, "value");
+
+    return GetWinUIProcessShutdownEvents().AddCompletedHandler(value, token);
+}
+
+IFACEMETHODIMP WindowsXamlManagerFactory::remove_WinUIProcessShutdownCompleted(EventRegistrationToken token)
+{
+    return GetWinUIProcessShutdownEvents().RemoveCompletedHandler(token);
+}
+
 /*static*/ ctl::ComPtr<WindowsXamlManager> WindowsXamlManager::GetForCurrentThread()
 {
     if (tls_xamlCore)
@@ -252,6 +341,15 @@ _Check_return_ HRESULT WindowsXamlManager::XamlCore::Initialize(msy::IDispatcher
         // Take the lock here to ensure FrameworkApplication::ReleaseCurrent isn't happening on another thread while
         //  we're starting up the Application (see XamlCore::Close)
         CApplicationLock lock;
+        if (s_processShutdownInProgress)
+        {
+            IFC_RETURN(ErrorHelper::OriginateError(
+                HRESULT_FROM_WIN32(ERROR_INVALID_STATE),
+                XSTRING_PTR_EPHEMERAL(
+                    L"Xaml cannot be initialized while process shutdown is in progress. "
+                    L"Wait until WinUIProcessShutdownCompleted is raised."
+                ), true /*outputToDebugger*/));
+        }
         ++s_instancesInProcess;
 
         frameworkApplication = FrameworkApplication::GetCurrentNoRef();
@@ -371,7 +469,12 @@ _Check_return_ HRESULT WindowsXamlManager::EnqueueClose()
         // Close if we're still in the Closing state.
         if (core->GetState() == XamlCore::State::Closing)
         {
-            IFC_RETURN(core->Close());
+            bool shouldRaiseProcessShutdownEvents = false;
+            IFC_RETURN(core->Close(&shouldRaiseProcessShutdownEvents));
+            if (shouldRaiseProcessShutdownEvents)
+            {
+                core->RaiseProcessShutdownEvents();
+            }
         }
         return S_OK;
     });
@@ -419,8 +522,9 @@ WindowsXamlManager::XamlCore::~XamlCore()
     ASSERT(m_state == State::Closed);
 }
 
-_Check_return_ HRESULT WindowsXamlManager::XamlCore::Close()
+_Check_return_ HRESULT WindowsXamlManager::XamlCore::Close(_Out_ bool* shouldRaiseProcessShutdownEvents)
 {
+    *shouldRaiseProcessShutdownEvents = false;
     SetState(XamlCore::State::Closed);
 
     if (m_dispatcherQueue && m_frameworkShutdownStartingToken.value)
@@ -518,37 +622,60 @@ _Check_return_ HRESULT WindowsXamlManager::XamlCore::Close()
     // Conveniently, we know when the last instance is going away because we're tracking the XamlCore instance count in
     // s_instancesInProcess.
     //
+    bool lastInstanceInProcess = false;
     {
         CApplicationLock applicationLock;
 
         --s_instancesInProcess;
-        const bool lastInstanceInProcess = (s_instancesInProcess == 0);
-
-        if (lastInstanceInProcess)
+        if (s_instancesInProcess == 0)
         {
-            // MetadataAPI::Reset() is called in FrameworkApplication::ReleaseCurrent when m_metadataRef is reset
-            FrameworkApplication::ReleaseCurrent();
-
-            // ActivationFactoryCache is a process-wide singleton (DependencyLocator StoragePolicyFlags::None). It caches
-            // shared WinRT static factories (DragDropManager, ContentIsland, InputActivationListener, ...) and holds
-            // module locks for Microsoft.UI.Input/Composition/Dispatching. Its shared references must be released exactly
-            // once per process, and while holding the CApplicationLock so concurrent XamlCore::Close calls on different
-            // UI threads are serialized.
-            //
-            // Previously ResetCache() ran on every thread's XamlCore::Close, outside this lock. When an app hosted XAML
-            // on multiple UI threads that shut down concurrently, two threads could enter ResetCache() at the same time
-            // and double-release the same cached factory / module lock. That drove the Microsoft.UI.Input module-lock
-            // refcount below zero and tripped FAIL_FAST_FATAL_APP_EXIT (0xc0000409). Gating on lastInstanceInProcess and
-            // holding the lock removes both the redundant per-thread teardown and the race. See AB#57997833.
-            ActivationFactoryCache::GetActivationFactoryCache()->ResetCache();
+            s_processShutdownInProgress = true;
+            lastInstanceInProcess = true;
         }
+    }
+
+    if (lastInstanceInProcess)
+    {
+        CApplicationLock applicationLock;
+
+        // MetadataAPI::Reset() is called in FrameworkApplication::ReleaseCurrent when m_metadataRef is reset
+        FrameworkApplication::ReleaseCurrent();
+
+        // ActivationFactoryCache is a process-wide singleton (DependencyLocator StoragePolicyFlags::None). It caches
+        // shared WinRT static factories (DragDropManager, ContentIsland, InputActivationListener, ...) and holds
+        // module locks for Microsoft.UI.Input/Composition/Dispatching. Its shared references must be released exactly
+        // once per process, and while holding the CApplicationLock so concurrent XamlCore::Close calls on different
+        // UI threads are serialized.
+        //
+        // Previously ResetCache() ran on every thread's XamlCore::Close, outside this lock. When an app hosted XAML
+        // on multiple UI threads that shut down concurrently, two threads could enter ResetCache() at the same time
+        // and double-release the same cached factory / module lock. That drove the Microsoft.UI.Input module-lock
+        // refcount below zero and tripped FAIL_FAST_FATAL_APP_EXIT (0xc0000409). Gating on lastInstanceInProcess and
+        // holding the lock removes both the redundant per-thread teardown and the race. See AB#57997833.
+        ActivationFactoryCache::GetActivationFactoryCache()->ResetCache();
     }
 
     DependencyLocator::UninitializeThread();
 
     // "this" ptr may be null after this next line
     tls_xamlCore = nullptr;
+
+    *shouldRaiseProcessShutdownEvents = lastInstanceInProcess;
     return S_OK;
+}
+
+void WindowsXamlManager::XamlCore::RaiseProcessShutdownEvents()
+{
+    GetWinUIProcessShutdownEvents().RaiseStarting();
+
+    {
+        CApplicationLock applicationLock;
+        FAIL_FAST_ASSERT(s_instancesInProcess == 0);
+        FAIL_FAST_ASSERT(s_processShutdownInProgress);
+        s_processShutdownInProgress = false;
+    }
+
+    GetWinUIProcessShutdownEvents().RaiseCompleted();
 }
 
 _Check_return_ HRESULT WindowsXamlManager::Close()
@@ -592,8 +719,13 @@ _Check_return_ HRESULT WindowsXamlManager::CloseImpl(bool synchronous)
             // callback runs (see EnqueueClose), it will check to make sure the object still needs to be closed
             // before doing anything.
             tls_xamlCore->SetState(XamlCore::State::Closing);
-            IFC_RETURN(tls_xamlCore->Close());
-            tls_xamlCore = nullptr; // Close() already does this, but adding here for clarity.
+            auto core = tls_xamlCore;
+            bool shouldRaiseProcessShutdownEvents = false;
+            IFC_RETURN(core->Close(&shouldRaiseProcessShutdownEvents));
+            if (shouldRaiseProcessShutdownEvents)
+            {
+                core->RaiseProcessShutdownEvents();
+            }
         }
         else
         {
