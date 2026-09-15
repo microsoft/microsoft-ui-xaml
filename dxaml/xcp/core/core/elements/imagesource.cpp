@@ -271,6 +271,8 @@ CImageSource::~CImageSource()
 
     DisconnectImageOperation();
 
+    CompleteAsyncAction(E_ABORT);
+
     core->RemoveImageUpdateRequest(m_pImageSurfaceWrapper);
 
     VERIFYHR(UnregisterWithReloadManager());
