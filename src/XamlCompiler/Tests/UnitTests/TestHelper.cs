@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Win8Xaml.CompilerProxies;
@@ -521,6 +522,19 @@ namespace UnitTests
                 fileInfo.RelativePathFromGeneratedCodeToXamlFile = dummyFileName;
                 fileInfo.SourceXamlGivenPath = dummyFilePath;
                 sharedCodeInfo.AddXamlFileInfo(fileInfo);
+            }
+
+            if (!cpx.IsPass1)
+            {
+                // Mirror CompileXamlInternal, which parses the bind universes once every file has
+                // been harvested and before any code is generated. Without this the x:Binds have
+                // no path steps and no binding code is emitted at all.
+                foreach (BindUniverse bindUniverse in sharedCodeInfo.BindUniverses)
+                {
+                    IEnumerable<XamlCompileError> errors = bindUniverse.Parse(sharedCodeInfo);
+                    Assert.AreEqual(0, errors.Count(),
+                        String.Join(", ", errors.Select(error => error.ErrorCode + ": " + error.Message)));
+                }
             }
 
             if (!cpx.IsPass1 && lang == CodeGenLanguage.Cpp)
