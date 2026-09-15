@@ -98,6 +98,47 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // The positive test above only proves the peer stopped reporting a blanket "offscreen";
+        // these are the cases where it still has to say true, so that assistive technology keeps
+        // skipping a canvas the user genuinely cannot reach.
+        [TestMethod]
+        public void InkCanvasAutomationPeerReportsOffscreen()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var collapsedCanvas = new InkCanvas
+                {
+                    Width = 400,
+                    Height = 300,
+                    Visibility = Visibility.Collapsed
+                };
+
+                Content = collapsedCanvas;
+                Content.UpdateLayout();
+
+                var collapsedPeer = FrameworkElementAutomationPeer.CreatePeerForElement(collapsedCanvas);
+                Verify.IsNotNull(collapsedPeer, "InkCanvas should create an automation peer.");
+                Verify.IsTrue(collapsedPeer.IsOffscreen(), "A collapsed InkCanvas should report itself as offscreen.");
+
+                // Positioned far past the right edge of the content area, so no part of it intersects
+                // the XamlRoot - this is the "beyond the app boundary" case.
+                var offscreenCanvas = new InkCanvas { Width = 400, Height = 300 };
+                var canvasHost = new Canvas();
+                canvasHost.Children.Add(offscreenCanvas);
+                Canvas.SetLeft(offscreenCanvas, 20000);
+
+                Content = canvasHost;
+                Content.UpdateLayout();
+
+                var offscreenPeer = FrameworkElementAutomationPeer.CreatePeerForElement(offscreenCanvas);
+                Verify.IsNotNull(offscreenPeer, "InkCanvas should create an automation peer.");
+
+                var offscreenBounds = offscreenPeer.GetBoundingRectangle();
+                Log.Comment($"Offscreen bounding rectangle: {offscreenBounds.X},{offscreenBounds.Y} {offscreenBounds.Width}x{offscreenBounds.Height}");
+                Verify.IsTrue(offscreenPeer.IsOffscreen(), "An InkCanvas positioned outside the content area should report itself as offscreen.");
+            });
+        }
+
         [TestMethod]
         public void InkCanvasMultipleInstancesTest()
         {
