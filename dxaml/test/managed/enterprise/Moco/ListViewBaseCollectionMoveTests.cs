@@ -171,6 +171,57 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
+        public void CollectionMoveIndexOfRejectsMutationDuringRead()
+        {
+            WithCollectionMoveChange(true, () =>
+            {
+                UIExecutor.Execute(() =>
+                {
+                    const int changedState = unchecked((int)0x8000000C);
+                    var source = new MoveReadTrackingSource(3);
+                    var viewSource = new CollectionViewSource { Source = source };
+                    var view = viewSource.View;
+                    view.MoveCurrentToPosition(-1);
+                    Verify.AreEqual(-1, view.CurrentPosition);
+
+                    var notifications = new List<CollectionChange>();
+                    bool mutatedDuringRead = false;
+                    VectorChangedEventHandler<object> handler = (sender, args) =>
+                    {
+                        notifications.Add(args.CollectionChange);
+                        if (args.CollectionChange == CollectionChange.ItemRemoved)
+                        {
+                            source.OnIndexedRead = () =>
+                            {
+                                source.OnIndexedRead = null;
+                                mutatedDuringRead = true;
+                                source.MoveRange(0, 1, 1);
+                            };
+                            VerifyMoveFailure(() => view.IndexOf("Item 1"), changedState);
+                        }
+                    };
+                    view.VectorChanged += handler;
+                    try
+                    {
+                        source.MoveRange(0, 2, 1);
+                        Verify.IsTrue(mutatedDuringRead);
+                        Verify.IsTrue(notifications.SequenceEqual(new[] { CollectionChange.ItemRemoved, CollectionChange.Reset }));
+                        var finalItems = new object[] { "Item 2", "Item 1", "Item 0" };
+                        VerifyMoveItems(view, finalItems, finalItems);
+                        VerifyMoveSource(source, finalItems);
+                    }
+                    finally
+                    {
+                        source.OnIndexedRead = null;
+                        view.VectorChanged -= handler;
+                    }
+                });
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
         public void CollectionMoveRejectsReentrantViewMutation()
         {
             WithCollectionMoveChange(true, () =>
@@ -1018,6 +1069,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
             public int IndexedReadCount { get; private set; }
             public int EnumeratorCount { get; private set; }
             public int CopyCount { get; private set; }
+            public Action OnIndexedRead { get; set; }
             public event NotifyCollectionChangedEventHandler CollectionChanged;
 
             public MoveReadTrackingSource(int count)
@@ -1046,7 +1098,9 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                 get
                 {
                     IndexedReadCount++;
-                    return items[index];
+                    var item = items[index];
+                    OnIndexedRead?.Invoke();
+                    return item;
                 }
                 set { throw new NotSupportedException(); }
             }
