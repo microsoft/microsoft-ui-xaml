@@ -184,6 +184,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public const string XamlTypeInfo = "XamlTypeInfo";
         public const string Get = "Get";
         public const string Set = "Set";
+        public const string ToString = "ToString";
         public const string Debug = "Debug";
         public const string Converter = "Converter";
         public const string ConverterLanguage = "ConverterLanguage";

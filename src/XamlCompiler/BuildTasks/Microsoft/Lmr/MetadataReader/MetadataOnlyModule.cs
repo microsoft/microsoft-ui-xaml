@@ -3,7 +3,7 @@
 // Provide implementation of System.Reflection.Module around a System.Reflection.Metadata.MetadataReader.
 
 using System;
-using Debug = Microsoft.UI.Xaml.Markup.Compiler.Lmr.Internal.Debug;
+using Debug = System.Diagnostics.Debug;
 using System.Text;
 
 using System.Collections.Generic;
@@ -574,7 +574,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                     // Validate results.
                     if (assembly == null)
                     {
-                        Debug.Assert(false);
+                        // Not an invariant violation: an ITypeUniverse may legitimately hand back
+                        // null here, and XamlDomValidator.CheckIsUnresolvedForwardedType relies on
+                        // the exception below to raise WMC0003 for a type forwarded to an assembly
+                        // the project does not reference. Reporting it is the contract; asserting
+                        // on it is not.
                         throw new UnresolvedAssemblyException(Resources.ResolverMustResolveToValidAssembly);
                     }
                     {
