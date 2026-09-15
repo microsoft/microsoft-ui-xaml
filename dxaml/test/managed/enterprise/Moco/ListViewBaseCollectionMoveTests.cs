@@ -29,13 +29,8 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:false}")]
-        public void CollectionMoveNotificationsAreDisabledByDefault()
+        public void CollectionMoveNotificationsCanBeDisabled()
         {
-            UIExecutor.Execute(() =>
-            {
-                Verify.IsFalse(XamlOptionalChanges.IsChangeEnabled(XamlChangeId.CollectionMoveNotifications));
-            });
-
             WithCollectionMoveChange(false, () =>
             {
                 UIExecutor.Execute(() =>
@@ -54,7 +49,6 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "WPF")]
-        [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
         public void CollectionMoveSingleItemNotificationsAreCoherent()
         {
             WithCollectionMoveChange(true, () =>
@@ -417,7 +411,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                 UIExecutor.Execute(() =>
                 {
                     Verify.AreEqual(enabled, XamlOptionalChanges.IsChangeEnabled(XamlChangeId.CollectionMoveNotifications),
-                        "Data:XamlOptionalChanges must configure the Move behavior for this test.");
+                        "Test defaults and Data:XamlOptionalChanges must configure the Move behavior for this test.");
                     XamlOptionalChanges.Lock();
                     Verify.IsTrue(XamlOptionalChanges.IsLocked());
                 });

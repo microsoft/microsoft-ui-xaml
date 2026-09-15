@@ -2192,6 +2192,7 @@ void WindowHelper::InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* c
         optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_OptimizeApplyStyles, &mutated);
         optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_DefaultStyleOptimizations, &mutated);
         optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_DeferContextFlyoutInit, &mutated);
+        optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_CollectionMoveNotifications, &mutated);
 
         // Apply per-test overrides from XamlOptionalChanges test data.
         for (const auto& [changeId, enabled] : changeOverrides)
