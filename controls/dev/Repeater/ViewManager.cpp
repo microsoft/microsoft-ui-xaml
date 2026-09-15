@@ -532,6 +532,78 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
         break;
     }
 
+    case winrt::NotifyCollectionChangedAction::Move:
+    {
+        const auto oldIndex = args.OldStartingIndex();
+        const auto newIndex = args.NewStartingIndex();
+        const auto count = args.OldItems() != nullptr ? static_cast<int>(args.OldItems().Size()) : 1;
+
+        if (oldIndex != newIndex && count > 0)
+        {
+            auto updateIndex = [oldIndex, newIndex, count](int dataIndex) -> int
+            {
+                if (oldIndex < newIndex)
+                {
+                    if (dataIndex >= oldIndex && dataIndex < oldIndex + count)
+                    {
+                        return dataIndex + (newIndex - oldIndex);
+                    }
+                    else if (dataIndex >= oldIndex + count && dataIndex <= newIndex + count - 1)
+                    {
+                        return dataIndex - count;
+                    }
+                }
+                else // newIndex < oldIndex
+                {
+                    if (dataIndex >= oldIndex && dataIndex < oldIndex + count)
+                    {
+                        return dataIndex - (oldIndex - newIndex);
+                    }
+                    else if (dataIndex >= newIndex && dataIndex < oldIndex)
+                    {
+                        return dataIndex + count;
+                    }
+                }
+                return dataIndex;
+            };
+
+            auto children = m_owner->Children();
+            for (unsigned i = 0u; i < children.Size(); ++i)
+            {
+                auto element = children.GetAt(i);
+                auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+                if (virtInfo->IsRealized())
+                {
+                    const auto currentDataIndex = virtInfo->Index();
+                    const auto updatedDataIndex = updateIndex(currentDataIndex);
+                    if (currentDataIndex != updatedDataIndex)
+                    {
+                        UpdateElementIndex(element, virtInfo, updatedDataIndex);
+                    }
+                }
+            }
+
+            for (size_t i = 0; i < m_pinnedPool.size(); ++i)
+            {
+                auto elementInfo = m_pinnedPool[i];
+                auto virtInfo = elementInfo.VirtualizationInfo();
+                if (virtInfo->IsRealized())
+                {
+                    const auto currentDataIndex = virtInfo->Index();
+                    const auto updatedDataIndex = updateIndex(currentDataIndex);
+                    if (currentDataIndex != updatedDataIndex)
+                    {
+                        auto element = elementInfo.PinnedElement();
+                        UpdateElementIndex(element, virtInfo, updatedDataIndex);
+                    }
+                }
+            }
+
+            InvalidateRealizedIndicesHeldByLayout();
+        }
+        break;
+    }
+
     case winrt::NotifyCollectionChangedAction::Reset:
         // If we get multiple resets back to back before
         // running layout, we dont have to clear all the elements again.         
