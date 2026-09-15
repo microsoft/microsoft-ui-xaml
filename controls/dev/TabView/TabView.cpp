@@ -1076,12 +1076,15 @@ void TabView::RequestCloseTab(winrt::TabViewItem const& container, bool updateTa
                         return;
                     }
 
-                    if (!newFocusedElement)
+                    if (!newFocusedElement && IsFocusable(m_addButton.get()))
                     {
                         newFocusedElement = m_addButton.get();
                     }
 
-                    args.Handled(args.TrySetNewFocusedElement(newFocusedElement));
+                    if (newFocusedElement && newFocusedElement != args.NewFocusedElement())
+                    {
+                        args.Handled(args.TrySetNewFocusedElement(newFocusedElement));
+                    }
                 }
             });
     }
