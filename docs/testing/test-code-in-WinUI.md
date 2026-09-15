@@ -160,6 +160,33 @@ Provides test helper functions such as:
 
 Most private API usage has been removed from Private.Infrastructure. It depends on an internal package for input injection.
 
+#### WPF leak detection
+
+Core tests opt into WPF native leak detection with the method property
+`Data:WpfLeakDetection={true}`. Initially, only
+`CheckBoxIntegrationTests::CanInstantiate` opts in. Existing method fixtures
+need no changes:
+
+```cpp
+// TestSetup
+TestServices::WindowHelper->InitializeXaml();
+
+// TestCleanup
+TestServices::WindowHelper->ShutdownXaml();
+TestServices::WindowHelper->VerifyTestCleanup();
+```
+
+For WPF, shutdown leaves the original core idle so verification can check it
+before the next `InitializeXaml()` recreates the host. All initialization overloads
+handle that handoff. Obtain dispatcher-bound helpers from `TestServices` after
+initialization, rather than caching them across host replacement.
+
+Verify an opted-in interval before restarting it; initialization rejects a
+pending leak check. Cleanup that requires a live core runs before shutdown-to-idle.
+UAP behavior, leak opt-outs, and the OneCore shutdown restriction are unchanged.
+This check covers native residue after teardown, not whole-host or CLR retention.
+It does not add GC passes, exclusions, or class-level host teardown.
+
 ### Server Component
 
 Most of the test infra executes in the main test process. However, for some things we want to execute in a different

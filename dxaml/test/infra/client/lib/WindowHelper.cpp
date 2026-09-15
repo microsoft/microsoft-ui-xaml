@@ -815,20 +815,47 @@ HRESULT WindowHelper::VerifyTestCleanup()
 {
     COM_START_GROUP(L"WindowHelper::VerifyTestCleanup")
     {
-         Hosting::HostingMode hostingMode = Hosting::HostingMode::UAP;
+        Hosting::HostingMode hostingMode = Hosting::HostingMode::UAP;
         LogThrow_IfFailed(GetHostingMode(&hostingMode));
 
-        // TODO: Enable leak detection when in Win32 hosting modes
-        if (IsLeakDetectionEnabled() && hostingMode == HostingMode::UAP)
+        bool checkWpfLeaks = false;
+        if (hostingMode == HostingMode::WPF)
         {
-            RunOnUIThread([] () {
-                // Be a plumber
+            LogThrow_IfFalse(m_wpfCoreState != WpfCoreState::ShuttingDown,
+                E_UNEXPECTED, L"WPF shutdown did not complete; cleanup cannot be verified.");
+            checkWpfLeaks = m_wpfLeakCheckPending || IsWpfLeakDetectionRequested();
+            if (checkWpfLeaks && !ErrorHandlingHelper::ShouldIgnoreLeaks() && m_wpfCoreState != WpfCoreState::Idle)
+            {
+                BOOLEAN isOneCore = FALSE;
+                LogThrow_IfFailed(Utilities::IsOneCoreStatic(&isOneCore));
+                LogThrow_IfFalse(isOneCore,
+                    E_UNEXPECTED, L"WPF leak verification requires a successful ShutdownXaml.");
+            }
+        }
+
+        if ((hostingMode == HostingMode::UAP && IsLeakDetectionEnabled()) ||
+            (hostingMode == HostingMode::WPF && m_wpfLeakCheckPending))
+        {
+            if (hostingMode == HostingMode::WPF)
+            {
+                LOG_OUTPUT(L"Checking WPF test for leaks in VerifyTestCleanup.");
+            }
+
+            // A failed attempt is reported in this cleanup, not retried after host recreation.
+            m_wpfLeakCheckPending = false;
+            RunOnUIThread([]() {
                 ErrorHandlingHelper::PerformLeakDetection();
             });
+
+            if (hostingMode == HostingMode::WPF)
+            {
+                LOG_OUTPUT(L"WPF leak check completed.");
+            }
         }
         else
         {
-            LOG_OUTPUT(L"> VerifyTestCleanup: SKIPPING leak detection for this test.");
+            m_wpfLeakCheckPending = false;
+            LOG_OUTPUT(L"> VerifyTestCleanup: SKIPPING leak detection (disabled or already checked).");
         }
 
         // Leaving UI content behind is something a test shouldn't do and for a lot of controls
@@ -1008,33 +1035,41 @@ HRESULT WindowHelper::VerifyTestCleanup()
            }
         }
 
-        // Briefly inject MockDComp to cause DComp device recreation and comp object leak detection via DebugDeviceFinalReleaseAsserter
-        // The asserter runs when the old DComp device is being cleaned up, and verifies that it experiences its final release
-        // (see DebugDeviceFinalReleaseAsserter::ReleaseAllWithAssert()). If it doesn't, most likely some other composition object
-        // is holding a references to the device has been leaked. In addition to leaking resources, this situation can also cause
-        // failures for subsequent tests running  in the same window, as we're not able to properly hook up the new device while
-        // uncleaned remnants of the old one remain.
-        if (Utilities::IsCompLeakDetectionEnabled())
+        if (hostingMode != HostingMode::WPF || m_wpfCoreState == WpfCoreState::Active)
         {
-            // TODO: This should be a message rather than warning.
-            Log::Warning(L"Briefly inject MockDComp to trigger check for composition leaks...");
-
-            // If we are doing comp leak detection MockDComp should be disabled up to this point
-            _ASSERT(Utilities::GetIsMockDCompDisabledForCompLeakDetection() == true);
-
-            Utilities::SetIsMockDCompDisabledForCompLeakDetection(false);
-            InjectMockDComp();      // Comp object leak validation occurs here, via DebugDeviceFinalReleaseAsserter::ReleaseAllWithAssert
-            WaitForIdle();
-            DetachMockDComp();
-            WaitForIdle();
-            Utilities::SetIsMockDCompDisabledForCompLeakDetection(true);
+            VerifyActiveCoreCleanup();
         }
-
-        LogThrow_IfFailed(WindowHelper::CancelAllConnectedAnimationsAndResetDefaults());
 
         Utilities::CraterJupiter(craterJupiterError);
     }
     COM_END
+}
+
+void WindowHelper::VerifyActiveCoreCleanup()
+{
+    // Briefly inject MockDComp to cause DComp device recreation and comp object leak detection via DebugDeviceFinalReleaseAsserter
+    // The asserter runs when the old DComp device is being cleaned up, and verifies that it experiences its final release
+    // (see DebugDeviceFinalReleaseAsserter::ReleaseAllWithAssert()). If it doesn't, most likely some other composition object
+    // is holding a references to the device has been leaked. In addition to leaking resources, this situation can also cause
+    // failures for subsequent tests running  in the same window, as we're not able to properly hook up the new device while
+    // uncleaned remnants of the old one remain.
+    if (Utilities::IsCompLeakDetectionEnabled())
+    {
+        // TODO: This should be a message rather than warning.
+        Log::Warning(L"Briefly inject MockDComp to trigger check for composition leaks...");
+
+        // If we are doing comp leak detection MockDComp should be disabled up to this point
+        _ASSERT(Utilities::GetIsMockDCompDisabledForCompLeakDetection() == true);
+
+        Utilities::SetIsMockDCompDisabledForCompLeakDetection(false);
+        InjectMockDComp();      // Comp object leak validation occurs here, via DebugDeviceFinalReleaseAsserter::ReleaseAllWithAssert
+        WaitForIdle();
+        DetachMockDComp();
+        WaitForIdle();
+        Utilities::SetIsMockDCompDisabledForCompLeakDetection(true);
+    }
+
+    LogThrow_IfFailed(WindowHelper::CancelAllConnectedAnimationsAndResetDefaults());
 }
 
 void WindowHelper::SetWindowContentStatic(xaml::IUIElement* pElement, wrl::ComPtr<test_infra::Hosting::IWin32Host> win32Host)
@@ -2023,10 +2058,57 @@ HRESULT WindowHelper::CleanUpAfterTest()
     COM_END
 }
 
+HRESULT WindowHelper::VerifyNoPendingWpfLeakCheck() const
+{
+    if (m_wpfLeakCheckPending)
+    {
+        Log::Error(L"Call VerifyTestCleanup before reinitializing a WPF leak-detection test.");
+        return E_UNEXPECTED;
+    }
+    return S_OK;
+}
+
+wrl::ComPtr<test_infra::IWindowHelper> WindowHelper::PrepareHostForXamlInitialization()
+{
+    wrl::ComPtr<test_infra::IWindowHelper> currentHelper;
+    LogThrow_IfFailed(m_pTestServices->get_WindowHelper(&currentHelper));
+    if (currentHelper.Get() != static_cast<test_infra::IWindowHelper*>(this))
+    {
+        return currentHelper;
+    }
+
+    if (m_wpfCoreState == WpfCoreState::Active)
+    {
+        return nullptr;
+    }
+
+    LogThrow_IfFalse(m_wpfCoreState == WpfCoreState::Idle,
+        E_UNEXPECTED, L"WPF shutdown did not complete; this host cannot be reinitialized.");
+    LogThrow_IfFailed(VerifyNoPendingWpfLeakCheck());
+
+    LOG_OUTPUT(L"Recreating the idle WPF host during InitializeXaml.");
+    LogThrow_IfFailed(m_pTestServices->InitializeHost());
+    LogThrow_IfFailed(m_pTestServices->get_WindowHelper(&currentHelper));
+    LogThrow_IfFalse(currentHelper && currentHelper.Get() != static_cast<test_infra::IWindowHelper*>(this),
+        E_UNEXPECTED, L"WPF host recreation did not replace WindowHelper.");
+    LogThrow_IfFailed(currentHelper->RestoreForegroundWindow());
+    RpcClientEnsureConnected();
+    LogThrow_IfFailed(RpcResetInputInjection());
+    return currentHelper;
+}
+
 HRESULT WindowHelper::InitializeXaml()
 {
     COM_START_GROUP(L"WindowHelper::InitializeXaml")
     {
+        // InitializeHost replaces the service's reference to this helper.
+        wrl::ComPtr<WindowHelper> keepAlive(this);
+        if (auto currentHelper = PrepareHostForXamlInitialization())
+        {
+            LogThrow_IfFailed(currentHelper->InitializeXaml());
+            return S_OK;
+        }
+
         // Since we're being initialized without a custom provider, we'll use the MUXC provider.
         wrl::ComPtr<xaml_markup::IXamlMetadataProvider> xamlControlsXamlMetadataProvider;
 
@@ -2420,6 +2502,13 @@ HRESULT WindowHelper::InitializeXamlWithCustomMetadata(_In_ xaml_markup::IXamlMe
     {
         Throw::IfNull(registrar);
 
+        wrl::ComPtr<WindowHelper> keepAlive(this);
+        if (auto currentHelper = PrepareHostForXamlInitialization())
+        {
+            LogThrow_IfFailed(currentHelper->InitializeXamlWithCustomMetadata(customProvider, registrar));
+            return S_OK;
+        }
+
         LogThrow_IfFailed(InitializeXamlWithProvider(customProvider));
 
         // Now tell the registrar to register
@@ -2434,6 +2523,13 @@ HRESULT WindowHelper::InitializeXamlWithProvider(_In_ xaml_markup::IXamlMetadata
 {
     COM_START
     {
+        wrl::ComPtr<WindowHelper> keepAlive(this);
+        if (auto currentHelper = PrepareHostForXamlInitialization())
+        {
+            LogThrow_IfFailed(currentHelper->InitializeXamlWithProvider(customProvider));
+            return S_OK;
+        }
+
         InitializeXamlCore(customProvider);
     }
     COM_END
@@ -2575,15 +2671,30 @@ HRESULT WindowHelper::ShutdownXaml()
 {
     COM_START_GROUP(L"WindowHelper::ShutdownXaml")
     {
+        Hosting::HostingMode hostingMode = Hosting::HostingMode::UAP;
+        LogThrow_IfFailed(GetHostingMode(&hostingMode));
+
+        bool checkWpfLeaks = false;
+        if (hostingMode == HostingMode::WPF)
+        {
+            if (m_wpfCoreState == WpfCoreState::Idle)
+            {
+                LOG_OUTPUT(L"WPF core is already idle.");
+                return S_OK;
+            }
+
+            LogThrow_IfFalse(m_wpfCoreState == WpfCoreState::Active,
+                E_UNEXPECTED, L"WPF shutdown is already in progress or previously failed.");
+            checkWpfLeaks = IsWpfLeakDetectionRequested();
+            m_wpfCoreState = WpfCoreState::ShuttingDown;
+        }
+
         RunOnUIThread([&]() {
             HMODULE hModuleMuxc = GetModuleHandle(L"Microsoft.UI.Xaml.Controls.dll");
             typedef void(__stdcall* PfnDeinitializeMUXC)();
             PfnDeinitializeMUXC pfnDeinitializeMUXC = reinterpret_cast<PfnDeinitializeMUXC>(GetProcAddress(hModuleMuxc, "DeinitializeMUXC"));
             pfnDeinitializeMUXC();
         });
-
-        Hosting::HostingMode hostingMode = Hosting::HostingMode::UAP;
-        LogThrow_IfFailed(GetHostingMode(&hostingMode));
 
         if (hostingMode != Hosting::HostingMode::UAP)
         {
@@ -2678,6 +2789,7 @@ HRESULT WindowHelper::ShutdownXaml()
                 testHooks->SetRuntimeEnabledFeatureOverride(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableCoreShutdown, false, nullptr);
             });
 
+            m_wpfCoreState = WpfCoreState::Active;
             return S_OK;
         }
 
@@ -2727,6 +2839,7 @@ HRESULT WindowHelper::ShutdownXaml()
         }
         else if (hostingMode == Hosting::HostingMode::WPF)
         {
+            VerifyActiveCoreCleanup();
             LogThrow_IfFailed(ResetVisualTree());
         }
 
@@ -2743,16 +2856,15 @@ HRESULT WindowHelper::ShutdownXaml()
 
         LOG_OUTPUT(L"Shutdown complete");
 
-        LOG_OUTPUT(L"Resetting Host");
         if (hostingMode == Hosting::HostingMode::WPF)
         {
-            LogThrow_IfFailed(m_pTestServices->InitializeHost());
-            LogThrow_IfFailed(RestoreForegroundWindow());
+            m_wpfCoreState = WpfCoreState::Idle;
+            m_wpfLeakCheckPending = checkWpfLeaks && IsLeakDetectionEnabled();
+            LOG_OUTPUT(L"WPF core is idle; host recreation deferred until InitializeXaml.");
         }
 
-        LOG_OUTPUT(L"Reset complete");
-
-        if (hostingMode != Hosting::HostingMode::UAP || Utilities::IsBVT())
+        if (hostingMode != Hosting::HostingMode::WPF &&
+            (hostingMode != Hosting::HostingMode::UAP || Utilities::IsBVT()))
         {
             RpcClientEnsureConnected();
             LogThrow_IfFailed(RpcResetInputInjection());
@@ -2944,6 +3056,19 @@ WindowHelper::IsLeakDetectionEnabled()
     }
 
     return s_isShutdownEnabled;
+}
+
+bool WindowHelper::IsWpfLeakDetectionRequested()
+{
+    WEX::Common::String value;
+    if (FAILED(WEX::TestExecution::TestData::TryGetValue(L"WpfLeakDetection", value)))
+    {
+        return false;
+    }
+
+    LogThrow_IfFalse(value.CompareNoCase(L"true") == 0 || value.CompareNoCase(L"false") == 0,
+        E_INVALIDARG, L"WpfLeakDetection must be true or false.");
+    return value.CompareNoCase(L"true") == 0;
 }
 
 void

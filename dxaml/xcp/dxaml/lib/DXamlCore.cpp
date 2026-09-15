@@ -1084,6 +1084,9 @@ _Check_return_ HRESULT DXamlCore::DeinitializeInstanceToIdle()
 {
     RemoveAutoHideScrollBarsChangedHandler();
 
+    // Match full shutdown: the idle core must not retain the drag/drop manager.
+    DeleteDragDrop();
+
     if (m_pDOCoreApp)
     {
         // CApplication is one of the few (if not only) thing that can have resources attached

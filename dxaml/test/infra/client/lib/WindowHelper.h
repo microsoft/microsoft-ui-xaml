@@ -302,12 +302,23 @@ namespace Private { namespace Infrastructure {
         static HWND GetCurrentWindowHandle();
 
         void OverrideMetadataProvider(xaml_markup::IXamlMetadataProvider * provider);
+        HRESULT VerifyNoPendingWpfLeakCheck() const;
 
         static wrl::ComPtr<msy::IDispatcherQueue> GetDispatcherForView(const wrl::ComPtr<wac::ICoreApplicationView>& view);
         static wrl::ComPtr<msy::IDispatcherQueue> GetDispatcherForMainView();
 
     private:
+        enum class WpfCoreState
+        {
+            Active,
+            ShuttingDown,
+            Idle
+        };
+
+        wrl::ComPtr<test_infra::IWindowHelper> PrepareHostForXamlInitialization();
         void InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* customProvider);
+        void VerifyActiveCoreCleanup();
+        static bool IsWpfLeakDetectionRequested();
 
         static HRESULT OnAppSuspended();
 
@@ -353,6 +364,8 @@ namespace Private { namespace Infrastructure {
         static bool s_isShutdownEnabled;
 
         bool m_ensureSatelliteDLLCustomDPCleanup = false;
+        WpfCoreState m_wpfCoreState = WpfCoreState::Active;
+        bool m_wpfLeakCheckPending = false;
 
         // Delegate function the test can set to call it back after every UI thread tick
         wrl::ComPtr<test_infra::IPostTickCallback> m_spPostTickCallback;
