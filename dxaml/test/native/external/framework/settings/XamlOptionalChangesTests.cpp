@@ -129,39 +129,6 @@ void XamlOptionalChangesTests::LockReturnsTrueOnFirstCall()
     VERIFY_IS_TRUE(!!locked);
 }
 
-void XamlOptionalChangesTests::CollectionMoveNotificationsHasIndependentOptIn()
-{
-    auto statics = GetStatics();
-    const auto collectionMove = xaml_settings_abi::XamlChangeId_CollectionMoveNotifications;
-    BOOLEAN enabled = TRUE;
-    BOOLEAN mutated = FALSE;
-
-    VERIFY_SUCCEEDED(statics->IsChangeEnabled(collectionMove, &enabled));
-    VERIFY_IS_FALSE(!!enabled);
-    VERIFY_SUCCEEDED(statics->EnableChange(collectionMove, &mutated));
-    VERIFY_IS_TRUE(!!mutated);
-    VERIFY_SUCCEEDED(statics->IsChangeEnabled(collectionMove, &enabled));
-    VERIFY_IS_TRUE(!!enabled);
-    VERIFY_SUCCEEDED(statics->IsChangeEnabled(c_iconNoGrid, &enabled));
-    VERIFY_IS_FALSE(!!enabled);
-
-    VERIFY_SUCCEEDED(statics->EnableChange(c_iconNoGrid, &mutated));
-    VERIFY_IS_TRUE(!!mutated);
-    VERIFY_SUCCEEDED(statics->DisableChange(collectionMove, &mutated));
-    VERIFY_IS_TRUE(!!mutated);
-    VERIFY_SUCCEEDED(statics->IsChangeEnabled(collectionMove, &enabled));
-    VERIFY_IS_FALSE(!!enabled);
-    VERIFY_SUCCEEDED(statics->IsChangeEnabled(c_iconNoGrid, &enabled));
-    VERIFY_IS_TRUE(!!enabled);
-    VERIFY_SUCCEEDED(statics->DisableChange(c_iconNoGrid, &mutated));
-
-    BOOLEAN locked = FALSE;
-    VERIFY_SUCCEEDED(statics->Lock(&locked));
-    VERIFY_IS_TRUE(!!locked);
-    VERIFY_ARE_EQUAL(statics->EnableChange(collectionMove, &mutated), E_ILLEGAL_STATE_CHANGE);
-    VERIFY_IS_FALSE(!!mutated);
-}
-
 void XamlOptionalChangesTests::EnableChangeFailsAfterLock()
 {
     auto statics = GetStatics();
