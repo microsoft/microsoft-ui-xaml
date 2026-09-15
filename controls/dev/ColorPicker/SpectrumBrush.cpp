@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -27,7 +27,7 @@ void SpectrumBrush::OnDisconnected()
 void SpectrumBrush::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
-    winrt::Compositor compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+    winrt::Compositor compositor = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
 
     if (property == s_MinSurfaceProperty)
     {
@@ -50,7 +50,7 @@ void SpectrumBrush::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
 
 void SpectrumBrush::CreateSpectrumBrush()
 {
-    winrt::Compositor compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+    winrt::Compositor compositor = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
 
     m_brushEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::CrossFadeEffect>();
     m_brushEffect->Source1(winrt::CompositionEffectSourceParameter{ L"MinSurface" });

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -323,129 +323,14 @@ void RevealBrush::EnsureNoiseBrush()
 
 winrt::Windows::Graphics::Effects::IGraphicsEffect RevealBrush::CreateRevealHoverEffect()
 {
-    // We apply noise to the SceneLightingEffect to reduce banding artifacts, but we don't want the noise to show up with just
-    // ambient lighting (when the brush doesn't have the pointer near it). Since the ambient contribution is a constant, we factor
-    // it out to a separate ColorSourceEffect. We can then mask the SLE with a noise texture, combine that with the ambient color
-    // effect, and use that in the rest of the effect graph:
-    //
-    //  (1) <ArithmeticCompositeEffect>
-    //  (2)     <BaseColorEffect />
-    //  (3)     <ColorMatrixEffect>
-    //  (4)         <CompositeStepEffect>
-    //  (5)             <ColorSourceEffect for ambient contribution/>
-    //  (6)             <AlphaMaskEffect>
-    //  (7)                 <SceneLightingEffect without ambient coefficient/>
-    //  (8)                 <ColorMatrixEffect>
-    //  (9)                     <BorderEffect>
-    //                              <Noise texture in a brush />
-    //                          </BorderEffect>
-    //                      </ColorMatrixEffect>
-    //                  </AlphaMaskEffect>
-    //              </CompositeStepEffect>
-    //          </ColorMatrixEffect>
-    //      </ArithmeticCompositeEffect>
-    winrt::Color initBaseColor{ 0, 0, 0, 0 };
-
-    // (9) Noise image BorderEffect (infinitely tiles noise image)
-    auto noiseBorderEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::BorderEffect>();
-    noiseBorderEffect->ExtendX(winrt::CanvasEdgeBehavior::Wrap);
-    noiseBorderEffect->ExtendY(winrt::CanvasEdgeBehavior::Wrap);
-    winrt::CompositionEffectSourceParameter noiseEffectSourceParameter{ L"Noise" };
-    noiseBorderEffect->Source(noiseEffectSourceParameter);
-
-    // (8) ColorMatrixEffect applied to (9) to introduce alpha, to be used to mask the SceneLightingEffect
-    auto noiseOpacityEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::ColorMatrixEffect>();
-    noiseOpacityEffect->ColorMatrix(sc_colorToAlphaMatrix);
-    noiseOpacityEffect->AlphaMode(winrt::CanvasAlphaMode::Straight);
-    noiseOpacityEffect->Source(*noiseBorderEffect);
-
-    // (7) SceneLightingEffect
-    // Note: Unlike the Win2D-based effects, SceneLightingEffect is a public Windows platform type, we can instatiate it directly via winrt.
-    // No ambient coefficient. This SLE gets noise applied to it, and we don't want the ambient contribution to be affected by noise. The
-    // ambient contribution will be added by a separate ColorSourceEffect.
-    winrt::Microsoft::UI::Composition::Effects::SceneLightingEffect sceneLightingEffect;
-    sceneLightingEffect.AmbientAmount(0);
-    sceneLightingEffect.DiffuseAmount(sc_diffuseAmount);
-    sceneLightingEffect.SpecularAmount(sc_specularAmount);
-    sceneLightingEffect.SpecularShine(sc_specularShine);
-
-    // (6) Alpha mask of (7) with (8)
-    auto blendEffectOuter = winrt::make_self<Microsoft::UI::Private::Composition::Effects::AlphaMaskEffect>();
-    blendEffectOuter->Source(sceneLightingEffect);
-    blendEffectOuter->Mask(*noiseOpacityEffect);
-
-    // (5) ColorSourceEffect
-    auto colorSourceEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::ColorSourceEffect>();
-    colorSourceEffect->Color(sc_ambientContributionColor);
-
-    // (4) Composite of (5) with (6)
-    auto compositeEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::CompositeStepEffect>();
-    compositeEffect->Mode(winrt::CanvasComposite::Add);
-    compositeEffect->Destination(*colorSourceEffect);
-    compositeEffect->Source(*blendEffectOuter);
-
-    // (3) ColorMatrixEffect applied to (4)
-    auto colorMatrixEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::ColorMatrixEffect>();
-    colorMatrixEffect->ColorMatrix(sc_luminanceToAlphaMatrix);
-    colorMatrixEffect->AlphaMode(winrt::CanvasAlphaMode::Straight);
-    colorMatrixEffect->Source(*compositeEffect);
-
-    // (2) Base Color Effect
-    auto baseColorEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::ColorSourceEffect>();
-    baseColorEffect->Name(L"BaseColorEffect");
-    baseColorEffect->Color(initBaseColor);
-
-    // (1) Composite of (3) [source] with (2) [destination]
-    auto arithmeticCompositeEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::ArithmeticCompositeEffect>();
-    arithmeticCompositeEffect->Source1Amount(2.0f);
-    arithmeticCompositeEffect->Source2Amount(2.0f);
-    arithmeticCompositeEffect->MultiplyAmount(-2.0f);
-    arithmeticCompositeEffect->Offset(-1.0f);
-    arithmeticCompositeEffect->Source1(*colorMatrixEffect);
-    arithmeticCompositeEffect->Source2(*baseColorEffect);
-
-    return *arithmeticCompositeEffect;
+    throw winrt::hresult_not_implemented(
+        L"Reveal effects are unavailable when WinUI uses the system composition stack.");
 }
 
 winrt::Windows::Graphics::Effects::IGraphicsEffect RevealBrush::CreateRevealBorderEffect(bool isInverted, bool hasBaseColor)
 {
-    // (1) SceneLightingEffect
-    // Note: Unlike the Win2D-based effects, SceneLightingEffect is a public Windows platform type, we can instatiate it directly via winrt.
-    winrt::Microsoft::UI::Composition::Effects::SceneLightingEffect sceneLightingEffect;
-    sceneLightingEffect.AmbientAmount(0.0f);
-    sceneLightingEffect.DiffuseAmount(sc_diffuseAmountBorder);
-    sceneLightingEffect.SpecularAmount(sc_specularAmountBorder);
-    sceneLightingEffect.SpecularShine(sc_specularShineBorder);
-
-    // (2) ColorMatrixEffect applied to 1
-    auto colorMatrixEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::ColorMatrixEffect>();
-    colorMatrixEffect->ColorMatrix(isInverted ? sc_revealInvertedBorderColorMatrix : sc_revealBorderColorMatrix);
-    colorMatrixEffect->AlphaMode(winrt::CanvasAlphaMode::Straight);
-    colorMatrixEffect->Source(sceneLightingEffect);
-
-    if (hasBaseColor)
-    {
-        // (3) Base Color Effect
-        auto  baseColorEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::ColorSourceEffect>();
-        baseColorEffect->Name(L"BaseColorEffect");
-        // Set base color to 0 because we want to build one EffectFactory and cache it regardless of the different colors that
-        // the app may choose. So make the factory have it as 0,0,0,0 and then we'll make it an animatable property and set it
-        // immediately after we create it.
-        baseColorEffect->Color({ 0,0,0,0 });
-
-        // (4) Do a source over blend of (2) the color matrix with (3) the base color.
-        auto compositeEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::CompositeStepEffect>();
-        compositeEffect->Mode(winrt::CanvasComposite::SourceOver);
-        compositeEffect->Source(*colorMatrixEffect);
-        compositeEffect->Destination(*baseColorEffect);
-
-        return *compositeEffect;
-    }
-    else
-    {
-        // No base color, just return the color matrix effect.
-        return *colorMatrixEffect;
-    }
+    throw winrt::hresult_not_implemented(
+        L"Reveal effects are unavailable when WinUI uses the system composition stack.");
 }
 
 winrt::CompositionEffectFactory
@@ -486,7 +371,7 @@ RevealBrush::GetOrCreateRevealBrushCompositionEffectFactory(
 
 void RevealBrush::CreateRevealBrush()
 {
-    winrt::Compositor compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+    winrt::Compositor compositor = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
     if (!IsInFallbackMode())
     {
         const auto color = Color();

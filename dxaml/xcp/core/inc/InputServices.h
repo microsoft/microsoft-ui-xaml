@@ -6,7 +6,7 @@
 #include "Pointer.h"
 #include "PointerCollection.h"
 #include "PointerEventArgs.h"
-#include <Microsoft.DirectManipulation.h>
+#include <directmanipulation.h>
 #include "DragEventArgs.h"
 #include "EventMgr.h"
 #include <DMDeferredRelease.h>

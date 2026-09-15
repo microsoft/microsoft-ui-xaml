@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -149,7 +149,7 @@ winrt::SpotLight RevealTestApi::GetBackgroundSpotlightProxy(winrt::ApplicationTh
     int index = std::clamp((int)theme, 0, 1);
     if (!s_backgroundSpotlightProxy[index])
     {
-        auto light = s_backgroundSpotlightProxy[index] = winrt::CompositionTarget::GetCompositorForCurrentThread().CreateSpotLight();
+        auto light = s_backgroundSpotlightProxy[index] = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread().CreateSpotLight();
 
         light.InnerConeAngleInDegrees(RevealHoverLight::s_innerConeAngleInDegrees);
         light.OuterConeAngleInDegrees(RevealHoverLight::s_outerConeAngleInDegrees);

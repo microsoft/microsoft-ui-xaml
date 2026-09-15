@@ -2597,7 +2597,7 @@ _Check_return_ HRESULT
                     IFC_RETURN(spThis.AsWeak(&wrThis));
 
                     IFC_RETURN(wf::GetActivationFactory(
-                        wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
+                        wrl_wrappers::HStringReference(RuntimeClass_Windows_System_DispatcherQueue).Get(),
                         &spDispatcherQueueStatics));
 
                     IFC_RETURN(spDispatcherQueueStatics->GetForCurrentThread(&spDispatcherQueue));
@@ -3173,4 +3173,3 @@ _Check_return_ HRESULT AutoSuggestBox::OnInkingFunctionButtonClicked(
 
     return S_OK;
 }
-

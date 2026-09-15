@@ -16,7 +16,7 @@
 #include <algorithm>
 #include <string_view>
 #include <unordered_set>
-#include <winrt/Microsoft.UI.Dispatching.h>
+#include <winrt/Windows.System.h>
 
 namespace
 {
@@ -1377,4 +1377,3 @@ winrt::hstring ShapedItemsSource::Diagnostic(std::wstring_view text) const
 {
     return m_diagnosticName + L": " + winrt::hstring{ text };
 }
-

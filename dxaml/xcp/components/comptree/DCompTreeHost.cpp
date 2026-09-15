@@ -498,11 +498,7 @@ DCompTreeHost::EnsureDCompDevice() noexcept
 
     m_spMainDevice = m_pCompositionHelper->GetMainDevice();
 
-    wrl::ComPtr<IInspectable> compositor;
-    IFC_RETURN(RoActivateInstance(
-        wrl_wrappers::HStringReference(RuntimeClass_Windows_UI_Composition_Compositor).Get(),
-        &compositor));
-    IFC_RETURN(compositor.As(&m_spCompositor));
+    IFC_RETURN(m_spMainDevice.As(&m_spCompositor));
     IFC_RETURN(m_spCompositor.As(&m_spCompositor2));
     IFC_RETURN(m_spCompositor.As(&m_spCompositor5));
     IFC_RETURN(m_spCompositor.As(&m_spCompositor6));

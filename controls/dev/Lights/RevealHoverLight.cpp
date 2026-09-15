@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -199,7 +199,7 @@ void RevealHoverLight::EnsureCompositionResources()
     {
         if (auto element = m_targetElement.get())
         {
-            auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+            auto compositor = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
 
             m_compositionSpotLight = compositor.CreateSpotLight();
             CompositionLight(m_compositionSpotLight);

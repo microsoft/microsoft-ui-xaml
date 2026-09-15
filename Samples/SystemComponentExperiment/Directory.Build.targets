@@ -1,0 +1,30 @@
+<Project>
+  <PropertyGroup>
+    <GetCppWinRTPlatformWinMDReferencesDependsOn>$(GetCppWinRTPlatformWinMDReferencesDependsOn);UseCurrentUniversalApiContractForSystemComposition</GetCppWinRTPlatformWinMDReferencesDependsOn>
+  </PropertyGroup>
+
+  <Target Name="UseCurrentUniversalApiContractForSystemComposition"
+          AfterTargets="ResolveAssemblyReferences">
+    <PropertyGroup>
+      <_CurrentUniversalApiContract>$(WindowsSdkDir)References\$(WindowsTargetPlatformVersion)\Windows.Foundation.UniversalApiContract.winmd</_CurrentUniversalApiContract>
+      <_SystemContractStagingDir>$(IntermediateOutputPath)system-contract-ref\</_SystemContractStagingDir>
+      <_StagedUniversalApiContract>$(_SystemContractStagingDir)Windows.Foundation.UniversalApiContract.winmd</_StagedUniversalApiContract>
+    </PropertyGroup>
+    <ItemGroup>
+      <_LegacyUniversalApiContract Include="@(ReferencePath)"
+                                   Condition="'%(Filename)' == 'Windows.Foundation.UniversalApiContract'" />
+    </ItemGroup>
+    <MakeDir Directories="$(_SystemContractStagingDir)" />
+    <Copy SourceFiles="$(_CurrentUniversalApiContract)"
+          DestinationFiles="$(_StagedUniversalApiContract)"
+          SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <ReferencePath Remove="@(_LegacyUniversalApiContract)" />
+      <ReferencePath Include="$(_StagedUniversalApiContract)">
+        <IsSystemReference>true</IsSystemReference>
+        <WinMDFile>true</WinMDFile>
+        <ReferenceSourceTarget>ResolveAssemblyReference</ReferenceSourceTarget>
+      </ReferencePath>
+    </ItemGroup>
+  </Target>
+</Project>

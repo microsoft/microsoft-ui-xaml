@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -44,5 +44,5 @@ private:
     std::map<winrt::DispatcherTimer, uint32_t> m_keepAliveTimersMap;
     std::map<uint32_t, winrt::IVector<winrt::ItemCollectionTransition>> m_transitionsMap;
     std::map<uint32_t, winrt::IVector<winrt::ItemCollectionTransition>> m_transitionsWithAnimationsMap;
-    winrt::CompositionTarget::Rendering_revoker m_rendering{};
+    winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_rendering{};
 };

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -9,11 +9,11 @@ class ScrollPresenterTestHooksInteractionSourcesChangedEventArgs :
     public winrt::implementation::ScrollPresenterTestHooksInteractionSourcesChangedEventArgsT<ScrollPresenterTestHooksInteractionSourcesChangedEventArgs>
 {
 public:
-    ScrollPresenterTestHooksInteractionSourcesChangedEventArgs(const winrt::Microsoft::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources);
+    ScrollPresenterTestHooksInteractionSourcesChangedEventArgs(const winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources);
 
     // IScrollPresenterTestHooksInteractionSourcesChangedEventArgs overrides
-    winrt::Microsoft::UI::Composition::Interactions::CompositionInteractionSourceCollection InteractionSources();
+    winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection InteractionSources();
         
 private:
-    winrt::Microsoft::UI::Composition::Interactions::CompositionInteractionSourceCollection m_interactionSources{ nullptr };
+    winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection m_interactionSources{ nullptr };
 };

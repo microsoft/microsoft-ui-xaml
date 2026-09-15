@@ -11,7 +11,7 @@
 
 #ifndef __XCP__DIRECTMANIPULATION__VIEWPORT__EVENTHANDLER
 #define __XCP__DIRECTMANIPULATION__VIEWPORT__EVENTHANDLER
-#include <Microsoft.DirectManipulation.h>
+#include <directmanipulation.h>
 
 struct IXcpDirectManipulationViewportEventHandler : public IObject
 {

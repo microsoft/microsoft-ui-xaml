@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include <winrt/Microsoft.UI.Dispatching.h>
+#include <winrt/Windows.System.h>
 #include <winrt/Microsoft.UI.Xaml.Data.h>
 #include <winrt/Microsoft.UI.Xaml.Interop.h>
 #include <winrt/Windows.Foundation.Collections.h>

@@ -4633,7 +4633,8 @@ void ScrollPresenter::OnPointerPressed(
 
     try
     {
-        m_scrollPresenterVisualInteractionSource.TryRedirectForManipulation(args.GetCurrentPoint(nullptr));
+        m_scrollPresenterVisualInteractionSource.TryRedirectForManipulation(
+            args.GetCurrentPoint(nullptr).as<winrt::Windows::UI::Input::PointerPoint>());
     }
     catch (const winrt::hresult_error & e)
     {
@@ -4677,7 +4678,8 @@ void ScrollPresenter::OnScrollControllerPanningInfoPanRequested(
     {
         try
         {
-            scrollControllerVisualInteractionSource.TryRedirectForManipulation(args.PointerPoint());
+            scrollControllerVisualInteractionSource.TryRedirectForManipulation(
+                args.PointerPoint().as<winrt::Windows::UI::Input::PointerPoint>());
         }
         catch (const winrt::hresult_error & e)
         {

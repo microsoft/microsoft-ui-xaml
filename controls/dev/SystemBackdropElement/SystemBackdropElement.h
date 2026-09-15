@@ -5,7 +5,6 @@
 
 #include "SystemBackdropElement.g.h"
 #include "SystemBackdropElement.properties.h"
-#include <CppWinrtContentExternalBackdropLinkHelper.h>
 
 class SystemBackdropElement :
     public ReferenceTracker<SystemBackdropElement, winrt::implementation::SystemBackdropElementT>,
@@ -20,20 +19,9 @@ public:
     winrt::Size ArrangeOverride(winrt::Size const& finalSize);
 
 private:
-    void UpdatePlacementVisualSize();
-    void UpdatePlacementVisualClip();
     void UpdatePlacementVisual();
-    void EnsureCompositionResources();
     void ReleaseCompositionResources();
-    void TryConnectSystemBackdrop();
-
-    // Member variables
-    ContentExternalLinkHelper::BackdropLink m_backdropLink{ nullptr };
-    winrt::Microsoft::UI::Composition::Compositor m_compositor{ nullptr };
     winrt::Microsoft::UI::Xaml::Media::SystemBackdrop m_systemBackdrop{ nullptr };
-    winrt::Microsoft::UI::Composition::RectangleClip m_clip{ nullptr };
     winrt::CornerRadius m_cornerRadius{};
-    
-    bool m_registeredWithSystemBackdrop{ false };
     winrt::Size m_lastArrangedSize{};
 };

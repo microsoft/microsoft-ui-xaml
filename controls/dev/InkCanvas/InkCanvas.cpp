@@ -14,7 +14,7 @@
 #include <winrt/Windows.UI.Input.h>
 #include <winrt/Windows.UI.Composition.h>
 #include <winrt/Microsoft.UI.Composition.Experimental.h>
-#include <winrt/Microsoft.UI.Dispatching.h>
+#include <winrt/Windows.System.h>
 #include <future>
 #include <vector>
 
@@ -184,7 +184,6 @@ void InkCanvas::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEvent
 
     m_xamlRootChangedRevoker.revoke();
     m_sizeChangedRevoker.revoke();
-    m_layoutUpdatedRevoker.revoke();
 
     DetachFromVisualLink();
 }
@@ -273,24 +272,9 @@ void InkCanvas::AttachToVisualLink()
 
     m_hostHwnd = hostHwnd;
 
-    // Ensure the shared system DirectComposition device (both compositor paths render ink through
-    // it). The ink visual is created, bound to the presenter, and rooted under the chosen
-    // compositor's target inside the fork below - deliberately not before it, so nothing is attached
-    // until the compositor engine has been decided.
+    // Ensure the shared system DirectComposition device before attaching the ink visual.
     EnsureCompositionDevice();
-
-    // Fork on the compositor engine (IsSystemCompositor detects it via GetForSystemEngine): a
-    // system-backed process splices the ink visual under a lifted MUC visual; a lifted process
-    // bridges it into the XAML tree via ContentExternalOutputLink. Each path binds the ink visual to
-    // the presenter (AttachInkVisualToPresenter) first, then roots it under its own target.
-    if (IsSystemCompositor())
-    {
-        AttachToSystemCompositor();
-    }
-    else
-    {
-        AttachToLiftedCompositor();
-    }
+    AttachToSystemCompositor();
 }
 
 // Ensures the per-thread system DirectComposition device used by the rendering paths.
@@ -318,9 +302,7 @@ void InkCanvas::EnsureCompositionDevice()
 }
 
 // Creates this canvas's ink visual on the shared system DComp device and binds it to the OS
-// presenter on the ink thread. Compositor-independent: the same ink visual is rooted under either
-// compositor's target by the caller, so AttachToSystemCompositor and AttachToLiftedCompositor both
-// call this first, before their compositor-specific rooting.
+// presenter on the ink thread before it is rooted under the system compositor target.
 void InkCanvas::AttachInkVisualToPresenter()
 {
     winrt::check_hresult(m_threadData->m_compositionDevice->CreateVisual(m_inkRootVisual.put()));
@@ -351,15 +333,14 @@ void InkCanvas::SetInkRootVisual(IDCompositionTarget* target)
     winrt::check_hresult(target->SetRoot(m_inkRootVisual.get()));
 }
 
-// System compositor path: splices the ink visual directly under a lifted MUC visual via
-// IExpCompositorInterop2::CreateDCompVisualUnderMUCVisual, so lifted XAML natively clips/scrolls/
-// z-orders it. Only reached when IsSystemCompositor() is true, so the interop must be present.
+// Splices the ink visual directly under a system composition visual via
+// IExpCompositorInterop2::CreateDCompVisualUnderMUCVisual.
 void InkCanvas::AttachToSystemCompositor()
 {
     // Create the ink visual and bind it to the presenter before the compositor-specific splice.
     AttachInkVisualToPresenter();
 
-    auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+    auto compositor = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
 
     winrt::com_ptr<ABI::Microsoft::UI::Composition::Experimental::IExpCompositorInterop2> interop;
     winrt::check_hresult(winrt::get_unknown(compositor)->QueryInterface(IID_PPV_ARGS(interop.put())));
@@ -372,7 +353,7 @@ void InkCanvas::AttachToSystemCompositor()
     // ABI interface is IContainerVisual, which is why we up-cast to Visual first. Doing it through the
     // projection avoids a compile-time dependency on the internal ABI composition header; the pointer is
     // forwarded unchanged to the interop (as ABI IVisual* with the package header, IUnknown* without it).
-    auto parentVisual = mucRootVisual.as<winrt::Microsoft::UI::Composition::Visual>();
+    auto parentVisual = mucRootVisual.as<winrt::Windows::UI::Composition::Visual>();
     auto parentAbi = winrt::get_abi(parentVisual);
 
     // m_systemDCompTarget roots the ink visual under the MUC visual and must outlive this call; it
@@ -391,40 +372,6 @@ void InkCanvas::AttachToSystemCompositor()
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, mucRootVisual);
 }
 
-// Lifted compositor path: ContentExternalOutputLink produces a lifted PlacementVisual (backed by a
-// system proxy visual) parented into the XAML tree, so lifted XAML clips/scrolls/z-orders the ink.
-void InkCanvas::AttachToLiftedCompositor()
-{
-    // Create the ink visual and bind it to the presenter before the compositor-specific bridge.
-    AttachInkVisualToPresenter();
-
-    // A new link means a fresh, unsized PlacementVisual, so drop the cached size to force PositionInkVisual to re-apply.
-    m_lastPlacementWidth = -1;
-    m_lastPlacementHeight = -1;
-
-    // Keep the lifted PlacementVisual sized to the control as layout changes so it has a hit-test area.
-    m_layoutUpdatedRevoker = LayoutUpdated(winrt::auto_revoke,
-        [weakThis{ get_weak() }](auto const& /*sender*/, auto const& /*args*/)
-        {
-            if (auto strongThis = weakThis.get())
-            {
-                strongThis->PositionInkVisual();
-            }
-        });
-
-    auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
-
-    m_systemVisualLink = ContentExternalLinkHelper::OutputLink::Create(compositor);
-    m_systemVisualLink.IsAboveContent(true);
-
-    winrt::com_ptr<IDCompositionTarget> target = m_systemVisualLink.DCompTarget();
-    SetInkRootVisual(target.get());
-
-    winrt::check_hresult(m_threadData->m_compositionDevice->Commit());
-    winrt::ElementCompositionPreview::SetElementChildVisual(*this, m_systemVisualLink.PlacementVisual());
-    PositionInkVisual();
-}
-
 void InkCanvas::DetachFromVisualLink()
 {
     // Mark destruction-safety: flag detach BEFORE we tear down anything so concurrent
@@ -435,7 +382,6 @@ void InkCanvas::DetachFromVisualLink()
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, nullptr);
 
     m_systemDCompTarget = nullptr;
-    m_systemVisualLink = nullptr;
     m_inkRootVisual = nullptr;
     m_hostHwnd = NULL;
 
@@ -448,60 +394,3 @@ void InkCanvas::DetachFromVisualLink()
         m_threadData->m_compositionDevice->Commit();
     }
 }
-
-// Compositor-engine detection: true when the process runs on the system composition engine.
-// CompositionEngine::GetForSystemEngine returns a non-null system object only on a system-backed
-// compositor, so it selects the system splice (AttachToSystemCompositor) over the lifted
-// ContentExternalOutputLink path (AttachToLiftedCompositor). Evaluated once per process on first
-// use, so every InkCanvas on the thread agrees for the process lifetime.
-bool InkCanvas::IsSystemCompositor()
-{
-    static bool isSystemCompositor = [] {
-        auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
-        // GetForSystemEngine takes any composition object (IInspectable); pass the compositor
-        // directly rather than allocating a throwaway visual just to probe the engine.
-        // CompositionEngine lives in the Microsoft.UI.Composition namespace (it was promoted out of
-        // the Experimental namespace in the InteractiveExperiences transport), so reference it there.
-        return winrt::Microsoft::UI::Composition::CompositionEngine::GetForSystemEngine(compositor) != nullptr;
-    }();
-    return isSystemCompositor;
-}
-
-// Sizes the lifted PlacementVisual to the control's physical-pixel bounds so it has a hit-test area
-// for pen input. Runs on the lifted path only; the system path leaves m_systemVisualLink null.
-void InkCanvas::PositionInkVisual()
-{
-    if (!m_systemVisualLink)
-    {
-        return;
-    }
-
-    auto xamlRoot = XamlRoot();
-    if (!xamlRoot)
-    {
-        return;
-    }
-
-    // Physical-pixel size of the control (layout size scaled by the accumulated rasterization scale).
-    const float rootScale = static_cast<float>(xamlRoot.RasterizationScale());
-    const float width = static_cast<float>(ActualWidth()) * rootScale;
-    const float height = static_cast<float>(ActualHeight()) * rootScale;
-
-    // LayoutUpdated fires on every layout pass in the tree; only touch the composition visual and the
-    // ink thread when the physical size actually changed, so animations/resize don't post per-frame work.
-    if (width == m_lastPlacementWidth && height == m_lastPlacementHeight)
-    {
-        return;
-    }
-    m_lastPlacementWidth = width;
-    m_lastPlacementHeight = height;
-
-    // ActualWidth/Height are never negative, so always size; a collapse to 0 clears the hit-test
-    // area instead of leaving the previous non-zero size stale.
-    m_systemVisualLink.PlacementVisual().Size({ width, height });
-
-    UpdateInkPresenterSize();
-}
-
-
-

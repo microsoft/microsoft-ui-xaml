@@ -1027,7 +1027,7 @@ MenuFlyoutSubItem::QueueRefreshItemsSource()
         ctl::ComPtr<msy::IDispatcherQueue> dispatcherQueue;
 
         IFC_RETURN(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
+            wrl_wrappers::HStringReference(RuntimeClass_Windows_System_DispatcherQueue).Get(),
             dispatcherQueueStatics.ReleaseAndGetAddressOf()));
 
         IFC_RETURN(dispatcherQueueStatics->GetForCurrentThread(&dispatcherQueue));

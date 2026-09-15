@@ -9,12 +9,16 @@ public sealed partial class StartupScenarioPage : Page
 {
     private static readonly HashSet<string> ForbiddenModules = new(
         [
+            "Microsoft.UI.Composition.dll",
+            "Microsoft.UI.Dispatching.dll",
+            "Microsoft.UI.Content.dll",
             "CoreMessagingXP.dll",
             "dcompi.dll",
             "DwmSceneI.dll",
             "dwmcorei.dll",
             "marshal.dll",
             "Microsoft.UI.Composition.OSSupport.dll",
+            "Microsoft.DirectManipulation.dll",
             "wuceffectsi.dll"
         ],
         StringComparer.OrdinalIgnoreCase);

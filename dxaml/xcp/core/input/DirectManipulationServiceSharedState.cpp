@@ -4,7 +4,7 @@
 #include "precomp.h"
 #include "DirectManipulationServiceSharedState.h"
 #include "LoadLibraryAbs.h"
-#include <Microsoft.DirectManipulation.h>
+#include <directmanipulation.h>
 #include "DirectManipulationHelper.h"
 
 DirectManipulationServiceSharedState::DirectManipulationServiceSharedState()
@@ -21,7 +21,7 @@ HRESULT DirectManipulationServiceSharedState::GetSharedDCompManipulationComposit
 {
     if (!m_compositor)
     {
-        HMODULE hmodDManip = LoadLibraryExWAbs(L"Microsoft.DirectManipulation.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+        HMODULE hmodDManip = LoadLibraryExW(L"DirectManipulation.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
         IFCW32_RETURN(hmodDManip != nullptr);
 
         wrl::ComPtr<IClassFactory> directManipulationFactory;

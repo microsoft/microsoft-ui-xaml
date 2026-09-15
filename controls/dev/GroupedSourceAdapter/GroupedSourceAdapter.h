@@ -11,7 +11,7 @@
 #include "pch.h"
 #include "common.h"
 
-#include <winrt/Microsoft.UI.Dispatching.h>
+#include <winrt/Windows.System.h>
 
 #include "RowExpansionModel.h"
 
@@ -94,7 +94,7 @@ private:
     // Affinity assertion only (chk); the adapter never marshals. Teardown runs on the owning UI
     // thread because every strong owner (TableViewSource / TableView) is a ReferenceTracker whose
     // final_release marshals destruction there, so no revoke thread guard is needed.
-    winrt::weak_ref<winrt::Microsoft::UI::Dispatching::DispatcherQueue> m_uiQueue{ nullptr };
+    winrt::weak_ref<winrt::Windows::System::DispatcherQueue> m_uiQueue{ nullptr };
 
     winrt::IInspectable m_attachedSourceForRevocation{ nullptr };
     winrt::event_token m_outerCollectionChangedToken{};

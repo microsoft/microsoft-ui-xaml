@@ -160,7 +160,7 @@ winrt::IRefreshInfoProvider ScrollViewerIRefreshInfoProviderAdapter::Adapt(winrt
         {
             if (m_visualInteractionSourceIsAttached)
             {
-                winrt::PointerPoint pp = args.GetCurrentPoint(nullptr);
+                auto pp = args.GetCurrentPoint(nullptr).try_as<winrt::Windows::UI::Input::PointerPoint>();
 
                 if (pp)
                 {

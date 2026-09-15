@@ -90,8 +90,10 @@ _Check_return_ HRESULT XamlIsland::Initialize()
 
     XamlIslandRoot* xamlIslandRoot = m_xamlIslandRoot;
     IFCFAILFAST(m_inputFocusController2->add_NavigateFocusRequested(
-        WRLHelper::MakeAgileCallback<wf::ITypedEventHandler<ixp::InputFocusController*, ixp::FocusNavigationRequestEventArgs*>>(
-            [xamlIslandRoot](ixp::IInputFocusController* sender, ixp::IFocusNavigationRequestEventArgs* args) -> HRESULT
+        WRLHelper::MakeAgileCallback<SystemInputFocusControllerInterop::INavigateFocusRequestedHandler>(
+            [xamlIslandRoot](
+                ixp::IInputFocusController* sender,
+                SystemInputFocusControllerInterop::IFocusNavigationRequestEventArgs* systemArgs) -> HRESULT
             {
                 // Convert IXP FocusNavigationRequest to Xaml FocusNavigationRequest
                 wrl::ComPtr<xaml_hosting::IXamlSourceFocusNavigationRequest> xamlSourceFocusNavigationRequest;
@@ -100,13 +102,10 @@ _Check_return_ HRESULT XamlIsland::Initialize()
                 wrl::ComPtr<xaml_hosting::IXamlSourceFocusNavigationRequestFactory> requestFactory;
                 IFC_RETURN(requestActivationFactory.As(&requestFactory));
 
-                wrl::ComPtr<ixp::IFocusNavigationRequest> ixpRequest;
-                IFC_RETURN(args->get_Request(&ixpRequest));
-
                 // Convert IXP FocusNavigationReason to Xaml FocusNavigationReason
                 ixp::FocusNavigationReason ixpReason;
                 xaml_hosting::XamlSourceFocusNavigationReason xamlReason;
-                IFC_RETURN(ixpRequest->get_Reason(&ixpReason));
+                IFC_RETURN(systemArgs->get_Reason(&ixpReason));
                 switch (ixpReason)
                 {
                 case ixp::FocusNavigationReason::FocusNavigationReason_Programmatic:
@@ -135,16 +134,9 @@ _Check_return_ HRESULT XamlIsland::Initialize()
                     break;
                 }
 
-                // Get HintRect and CorrelationID from IXP FocusNavigationRequest
-                ctl::ComPtr<ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Rect>> hintRectRef;
-                IFC_RETURN(ixpRequest->get_HintRect(&hintRectRef));
-                ABI::Windows::Foundation::Rect hintRect;
-                if (hintRectRef != nullptr)
-                {
-                    IFC_RETURN(hintRectRef->get_Value(&hintRect));
-                }
+                ABI::Windows::Foundation::Rect hintRect = {};
                 GUID correlationId;
-                IFC_RETURN(ixpRequest->get_CorrelationId(&correlationId));
+                IFC_RETURN(CoCreateGuid(&correlationId));
 
                 IFC_RETURN(requestFactory->CreateInstanceWithHintRectAndCorrelationId(
                     xamlReason,
@@ -167,61 +159,10 @@ _Check_return_ HRESULT XamlIsland::Initialize()
                 boolean wasFocusMoved;
                 IFC_RETURN(pResult->get_WasFocusMoved(&wasFocusMoved));
                 ixp::FocusNavigationResult ixpResult = wasFocusMoved ? ixp::FocusNavigationResult::FocusNavigationResult_Moved : ixp::FocusNavigationResult::FocusNavigationResult_NotMoved;
-                IFC_RETURN(args->put_Result(ixpResult));
+                IFC_RETURN(systemArgs->put_Result(ixpResult));
 
                 return S_OK;
             }).Get(), &m_focusNavigationRequestedToken));
-
-    // Note: This is needed for ScrollViewer initialization.
-    // CUIElement::CanDMContainerInitialize looks for a valid input window, and CanDMContainerInitialize
-    // is needed before CInputServices::InitializeDirectManipulationContainers can activate DM for a
-    // ScrollViewer.
-    wrl::ComPtr<ixp::IContentIsland> contentIsland = m_pXamlIslandCore->GetContentIsland();
-    wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
-    IFCFAILFAST(contentIsland.As(&contentIslandExperimental));
-
-    // Right now, the InputSite only has a valid HWND once the island has connected. This means that
-    // we wait to set it on the XamlIslandRoot until the connected event. Once velocity key
-    // 45720437 has been flipped on, we can remove this and set the input site on initialization.
-    // http://task.ms/48681310: Once we flip this InputSite velocity key in Xaml, we can set the InputSite as
-    // soon as the XamlIsland is initialized and won't have to wait for connection.
-
-    ctl::WeakRefPtr wrThis;
-    IFC_RETURN(ctl::AsWeak(this, &wrThis));
-
-    IFCFAILFAST(contentIslandExperimental->add_Connected(
-        WRLHelper::MakeAgileCallback<wf::IEventHandler<ixp::ContentIsland *>>(
-            [wrThis](IInspectable *, ixp::IContentIsland * /* content */) mutable -> HRESULT
-            {
-                ctl::ComPtr<XamlIsland> spThis;
-                IFC_RETURN(wrThis.As(&spThis));
-
-                if (spThis)
-                {
-                    spThis->m_pXamlIslandCore->OnContentIslandConnected();
-                }
-
-                return S_OK;
-            })
-            .Get(),
-        &m_islandConnectedToken));
-
-    IFCFAILFAST(contentIslandExperimental->add_Disconnected(
-        WRLHelper::MakeAgileCallback<wf::IEventHandler<ixp::ContentIsland *>>(
-            [wrThis](IInspectable *, ixp::IContentIsland * /* content */) mutable -> HRESULT
-            {
-                ctl::ComPtr<XamlIsland> spThis;
-                IFC_RETURN(wrThis.As(&spThis));
-
-                if (spThis && spThis->m_pXamlIslandCore)
-                {
-                    spThis->m_pXamlIslandCore->OnContentIslandDisconnected();
-                }
-
-                return S_OK;
-            })
-            .Get(),
-        &m_islandDisconnectedToken));
 
     return S_OK;
 }

@@ -13,7 +13,7 @@ namespace DispatcherHelper
     {
         ::Microsoft::WRL::ComPtr<msy::IDispatcherQueueStatics> dispatcherQueueStatics;
         RETURN_IF_FAILED(wf::GetActivationFactory(
-            ::wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(), &dispatcherQueueStatics));
+            ::wrl_wrappers::HStringReference(RuntimeClass_Windows_System_DispatcherQueue).Get(), &dispatcherQueueStatics));
         RETURN_IF_FAILED(dispatcherQueueStatics->GetForCurrentThread(value));
 
         return S_OK;
@@ -566,4 +566,3 @@ std::wstring RectToString(const wf::Rect& rect)
 
     return ss.str();
 }
-

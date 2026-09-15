@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -6,14 +6,14 @@
 #include "ScrollPresenterTestHooksInteractionSourcesChangedEventArgs.h"
 
 ScrollPresenterTestHooksInteractionSourcesChangedEventArgs::ScrollPresenterTestHooksInteractionSourcesChangedEventArgs(
-    const winrt::Microsoft::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources)
+    const winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources)
 {
     m_interactionSources = interactionSources;
 }
 
 #pragma region IScrollPresenterTestHooksInteractionSourcesChangedEventArgs
 
-winrt::Microsoft::UI::Composition::Interactions::CompositionInteractionSourceCollection ScrollPresenterTestHooksInteractionSourcesChangedEventArgs::InteractionSources()
+winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection ScrollPresenterTestHooksInteractionSourcesChangedEventArgs::InteractionSources()
 {
     return m_interactionSources;
 }

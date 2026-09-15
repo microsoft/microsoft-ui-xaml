@@ -116,7 +116,7 @@ unsealed runtimeclass ScrollingZoomOptions
 [webhosthidden]
 runtimeclass ScrollingScrollAnimationStartingEventArgs
 {
-    Microsoft.UI.Composition.CompositionAnimation Animation { get; set; };
+    Windows.UI.Composition.CompositionAnimation Animation { get; set; };
     Windows.Foundation.Numerics.Vector2 StartPosition { get; };
     Windows.Foundation.Numerics.Vector2 EndPosition { get; };
     Int32 CorrelationId { get; };
@@ -129,7 +129,7 @@ runtimeclass ScrollingZoomAnimationStartingEventArgs
     Windows.Foundation.Numerics.Vector2 CenterPoint { get; };
     Single StartZoomFactor { get; };
     Single EndZoomFactor { get; };
-    Microsoft.UI.Composition.CompositionAnimation Animation { get; set; };
+    Windows.UI.Composition.CompositionAnimation Animation { get; set; };
     Int32 CorrelationId { get; };
 }
 

@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
-#include "Microsoft.DirectManipulation.h"
+#include <directmanipulation.h>
 #include "DirectManipulationService.h"
 
 #include "XcpAllocation.h"
@@ -1665,7 +1665,7 @@ HRESULT CWindowsServices::IsDirectManipulationSupported(_Out_ bool &isDirectMani
     {
         IDirectManipulationManager *pDMManager = NULL;
 
-        HMODULE hmodDManip = LoadLibraryExWAbs(L"Microsoft.DirectManipulation.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+        HMODULE hmodDManip = LoadLibraryExW(L"DirectManipulation.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
         IFCW32_RETURN(hmodDManip);
 
         wrl::ComPtr<IClassFactory> directManipulationFactory;
@@ -2321,4 +2321,3 @@ CWindowsServices::GetTrackerStressFromEnvironment( _Out_ int *maxIterations, _Ou
 }
 
 #endif
-

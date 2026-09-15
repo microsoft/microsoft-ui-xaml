@@ -12,7 +12,7 @@
 #include <string_view>
 
 #include <winrt/Microsoft.UI.Xaml.Interop.h>
-#include <winrt/Microsoft.UI.Dispatching.h>
+#include <winrt/Windows.System.h>
 
 #include "GroupContract.h"
 
@@ -20,7 +20,7 @@ GroupedSourceAdapter::GroupedSourceAdapter()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_GroupedSourceAdapter);
 
-    auto queue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
+    auto queue = winrt::Windows::System::DispatcherQueue::GetForCurrentThread();
     if (!queue)
     {
         throw winrt::hresult_error(RPC_E_WRONG_THREAD, L"GroupedSourceAdapter must be constructed on a UI thread.");

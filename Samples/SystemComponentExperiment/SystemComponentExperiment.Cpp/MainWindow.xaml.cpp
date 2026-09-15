@@ -80,12 +80,16 @@ namespace winrt::SystemComponentExperiment::Cpp::implementation
     {
         static constexpr std::array forbiddenModules
         {
+            L"Microsoft.UI.Composition.dll",
+            L"Microsoft.UI.Dispatching.dll",
+            L"Microsoft.UI.Content.dll",
             L"CoreMessagingXP.dll",
             L"dcompi.dll",
             L"DwmSceneI.dll",
             L"dwmcorei.dll",
             L"marshal.dll",
             L"Microsoft.UI.Composition.OSSupport.dll",
+            L"Microsoft.DirectManipulation.dll",
             L"wuceffectsi.dll",
         };
 
@@ -159,7 +163,7 @@ namespace winrt::SystemComponentExperiment::Cpp::implementation
             child.Brush(compositor.CreateColorBrush(Microsoft::UI::Colors::CornflowerBlue()));
             ElementCompositionPreview::SetElementChildVisual(
                 VisualHost(),
-                child.as<Microsoft::UI::Composition::Visual>());
+                child);
             ResultText().Text(L"Passed");
         }
         catch (hresult_error const& error)

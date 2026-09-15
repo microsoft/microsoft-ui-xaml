@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include <pch.h>
@@ -94,10 +94,10 @@ com_ptr<MaterialHelper> LifetimeHandler::TryGetMaterialHelperInstance()
         // we're not using comp objects based on a stale/closed Compositor.
         winrt::Compositor xamlCompositor {nullptr};        
 
-        // Calling winrt::CompositionTarget::GetCompositorForCurrentThread() can result in a noisy exception if this
+        // Calling winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread() can result in a noisy exception if this
         // call is happening after the XAML core has already shutdown. Avoid this by calling the ABI method, using
         // relevant winrt::impl types for the guid and interface definition.
-        auto compositionTarget = winrt::get_activation_factory<winrt::CompositionTarget>();
+        auto compositionTarget = winrt::get_activation_factory<winrt::Microsoft::UI::Xaml::Media::CompositionTarget>();
         auto guid = winrt::impl::guid_v<winrt::Microsoft::UI::Xaml::Media::ICompositionTargetStatics>;
         com_ptr<winrt::impl::abi<winrt::Microsoft::UI::Xaml::Media::ICompositionTargetStatics>::type> compositionTargetStatics;
         auto hr = compositionTarget.as<IUnknown>()->QueryInterface(guid, compositionTargetStatics.put_void());

@@ -403,7 +403,7 @@ void InkInputConfiguration::IsEraserInputEnabled(bool value)
 // InkPresenter
 // ---------------------------------------------------------------------------
 
-InkPresenter::InkPresenter(winrt::com_ptr<IInkDesktopHost> const& inkHost, winrt::Microsoft::UI::Dispatching::DispatcherQueue const& uiDispatcher)
+InkPresenter::InkPresenter(winrt::com_ptr<IInkDesktopHost> const& inkHost, winrt::Windows::System::DispatcherQueue const& uiDispatcher)
     : m_inkHost(inkHost)
     , m_uiDispatcher(uiDispatcher)
 {

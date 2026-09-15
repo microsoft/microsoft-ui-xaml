@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -20,7 +20,7 @@ static constexpr wstring_view s_transitionEndSuffix{ L"_End"sv };
 AnimatedIcon::AnimatedIcon()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_AnimatedIcon);
-    auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+    auto compositor = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
     m_progressPropertySet = compositor.CreatePropertySet();
     m_progressPropertySet.InsertScalar(s_progressPropertyName, 0);
     Loaded({ this, &AnimatedIcon::OnLoaded });
@@ -518,7 +518,7 @@ winrt::Visual AnimatedIcon::ConstructVisual()
         TrySetForegroundProperty(source);
 
         winrt::IInspectable diagnostics{};
-        auto const visual = source.TryCreateAnimatedVisual(winrt::CompositionTarget::GetCompositorForCurrentThread(), diagnostics);
+        auto const visual = source.TryCreateAnimatedVisual(winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread(), diagnostics);
         m_animatedVisual.set(visual);
         return visual ? visual.RootVisual() : nullptr;
     }

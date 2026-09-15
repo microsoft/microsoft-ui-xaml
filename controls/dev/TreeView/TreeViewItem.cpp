@@ -7,7 +7,7 @@
 #include "TreeViewItemAutomationPeer.h"
 #include "TreeViewList.h"
 #include "TreeViewItemTemplateSettings.h"
-#include <winrt/Microsoft.UI.Dispatching.h>
+#include <winrt/Windows.System.h>
 
 TreeViewItem::TreeViewItem()
 {
@@ -743,7 +743,7 @@ winrt::TreeViewNode TreeViewItem::TreeNode()
 void TreeViewItem::UpdateNodeIsExpandedAsync(winrt::TreeViewNode const& node, bool isExpanded)
 {
     DispatcherQueue().TryEnqueue(
-        winrt::Microsoft::UI::Dispatching::DispatcherQueueHandler([node, isExpanded]()
+        winrt::Windows::System::DispatcherQueueHandler([node, isExpanded]()
         {
             node.IsExpanded(isExpanded);
         }));

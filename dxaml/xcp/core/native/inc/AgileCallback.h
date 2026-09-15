@@ -25,7 +25,7 @@ DispatcherCallback(
             : m_wpDO(xref::get_weakref(pDO)), m_pMethod(pMethod)
         {
             ctl::ComPtr<msy::IDispatcherQueueStatics> spDispatcherQueueStatics;
-            IFCFAILFAST(MuxGetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
+            IFCFAILFAST(MuxGetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Windows_System_DispatcherQueue).Get(),
                 spDispatcherQueueStatics.ReleaseAndGetAddressOf()));
             IFCFAILFAST(spDispatcherQueueStatics->GetForCurrentThread(&m_spDispatcherQueue));
             if (!m_spDispatcherQueue)
@@ -69,5 +69,4 @@ DispatcherCallback(
 
     return Microsoft::WRL::Make<ComObject>(pObject, pMethod);
 }
-
 

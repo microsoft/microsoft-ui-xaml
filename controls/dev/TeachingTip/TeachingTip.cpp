@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -1639,7 +1639,7 @@ void TeachingTip::OnTargetLayoutUpdated(const winrt::IInspectable&, const winrt:
 
 void TeachingTip::CreateExpandAnimation()
 {
-    auto const compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+    auto const compositor = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
 
     auto&& expandEasingFunction = [this, compositor]()
     {
@@ -1690,7 +1690,7 @@ void TeachingTip::CreateExpandAnimation()
 
 void TeachingTip::CreateContractAnimation()
 {
-    auto const compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+    auto const compositor = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
 
     auto&& contractEasingFunction = [this, compositor]()
     {
@@ -1744,7 +1744,7 @@ void TeachingTip::StartExpandToOpen()
 
     auto const scopedBatch = [this]()
     {
-        auto const scopedBatch = winrt::CompositionTarget::GetCompositorForCurrentThread().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
+        auto const scopedBatch = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
 
         if (auto&& expandAnimation = m_expandAnimation.get())
         {
@@ -1800,7 +1800,7 @@ void TeachingTip::StartContractToClose()
 
     auto const scopedBatch = [this]()
     {
-        auto const scopedBatch = winrt::CompositionTarget::GetCompositorForCurrentThread().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
+        auto const scopedBatch = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
         if (auto&& contractAnimation = m_contractAnimation.get())
         {
             if (auto&& tailOcclusionGrid = m_tailOcclusionGrid.get())

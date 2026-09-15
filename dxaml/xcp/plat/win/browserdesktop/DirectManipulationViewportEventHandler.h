@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <Microsoft.DirectManipulation.h>
+#include <directmanipulation.h>
 
 // Uncomment for DManip debug outputs.
 //#define DM_DEBUG

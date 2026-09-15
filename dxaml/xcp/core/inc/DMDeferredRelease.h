@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
-#include <Microsoft.DirectManipulation.h>
+#include <directmanipulation.h>
 
 // DMDeferredRelease: A helper class to help carry out releasing DManip content
 // and shared transform until after they are no longer "live".

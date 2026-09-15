@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -1871,19 +1871,8 @@ void WebView2::OnDrop(const winrt::IInspectable& sender, const winrt::DragEventA
 
 void WebView2::CreateAndSetVisual()
 {
-    if (!m_systemVisualBridge)
-    {
-        winrt::Compositor compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
-        m_systemVisualBridge = ContentExternalLinkHelper::OutputLink::Create(compositor);
-    }
-    UpdateDefaultVisualBackgroundColor();
-
-    SetCoreWebViewAndVisualSize(static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight()));
-    winrt::ElementCompositionPreview::SetElementChildVisual(*this, m_systemVisualBridge.PlacementVisual());
-
-    winrt::com_ptr<IDCompositionTarget> sharedTarget = m_systemVisualBridge.DCompTarget();
-    auto coreWebView2CompositionControllerInterop = m_coreWebViewCompositionController.as<ICoreWebView2CompositionControllerInterop>();
-    winrt::check_hresult(coreWebView2CompositionControllerInterop->put_RootVisualTarget(sharedTarget.get()));
+    throw winrt::hresult_not_implemented(
+        L"WebView2 composition hosting is unavailable when WinUI uses the system composition stack.");
 }
 
 winrt::IAsyncOperation<winrt::hstring> WebView2::ExecuteScriptAsync(winrt::hstring javascriptCode)
@@ -2143,27 +2132,13 @@ void WebView2::CheckAndUpdateWebViewPosition()
 
 void WebView2::SetCoreWebViewAndVisualSize(const float width, const float height)
 {
-    if (!m_coreWebView && !m_systemVisualBridge) return;
+    if (!m_coreWebView) return;
 
     if (m_coreWebView)
     {
         CheckAndUpdateWebViewPosition();
     }
 
-    // The CoreWebView2 visuals hosted under the bridge visual are already scaled for the rasterization scale.
-    // To keep them from being scaled again from the scale above the WebView2 element, we need to apply
-    // an inverse scale on the bridge visual. Since the inverse scale will reduce the size of the bridge visual, we
-    // need to scale up the size by the rasterization scale to compensate.
-
-    if (m_systemVisualBridge)
-    {
-        winrt::Visual systemVisualPlacementVisual = m_systemVisualBridge.PlacementVisual();
-        winrt::float2 newSize = winrt::float2(width * m_rasterizationScale, height * m_rasterizationScale);
-        winrt::float3 newScale = winrt::float3(1.0f / m_rasterizationScale, 1.0f / m_rasterizationScale, 1.0);
-
-        systemVisualPlacementVisual.Size(newSize);
-        systemVisualPlacementVisual.Scale(newScale);
-    }
 }
 
 void WebView2::CheckAndUpdateWindowPosition()

@@ -43,7 +43,7 @@ _Check_return_ HRESULT GetDispatcherQueue(msy::IDispatcherQueue** dispatcherQueu
 {
     wrl::ComPtr<msy::IDispatcherQueueStatics> dispatcherQueueStatics;
     IFC_RETURN(wf::GetActivationFactory(
-        wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
+        wrl_wrappers::HStringReference(RuntimeClass_Windows_System_DispatcherQueue).Get(),
         &dispatcherQueueStatics));
     IFC_RETURN(dispatcherQueueStatics->GetForCurrentThread(dispatcherQueue));
     return S_OK;

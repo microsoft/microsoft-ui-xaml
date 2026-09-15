@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -258,7 +258,7 @@ void ProgressRing::SetAnimatedVisualPlayerSource()
 
 void ProgressRing::SetLottieForegroundColor(const winrt::IAnimatedVisualSource animatedVisualSource)
 {
-    const auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+    const auto compositor = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
 
     const auto foregroundColor = [foreground = Foreground().try_as<winrt::SolidColorBrush>()]()
     {
@@ -281,7 +281,7 @@ void ProgressRing::SetLottieForegroundColor(const winrt::IAnimatedVisualSource a
 
 void ProgressRing::SetLottieBackgroundColor(const winrt::IAnimatedVisualSource animatedVisualSource)
 {
-    const auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+    const auto compositor = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
 
     const auto backgroundColor = [background = Background().try_as<winrt::SolidColorBrush>()]()
     {

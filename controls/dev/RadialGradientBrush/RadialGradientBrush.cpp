@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -105,7 +105,7 @@ void RadialGradientBrush::EnsureCompositionBrush()
 {
     if (m_isConnected && !m_brush)
     {
-        const auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+        const auto compositor = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
 
         // If CompositionRadialGradientBrush is available then use it to render a gradient.
         m_brush = compositor.CreateRadialGradientBrush();
@@ -150,12 +150,12 @@ void RadialGradientBrush::UpdateCompositionGradientMappingMode()
         switch (MappingMode())
         {
         case winrt::BrushMappingMode::Absolute:
-            compositionGradientBrush.MappingMode(winrt::Microsoft::UI::Composition::CompositionMappingMode::Absolute);
+            compositionGradientBrush.MappingMode(winrt::Windows::UI::Composition::CompositionMappingMode::Absolute);
             break;
         case winrt::BrushMappingMode::RelativeToBoundingBox:
             [[fallthrough]];
         default: // Use Relative as the default if the mode isn't recognized.
-            compositionGradientBrush.MappingMode(winrt::Microsoft::UI::Composition::CompositionMappingMode::Relative);
+            compositionGradientBrush.MappingMode(winrt::Windows::UI::Composition::CompositionMappingMode::Relative);
             break;
         }
     }
@@ -185,7 +185,7 @@ void RadialGradientBrush::UpdateCompositionGradientStops()
 {
     if (const auto compositionGradientBrush = m_brush.try_as<winrt::CompositionRadialGradientBrush>())
     {
-        const auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+        const auto compositor = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
 
         compositionGradientBrush.ColorStops().Clear();
 
@@ -215,15 +215,15 @@ void RadialGradientBrush::UpdateCompositionExtendMode()
         switch (SpreadMethod())
         {
         case winrt::GradientSpreadMethod::Repeat:
-            compositionGradientBrush.ExtendMode(winrt::Microsoft::UI::Composition::CompositionGradientExtendMode::Wrap);
+            compositionGradientBrush.ExtendMode(winrt::Windows::UI::Composition::CompositionGradientExtendMode::Wrap);
             break;
         case winrt::GradientSpreadMethod::Reflect:
-            compositionGradientBrush.ExtendMode(winrt::Microsoft::UI::Composition::CompositionGradientExtendMode::Mirror);
+            compositionGradientBrush.ExtendMode(winrt::Windows::UI::Composition::CompositionGradientExtendMode::Mirror);
             break;
         case winrt::GradientSpreadMethod::Pad:
             [[fallthrough]];
         default: // Use Pad as the default if the mode isn't recognized.
-            compositionGradientBrush.ExtendMode(winrt::Microsoft::UI::Composition::CompositionGradientExtendMode::Clamp);
+            compositionGradientBrush.ExtendMode(winrt::Windows::UI::Composition::CompositionGradientExtendMode::Clamp);
             break;
         }
     }

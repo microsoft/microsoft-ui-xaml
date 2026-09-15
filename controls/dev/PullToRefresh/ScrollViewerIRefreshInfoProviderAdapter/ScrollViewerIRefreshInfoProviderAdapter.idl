@@ -13,7 +13,7 @@ interface IRefreshInfoProviderAdapter
 [webhosthidden]
 interface IAdapterAnimationHandler
 {
-    void InteractionTrackerAnimation(Microsoft.UI.Xaml.UIElement refreshVisualizer, Microsoft.UI.Xaml.UIElement infoProvider, Microsoft.UI.Composition.Interactions.InteractionTracker interactionTracker);
+    void InteractionTrackerAnimation(Microsoft.UI.Xaml.UIElement refreshVisualizer, Microsoft.UI.Xaml.UIElement infoProvider, Windows.UI.Composition.Interactions.InteractionTracker interactionTracker);
     void RefreshRequestedAnimation(Microsoft.UI.Xaml.UIElement refreshVisualizer, Microsoft.UI.Xaml.UIElement infoProvider, Double executionRatio);
     void RefreshCompletedAnimation(Microsoft.UI.Xaml.UIElement refreshVisualizer, Microsoft.UI.Xaml.UIElement infoProvider);
 }

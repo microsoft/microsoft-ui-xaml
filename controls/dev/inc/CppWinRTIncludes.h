@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -29,6 +29,8 @@
 #include <winrt\Windows.System.Threading.h>
 #include <winrt\Windows.System.UserProfile.h>
 #include <winrt\Windows.UI.h>
+#include <winrt\Windows.UI.Composition.h>
+#include <winrt\Windows.UI.Composition.Interactions.h>
 #include <winrt\Windows.UI.Core.h>
 #include <winrt\Windows.UI.Input.h>
 #include <winrt\Windows.UI.Input.Inking.h>
@@ -38,7 +40,6 @@
 #include <winrt\Windows.Data.Json.h>
 
 #include <winrt\Microsoft.Windows.ApplicationModel.Resources.h>
-#include <winrt\Microsoft.UI.Dispatching.h>
 #include <winrt\Microsoft.UI.Composition.h>
 #include <winrt\Microsoft.UI.Composition.Effects.h>
 #include <winrt\Microsoft.UI.Composition.Interactions.h>
@@ -101,6 +102,7 @@ namespace winrt
     using namespace ::winrt::Windows::Graphics::Effects;
     using namespace ::winrt::Windows::Storage;
     using namespace ::winrt::Windows::Storage::Streams;
+    using namespace ::winrt::Windows::System;
     using namespace ::winrt::Windows::System::Power;
     using namespace ::winrt::Windows::System::Profile;
     using namespace ::winrt::Windows::System::Threading;
@@ -111,11 +113,10 @@ namespace winrt
     using namespace ::winrt::Windows::UI::ViewManagement;
     using namespace ::winrt::Windows::Web;
 
-    using namespace ::winrt::Microsoft::UI::Dispatching;
-    using namespace ::winrt::Microsoft::UI::Composition;
+    using namespace ::winrt::Windows::UI::Composition;
     namespace Microsoft::UI::Private::Composition::Effects {} // Empty fallback for Tabular when the projection header is gated.
     using namespace ::winrt::Microsoft::UI::Private::Composition::Effects;
-    using namespace ::winrt::Microsoft::UI::Composition::Interactions;
+    using namespace ::winrt::Windows::UI::Composition::Interactions;
     using namespace ::winrt::Microsoft::UI::Composition::SystemBackdrops;
     using namespace ::winrt::Microsoft::UI::Content;
     using namespace ::winrt::Microsoft::UI::Input;

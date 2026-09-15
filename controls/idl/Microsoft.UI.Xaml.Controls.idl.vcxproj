@@ -61,6 +61,21 @@
     <!-- Don't add winmds here, add them to ExternalWinMDs in eng\productmetadata.props -->
     <Reference Include="@(ExternalWinMDs)" />
   </ItemGroup>
+  <PropertyGroup>
+    <GetCppWinRTPlatformWinMDReferencesDependsOn>$(GetCppWinRTPlatformWinMDReferencesDependsOn);UseCurrentUniversalApiContractForSystemComposition</GetCppWinRTPlatformWinMDReferencesDependsOn>
+  </PropertyGroup>
+  <Target Name="UseCurrentUniversalApiContractForSystemComposition">
+    <ItemGroup>
+      <_LegacyUniversalApiContract Include="@(ReferencePath)"
+                                   Condition="'%(Filename)' == 'Windows.Foundation.UniversalApiContract'" />
+      <ReferencePath Remove="@(_LegacyUniversalApiContract)" />
+      <ReferencePath Include="$(WindowsSdkDir)References\$(WindowsTargetPlatformVersion)\Windows.Foundation.UniversalApiContract.winmd">
+        <IsSystemReference>true</IsSystemReference>
+        <WinMDFile>true</WinMDFile>
+        <ReferenceSourceTarget>ResolveAssemblyReference</ReferenceSourceTarget>
+      </ReferencePath>
+    </ItemGroup>
+  </Target>
   <Import Project="$(MUXCProjectRoot)ProjectImports.targets" />
   <!-- We only want to perform MIDL operations in this project, so we'll remove everything else. -->
   <ItemGroup>

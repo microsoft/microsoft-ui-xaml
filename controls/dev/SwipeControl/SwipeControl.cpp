@@ -679,7 +679,8 @@ void SwipeControl::OnPointerPressedEvent(
         }
         try
         {
-            m_visualInteractionSource.get().TryRedirectForManipulation(args.GetCurrentPoint(*this));
+            m_visualInteractionSource.get().TryRedirectForManipulation(
+                args.GetCurrentPoint(*this).as<winrt::Windows::UI::Input::PointerPoint>());
         }
         catch (const winrt::hresult_error& e)
         {

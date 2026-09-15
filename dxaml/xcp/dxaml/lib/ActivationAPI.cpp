@@ -11,6 +11,7 @@
 #include "DependencyObject.h"
 #include "UriXStringGetters.h"
 #include "MediaPlayerElement_Partial.h"
+#include "MuxActivationFactory.h"
 #include <wininet.h>
 
 using namespace DirectUI;
@@ -36,8 +37,23 @@ _Check_return_ HRESULT ActivationAPI::ActivateInstance(_In_ const CClassInfo* pT
     }
     else
     {
-        // Delegate activation to the IXamlType.
-        IFC(pType->AsCustomType()->GetXamlTypeNoRef()->ActivateInstance(ppInstance));
+        const auto& fullName = pType->GetFullName();
+        constexpr wchar_t controlsNamespace[] = L"Microsoft.UI.Xaml.Controls.";
+
+        if (fullName.GetCount() >= ARRAYSIZE(controlsNamespace) - 1 &&
+            wcsncmp(fullName.GetBuffer(), controlsNamespace, ARRAYSIZE(controlsNamespace) - 1) == 0)
+        {
+            ctl::ComPtr<IActivationFactory> activationFactory;
+            IFC(MuxGetActivationFactory(
+                wrl_wrappers::HStringReference(fullName.GetBuffer(), fullName.GetCount()).Get(),
+                &activationFactory));
+            IFC(activationFactory->ActivateInstance(ppInstance));
+        }
+        else
+        {
+            // Delegate activation to the IXamlType.
+            IFC(pType->AsCustomType()->GetXamlTypeNoRef()->ActivateInstance(ppInstance));
+        }
     }
 
 Cleanup:

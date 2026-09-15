@@ -172,15 +172,6 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
 
 CommandBarFlyoutCommandBar::~CommandBarFlyoutCommandBar()
 {
-    // The SystemBackdrop DP has already been cleared out. Use our cached field.
-    if (m_registeredWithSystemBackdrop)
-    {
-        if (auto systemBackdrop = m_systemBackdrop.get())
-        {
-            systemBackdrop.OnTargetDisconnected(m_backdropLink.SystemBackdropTarget());
-            systemBackdrop.OnTargetDisconnected(m_overflowPopupBackdropLink.SystemBackdropTarget());
-        }
-    }
 }
 
 void CommandBarFlyoutCommandBar::OnApplyTemplate()
@@ -230,9 +221,9 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
 
     auto& primaryItemsRoot = m_primaryItemsRoot.get();
     auto& primaryItemsSystemBackdropRoot = m_primaryItemsSystemBackdropRoot.get();
-    if (primaryItemsRoot && primaryItemsSystemBackdropRoot && m_backdropLink)
+    if (false)
     {
-        winrt::Visual placementVisual = m_backdropLink.PlacementVisual();
+        winrt::Visual placementVisual = m_backdropLink.PlacementVisual().try_as<winrt::Visual>();
 
         // Hard-code a large size for the placement visual. The size and position of this lifted visual controls the
         // size and position of the system visual with the backdrop. This visual is parented in a windowed popup, so it
@@ -249,9 +240,9 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
 
     const auto& overflowContentRootV2 = m_outerOverflowContentRootV2.get();
     const auto& overflowPopupSystemBackdropRoot = m_overflowPopupSystemBackdropRoot.get();
-    if (overflowContentRootV2 && overflowPopupSystemBackdropRoot && m_overflowPopupBackdropLink)
+    if (false)
     {
-        winrt::Visual popupPlacementVisual = m_overflowPopupBackdropLink.PlacementVisual();
+        winrt::Visual popupPlacementVisual = m_overflowPopupBackdropLink.PlacementVisual().try_as<winrt::Visual>();
 
         // Use a hardcoded size. See above.
         popupPlacementVisual.Size({10000, 10000});
@@ -696,9 +687,9 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
 
         // Update the corner radius clip on the backdrop. We copy the corner radius from the elements in the template,
         // which depends on the visual state of the CommandBarFlyoutCommandBar.
-        if (m_overflowPopupBackdropLink && m_outerOverflowContentRootV2)
+        if (false)
         {
-            winrt::Visual popupPlacementVisual = m_overflowPopupBackdropLink.PlacementVisual();
+            winrt::Visual popupPlacementVisual = m_overflowPopupBackdropLink.PlacementVisual().try_as<winrt::Visual>();
             winrt::Grid overflowContentRootV2 = m_outerOverflowContentRootV2.get().try_as<winrt::Grid>();
             auto cornerRadius = overflowContentRootV2.CornerRadius();
 
@@ -734,9 +725,9 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
             popupPlacementVisual.Clip(rectangleClip);
         }
 
-        if (m_overflowPopupBackdropLink && m_overflowPopupSystemBackdropRoot)
+        if (false)
         {
-            winrt::Visual popupPlacementVisual = m_overflowPopupBackdropLink.PlacementVisual();
+            winrt::Visual popupPlacementVisual = m_overflowPopupBackdropLink.PlacementVisual().try_as<winrt::Visual>();
             const auto& overflowPopupSystemBackdropRoot = m_overflowPopupSystemBackdropRoot.get();
             winrt::ElementCompositionPreview::SetElementChildVisual(overflowPopupSystemBackdropRoot, popupPlacementVisual);
         }
@@ -750,7 +741,7 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
         // Take the backdrop behind the overflow popup out of the tree. If the entire CommandBarFlyoutCommandBar is
         // closed and reopens, the overflow popup could be closed and we don't want the backdrop behind the overflow
         // popup to flicker.
-        if (m_overflowPopupBackdropLink && m_overflowPopupSystemBackdropRoot)
+        if (false)
         {
             const auto& overflowPopupSystemBackdropRoot = m_overflowPopupSystemBackdropRoot.get();
             winrt::ElementCompositionPreview::SetElementChildVisual(overflowPopupSystemBackdropRoot, nullptr);
@@ -759,9 +750,9 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
 
     // Update the corner radius clip on the backdrop. We copy the corner radius from the elements in the template, which
     // depends on the visual state of the CommandBarFlyoutCommandBar.
-    if (m_backdropLink && m_primaryItemsRoot)
+    if (false)
     {
-        winrt::Visual placementVisual = m_backdropLink.PlacementVisual();
+        winrt::Visual placementVisual = m_backdropLink.PlacementVisual().try_as<winrt::Visual>();
 
         winrt::Grid primaryItemsRoot = m_primaryItemsRoot.get().try_as<winrt::Grid>();
         auto cornerRadius = primaryItemsRoot.CornerRadius();
@@ -1583,34 +1574,12 @@ void CommandBarFlyoutCommandBar::OnPropertyChanged(const winrt::DependencyProper
     {
         if (args.NewValue() != args.OldValue())
         {
-            const auto& oldSystemBackdrop = args.OldValue().try_as<winrt::SystemBackdrop>();
             const auto& newSystemBackdrop = args.NewValue().try_as<winrt::SystemBackdrop>();
-
-            if (oldSystemBackdrop)
-            {
-                oldSystemBackdrop.OnTargetDisconnected(m_backdropLink.SystemBackdropTarget());
-                oldSystemBackdrop.OnTargetDisconnected(m_overflowPopupBackdropLink.SystemBackdropTarget());
-                m_registeredWithSystemBackdrop = false;
-            }
-
             m_systemBackdrop = newSystemBackdrop;
-
             if (newSystemBackdrop)
             {
-                if (!m_backdropLink)
-                {
-                    auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
-                    auto compositor = visual.Compositor();
-                    m_backdropLink = ContentExternalLinkHelper::BackdropLink::Create(compositor);
-                    m_overflowPopupBackdropLink = ContentExternalLinkHelper::BackdropLink::Create(compositor);
-                }
-
-                TryConnectSystemBackdrop();
-            }
-            else
-            {
-                m_backdropLink = nullptr;
-                m_overflowPopupBackdropLink = nullptr;
+                throw winrt::hresult_not_implemented(
+                    L"CommandBarFlyout SystemBackdrop is unavailable when WinUI uses the system composition stack.");
             }
         }
     }
@@ -1618,21 +1587,4 @@ void CommandBarFlyoutCommandBar::OnPropertyChanged(const winrt::DependencyProper
 
 void CommandBarFlyoutCommandBar::TryConnectSystemBackdrop()
 {
-    if (!m_registeredWithSystemBackdrop)
-    {
-        if (auto systemBackdrop = m_systemBackdrop.get())
-        {
-            MUX_ASSERT(m_backdropLink);
-            MUX_ASSERT(m_overflowPopupBackdropLink);
-
-            auto xamlRoot = XamlRoot();
-
-            if (xamlRoot)
-            {
-                systemBackdrop.OnTargetConnected(m_backdropLink.SystemBackdropTarget(), XamlRoot());
-                systemBackdrop.OnTargetConnected(m_overflowPopupBackdropLink.SystemBackdropTarget(), XamlRoot());
-                m_registeredWithSystemBackdrop = true;
-            }
-        }
-    }
 }

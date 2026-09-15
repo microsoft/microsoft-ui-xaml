@@ -7,6 +7,7 @@
 #include <fwd/Microsoft.UI.Xaml.hosting.h>
 #include <Microsoft.UI.Content.h>
 #include <Microsoft.UI.Input.h>
+#include <SystemInputFocusControllerInterop.h>
 #include "XAMLIslandRoot_Partial.h"
 
 namespace DirectUI
@@ -53,7 +54,7 @@ namespace DirectUI
         ctl::ComPtr<xaml_hosting::IXamlIslandRoot> m_spXamlIsland;
         XamlIslandRoot * m_xamlIslandRoot;
         CXamlIslandRoot * m_pXamlIslandCore{};
-        ctl::ComPtr<ABI::Microsoft::UI::Input::IInputFocusController2> m_inputFocusController2;
+        ctl::ComPtr<SystemInputFocusControllerInterop::IInputFocusController2> m_inputFocusController2;
         EventRegistrationToken m_focusNavigationRequestedToken = {};
         EventRegistrationToken m_islandConnectedToken = {};
         EventRegistrationToken m_islandDisconnectedToken = {};
@@ -61,4 +62,3 @@ namespace DirectUI
         ctl::ComPtr<xaml::Media::ISystemBackdrop> m_systemBackdrop;
     };
 }
-

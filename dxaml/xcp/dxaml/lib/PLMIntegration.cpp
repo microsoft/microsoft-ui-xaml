@@ -353,7 +353,7 @@ namespace PLM
         IFC_RETURN(m_pAppSuspendHandlers->InvokeHandlers(pAppSender, spWrappedArgs.Get()));
 
         IFC_RETURN(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
+            wrl_wrappers::HStringReference(RuntimeClass_Windows_System_DispatcherQueue).Get(),
             &spDispatcherQueueStatics));
 
         IFC_RETURN(spDispatcherQueueStatics->GetForCurrentThread(&spDispatcherQueue));

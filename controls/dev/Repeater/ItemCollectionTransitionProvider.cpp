@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include <pch.h>
@@ -33,7 +33,7 @@ void ItemCollectionTransitionProvider::QueueTransition(winrt::ItemCollectionTran
         usesNewTransitionsBatch = true;
         // The batch gets a new id.
         m_transitionsBatch++;
-        m_rendering = winrt::CompositionTarget::Rendering(winrt::auto_revoke, { this, &ItemCollectionTransitionProvider::OnRendering });
+        m_rendering = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering(winrt::auto_revoke, { this, &ItemCollectionTransitionProvider::OnRendering });
     }
 
     // We'll animate if animations are enabled and the transition provider has indicated we should animate this transition.

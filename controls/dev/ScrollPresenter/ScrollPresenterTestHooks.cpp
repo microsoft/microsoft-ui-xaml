@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -297,7 +297,7 @@ void ScrollPresenterTestHooks::AnchorEvaluated(winrt::event_token const& token)
 
 void ScrollPresenterTestHooks::NotifyInteractionSourcesChanged(
     const winrt::ScrollPresenter& sender,
-    const winrt::Microsoft::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources)
+    const winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources)
 {
     auto hooks = EnsureGlobalTestHooks();
     if (hooks->m_interactionSourcesChangedEventSource)

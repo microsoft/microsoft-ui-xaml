@@ -29,8 +29,8 @@ unsealed runtimeclass RadialGradientBrush : Microsoft.UI.Xaml.Media.XamlComposit
     Microsoft.UI.Xaml.Media.BrushMappingMode MappingMode { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_DEFAULT_VALUE("winrt::Microsoft::UI::Composition::CompositionColorSpace::Auto")]
-    Microsoft.UI.Composition.CompositionColorSpace InterpolationSpace { get; set; };
+    [MUX_DEFAULT_VALUE("winrt::Windows::UI::Composition::CompositionColorSpace::Auto")]
+    Windows.UI.Composition.CompositionColorSpace InterpolationSpace { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::GradientSpreadMethod::Pad")]

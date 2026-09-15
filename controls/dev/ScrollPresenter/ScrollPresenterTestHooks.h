@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -58,7 +58,7 @@ public:
     static winrt::event_token AnchorEvaluated(winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::ScrollPresenterTestHooksAnchorEvaluatedEventArgs> const& value);
     static void AnchorEvaluated(winrt::event_token const& token);
 
-    static void NotifyInteractionSourcesChanged(const winrt::ScrollPresenter& sender, const winrt::Microsoft::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources);
+    static void NotifyInteractionSourcesChanged(const winrt::ScrollPresenter& sender, const winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources);
     static winrt::event_token InteractionSourcesChanged(winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::ScrollPresenterTestHooksInteractionSourcesChangedEventArgs> const& value);
     static void InteractionSourcesChanged(winrt::event_token const& token);
 

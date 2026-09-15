@@ -2,13 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
-#include "winrt/Microsoft.UI.Composition.SystemBackdrops.h"
 #include <winrt/windows.system.h>
 
 #include "DesktopAcrylicBackdrop.g.h"
 
-using namespace winrt::Microsoft::UI::Composition;
-using namespace winrt::Microsoft::UI::Composition::SystemBackdrops;
+using namespace winrt::Windows::UI::Composition;
 
 class DesktopAcrylicBackdrop :
     public ReferenceTracker<DesktopAcrylicBackdrop, winrt::implementation::DesktopAcrylicBackdropT>
@@ -21,19 +19,4 @@ public:
     void OnTargetDisconnected(ICompositionSupportsSystemBackdrop disconnectedTarget);
 
 private:
-    class ControllerEntry
-    {
-    public:
-        ControllerEntry(ICompositionSupportsSystemBackdrop target, DesktopAcrylicController controller, SystemBackdropConfiguration configuration);
-        ~ControllerEntry();
-
-        // Block copy and assignment. This class is meant to be constructed in-place in the list.
-        ControllerEntry(const ControllerEntry& other) = delete;
-        ControllerEntry& operator=(const ControllerEntry& other) = delete;
-
-        ICompositionSupportsSystemBackdrop m_target;
-        DesktopAcrylicController m_controller;
-    };
-
-    std::vector<std::unique_ptr<ControllerEntry>> m_controllers;
 };

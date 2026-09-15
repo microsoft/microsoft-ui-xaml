@@ -6,7 +6,7 @@
 interface IAnimatedVisual
     requires Windows.Foundation.IClosable
 {
-    Microsoft.UI.Composition.Visual RootVisual{ get; };
+    Windows.UI.Composition.Visual RootVisual{ get; };
     Windows.Foundation.Numerics.Vector2 Size{ get; };
     Windows.Foundation.TimeSpan Duration{ get; };
 };
@@ -24,7 +24,7 @@ interface IAnimatedVisual2 requires IAnimatedVisual
 interface IAnimatedVisualSource
 {
     IAnimatedVisual TryCreateAnimatedVisual(
-        Microsoft.UI.Composition.Compositor compositor,
+        Windows.UI.Composition.Compositor compositor,
         out Object diagnostics);
 };
 
@@ -41,7 +41,7 @@ interface IDynamicAnimatedVisualSource
 interface IAnimatedVisualSource3
 {
     IAnimatedVisual2 TryCreateAnimatedVisual(
-        Microsoft.UI.Composition.Compositor compositor,
+        Windows.UI.Composition.Compositor compositor,
         out Object diagnostics,
         Boolean createAnimations);
 };
@@ -57,7 +57,7 @@ interface ISelfPlayingAnimatedVisual
     void Stop();
     void SetPlaybackRate(Double playbackRate);
     void SetProgress(Double progress);
-    void SetProgressObject(Microsoft.UI.Composition.CompositionPropertySet compositionPropertySet);
+    void SetProgressObject(Windows.UI.Composition.CompositionPropertySet compositionPropertySet);
     void SetSize(Windows.Foundation.Size size);
 };
 
@@ -101,7 +101,7 @@ unsealed runtimeclass AnimatedVisualPlayer
         PlayerAnimationOptimization AnimationOptimization;
     }
 
-    Microsoft.UI.Composition.CompositionObject ProgressObject{ get; };
+    Windows.UI.Composition.CompositionObject ProgressObject{ get; };
 
     [MUX_DEFAULT_VALUE("winrt::Stretch::Uniform")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]

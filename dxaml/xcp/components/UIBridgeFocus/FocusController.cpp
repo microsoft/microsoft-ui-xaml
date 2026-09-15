@@ -9,6 +9,7 @@
 #include "NavigateFocusResult.h"
 #include <WRLHelper.h>
 #include <MuxActivationFactory.h>
+#include <SystemInputFocusControllerInterop.h>
 
 using namespace xaml_hosting;
 using FocusChangedEventHandler = wf::ITypedEventHandler<
@@ -178,20 +179,10 @@ HRESULT FocusController::DepartFocus(
             break;
     }
 
-    ABI::Windows::Foundation::Rect hintRect;
-    IFC_RETURN(request->get_HintRect(&hintRect));
-    GUID correlationId;
-    IFC_RETURN(request->get_CorrelationId(&correlationId));
-    wrl::ComPtr<ixp::IFocusNavigationRequest> ixpRequest;
-
-    wrl::ComPtr<ixp::IFocusNavigationRequestStatics> focusNavigationRequestStatics;
-    MuxGetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_FocusNavigationRequest).Get(), &focusNavigationRequestStatics);
-    IFCFAILFAST(focusNavigationRequestStatics->CreateWithHintRectAndId(ixpReason, hintRect, correlationId, &ixpRequest));
-
-    wrl::ComPtr<ixp::IInputFocusController2> inputFocusController2;
+    wrl::ComPtr<SystemInputFocusControllerInterop::IInputFocusController2> inputFocusController2;
     IFC_RETURN(m_inputObjectFocusable.As(&inputFocusController2));
     ixp::FocusNavigationResult result;
-    IFC_RETURN(inputFocusController2->DepartFocus(ixpRequest.Get(), &result));
+    IFC_RETURN(inputFocusController2->DepartFocus(ixpReason, &result));
 
     // WinUI may wish to respond to the result (Moved/NotMoved/NoFocusableElements) here in some way
 
@@ -219,7 +210,7 @@ HRESULT FocusController::OnGotFocusCommon()
 {
     wrl::ComPtr<msy::IDispatcherQueueStatics> spDispatcherQueueStatics;
     IFC_RETURN(MuxGetActivationFactory(
-        wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
+        wrl_wrappers::HStringReference(RuntimeClass_Windows_System_DispatcherQueue).Get(),
         &spDispatcherQueueStatics));
 
     wrl::ComPtr<msy::IDispatcherQueue> spDispatcherQueue;
@@ -269,4 +260,3 @@ HRESULT FocusController::FireGotFocus(_In_opt_ xaml_hosting::IXamlSourceFocusNav
 
     return S_OK;
 }
-

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -193,7 +193,7 @@ void MaterialHelperBase::AssertUniqueCompositorOrUpdate(const winrt::Compositor&
 
 winrt::CompositionSurfaceBrush MaterialHelperBase::CreateScaledBrush(int dpiScale)
 {
-    winrt::Compositor compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+    winrt::Compositor compositor = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
     winrt::LoadedImageSurface surface{ ResourceAccessor::GetImageSurface(IR_NoiseAsset_256X256_PNG, { 256, 256 }) };
     winrt::CompositionSurfaceBrush noiseBrush = compositor.CreateSurfaceBrush(surface);
 
@@ -334,7 +334,7 @@ void MaterialHelper::EnsureCompositionCapabilities()
     {
         try
         {
-            m_compositionCapabilities = winrt::CompositionCapabilities();
+            m_compositionCapabilities = winrt::CompositionCapabilities::GetForCurrentView();
             m_compositionCapabilitiesChangedToken = m_compositionCapabilities.Changed({ this, &MaterialHelper::OnCompositionCapabilitiesChanged });
         }
         catch (winrt::hresult_error)

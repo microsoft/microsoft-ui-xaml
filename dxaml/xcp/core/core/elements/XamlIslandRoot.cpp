@@ -307,20 +307,6 @@ _Check_return_ HRESULT CXamlIslandRoot::InitializeCommon()
             WRLHelper::MakeAgileCallback<wf::ITypedEventHandler<ixp::ContentIslandEnvironment*, ixp::ContentEnvironmentSettingChangedEventArgs*>>(settingChangedCallback).Get(),
             &m_topLevelHost_SettingChanged));
 
-        auto themeChangedCallback = [](ixp::IContentIslandEnvironment*, IInspectable*) -> HRESULT
-        {
-            if (auto dxamlCore = DirectUI::DXamlCore::GetCurrent())
-            {
-                dxamlCore->GetControl()->OnThemeChanged();
-            }
-            return S_OK;
-        };
-
-        wrl::ComPtr<ixp::IContentIslandEnvironmentExperimental> contentIslandEnvironmentExperimental;
-        IFCFAILFAST(m_topLevelHost.As(&contentIslandEnvironmentExperimental));
-        IFCFAILFAST(contentIslandEnvironmentExperimental->add_ThemeChanged(
-            WRLHelper::MakeAgileCallback<wf::ITypedEventHandler<ixp::ContentIslandEnvironment*, IInspectable*>>(themeChangedCallback).Get(),
-            &m_topLevelHost_ThemeChanged));
     }
 
     return S_OK;

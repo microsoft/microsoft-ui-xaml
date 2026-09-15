@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -86,7 +86,7 @@ void RevealBorderLight::EnsureLocalLight()
 {
     if (!m_compositionSpotLight)
     {
-        auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+        auto compositor = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
         m_compositionSpotLight = compositor.CreateSpotLight();
         CompositionLight(m_compositionSpotLight);
 
@@ -194,7 +194,7 @@ void RevealBorderLight::SwitchLight(bool turnOn)
     }
     else
     {
-        winrt::CompositionScopedBatch scopedBatch = winrt::CompositionTarget::GetCompositorForCurrentThread().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
+        winrt::CompositionScopedBatch scopedBatch = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
         animateSpotLight();
         scopedBatch.End();
 

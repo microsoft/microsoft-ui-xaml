@@ -6,7 +6,7 @@
 //    DirectManipulation APIs.
 
 #include "precomp.h"
-#include <Microsoft.DirectManipulation.h>
+#include <directmanipulation.h>
 #include "DirectManipulationService.h"
 #include "DirectManipulationServiceSharedState.h"
 #include "DirectManipulationViewportEventHandler.h"
@@ -25,6 +25,9 @@
 #include "LoadLibraryAbs.h"
 
 using namespace ATL;
+
+constexpr GUID CLSID_SystemParametricMotionBehavior =
+{ 0x8a7bd110, 0x3f9d, 0x472d, { 0xba, 0x35, 0xdd, 0xd2, 0xe0, 0xce, 0x94, 0xa6 } };
 
 // Define as 1 (i.e. XCP_TRACE_OUTPUT_MSG) to get debug outputs, and 0 otherwise
 #define DMS_DBG 0
@@ -1202,7 +1205,7 @@ CDirectManipulationService::AddSecondaryContent(
 
     IFC(GetDMViewportFromHandle(pViewport, &pDMViewport));
     ASSERT(pDMViewport);
-    IFC(m_pDMManager->CreateContent(NULL /*pFrameInfo*/, CLSID_Microsoft_ParametricMotionBehavior, IID_PPV_ARGS(&pNewDMSecondaryContent)));
+    IFC(m_pDMManager->CreateContent(NULL /*pFrameInfo*/,     CLSID_SystemParametricMotionBehavior, IID_PPV_ARGS(&pNewDMSecondaryContent)));
 #ifdef DM_DEBUG
     if (DMS_TraceDbg())
     {
@@ -1324,7 +1327,7 @@ CDirectManipulationService::AddSecondaryContent(
 
     if (!pDMSecondaryContent)
     {
-        IFC(m_pDMManager->CreateContent(NULL /*pFrameInfo*/, CLSID_Microsoft_ParametricMotionBehavior, IID_PPV_ARGS(&pDMSecondaryContent)));
+        IFC(m_pDMManager->CreateContent(NULL /*pFrameInfo*/,         CLSID_SystemParametricMotionBehavior, IID_PPV_ARGS(&pDMSecondaryContent)));
 
 #ifdef DM_DEBUG
         if (DMS_TraceDbg())
@@ -1492,7 +1495,7 @@ CDirectManipulationService::AddSecondaryClipContent(
 
     if (!pDMSecondaryClipContent)
     {
-        IFC(m_pDMManager->CreateContent(NULL /*pFrameInfo*/, CLSID_Microsoft_ParametricMotionBehavior, IID_PPV_ARGS(&pDMSecondaryClipContent)));
+        IFC(m_pDMManager->CreateContent(NULL /*pFrameInfo*/,         CLSID_SystemParametricMotionBehavior, IID_PPV_ARGS(&pDMSecondaryClipContent)));
 #ifdef DM_DEBUG
         if (DMS_TraceDbg())
         {
@@ -3452,7 +3455,7 @@ CDirectManipulationService::ActivateAutoScroll(
         IFC(m_pDMManager->QueryInterface(IID_PPV_ARGS(&spManager2)));
         IFC(pDMViewport->QueryInterface(IID_PPV_ARGS(&spDMViewport2)));
 
-        IFC(spManager2->CreateBehavior(CLSID_Microsoft_AutoScrollBehavior, IID_PPV_ARGS(&spAutoScrollBehavior)));
+        IFC(spManager2->CreateBehavior(        CLSID_AutoScrollBehavior, IID_PPV_ARGS(&spAutoScrollBehavior)));
         IFC(spDMViewport2->AddBehavior(spAutoScrollBehavior.Get(), &m_autoScrollBehaviorCookie));
 
         m_spAutoScrollBehavior = spAutoScrollBehavior;
@@ -3530,7 +3533,7 @@ CDirectManipulationService::AttachDragDropBehavior(
         Microsoft::WRL::ComPtr<IDirectManipulationDragDropBehavior> spDragDropBehavior;
 
         IFC_RETURN(m_pDMManager->QueryInterface(IID_PPV_ARGS(&spManager2)));
-        IFC_RETURN(spManager2->CreateBehavior(CLSID_Microsoft_DragDropConfigurationBehavior, IID_PPV_ARGS(&spDragDropBehavior)));
+        IFC_RETURN(spManager2->CreateBehavior(        CLSID_DragDropConfigurationBehavior, IID_PPV_ARGS(&spDragDropBehavior)));
         IFC_RETURN(spDragDropBehavior->SetConfiguration(DIRECTMANIPULATION_DRAG_DROP_CONFIGURATION_VERTICAL | DIRECTMANIPULATION_DRAG_DROP_CONFIGURATION_HORIZONTAL | DIRECTMANIPULATION_DRAG_DROP_CONFIGURATION_HOLD_DRAG));
 
         m_spDragDropBehavior = spDragDropBehavior;
@@ -5153,7 +5156,7 @@ CDirectManipulationService::CreateParametricReflex(
 
     *ppReflex = nullptr;
 
-    IFC(pManager2->CreateContent(NULL /*pFrameInfoProvider*/, CLSID_Microsoft_ParametricMotionBehavior, IID_PPV_ARGS(&spReflex)));
+    IFC(pManager2->CreateContent(NULL /*pFrameInfoProvider*/,     CLSID_SystemParametricMotionBehavior, IID_PPV_ARGS(&spReflex)));
     IFC(pDMViewport2->AddContent(spReflex.Get()));
 
     IFC(spReflex.CopyTo(ppReflex));
@@ -5259,7 +5262,7 @@ wrl::ComPtr<ixp::IPointerPoint> CDirectManipulationService::GetPointerPointFromP
 
 wrl::ComPtr<IDirectManipulationManager3> CDirectManipulationService::CreateDirectManipulationManager()
 {
-    HMODULE hmodDManip = LoadLibraryExWAbs(L"Microsoft.DirectManipulation.dll", nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+    HMODULE hmodDManip = LoadLibraryExW(L"DirectManipulation.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
     ASSERT(hmodDManip != nullptr);
 
     wrl::ComPtr<IClassFactory> directManipulationFactory;

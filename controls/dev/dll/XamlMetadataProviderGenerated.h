@@ -145,7 +145,7 @@ Entry c_typeEntries[] =
 
                     xamlType.AddMember(
                         L"ProgressObject", /* propertyName */
-                        L"Microsoft.UI.Composition.CompositionObject", /* propertyType */
+                        L"Windows.UI.Composition.CompositionObject", /* propertyType */
                         [](winrt::IInspectable instance) { return instance.as<winrt::AnimatedVisualPlayer>().ProgressObject(); },
                         nullptr, /* setter */
                         false, /* isContent */
@@ -4997,7 +4997,7 @@ Entry c_typeEntries[] =
                         false /* isAttachable */);
                     xamlType.AddMember(
                         L"ExpressionAnimationSources", /* propertyName */
-                        L"Microsoft.UI.Composition.CompositionPropertySet", /* propertyType */
+                        L"Windows.UI.Composition.CompositionPropertySet", /* propertyType */
                         [](winrt::IInspectable instance) { return instance.as<winrt::ScrollPresenter>().ExpressionAnimationSources(); },
                         nullptr, /* setter */
                         false, /* isContent */
@@ -5883,7 +5883,7 @@ Entry c_typeEntries[] =
                         false /* isAttachable */);
                     xamlType.AddMember(
                         L"ExpressionAnimationSources", /* propertyName */
-                        L"Microsoft.UI.Composition.CompositionPropertySet", /* propertyType */
+                        L"Windows.UI.Composition.CompositionPropertySet", /* propertyType */
                         [](winrt::IInspectable instance) { return instance.as<winrt::ScrollView>().ExpressionAnimationSources(); },
                         nullptr, /* setter */
                         false, /* isContent */
@@ -7949,7 +7949,7 @@ Entry c_typeEntries[] =
                     {
                         xamlType.AddDPMember(L"Center", L"Windows.Foundation.Point", statics.CenterProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"GradientOrigin", L"Windows.Foundation.Point", statics.GradientOriginProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"InterpolationSpace", L"Microsoft.UI.Composition.CompositionColorSpace", statics.InterpolationSpaceProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"InterpolationSpace", L"Windows.UI.Composition.CompositionColorSpace", statics.InterpolationSpaceProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"MappingMode", L"Microsoft.UI.Xaml.Media.BrushMappingMode", statics.MappingModeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"RadiusX", L"Double", statics.RadiusXProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"RadiusY", L"Double", statics.RadiusYProperty(), false /* isContent */);
@@ -8107,49 +8107,6 @@ Entry c_typeEntries[] =
         L"Int32",
         /* Arg2 CreateXamlTypeCallback */ 
         []() { return winrt::make<PrimitiveXamlType>((PCWSTR)L"Int32"); }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Composition.CompositionColorSpace",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make<EnumXamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Composition.CompositionColorSpace",
-                /* Arg 2 - CreateFromString func */ 
-                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
-                {
-                    if (fromString == L"Auto") return box_value(winrt::CompositionColorSpace::Auto);
-                    if (fromString == L"Hsl") return box_value(winrt::CompositionColorSpace::Hsl);
-                    if (fromString == L"Rgb") return box_value(winrt::CompositionColorSpace::Rgb);
-                    if (fromString == L"HslLinear") return box_value(winrt::CompositionColorSpace::HslLinear);
-                    if (fromString == L"RgbLinear") return box_value(winrt::CompositionColorSpace::RgbLinear);
-                    throw winrt::hresult_invalid_argument();
-                });
-
-            return xamlType;
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Composition.CompositionObject",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>((PCWSTR)L"Microsoft.UI.Composition.CompositionObject", (PCWSTR)L"Object" /* BaseTypeName */ , nullptr /* Activator Func */, nullptr /* PopulatePropertiesFunc */ );
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Composition.CompositionPropertySet",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>((PCWSTR)L"Microsoft.UI.Composition.CompositionPropertySet", (PCWSTR)L"Object" /* BaseTypeName */ , nullptr /* Activator Func */, nullptr /* PopulatePropertiesFunc */ );
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
     },
     {
         /* Arg1 TypeName */ 
@@ -8914,6 +8871,49 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Windows.UI.Composition.CompositionColorSpace",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make<EnumXamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Windows.UI.Composition.CompositionColorSpace",
+                /* Arg 2 - CreateFromString func */ 
+                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
+                {
+                    if (fromString == L"Auto") return box_value(winrt::CompositionColorSpace::Auto);
+                    if (fromString == L"Hsl") return box_value(winrt::CompositionColorSpace::Hsl);
+                    if (fromString == L"Rgb") return box_value(winrt::CompositionColorSpace::Rgb);
+                    if (fromString == L"HslLinear") return box_value(winrt::CompositionColorSpace::HslLinear);
+                    if (fromString == L"RgbLinear") return box_value(winrt::CompositionColorSpace::RgbLinear);
+                    throw winrt::hresult_invalid_argument();
+                });
+
+            return xamlType;
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Windows.UI.Composition.CompositionObject",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>((PCWSTR)L"Windows.UI.Composition.CompositionObject", (PCWSTR)L"Object" /* BaseTypeName */ , nullptr /* Activator Func */, nullptr /* PopulatePropertiesFunc */ );
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Windows.UI.Composition.CompositionPropertySet",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>((PCWSTR)L"Windows.UI.Composition.CompositionPropertySet", (PCWSTR)L"Object" /* BaseTypeName */ , nullptr /* Activator Func */, nullptr /* PopulatePropertiesFunc */ );
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Windows.UI.Core.CoreInputDeviceTypes",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -8978,6 +8978,7 @@ std::wstring_view c_knownNamespacePrefixes[] =
     L"Windows.Foundation.Numerics.",
     L"Windows.Globalization.NumberFormatting.",
     L"Windows.UI.",
+    L"Windows.UI.Composition.",
     L"Windows.UI.Core.",
     L"Windows.UI.Input.",
 };

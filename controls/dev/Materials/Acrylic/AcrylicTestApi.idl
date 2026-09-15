@@ -9,8 +9,8 @@ runtimeclass AcrylicTestApi : Microsoft.UI.Xaml.DependencyObject
 
     MU_XM_NAMESPACE.AcrylicBrush AcrylicBrush { get; set; };
     Boolean IsUsingAcrylicBrush { get; };
-    Microsoft.UI.Composition.CompositionBrush CompositionBrush { get; };
-    Microsoft.UI.Composition.CompositionBrush NoiseBrush { get; };
+    Windows.UI.Composition.CompositionBrush CompositionBrush { get; };
+    Windows.UI.Composition.CompositionBrush NoiseBrush { get; };
     void ForceCreateAcrylicBrush(Boolean useCrossFadeEffect);
 
 }
@@ -19,8 +19,8 @@ runtimeclass AcrylicTestApi : Microsoft.UI.Xaml.DependencyObject
 [webhosthidden]
 interface IAcrylicBrushStaticsPrivate
 {
-    Microsoft.UI.Composition.CompositionEffectBrush CreateBackdropAcrylicEffectBrush(Microsoft.UI.Composition.Compositor compositor, Windows.UI.Color initialTintColor, Windows.UI.Color initialFallbackColor, Boolean willTintColorAlwaysBeOpaque);
-    Microsoft.UI.Composition.CompositionEffectBrush CreateBackdropAcrylicEffectBrushWithLuminosity(Microsoft.UI.Composition.Compositor compositor, Windows.UI.Color initialTintColor, Windows.Foundation.IReference<double> luminosityOpacity, Windows.UI.Color initialFallbackColor, Boolean willTintColorAlwaysBeOpaque);
+    Windows.UI.Composition.CompositionEffectBrush CreateBackdropAcrylicEffectBrush(Windows.UI.Composition.Compositor compositor, Windows.UI.Color initialTintColor, Windows.UI.Color initialFallbackColor, Boolean willTintColorAlwaysBeOpaque);
+    Windows.UI.Composition.CompositionEffectBrush CreateBackdropAcrylicEffectBrushWithLuminosity(Windows.UI.Composition.Compositor compositor, Windows.UI.Color initialTintColor, Windows.Foundation.IReference<double> luminosityOpacity, Windows.UI.Color initialFallbackColor, Boolean willTintColorAlwaysBeOpaque);
 }
 
 }

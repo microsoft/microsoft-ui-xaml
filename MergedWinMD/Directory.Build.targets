@@ -5,6 +5,28 @@
        So we'll do that manually to guarantee that ordering. -->
   <Target Name="BuildMidlProjectReferences" DependsOnTargets="BuildGenerateSourcesTraverse" AfterTargets="Rebuild" BeforeTargets="Build;_Midl;GetCppWinRTDirectWinMDReferences;_ComposedMetadata;CoreCompile" />
 
+  <Target Name="UseCurrentUniversalApiContractForSystemCompositionMerge"
+          AfterTargets="_GatherComposedMetadataInputs"
+          BeforeTargets="_IsolateCollidingReferenceWinMDs;_ComposedMetadata">
+    <PropertyGroup>
+      <_CurrentUniversalApiContract>$(WindowsSdkDir)References\$(WindowsTargetPlatformVersion)\Windows.Foundation.UniversalApiContract.winmd</_CurrentUniversalApiContract>
+      <_SystemContractStagingDir>$(IntDir)mdmerge-system-contracts\</_SystemContractStagingDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <_SystemContractWinMDs Include="$(SDKReferencesPath)\*.winmd"
+                             Exclude="$(SDKReferencesPath)\Windows.Foundation.UniversalApiContract.winmd" />
+      <_SystemContractWinMDs Include="$(_CurrentUniversalApiContract)" />
+    </ItemGroup>
+    <MakeDir Directories="$(_SystemContractStagingDir)" />
+    <Copy SourceFiles="@(_SystemContractWinMDs)"
+          DestinationFolder="$(_SystemContractStagingDir)"
+          SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <_WinMdReferenceDirectories Remove="$(SDKReferencesPath)" />
+      <_WinMdReferenceDirectories Include="$(_SystemContractStagingDir)" />
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
     <BinplaceItem Include="$(OutputWinmds)"/>
   </ItemGroup>

@@ -154,7 +154,7 @@ CTimedTextSource::Initialize(_In_opt_ xaml::IDependencyObject* pOwner, _In_ xaml
     // to be used when cue are received
     ctl::ComPtr<msy::IDispatcherQueueStatics> spDispatcherQueueStatics;
     IFC_RETURN(wf::GetActivationFactory(
-        wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
+        wrl_wrappers::HStringReference(RuntimeClass_Windows_System_DispatcherQueue).Get(),
         spDispatcherQueueStatics.ReleaseAndGetAddressOf()));
 
     // We won't always have a DispatcherQueue for the thread. For example, users of
@@ -907,4 +907,3 @@ CTimedTextSource::OnMediaCurrentItemChanged()
 
     return S_OK;
 }
-

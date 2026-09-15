@@ -12,8 +12,8 @@ runtimeclass RevealBrushTestApi : Microsoft.UI.Xaml.DependencyObject
     Boolean IsAmbientLightSet { get; };
     Boolean IsBorderLightSet { get; };
     Boolean IsHoverLightSet { get; };
-    Microsoft.UI.Composition.CompositionBrush CompositionBrush { get; };
-    Microsoft.UI.Composition.CompositionBrush NoiseBrush { get; };
+    Windows.UI.Composition.CompositionBrush CompositionBrush { get; };
+    Windows.UI.Composition.CompositionBrush NoiseBrush { get; };
     
 }
 

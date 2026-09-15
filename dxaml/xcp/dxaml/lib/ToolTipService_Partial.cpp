@@ -1866,7 +1866,7 @@ ToolTipService::GetDispatcherQueueForCurrentThread(
     ctl::ComPtr<msy::IDispatcherQueueStatics> dispatcherQueueStatics;
 
     IFC_RETURN(ctl::GetActivationFactory(
-        wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
+        wrl_wrappers::HStringReference(RuntimeClass_Windows_System_DispatcherQueue).Get(),
         &dispatcherQueueStatics));
     IFC_RETURN(dispatcherQueueStatics->GetForCurrentThread(value));
 

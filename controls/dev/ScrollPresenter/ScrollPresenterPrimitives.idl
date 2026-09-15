@@ -201,7 +201,7 @@ interface IScrollControllerPanningInfo
     Microsoft.UI.Xaml.UIElement PanningElementAncestor{ get; };
 
     void SetPanningElementExpressionAnimationSources(
-        Microsoft.UI.Composition.CompositionPropertySet propertySet,
+        Windows.UI.Composition.CompositionPropertySet propertySet,
         String minOffsetPropertyName,
         String maxOffsetPropertyName,
         String offsetPropertyName,
@@ -220,11 +220,11 @@ interface IScrollController
     Boolean IsScrollingWithMouse{ get; };
     void SetIsScrollable(Boolean isScrollable);
     void SetValues(Double minOffset, Double maxOffset, Double offset, Double viewportLength);
-    Microsoft.UI.Composition.CompositionAnimation GetScrollAnimation(
+    Windows.UI.Composition.CompositionAnimation GetScrollAnimation(
         Int32 correlationId,
         Windows.Foundation.Numerics.Vector2 startPosition,
         Windows.Foundation.Numerics.Vector2 endPosition,
-        Microsoft.UI.Composition.CompositionAnimation defaultAnimation);
+        Windows.UI.Composition.CompositionAnimation defaultAnimation);
     void NotifyRequestedScrollCompleted(Int32 correlationId);
     event Windows.Foundation.TypedEventHandler<IScrollController, Object> CanScrollChanged;
     event Windows.Foundation.TypedEventHandler<IScrollController, Object> IsScrollingWithMouseChanged;
@@ -246,7 +246,7 @@ unsealed runtimeclass ScrollPresenter :
 
     Microsoft.UI.Xaml.Media.Brush Background { get; set; };
     Microsoft.UI.Xaml.UIElement Content { get; set; };
-    Microsoft.UI.Composition.CompositionPropertySet ExpressionAnimationSources { get; };
+    Windows.UI.Composition.CompositionPropertySet ExpressionAnimationSources { get; };
     Double HorizontalOffset { get; };
     Double VerticalOffset { get; };
     Single ZoomFactor { get; };

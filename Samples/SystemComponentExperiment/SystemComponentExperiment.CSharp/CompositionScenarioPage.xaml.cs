@@ -26,7 +26,7 @@ public sealed partial class CompositionScenarioPage : Page
             child.Brush = compositor.CreateColorBrush(Colors.CornflowerBlue);
             ElementCompositionPreview.SetElementChildVisual(
                 VisualHost,
-                (Microsoft.UI.Composition.Visual)(object)child);
+                child);
             ResultText.Text = $"Passed: {compositor.GetType().FullName}";
         }
         catch (Exception exception)

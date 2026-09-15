@@ -1909,7 +1909,7 @@ _Check_return_ HRESULT LoopingSelector::SetScrollPosition(_In_ double offset, _I
         IFC(spThis.AsWeak(&wrThis));
 
         IFC(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
+            wrl_wrappers::HStringReference(RuntimeClass_Windows_System_DispatcherQueue).Get(),
             &spDispatcherQueueStatics));
         IFC(spDispatcherQueueStatics->GetForCurrentThread(&spDispatcherQueue));
         IFC(spDispatcherQueue->TryEnqueue(

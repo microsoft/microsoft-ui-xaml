@@ -2,14 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
-#include "winrt/Microsoft.UI.Composition.SystemBackdrops.h"
 #include <winrt/windows.system.h>
 
 #include "MicaBackdrop.g.h"
 #include "MicaBackdrop.properties.h"
 
-using namespace winrt::Microsoft::UI::Composition;
-using namespace winrt::Microsoft::UI::Composition::SystemBackdrops;
+using namespace winrt::Windows::UI::Composition;
 
 class MicaBackdrop :
     public ReferenceTracker<MicaBackdrop, winrt::implementation::MicaBackdropT>,
@@ -25,19 +23,4 @@ public:
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
-    class ControllerEntry
-    {
-    public:
-        ControllerEntry(ICompositionSupportsSystemBackdrop target, MicaController controller, SystemBackdropConfiguration configuration);
-        ~ControllerEntry();
-
-        // Block copy and assignment. This class is meant to be constructed in-place in the list.
-        ControllerEntry(const ControllerEntry& other) = delete;
-        ControllerEntry& operator=(const ControllerEntry& other) = delete;
-
-        ICompositionSupportsSystemBackdrop m_target;
-        MicaController m_controller;
-    };
-
-    std::vector<std::unique_ptr<ControllerEntry>> m_controllers;
 };

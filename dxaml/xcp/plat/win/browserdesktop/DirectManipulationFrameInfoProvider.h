@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <Microsoft.DirectManipulation.h>
+#include <directmanipulation.h>
 
 class CDirectManipulationService;
 

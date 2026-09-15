@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <Microsoft.DirectManipulation.h>
+#include <directmanipulation.h>
 #include "XcpDirectManipulationViewportEventHandler.h"
 #include "XcpAutoLock.h"
 #include "DirectManipulationHelper.h"

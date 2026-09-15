@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -605,7 +605,7 @@ void AcrylicBrush::CreateAcrylicBrush(bool useCrossFadeEffect, bool forceCreateA
     // Forget about any pending animation state when recreating the brush.
     CancelFallbackAnimationCompleteWait();
 
-    const auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+    const auto compositor = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
 
     const auto fallbackColor = FallbackColor();
     //if forceCreateAcrylicBrush=true, m_isUsingAcrylicBrush is ignored.

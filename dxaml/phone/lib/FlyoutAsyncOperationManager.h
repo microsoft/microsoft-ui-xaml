@@ -136,7 +136,7 @@ XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { n
             (this, &FlyoutAsyncOperationManager<TResult, TTrackerRuntimeClass, OpName>::OnClosed).Get(),
             &closedToken));
 
-        IFC(wf::GetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(), &spDispatcherQueueStatics));
+        IFC(wf::GetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Windows_System_DispatcherQueue).Get(), &spDispatcherQueueStatics));
         IFC(spDispatcherQueueStatics->GetForCurrentThread(&m_spDispatcherQueue));
 
         m_isInitialized = true;
@@ -399,5 +399,4 @@ Cleanup:
 #pragma endregion FlyoutAsyncOperationManager Definition
 
 }}}} XAML_ABI_NAMESPACE_END
-
 

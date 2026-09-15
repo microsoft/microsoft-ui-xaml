@@ -8,7 +8,7 @@ interface IRefreshInfoProvider
     void OnRefreshStarted();
     void OnRefreshCompleted();
     Boolean IsInteractingForRefresh { get; };
-    Microsoft.UI.Composition.CompositionPropertySet CompositionProperties { get; };
+    Windows.UI.Composition.CompositionPropertySet CompositionProperties { get; };
     String InteractionRatioCompositionProperty { get; };
     Double ExecutionRatio { get; };
     event Windows.Foundation.TypedEventHandler<IRefreshInfoProvider, Object> IsInteractingForRefreshChanged;

@@ -23,7 +23,7 @@ runtimeclass ScrollPresenterTestHooksAnchorEvaluatedEventArgs
 [webhosthidden]
 runtimeclass ScrollPresenterTestHooksInteractionSourcesChangedEventArgs
 {
-    Microsoft.UI.Composition.Interactions.CompositionInteractionSourceCollection InteractionSources { get; };
+    Windows.UI.Composition.Interactions.CompositionInteractionSourceCollection InteractionSources { get; };
 }
 
 [MUX_INTERNAL]

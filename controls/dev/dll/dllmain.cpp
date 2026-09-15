@@ -27,6 +27,9 @@ const char *gFileVersion = (const char *)(VER_FILEVERSION_STR);
 
 STDAPI_(void) SendTelemetryOnSuspend();
 
+// C++/WinRT's generated non-throwing factory lookup, defined in module.g.cpp.
+void* __stdcall winrt_get_activation_factory(std::wstring_view const& name);
+
 // ---------------------------------------------------------------------------
 // Activation factory bypass for MUX types
 //
@@ -47,6 +50,27 @@ namespace {
 using DllGetActivationFactory_t = HRESULT(WINAPI*)(HSTRING, IActivationFactory**);
 std::atomic<DllGetActivationFactory_t> s_muxGetFactory{ nullptr };
 std::atomic<bool> s_muxFactoryResolved{ false };
+
+struct MuxcActivationTraceEntry
+{
+    wchar_t name[128];
+    HRESULT result;
+    int stage;
+};
+
+MuxcActivationTraceEntry g_muxcActivationTrace[128]{};
+LONG g_muxcActivationTraceIndex = 0;
+
+void TraceActivation(std::wstring_view name, HRESULT result, int stage) noexcept
+{
+    const LONG index = InterlockedIncrement(&g_muxcActivationTraceIndex) - 1;
+    auto& entry = g_muxcActivationTrace[index % ARRAYSIZE(g_muxcActivationTrace)];
+    const size_t count = (std::min)(name.size(), ARRAYSIZE(entry.name) - 1);
+    wmemcpy_s(entry.name, ARRAYSIZE(entry.name), name.data(), count);
+    entry.name[count] = L'\0';
+    entry.result = result;
+    entry.stage = stage;
+}
 
 DllGetActivationFactory_t GetMuxActivationFactoryFn()
 {
@@ -139,6 +163,19 @@ int32_t __stdcall MuxcActivationHandler(
     const wchar_t* buf = WindowsGetStringRawBuffer(hstr, &len);
     std::wstring_view name{ buf, len };
 
+    // Resolve types hosted by this DLL before redirecting Microsoft.UI.Xaml.*
+    // activations to the framework DLL. Controls and framework types share a
+    // namespace, and package class registration may be intentionally absent.
+    if (auto raw = winrt_get_activation_factory(name))
+    {
+        ComPtr<IActivationFactory> selfFactory;
+        selfFactory.Attach(static_cast<IActivationFactory*>(raw));
+        const HRESULT hr = selfFactory->QueryInterface(
+            reinterpret_cast<const IID&>(iid), factory);
+        TraceActivation(name, hr, 1);
+        return hr;
+    }
+
     if (name.starts_with(L"Microsoft.UI.Xaml."))
     {
         auto muxGetFactory = GetMuxActivationFactoryFn();
@@ -150,6 +187,7 @@ int32_t __stdcall MuxcActivationHandler(
             {
                 hr = af->QueryInterface(
                     reinterpret_cast<const IID&>(iid), factory);
+                TraceActivation(name, hr, 2);
                 return hr;
             }
             // MUX didn't handle it -- fall through to RoGetActivationFactory.
@@ -170,6 +208,7 @@ int32_t __stdcall MuxcActivationHandler(
 
     if (SUCCEEDED(hr))
     {
+        TraceActivation(name, hr, 3);
         return hr;
     }
 
@@ -215,6 +254,7 @@ int32_t __stdcall MuxcActivationHandler(
             reinterpret_cast<const IID&>(iid), factory);
         if (SUCCEEDED(hr))
         {
+            TraceActivation(name, hr, 4);
             return hr;
         }
         else
@@ -223,6 +263,7 @@ int32_t __stdcall MuxcActivationHandler(
         }
     }
 
+    TraceActivation(name, hr, 5);
     return hr;
 }
 
@@ -306,9 +347,6 @@ HRESULT WINAPI DllGetActivationFactory(_In_ HSTRING activatableClassId, _Out_ ::
     return WINRT_GetActivationFactory(activatableClassId, reinterpret_cast<void**>(factory));
 }
 
-// Forward declaration of cppwinrt's generated non-throwing factory lookup, defined in module.g.cpp. 
-void* __stdcall winrt_get_activation_factory(std::wstring_view const& name);
-
 // DllTryGetActivationFactory is a non-error-originating variant of
 // DllGetActivationFactory.  It is intended for callers (today: MUX's
 // MuxGetActivationFactoryImpl in xcpcore.cpp) that speculatively probe this DLL for a
@@ -357,4 +395,3 @@ STDAPI_(void) DeinitializeMUXC()
     RuntimeProfiler::UninitializeRuntimeProfiler();
     LifetimeHandler::ClearMaterialHelperInstance();
 }
-

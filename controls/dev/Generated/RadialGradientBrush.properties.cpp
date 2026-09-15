@@ -58,7 +58,7 @@ void RadialGradientBrushProperties::EnsureProperties()
                 winrt::name_of<winrt::CompositionColorSpace>(),
                 winrt::name_of<winrt::RadialGradientBrush>(),
                 false /* isAttached */,
-                ValueHelper<winrt::CompositionColorSpace>::BoxValueIfNecessary(winrt::Microsoft::UI::Composition::CompositionColorSpace::Auto),
+                ValueHelper<winrt::CompositionColorSpace>::BoxValueIfNecessary(winrt::Windows::UI::Composition::CompositionColorSpace::Auto),
                 winrt::PropertyChangedCallback(&OnInterpolationSpacePropertyChanged));
     }
     if (!s_MappingModeProperty)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -274,8 +274,8 @@ void constexpr specialize_guids()
     
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Windows::Foundation::Collections::IKeyValuePair<struct winrt::hstring,struct winrt::Microsoft::UI::Xaml::DataTemplate> >>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Windows::Foundation::IInspectable>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Composition::Interactions::CompositionConditionalValue>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Composition::Interactions::InteractionTrackerInertiaModifier>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Windows::UI::Composition::Interactions::CompositionConditionalValue>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Windows::UI::Composition::Interactions::InteractionTrackerInertiaModifier>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::ICommandBarElement>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItemBase>>();
@@ -284,8 +284,8 @@ void constexpr specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::hstring>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Windows::Foundation::Collections::IKeyValuePair<struct winrt::hstring,struct winrt::Microsoft::UI::Xaml::DataTemplate> >>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Windows::Foundation::IInspectable>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Microsoft::UI::Composition::Interactions::CompositionConditionalValue>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Microsoft::UI::Composition::Interactions::InteractionTrackerInertiaModifier>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Windows::UI::Composition::Interactions::CompositionConditionalValue>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Windows::UI::Composition::Interactions::InteractionTrackerInertiaModifier>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Microsoft::UI::Xaml::Controls::ICommandBarElement>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItemBase>>();
@@ -295,20 +295,20 @@ void constexpr specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::hstring,struct winrt::hstring>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::hstring,struct winrt::Windows::Foundation::IInspectable>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::hstring,struct winrt::Windows::Graphics::Imaging::BitmapTypedValue>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::hstring,struct winrt::Microsoft::UI::Composition::ICompositionAnimationBase>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::hstring,struct winrt::Windows::UI::Composition::ICompositionAnimationBase>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::hstring,struct winrt::Microsoft::UI::Xaml::DataTemplate>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMap<struct winrt::Windows::Foundation::IInspectable,struct winrt::Windows::Foundation::IInspectable>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IMapView<struct winrt::hstring,struct winrt::Microsoft::UI::Xaml::DataTemplate>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IObservableVector<struct winrt::Windows::Foundation::IInspectable>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IObservableVector<struct winrt::Microsoft::UI::Composition::Interactions::InteractionTrackerInertiaModifier>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IObservableVector<struct winrt::Windows::UI::Composition::Interactions::InteractionTrackerInertiaModifier>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IObservableVector<struct winrt::Microsoft::UI::Xaml::Controls::ICommandBarElement>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IObservableVector<struct winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItemBase>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<double>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::hstring>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Windows::Foundation::IInspectable>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Windows::Foundation::Point>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Microsoft::UI::Composition::Interactions::CompositionConditionalValue>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Microsoft::UI::Composition::Interactions::InteractionTrackerInertiaModifier>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Windows::UI::Composition::Interactions::CompositionConditionalValue>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Windows::UI::Composition::Interactions::InteractionTrackerInertiaModifier>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Microsoft::UI::Xaml::Controls::ICommandBarElement>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItemBase>>();
@@ -327,7 +327,7 @@ void constexpr specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Microsoft::UI::Xaml::TriggerAction>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Microsoft::UI::Xaml::UIElement>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVectorView<struct winrt::Windows::Foundation::IInspectable>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVectorView<struct winrt::Microsoft::UI::Composition::Interactions::CompositionConditionalValue>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVectorView<struct winrt::Windows::UI::Composition::Interactions::CompositionConditionalValue>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::VectorChangedEventHandler<struct winrt::Windows::Foundation::IInspectable>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::VectorChangedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::ICommandBarElement>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::VectorChangedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItemBase>>();
@@ -363,9 +363,9 @@ void constexpr specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<unsigned int>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::ApplicationModel::Core::CoreApplicationViewTitleBar,struct winrt::Windows::Foundation::IInspectable>>();    
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::Foundation::IInspectable,struct winrt::Windows::Foundation::IInspectable>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::Foundation::IInspectable,struct winrt::Microsoft::UI::Composition::CompositionBatchCompletedEventArgs>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::Foundation::IInspectable,struct winrt::Windows::UI::Composition::CompositionBatchCompletedEventArgs>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::Graphics::Display::DisplayInformation,struct winrt::Windows::Foundation::IInspectable>>();
-    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Composition::CompositionCapabilities,struct winrt::Windows::Foundation::IInspectable>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Composition::CompositionCapabilities,struct winrt::Windows::Foundation::IInspectable>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Core::CoreDispatcher,struct winrt::Windows::UI::Core::AcceleratorKeyEventArgs>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Core::CoreWindow,struct winrt::Windows::UI::Core::KeyEventArgs>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Core::CoreWindow,struct winrt::Windows::UI::Core::PointerEventArgs>>();

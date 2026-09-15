@@ -867,7 +867,7 @@ void ButtonManager::DispatchButtonCheckStateChanged(winrt::IInspectable const& s
     auto child = sender.as<winrt::UIElement>();
     auto toolbar = ReferenceInkToolbar();
 
-    if (auto dispatcherQueue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread())
+    if (auto dispatcherQueue = winrt::Windows::System::DispatcherQueue::GetForCurrentThread())
     {
         dispatcherQueue.TryEnqueue([toolbar, child, check]()
         {

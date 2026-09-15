@@ -303,7 +303,6 @@ void ActivationFactoryCache::ResetCache()
     m_dcompiModule.reset();
     m_muxcModule.reset();
     m_inputModule.reset();
-    m_dispatchingModule.reset();
 }
 
 // Try to get an activation factory directly from a loaded module's DllGetActivationFactory
@@ -383,11 +382,6 @@ HRESULT ActivationFactoryCache::MuxGetActivationFactoryImpl(
     _COM_Outptr_ void** factory)
 {
     *factory = nullptr;
-
-    if (!IsPerfOptInEnabled())
-    {
-        return RoGetActivationFactory(activatableClassId, iid, factory);
-    }
 
     const wchar_t* name = WindowsGetStringRawBuffer(activatableClassId, nullptr);
 
@@ -480,21 +474,6 @@ HRESULT ActivationFactoryCache::MuxGetActivationFactoryImpl(
             }
         }
     }
-    else if (wcsncmp(suffix, L"Dispatching.", 12) == 0)
-    {
-        // Microsoft.UI.Dispatching.* types live in CoreMessagingXP.dll, which for islands-based
-        // apps should already be loaded.
-        HMODULE dispatching = EnsureModuleLoaded(m_dispatchingModule, L"CoreMessagingXP.dll");
-        if (dispatching)
-        {
-            HRESULT hr = TryGetActivationFactoryFromModule(dispatching, activatableClassId, iid, factory);
-            if (SUCCEEDED(hr))
-            {
-                return hr;
-            }
-        }
-    }
-
     // Fall back to the slow path (RoGetActivationFactory)
     return RoGetActivationFactory(activatableClassId, iid, factory);
 }

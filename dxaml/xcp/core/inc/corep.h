@@ -647,7 +647,6 @@ private:
     CachedModule m_dcompiModule;        // dcompi.dll (Microsoft.UI.Composition.*)
     CachedModule m_muxcModule;          // Microsoft.UI.Xaml.Controls.dll
     CachedModule m_inputModule;         // Microsoft.UI.Input.dll (Input.* and Content.*)
-    CachedModule m_dispatchingModule;   // CoreMessagingXP.dll (Microsoft.UI.Dispatching.*)
 
 
 

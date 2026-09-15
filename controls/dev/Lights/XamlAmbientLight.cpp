@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -52,7 +52,7 @@ void XamlAmbientLight::EnsureCompositionResources()
 {
     if (!m_compositionAmbientLight)
     {
-        auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+        auto compositor = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
         m_compositionAmbientLight = compositor.CreateAmbientLight();
         m_compositionAmbientLight.Color(m_ambientLightColor);
         CompositionLight(m_compositionAmbientLight);

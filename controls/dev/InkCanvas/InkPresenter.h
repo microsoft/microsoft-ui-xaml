@@ -20,7 +20,7 @@
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Storage.Streams.h>
 #include <winrt/Windows.UI.Core.h>
-#include <winrt/Microsoft.UI.Dispatching.h>
+#include <winrt/Windows.System.h>
 #include <functional>
 #include <vector>
 
@@ -291,7 +291,7 @@ class InkPresenter :
     public winrt::implementation::InkPresenterT<InkPresenter>
 {
 public:
-    InkPresenter(winrt::com_ptr<IInkDesktopHost> const& inkHost, winrt::Microsoft::UI::Dispatching::DispatcherQueue const& uiDispatcher);
+    InkPresenter(winrt::com_ptr<IInkDesktopHost> const& inkHost, winrt::Windows::System::DispatcherQueue const& uiDispatcher);
 
     winrt::CoreInputDeviceTypes InputDeviceTypes() const noexcept;
     void InputDeviceTypes(winrt::CoreInputDeviceTypes const& value);
@@ -369,7 +369,7 @@ private:
 
     // The owning InkCanvas's UI-thread dispatcher, captured on the UI thread at construction. Used
     // to marshal StrokesCollected/StrokesErased from the ink thread back to the UI thread.
-    winrt::Microsoft::UI::Dispatching::DispatcherQueue m_uiDispatcher{ nullptr };
+    winrt::Windows::System::DispatcherQueue m_uiDispatcher{ nullptr };
 
     // UI-thread cache of the last configured values. Initialized to the same defaults
     // InitializeOsPresenter applies on the ink thread.

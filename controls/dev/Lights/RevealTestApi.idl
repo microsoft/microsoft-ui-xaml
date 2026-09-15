@@ -8,13 +8,13 @@ runtimeclass RevealTestApi : Microsoft.UI.Xaml.DependencyObject
     RevealTestApi();
 
     Microsoft.UI.Xaml.ApplicationTheme TargetTheme { get; set; };
-    Microsoft.UI.Composition.SpotLight BackgroundLight { get; };
+    Windows.UI.Composition.SpotLight BackgroundLight { get; };
     Microsoft.UI.Xaml.Media.XamlLight BorderLight { get; };
     Microsoft.UI.Xaml.Media.XamlLight BorderWideLight { get; };
     Double BackgroundLightMinSize { get; set; };
     Double BackgroundLightMaxSize { get; set; };
-    Microsoft.UI.Composition.SpotLight GetSpotLight(Microsoft.UI.Xaml.Media.XamlLight value);
-    Microsoft.UI.Composition.ExpressionAnimation GetHoverLightOffsetExpression(RevealHoverLight value);
+    Windows.UI.Composition.SpotLight GetSpotLight(Microsoft.UI.Xaml.Media.XamlLight value);
+    Windows.UI.Composition.ExpressionAnimation GetHoverLightOffsetExpression(RevealHoverLight value);
     RevealBorderLight GetAsRevealBorderLight(Microsoft.UI.Xaml.Media.XamlLight value);
     RevealHoverLight GetAsRevealHoverLight(Microsoft.UI.Xaml.Media.XamlLight value);
     Boolean BorderLight_ShouldBeOn(RevealBorderLight value);
