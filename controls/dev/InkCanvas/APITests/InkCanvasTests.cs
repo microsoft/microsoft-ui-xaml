@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
 using Microsoft.UI.Xaml.Markup;
+using Windows.Foundation;
 
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -190,7 +191,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Width = 400,
                     Height = 300,
                     // Clip to a region the canvas cannot reach.
-                    Clip = new RectangleGeometry { Rect = new Windows.Foundation.Rect(0, 0, 0, 0) }
+                    Clip = new RectangleGeometry { Rect = new Rect(0, 0, 0, 0) }
                 };
 
                 host.Children.Add(inkCanvas);

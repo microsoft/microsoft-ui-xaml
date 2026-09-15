@@ -21,24 +21,6 @@ winrt::AutomationControlType InkCanvasAutomationPeer::GetAutomationControlTypeCo
     return winrt::AutomationControlType::Pane;
 }
 
-namespace
-{
-    winrt::Rect IntersectRects(winrt::Rect const& a, winrt::Rect const& b)
-    {
-        const float left = std::max(a.X, b.X);
-        const float top = std::max(a.Y, b.Y);
-        const float right = std::min(a.X + a.Width, b.X + b.Width);
-        const float bottom = std::min(a.Y + a.Height, b.Y + b.Height);
-
-        if (right <= left || bottom <= top)
-        {
-            return { 0.0f, 0.0f, 0.0f, 0.0f };
-        }
-
-        return { left, top, right - left, bottom - top };
-    }
-}
-
 // InkCanvas draws entirely through a child composition visual and has no XAML children, so the
 // framework finds no rendered content to measure and reports an empty rect. Derive the bounds from
 // the layout size instead, then re-apply the clipping that CFrameworkElementAutomationPeer would
@@ -79,7 +61,7 @@ winrt::Rect InkCanvasAutomationPeer::GetClippedBoundsInRoot()
 
         if (auto const clip = ancestor.Clip())
         {
-            bounds = IntersectRects(bounds, ancestor.TransformToVisual(nullptr).TransformBounds(clip.Rect()));
+            bounds = winrt::RectHelper::Intersect(bounds, ancestor.TransformToVisual(nullptr).TransformBounds(clip.Rect()));
         }
 
         // Scroll presenters clip to their viewport without setting UIElement.Clip.
@@ -91,7 +73,7 @@ winrt::Rect InkCanvasAutomationPeer::GetClippedBoundsInRoot()
                 static_cast<float>(ancestor.ActualWidth()),
                 static_cast<float>(ancestor.ActualHeight()) };
 
-            bounds = IntersectRects(bounds, ancestor.TransformToVisual(nullptr).TransformBounds(viewport));
+            bounds = winrt::RectHelper::Intersect(bounds, ancestor.TransformToVisual(nullptr).TransformBounds(viewport));
         }
 
         if (bounds.Width <= 0.0f || bounds.Height <= 0.0f)
@@ -103,7 +85,13 @@ winrt::Rect InkCanvasAutomationPeer::GetClippedBoundsInRoot()
     if (auto const xamlRoot = owner.XamlRoot())
     {
         const auto rootSize = xamlRoot.Size();
-        bounds = IntersectRects(bounds, { 0.0f, 0.0f, rootSize.Width, rootSize.Height });
+        bounds = winrt::RectHelper::Intersect(bounds, { 0.0f, 0.0f, rootSize.Width, rootSize.Height });
+    }
+
+    // RectHelper::Intersect reports no overlap as RectHelper::Empty(), which is not a zero rect.
+    if (bounds.Width <= 0.0f || bounds.Height <= 0.0f)
+    {
+        return { 0.0f, 0.0f, 0.0f, 0.0f };
     }
 
     return bounds;
