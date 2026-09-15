@@ -137,7 +137,8 @@ IFACEMETHODIMP BindableObservableVectorWrapper::IndexOf(
     {
         ctl::ComPtr<IInspectable> item;
         bool equal = false;
-        IFC_RETURN(GetAt(current, &item));
+        IFC_RETURN(BindableVectorWrapper::GetAt(m_moveView->GetSourceIndex(current), &item));
+        IFC_RETURN(CheckMoveSourceUnchanged());
         IFC_RETURN(PropertyValue::AreEqual(value, item.Get(), &equal));
         IFC_RETURN(CheckMoveSourceUnchanged());
         if (equal)
@@ -630,6 +631,5 @@ Cleanup:
 
     RRETURN( hr );
 }
-
 
 
