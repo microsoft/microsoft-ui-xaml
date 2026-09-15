@@ -301,25 +301,25 @@ namespace UnitTests
         [TestMethod]
         public void Codegen_BasicCppWinRT()
         {
-            DiffCodegen(@"Basic\CppWinRT\Simple\Generated Files");
+            DiffCodegen(@"Basic\CppWinRT\Simple\generated");
         }
 
         [TestMethod]
         public void Codegen_BasicCS()
         {
-            DiffCodegen(@"Basic\CSharp\Simple\obj\x86\Debug");
+            DiffCodegen(@"Basic\CSharp\Simple\generated");
         }
 
         [TestMethod]
         public void Codegen_EventHandlingCppWinRT()
         {
-            DiffCodegen(@"Basic\CppWinRT\EventHandling_968976\Generated Files");
+            DiffCodegen(@"Basic\CppWinRT\EventHandling_968976\generated");
         }
 
         [TestMethod]
         public void Codegen_NonStandardCppWinRT()
         {
-            DiffCodegen(@"NonStandard\NonStandardCppWinRT\NonStandardCppWinRT\Generated Files");
+            DiffCodegen(@"NonStandard\NonStandardCppWinRT\NonStandardCppWinRT\generated");
         }
 
         //
@@ -329,31 +329,31 @@ namespace UnitTests
         [TestMethod]
         public void Codegen_References_CSExe()
         {
-            DiffCodegen(@"Basic\References\CSharpExe\obj\x86\Debug");
+            DiffCodegen(@"Basic\References\CSharpExe\generated");
         }
 
         [TestMethod]
         public void Codegen_References_CSLib()
         {
-            DiffCodegen(@"Basic\References\CSharpLib\obj\x86\Debug");
+            DiffCodegen(@"Basic\References\CSharpLib\generated");
         }
 
         [TestMethod]
         public void Codegen_References_CSWinRT()
         {
-            DiffCodegen(@"Basic\References\CSharpWinrtComponent\obj\x86\Debug");
+            DiffCodegen(@"Basic\References\CSharpWinrtComponent\generated");
         }
 
         [TestMethod]
         public void Codegen_References_CppWinRTExe()
         {
-            DiffCodegen(@"Basic\References\CppWinRTExe\Generated Files");
+            DiffCodegen(@"Basic\References\CppWinRTExe\generated");
         }
 
         [TestMethod]
         public void Codegen_References_CppWinRTComponent()
         {
-            DiffCodegen(@"Basic\References\CppWinRTComponent\Generated Files");
+            DiffCodegen(@"Basic\References\CppWinRTComponent\generated");
         }
 
         //
@@ -363,25 +363,25 @@ namespace UnitTests
         [TestMethod]
         public void Codegen_BindtestbedCS()
         {
-            DiffCodegen(@"Features\CompiledBinding\BindTestbedCS\obj\x86\Debug");
+            DiffCodegen(@"Features\CompiledBinding\BindTestbedCS\generated");
         }
 
         [TestMethod]
         public void Codegen_BindtestbedCppWinRT()
         {
-            DiffCodegen(@"Features\CompiledBinding\BindTestbedCppWinRT\Generated Files");
+            DiffCodegen(@"Features\CompiledBinding\BindTestbedCppWinRT\generated");
         }
 
         [TestMethod]
         public void Codegen_BindTestbedCppWinRTIncremental()
         {
-            DiffCodegen(@"Features\CompiledBinding\BindTestbedCppWinRT\Incremental\Generated Files");
+            DiffCodegen(@"Features\CompiledBinding\BindTestbedCppWinRT\Incremental\generated");
         }
 
         [TestMethod]
         public void Codegen_BindPhasingTestbedCppWinRT()
         {
-            DiffCodegen(@"Features\BindPhasingTestBedCppWinRT\BindPhasingTestBedCppWinRT\Generated Files");
+            DiffCodegen(@"Features\BindPhasingTestBedCppWinRT\BindPhasingTestBedCppWinRT\generated");
         }
 
         //
@@ -391,91 +391,91 @@ namespace UnitTests
         [TestMethod]
         public void Codegen_DeferLoadStrategyCS()
         {
-            DiffCodegen(@"Features\DeferLoadStrategy\CSharp\obj\x86\Debug");
+            DiffCodegen(@"Features\DeferLoadStrategy\CSharp\generated");
         }
 
         [TestMethod]
         public void Codegen_DeferLoadStrategyCppWinRT()
         {
-            DiffCodegen(@"Features\DeferLoadStrategy\CppWinRT\Generated Files");
+            DiffCodegen(@"Features\DeferLoadStrategy\CppWinRT\generated");
         }
 
         [TestMethod]
         public void Codegen_MetadataTestbedCppWinRT()
         {
-            DiffCodegen(@"Features\Metadata\MetadataTestbedCppWinRT\Generated Files");
+            DiffCodegen(@"Features\Metadata\MetadataTestbedCppWinRT\generated");
         }
 
         [TestMethod]
         public void Codegen_ReduceProviderLoading_ConsumerCS()
         {
-            DiffCodegen(@"Features\ReduceProviderLoading\ConsumerProvider\ConsumerCs\obj\x86\Debug");
+            DiffCodegen(@"Features\ReduceProviderLoading\ConsumerProvider\ConsumerCs\generated");
         }
 
         [TestMethod]
         public void Codegen_ReduceProviderLoading_ProviderCS()
         {
-            DiffCodegen(@"Features\ReduceProviderLoading\ConsumerProvider\ProviderCs\obj\x86\Debug");
+            DiffCodegen(@"Features\ReduceProviderLoading\ConsumerProvider\ProviderCs\generated");
         }
 
         [TestMethod]
         public void Codegen_ReduceProviderLoading_ProviderCppWinRT()
         {
-            DiffCodegen(@"Features\ReduceProviderLoading\ConsumerProvider\ProviderCppWinRT\Generated Files");
+            DiffCodegen(@"Features\ReduceProviderLoading\ConsumerProvider\ProviderCppWinRT\generated");
         }
 
         [TestMethod]
         public void Codegen_ReduceProviderLoading_ConsumerCppWinRT()
         {
-            DiffCodegen(@"Features\ReduceProviderLoading\ConsumerProvider\ConsumerCppWinRT\Generated Files");
+            DiffCodegen(@"Features\ReduceProviderLoading\ConsumerProvider\ConsumerCppWinRT\generated");
         }
 
         [TestMethod]
         public void Codegen_MultipleViewsCppWinRT()
         {
-            DiffCodegen(@"Features\MultiXamlFiles\MultipleViewsTestbedCppWinRT\Generated Files");
+            DiffCodegen(@"Features\MultiXamlFiles\MultipleViewsTestbedCppWinRT\generated");
         }
 
         [TestMethod]
         public void Codegen_MultipleViewsCS()
         {
-            DiffCodegen(@"Features\MultiXamlFiles\MultipleViewsTestbed\obj\x86\Debug");
+            DiffCodegen(@"Features\MultiXamlFiles\MultipleViewsTestbed\generated");
         }
 
         [TestMethod]
         public void Codegen_ConditionalControls()
         {
-            DiffCodegen(@"Features\Conditionals\ConditionalControls\obj\x86\Debug");
+            DiffCodegen(@"Features\Conditionals\ConditionalControls\generated");
         }
 
         [TestMethod]
         public void Codegen_ConditionalsModel()
         {
-            DiffCodegen(@"Features\Conditionals\ConditionalsModel\obj\x86\Debug");
+            DiffCodegen(@"Features\Conditionals\ConditionalsModel\generated");
         }
 
         [TestMethod]
         public void Codegen_ConditionalsCS()
         {
-            DiffCodegen(@"Features\Conditionals\ConditionalsCS\obj\x86\Debug");
+            DiffCodegen(@"Features\Conditionals\ConditionalsCS\generated");
         }
 
         [TestMethod]
         public void Codegen_ConditionalsCppWinRT()
         {
-            DiffCodegen(@"Features\Conditionals\ConditionalsCppWinRT\Generated Files");
+            DiffCodegen(@"Features\Conditionals\ConditionalsCppWinRT\generated");
         }
 
         [TestMethod]
         public void Codegen_MarkupExtensionsCppWinRT()
         {
-            DiffCodegen(@"Features/MarkupExtensions/MarkupExtensionsCppWinRT/Generated Files");
+            DiffCodegen(@"Features\MarkupExtensions\MarkupExtensionsCppWinRT\generated");
         }
 
         [TestMethod]
         public void Codegen_MarkupExtensionsCS()
         {
-            DiffCodegen(@"Features/MarkupExtensions/MarkupExtensionsCS/obj/x86/Debug");
+            DiffCodegen(@"Features\MarkupExtensions\MarkupExtensionsCS\generated");
         }
     }
 }
