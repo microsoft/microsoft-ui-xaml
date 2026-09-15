@@ -27,6 +27,11 @@ public:
     tracker_ref<winrt::FlyoutPresenter> GetPresenter();
 
 protected:
+    // Gives a derived flyout the last word on whether it has any UI worth showing. This is checked
+    // once the flyout has opened but before anything has been rendered, so returning true closes it
+    // again without the user ever seeing it.
+    virtual bool ShouldCloseWithoutShowing() { return false; }
+
     tracker_ref<winrt::CommandBarFlyoutCommandBar> m_commandBar{ this };
 
 private:
@@ -66,5 +71,6 @@ private:
     tracker_ref<winrt::FlyoutPresenter> m_presenter{ this };
 
     bool m_isClosingAfterCloseAnimation{ false };
+    bool m_isClosingWithoutShowing{ false };
 }; 
 
