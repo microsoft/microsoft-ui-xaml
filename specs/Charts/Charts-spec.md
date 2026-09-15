@@ -17,9 +17,6 @@ The public surface has three parts:
   grid-line presentation that Cartesian scales share, and `LinearAxis`, `CategoryAxis`, and
   `DateTimeAxis` are the concrete scales.
 
-Two decisions in the shape of the API are worth stating up front, because the rest of the document
-depends on them.
-
 **Data is dimensional, and each dimension is addressed through a handle.** A series does not take
 a collection of point objects. It takes two `Samples` objects — one for the X dimension and one
 for the Y dimension. A `Samples` object is not a collection: it is a `DependencyObject` *handle*
@@ -34,12 +31,7 @@ and the axis line are properties of `CartesianAxis`, not of `Chart` and not of `
 Two series that share an axis therefore share one set of values, with no merge policy needed, and
 a chart can carry independently configured axes.
 
-This spec covers the whole public surface of the namespace: 14 runtime classes, 7 enumerations,
-and the API contract, including every constructor and every static dependency property accessor.
-
 # Conceptual pages (How To)
-
-_(This is conceptual documentation that will go to learn.microsoft.com "how to" page)_
 
 ## How to use Chart
 
@@ -225,10 +217,11 @@ instead falls back to `Chart.Foreground`; see [How brushes are used](#how-brushe
                    StrokeThickness="2"
                    StrokeDashStyle="Dash"
                    ShowDataMarkers="True"
-                   MarkerShape="Diamond" />
+                   MarkerShape="Plus"
+                   DataMarkerBrush="Goldenrod" />
 ```
 
-![A dashed line series with diamond markers](./images/chart-line-styled.png)
+![A dashed line series with plus markers](./images/chart-line-styled.png)
 
 ## How brushes are used
 
@@ -242,7 +235,7 @@ different:
 
 | Property                                                                  | Null                                  | Non-`SolidColorBrush`                       |
 |---------------------------------------------------------------------------|---------------------------------------|----------------------------------------------|
-| `CartesianAxis.GridLineMajorBrush`, `GridLineMinorBrush`, `TickBrush`, `TickLabelBrush`, `AxisLineBrush` | Resolves the keyed theme resource.    | Retains the value, writes a diagnostic, and resolves the keyed theme resource. |
+| `CartesianAxis.GridLineMajorBrush`, `GridLineMinorBrush`, `TickBrush`, `TickLabelBrush`, `AxisLineBrush` | Resolves the keyed theme resource. | Retains the value, writes a diagnostic, and resolves the keyed theme resource. |
 | `CartesianSeries.Stroke`, `DataMarkerBrush`, `AreaSeries.Fill`, `BarSeries.Fill` | Takes the series' palette color for that role. | Takes the series' palette color for that role. |
 | `DataMarkerOverride.Brush`                                                 | Inherits `DataMarkerBrush`, then the marker palette color. | Inherits `DataMarkerBrush`, then the marker palette color. |
 | `CartesianSeries.DataLabelBrush`                                           | Falls back to `Chart.Foreground`.      | Falls back to `Chart.Foreground`.             |
@@ -251,8 +244,22 @@ different:
 | `Chart.Foreground`                                                          | Uses the renderer's default text color. | Uses the renderer's default text color.       |
 
 Set `SolidColorBrush` values throughout. An unsupported axis brush falls back to its keyed theme
-resource, whereas an unsupported series brush falls back to the corresponding palette or
-foreground color.
+resource, whereas an unsupported series brush falls back to the corresponding palette color or
+to `Chart.Foreground` for data labels.
+
+The axis resource keys are:
+
+| Property | Resource fallback |
+|----------|-------------------|
+| `GridLineMajorBrush` | `ChartsGridLineMajorBrush` |
+| `GridLineMinorBrush` | `ChartsGridLineMinorBrush` |
+| `TickBrush` | `ChartsTickBrush` |
+| `TickLabelBrush` | `ChartsTickLabelBrush` |
+| `AxisLineBrush` | `ChartsAxisLineBrush` |
+
+`Chart.Foreground` controls chart text such as the legend, legend title, axis titles, and data
+labels. Tick labels are the exception: they use `CartesianAxis.TickLabelBrush`, then
+`ChartsTickLabelBrush`. Set both when one color must cover all chart text.
 
 Series and per-point override brushes stay live after assignment: changing the `Color` of a
 `SolidColorBrush` updates the rendered elements that reference it. Axis brush properties are
@@ -278,9 +285,14 @@ keyed by the zero-based index of the data point. Use them to annotate individual
 code-only; being maps rather than dependency properties, they cannot be populated from markup.
 
 ```csharp
-// Call out the peak with red text and a red diamond.
-series.DataLabelOverrides[7]  = new DataLabelOverride("Peak", redBrush);
-series.DataMarkerOverrides[7] = new DataMarkerOverride(MarkerShape.Diamond, redBrush);
+var labelBrush = new SolidColorBrush(Colors.DarkSlateBlue);
+var markerBrush = new SolidColorBrush(Colors.Firebrick);
+
+// Use contrasting colors to keep the label and marker visually distinct.
+series.DataLabelOverrides[7] =
+    new DataLabelOverride("Peak", labelBrush);
+series.DataMarkerOverrides[7] =
+    new DataMarkerOverride(MarkerShape.Diamond, markerBrush);
 
 // Hide the marker on one point only.
 series.DataMarkerOverrides[3] = new DataMarkerOverride(MarkerShape.None, null);
@@ -303,8 +315,17 @@ changing the `Color` of a `SolidColorBrush` updates every point that references 
 `Chart` is a `Control`, and its default style takes `Background` from
 `ChartsControlBackgroundBrush`, `Foreground` from `ChartsControlForegroundBrush`, and sets
 `MinWidth` to 160 and `MinHeight` to 96. The renderer consumes only solid colors: a non-solid
-`Background` renders transparent, and a non-solid `Foreground` leaves text at the renderer's
-default color. `FontFamily` and `FontSize` are applied to chart text.
+`Background` renders transparent, and a non-solid text foreground leaves that role at the
+renderer's default color.
+
+Set `Chart.FontFamily` and `Chart.FontSize` to change renderer-generated chart text. Font weight
+and style are not chart-wide presentation properties. Applications compose their own chart title
+and subtitle around the control.
+
+Set `Chart.Foreground` for legend text, legend titles, axis titles, and data labels. Set
+`CartesianAxis.TickLabelBrush` for one axis, or override `ChartsTickLabelBrush` for the
+application, to change tick-label color. Clearing `DataLabelBrush` restores `Chart.Foreground`;
+clearing `TickLabelBrush` restores `ChartsTickLabelBrush`.
 
 Merge `XamlChartsResources` into your application resources to bring the chart theme resources
 into scope, then override any of them:
@@ -318,6 +339,7 @@ into scope, then override any of them:
         </ResourceDictionary.MergedDictionaries>
 
         <SolidColorBrush x:Key="ChartsGridLineMajorBrush" Color="SlateGray" />
+        <SolidColorBrush x:Key="ChartsTickLabelBrush" Color="Gainsboro" />
     </ResourceDictionary>
 </Application.Resources>
 ```
@@ -327,6 +349,22 @@ axis only, set the brush property on that axis instead.
 
 > Set axis brushes to `SolidColorBrush` values. An axis brush of any other type retains its
 > property value, writes a diagnostic, and falls back to the corresponding theme resource.
+
+## Accessibility
+
+`Chart` does not create a chart-specific automation peer. The plotted series, axes, legend, and
+data labels are not exposed as individual automation elements. Provide an accessible summary on
+the control and expose the underlying data elsewhere in the page when users must inspect exact
+values.
+
+```xaml
+<charts:Chart
+    AutomationProperties.Name="Monthly revenue chart"
+    AutomationProperties.HelpText="Revenue rose from 18 in January to 52 in June." />
+```
+
+The control has no chart-specific keyboard interaction. Do not rely on color alone to distinguish
+series; combine color with titles, dash styles, marker shapes, or adjacent text.
 
 # Examples
 
@@ -460,37 +498,53 @@ Line, Area, and Bar series. Area and Bar series additionally provide `Fill`; Bar
         <charts:Samples x:Name="Target"   ItemsSource="{x:Bind Targets, Mode=OneTime}" />
     </charts:Chart.Data>
 
+    <charts:Chart.Axes>
+        <charts:CategoryAxis x:Name="MonthX" Label="Month" />
+        <charts:LinearAxis x:Name="RevenueY"
+                           Label="Revenue"
+                           Minimum="0"
+                           Maximum="60"
+                           Spacing="10"
+                           GridLines="Major" />
+    </charts:Chart.Axes>
+
     <charts:AreaSeries Title="Forecast"
+                       XAxis="{x:Bind MonthX, Mode=OneTime}"
+                       YAxis="{x:Bind RevenueY, Mode=OneTime}"
                        XValues="{x:Bind Month, Mode=OneTime}"
                        YValues="{x:Bind Forecast, Mode=OneTime}"
                        Fill="LightSteelBlue"
-                       Stroke="SteelBlue"
+                       Stroke="MidnightBlue"
                        StrokeThickness="2"
                        StrokeDashStyle="Dot"
                        ShowDataMarkers="True"
                        MarkerShape="Square"
-                       DataMarkerBrush="SteelBlue" />
+                       DataMarkerBrush="Crimson" />
 
     <charts:BarSeries Title="Actual"
                       Orientation="Vertical"
+                      XAxis="{x:Bind MonthX, Mode=OneTime}"
+                      YAxis="{x:Bind RevenueY, Mode=OneTime}"
                       XValues="{x:Bind Month, Mode=OneTime}"
                       YValues="{x:Bind Actual, Mode=OneTime}"
                       Fill="SeaGreen"
-                      Stroke="DarkGreen"
+                      Stroke="Black"
                       StrokeThickness="1"
                       ShowDataLabels="True"
-                      DataLabelBrush="DarkGreen" />
+                      DataLabelBrush="Black" />
 
     <charts:LineSeries x:Name="TargetSeries"
                        Title="Target"
+                       XAxis="{x:Bind MonthX, Mode=OneTime}"
+                       YAxis="{x:Bind RevenueY, Mode=OneTime}"
                        XValues="{x:Bind Month, Mode=OneTime}"
                        YValues="{x:Bind Target, Mode=OneTime}"
                        Stroke="Firebrick"
                        StrokeThickness="2"
                        StrokeDashStyle="Dash"
                        ShowDataMarkers="True"
-                       MarkerShape="Diamond"
-                       DataMarkerBrush="Firebrick" />
+                       MarkerShape="Plus"
+                       DataMarkerBrush="Goldenrod" />
 </charts:Chart>
 ```
 
@@ -498,11 +552,12 @@ Per-point overrides are populated in code because the override maps are not depe
 properties:
 
 ```csharp
-var highlight = new SolidColorBrush(Colors.Gold);
+var labelHighlight = new SolidColorBrush(Colors.Black);
+var markerHighlight = new SolidColorBrush(Colors.Magenta);
 TargetSeries.DataLabelOverrides[2] =
-    new DataLabelOverride("Peak", highlight);
+    new DataLabelOverride("Peak", labelHighlight);
 TargetSeries.DataMarkerOverrides[2] =
-    new DataMarkerOverride(MarkerShape.Diamond, highlight);
+    new DataMarkerOverride(MarkerShape.Asterisk, markerHighlight);
 ```
 
 ![Area, bar, and line series with legend, axes, grid lines, labels, markers, and a highlighted point](./images/chart-all-adornments.png)
@@ -558,8 +613,6 @@ chart.Series.Add(new AreaSeries
 
 # API Pages
 
-_(Each of the following L2 sections correspond to a page that will be on learn.microsoft.com)_
-
 ## Chart class
 
 Displays one or more Cartesian data series with configurable axes and a legend.
@@ -593,7 +646,7 @@ may be written as direct children in markup.
 </charts:Chart>
 ```
 
-**Remarks**
+### Remarks
 
 `Axes` and `Series` are validating collections. They reject a null element and reject the same
 object appearing twice, both with `E_INVALIDARG`, and they apply changes transactionally: if a
@@ -624,7 +677,7 @@ given an `x:Name`:
 </charts:Chart.Data>
 ```
 
-**Remarks**
+### Remarks
 
 Membership in `Data` does not bind anything, and it is not required in order to bind. What plots a
 handle's data is a series referencing that handle through `XValues` or `YValues`. In code you may
@@ -661,7 +714,7 @@ The collection is typed as `Axis`, the root of the axis hierarchy. Every axis a 
 derives from `CartesianAxis`, which is why `CartesianSeries.XAxis` and `YAxis` are typed
 `CartesianAxis` rather than `Axis`.
 
-**Remarks**
+### Remarks
 
 Adding an axis that already belongs to a different chart throws `E_INVALIDARG`, as does removing
 an axis a series in this chart still references. Removing an unreferenced axis detaches it with
@@ -748,7 +801,7 @@ barSeries.YValues  = revenue;   // Both series draw from one handle.
 revenue.ItemsSource = updatedRevenues;   // Both series follow the swap.
 ```
 
-**Remarks**
+### Remarks
 
 `Samples` has no `Name` property. In markup, give it an `x:Name` and reference it with `{x:Bind}`
 or `{x:Reference}`; in code, keep the object. A series never identifies a handle by string.
@@ -777,7 +830,7 @@ samples.ItemsSource = readings;
 readings.Add(42.0);
 ```
 
-**Remarks**
+### Remarks
 
 For an `Object` or non-generic source, the first element determines the data type; an empty source
 is treated as numeric. Elements may be `Double`, `Windows.Foundation.DateTime`, or `String`
@@ -882,12 +935,12 @@ that `LinearAxis`, `CategoryAxis`, and `DateTimeAxis` differ only in how they ma
 
 ![An axis with minor grid lines and visible tick marks](./images/chart-axis-gridlines.png)
 
-**Remarks**
+### Remarks
 
-The five brush properties default to null, which means "use the theme". A null brush resolves to
-the corresponding keyed resource — `ChartsGridLineMajorBrush`, `ChartsGridLineMinorBrush`,
-`ChartsTickBrush`, `ChartsTickLabelBrush`, or `ChartsAxisLineBrush` — looked up first in the
-chart's own `Resources` dictionary and then in `Application.Current.Resources`.
+The five brush properties default to null. A null brush resolves to the corresponding keyed
+resource — `ChartsGridLineMajorBrush`, `ChartsGridLineMinorBrush`, `ChartsTickBrush`,
+`ChartsTickLabelBrush`, or `ChartsAxisLineBrush` — looked up first in the chart's own `Resources`
+dictionary and then in `Application.Current.Resources`.
 
 `SolidColorBrush` is the only brush type the renderer reads a color from. If the property is null,
 cannot be read, or contains another brush type, its value is retained and the corresponding theme
@@ -971,7 +1024,7 @@ axis.Maximum(winrt::box_value(100.0).as<IReference<double>>());
 axis.Maximum(nullptr);   // Back to automatic.
 ```
 
-**Remarks**
+### Remarks
 
 `Minimum`, `Maximum`, and `Spacing` are validated when set. An invalid value throws
 `E_INVALIDARG` and leaves the axis unchanged:
@@ -1023,7 +1076,7 @@ keep the order of the source collection.
 
 ![A bar chart with categories sorted by value, descending](./images/chart-category-sort.png)
 
-**Remarks**
+### Remarks
 
 `SortKey` decides *what* is sorted on and `SortOrder` decides the direction. With
 `CategorySortKey.Value`, sorting is by the category value itself — ordinal and case-sensitive for
@@ -1081,7 +1134,7 @@ axis.Maximum(nullptr);   // Back to automatic.
 
 ![A time series with monthly ticks labelled "month year"](./images/chart-datetime-axis.png)
 
-**Remarks**
+### Remarks
 
 `IntervalType` and `LabelFormat` can be set from markup. `Minimum` and `Maximum` are typed
 `Windows.Foundation.DateTime`, for which XAML has no text syntax, so set them from code.
@@ -1167,7 +1220,7 @@ public class CartesianSeries : DependencyObject
                    MarkerShape="Circle" />
 ```
 
-**Remarks**
+### Remarks
 
 Values set before the series joins a chart are applied when it joins. Values set on a series
 already in a chart take effect in place.
@@ -1234,7 +1287,7 @@ chart.Axes.Add(monthX);
 series.XAxis = monthX;
 ```
 
-**Remarks**
+### Remarks
 
 `XAxis` and `YAxis` name data slots, not screen edges. A horizontal `BarSeries` binds its
 categories through `XAxis` even though they are laid out vertically.
@@ -1274,7 +1327,7 @@ series.DataLabelOverrides[7] = new DataLabelOverride("Peak", redBrush);
 series.DataLabelOverrides.Remove(0);
 ```
 
-**Remarks**
+### Remarks
 
 The map is get-only and is not a dependency property, so it cannot be populated from markup.
 
@@ -1298,7 +1351,7 @@ series.DataMarkerOverrides[7] = new DataMarkerOverride(MarkerShape.Diamond, redB
 series.DataMarkerOverrides[3] = new DataMarkerOverride(MarkerShape.None, null);
 ```
 
-**Remarks**
+### Remarks
 
 The keying, indexing, and immutability rules match `DataLabelOverrides`. `MarkerShape.None` hides
 the marker for that one point.
@@ -1444,7 +1497,7 @@ both orientations, and neither axis reference is swapped when the orientation ch
 series.Orientation = BarOrientation.Vertical;   // XAxis is still the category axis.
 ```
 
-**Remarks**
+### Remarks
 
 The property *requests* an orientation; it does not guarantee one is rendered. Changing
 `Orientation` on a series already in a chart re-validates its existing axis assignments against
@@ -1565,7 +1618,7 @@ into scope where your own resources can override them.
         </ResourceDictionary.MergedDictionaries>
 
         <SolidColorBrush x:Key="ChartsGridLineMajorBrush" Color="SlateGray" />
-        <SolidColorBrush x:Key="ChartsTickLabelBrush"     Color="Gainsboro" />
+        <SolidColorBrush x:Key="ChartsTickLabelBrush" Color="Gainsboro" />
     </ResourceDictionary>
 </Application.Resources>
 ```
@@ -1927,7 +1980,7 @@ namespace Microsoft.UI.Xaml.Controls.Charts
     [webhosthidden]
     enum DateTimeIntervalType
     {
-        /// Selects an interval based on the axis range and available axis length.
+        /// Selects an interval based on the axis range and available length.
         Auto,
         /// Uses day intervals.
         Day,
@@ -2148,7 +2201,7 @@ back to.
 | `CartesianSeries` | `ShowDataLabels`                | `false`                                   |
 | `CartesianSeries` | `ShowDataMarkers`               | `false`                                   |
 | `CartesianSeries` | `MarkerShape`                   | `MarkerShape.Circle`                      |
-| `CartesianSeries` | `DataLabelBrush`                | `null` (falls back to `Chart.Foreground`) |
+| `CartesianSeries` | `DataLabelBrush`                | `null` (uses `Chart.Foreground`)          |
 | `CartesianSeries` | `DataMarkerBrush`               | `null` (palette)                          |
 | `CartesianSeries` | `XAxis`, `YAxis`                | `null` (automatic)                        |
 | `AreaSeries`      | `Fill`                          | `null` (palette)                          |
