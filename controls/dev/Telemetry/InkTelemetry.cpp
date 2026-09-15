@@ -7,6 +7,12 @@
 
 #include <atomic>
 #include <chrono>
+#include <mutex>
+#include <string>
+
+#include <windows.h>
+
+#pragma comment(lib, "version.lib")
 
 namespace InkTelemetry
 {
@@ -27,6 +33,68 @@ namespace InkTelemetry
             return g_nextId.fetch_add(1, std::memory_order_relaxed) + 1;
         }
 
+        // Ephemeral, per-process, never persisted: it only groups this run's events together.
+        uint64_t SessionId() noexcept
+        {
+            static uint64_t const id = [] {
+                LARGE_INTEGER counter{};
+                QueryPerformanceCounter(&counter);
+                return (static_cast<uint64_t>(GetCurrentProcessId()) << 32) ^
+                    static_cast<uint64_t>(counter.QuadPart);
+            }();
+            return id;
+        }
+
+        // File version of the module this code is linked into, which is the control version we ship.
+        char const* ControlVersion() noexcept
+        {
+            static std::string const version = [] () -> std::string {
+                HMODULE module{};
+                if (!GetModuleHandleExW(
+                        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                        reinterpret_cast<LPCWSTR>(&g_nextId),
+                        &module))
+                {
+                    return "unknown";
+                }
+
+                wchar_t path[MAX_PATH]{};
+                if (GetModuleFileNameW(module, path, ARRAYSIZE(path)) == 0)
+                {
+                    return "unknown";
+                }
+
+                DWORD handle{};
+                DWORD const size = GetFileVersionInfoSizeW(path, &handle);
+                if (size == 0)
+                {
+                    return "unknown";
+                }
+
+                std::string buffer(size, '\0');
+                // The handle argument is ignored by the API and must be zero.
+                if (!GetFileVersionInfoW(path, 0, size, buffer.data()))
+                {
+                    return "unknown";
+                }
+
+                VS_FIXEDFILEINFO* info{};
+                UINT length{};
+                if (!VerQueryValueW(buffer.data(), L"\\", reinterpret_cast<void**>(&info), &length) || !info)
+                {
+                    return "unknown";
+                }
+
+                char text[64]{};
+                sprintf_s(text, "%u.%u.%u.%u",
+                    HIWORD(info->dwFileVersionMS), LOWORD(info->dwFileVersionMS),
+                    HIWORD(info->dwFileVersionLS), LOWORD(info->dwFileVersionLS));
+                return text;
+            }();
+
+            return version.c_str();
+        }
+
         bool IsProviderEnabled(uint64_t keyword) noexcept
         {
             return g_IsTelemetryProviderEnabled &&
@@ -34,6 +102,14 @@ namespace InkTelemetry
                 (g_TelemetryProviderMatchAnyKeyword & keyword || g_TelemetryProviderMatchAnyKeyword == 0);
         }
     }
+
+// Dimensions the control telemetry spec requires on every event, so Inking rows join the same
+// schema as the other controls.
+#define INK_TELEMETRY_COMMON_FIELDS \
+    TraceLoggingUInt32(SchemaVersion, "SchemaVersion"), \
+    TraceLoggingString("Inking", "ControlType"), \
+    TraceLoggingString(ControlVersion(), "ControlVersion"), \
+    TraceLoggingUInt64(SessionId(), "AppSessionId")
 
     bool IsCanvasEnabled() noexcept
     {
@@ -64,7 +140,7 @@ namespace InkTelemetry
         TraceLoggingWrite(
             g_hTelemetryProvider,
             "InkCanvas_Initialization",
-            TraceLoggingUInt32(SchemaVersion, "SchemaVersion"),
+            INK_TELEMETRY_COMMON_FIELDS,
             TraceLoggingUInt64(state.id, "InkCanvasId"),
             TraceLoggingUInt32(static_cast<uint32_t>(Result::Started), "Result"),
             TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
@@ -102,7 +178,7 @@ namespace InkTelemetry
         TraceLoggingWrite(
             g_hTelemetryProvider,
             "InkCanvas_Initialization",
-            TraceLoggingUInt32(SchemaVersion, "SchemaVersion"),
+            INK_TELEMETRY_COMMON_FIELDS,
             TraceLoggingUInt64(state.id, "InkCanvasId"),
             TraceLoggingUInt32(static_cast<uint32_t>(result), "Result"),
             TraceLoggingUInt32(static_cast<uint32_t>(state.stage), "FailureStage"),
@@ -114,10 +190,16 @@ namespace InkTelemetry
 
         if (result == Result::Success)
         {
+            state.activationCount++;
+            if (!state.activatedMicroseconds)
+            {
+                state.activatedMicroseconds = Timestamp();
+            }
+
             TraceLoggingWrite(
                 g_hTelemetryProvider,
                 "InkCanvas_InitializationLatency",
-                TraceLoggingUInt32(SchemaVersion, "SchemaVersion"),
+                INK_TELEMETRY_COMMON_FIELDS,
                 TraceLoggingUInt64(state.id, "InkCanvasId"),
                 TraceLoggingFloat64(elapsedMicroseconds / 1000.0, "ElapsedMs"),
                 TraceLoggingUInt32(static_cast<uint32_t>(engine), "CompositorEngine"),
@@ -148,7 +230,7 @@ namespace InkTelemetry
         TraceLoggingWrite(
             g_hTelemetryProvider,
             "InkCanvas_UsageSummary",
-            TraceLoggingUInt32(SchemaVersion, "SchemaVersion"),
+            INK_TELEMETRY_COMMON_FIELDS,
             TraceLoggingUInt64(state.id, "InkCanvasId"),
             TraceLoggingUInt32(static_cast<uint32_t>(engine), "CompositorEngine"),
             TraceLoggingUInt32(inputDeviceTypes, "InputDeviceTypes"),
@@ -168,7 +250,7 @@ namespace InkTelemetry
         TraceLoggingWrite(
             g_hTelemetryProvider,
             "InkPresenter_CustomDryingActivation",
-            TraceLoggingUInt32(SchemaVersion, "SchemaVersion"),
+            INK_TELEMETRY_COMMON_FIELDS,
             TraceLoggingUInt32(static_cast<uint32_t>(result), "Result"),
             TraceLoggingHResult(hr, "HResult"),
             TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
@@ -199,7 +281,7 @@ namespace InkTelemetry
         TraceLoggingWrite(
             g_hTelemetryProvider,
             "InkToolbar_UsageSummary",
-            TraceLoggingUInt32(SchemaVersion, "SchemaVersion"),
+            INK_TELEMETRY_COMMON_FIELDS,
             TraceLoggingUInt64(state.id, "InkToolbarId"),
             TraceLoggingUInt32(initialControls, "InitialControls"),
             TraceLoggingUInt32(orientation, "Orientation"),
@@ -209,5 +291,129 @@ namespace InkTelemetry
             TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
             TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
             TraceLoggingKeyword(KEYWORD_INKTOOLBAR));
+    }
+
+    void ReportError(
+        ErrorCategory category,
+        Operation operation,
+        bool isRecoverable,
+        int32_t hr,
+        CanvasState* state) noexcept
+    {
+        if (state)
+        {
+            state->errorCount++;
+        }
+
+        if (!IsCanvasEnabled())
+        {
+            return;
+        }
+
+        TraceLoggingWrite(
+            g_hTelemetryProvider,
+            "Ink_ControlError",
+            INK_TELEMETRY_COMMON_FIELDS,
+            TraceLoggingUInt64(state ? state->id : 0, "InkCanvasId"),
+            TraceLoggingUInt32(static_cast<uint32_t>(category), "ErrorCategory"),
+            TraceLoggingUInt32(static_cast<uint32_t>(operation), "Operation"),
+            TraceLoggingBoolean(isRecoverable, "IsRecoverable"),
+            TraceLoggingHResult(hr, "HResult"),
+            TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
+            TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
+            TraceLoggingKeyword(KEYWORD_INKCANVAS));
+    }
+
+    void RecordStrokesCollected(CanvasState& state, uint32_t count) noexcept
+    {
+        state.strokesCollected += count;
+
+        if (!state.firstInkMicroseconds && count > 0)
+        {
+            state.firstInkMicroseconds = Timestamp();
+        }
+    }
+
+    void RecordStrokesErased(CanvasState& state, uint32_t count) noexcept
+    {
+        state.strokesErased += count;
+    }
+
+    void RecordToolSwitch(ToolbarState& state, uint32_t toolKind) noexcept
+    {
+        state.toolSwitchCount++;
+
+        if (toolKind < 32)
+        {
+            state.toolsUsedMask |= (1u << toolKind);
+        }
+    }
+
+    void ReportCanvasSessionSummary(CanvasState& state, CompositorEngine engine) noexcept
+    {
+        // Nothing to say about a canvas that never finished activating; its failure was already sent.
+        if (state.summaryReported || !state.activatedMicroseconds || !IsCanvasEnabled())
+        {
+            return;
+        }
+
+        state.summaryReported = true;
+
+        auto const activeMilliseconds = (Timestamp() - state.activatedMicroseconds) / 1000.0;
+        auto const timeToFirstInkMs = state.firstInkMicroseconds
+            ? (state.firstInkMicroseconds - state.activatedMicroseconds) / 1000.0
+            : -1.0;
+
+        TraceLoggingWrite(
+            g_hTelemetryProvider,
+            "InkCanvas_SessionSummary",
+            INK_TELEMETRY_COMMON_FIELDS,
+            TraceLoggingUInt64(state.id, "InkCanvasId"),
+            TraceLoggingUInt32(static_cast<uint32_t>(engine), "CompositorEngine"),
+            TraceLoggingUInt32(state.activationCount, "ActivationCount"),
+            TraceLoggingUInt32(CountBucket(state.strokesCollected), "StrokesCollectedBucket"),
+            TraceLoggingUInt32(CountBucket(state.strokesErased), "StrokesErasedBucket"),
+            TraceLoggingUInt32(state.errorCount, "ErrorCount"),
+            TraceLoggingBoolean(state.strokesCollected > 0, "ReceivedInk"),
+            TraceLoggingFloat64(timeToFirstInkMs, "TimeToFirstInkMs"),
+            TraceLoggingFloat64(activeMilliseconds, "ActiveDurationMs"),
+            TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
+            TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
+            TraceLoggingKeyword(KEYWORD_INKCANVAS));
+    }
+
+    void ReportToolbarSessionSummary(ToolbarState& state) noexcept
+    {
+        if (state.summaryReported || !state.usageReported || !IsToolbarEnabled())
+        {
+            return;
+        }
+
+        state.summaryReported = true;
+
+        uint32_t distinctTools = 0;
+        for (uint32_t mask = state.toolsUsedMask; mask; mask >>= 1)
+        {
+            distinctTools += (mask & 1u);
+        }
+
+        TraceLoggingWrite(
+            g_hTelemetryProvider,
+            "InkToolbar_SessionSummary",
+            INK_TELEMETRY_COMMON_FIELDS,
+            TraceLoggingUInt64(state.id, "InkToolbarId"),
+            TraceLoggingUInt32(CountBucket(state.toolSwitchCount), "ToolSwitchCountBucket"),
+            TraceLoggingUInt32(distinctTools, "DistinctToolsUsed"),
+            TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
+            TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
+            TraceLoggingKeyword(KEYWORD_INKTOOLBAR));
+    }
+
+    uint32_t CountBucket(uint32_t count) noexcept
+    {
+        if (count <= 1) { return count; }
+        if (count <= 4) { return 2; }
+        if (count <= 16) { return 3; }
+        return 4;
     }
 }

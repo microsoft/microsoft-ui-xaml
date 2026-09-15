@@ -109,6 +109,8 @@ InkCanvas::InkCanvas()
 
 InkCanvas::~InkCanvas()
 {
+    InkTelemetry::ReportCanvasSessionSummary(m_telemetryState, CompositorEngineForTelemetry());
+
     // Ensure that we have torn down our dcomp stuff
     DetachFromVisualLink();
 }
@@ -127,6 +129,13 @@ void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventAr
     InkTelemetry::BeginCanvasInitialization(m_telemetryState);
     auto initializationOutcome = wil::scope_exit([this]()
         {
+            InkTelemetry::ReportError(
+                InkTelemetry::ErrorCategory::Initialization,
+                InkTelemetry::Operation::AttachToCompositor,
+                false /* isRecoverable */,
+                E_FAIL,
+                &m_telemetryState);
+
             InkTelemetry::CompleteCanvasInitialization(
                 m_telemetryState, InkTelemetry::Result::Failure, CompositorEngineForTelemetry(), E_FAIL);
         });
@@ -213,6 +222,42 @@ void InkCanvas::ReportUsageTelemetry(InkTelemetry::CompositorEngine engine) noex
         engine,
         static_cast<uint32_t>(m_inkPresenterProxy.InputDeviceTypes()),
         static_cast<uint32_t>(m_inkPresenterProxy.HighContrastAdjustment()));
+
+    SubscribeToStrokeTelemetry();
+}
+
+// Counts only: the handlers never look at stroke geometry, and the totals are emitted once in the
+// session summary rather than as an event per stroke.
+void InkCanvas::SubscribeToStrokeTelemetry() noexcept
+{
+    if (m_strokesCollectedTelemetryRevoker || !m_inkPresenterProxy)
+    {
+        return;
+    }
+
+    m_strokesCollectedTelemetryRevoker = m_inkPresenterProxy.StrokesCollected(
+        winrt::auto_revoke,
+        [weakThis{ get_weak() }](auto const&, winrt::InkStrokesCollectedEventArgs const& args)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                auto const strokes = args.Strokes();
+                InkTelemetry::RecordStrokesCollected(
+                    strongThis->m_telemetryState, strokes ? strokes.Size() : 0);
+            }
+        });
+
+    m_strokesErasedTelemetryRevoker = m_inkPresenterProxy.StrokesErased(
+        winrt::auto_revoke,
+        [weakThis{ get_weak() }](auto const&, winrt::InkStrokesErasedEventArgs const& args)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                auto const strokes = args.Strokes();
+                InkTelemetry::RecordStrokesErased(
+                    strongThis->m_telemetryState, strokes ? strokes.Size() : 0);
+            }
+        });
 }
 
 void InkCanvas::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)

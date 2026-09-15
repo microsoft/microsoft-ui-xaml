@@ -35,6 +35,33 @@ Decisions needed before this is relied on for reporting.
 9. Confirm the privacy tags: performance events use `PDT_ProductAndServicePerformance`, usage events
    use `PDT_ProductAndServiceUsage`.
 
+## Alignment with the WinUI 3 controls telemetry spec
+
+13. The spec's north-star metrics — Daily Active Control Devices, Daily Active App-Device and Active
+    Apps — need `DeviceId` and `AppId`. Neither is emitted here, on the assumption the telemetry
+    pipeline attaches them. Confirm that, because if it does not, none of the P0 usage metrics can be
+    computed from these events.
+14. The spec proposes one common event set (`ControlActivated`, `ControlError`, `ControlPerformance`,
+    `ControlSessionSummary`, `ControlInteraction`) shared by Inking, Charting and TableView, with a
+    `ControlType` dimension. These events keep ink-specific names and add `ControlType` instead.
+    Renaming affects all three controls, so it needs a cross-team decision rather than a unilateral
+    one here. Existing WinUI events are per-control named (`ItemsViewPerf`, `ItemsRepeaterInfo`).
+15. The spec lists `InputToRender` as the P0 performance granularity for inking. It is not
+    implemented: wet ink is rendered by the OS ink stack on the ink thread, so this layer cannot
+    observe the pointer-to-pixel path. Should this be measured in the OS ink stack instead, or
+    dropped for inking?
+16. `ControlVersion` is read from the file version of the hosting module. Confirm that is the version
+    reporting should key on, rather than a package or Windows App SDK version.
+17. `AppSessionId` is a process-local value derived from the process id and a performance counter. It
+    is ephemeral and never persisted, but confirm the derivation is acceptable, or whether an
+    existing session identifier should be reused.
+18. The `Result` enum mirrors the spec's Outcome vocabulary (`Started`, `Success`, `Failure`,
+    `Cancelled`). A `Degraded` outcome is intentionally *not* emitted: the lifted-vs-system
+    compositor split is already carried explicitly on every event by the `CompositorEngine`
+    dimension, so analysts can compute a degraded-engine rate without it. If the team wants a
+    single Outcome-level "degraded" signal, wire it to the lifted-compositor init path — but that
+    encodes a judgement that lifted is inferior, which needs sign-off.
+
 ## Operational
 
 10. `KEYWORD_INKCANVAS` (`0x10000`) is newly allocated; `KEYWORD_INKTOOLBAR` (`0x4000`) already

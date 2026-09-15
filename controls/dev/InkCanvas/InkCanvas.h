@@ -57,6 +57,7 @@ private:
 
     InkTelemetry::CompositorEngine CompositorEngineForTelemetry() noexcept;
     void ReportUsageTelemetry(InkTelemetry::CompositorEngine engine) noexcept;
+    void SubscribeToStrokeTelemetry() noexcept;
     void AttachToSystemCompositor();
     void AttachToLiftedCompositor();
     // Shared by both compositor paths: creates the ink visual on the shared DComp device and binds
@@ -103,5 +104,8 @@ private:
     std::atomic<bool> m_isDetached{ false };
 
     InkTelemetry::CanvasState m_telemetryState;
+
+    winrt::InkPresenter::StrokesCollected_revoker m_strokesCollectedTelemetryRevoker{};
+    winrt::InkPresenter::StrokesErased_revoker m_strokesErasedTelemetryRevoker{};
 
 };

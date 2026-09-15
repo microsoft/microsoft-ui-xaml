@@ -31,6 +31,7 @@ class InkToolbar :
 {
 public:
     InkToolbar();
+    ~InkToolbar();
 
     // IFrameworkElementOverrides / IUIElementOverrides
     // NOTE: like UWP, the container populates its buttons in MeasureOverride (runs even when Children

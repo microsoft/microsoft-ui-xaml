@@ -54,6 +54,11 @@ InkToolbar::InkToolbar()
     m_buttonManager = std::make_unique<ButtonManager>(get_weak());
 }
 
+InkToolbar::~InkToolbar()
+{
+    InkTelemetry::ReportToolbarSessionSummary(m_telemetryState);
+}
+
 // ---- Auto-population + ordering (faithful port of UWP @1943 / OrderChildren) ----------------
 
 void InkToolbar::PerformAutoPopulation()
@@ -818,6 +823,12 @@ void InkToolbar::OnActiveToolChanged(winrt::DependencyPropertyChangedEventArgs c
     if (newTool == oldTool)
     {
         return;
+    }
+
+    // Only a real switch counts; the initial auto-population assignment has no old tool.
+    if (oldTool && newTool)
+    {
+        InkTelemetry::RecordToolSwitch(m_telemetryState, static_cast<uint32_t>(newTool.ToolKind()));
     }
 
     if (oldTool)
