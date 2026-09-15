@@ -17,7 +17,12 @@ parameters:
 jobs:
 - job: ${{ parameters.runTestJobName }} #${{ parameters.testOS }}${{ parameters.buildPlatform }}${{ parameters.buildConfiguration }}
   dependsOn: ${{ parameters.dependsOn }}
-  condition: not(failed())
+  # Use succeeded() rather than not(failed()): if the upstream CreateTestPayload job is canceled/skipped
+  # (e.g. a hung 1ES post-job/SDL step that never publishes its test-payload artifact), not(failed()) still
+  # evaluates true and this job runs without any payload, failing later with a cryptic
+  # "Get-ChildItem: Cannot find path ...\helixworkitems\... PathNotFound". Requiring success skips the run
+  # instead so the missing-payload cause is obvious.
+  condition: succeeded()
   pool:
     type: windows
     isCustom: true
