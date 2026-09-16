@@ -80,7 +80,53 @@ $isLifetimeStress = ($taefQuery -match 'LifetimeStressTestSuite')
 if ($isLifetimeStress)
 {
     Write-Host "=== Lifetime stress suite detected: running as a NON-GATING report. Failures or a native TAEF-host crash will be captured in the log / te_original.wtl but will NOT fail the pipeline. ==="
+
+    # Ensure the aggressive native-repro variant actually runs. The harness (LifetimeStressTests.cs) reads
+    # WINUI_LIFETIME_STRESS_NATIVE via GetEnvInt (Environment.GetEnvironmentVariable) from te's OWN process
+    # environment. A previous attempt set only the Process-scope $env: on this launcher shell, but that did NOT
+    # reach the harness: the unpackaged managed test runs in te.processhost.exe, which TAEF spawns via a broker so
+    # it does NOT inherit this shell's process environment block - it is seeded from the User/Machine registry
+    # environment at creation instead (that is why only registry-backed vars like TEMP/SystemRoot were visible to
+    # tests). So write the value into the User (and, best-effort, Machine) registry environment BEFORE launching te
+    # so the broker-spawned te.processhost picks it up at creation. Keep the Process-scope $env: too for any
+    # direct-child te.exe case and for local dev. Only set it when a pipeline did not already provide a value.
+    # Because native crashes are now surfaced as non-gating warnings, running the aggressive variant on every
+    # pipeline - including the per-PR gate - is safe and keeps the stage green.
+    if (-not $env:WINUI_LIFETIME_STRESS_NATIVE)
+    {
+        $env:WINUI_LIFETIME_STRESS_NATIVE = "1"
+    }
+
+    # Registry-backed scopes so the broker-spawned te.processhost.exe inherits it at process creation.
+    try
+    {
+        [Environment]::SetEnvironmentVariable("WINUI_LIFETIME_STRESS_NATIVE", $env:WINUI_LIFETIME_STRESS_NATIVE, "User")
+        Write-Host "Lifetime stress: set WINUI_LIFETIME_STRESS_NATIVE at User scope."
+    }
+    catch
+    {
+        Write-Host "Lifetime stress: WARNING - failed to set WINUI_LIFETIME_STRESS_NATIVE at User scope: $($_.Exception.Message)"
+    }
+    try
+    {
+        [Environment]::SetEnvironmentVariable("WINUI_LIFETIME_STRESS_NATIVE", $env:WINUI_LIFETIME_STRESS_NATIVE, "Machine")
+        Write-Host "Lifetime stress: set WINUI_LIFETIME_STRESS_NATIVE at Machine scope."
+    }
+    catch
+    {
+        # Machine scope requires elevation; not fatal - User scope (and Process scope) still apply.
+        Write-Host "Lifetime stress: NOTE - could not set WINUI_LIFETIME_STRESS_NATIVE at Machine scope (needs elevation): $($_.Exception.Message)"
+    }
+
+    Write-Host "Lifetime stress: WINUI_LIFETIME_STRESS_NATIVE=$($env:WINUI_LIFETIME_STRESS_NATIVE) (1 = aggressive native repro)."
 }
+
+# State captured while the lifetime stress suite runs so a native TAEF-host crash can be attributed to a specific
+# scenario and surfaced as a non-gating pipeline warning (see Report-LifetimeNativeCrash). Only used when
+# $isLifetimeStress is true.
+$script:lifetimeTeConsoleLog = Join-Path (Get-Location) "lifetime_te_console.log"
+$script:lifetimeTeExitCode = 0
+Delete-IfExists $script:lifetimeTeConsoleLog
 
 $picturesPath = [Environment]::GetFolderPath("mypictures")
 $xamlTaefOutputPath = Join-Path $picturesPath "XamlTaefOutput"
@@ -137,7 +183,95 @@ function Run-Taef
     # extra quotes around parts of the arguments which gives the incorrect behavior since the argument string is already exactly as it needs 
     # to be. I was unable to find a way to disable this behavior, so as a workaround we create a .cmd file and invoke that.
     Out-File -FilePath "run.cmd" -Encoding ascii -InputObject $teCommand
-    & ./run.cmd
+    if ($isLifetimeStress)
+    {
+        # Capture te.exe's console output (it is still streamed to the pipeline because Tee-Object passes the
+        # output through) so a native host crash can later be attributed to the specific lifetime scenario that
+        # was in-flight, and remember the host process exit code as one of the crash signals.
+        & ./run.cmd 2>&1 | Tee-Object -FilePath $script:lifetimeTeConsoleLog -Append
+        $script:lifetimeTeExitCode = $LASTEXITCODE
+    }
+    else
+    {
+        & ./run.cmd
+    }
+}
+
+function Get-LifetimeDumpFiles
+{
+    # Current set of crash dumps in the shared per-slice dump folder (armed for te.exe/te.processhost.exe by
+    # TestPass-OneTimeMachineSetupCore.ps1 via WER LocalDumps -> $env:HELIX_DUMP_FOLDER).
+    if ($env:HELIX_DUMP_FOLDER -and (Test-Path $env:HELIX_DUMP_FOLDER))
+    {
+        return @(Get-ChildItem -Path $env:HELIX_DUMP_FOLDER -Filter *.dmp -ErrorAction SilentlyContinue)
+    }
+    return @()
+}
+
+function Report-LifetimeNativeCrash
+{
+    # Detect a native TAEF-host crash during the lifetime stress suite and surface it as a NON-GATING pipeline
+    # warning attributed to the specific scenario, WITHOUT opening the dump and WITHOUT failing the stage. This
+    # runs before Set-LifetimeResultsNonGating launders the results green, so the crash is never silently swallowed.
+    param (
+        [string[]] $preRunDumps,
+        [int] $teExitCode,
+        [string] $teConsoleLogPath
+    )
+
+    # Parse the scenario markers emitted by the harness (LifetimeStressTests.cs):
+    #   "[LifetimeStress] NATIVE: scenario 'X' starting (aggressiveNativeRepro=...)."
+    #   "[LifetimeStress] NATIVE: scenario 'X' completed (aggressiveNativeRepro=...)."
+    # A scenario that started but never reported completion is the one that was in-flight when the host died.
+    $startedScenarios = New-Object System.Collections.Generic.List[string]
+    $completedScenarios = New-Object System.Collections.Generic.List[string]
+    if ($teConsoleLogPath -and (Test-Path $teConsoleLogPath))
+    {
+        foreach ($line in Get-Content $teConsoleLogPath)
+        {
+            if ($line -match "NATIVE: scenario '([^']+)' starting")       { $startedScenarios.Add($Matches[1]) }
+            elseif ($line -match "NATIVE: scenario '([^']+)' completed")   { $completedScenarios.Add($Matches[1]) }
+        }
+    }
+    $inFlight = @($startedScenarios | Where-Object { $completedScenarios -notcontains $_ } | Select-Object -Unique)
+
+    # Dumps produced by *this* work item = whatever is new since the pre-run snapshot.
+    $newDumps = @(Get-LifetimeDumpFiles | Where-Object { $preRunDumps -notcontains $_.FullName })
+
+    # A native host crash is indicated by any of: a non-zero te.exe exit code, a new crash dump, or a scenario
+    # that started but never completed.
+    $crashDetected = ($teExitCode -ne 0) -or ($newDumps.Count -gt 0) -or ($inFlight.Count -gt 0)
+    if (-not $crashDetected)
+    {
+        return
+    }
+
+    $scenarioLabel = if ($inFlight.Count -gt 0) { $inFlight -join ", " } else { "unknown" }
+
+    # Name each new dump after the crashing scenario so it (a) carries attribution without a debugger and (b) is
+    # easy for RunTestPassSliceOnBuildAgent.ps1 to prioritize so it is not crowded out of the per-slice dump cap.
+    $safeScenario = ($scenarioLabel -replace '[^A-Za-z0-9._-]', '_')
+    $dumpNames = @()
+    foreach ($dump in $newDumps)
+    {
+        $attributedName = "LifetimeStress-$safeScenario-$($dump.Name)"
+        try
+        {
+            Rename-Item -Path $dump.FullName -NewName $attributedName -Force
+            $dumpNames += $attributedName
+        }
+        catch
+        {
+            Write-Host "Lifetime stress: could not rename dump '$($dump.Name)' ($($_.Exception.Message)); leaving original name."
+            $dumpNames += $dump.Name
+        }
+    }
+    $dumpLabel = if ($dumpNames.Count -gt 0) { $dumpNames -join ", " } else { "none captured" }
+
+    # Non-gating Azure Pipelines warning: shows up in the pipeline UI with scenario + dump attribution but does
+    # NOT fail the stage (Set-LifetimeResultsNonGating still keeps the published results green).
+    Write-Host "##vso[task.logissue type=warning]Native lifetime crash in scenario '$scenarioLabel' (dump: $dumpLabel)"
+    Write-Host "Lifetime stress: native host crash detected (te.exe exit code=$teExitCode, new dumps=$($newDumps.Count), in-flight scenario(s)='$scenarioLabel'). Emitted a non-gating warning; the stage stays green."
 }
 
 function Set-LifetimeResultsNonGating
@@ -248,6 +382,14 @@ Write-Host "(Skipping Get-AppxPackge dump to save time)"
 
 Write-Host "WorkItemTestStartTime: $(Get-Date)"
 
+# Snapshot the shared dump folder before the run so a native lifetime crash can be attributed to a scenario by
+# diffing for newly-produced dumps afterwards.
+$preRunLifetimeDumps = @()
+if ($isLifetimeStress)
+{
+    $preRunLifetimeDumps = @(Get-LifetimeDumpFiles | ForEach-Object { $_.FullName })
+}
+
 # Run the tests:
 Run-Taef("$taefQuery")
 
@@ -319,6 +461,10 @@ if ($failedTestQuery -and $rerunFailed -and -not $isLifetimeStress)
 
 if ($isLifetimeStress)
 {
+    # Detect and surface a native TAEF-host crash as a non-gating, scenario-attributed warning BEFORE the results
+    # are laundered green below, so the crash is reported (not silently swallowed) while the stage stays green.
+    Report-LifetimeNativeCrash -preRunDumps $preRunLifetimeDumps -teExitCode $script:lifetimeTeExitCode -teConsoleLogPath $script:lifetimeTeConsoleLog
+
     # Non-gating report path: convert real results when te.exe produced a log, but never let a conversion error
     # (or a missing log from a crashed host) stop the runner - Set-LifetimeResultsNonGating guarantees a valid,
     # zero-failure testResults.xml either way.
