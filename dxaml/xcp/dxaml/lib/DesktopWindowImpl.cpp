@@ -1255,7 +1255,8 @@ LRESULT DesktopWindowImpl::OnMessage(
         {
             // Without a redirection surface there is nothing to erase: GDI painting on this window goes
             // nowhere, so the themed fill below would have no effect. See CreateDesktopWindow.
-            if (OptionalChangeState::IsSkipWindowRedirectionSurfaceEnabled())
+            // Use this HWND's style because tests can change the process-wide opt-in after window creation.
+            if ((::GetWindowLongPtrW(m_hwnd.get(), GWL_EXSTYLE) & WS_EX_NOREDIRECTIONBITMAP) != 0)
             {
                 return 1;
             }
