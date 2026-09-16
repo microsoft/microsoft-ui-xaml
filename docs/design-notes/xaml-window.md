@@ -72,8 +72,17 @@ That surface is not free. It costs one 32-bit bitmap the size of the window, and
 every frame even though it contributes nothing once the island is up. The memory is charged to the compositor
 process rather than to the app, so it doesn't show up in the app's own memory counters.
 
-`WS_EX_NOREDIRECTIONBITMAP` tells the system not to create the surface at all. Xaml passes it when
-`XamlChangeId.SkipWindowRedirectionSurface` is enabled:
+`WS_EX_NOREDIRECTIONBITMAP` tells the system not to create the surface at all. Apps opt in with
+`XamlOptionalChanges.EnableChange` before calling `Application.Start` or
+`WindowsXamlManager.InitializeForCurrentThread`, which lock the optional-change state:
+
+``` cs
+using Microsoft.UI.Xaml.Settings;
+
+XamlOptionalChanges.EnableChange(XamlChangeId.SkipWindowRedirectionSurface);
+```
+
+Xaml passes the style when `XamlChangeId.SkipWindowRedirectionSurface` is enabled:
 
 ``` cpp
 // DesktopWindowImpl.cpp
