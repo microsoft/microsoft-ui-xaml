@@ -601,3 +601,19 @@ function Test-SingleDryRunResolvesRequestedPullRequest {
         }
     }
 }
+
+function Test-GitHubPublishStepRejectsUnexpandedPipelineMacros {
+    # The call site passes runtime macros such as $(System.PullRequest.PullRequestNumber).
+    # Azure Pipelines leaves an undefined macro as literal text, which is not blank, so a
+    # plain IsNullOrWhiteSpace fallback does not fire and [int] then throws - which would
+    # fail the publish step and leave the pull request with no comment at all.
+    $yaml = Get-Content (Join-Path $root '..\AzurePipelinesTemplates\WinUI-PRPerf-Run.yml') -Raw
+
+    if ($yaml -notmatch 'pullRequestNumber -notmatch ''\^\\d\+\$''') {
+        throw 'The GitHub publish step must validate the pull request number is numeric before casting it.'
+    }
+    if ($yaml -notmatch 'expectedSourceCommit -notmatch ''\^\[0-9a-fA-F\]\{40\}\$''') {
+        throw 'The GitHub publish step must validate the source commit is a real SHA before using it.'
+    }
+}
+

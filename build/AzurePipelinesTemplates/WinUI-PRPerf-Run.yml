@@ -639,13 +639,19 @@ stages:
             # is what happens for a `/azp run WinUI-PRPerf` comment trigger.
             $context = Get-PRPerfContextFromPipeline
 
+            # An unexpanded macro (for example on a manual, non-pull-request run) arrives as
+            # literal '$(System.PullRequest.PullRequestNumber)', which is not blank, so test
+            # for an actual number rather than for emptiness before falling back.
             $pullRequestNumber = '${{ parameters.pullRequestId }}'
-            if ([string]::IsNullOrWhiteSpace($pullRequestNumber)) {
+            if ($pullRequestNumber -notmatch '^\d+$') {
               $pullRequestNumber = $context.PullRequestNumber
+            }
+            if ("$pullRequestNumber" -notmatch '^\d+$') {
+              throw "No pull request number is available (got '$pullRequestNumber'), so the perf result cannot be posted."
             }
 
             $expectedSourceCommit = '${{ parameters.sourceCommit }}'
-            if ([string]::IsNullOrWhiteSpace($expectedSourceCommit)) {
+            if ($expectedSourceCommit -notmatch '^[0-9a-fA-F]{40}$') {
               $expectedSourceCommit = $context.SourceCommit
             }
 
