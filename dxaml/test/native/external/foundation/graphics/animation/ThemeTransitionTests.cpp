@@ -11,6 +11,9 @@
 #include <SafeEventRegistration.h>
 #include <StoryboardMonitorWrapper.h>
 #include <XamlTailored.h>
+#include <Collection.h>
+#include <algorithm>
+#include <limits>
 
 #include <CustomTypeMetadataProvider.h>
 #include <NavigationThemeTransitionTestPage.xaml.h>
@@ -21,6 +24,355 @@ using namespace Private::Foundation::CustomTypes;
 using namespace Microsoft::UI::Xaml::Tests::Common;
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Foundation { namespace Graphics {
+
+namespace
+{
+    using StoryboardVector = Platform::Collections::Vector<xaml_animation::Storyboard^>;
+
+    enum class ItemsControlTransitionBatch
+    {
+        Remove,
+        RemoveAndAppend,
+        Add
+    };
+
+    StoryboardVector^ CreateTransitionStoryboards(
+        xaml_animation::Transition^ transition,
+        xaml::UIElement^ target,
+        xaml::TransitionTrigger trigger,
+        wf::Rect start,
+        wf::Rect destination)
+    {
+        auto storyboards = ref new StoryboardVector();
+        xaml::TransitionParent parent;
+        safe_cast<xaml_animation::ITransitionPrivate^>(transition)->CreateStoryboard(
+            target, start, destination, trigger, storyboards, &parent);
+        return storyboards;
+    }
+
+    struct TransitionAnimationTiming
+    {
+        long long earliestStart = (std::numeric_limits<long long>::max)();
+        long long latestStart = 0;
+        long long latestEnd = 0;
+    };
+
+    bool TryGetTransitionAnimationTiming(
+        StoryboardVector^ storyboards,
+        Platform::String^ targetProperty,
+        TransitionAnimationTiming& timing)
+    {
+        unsigned int matchingAnimations = 0;
+
+        for (xaml_animation::Storyboard^ storyboard : storyboards)
+        {
+            const auto storyboardBegin = storyboard->BeginTime ? storyboard->BeginTime->Value.Duration : 0LL;
+
+            for (xaml_animation::Timeline^ timeline : storyboard->Children)
+            {
+                auto animation = dynamic_cast<xaml_animation::DoubleAnimationUsingKeyFrames^>(timeline);
+                if (animation == nullptr || xaml_animation::Storyboard::GetTargetProperty(animation) != targetProperty)
+                {
+                    continue;
+                }
+
+                const auto begin = storyboardBegin + (animation->BeginTime ? animation->BeginTime->Value.Duration : 0LL);
+
+                // Transition delays can be hold keyframes, rather than Timeline.BeginTime.
+                for (unsigned int i = 1; i < animation->KeyFrames->Size; ++i)
+                {
+                    auto previous = animation->KeyFrames->GetAt(i - 1);
+                    auto current = animation->KeyFrames->GetAt(i);
+                    if (previous->Value != current->Value)
+                    {
+                        auto firstChange = dynamic_cast<xaml_animation::DiscreteDoubleKeyFrame^>(current)
+                            ? current->KeyTime.TimeSpan.Duration
+                            : previous->KeyTime.TimeSpan.Duration;
+                        timing.earliestStart = (std::min)(timing.earliestStart, begin + firstChange);
+                        timing.latestStart = (std::max)(timing.latestStart, begin + firstChange);
+                        timing.latestEnd = (std::max)(timing.latestEnd, begin + animation->KeyFrames->GetAt(animation->KeyFrames->Size - 1)->KeyTime.TimeSpan.Duration);
+                        ++matchingAnimations;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return matchingAnimations != 0;
+    }
+
+    long long VerifyTransitionAnimationStartsAt(
+        StoryboardVector^ storyboards,
+        Platform::String^ targetProperty,
+        long long expectedStartMilliseconds)
+    {
+        TransitionAnimationTiming timing;
+        VERIFY_IS_TRUE(TryGetTransitionAnimationTiming(storyboards, targetProperty, timing));
+        VERIFY_ARE_EQUAL(expectedStartMilliseconds * 10000LL, timing.earliestStart);
+        VERIFY_ARE_EQUAL(expectedStartMilliseconds * 10000LL, timing.latestStart);
+        return timing.latestEnd;
+    }
+
+    void VerifyItemsControlTransitionStoryboards(
+        ItemsControlTransitionBatch batch,
+        bool hasAddDelete = true,
+        bool useLocalTransitions = false,
+        bool staggeringEnabled = false)
+    {
+        RuntimeEnabledFeatureScopeGuard<RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableGlobalAnimations> enableAnimations;
+        TestCleanupWrapper cleanup;
+        xaml_controls::ItemsControl^ itemsControl = nullptr;
+        Platform::Collections::Vector<Platform::String^>^ items = nullptr;
+        xaml_controls::ContentPresenter^ target = nullptr;
+        xaml_animation::AddDeleteThemeTransition^ addDelete = nullptr;
+        xaml_animation::ReorderThemeTransition^ reorder = nullptr;
+        xaml_animation::RepositionThemeTransition^ reposition = nullptr;
+        xaml_animation::TransitionCollection^ localTransitions = nullptr;
+        auto loadedEvent = std::make_shared<Event>();
+        auto loadedRegistration = CreateSafeEventRegistration(xaml_controls::ItemsControl, Loaded);
+        Platform::String^ opacityProperty = L"(UIElement.TransitionTarget).Opacity";
+        Platform::String^ translationProperty = L"(UIElement.TransitionTarget).(TransitionTarget.CompositeTransform).TranslateY";
+        Platform::String^ addedItem = L"New item";
+        xaml_controls::ContentPresenter^ removedContainer = nullptr;
+        xaml_controls::ContentPresenter^ lastSurvivor = nullptr;
+        bool sawRemoval = false;
+        bool sawFirstSurvivor = false;
+        bool sawLastSurvivor = false;
+        bool sawAddition = false;
+        bool checkedRepositionSuppression = false;
+        long long removalStart = (std::numeric_limits<long long>::max)();
+        long long removalEnd = 0;
+        long long firstMovementStart = (std::numeric_limits<long long>::max)();
+        long long additionStart = (std::numeric_limits<long long>::max)();
+        auto storyboardMonitor = ref new StoryboardMonitorWrapper();
+        auto detachMonitor = wil::scope_exit([&]() { storyboardMonitor->DetachStartedHandler(); });
+
+        RunOnUIThread([&]()
+        {
+            itemsControl = safe_cast<xaml_controls::ItemsControl^>(xaml_markup::XamlReader::Load(
+                LR"(<ItemsControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Width="200" Height="240">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" Height="40"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>)"));
+
+            addDelete = ref new xaml_animation::AddDeleteThemeTransition();
+            reorder = ref new xaml_animation::ReorderThemeTransition();
+            reposition = ref new xaml_animation::RepositionThemeTransition();
+            reposition->IsStaggeringEnabled = staggeringEnabled;
+            auto transitions = ref new xaml_animation::TransitionCollection();
+            if (hasAddDelete)
+            {
+                if (!useLocalTransitions)
+                {
+                    transitions->Append(addDelete);
+                }
+                transitions->Append(reorder);
+            }
+            transitions->Append(reposition);
+            itemsControl->ItemContainerTransitions = transitions;
+
+            if (useLocalTransitions)
+            {
+                localTransitions = ref new xaml_animation::TransitionCollection();
+                localTransitions->Append(addDelete);
+                localTransitions->Append(reorder);
+                localTransitions->Append(reposition);
+                auto containerStyle = ref new xaml::Style();
+                containerStyle->TargetType = wxaml_interop::TypeName(xaml_controls::ContentPresenter::typeid);
+                containerStyle->Setters->Append(ref new xaml::Setter(xaml::UIElement::TransitionsProperty, localTransitions));
+                itemsControl->ItemContainerStyle = containerStyle;
+            }
+
+            items = ref new Platform::Collections::Vector<Platform::String^>();
+            for (int i = 0; i < 4; ++i)
+            {
+                auto item = ref new Platform::String(L"Item ");
+                item += i;
+                items->Append(item);
+            }
+            itemsControl->ItemsSource = items;
+            loadedRegistration.Attach(itemsControl, ref new xaml::RoutedEventHandler(
+                [loadedEvent](Platform::Object^, xaml::RoutedEventArgs^)
+                {
+                    loadedEvent->Set();
+                }));
+            TestServices::WindowHelper->WindowContent = itemsControl;
+        });
+
+        loadedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            target = safe_cast<xaml_controls::ContentPresenter^>(itemsControl->ContainerFromIndex(2));
+            VERIFY_IS_NOT_NULL(target);
+            if (hasAddDelete)
+            {
+                auto bounds = xaml_controls::Primitives::LayoutInformation::GetLayoutSlot(target);
+                VerifyTransitionAnimationStartsAt(
+                    CreateTransitionStoryboards(addDelete, target, xaml::TransitionTrigger::Load, bounds, bounds),
+                    opacityProperty, 300);
+            }
+        });
+
+        // Start the mutation batch on a new tick, after consuming the initial-load context.
+        TestServices::WindowHelper->SynchronouslyTickUIThread(1);
+
+        RunOnUIThread([&]()
+        {
+            auto start = xaml_controls::Primitives::LayoutInformation::GetLayoutSlot(target);
+            const bool removesItem = batch != ItemsControlTransitionBatch::Add;
+            const bool addsItem = batch != ItemsControlTransitionBatch::Remove;
+            lastSurvivor = safe_cast<xaml_controls::ContentPresenter^>(itemsControl->ContainerFromIndex(3));
+            if (removesItem)
+            {
+                removedContainer = safe_cast<xaml_controls::ContentPresenter^>(itemsControl->ContainerFromIndex(1));
+            }
+
+            storyboardMonitor->AttachStartedHandler(
+                [&](xaml_animation::Storyboard^ storyboard, xaml::UIElement^ animationTarget)
+                {
+                    auto storyboards = ref new StoryboardVector();
+                    storyboards->Append(storyboard);
+                    TransitionAnimationTiming timing;
+                    if (animationTarget == removedContainer && removedContainer != nullptr)
+                    {
+                        if (TryGetTransitionAnimationTiming(storyboards, opacityProperty, timing))
+                        {
+                            sawRemoval = true;
+                            removalStart = (std::min)(removalStart, timing.earliestStart);
+                            removalEnd = (std::max)(removalEnd, timing.latestEnd);
+                        }
+                    }
+                    else if (animationTarget == target || animationTarget == lastSurvivor)
+                    {
+                        if (TryGetTransitionAnimationTiming(storyboards, translationProperty, timing))
+                        {
+                            sawFirstSurvivor |= animationTarget == target;
+                            sawLastSurvivor |= animationTarget == lastSurvivor;
+                            firstMovementStart = (std::min)(firstMovementStart, timing.earliestStart);
+
+                            if (!checkedRepositionSuppression && hasAddDelete && batch != ItemsControlTransitionBatch::Add)
+                            {
+                                // Normal storyboard creation has now latched this batch's context.
+                                checkedRepositionSuppression = true;
+                                const auto savedStaggeringEnabled = reposition->IsStaggeringEnabled;
+                                auto restoreStaggering = wil::scope_exit([&]()
+                                {
+                                    reposition->IsStaggeringEnabled = savedStaggeringEnabled;
+                                });
+                                auto destination = xaml_controls::Primitives::LayoutInformation::GetLayoutSlot(
+                                    safe_cast<xaml_controls::ContentPresenter^>(animationTarget));
+                                auto start = destination;
+                                start.Y += 40;
+                                for (bool factoryStaggeringEnabled : { false, true })
+                                {
+                                    reposition->IsStaggeringEnabled = factoryStaggeringEnabled;
+                                    VERIFY_ARE_EQUAL(0u, CreateTransitionStoryboards(
+                                        reposition, animationTarget, xaml::TransitionTrigger::Layout, start, destination)->Size);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        auto container = dynamic_cast<xaml_controls::ContentPresenter^>(animationTarget);
+                        if (container && dynamic_cast<Platform::String^>(container->Content) == addedItem &&
+                            TryGetTransitionAnimationTiming(storyboards, opacityProperty, timing))
+                        {
+                            sawAddition = true;
+                            additionStart = (std::min)(additionStart, timing.earliestStart);
+                        }
+                    }
+                });
+
+            if (removesItem)
+            {
+                items->RemoveAt(1);
+
+                if (hasAddDelete)
+                {
+                    // Registration must not consume the removal before a same-batch addition arrives.
+                    safe_cast<xaml_animation::ITransitionPrivate^>(addDelete)->ParticipatesInTransition(
+                        target, xaml::TransitionTrigger::Unload);
+                }
+            }
+            if (addsItem)
+            {
+                if (removesItem)
+                {
+                    items->Append(addedItem);
+                }
+                else
+                {
+                    items->InsertAt(0, addedItem);
+                }
+            }
+            itemsControl->UpdateLayout();
+
+            VERIFY_ARE_EQUAL(target, itemsControl->ContainerFromItem(target->Content));
+            auto destination = xaml_controls::Primitives::LayoutInformation::GetLayoutSlot(target);
+            VERIFY_ARE_NOT_EQUAL(start.Y, destination.Y);
+
+            // Let the framework create this batch's storyboards. Calling the private factories
+            // ourselves here would consume mutation context ahead of normal transition processing.
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+        storyboardMonitor->DetachStartedHandler();
+
+        VERIFY_IS_TRUE(sawFirstSurvivor);
+        VERIFY_IS_TRUE(sawLastSurvivor);
+        if (hasAddDelete && batch != ItemsControlTransitionBatch::Add)
+        {
+            VERIFY_IS_TRUE(sawRemoval);
+            VERIFY_IS_TRUE(checkedRepositionSuppression);
+            VERIFY_ARE_EQUAL(0LL, removalStart);
+            VERIFY_IS_GREATER_THAN(removalEnd, 0LL);
+            VERIFY_IS_LESS_THAN_OR_EQUAL(removalEnd, firstMovementStart);
+            VERIFY_IS_GREATER_THAN_OR_EQUAL(firstMovementStart, 220 * 10000LL);
+        }
+        else
+        {
+            VERIFY_IS_FALSE(sawRemoval);
+            VERIFY_ARE_EQUAL(0LL, firstMovementStart);
+        }
+        if (hasAddDelete && batch != ItemsControlTransitionBatch::Remove)
+        {
+            VERIFY_IS_TRUE(sawAddition);
+            if (batch == ItemsControlTransitionBatch::RemoveAndAppend)
+            {
+                VERIFY_IS_GREATER_THAN_OR_EQUAL(additionStart, 600 * 10000LL);
+            }
+            else
+            {
+                VERIFY_ARE_EQUAL(300 * 10000LL, additionStart);
+            }
+        }
+
+        RunOnUIThread([&]()
+        {
+            // A subsequent layout-only change must not inherit the previous batch's deletion phase.
+            auto start = xaml_controls::Primitives::LayoutInformation::GetLayoutSlot(target);
+            auto firstContainer = safe_cast<xaml_controls::ContentPresenter^>(itemsControl->ContainerFromIndex(0));
+            firstContainer->Height = firstContainer->ActualHeight + 10;
+            itemsControl->UpdateLayout();
+            auto destination = xaml_controls::Primitives::LayoutInformation::GetLayoutSlot(target);
+            VERIFY_ARE_NOT_EQUAL(start.Y, destination.Y);
+
+            for (bool factoryStaggeringEnabled : { false, true })
+            {
+                reposition->IsStaggeringEnabled = factoryStaggeringEnabled;
+                VerifyTransitionAnimationStartsAt(
+                    CreateTransitionStoryboards(reposition, target, xaml::TransitionTrigger::Layout, start, destination),
+                    translationProperty, 0);
+            }
+        });
+    }
+}
 
 Platform::String^ ThemeTransitionTests::GetResourcesPath() const
 {
@@ -44,6 +396,37 @@ bool ThemeTransitionTests::TestCleanup()
     test_infra::TestServices::WindowHelper->ShutdownXaml();
     TestServices::WindowHelper->VerifyTestCleanup();
     return true;
+}
+
+void ThemeTransitionTests::ValidateItemsControlDeleteTransitionStoryboards()
+{
+    for (bool staggeringEnabled : { false, true })
+    {
+        VerifyItemsControlTransitionStoryboards(ItemsControlTransitionBatch::Remove, true, false, staggeringEnabled);
+    }
+}
+
+void ThemeTransitionTests::ValidateItemsControlMixedTransitionStoryboards()
+{
+    for (bool staggeringEnabled : { false, true })
+    {
+        VerifyItemsControlTransitionStoryboards(ItemsControlTransitionBatch::RemoveAndAppend, true, false, staggeringEnabled);
+    }
+}
+
+void ThemeTransitionTests::ValidateItemsControlLocalTransitionStoryboards()
+{
+    VerifyItemsControlTransitionStoryboards(ItemsControlTransitionBatch::RemoveAndAppend, true, true);
+}
+
+void ThemeTransitionTests::ValidateItemsControlAddTransitionStoryboards()
+{
+    VerifyItemsControlTransitionStoryboards(ItemsControlTransitionBatch::Add);
+}
+
+void ThemeTransitionTests::ValidateItemsControlStandaloneRepositionStoryboards()
+{
+    VerifyItemsControlTransitionStoryboards(ItemsControlTransitionBatch::RemoveAndAppend, false);
 }
 
 void ThemeTransitionTests::ValidateStaggeringWorks()
