@@ -48,6 +48,14 @@ parameters:
 - name: gateOnLabel
   type: boolean
   default: false
+# Name of the dedicated, single-agent perf pool. Left empty the job runs on the
+# standard pool, which is what the repository needs until real measurement is
+# wired: the perf queue is not authorized for the pull request pipeline, so
+# naming it leaves the whole stage pending on a permission prompt and no result
+# is ever reported.
+- name: perfPoolName
+  type: string
+  default: ''
 
 stages:
 - stage: RunPRPerf
@@ -150,9 +158,9 @@ stages:
       condition: eq(dependencies.GatePRPerf.outputs['gate.shouldRun'], 'true')
     pool:
       type: windows
-      ${{ if ne(parameters.useFixtures, true) }}:
+      ${{ if ne(parameters.perfPoolName, '') }}:
         isCustom: true
-        name: WinUI-PerfTest
+        name: ${{ parameters.perfPoolName }}
     variables:
       ob_outputDirectory: $(Build.ArtifactStagingDirectory)
       prPerfSourcesDirectory: $(Agent.BuildDirectory)\s\microsoft-ui-xaml

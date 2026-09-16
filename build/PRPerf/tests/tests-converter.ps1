@@ -303,7 +303,7 @@ function Test-RunYamlPreservesFixturesAndRunsRealTargetThenTrial {
     $yamlPath = Join-Path (Split-Path -Parent $root) 'AzurePipelinesTemplates\WinUI-PRPerf-Run.yml'
     $yaml = Get-Content -LiteralPath $yamlPath -Raw
     foreach ($required in @(
-        'WinUI-PerfTest',
+        'name: ${{ parameters.perfPoolName }}',
         'targetBuildId',
         'sourceBuildId',
         'drop_amd64fre',

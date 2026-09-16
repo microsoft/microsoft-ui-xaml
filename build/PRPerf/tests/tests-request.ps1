@@ -693,3 +693,26 @@ function Test-PerfStageDeclaresNoImplicitStageDependency {
         throw 'The perf stage must declare "dependsOn: []" when no dependency is supplied, or it inherits the previous stage.'
     }
 }
+
+
+function Test-PerfJobOnlyRequestsTheDedicatedPoolWhenAsked {
+    # The WinUI-PerfTest queue is not authorized for the PR pipeline and its single
+    # agent is offline, so naming it left the whole stage pending on a permission
+    # prompt and no comment was ever posted. The dedicated pool must be opt-in.
+    $yaml = Get-Content (Join-Path $root '..\AzurePipelinesTemplates\WinUI-PRPerf-Run.yml') -Raw
+
+    if ($yaml -notmatch '(?m)^- name: perfPoolName\s*$') {
+        throw 'The template must expose a perfPoolName parameter so the dedicated pool is opt-in.'
+    }
+    if ($yaml -match "(?m)^\s*name: WinUI-PerfTest\s*$") {
+        throw 'The template must not hard-code the WinUI-PerfTest pool.'
+    }
+    if ($yaml -notmatch [regex]::Escape("if ne(parameters.perfPoolName, '')")) {
+        throw 'The dedicated pool must only be requested when perfPoolName is supplied.'
+    }
+
+    $callSite = Get-Content (Join-Path $root '..\WinUI-GitHub-PR.yml') -Raw
+    if ($callSite -match '(?m)^\s*perfPoolName:\s*\S') {
+        throw 'The PR pipeline must not request the dedicated perf pool until measurement is wired.'
+    }
+}
