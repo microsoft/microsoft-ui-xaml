@@ -191,7 +191,7 @@ function Test-PerfRunFallbackCapturesActualFailedTimelineRecord {
                 Replace('$(System.JobName)', 'RunPRPerf').
                 Replace('$(pipelineUrl)', 'https://pipeline').
                 Replace('$(artifactUrl)', 'https://artifacts').
-                Replace('$(Build.SourcesDirectory)', (Split-Path -Parent (Split-Path -Parent $root))).
+                Replace('$(prPerfSourcesDirectory)', (Split-Path -Parent (Split-Path -Parent $root))).
                 Replace('$(Build.BuildId)', '1234').
                 Replace('$(System.CollectionUri)', 'https://dev.azure.com/example/').
                 Replace('$(System.TeamProject)', 'WinUI').
@@ -617,3 +617,50 @@ function Test-GitHubPublishStepRejectsUnexpandedPipelineMacros {
     }
 }
 
+
+
+function Test-PerfCheckoutPinsAnExplicitPathForEveryJob {
+    # The agent relocates an unpinned checkout ("Repository is current at
+    # ...\s\microsoft-ui-xaml, move to ...\s"), and the container step then
+    # failed to find build\PRPerf\PRPerfGitHub.psm1 under $(Build.SourcesDirectory).
+    # Pinning the checkout path makes the source location deterministic.
+    $yaml = Get-Content (Join-Path $root '..\AzurePipelinesTemplates\WinUI-PRPerf-Run.yml') -Raw
+
+    $checkouts = [regex]::Matches($yaml, '(?m)^(?<indent>\s*)- checkout: self\r?\n(?<body>(?:\k<indent>\s+\S.*\r?\n)*)')
+    if ($checkouts.Count -lt 2) {
+        throw "Expected at least two 'checkout: self' steps, found $($checkouts.Count)."
+    }
+    foreach ($checkout in $checkouts) {
+        if ($checkout.Groups['body'].Value -notmatch '(?m)^\s+path:\s*\S') {
+            throw 'Every "checkout: self" step must pin an explicit path so the sources directory is deterministic.'
+        }
+    }
+}
+
+function Test-PerfScriptsResolveFromThePinnedCheckoutPath {
+    $yaml = Get-Content (Join-Path $root '..\AzurePipelinesTemplates\WinUI-PRPerf-Run.yml') -Raw
+
+    if ($yaml -notmatch '(?m)^\s+prPerfSourcesDirectory:\s*\S') {
+        throw 'The template must define prPerfSourcesDirectory pointing at the pinned checkout path.'
+    }
+    if ($yaml -match [regex]::Escape("Join-Path '`$(Build.SourcesDirectory)' 'build\PRPerf")) {
+        throw 'PR perf scripts must not be resolved from the unpinned $(Build.SourcesDirectory).'
+    }
+}
+
+function Test-PerfGateCannotFailTheStageOnModuleLoadFailure {
+    $yaml = Get-Content (Join-Path $root '..\AzurePipelinesTemplates\WinUI-PRPerf-Run.yml') -Raw
+    $match = [regex]::Match($yaml, "(?s)name: gate.*?script:\s*\|\r?\n(?<script>.*?)(?:\r?\n  - job:|\z)")
+    if (-not $match.Success) {
+        throw 'The gate inline script was not found.'
+    }
+    $script = $match.Groups['script'].Value
+    $importIndex = $script.IndexOf('Import-Module')
+    $tryIndex = $script.IndexOf('try {')
+    if ($importIndex -lt 0 -or $tryIndex -lt 0) {
+        throw 'The gate script must import the module inside a try block.'
+    }
+    if ($importIndex -lt $tryIndex) {
+        throw 'The gate must import its module inside the try/catch so a load failure skips perf instead of failing the stage.'
+    }
+}

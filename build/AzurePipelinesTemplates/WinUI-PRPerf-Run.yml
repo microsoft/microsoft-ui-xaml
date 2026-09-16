@@ -62,10 +62,34 @@ stages:
         type: windows
       variables:
         ob_outputDirectory: $(Build.ArtifactStagingDirectory)
+        prPerfSourcesDirectory: $(Agent.BuildDirectory)\s\microsoft-ui-xaml
       steps:
       - checkout: self
         fetchDepth: 1
         fetchTags: false
+        path: s\microsoft-ui-xaml
+
+      - task: PowerShell@2
+        displayName: Report where the perf scripts were checked out
+        condition: always()
+        continueOnError: true
+        inputs:
+          targetType: inline
+          script: |
+            Write-Host "BUILD_SOURCESDIRECTORY=$env:BUILD_SOURCESDIRECTORY"
+            Write-Host "AGENT_BUILDDIRECTORY=$env:AGENT_BUILDDIRECTORY"
+            Write-Host "prPerfSourcesDirectory=$(prPerfSourcesDirectory)"
+            foreach ($candidate in @($env:BUILD_SOURCESDIRECTORY, '$(prPerfSourcesDirectory)')) {
+              if ([string]::IsNullOrWhiteSpace($candidate)) { continue }
+              $module = Join-Path $candidate 'build\PRPerf\PRPerfGitHub.psm1'
+              $found = Test-Path -LiteralPath $module
+              Write-Host ("exists('{0}') = {1}" -f $module, $found)
+            }
+            if (Test-Path -LiteralPath $env:AGENT_BUILDDIRECTORY) {
+              Get-ChildItem -LiteralPath $env:AGENT_BUILDDIRECTORY -Depth 1 -ErrorAction SilentlyContinue |
+                Select-Object -First 40 -ExpandProperty FullName |
+                ForEach-Object { Write-Host "  $_" }
+            }
 
       - task: PowerShell@2
         name: gate
@@ -76,13 +100,15 @@ stages:
           targetType: inline
           script: |
             $ErrorActionPreference = 'Stop'
-            Import-Module (Join-Path '$(Build.SourcesDirectory)' 'build\PRPerf\PRPerfGitHub.psm1') -Force
 
             # A perf run is opt-in, so anything other than a confirmed label is
             # treated as "do not run" rather than surfacing an error on a pull
-            # request whose author never asked for perf coverage.
+            # request whose author never asked for perf coverage. The module
+            # import is inside the guard as well: an informational stage must
+            # never turn red just because it could not locate its own scripts.
             $shouldRun = $false
             try {
+              Import-Module (Join-Path '$(prPerfSourcesDirectory)' 'build\PRPerf\PRPerfGitHub.psm1') -Force
               $context = Get-PRPerfContextFromPipeline
               $uri = "https://api.github.com/repos/$($context.Owner)/$($context.Repository)/pulls/$($context.PullRequestNumber)"
 
@@ -124,6 +150,7 @@ stages:
         name: WinUI-PerfTest
     variables:
       ob_outputDirectory: $(Build.ArtifactStagingDirectory)
+      prPerfSourcesDirectory: $(Agent.BuildDirectory)\s\microsoft-ui-xaml
       comparisonDirectory: $(Build.ArtifactStagingDirectory)\PRPerf
       # Selection is stated explicitly here rather than inferred inside the converter: a run set
       # emits every scenario carrying the selected tag, and comparing an unintended one would be
@@ -137,6 +164,7 @@ stages:
     - checkout: self
       fetchDepth: 1
       fetchTags: false
+      path: s\microsoft-ui-xaml
 
     - task: PowerShell@2
       displayName: Tag PR performance run
@@ -162,8 +190,8 @@ stages:
           script: |
             $ErrorActionPreference = 'Stop'
             New-Item -ItemType Directory -Path '$(comparisonDirectory)' -Force | Out-Null
-            Copy-Item -LiteralPath '$(Build.SourcesDirectory)\build\PRPerf\fixtures\target-pass.json' -Destination '$(comparisonDirectory)\target-results.json'
-            Copy-Item -LiteralPath '$(Build.SourcesDirectory)\build\PRPerf\fixtures\trial-pass.json' -Destination '$(comparisonDirectory)\pr-results.json'
+            Copy-Item -LiteralPath '$(prPerfSourcesDirectory)\build\PRPerf\fixtures\target-pass.json' -Destination '$(comparisonDirectory)\target-results.json'
+            Copy-Item -LiteralPath '$(prPerfSourcesDirectory)\build\PRPerf\fixtures\trial-pass.json' -Destination '$(comparisonDirectory)\pr-results.json'
 
     # Real measurement needs a completed build of the merge base to supply the baseline
     # binaries, and looking that build up is not implemented yet. Without it the download
@@ -204,7 +232,7 @@ stages:
           targetType: inline
           script: |
             $ErrorActionPreference = 'Stop'
-            $summaryJson = & '$(Build.SourcesDirectory)\build\PRPerf\Assert-PRPerfArtifacts.ps1' `
+            $summaryJson = & '$(prPerfSourcesDirectory)\build\PRPerf\Assert-PRPerfArtifacts.ps1' `
               -TargetRoot '$(targetArtifactRoot)' `
               -TrialRoot '$(trialArtifactRoot)' `
               -ExpectedArtifactName 'drop_amd64fre'
@@ -219,17 +247,17 @@ stages:
           USEREXPERIMENTSPATH: ${{ parameters.requestIdentity }}
         inputs:
           targetType: filePath
-          filePath: $(Build.SourcesDirectory)\perf\scripts\pipeline-run.ps1
+          filePath: $(prPerfSourcesDirectory)\perf\scripts\pipeline-run.ps1
           arguments: >-
             "pr-smoke/cpu-pr"
             "PRPerf\${{ parameters.requestIdentity }}\target"
-          workingDirectory: $(Build.SourcesDirectory)\perf\scripts
+          workingDirectory: $(prPerfSourcesDirectory)\perf\scripts
 
       - task: PowerShell@2
         displayName: Convert target raw performance results
         inputs:
           targetType: filePath
-          filePath: $(Build.SourcesDirectory)\build\PRPerf\Convert-WinUIPerfResults.ps1
+          filePath: $(prPerfSourcesDirectory)\build\PRPerf\Convert-WinUIPerfResults.ps1
           arguments: >-
             -InputCsv "$(Build.ArtifactStagingDirectory)\current"
             -Commit "${{ parameters.targetCommit }}"
@@ -309,17 +337,17 @@ stages:
           USEREXPERIMENTSPATH: ${{ parameters.requestIdentity }}
         inputs:
           targetType: filePath
-          filePath: $(Build.SourcesDirectory)\perf\scripts\pipeline-run.ps1
+          filePath: $(prPerfSourcesDirectory)\perf\scripts\pipeline-run.ps1
           arguments: >-
             "pr-smoke/cpu-pr"
             "PRPerf\${{ parameters.requestIdentity }}\trial"
-          workingDirectory: $(Build.SourcesDirectory)\perf\scripts
+          workingDirectory: $(prPerfSourcesDirectory)\perf\scripts
 
       - task: PowerShell@2
         displayName: Convert trial raw performance results
         inputs:
           targetType: filePath
-          filePath: $(Build.SourcesDirectory)\build\PRPerf\Convert-WinUIPerfResults.ps1
+          filePath: $(prPerfSourcesDirectory)\build\PRPerf\Convert-WinUIPerfResults.ps1
           arguments: >-
             -InputCsv "$(Build.ArtifactStagingDirectory)\current"
             -Commit "${{ parameters.sourceCommit }}"
@@ -389,11 +417,11 @@ stages:
       condition: always()
       inputs:
         targetType: filePath
-        filePath: $(Build.SourcesDirectory)\build\PRPerf\Compare-PRPerfResults.ps1
+        filePath: $(prPerfSourcesDirectory)\build\PRPerf\Compare-PRPerfResults.ps1
         arguments: >-
           -TargetPath "$(comparisonDirectory)\target-results.json"
           -TrialPath "$(comparisonDirectory)\pr-results.json"
-          -ThresholdPath "$(Build.SourcesDirectory)\build\PRPerf\pr-perf-thresholds.json"
+          -ThresholdPath "$(prPerfSourcesDirectory)\build\PRPerf\pr-perf-thresholds.json"
           -OutputDirectory "$(comparisonDirectory)"
           -ArtifactUrl "$(artifactUrl)"
           -PipelineUrl "$(pipelineUrl)"
@@ -412,7 +440,7 @@ stages:
         targetType: inline
         script: |
           $ErrorActionPreference = 'Stop'
-          Import-Module '$(Build.SourcesDirectory)\build\PRPerf\PRPerfRequest.psm1' -Force
+          Import-Module '$(prPerfSourcesDirectory)\build\PRPerf\PRPerfRequest.psm1' -Force
           $comparisonJson = '$(comparisonDirectory)\comparison.json'
           $comparisonMarkdown = '$(comparisonDirectory)\comparison.md'
           if ((Test-Path -LiteralPath $comparisonJson -PathType Leaf) -and
@@ -604,7 +632,7 @@ stages:
           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
         inputs:
           targetType: filePath
-          filePath: $(Build.SourcesDirectory)\build\PRPerf\Publish-PRPerfResult.ps1
+          filePath: $(prPerfSourcesDirectory)\build\PRPerf\Publish-PRPerfResult.ps1
           arguments: >-
             -CollectionUri "$(System.CollectionUri)"
             -Project "$(System.TeamProject)"
@@ -632,7 +660,7 @@ stages:
               throw "GitHubPRPerfToken is not set. Define it as a secret pipeline variable so results can be posted to the GitHub pull request."
             }
 
-            Import-Module '$(Build.SourcesDirectory)\build\PRPerf\PRPerfGitHub.psm1' -Force
+            Import-Module '$(prPerfSourcesDirectory)\build\PRPerf\PRPerfGitHub.psm1' -Force
 
             # Prefer explicitly supplied parameters; otherwise derive the pull
             # request context from the Azure Pipelines GitHub PR variables, which
@@ -669,7 +697,7 @@ stages:
               $arguments['ExpectedSourceCommit'] = $expectedSourceCommit
             }
 
-            & '$(Build.SourcesDirectory)\build\PRPerf\Publish-PRPerfResultGitHub.ps1' @arguments
+            & '$(prPerfSourcesDirectory)\build\PRPerf\Publish-PRPerfResultGitHub.ps1' @arguments
 
 
 
