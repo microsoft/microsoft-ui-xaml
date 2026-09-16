@@ -127,8 +127,28 @@ void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventAr
     // (SetRootVisual below runs against it). Safe here: we are past construction and on the UI thread.
     EnsureInkPresenter();
 
-    // Hook up this ink canvas with the DComp tree.
-    AttachToVisualLink();
+    // Hook up this ink canvas with the DComp tree. Attaching can throw on an OS build that lacks the
+    // system-composition splice interop, on a null XamlRoot, or on a transient composition/device
+    // failure; contain it here and detach so the canvas renders no ink instead of throwing out of
+    // Loaded and tearing down the app.
+    try
+    {
+        AttachToVisualLink();
+    }
+    catch (winrt::hresult_error const& e)
+    {
+        // InkCanvas has no logging channel; surface the HRESULT to the debugger so a degraded attach
+        // is diagnosable.
+        wchar_t message[160];
+        swprintf_s(
+            message,
+            L"InkCanvas: attach to the composition tree failed (hr=0x%08X); rendering no ink.\n",
+            static_cast<unsigned int>(e.code()));
+        OutputDebugStringW(message);
+
+        DetachFromVisualLink();
+        return;
+    }
 
     // The composition target maintains position/clipping for our visual, but the presenter
     // does not see size changes, so explicitly update the presenter size when the rasterization
@@ -460,12 +480,23 @@ void InkCanvas::DetachFromVisualLink()
 bool InkCanvas::IsSystemCompositor()
 {
     static bool isSystemCompositor = [] {
-        auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
-        // GetForSystemEngine takes any composition object (IInspectable); pass the compositor
-        // directly rather than allocating a throwaway visual just to probe the engine.
-        // CompositionEngine lives in the Microsoft.UI.Composition namespace (it was promoted out of
-        // the Experimental namespace in the InteractiveExperiences transport), so reference it there.
-        return winrt::Microsoft::UI::Composition::CompositionEngine::GetForSystemEngine(compositor) != nullptr;
+        // CompositionEngine ships in the InteractiveExperiences payload, whose version varies by OS
+        // build and by which package the app resolved. Where the class is not activatable this throws
+        // CLASS_E_CLASSNOTAVAILABLE, so treat any failure as "not the system engine" and take the
+        // lifted path, which still renders ink, rather than failing the attach outright.
+        try
+        {
+            auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+            // GetForSystemEngine takes any composition object (IInspectable); pass the compositor
+            // directly rather than allocating a throwaway visual just to probe the engine.
+            // CompositionEngine lives in the Microsoft.UI.Composition namespace (it was promoted out of
+            // the Experimental namespace in the InteractiveExperiences transport), so reference it there.
+            return winrt::Microsoft::UI::Composition::CompositionEngine::GetForSystemEngine(compositor) != nullptr;
+        }
+        catch (winrt::hresult_error const&)
+        {
+            return false;
+        }
     }();
     return isSystemCompositor;
 }
