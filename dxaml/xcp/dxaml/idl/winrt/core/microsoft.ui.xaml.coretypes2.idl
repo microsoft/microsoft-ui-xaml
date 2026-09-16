@@ -520,6 +520,8 @@ namespace Microsoft.UI.Xaml.Settings
         OptimizeApplyStyles = 61697456,
         DefaultStyleOptimizations = 60995620,
         DeferContextFlyoutInit = 61098986,
+        [feature(Feature_ExperimentalApi)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
         GamepadKeyRouting = 63117108,
     };
 }
