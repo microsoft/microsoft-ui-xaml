@@ -239,11 +239,17 @@ Below are equivalent applications using system XAML.  They are used for comparis
 10. Install Python 3.11 from official site to enable report generation.  For convenience install it for all users in `c:\python311`
 ### Wiring the real WinUI perf harness
 
-The comparison currently runs on fixture data (`perfUseFixtures: true`). The scenario it
+Fixture data exists for local demonstration and is **not** the pipeline default: it is recorded
+against placeholder commits, so a fixture run can never be a measurement of the pull request
+under test. `Compare-PRPerfResults.ps1` now verifies that the results it was given were
+actually measured at the requested commits, and that the two sides differ, so a fixture or
+stale result on a real PR reports `Inconclusive` rather than a fabricated pass.
+
+The scenario it
 compares is `Lifecycle-MinApp.Cpp.MUX`, registered in `perf\profiles\scenarios.json` and
 selected by its unique `test` tag, so the fixtures speak the same names as real output.
 
-To measure for real, set `perfUseFixtures: false` and have each side run:
+To measure for real, have each side run:
 
 ```powershell
 perf\scripts\pipeline-run.ps1 test#cpu <experimentName>
@@ -263,3 +269,4 @@ Three things still block that switch, none of them in this code:
 
 Until those are arranged the stage stays on fixtures, which exercises every step after
 measurement: conversion, comparison, verdict and PR comment.
+

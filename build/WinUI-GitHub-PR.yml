@@ -39,10 +39,13 @@ parameters:
   displayName: "Enable the informational PR performance comparison stage"
   type: boolean
   default: true
+# Fixture data is recorded against placeholder commits, so a fixture run can never be a
+# measurement of the pull request under test. Defaulting this to true let a real PR receive
+# a passing perf comment for a commit that was never measured.
 - name: perfUseFixtures
   displayName: "Use recorded fixtures instead of measuring on perf hardware"
   type: boolean
-  default: true
+  default: false
 
 variables:
 - template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig

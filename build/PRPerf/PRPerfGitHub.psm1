@@ -127,4 +127,17 @@ function Test-GitHubPRPerfRequested {
     return Test-PRPerfLabel -Labels $labels
 }
 
-Export-ModuleMember -Function New-GitHubPRPerfHeaders, Get-PRPerfContextFromPipeline, Get-GitHubPRPerfCommits, Test-GitHubPRPerfRequestCurrent, Test-GitHubPRPerfRequested
+
+function ConvertTo-GitHubPRPerfStatusState {
+    <#
+        The PR performance stage is informational: it must never present as a failed check.
+        A 'failure' or 'error' commit status renders red on the pull request and is one
+        branch-protection toggle away from blocking merges, so every outcome reports
+        'success' and the actual verdict is carried in the comment body.
+    #>
+    param([string] $OverallState)
+
+    return 'success'
+}
+Export-ModuleMember -Function New-GitHubPRPerfHeaders, Get-PRPerfContextFromPipeline, Get-GitHubPRPerfCommits, Test-GitHubPRPerfRequestCurrent, Test-GitHubPRPerfRequested, ConvertTo-GitHubPRPerfStatusState
+

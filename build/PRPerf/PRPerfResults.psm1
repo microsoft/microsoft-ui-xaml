@@ -549,7 +549,13 @@ function Compare-PRPerfFiles {
     param(
         [Parameter(Mandatory)][string] $TargetPath,
         [Parameter(Mandatory)][string] $TrialPath,
-        [Parameter(Mandatory)][string] $ThresholdPath
+        [Parameter(Mandatory)][string] $ThresholdPath,
+
+        # When supplied, the measured results must actually come from these commits. A result
+        # file left over from an earlier run, or fixture data, otherwise compares cleanly and
+        # reports a pass for a commit that was never measured.
+        [string] $ExpectedTargetCommit = '',
+        [string] $ExpectedTrialCommit = ''
     )
     $issues = @()
     $target = $null
@@ -577,6 +583,24 @@ function Compare-PRPerfFiles {
 
     if ($issues.Count -gt 0) {
         return New-PRPerfInconclusiveComparison -Target $target -Trial $trial -Issues $issues
+    }
+
+    $measuredTargetCommit = Get-PRPerfPropertyValue -InputObject $target -Name 'commit'
+    $measuredTrialCommit = Get-PRPerfPropertyValue -InputObject $trial -Name 'commit'
+    $provenanceIssues = @()
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedTargetCommit) -and
+        $measuredTargetCommit -ine $ExpectedTargetCommit) {
+        $provenanceIssues += "Target result was measured at commit '$measuredTargetCommit' but the run was requested for '$ExpectedTargetCommit'."
+    }
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedTrialCommit) -and
+        $measuredTrialCommit -ine $ExpectedTrialCommit) {
+        $provenanceIssues += "Trial result was measured at commit '$measuredTrialCommit' but the run was requested for '$ExpectedTrialCommit'."
+    }
+    if ($measuredTargetCommit -ieq $measuredTrialCommit) {
+        $provenanceIssues += "Target and trial were both measured at commit '$measuredTargetCommit', so the comparison says nothing about the change."
+    }
+    if ($provenanceIssues.Count -gt 0) {
+        return New-PRPerfInconclusiveComparison -Target $target -Trial $trial -Issues $provenanceIssues
     }
 
     try {

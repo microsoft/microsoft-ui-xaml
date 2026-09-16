@@ -712,3 +712,61 @@ function Test-CLIWritesInconclusiveComparisonJsonForMalformedInput {
         }
     }
 }
+
+function Invoke-CompareCli([hashtable] $Extra, [string] $TrialFile = 'fixtures\trial-pass.json') {
+    $outputDirectory = Join-Path ([System.IO.Path]::GetTempPath()) "pr-perf-$([guid]::NewGuid())"
+    try {
+        $scriptPath = Join-Path $root 'Compare-PRPerfResults.ps1'
+        $args = @(
+            '-TargetPath', (Join-Path $root 'fixtures\target-pass.json'),
+            '-TrialPath', (Join-Path $root $TrialFile),
+            '-ThresholdPath', (Join-Path $root 'pr-perf-thresholds.json'),
+            '-OutputDirectory', $outputDirectory
+        )
+        foreach ($k in $Extra.Keys) { $args += @("-$k", $Extra[$k]) }
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $scriptPath @args | Out-Null
+        return Get-Content -LiteralPath (Join-Path $outputDirectory 'comparison.json') -Raw | ConvertFrom-Json
+    } finally {
+        if (Test-Path -LiteralPath $outputDirectory) { Remove-Item -LiteralPath $outputDirectory -Recurse -Force }
+    }
+}
+
+function Test-CLIRejectsResultsMeasuredAtADifferentSourceCommit {
+    # A result file left over from an earlier run, or fixture data, must never be reported as a
+    # clean pass for the commit the run was actually requested for.
+    $comparison = Invoke-CompareCli @{
+        SourceCommit = ('c' * 40)
+        TargetCommit = ('a' * 40)
+    }
+    Assert-Equal 'Inconclusive' $comparison.overallState 'A trial measured at another commit must be inconclusive.'
+}
+
+function Test-CLIRejectsResultsMeasuredAtADifferentTargetCommit {
+    $comparison = Invoke-CompareCli @{
+        SourceCommit = ('b' * 40)
+        TargetCommit = ('d' * 40)
+    }
+    Assert-Equal 'Inconclusive' $comparison.overallState 'A target measured at another commit must be inconclusive.'
+}
+
+function Test-CLIRejectsComparisonOfACommitAgainstItself {
+    # Comparing a commit with itself always passes and says nothing about the change.
+    $comparison = Invoke-CompareCli @{
+        SourceCommit = ('a' * 40)
+        TargetCommit = ('a' * 40)
+    }
+    Assert-Equal 'Inconclusive' $comparison.overallState 'Comparing a commit against itself must be inconclusive.'
+}
+
+function Test-CLIStillPassesWhenRequestedCommitsMatchTheMeasuredResults {
+    $comparison = Invoke-CompareCli @{
+        SourceCommit = ('b' * 40)
+        TargetCommit = ('a' * 40)
+    }
+    Assert-Equal 'Passed' $comparison.overallState 'Matching commits must still be able to pass.'
+}
+
+function Test-CLIPassesWhenNoCommitsAreSupplied {
+    $comparison = Invoke-CompareCli @{}
+    Assert-Equal 'Passed' $comparison.overallState 'Omitting commit context must not change the verdict.'
+}

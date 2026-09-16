@@ -299,11 +299,20 @@ function Test-GitHubPublisherMarksSupersededResultInconclusiveAndNotPassed {
     }
 
     $statusBody = ($calls | Where-Object { $_.Method -eq 'Post' -and $_.Uri -like '*/statuses/*' })[0].Body | ConvertFrom-Json
-    Assert-GitHubEqual 'error' $statusBody.state 'Superseded GitHub status must use the Inconclusive state mapping.'
-    if ($statusBody.state -eq 'success') {
-        throw 'Superseded GitHub status must not be published as success.'
+    # The stage is informational, so the commit status is always 'success' and must never
+    # render as a failed check. The superseded verdict is carried by the comment and the
+    # status description instead, which is what a human actually reads.
+    Assert-GitHubEqual 'success' $statusBody.state 'An informational stage must always publish a success status.'
+    if ($statusBody.description -like '*passed*') {
+        throw 'Superseded GitHub status description must not claim a pass.'
     }
     Assert-GitHubEqual 'Superseded by a newer commit - perf results no longer apply.' $statusBody.description 'Superseded GitHub status description mismatch.'
+
+    # Guards the original defect: the body below the superseded heading previously still
+    # contained the full green "passed" report for data already known to be untrustworthy.
+    if ($commentBody.body -like '*Perf regression test passed*') {
+        throw 'Superseded GitHub comments must not still contain the passing report body.'
+    }
 }
 
 
@@ -370,3 +379,16 @@ function Test-GitHubLabelsResemblingRunPerfDoNotRequestAPerfRun {
         Assert-GitHubEqual $false (Test-GitHubPRPerfRequested -PullRequest $pullRequest) "Label '$name' must not be treated as the run-perf label."
     }
 }
+
+function Test-GitHubStatusIsNeverFailingBecauseTheStageIsInformational {
+    # The perf stage is informational and must never present as a failed check on the PR: a
+    # failure/error commit status renders red and is one branch-protection toggle away from
+    # blocking merges. The verdict belongs in the comment body instead.
+    foreach ($state in @('Passed', 'RegressionWarning', 'Inconclusive', 'Superseded', 'Anything')) {
+        $actual = ConvertTo-GitHubPRPerfStatusState -OverallState $state
+        if ($actual -ne 'success') {
+            throw "Overall state '$state' produced GitHub status '$actual'; an informational stage must always report 'success'."
+        }
+    }
+}
+

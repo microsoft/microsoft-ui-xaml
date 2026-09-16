@@ -146,7 +146,13 @@ stages:
           $ErrorActionPreference = 'Stop'
           Write-Host "##vso[build.addbuildtag]PRPerf"
           Write-Host "##vso[build.addbuildtag]PRPerf-PR-${{ parameters.pullRequestId }}"
-          Write-Host "##vso[build.addbuildtag]PRPerf-Request-$('${{ parameters.requestIdentity }}'.Substring(0, 16))"
+          # requestIdentity is empty for comment-triggered runs, and Substring would throw
+          # there. A missing tag is cosmetic; throwing here skips every step that is not
+          # condition: always(), which previously masked a much worse defect underneath.
+          $requestIdentity = '${{ parameters.requestIdentity }}'
+          if ($requestIdentity.Length -ge 16) {
+            Write-Host "##vso[build.addbuildtag]PRPerf-Request-$($requestIdentity.Substring(0, 16))"
+          }
 
     - ${{ if eq(parameters.useFixtures, true) }}:
       - task: PowerShell@2
@@ -246,7 +252,7 @@ stages:
                   @(
                     Import-Csv -LiteralPath $_.FullName |
                       Where-Object {
-                        $_.scenario -cmatch '^PRPerf-' -and
+                        $_.scenario -cmatch '$(perfScenarioPattern)' -and
                         $_.metric -ceq 'CPU/WallTime' -and
                         -not [string]::IsNullOrWhiteSpace($_.interval) -and
                         $_.interval -cne 'Total'
@@ -336,7 +342,7 @@ stages:
                   @(
                     Import-Csv -LiteralPath $_.FullName |
                       Where-Object {
-                        $_.scenario -cmatch '^PRPerf-' -and
+                        $_.scenario -cmatch '$(perfScenarioPattern)' -and
                         $_.metric -ceq 'CPU/WallTime' -and
                         -not [string]::IsNullOrWhiteSpace($_.interval) -and
                         $_.interval -cne 'Total'
@@ -646,4 +652,5 @@ stages:
             }
 
             & '$(Build.SourcesDirectory)\build\PRPerf\Publish-PRPerfResultGitHub.ps1' @arguments
+
 

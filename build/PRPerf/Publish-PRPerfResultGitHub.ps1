@@ -15,15 +15,6 @@ $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 Import-Module (Join-Path $root 'PRPerfComment.psm1') -Force
 Import-Module (Join-Path $root 'PRPerfGitHub.psm1') -Force
 
-function ConvertTo-GitHubPRPerfStatusState {
-    param([string] $OverallState)
-
-    switch ($OverallState) {
-        'Passed' { 'success' }
-        'RegressionWarning' { 'failure' }
-        default { 'error' }
-    }
-}
 
 $comparison = Get-Content -LiteralPath $ComparisonPath -Raw | ConvertFrom-Json
 $markdown = New-PRPerfMarkdown `
@@ -52,9 +43,24 @@ if (-not [string]::IsNullOrWhiteSpace($ExpectedSourceCommit)) {
         -ExpectedSourceCommit $ExpectedSourceCommit `
         -CurrentPullRequest $currentPR)
     if ($isSuperseded) {
+        # Regenerate the report from a comparison whose verdict has actually been downgraded,
+        # rather than prefixing a heading onto the original. Prefixing left the full passing
+        # report intact below the heading, so a reader still saw a green table for results the
+        # code had already decided no longer apply.
+        $comparison.overallState = 'Inconclusive'
+        $supersededIssue = 'Superseded by a newer commit - perf results no longer apply.'
+        if ($null -eq $comparison.issues) {
+            $comparison | Add-Member -NotePropertyName 'issues' -NotePropertyValue @($supersededIssue) -Force
+        } else {
+            $comparison.issues = @($comparison.issues) + $supersededIssue
+        }
+        $markdown = New-PRPerfMarkdown `
+            -Comparison $comparison `
+            -ArtifactUrl $ArtifactUrl `
+            -PipelineUrl $PipelineUrl
         $marker = '<!-- winui-pr-perf-result -->'
         $markdownWithoutMarker = [regex]::Replace($markdown, "^\s*$([regex]::Escape($marker))\s*", '', 1)
-        $markdown = "$marker`n## Superseded by a newer PR commit`n`nSuperseded by a newer commit - perf results no longer apply.`n`n$markdownWithoutMarker"
+        $markdown = "$marker`n## Superseded by a newer PR commit`n`n$supersededIssue`n`n$markdownWithoutMarker"
         $title = 'Superseded by a newer commit - perf results no longer apply.'
         $state = ConvertTo-GitHubPRPerfStatusState -OverallState 'Inconclusive'
     }

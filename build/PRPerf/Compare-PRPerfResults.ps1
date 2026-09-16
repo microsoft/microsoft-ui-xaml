@@ -21,7 +21,9 @@ Import-Module (Join-Path $root 'PRPerfComment.psm1') -Force
 $comparison = Compare-PRPerfFiles `
     -TargetPath $TargetPath `
     -TrialPath $TrialPath `
-    -ThresholdPath $ThresholdPath
+    -ThresholdPath $ThresholdPath `
+    -ExpectedTargetCommit $TargetCommit `
+    -ExpectedTrialCommit $SourceCommit
 if ($comparison.overallState -eq 'Inconclusive' -and
     (-not [string]::IsNullOrWhiteSpace($SourceCommit) -or
      -not [string]::IsNullOrWhiteSpace($TargetCommit) -or

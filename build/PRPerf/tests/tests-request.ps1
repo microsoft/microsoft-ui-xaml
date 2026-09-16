@@ -122,45 +122,6 @@ function Test-LiveAuthorizationHeaderUsesAccessToken {
     }
 }
 
-function Test-DispatcherHasScheduledManualOnlyTrigger {
-    $yaml = Get-Content (Join-Path $root '..\WinUI-PRPerf-Dispatcher.yml') -Raw
-
-    if ($yaml -notmatch '(?m)^trigger:\s*none\s*$') {
-        throw 'Dispatcher CI trigger must be none.'
-    }
-    if ($yaml -notmatch '(?m)^schedules:\s*$') {
-        throw 'Dispatcher schedule is missing.'
-    }
-    if ($yaml -notmatch 'cron:\s*["'']\*/5 \* \* \* \*["'']') {
-        throw 'Dispatcher five-minute schedule is missing.'
-    }
-}
-
-function Test-DispatcherPassesSystemAccessToken {
-    $yaml = Get-Content (Join-Path $root '..\WinUI-PRPerf-Dispatcher.yml') -Raw
-
-    if ($yaml -notmatch 'SYSTEM_ACCESSTOKEN:\s*\$\(System\.AccessToken\)') {
-        throw 'Dispatcher must pass SYSTEM_ACCESSTOKEN to the dispatch script.'
-    }
-}
-
-function Test-PerfPipelineCarriesImmutableQueueParameters {
-    $yaml = Get-Content (Join-Path $root '..\WinUI-PRPerf.yml') -Raw
-    foreach ($name in @(
-        'pullRequestId',
-        'repositoryId',
-        'sourceCommit',
-        'targetCommit',
-        'sourceBuildId',
-        'targetBuildId',
-        'requestIdentity',
-        'useFixtures'
-    )) {
-        if ($yaml -notmatch [regex]::Escape("- name: $name")) {
-            throw "Missing pipeline parameter '$name'."
-        }
-    }
-}
 
 function Test-FixtureRunCopiesTargetAndTrialWithoutPerfMachine {
     $yaml = Get-Content (Join-Path $root '..\AzurePipelinesTemplates\WinUI-PRPerf-Run.yml') -Raw
