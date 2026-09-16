@@ -105,5 +105,5 @@ write-host "1. Download the official x64 Evergreen Standalone Installer from $in
 write-host "2. Verify its Microsoft signature, SHA-256, and size as documented in controls\dev\WebView2\WebView2-update.md"
 write-host "3. Run `"nuget pack $nuspecPath -OutputDirectory $rootPath\packages`""
 write-host "4. Set `$packagePath to the exact .nupkg path printed by nuget pack; NuGet may normalize a trailing .0 from the filename"
-write-host "5. Review the internal WinUI package publishing guide for the current feed locations and commands"
+write-host "5. Review docs\publishing\internal-pipeline-resources.md in the internal WinUI source repository for the current feed locations and commands"
 write-host "6. After approval, push the same package to both the private WinUI.Dependencies and public shine-oss WinUI-Dependencies feeds"

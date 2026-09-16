@@ -131,9 +131,9 @@ example, if an API was previously experimental before but is currently final, ol
      `$packagePath` to the exact `.nupkg` path reported by `nuget pack`; do not construct the filename from the
      four-part Runtime version.
    * Obtain required legal, redistribution, and feed-owner approval.
-   * Authorized publishers must follow the internal WinUI package publishing guide for the current private
-     `WinUI.Dependencies` and public shine-oss `WinUI-Dependencies` feed locations and commands. Publish the exact same
-     `.nupkg` to both feeds.
+   * Authorized publishers must follow `docs\publishing\internal-pipeline-resources.md` in the internal WinUI source
+     repository for the current private `WinUI.Dependencies` and public shine-oss `WinUI-Dependencies` feed locations
+     and commands. Publish the exact same `.nupkg` to both feeds.
    * NuGet package versions are immutable. If installer bytes change while the embedded Runtime version remains the
      same, stop and investigate; do not overwrite or republish that package version.
    * Generated `.nupkg` files must not be checked in to Git.
