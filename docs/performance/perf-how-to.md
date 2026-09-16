@@ -94,6 +94,13 @@ When the run finishes, read the marked pull request comment as one of:
 
 The result is always informational and must not be configured as a required status check.
 
+`GitHubPRPerfToken` must be a GitHub PAT that is SSO-authorized for the `microsoft`
+organization. Posting the comment on a public repository needs only an authenticated
+identity, but `POST /repos/{owner}/{repo}/statuses/{sha}` additionally needs push access. The
+comment is published before the status, so a token without push still delivers the result and
+only the status call fails; because the job sets `continueOnError`, that cannot affect the
+pull request.
+
 Use the comment's artifact and pipeline links for raw data, selected diagnostics, traces, and logs.  Rerunning updates the single marked comment rather than adding a new one; if a newer pull request commit appears before publication, the older result is marked `Superseded by a newer PR commit` and no longer reports as passing.
 
 The current MVP uses one warm-up and seven measured samples for the required PR smoke CPU scenarios in the `pr-smoke-v1` benchmark configuration.  Exact DWM bitmap create/delete timing is not represented by the mount/unmount measurements in this MVP.
@@ -272,5 +279,6 @@ Three things still block that switch, none of them in this code:
 
 Until those are arranged the stage stays on fixtures, which exercises every step after
 measurement: conversion, comparison, verdict and PR comment.
+
 
 
