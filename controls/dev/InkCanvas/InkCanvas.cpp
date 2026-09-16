@@ -109,6 +109,8 @@ InkCanvas::InkCanvas()
 
 InkCanvas::~InkCanvas()
 {
+    InkTelemetry::ReportCanvasSessionSummary(m_telemetryState, CompositorEngineForTelemetry());
+
     // Ensure that we have torn down our dcomp stuff
     DetachFromVisualLink();
 }
@@ -123,11 +125,28 @@ void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventAr
         return;
     }
 
+    // Bracket the whole attach sequence so a throw from any step is still recorded as a failure.
+    InkTelemetry::BeginCanvasInitialization(m_telemetryState);
+    auto initializationOutcome = wil::scope_exit([this]()
+        {
+            InkTelemetry::ReportError(
+                InkTelemetry::ErrorCategory::Initialization,
+                InkTelemetry::Operation::AttachToCompositor,
+                false /* isRecoverable */,
+                E_FAIL,
+                &m_telemetryState);
+
+            InkTelemetry::CompleteCanvasInitialization(
+                m_telemetryState, InkTelemetry::Result::Failure, CompositorEngineForTelemetry(), E_FAIL);
+        });
+
     // Make sure the presenter (proxy + OS presenter) exists before we queue any ink-thread work
     // (SetRootVisual below runs against it). Safe here: we are past construction and on the UI thread.
+    InkTelemetry::SetCanvasInitializationStage(m_telemetryState, InkTelemetry::InitializationStage::InkPresenter);
     EnsureInkPresenter();
 
     // Hook up this ink canvas with the DComp tree.
+    InkTelemetry::SetCanvasInitializationStage(m_telemetryState, InkTelemetry::InitializationStage::VisualLink);
     AttachToVisualLink();
 
     // The composition target maintains position/clipping for our visual, but the presenter
@@ -169,7 +188,76 @@ void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventAr
 
     // Both compositor paths host the ink visual in the lifted XAML tree, which positions/clips/
     // scrolls it natively; the presenter still needs its size in physical pixels though.
+    InkTelemetry::SetCanvasInitializationStage(m_telemetryState, InkTelemetry::InitializationStage::PresenterSize);
     UpdateInkPresenterSize();
+
+    initializationOutcome.release();
+    auto const engine = CompositorEngineForTelemetry();
+    InkTelemetry::CompleteCanvasInitialization(m_telemetryState, InkTelemetry::Result::Success, engine);
+    ReportUsageTelemetry(engine);
+}
+
+// The engine is decided once per process, so this is stable for the lifetime of the canvas. It only
+// reads the value cached during the attach fork: this is noexcept and is reached from the failure
+// path, where re-entering the compositor query could throw and terminate the process instead of
+// surfacing the original initialization failure.
+InkTelemetry::CompositorEngine InkCanvas::CompositorEngineForTelemetry() noexcept
+{
+    return m_telemetryEngine;
+}
+
+void InkCanvas::ReportUsageTelemetry(InkTelemetry::CompositorEngine engine) noexcept
+{
+    if (!m_inkPresenterProxy)
+    {
+        return;
+    }
+
+    InkTelemetry::ReportCanvasUsage(
+        m_telemetryState,
+        engine,
+        static_cast<uint32_t>(m_inkPresenterProxy.InputDeviceTypes()),
+        static_cast<uint32_t>(m_inkPresenterProxy.HighContrastAdjustment()));
+
+    SubscribeToStrokeTelemetry();
+}
+
+// Counts only: the handlers never look at stroke geometry, and the totals are emitted once in the
+// session summary rather than as an event per stroke.
+void InkCanvas::SubscribeToStrokeTelemetry() noexcept
+{
+    if (m_strokesCollectedTelemetryRevoker || !m_inkPresenterProxy)
+    {
+        return;
+    }
+
+    // InkCanvas is unsealed, so route the weak reference through the outer object (cppwinrt #1431),
+    // exactly as the other subscriptions in this file do.
+    auto weakThis{ winrt::make_weak(static_cast<winrt::InkCanvas>(*this)) };
+
+    m_strokesCollectedTelemetryRevoker = m_inkPresenterProxy.StrokesCollected(
+        winrt::auto_revoke,
+        [weakThis](auto const&, winrt::InkStrokesCollectedEventArgs const& args)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                auto const strokes = args.Strokes();
+                InkTelemetry::RecordStrokesCollected(
+                    winrt::get_self<InkCanvas>(strongThis)->m_telemetryState, strokes ? strokes.Size() : 0);
+            }
+        });
+
+    m_strokesErasedTelemetryRevoker = m_inkPresenterProxy.StrokesErased(
+        winrt::auto_revoke,
+        [weakThis](auto const&, winrt::InkStrokesErasedEventArgs const& args)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                auto const strokes = args.Strokes();
+                InkTelemetry::RecordStrokesErased(
+                    winrt::get_self<InkCanvas>(strongThis)->m_telemetryState, strokes ? strokes.Size() : 0);
+            }
+        });
 }
 
 void InkCanvas::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
@@ -283,7 +371,15 @@ void InkCanvas::AttachToVisualLink()
     // system-backed process splices the ink visual under a lifted MUC visual; a lifted process
     // bridges it into the XAML tree via ContentExternalOutputLink. Each path binds the ink visual to
     // the presenter (AttachInkVisualToPresenter) first, then roots it under its own target.
-    if (IsSystemCompositor())
+    const bool isSystemCompositor = IsSystemCompositor();
+
+    // Cache it here, where a throw is still allowed to propagate, so the noexcept telemetry accessor
+    // never has to ask again.
+    m_telemetryEngine = isSystemCompositor
+        ? InkTelemetry::CompositorEngine::System
+        : InkTelemetry::CompositorEngine::Lifted;
+
+    if (isSystemCompositor)
     {
         AttachToSystemCompositor();
     }
