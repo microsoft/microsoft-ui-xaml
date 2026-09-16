@@ -414,7 +414,9 @@ _Check_return_ HRESULT RepositionThemeTransition::CreateStoryboardImpl(
     BOOLEAN fastMutations = FALSE;
     ThemeTransitionContext context = ThemeTransitionContext::None;
 
-    *parentForTransition = transitionTrigger == xaml::TransitionTrigger_Reparent ? xaml::TransitionParent_ParentToRoot : xaml::TransitionParent_ParentToCommonParent;
+    *parentForTransition = transitionTrigger == xaml::TransitionTrigger_Reparent
+        ? xaml::TransitionParent_ParentToRoot
+        : xaml::TransitionParent_ParentToCommonParent;
 
     if (HasAddDeleteThemeTransition(element))
     {
