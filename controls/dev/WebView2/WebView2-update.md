@@ -130,24 +130,10 @@ example, if an API was previously experimental before but is currently final, ol
    * NuGet normalizes a package version ending in `.0` by dropping that component from the generated filename. Set
      `$packagePath` to the exact `.nupkg` path reported by `nuget pack`; do not construct the filename from the
      four-part Runtime version.
-   * Obtain required legal, redistribution, and feed-owner approval. Retrieve both feed URLs from Key Vault; do not
-     place either URL in source code or documentation. First publish to the internal feed:
-
-     ```powershell
-     $packagePath = "<exact .nupkg path printed by nuget pack>"
-     $internalFeed = "<internal feed URL from Key Vault>"
-     nuget push $packagePath -Source $internalFeed -apikey AzureDevOps
-     ```
-
-   * Then publish the exact same `.nupkg` to the public shine-oss feed:
-
-     ```powershell
-     $shineOssFeed = "<shine-oss feed URL from Key Vault>"
-     nuget push $packagePath -Source $shineOssFeed -apikey AzureDevOps
-     ```
-
-   * You need publish access to both feeds. The Azure Artifacts Credential Provider supplies authentication;
-     `AzureDevOps` is the required non-secret NuGet API-key argument.
+   * Obtain required legal, redistribution, and feed-owner approval.
+   * Authorized publishers must follow the internal WinUI package publishing guide for the current private
+     `WinUI.Dependencies` and public shine-oss `WinUI-Dependencies` feed locations and commands. Publish the exact same
+     `.nupkg` to both feeds.
    * NuGet package versions are immutable. If installer bytes change while the embedded Runtime version remains the
      same, stop and investigate; do not overwrite or republish that package version.
    * Generated `.nupkg` files must not be checked in to Git.
