@@ -238,40 +238,81 @@ function Report-LifetimeNativeCrash
     # Dumps produced by *this* work item = whatever is new since the pre-run snapshot.
     $newDumps = @(Get-LifetimeDumpFiles | Where-Object { $preRunDumps -notcontains $_.FullName })
 
+    # Count the harness-emitted non-gating native scenario warnings: RunNativeScenario downgrades any thrown
+    # exception (e.g. COMException) to a "[LifetimeStress] REPORT: scenario 'X' threw ..." line. These are native
+    # warnings that did NOT crash the host, so they must be counted separately from host crashes.
+    $warningScenarios = New-Object System.Collections.Generic.List[string]
+    if ($teConsoleLogPath -and (Test-Path $teConsoleLogPath))
+    {
+        foreach ($line in Get-Content $teConsoleLogPath)
+        {
+            if ($line -match "\[LifetimeStress\] REPORT: scenario '([^']+)' threw") { $warningScenarios.Add($Matches[1]) }
+        }
+    }
+
     # A native host crash is indicated by any of: a non-zero te.exe exit code, a new crash dump, or a scenario
     # that started but never completed.
     $crashDetected = ($teExitCode -ne 0) -or ($newDumps.Count -gt 0) -or ($inFlight.Count -gt 0)
-    if (-not $crashDetected)
+
+    $scenarioLabel = "none"
+    $dumpNames = @()
+    if ($crashDetected)
     {
-        return
+        $scenarioLabel = if ($inFlight.Count -gt 0) { $inFlight -join ", " } else { "unknown" }
+
+        # Name each new dump after the crashing scenario so it (a) carries attribution without a debugger and (b) is
+        # easy for RunTestPassSliceOnBuildAgent.ps1 to prioritize so it is not crowded out of the per-slice dump cap.
+        $safeScenario = ($scenarioLabel -replace '[^A-Za-z0-9._-]', '_')
+        foreach ($dump in $newDumps)
+        {
+            $attributedName = "LifetimeStress-$safeScenario-$($dump.Name)"
+            try
+            {
+                Rename-Item -Path $dump.FullName -NewName $attributedName -Force
+                $dumpNames += $attributedName
+            }
+            catch
+            {
+                Write-Host "Lifetime stress: could not rename dump '$($dump.Name)' ($($_.Exception.Message)); leaving original name."
+                $dumpNames += $dump.Name
+            }
+        }
+        $dumpLabel = if ($dumpNames.Count -gt 0) { $dumpNames -join ", " } else { "none captured" }
+
+        # Non-gating Azure Pipelines warning: shows up in the pipeline UI with scenario + dump attribution but does
+        # NOT fail the stage (Set-LifetimeResultsNonGating still keeps the published results green).
+        Write-Host "##vso[task.logissue type=warning]Native lifetime crash in scenario '$scenarioLabel' (dump: $dumpLabel)"
+        Write-Host "Lifetime stress: native host crash detected (te.exe exit code=$teExitCode, new dumps=$($newDumps.Count), in-flight scenario(s)='$scenarioLabel'). Emitted a non-gating warning; the stage stays green."
     }
 
-    $scenarioLabel = if ($inFlight.Count -gt 0) { $inFlight -join ", " } else { "unknown" }
-
-    # Name each new dump after the crashing scenario so it (a) carries attribution without a debugger and (b) is
-    # easy for RunTestPassSliceOnBuildAgent.ps1 to prioritize so it is not crowded out of the per-slice dump cap.
-    $safeScenario = ($scenarioLabel -replace '[^A-Za-z0-9._-]', '_')
-    $dumpNames = @()
-    foreach ($dump in $newDumps)
+    # Persist a machine-readable per-work-item record so the PostTestRun aggregation step can total the native
+    # crash/warning signals across every shard (see Helix/common/pipeline/Report-LifetimeNativeCrashTotals.ps1).
+    # Written for BOTH the crash and the warning-only case so nothing is missed. Each work item owns its own
+    # upload-root folder, so a fixed file name never collides across shards.
+    if ($env:HELIX_WORKITEM_UPLOAD_ROOT)
     {
-        $attributedName = "LifetimeStress-$safeScenario-$($dump.Name)"
+        $report = [ordered]@{
+            workItem           = (Split-Path $env:HELIX_WORKITEM_UPLOAD_ROOT -Leaf)
+            nativeCrashCount   = [int][bool]$crashDetected
+            nativeWarningCount = $warningScenarios.Count
+            teExitCode         = $teExitCode
+            newDumpCount       = $newDumps.Count
+            inFlightScenarios  = @($inFlight)
+            crashScenario      = $scenarioLabel
+            dumps              = @($dumpNames)
+            warningScenarios   = @($warningScenarios)
+        }
         try
         {
-            Rename-Item -Path $dump.FullName -NewName $attributedName -Force
-            $dumpNames += $attributedName
+            $reportPath = Join-Path $env:HELIX_WORKITEM_UPLOAD_ROOT "LifetimeNativeCrashReport.json"
+            $report | ConvertTo-Json -Depth 4 | Out-File -FilePath $reportPath -Encoding utf8
+            Write-Host "Lifetime stress: wrote native crash/warning report (crashes=$($report.nativeCrashCount), warnings=$($report.nativeWarningCount)) to $reportPath."
         }
         catch
         {
-            Write-Host "Lifetime stress: could not rename dump '$($dump.Name)' ($($_.Exception.Message)); leaving original name."
-            $dumpNames += $dump.Name
+            Write-Host "Lifetime stress: failed to write LifetimeNativeCrashReport.json ($($_.Exception.Message))."
         }
     }
-    $dumpLabel = if ($dumpNames.Count -gt 0) { $dumpNames -join ", " } else { "none captured" }
-
-    # Non-gating Azure Pipelines warning: shows up in the pipeline UI with scenario + dump attribution but does
-    # NOT fail the stage (Set-LifetimeResultsNonGating still keeps the published results green).
-    Write-Host "##vso[task.logissue type=warning]Native lifetime crash in scenario '$scenarioLabel' (dump: $dumpLabel)"
-    Write-Host "Lifetime stress: native host crash detected (te.exe exit code=$teExitCode, new dumps=$($newDumps.Count), in-flight scenario(s)='$scenarioLabel'). Emitted a non-gating warning; the stage stays green."
 }
 
 function Set-LifetimeResultsNonGating

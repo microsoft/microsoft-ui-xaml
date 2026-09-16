@@ -103,6 +103,20 @@ jobs:
       errorActionPreference: stop
       workingDirectory: $(Build.SourcesDirectory)\build\PipelineScripts
 
+  # PostTestRun: total the native lifetime crash/warning signals across every lifetime work item that ran on this
+  # shard and surface a single number (plus the LifetimeNativeCrashTotal variable) instead of requiring a manual
+  # scan of every shard's console log. Fail-open and non-gating: reports 0 on shards with no lifetime work items
+  # and never fails the stage. See Helix\common\pipeline\Report-LifetimeNativeCrashTotals.ps1.
+  - task: powershell@2
+    displayName: 'PostTestRun: Total lifetime native crashes/warnings'
+    condition: always()
+    inputs:
+      targetType: filePath
+      filePath: Helix\common\pipeline\Report-LifetimeNativeCrashTotals.ps1
+      arguments: -SearchRoot "$(uploadRootInner)"
+      errorActionPreference: continue
+      workingDirectory: $(Build.SourcesDirectory)
+
   - task: PublishTestResults@2
     condition: always()
     inputs:

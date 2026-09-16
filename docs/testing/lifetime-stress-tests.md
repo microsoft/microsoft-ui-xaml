@@ -55,6 +55,17 @@ want. A known deterministic crasher is quarantined per-scenario with `[TestPrope
 note below) so it does not gate while its underlying product bug is pending; if a *new* scenario is found to crash
 the host deterministically, quarantine it the same way.
 
+**Native crash/warning totals (PostTestRun).** Each native host crash and each non-gating native scenario warning
+(a thrown-exception/COMException report) is recorded per work item in `LifetimeNativeCrashReport.json` by
+[`RunHelixWorkItem.ps1`](../../Helix/common/test/RunHelixWorkItem.ps1) (`Report-LifetimeNativeCrash`). After the
+test run, the **PostTestRun** step in
+[`WinUI-RunTestPassOnPipeline-Job.yml`](../../build/AzurePipelinesTemplates/WinUI-RunTestPassOnPipeline-Job.yml)
+runs [`Report-LifetimeNativeCrashTotals.ps1`](../../Helix/common/pipeline/Report-LifetimeNativeCrashTotals.ps1),
+which totals those records across every lifetime work item on the shard and surfaces a single count — printed to
+the log, emitted as a non-gating warning, published as the `LifetimeNativeCrashTotal` pipeline variable, and
+written to `LifetimeNativeCrashSummary.json`. The suite runs as one isolated work item, so the shard that ran it
+reports the leg's total and other shards report zero. Like everything else here, the step is non-gating.
+
 Run modes (all optional; the default needs no configuration):
 
 - **PR gate + Nightly (default)** — neither environment variable set: each scenario runs a small non-gating
