@@ -72,6 +72,9 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <!-- By default, XBindDiagnostics should not be generated on builds where E&C and Designer are likely not going to run -->
         <EnableXBindDiagnostics Condition="'$(EnableXBindDiagnostics)' == '' and '$(DisableXbfLineInfo)' == 'false'">true</EnableXBindDiagnostics>
 
+        <!-- Experimental source lowering; existing compiler behavior is the default. -->
+        <EnableXamlCompilerOptimizations Condition="'$(EnableXamlCompilerOptimizations)' == ''">false</EnableXamlCompilerOptimizations>
+
         <!-- If EnableDefaultValidationContextGeneration is set, respect that value. Otherwise, we always generate it-->
         <EnableDefaultValidationContextGeneration Condition="'$(EnableDefaultValidationContextGeneration)' == ''">true</EnableDefaultValidationContextGeneration>
 
@@ -101,7 +104,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <EnableBindingDiagnostics Condition="'$(EnableBindingDiagnostics)' == '' and ('$(IsAotCompatible)' == 'true' or '$(PublishAot)' == 'true')">true</EnableBindingDiagnostics>
 	</PropertyGroup>
 
-    <!-- Construct the FeatureControlFlags property based off of the values of EnableTypeInfoReflection, EnableXBindDiagnostics, EnableDefaultValidationContextGeneration, EnableWin32Codegen, EnableBindingDiagnostics, and UsingCSWinRT -->
+    <!-- Construct FeatureControlFlags from the project's compiler feature properties. -->
     <ItemGroup>
       <XamlFeatureControlFlags Include="EnableTypeInfoReflection" Condition="'$(EnableTypeInfoReflection)' == 'true'" />
       <XamlFeatureControlFlags Include="EnableXBindDiagnostics" Condition="'$(EnableXBindDiagnostics)' == 'true'" />
@@ -109,6 +112,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
       <XamlFeatureControlFlags Include="EnableWin32Codegen" Condition="'$(EnableWin32Codegen)' == 'true'" />
       <XamlFeatureControlFlags Include="UsingCSWinRT" Condition="'$(_UsingCSWinRT)' == 'true'" />
       <XamlFeatureControlFlags Include="EnableBindingDiagnostics" Condition="'$(EnableBindingDiagnostics)' == 'true'" />
+      <XamlFeatureControlFlags Include="EnableXamlCompilerOptimizations" Condition="'$(EnableXamlCompilerOptimizations)' == 'true'" />
     </ItemGroup>
 
     <!-- When using reflection for our metadata provider, we need to include the reflection helper DLL which is in the same folder as this targets file -->

@@ -520,13 +520,24 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         private bool DidFeatureControlFlagsChange()
         {
             string featureCtrlFlags = FeatureControlFlags.ToString();
-            if (string.Compare(SaveState.XamlFeatureControlFlags, featureCtrlFlags, StringComparison.OrdinalIgnoreCase) != 0)
+            bool changed = string.Compare(SaveState.XamlFeatureControlFlags, featureCtrlFlags, StringComparison.OrdinalIgnoreCase) != 0;
+            if (changed)
             {
                 SaveState.XamlFeatureControlFlags = featureCtrlFlags;
-                return true;
             }
 
-            return false;
+            // Pass one updates the shared flags before pass two can observe the change.
+            // Keep the last generated XAML's optimization state until pass two succeeds.
+            return changed || (!IsPass1 && !IsDesignTimeBuild &&
+                SaveState.XamlCompilerOptimizationsEnabledAtLastPass2 != ShouldOptimizeXaml);
+        }
+
+        private void RecordXamlOptimizationState()
+        {
+            if (!IsPass1 && !IsDesignTimeBuild)
+            {
+                SaveState.XamlCompilerOptimizationsEnabledAtLastPass2 = ShouldOptimizeXaml;
+            }
         }
 
         private bool DidXamlOptionalChangesChange()
@@ -1076,6 +1087,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 }
 
                 // changes the finally.
+                RecordXamlOptimizationState();
                 shouldVerifyWorkDone = true;
             }
             catch (UnresolvedAssemblyException e)
@@ -2041,6 +2053,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                     fileCodeInfo.SourceXamlGivenPath = tif.XamlGivenPath;
                     fileCodeInfo.RelativePathFromGeneratedCodeToXamlFile = tif.RelativePathFromGeneratedCodeToXamlFile;
                     fileCodeInfo.XamlOutputFilename = tif.XamlOutputFilename;
+                    if (ShouldOptimizeXaml && !tif.IsApplication)
+                    {
+                        fileCodeInfo.OptimizationRoot = xamlDomRoot;
+                    }
 
                     classCodeInfo.AddXamlFileInfo(fileCodeInfo);
                     if (Language.IsNative)
@@ -2088,6 +2104,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
             if (!IsPass1)
             {
+                if (ShouldOptimizeXaml)
+                {
+                    PerformanceUtility.FireCodeMarker(CodeMarkerEvent.perfXC_XamlOptimization, "Skipped:ClasslessXaml");
+                }
+
                 // Don't edit the XAML.  Prepare a copy to the Output directory
                 // with the other edited XAML files.
                 generatedXamlFiles = new List<FileNameAndContentPair>();
@@ -2261,11 +2282,30 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             }
         }
 
+        private bool ShouldOptimizeXaml =>
+            !IsPass1 && !IsDesignTimeBuild && FeatureControlFlags.HasFlag(FeatureCtrlFlags.EnableXamlCompilerOptimizations);
+
         private bool GenerateEditedXamlFile(ref List<FileNameAndContentPair> generatedSources, XamlClassCodeInfo classCodeInfo, XamlFileCodeInfo fileCodeInfo)
         {
             PerformanceUtility.FireCodeMarker(CodeMarkerEvent.perfXC_PageEditStart, fileCodeInfo.SourceXamlGivenPath);
-            XamlConnectionIdRewriter connectionIdRewriter = new XamlConnectionIdRewriter();
+            XamlConnectionIdRewriter connectionIdRewriter = new XamlConnectionIdRewriter
+            {
+                OptimizationRoot = ShouldOptimizeXaml ? fileCodeInfo.OptimizationRoot : null
+            };
             string newXamlContents = connectionIdRewriter.Edit(fileCodeInfo.FullPathToXamlFile, classCodeInfo, fileCodeInfo);
+
+            if (ShouldOptimizeXaml)
+            {
+                if (classCodeInfo.IsApplication)
+                {
+                    PerformanceUtility.FireCodeMarker(CodeMarkerEvent.perfXC_XamlOptimization, "Skipped:ApplicationXaml");
+                }
+                foreach (var group in connectionIdRewriter.OptimizationDecisions.GroupBy(d => new { d.RuleId, d.Reason }))
+                {
+                    PerformanceUtility.FireCodeMarker(CodeMarkerEvent.perfXC_XamlOptimization,
+                        $"{group.Key.RuleId}:{group.Key.Reason}={group.Count()}");
+                }
+            }
 
             if (connectionIdRewriter.Errors.Count > 0)
             {
