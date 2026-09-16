@@ -249,7 +249,10 @@ The scenario it
 compares is `Lifecycle-MinApp.Cpp.MUX`, registered in `perf\profiles\scenarios.json` and
 selected by its unique `test` tag, so the fixtures speak the same names as real output.
 
-To measure for real, have each side run:
+Real measurement is not wired from the PR pipeline yet: there is no lookup for a completed
+build of the merge base to supply the baseline binaries, so the stage warns and the comparison
+reports `Inconclusive` rather than downloading from an empty build id. Once that lookup
+exists, each side runs:
 
 ```powershell
 perf\scripts\pipeline-run.ps1 test#cpu <experimentName>
@@ -269,4 +272,5 @@ Three things still block that switch, none of them in this code:
 
 Until those are arranged the stage stays on fixtures, which exercises every step after
 measurement: conversion, comparison, verdict and PR comment.
+
 

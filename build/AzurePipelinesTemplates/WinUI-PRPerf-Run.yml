@@ -165,7 +165,19 @@ stages:
             Copy-Item -LiteralPath '$(Build.SourcesDirectory)\build\PRPerf\fixtures\target-pass.json' -Destination '$(comparisonDirectory)\target-results.json'
             Copy-Item -LiteralPath '$(Build.SourcesDirectory)\build\PRPerf\fixtures\trial-pass.json' -Destination '$(comparisonDirectory)\pr-results.json'
 
-    - ${{ if ne(parameters.useFixtures, true) }}:
+    # Real measurement needs a completed build of the merge base to supply the baseline
+    # binaries, and looking that build up is not implemented yet. Without it the download
+    # below would run with an empty pipelineId and the converter with an empty commit, so
+    # the stage instead produces no result files and the comparison reports Inconclusive.
+    - ${{ if and(ne(parameters.useFixtures, true), eq(parameters.targetBuildId, '')) }}:
+      - task: PowerShell@2
+        displayName: PR performance comparison is not wired for real measurement
+        inputs:
+          targetType: inline
+          script: |
+            Write-Host '##vso[task.logissue type=warning]No targetBuildId was supplied, so there is no baseline build to compare against. Looking up a merge-base build is not implemented yet; the comparison will report Inconclusive.'
+
+    - ${{ if and(ne(parameters.useFixtures, true), ne(parameters.targetBuildId, '')) }}:
       - task: DownloadPipelineArtifact@2
         displayName: Download target build artifacts
         inputs:
@@ -652,5 +664,6 @@ stages:
             }
 
             & '$(Build.SourcesDirectory)\build\PRPerf\Publish-PRPerfResultGitHub.ps1' @arguments
+
 
 

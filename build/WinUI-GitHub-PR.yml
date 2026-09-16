@@ -205,4 +205,9 @@ extends:
           gateOnLabel: true
           continueOnError: true
           useFixtures: ${{ parameters.perfUseFixtures }}
+          # Real PR provenance, so that if fixture data is ever used on an actual pull request
+          # the commit check in Compare-PRPerfFiles sees the mismatch and reports Inconclusive
+          # instead of presenting recorded data as a measurement of this PR.
+          pullRequestId: $(System.PullRequest.PullRequestNumber)
+          sourceCommit: $(System.PullRequest.SourceCommitId)
           publishProvider: github
