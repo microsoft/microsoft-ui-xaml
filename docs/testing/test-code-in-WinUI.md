@@ -174,26 +174,30 @@ TestServices::WindowHelper->ShutdownXaml();
 TestServices::WindowHelper->VerifyTestCleanup();
 ```
 
-For WPF, shutdown leaves the original core idle so verification can check it
-before the next `InitializeXaml()` recreates the host. All initialization overloads
-handle that handoff. Obtain dispatcher-bound helpers from `TestServices` after
+The WPF lifecycle separates shutdown, verification, and host replacement:
+
+1. `ShutdownXaml()` runs cleanup that needs a live core, then leaves the original
+   core idle.
+2. `VerifyTestCleanup()` checks that same core, including any pending native leak
+   check. Each pending check is attempted once, even if it fails.
+3. The next `InitializeXaml()` recreates the host and restores the theme and
+   window-size defaults. All initialization overloads handle this handoff.
+
+Host initialization, including direct `InitializeHost()` calls, rejects a pending
+leak check. Obtain dispatcher-bound helpers from `TestServices` after
 initialization, rather than caching them across host replacement.
 
-Verify an opted-in interval before restarting it; initialization rejects a
-pending leak check. Cleanup that requires a live core runs before shutdown-to-idle.
-After a successful WPF shutdown, repeated calls to
-`ResetWindowContentAndWaitForIdle()` or `ResetWindowContentAndScaleWaitForIdle()`
-do nothing. They must not create new XAML objects on the idle core.
-The next initialization restores the theme and window-size defaults.
-`VerifyTestCleanup()` still checks the retiring interval, including any pending
-leak check.
-WPF island disposal unregisters its keyboard input site so the parent WPF window
-does not retain the disposed host and its native XAML objects during verification.
-Test-only visual-tree reset also clears the hidden window's island-startup content
-before removing the core tree and disconnecting native peers.
-UAP behavior and leak opt-outs are unchanged.
-This check covers native residue after teardown, not whole-host or CLR retention.
-It does not add GC passes, exclusions, or class-level host teardown.
+After a successful WPF shutdown, repeated calls to `ShutdownXaml()`,
+`ResetWindowContentAndWaitForIdle()`, or `ResetWindowContentAndScaleWaitForIdle()`
+do nothing. Content reset must not create new XAML objects on the idle core.
+
+Teardown unregisters the disposed WPF island's keyboard input site and clears the
+hidden window's island-startup content. This releases references held by the WPF
+parent window and the hidden XAML window before verification.
+
+Detection covers native residue after teardown, not whole-host or CLR retention.
+UAP behavior and leak opt-outs are unchanged. This adds no GC passes, exclusions,
+or class-level host teardown.
 
 ### Server Component
 

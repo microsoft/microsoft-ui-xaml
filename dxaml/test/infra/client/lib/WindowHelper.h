@@ -315,7 +315,7 @@ namespace Private { namespace Infrastructure {
             Idle
         };
 
-        wrl::ComPtr<test_infra::IWindowHelper> PrepareHostForXamlInitialization();
+        wrl::ComPtr<test_infra::IWindowHelper> ResolveXamlInitializationTarget();
         void InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* customProvider);
         void VerifyActiveCoreCleanup();
         static bool IsWpfLeakDetectionRequested();

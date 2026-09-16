@@ -216,11 +216,7 @@ HRESULT TestServicesStatics::InitializeHostAndDpiAwarenessContextAndCore(boolean
     // Direct host initialization must not bypass a required leak check.
     if (m_spWindowHelper)
     {
-        const HRESULT verificationResult = m_spWindowHelper->VerifyNoPendingLeakCheck();
-        if (FAILED(verificationResult))
-        {
-            return verificationResult;
-        }
+        RETURN_IF_FAILED(m_spWindowHelper->VerifyNoPendingLeakCheck());
     }
 
     LOG_OUTPUT(L"InitializeHost has been initiated.");
