@@ -75,6 +75,28 @@ namespace UnitTests
         }
 
         [TestMethod]
+        public void FunctionBinding_UpdatesWhenArgumentIsNull_CppCX()
+        {
+            string code = GenerateBindings(
+                "<TextBlock Text='{x:Bind FormatTitle(StringProperty)}'/>", CodeGenLanguage.Cpp);
+
+            AssertGenerated(code,
+                @"void Update_StringProperty\(::Platform::String\^ obj, int phase\)\s*\{\s*" +
+                @"this->Update_M_FormatTitle_\d+\(phase\);\s*\}");
+        }
+
+        [TestMethod]
+        public void FunctionBinding_UpdatesWhenArgumentIsNull_CppWinRT()
+        {
+            string code = GenerateBindings(
+                "<TextBlock Text='{x:Bind FormatTitle(StringProperty)}'/>", CodeGenLanguage.CppWinRT);
+
+            AssertGenerated(code,
+                @"void Update_StringProperty\(::winrt::hstring obj, int32_t phase\)\s*\{\s*" +
+                @"Update_M_FormatTitle_\d+\(phase\);\s*\}");
+        }
+
+        [TestMethod]
         public void FunctionBinding_KeepsNullCheckOnPathSteps()
         {
             string code = GenerateBindings(
@@ -101,6 +123,30 @@ namespace UnitTests
                 @"global::LibManagedDll\.AnotherClassForPathing instance;\s*" +
                 @"if \(!TryGet_InnerClass\(out instance\) \|\| instance == null\) \{ return; \}\s*" +
                 @"global::System\.String result = instance\.Format\(p0\);");
+        }
+
+        [TestMethod]
+        public void FunctionBinding_RetrievesInstanceWhenArgumentIsOutsideItsPath_CppCX()
+        {
+            string code = GenerateBindings(
+                "<TextBlock Text='{x:Bind InnerClass.Format(StringProperty)}'/>", CodeGenLanguage.Cpp);
+
+            AssertGenerated(code,
+                @"::LibManagedDll::AnotherClassForPathing\^ instance;\s*" +
+                @"if \(!TryGet_InnerClass\(instance\) \|\| instance == nullptr\) \{ return; \}\s*" +
+                @"::Platform::String\^ result = instance->Format\(p0\);");
+        }
+
+        [TestMethod]
+        public void FunctionBinding_RetrievesInstanceWhenArgumentIsOutsideItsPath_CppWinRT()
+        {
+            string code = GenerateBindings(
+                "<TextBlock Text='{x:Bind InnerClass.Format(StringProperty)}'/>", CodeGenLanguage.CppWinRT);
+
+            AssertGenerated(code,
+                @"::winrt::LibManagedDll::AnotherClassForPathing instance = nullptr;\s*" +
+                @"if \(!TryGet_InnerClass\(instance\) \|\| !instance\) \{ return; \}\s*" +
+                @"::winrt::hstring result = instance\.Format\(p0\);");
         }
 
         [TestMethod]
@@ -159,6 +205,49 @@ namespace UnitTests
                 @"Global\.LibManagedDll\.NamedElementForPathing\) As Boolean\s*" +
                 @"val = Me\.obj\d+\s*Return True\s*End Function");
         }
+
+        [TestMethod]
+        public void FunctionBinding_RetrievesNamedElementInstanceInTemplate_CppCX()
+        {
+            string code = GenerateBindings(
+                String.Format(NamedElementTemplate, "<TextBlock Text='{x:Bind helper.Format(StringProperty)}'/>"),
+                CodeGenLanguage.Cpp);
+
+            AssertGenerated(code,
+                @"bool TryGet_helper\(::LibManagedDll::NamedElementForPathing\^& val\)\s*\{\s*" +
+                @"val = this->obj\d+;\s*return true;\s*\}");
+        }
+
+        [TestMethod]
+        public void FunctionBinding_RetrievesNamedElementInstanceInTemplate_CppWinRT()
+        {
+            string code = GenerateBindings(
+                String.Format(NamedElementTemplate, "<TextBlock Text='{x:Bind helper.Format(StringProperty)}'/>"),
+                CodeGenLanguage.CppWinRT);
+
+            // The element root has no expression of its own, so reaching the field through it used
+            // to produce a stray leading '.' and an accessor call on what is a plain field.
+            AssertGenerated(code,
+                @"bool TryGet_helper\(::winrt::LibManagedDll::NamedElementForPathing& val\)\s*\{\s*" +
+                @"val = obj\d+;\s*return true;\s*\}");
+        }
+
+        /// <summary>
+        /// The same expression backs the reverse assignment of a two way binding, which reaches a
+        /// named element in a template without any function binding being involved.
+        /// </summary>
+        [TestMethod]
+        public void TwoWayBinding_AssignsThroughNamedElementInTemplate_CppWinRT()
+        {
+            string code = GenerateBindings(
+                String.Format(NamedElementTemplate, "<TextBox Text='{x:Bind helper.Value, Mode=TwoWay}'/>"),
+                CodeGenLanguage.CppWinRT);
+
+            AssertGenerated(code, @"if \(obj\d+ != nullptr\)");
+            AssertGenerated(code, @"obj\d+\.Value\(obj\d+\.Text\(\)\);");
+        }
+    }
+}
 
         [TestMethod]
         public void FunctionBinding_RetrievesNamedElementArgumentInTemplate()
