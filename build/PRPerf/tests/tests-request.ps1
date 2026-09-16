@@ -299,7 +299,7 @@ function Test-ComparisonAndPublicationAlwaysRun {
 
     foreach ($displayName in @(
         'Compare PR performance results',
-        'Publish PR perf comparison artifact',
+        'Verify PR perf comparison artifact contents',
         'Publish PR perf result'
     )) {
         $taskPattern = "(?s)displayName:\s*$([regex]::Escape($displayName)).{0,300}?condition:\s*always\(\)"
@@ -309,15 +309,27 @@ function Test-ComparisonAndPublicationAlwaysRun {
     }
 }
 
-function Test-ComparisonArtifactIncludesJsonAndMarkdown {
+function Test-ComparisonArtifactIsCollectedByOneBranch {
     $yaml = Get-Content (Join-Path $root '..\AzurePipelinesTemplates\WinUI-PRPerf-Run.yml') -Raw
 
-    if ($yaml -notmatch 'artifact:\s*PRPerfComparison') {
-        throw 'PRPerfComparison artifact publication is missing.'
+    # OneBranch rejects explicit publish steps and instead uploads whatever the
+    # job leaves in ob_outputDirectory, so the comparison files reach the drop
+    # only while comparisonDirectory stays nested inside that directory.
+    if ($yaml -match 'PublishPipelineArtifact|PublishBuildArtifacts') {
+        throw 'OneBranch forbids explicit publish tasks; artifacts must come from ob_outputDirectory.'
     }
+
+    if ($yaml -notmatch 'ob_outputDirectory:\s*\$\(Build\.ArtifactStagingDirectory\)') {
+        throw 'ob_outputDirectory must be the artifact staging directory.'
+    }
+
+    if ($yaml -notmatch 'comparisonDirectory:\s*\$\(Build\.ArtifactStagingDirectory\)\\PRPerf') {
+        throw 'comparisonDirectory must sit inside ob_outputDirectory so OneBranch uploads it.'
+    }
+
     foreach ($file in @('comparison.json', 'comparison.md')) {
         if ($yaml -notmatch [regex]::Escape($file)) {
-            throw "PRPerfComparison does not include '$file'."
+            throw "The comparison artifact does not include '$file'."
         }
     }
 }

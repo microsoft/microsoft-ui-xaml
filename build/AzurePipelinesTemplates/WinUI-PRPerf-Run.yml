@@ -567,12 +567,10 @@ stages:
           Get-Item -LiteralPath '$(comparisonDirectory)\comparison.json' | Out-Null
           Get-Item -LiteralPath '$(comparisonDirectory)\comparison.md' | Out-Null
 
-    - task: PublishPipelineArtifact@1
-      displayName: Publish PR perf comparison artifact
-      condition: always()
-      inputs:
-        targetPath: $(comparisonDirectory)
-        artifact: PRPerfComparison
+    # There is deliberately no publish task here. OneBranch rejects explicit
+    # publish steps and uploads ob_outputDirectory automatically at the end of
+    # the job, and comparisonDirectory sits inside it.
+    # See https://aka.ms/obpipelines/artifacts
 
     - ${{ if eq(parameters.publishProvider, 'ado') }}:
       - task: PowerShell@2
