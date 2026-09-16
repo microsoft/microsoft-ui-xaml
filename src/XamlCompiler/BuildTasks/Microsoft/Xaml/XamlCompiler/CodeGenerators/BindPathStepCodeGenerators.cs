@@ -176,9 +176,23 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         {
             get
             {
+                if (!string.IsNullOrEmpty(Instance.UpdateCallParamOverride))
+                {
+                    // A named element in a template is held in a field on the bindings class rather
+                    // than as a member of the namescope it belongs to, so it is read straight from
+                    // there. The element root it hangs off stands in for that namescope and has no
+                    // expression of its own to reach the element through.
+                    string bindingsField = Instance.UpdateCallParamOverride;
+                    return new LanguageSpecificString(
+                        () => $"this->{bindingsField}",
+                        () => bindingsField,
+                        () => $"this.{bindingsField}",
+                        () => $"Me.{bindingsField}");
+                }
+
                 var parentPathExpression = Instance.Parent.CodeGen().PathExpression;
                 var parentMemberAccessOperator = Instance.Parent.CodeGen().MemberAccessOperator;
-                string fieldName = !string.IsNullOrEmpty(Instance.UpdateCallParamOverride) ? Instance.UpdateCallParamOverride : Instance.FieldName;
+                string fieldName = Instance.FieldName;
 
                 return new LanguageSpecificString(
                     () => parentPathExpression.CppCXName() + parentMemberAccessOperator.CppCXName() + fieldName,
