@@ -37,7 +37,9 @@ failure cleanup. Process-exit assertions allow up to five seconds for terminatio
 
 These are script contract tests, not a validation of native binary rewriting,
 PDB identity, the coverage report schema, real VS collector readiness, or
-Windows pipe permissions. They do not run WinUI tests or validate pipeline YAML.
+Windows pipe permissions. They also check the merge job's success condition,
+test dependency wiring, and successful-slice artifact filter. They do not run
+WinUI tests, expand pipeline YAML, or simulate Azure's retry scheduling.
 
 ## Optional native smoke test
 

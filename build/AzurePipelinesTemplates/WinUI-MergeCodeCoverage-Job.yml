@@ -6,7 +6,7 @@ parameters:
 jobs:
 - job: MergeCodeCoverage
   dependsOn: ${{ parameters.dependsOn }}
-  condition: succeededOrFailed()
+  condition: succeeded()
   timeoutInMinutes: 90
   pool:
     type: windows
@@ -21,7 +21,7 @@ jobs:
     displayName: 'Download per-slice coverage'
     inputs:
       buildType: current
-      itemPattern: '**/coverage-*.coverage'
+      itemPattern: '*_Succeeded/**/coverage-*.coverage'
       targetPath: '$(coverageInputDir)'
 
   - task: PowerShell@2

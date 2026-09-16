@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 # Runs the standalone Pester coverage regression suite and returns failure if any test fails.
-# Invoke in a fresh powershell.exe or pwsh.exe process because the tests load an inert ACL type.
+# Invoke in a fresh powershell.exe or pwsh.exe process to isolate Pester mocks.
 $ErrorActionPreference = 'Stop'
 Import-Module Pester -RequiredVersion 3.4.0
 $result = Invoke-Pester -Script "$PSScriptRoot\Coverage.Tests.ps1" -PassThru

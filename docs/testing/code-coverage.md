@@ -297,6 +297,30 @@ This enables collection in DevTestSuite without skipping nightly stages or chang
 other nightly parameters, including signing and publishing.
 Enabling coverage for a queued run does not change pipeline defaults or schedules.
 
+### Retrying failed test jobs
+
+`MergeCodeCoverage` depends on the selected runtime test-job groups and uses
+`succeeded()`. A failed or canceled dependency skips the merge rather than
+publishing coverage from an unfinished test pass.
+
+Use **Rerun failed jobs** for `RunTests` to retry the failed test jobs and their
+dependent merge job. Successful test jobs keep their existing artifacts. Once
+the dependencies succeed, the merge downloads reports only from artifacts whose
+names end in `_Succeeded`, including successful retries. Reports in `_Failed`
+and `_Canceled` artifacts remain available for diagnosis but are not merged.
+This prevents a failed attempt's corrupt or partial report from interfering with
+a successful retry.
+
+The existing test-output publisher reuses a `_Succeeded` artifact if it already
+exists, rather than replacing it with a later attempt. The merge filter selects
+successful-status artifacts, not the latest attempt of each slice.
+
+Start a new coverage-enabled run to try a pipeline change; retrying an older run
+retains its original YAML and parameters. These changes support retrying failed
+tests before coverage is published. They do not replace an already-published
+`MergeCodeCoverage` artifact; rerunning a merge after publication can still
+encounter an artifact-name collision.
+
 ### Validate collector account access in the lab
 
 Use a coverage-enabled PR run with normal full validation and the normal test
@@ -371,19 +395,20 @@ as the Azure summary.
 
 Test outcomes and coverage collection are separate. Failed tests can leave useful
 coverage data, and passing tests do not prove that collection worked.
-The merge job uses `succeededOrFailed()` so test failures do not by themselves
-prevent publication. Cancellation can interrupt collection, upload, or merging.
+The merge job waits for successful test dependencies and selects only
+`_Succeeded` test-output artifacts. Cancellation can interrupt collection,
+upload, or merging. See [Retrying failed test jobs](#retrying-failed-test-jobs).
 
 [Merge-CodeCoverage.ps1](../../Helix/common/pipeline/coverage/Merge-CodeCoverage.ps1)
-converts every available slice report separately and requires source-line data
+converts every downloaded slice report separately and requires source-line data
 before merging. This detects corrupt reports that the VS tool can otherwise skip
 while returning success. The merge job fails if there are no input files, if an
 input file is empty, if a conversion fails, or if a report has no source-line data.
 
 Validation checks the files that arrived; it does not enforce an expected slice
 count. A missing slice can leave a valid but incomplete aggregate. A canceled or
-timed-out slice can also produce a valid report containing only part of its test
-pass, so even a complete file count does not prove complete execution.
+interrupted collector can also produce a valid report containing only part of a
+test pass, so even a complete file count does not prove complete execution.
 Likewise, data from other processes in a slice can produce a valid report even
 when one hosting mode contributes nothing.
 

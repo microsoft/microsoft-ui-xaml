@@ -1180,6 +1180,25 @@ try
         }
     }
 
+    Describe 'Coverage merge retry gating' {
+        BeforeEach {
+            $script:mergeTemplate = Get-Content -LiteralPath "$PSScriptRoot\..\..\..\..\..\build\AzurePipelinesTemplates\WinUI-MergeCodeCoverage-Job.yml" -Raw
+        }
+
+        It 'requires successful test dependencies before merging' {
+            $script:mergeTemplate | Should Match '(?m)^  dependsOn: \$\{\{ parameters\.dependsOn \}\}\r?$'
+            $script:mergeTemplate | Should Match '(?m)^  condition: succeeded\(\)\r?$'
+        }
+
+        It 'downloads only successful slice reports from the current run' {
+            $download = [regex]::Match($script:mergeTemplate, '(?ms)^  - task: DownloadPipelineArtifact@2\r?\n.*?(?=^  - task:|\z)')
+            $download.Success | Should Be $true
+            $download.Value | Should Match '(?m)^      buildType: current\r?$'
+            $download.Value | Should Match '(?m)^      itemPattern: ''\*_Succeeded/\*\*/coverage-\*\.coverage''\r?$'
+            $download.Value | Should Not Match '(?m)^      (artifactName|artifact):'
+        }
+    }
+
     Describe 'Coverage artifact publication' {
         It 'preserves cleanup-failure suppression in coverage jobs without changing the coverage-off probe condition' {
             $template = Get-Content -LiteralPath "$PSScriptRoot\..\..\..\..\..\build\AzurePipelinesTemplates\WinUI-RunTestPassOnPipeline-Job.yml" -Raw
