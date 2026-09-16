@@ -35,6 +35,14 @@ parameters:
   displayName: "Run Static Analysis (e.g., PREFast, APIScan)"
   type: boolean
   default: false
+- name: runPerfTests
+  displayName: "Enable the informational PR performance comparison stage"
+  type: boolean
+  default: true
+- name: perfUseFixtures
+  displayName: "Use recorded fixtures instead of measuring on perf hardware"
+  type: boolean
+  default: true
 
 variables:
 - template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
@@ -179,3 +187,16 @@ extends:
         parameters:
           pipelineKind: GitHubPR
           dependsOn: Build
+
+    # Informational performance comparison. This stage is a leaf that no other
+    # stage depends on, and its job sets continueOnError, so a perf failure can
+    # never fail pull request validation. It runs only when the pull request
+    # carries the 'run-perf' label.
+    - ${{ if eq(parameters.runPerfTests, true) }}:
+      - template: AzurePipelinesTemplates\WinUI-PRPerf-Run.yml
+        parameters:
+          dependsOn: Build
+          gateOnLabel: true
+          continueOnError: true
+          useFixtures: ${{ parameters.perfUseFixtures }}
+          publishProvider: github

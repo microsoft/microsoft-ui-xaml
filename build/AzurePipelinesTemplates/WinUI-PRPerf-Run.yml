@@ -32,13 +32,91 @@ parameters:
   - github
   - ado
   - none
+# Set when the stage is embedded in an existing pipeline so it starts only once
+# the build that produced the binaries has finished.
+- name: dependsOn
+  type: string
+  default: ''
+# Keeps a perf failure from failing the run it is embedded in. Performance
+# results are informational and must never block a pull request.
+- name: continueOnError
+  type: boolean
+  default: false
+# Requires the 'run-perf' pull request label before any measurement work runs.
+# Without this gate every pull request would queue the single dedicated perf
+# agent, which cannot keep up with the repository's pull request volume.
+- name: gateOnLabel
+  type: boolean
+  default: false
 
 stages:
 - stage: RunPRPerf
   displayName: Run PR performance comparison
+  ${{ if ne(parameters.dependsOn, '') }}:
+    dependsOn: ${{ parameters.dependsOn }}
   jobs:
+  - ${{ if eq(parameters.gateOnLabel, true) }}:
+    - job: GatePRPerf
+      displayName: Check for the run-perf label
+      pool:
+        type: windows
+      variables:
+        ob_outputDirectory: $(Build.ArtifactStagingDirectory)
+      steps:
+      - checkout: self
+        fetchDepth: 1
+        fetchTags: false
+
+      - task: PowerShell@2
+        name: gate
+        displayName: Check for the run-perf label
+        env:
+          GITHUB_PRPERF_TOKEN: $(GitHubPRPerfToken)
+        inputs:
+          targetType: inline
+          script: |
+            $ErrorActionPreference = 'Stop'
+            Import-Module (Join-Path '$(Build.SourcesDirectory)' 'build\PRPerf\PRPerfGitHub.psm1') -Force
+
+            # A perf run is opt-in, so anything other than a confirmed label is
+            # treated as "do not run" rather than surfacing an error on a pull
+            # request whose author never asked for perf coverage.
+            $shouldRun = $false
+            try {
+              $context = Get-PRPerfContextFromPipeline
+              $uri = "https://api.github.com/repos/$($context.Owner)/$($context.Repository)/pulls/$($context.PullRequestNumber)"
+
+              $headers = @{
+                Accept = 'application/vnd.github+json'
+                'X-GitHub-Api-Version' = '2022-11-28'
+                'User-Agent' = 'WinUI-PRPerf'
+              }
+              if (-not [string]::IsNullOrWhiteSpace($env:GITHUB_PRPERF_TOKEN)) {
+                $headers = New-GitHubPRPerfHeaders -Token $env:GITHUB_PRPERF_TOKEN
+              }
+
+              $pullRequest = Invoke-RestMethod -Uri $uri -Headers $headers -Method Get
+              $shouldRun = Test-GitHubPRPerfRequested -PullRequest $pullRequest
+            } catch {
+              Write-Host "##vso[task.logissue type=warning]Could not read pull request labels, skipping the performance comparison. $($_.Exception.Message)"
+              $shouldRun = $false
+            }
+
+            if ($shouldRun) {
+              Write-Host "The run-perf label is present; queuing the performance comparison."
+            } else {
+              Write-Host "The run-perf label is absent; skipping the performance comparison."
+            }
+
+            Write-Host "##vso[task.setvariable variable=shouldRun;isOutput=true]$($shouldRun.ToString().ToLowerInvariant())"
+
   - job: RunPRPerf
     displayName: Run PR performance comparison
+    ${{ if eq(parameters.continueOnError, true) }}:
+      continueOnError: true
+    ${{ if eq(parameters.gateOnLabel, true) }}:
+      dependsOn: GatePRPerf
+      condition: eq(dependencies.GatePRPerf.outputs['gate.shouldRun'], 'true')
     pool:
       type: windows
       ${{ if ne(parameters.useFixtures, true) }}:

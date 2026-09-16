@@ -306,3 +306,67 @@ function Test-GitHubPublisherMarksSupersededResultInconclusiveAndNotPassed {
     Assert-GitHubEqual 'Superseded by a newer commit - perf results no longer apply.' $statusBody.description 'Superseded GitHub status description mismatch.'
 }
 
+
+function New-GitHubLabeledPullRequest {
+    param([object[]] $LabelNames)
+
+    $labels = @()
+    foreach ($name in $LabelNames) {
+        $labels += [pscustomobject]@{ name = $name }
+    }
+    return [pscustomobject]@{
+        head = [pscustomobject]@{ sha = ('a' * 40) }
+        base = [pscustomobject]@{ sha = ('b' * 40) }
+        labels = $labels
+    }
+}
+
+function Test-GitHubRunPerfLabelRequestsAPerfRun {
+    Import-GitHubModule
+    $pullRequest = New-GitHubLabeledPullRequest -LabelNames @('run-perf')
+    Assert-GitHubEqual $true (Test-GitHubPRPerfRequested -PullRequest $pullRequest) 'The run-perf label must request a perf run.'
+}
+
+function Test-GitHubRunPerfLabelMatchIsCaseInsensitive {
+    Import-GitHubModule
+    $pullRequest = New-GitHubLabeledPullRequest -LabelNames @('Run-Perf')
+    Assert-GitHubEqual $true (Test-GitHubPRPerfRequested -PullRequest $pullRequest) 'The run-perf label must match case-insensitively.'
+}
+
+function Test-GitHubRunPerfLabelIsFoundAmongOtherLabels {
+    Import-GitHubModule
+    $pullRequest = New-GitHubLabeledPullRequest -LabelNames @('bug', 'run-perf', 'area-Scroller')
+    Assert-GitHubEqual $true (Test-GitHubPRPerfRequested -PullRequest $pullRequest) 'The run-perf label must be found alongside unrelated labels.'
+}
+
+function Test-GitHubMissingRunPerfLabelSkipsPerfRun {
+    Import-GitHubModule
+    $pullRequest = New-GitHubLabeledPullRequest -LabelNames @('bug', 'area-Scroller')
+    Assert-GitHubEqual $false (Test-GitHubPRPerfRequested -PullRequest $pullRequest) 'A pull request without the run-perf label must not request a perf run.'
+}
+
+function Test-GitHubEmptyLabelCollectionSkipsPerfRun {
+    Import-GitHubModule
+    $pullRequest = New-GitHubLabeledPullRequest -LabelNames @()
+    Assert-GitHubEqual $false (Test-GitHubPRPerfRequested -PullRequest $pullRequest) 'A pull request with no labels must not request a perf run.'
+}
+
+function Test-GitHubAbsentLabelsPropertySkipsPerfRun {
+    Import-GitHubModule
+    $pullRequest = [pscustomobject]@{ head = [pscustomobject]@{ sha = ('a' * 40) } }
+    Assert-GitHubEqual $false (Test-GitHubPRPerfRequested -PullRequest $pullRequest) 'A pull request payload without a labels property must not request a perf run.'
+}
+
+function Test-GitHubNullLabelsPropertySkipsPerfRun {
+    Import-GitHubModule
+    $pullRequest = [pscustomobject]@{ labels = $null }
+    Assert-GitHubEqual $false (Test-GitHubPRPerfRequested -PullRequest $pullRequest) 'A pull request with a null labels property must not request a perf run.'
+}
+
+function Test-GitHubLabelsResemblingRunPerfDoNotRequestAPerfRun {
+    Import-GitHubModule
+    foreach ($name in @('run-perf-2', 'runperf', 'perf', 'no-run-perf', 'run perf')) {
+        $pullRequest = New-GitHubLabeledPullRequest -LabelNames @($name)
+        Assert-GitHubEqual $false (Test-GitHubPRPerfRequested -PullRequest $pullRequest) "Label '$name' must not be treated as the run-perf label."
+    }
+}

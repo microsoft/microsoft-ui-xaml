@@ -74,15 +74,15 @@ The results will be found on the perf analysis network share under `experiments\
 
 ## Opt-in PR performance test
 
-Pull requests can request an informational performance comparison by commenting the following on the GitHub pull request:
+Pull requests can request an informational performance comparison by adding the **`run-perf`** label to the GitHub pull request.
 
-```text
-/azp run WinUI-PRPerf
-```
+The `WinUI-GitHub-PR` validation pipeline contains a `Run PR performance comparison` stage that first checks for the label and skips all measurement work when it is absent.  The label keeps the run opt-in: without it, every pull request would queue the single dedicated performance agent, which cannot keep up with the repository's pull request volume.
 
-The comment is handled by the Azure Pipelines GitHub app, which queues the `WinUI-PRPerf` pipeline in Azure DevOps and supplies the pull request context.  Only users with write access to the repository can run the command, so untrusted fork pull requests cannot occupy the dedicated performance agent.
+The stage is a leaf that no other stage depends on, and its measurement job sets `continueOnError`, so a performance failure can never fail pull request validation.  Because the stage runs inside the validation pipeline, it reuses the binaries that pipeline already built rather than building them again.
 
-The run is opt-in even though `WinUI-PRPerf.yml` declares a pull request trigger.  The trigger is required because Azure Pipelines rejects a comment-triggered run whose pipeline excludes the branch, so `pr: none` would break `/azp run` entirely.  Automatic builds are suppressed instead by the pipeline's **Require a team member's comment before building a pull request** setting (set to *On all pull requests*), which leaves the comment as the only way to start a run.
+Note that the pipeline sets `autoCancel: true` for pull requests, so pushing a new commit while a comparison is in flight cancels it.  The cancelled run reports `Inconclusive` rather than `Passed`; add the label again, or rerun the stage, to get a result for the new commit.
+
+A standalone `WinUI-PRPerf` pipeline covering the same comparison can also be queued from a pull request comment with `/azp run WinUI-PRPerf`.  Only users with write access to the repository can run that command, so untrusted fork pull requests cannot occupy the dedicated performance agent.
 
 The run compares the exact pull request commit against the exact target commit, measuring both sequentially on the same dedicated performance agent.  It never substitutes a nearby `main` build; when exact build artifacts are unavailable for either side the result is reported as `Inconclusive`.
 

@@ -1,5 +1,9 @@
 Set-StrictMode -Version Latest
 
+# The run-perf label is the opt-in signal, and its matching rule lives in
+# PRPerfRequest.psm1 so the GitHub and Azure DevOps paths cannot drift apart.
+Import-Module (Join-Path $PSScriptRoot 'PRPerfRequest.psm1') -Force
+
 function New-GitHubPRPerfHeaders {
     param(
         [Parameter(Mandatory)][string] $Token
@@ -103,4 +107,24 @@ function Test-GitHubPRPerfRequestCurrent {
         [string]$currentCommit -ieq $ExpectedSourceCommit
 }
 
-Export-ModuleMember -Function New-GitHubPRPerfHeaders, Get-PRPerfContextFromPipeline, Get-GitHubPRPerfCommits, Test-GitHubPRPerfRequestCurrent
+function Test-GitHubPRPerfRequested {
+    param(
+        [Parameter(Mandatory)] $PullRequest
+    )
+
+    $labelsProperty = $PullRequest.PSObject.Properties['labels']
+    if ($null -eq $labelsProperty -or $null -eq $labelsProperty.Value) {
+        return $false
+    }
+
+    $labels = @($labelsProperty.Value | Where-Object {
+        $null -ne $_ -and $null -ne $_.PSObject.Properties['name']
+    })
+    if ($labels.Count -eq 0) {
+        return $false
+    }
+
+    return Test-PRPerfLabel -Labels $labels
+}
+
+Export-ModuleMember -Function New-GitHubPRPerfHeaders, Get-PRPerfContextFromPipeline, Get-GitHubPRPerfCommits, Test-GitHubPRPerfRequestCurrent, Test-GitHubPRPerfRequested
