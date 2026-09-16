@@ -125,6 +125,10 @@ stages:
     variables:
       ob_outputDirectory: $(Build.ArtifactStagingDirectory)
       comparisonDirectory: $(Build.ArtifactStagingDirectory)\PRPerf
+      # Selection is stated explicitly here rather than inferred inside the converter: a run set
+      # emits every scenario carrying the selected tag, and comparing an unintended one would be
+      # worse than comparing none. Matches the scenario registered in perf\profiles\scenarios.json.
+      perfScenarioPattern: ^Lifecycle-MinApp\.Cpp\.MUX$
       targetArtifactRoot: $(Pipeline.Workspace)\target
       trialArtifactRoot: $(Pipeline.Workspace)\trial
       artifactUrl: $(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)&view=artifacts&type=publishedArtifacts
@@ -213,6 +217,7 @@ stages:
             -Commit "${{ parameters.targetCommit }}"
             -BuildId "${{ parameters.targetBuildId }}"
             -AgentName "$(Agent.Name)"
+            -ScenarioPattern "$(perfScenarioPattern)"
             -OutputPath "$(comparisonDirectory)\target-results.json"
 
       - task: PowerShell@2
@@ -302,6 +307,7 @@ stages:
             -Commit "${{ parameters.sourceCommit }}"
             -BuildId "${{ parameters.sourceBuildId }}"
             -AgentName "$(Agent.Name)"
+            -ScenarioPattern "$(perfScenarioPattern)"
             -OutputPath "$(comparisonDirectory)\pr-results.json"
 
       - task: PowerShell@2
@@ -640,3 +646,4 @@ stages:
             }
 
             & '$(Build.SourcesDirectory)\build\PRPerf\Publish-PRPerfResultGitHub.ps1' @arguments
+

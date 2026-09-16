@@ -16,7 +16,7 @@ function Test-MarkdownContainsStableMarkerAndState {
     $markdown = New-PRPerfMarkdown -Comparison $comparison -ArtifactUrl 'https://artifacts' -PipelineUrl 'https://pipeline'
     if ($markdown -notlike '*<!-- winui-pr-perf-result -->*') { throw 'Stable marker missing.' }
     if ($markdown -notlike '*Regression warning*') { throw 'State heading missing.' }
-    if ($markdown -notlike '*ObjectCreation.BasicControls*') { throw 'Scenario row missing.' }
+    if ($markdown -notlike '*Lifecycle-MinApp.Cpp.MUX*') { throw 'Scenario row missing.' }
 }
 
 function Test-MarkdownNumbersAreInvariantAcrossCultures {
@@ -420,3 +420,4 @@ function Test-ComparatorWritesMarkdownWithExactlyOneMarker {
         Remove-Item -LiteralPath $outputDirectory -Recurse -Force -ErrorAction SilentlyContinue
     }
 }
+

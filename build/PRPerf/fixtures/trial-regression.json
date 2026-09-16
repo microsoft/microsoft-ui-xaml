@@ -10,7 +10,7 @@
     "flavor": "fre"
   },
   "scenarios": [{
-    "name": "ObjectCreation.BasicControls",
+    "name": "Lifecycle-MinApp.Cpp.MUX",
     "metrics": [{
       "name": "CpuTimeMs",
       "unit": "ms",
@@ -18,3 +18,4 @@
     }]
   }]
 }
+

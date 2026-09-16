@@ -4,7 +4,12 @@ param(
     [Parameter(Mandatory)][string] $Commit,
     [Parameter(Mandatory)][string] $BuildId,
     [Parameter(Mandatory)][string] $AgentName,
-    [Parameter(Mandatory)][string] $OutputPath
+    [Parameter(Mandatory)][string] $OutputPath,
+
+    # The WinUI perf harness names scenarios after their entry in perf\profiles\scenarios.json
+    # (for example Lifecycle-MinApp.Cpp.MUX); it never emits a PRPerf- prefix. Callers can
+    # narrow this to the exact scenarios a PR run is expected to produce.
+    [string] $ScenarioPattern = '^[A-Za-z0-9]'
 )
 
 Set-StrictMode -Version Latest
@@ -67,7 +72,11 @@ if ([string]::IsNullOrWhiteSpace($AgentName)) {
 }
 
 $requiredHeaders = @('scenario', 'metric', 'value', 'interval', 'grouping')
-$allowedHeaders = @($requiredHeaders + 'run')
+# perf\vis\reports.py and dashboard.py read arch, version and shift alongside the value
+# columns, so real harness CSVs carry them. They carry no information this comparison uses,
+# but rejecting the file over them would discard an otherwise valid measurement.
+$ignoredHeaders = @('arch', 'version', 'shift')
+$allowedHeaders = @($requiredHeaders + 'run' + $ignoredHeaders)
 
 $parsedRows = @(
     $resolvedInputFiles = [Collections.Generic.Dictionary[string, IO.FileInfo]]::new(
@@ -106,7 +115,7 @@ $parsedRows = @(
         $rows = @(Import-Csv -LiteralPath $file.FullName)
         $selectedRows = @(
             $rows | Where-Object {
-                $_.scenario -cmatch '^PRPerf-' -and
+                $_.scenario -cmatch $ScenarioPattern -and
                 $_.metric -ceq 'CPU/WallTime' -and
                 -not [string]::IsNullOrWhiteSpace($_.interval) -and
                 $_.interval -cne 'Total'
@@ -123,7 +132,7 @@ $parsedRows = @(
         }
         foreach ($header in $headers) {
             if ($allowedHeaders -cnotcontains $header) {
-                throw "Unsupported CSV column '$header' in '$($file.FullName)'. Raw inputs with matching rows may contain only scenario, metric, value, interval, grouping, and optional run."
+                throw "Unsupported CSV column '$header' in '$($file.FullName)'. Raw inputs with matching rows may contain only scenario, metric, value, interval, grouping, and the optional run, arch, version and shift columns."
             }
             if (@($headers | Where-Object { $_ -ceq $header }).Count -ne 1) {
                 throw "CSV column '$header' appears more than once in '$($file.FullName)'."
@@ -155,7 +164,7 @@ $parsedRows = @(
     }
 )
 if ($parsedRows.Count -eq 0) {
-    throw 'Raw CSV inputs have no PRPerf CPU/WallTime rows with a non-total measured interval.'
+    throw "Raw CSV inputs have no CPU/WallTime rows matching scenario pattern '$ScenarioPattern' with a non-total measured interval."
 }
 
 $scenarioResults = @()
@@ -223,3 +232,5 @@ if (-not [string]::IsNullOrWhiteSpace($outputDirectory)) {
     New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
 }
 $result | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $OutputPath -Encoding UTF8
+
+

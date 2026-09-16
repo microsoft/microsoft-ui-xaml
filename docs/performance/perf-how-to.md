@@ -237,3 +237,29 @@ Below are equivalent applications using system XAML.  They are used for comparis
       ```
 
 10. Install Python 3.11 from official site to enable report generation.  For convenience install it for all users in `c:\python311`
+### Wiring the real WinUI perf harness
+
+The comparison currently runs on fixture data (`perfUseFixtures: true`). The scenario it
+compares is `Lifecycle-MinApp.Cpp.MUX`, registered in `perf\profiles\scenarios.json` and
+selected by its unique `test` tag, so the fixtures speak the same names as real output.
+
+To measure for real, set `perfUseFixtures: false` and have each side run:
+
+```powershell
+perf\scripts\pipeline-run.ps1 test#cpu <experimentName>
+```
+
+then point `Convert-WinUIPerfResults.ps1` at the resulting `.raw.csv` shift output. The
+converter reads the harness schema directly: it keeps `CPU/WallTime` rows on a non-total
+interval, derives the run index from the `Run:<n>` grouping, and ignores the `arch`,
+`version` and `shift` columns the harness also emits. The scenario it selects is pinned by
+the `perfScenarioPattern` pipeline variable rather than guessed.
+
+Three things still block that switch, none of them in this code:
+
+- `run-set.ps1` declares `#Requires -RunAsAdministrator`.
+- `Generate-Visualizations` hardcodes `c:\python311\python.exe`.
+- Tracing needs WPR/xperf, and the perf pool is a different agent pool than the PR pool.
+
+Until those are arranged the stage stays on fixtures, which exercises every step after
+measurement: conversion, comparison, verdict and PR comment.

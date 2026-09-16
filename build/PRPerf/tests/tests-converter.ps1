@@ -26,14 +26,17 @@ function New-TestCsv([string] $Name, [string[]] $Lines) {
     return $path
 }
 
-function Invoke-TestConversion([string[]] $InputCsv, [string] $Name = 'converted.json') {
+function Invoke-TestConversion([string[]] $InputCsv, [string] $Name = 'converted.json', [string] $ScenarioPattern) {
     $output = Join-Path $PSScriptRoot $Name
+    $extra = @{}
+    if ($ScenarioPattern) { $extra['ScenarioPattern'] = $ScenarioPattern }
     & $converter `
         -InputCsv $InputCsv `
         -Commit ('a' * 40) `
         -BuildId '1001' `
         -AgentName 'PERF-01' `
-        -OutputPath $output
+        -OutputPath $output `
+        @extra
     return Get-Content -LiteralPath $output -Raw | ConvertFrom-Json
 }
 
@@ -81,7 +84,7 @@ function Test-RawConverterDiscardsLaunchZeroAndEmitsSevenSamples {
         Assert-Equal 'PERF-01' $result.machine.agentName 'Agent name must come from arguments.'
         Assert-Equal 'amd64' $result.machine.architecture 'Architecture mismatch.'
         Assert-Equal 'fre' $result.machine.flavor 'Flavor mismatch.'
-        Assert-Equal 'PRPerf-ObjectCreation' $result.scenarios[0].name 'Scenario name mismatch.'
+        Assert-Equal 'Lifecycle-MinApp.Cpp.MUX' $result.scenarios[0].name 'Scenario name mismatch.'
         Assert-Equal 'CpuTimeMs' $result.scenarios[0].metrics[0].name 'Metric name mismatch.'
         Assert-Equal 'ms' $result.scenarios[0].metrics[0].unit 'Metric unit mismatch.'
         Assert-Equal 7 $result.scenarios[0].metrics[0].samples.Count 'Measured sample count mismatch.'
@@ -212,8 +215,8 @@ function Test-RawConverterFiltersMixedFilesAndUnrelatedCpuRows {
     )
     $output = Join-Path $PSScriptRoot 'mixed-files.json'
     try {
-        $result = Invoke-TestConversion -InputCsv @($unrelated, $mixed) -Name 'mixed-files.json'
-        Assert-Equal 1 $result.scenarios.Count 'Only the PRPerf scenario must be emitted.'
+        $result = Invoke-TestConversion -InputCsv @($unrelated, $mixed) -Name 'mixed-files.json' -ScenarioPattern '^PRPerf-'
+        Assert-Equal 1 $result.scenarios.Count 'Only the scenario matching the requested pattern must be emitted.'
         Assert-Equal 7 $result.scenarios[0].metrics[0].samples.Count 'Seven matching runs must be emitted.'
         Assert-Equal 1.0 $result.scenarios[0].metrics[0].samples[0] 'Unrelated CPU rows must be ignored.'
     } finally {
@@ -334,3 +337,88 @@ function Test-RunYamlPreservesFixturesAndRunsRealTargetThenTrial {
         throw 'Target conversion must appear before trial conversion in the same job.'
     }
 }
+
+function Test-RawConverterAcceptsRealHarnessScenarioName {
+    # perf\profiles\scenarios.json names the PR smoke scenario Lifecycle-MinApp.Cpp.MUX.
+    # Nothing in the real harness emits a PRPerf- prefix.
+    $csv = New-TestCsv 'real-name.raw.csv' @(
+        'scenario,metric,value,interval,grouping'
+        'Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,999,Measured,Run:0'
+        'Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,250,Measured,Run:1'
+        'Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,252,Measured,Run:2'
+        'Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,251,Measured,Run:3'
+        'Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,249,Measured,Run:4'
+        'Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,253,Measured,Run:5'
+        'Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,250.5,Measured,Run:6'
+        'Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,251.5,Measured,Run:7'
+    )
+    try {
+        $result = Invoke-TestConversion -InputCsv @($csv)
+        Assert-Equal 'Lifecycle-MinApp.Cpp.MUX' $result.scenarios[0].name 'Real harness scenario name must be preserved.'
+        Assert-Equal 7 $result.scenarios[0].metrics[0].samples.Count 'Real harness rows must yield seven samples.'
+    } finally {
+        Remove-Item -LiteralPath $csv -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Test-RawConverterToleratesRealHarnessColumns {
+    # perf\vis\reports.py works over arch/version/shift alongside the value columns,
+    # so real raw CSVs carry them and the converter must not reject the file.
+    $csv = New-TestCsv 'real-columns.raw.csv' @(
+        'shift,arch,version,scenario,metric,value,interval,grouping'
+        '0,amd64,1.0.0,Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,999,Measured,Run:0'
+        '0,amd64,1.0.0,Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,250,Measured,Run:1'
+        '0,amd64,1.0.0,Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,252,Measured,Run:2'
+        '0,amd64,1.0.0,Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,251,Measured,Run:3'
+        '0,amd64,1.0.0,Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,249,Measured,Run:4'
+        '0,amd64,1.0.0,Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,253,Measured,Run:5'
+        '0,amd64,1.0.0,Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,250.5,Measured,Run:6'
+        '0,amd64,1.0.0,Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,251.5,Measured,Run:7'
+    )
+    try {
+        $result = Invoke-TestConversion -InputCsv @($csv)
+        Assert-Equal 7 $result.scenarios[0].metrics[0].samples.Count 'Real harness columns must not be rejected.'
+    } finally {
+        Remove-Item -LiteralPath $csv -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Test-RawConverterStillRejectsGenuinelyUnknownColumns {
+    $csv = New-TestCsv 'bogus-column.raw.csv' @(
+        'scenario,metric,value,interval,grouping,bogus'
+        'Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,250,Measured,Run:1,x'
+    )
+    try {
+        $threw = $false
+        try { Invoke-TestConversion -InputCsv @($csv) } catch { $threw = $true }
+        Assert-Equal $true $threw 'An unrecognized column must still be rejected.'
+    } finally {
+        Remove-Item -LiteralPath $csv -Force -ErrorAction SilentlyContinue
+    }
+}
+
+
+function Test-RawConverterScopesToRequestedRealScenarioOnly {
+    # A real run set emits every scenario sharing the selected tag, so the pipeline must be
+    # able to narrow the comparison to the exact scenario it intends to measure.
+    $csv = New-TestCsv 'real-multi.raw.csv' @(
+        'scenario,metric,value,interval,grouping'
+        'Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,250,Measured,Run:1'
+        'Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,252,Measured,Run:2'
+        'Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,251,Measured,Run:3'
+        'Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,249,Measured,Run:4'
+        'Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,253,Measured,Run:5'
+        'Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,250.5,Measured,Run:6'
+        'Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,251.5,Measured,Run:7'
+        'Lifecycle-MinApp.Cs.WUX,CPU/WallTime,900,Measured,Run:1'
+    )
+    try {
+        $result = Invoke-TestConversion -InputCsv @($csv) -Name 'real-multi.json' -ScenarioPattern '^Lifecycle-MinApp\.Cpp\.MUX$'
+        Assert-Equal 1 $result.scenarios.Count 'Sibling scenarios must be excluded.'
+        Assert-Equal 'Lifecycle-MinApp.Cpp.MUX' $result.scenarios[0].name 'Wrong scenario selected.'
+    } finally {
+        Remove-Item -LiteralPath $csv -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath (Join-Path $PSScriptRoot 'real-multi.json') -Force -ErrorAction SilentlyContinue
+    }
+}
+
