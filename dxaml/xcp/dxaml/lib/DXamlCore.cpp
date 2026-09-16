@@ -1080,6 +1080,7 @@ Cleanup:
     return hr;
 }
 
+// Test-only shutdown path, used to reset the core between test runs.
 _Check_return_ HRESULT DXamlCore::DeinitializeInstanceToIdle()
 {
     RemoveAutoHideScrollBarsChangedHandler();

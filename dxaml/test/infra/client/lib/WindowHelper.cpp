@@ -670,6 +670,20 @@ HRESULT WindowHelper::ResetWindowContentAndScaleWaitForIdle(float scale)
         Hosting::HostingMode hostingMode = Hosting::HostingMode::UAP;
         LogThrow_IfFailed(Hosting::GetHostingMode(&hostingMode));
 
+        if (hostingMode == HostingMode::WPF)
+        {
+            LogThrow_IfFalse(m_coreState != CoreState::ShuttingDown,
+                E_UNEXPECTED, L"WPF shutdown did not complete; window content cannot be reset.");
+
+            if (m_coreState == CoreState::Idle)
+            {
+                // Inherited cleanup can run after a test shuts down XAML. Resetting theming here
+                // would create peers on the idle core; initialization restores these defaults instead.
+                LOG_OUTPUT(L"Skipping window content reset because the WPF core is already idle.");
+                return S_OK;
+            }
+        }
+
         RunOnUIThread([&]() {
             wrl::ComPtr<xaml::IUIElement> spCurrentRoot;
 
@@ -818,13 +832,13 @@ HRESULT WindowHelper::VerifyTestCleanup()
         Hosting::HostingMode hostingMode = Hosting::HostingMode::UAP;
         LogThrow_IfFailed(GetHostingMode(&hostingMode));
 
-        bool checkWpfLeaks = false;
+        bool checkLeaks = false;
         if (hostingMode == HostingMode::WPF)
         {
-            LogThrow_IfFalse(m_wpfCoreState != WpfCoreState::ShuttingDown,
+            LogThrow_IfFalse(m_coreState != CoreState::ShuttingDown,
                 E_UNEXPECTED, L"WPF shutdown did not complete; cleanup cannot be verified.");
-            checkWpfLeaks = m_wpfLeakCheckPending || IsWpfLeakDetectionRequested();
-            if (checkWpfLeaks && !ErrorHandlingHelper::ShouldIgnoreLeaks() && m_wpfCoreState != WpfCoreState::Idle)
+            checkLeaks = m_leakCheckPending || IsWpfLeakDetectionRequested();
+            if (checkLeaks && !ErrorHandlingHelper::ShouldIgnoreLeaks() && m_coreState != CoreState::Idle)
             {
                 BOOLEAN isOneCore = FALSE;
                 LogThrow_IfFailed(Utilities::IsOneCoreStatic(&isOneCore));
@@ -834,28 +848,18 @@ HRESULT WindowHelper::VerifyTestCleanup()
         }
 
         if ((hostingMode == HostingMode::UAP && IsLeakDetectionEnabled()) ||
-            (hostingMode == HostingMode::WPF && m_wpfLeakCheckPending))
+            (hostingMode == HostingMode::WPF && m_leakCheckPending))
         {
-            if (hostingMode == HostingMode::WPF)
-            {
-                LOG_OUTPUT(L"Checking WPF test for leaks in VerifyTestCleanup.");
-            }
-
             // A failed attempt is reported in this cleanup, not retried after host recreation.
-            m_wpfLeakCheckPending = false;
+            m_leakCheckPending = false;
             RunOnUIThread([]() {
                 ErrorHandlingHelper::PerformLeakDetection();
             });
-
-            if (hostingMode == HostingMode::WPF)
-            {
-                LOG_OUTPUT(L"WPF leak check completed.");
-            }
         }
         else
         {
-            m_wpfLeakCheckPending = false;
-            LOG_OUTPUT(L"> VerifyTestCleanup: SKIPPING leak detection (disabled or already checked).");
+            m_leakCheckPending = false;
+            LOG_OUTPUT(L"> VerifyTestCleanup: SKIPPING leak detection for this test.");
         }
 
         // Leaving UI content behind is something a test shouldn't do and for a lot of controls
@@ -1035,7 +1039,7 @@ HRESULT WindowHelper::VerifyTestCleanup()
            }
         }
 
-        if (hostingMode != HostingMode::WPF || m_wpfCoreState == WpfCoreState::Active)
+        if (hostingMode != HostingMode::WPF || m_coreState == CoreState::Active)
         {
             VerifyActiveCoreCleanup();
         }
@@ -2058,9 +2062,9 @@ HRESULT WindowHelper::CleanUpAfterTest()
     COM_END
 }
 
-HRESULT WindowHelper::VerifyNoPendingWpfLeakCheck() const
+HRESULT WindowHelper::VerifyNoPendingLeakCheck() const
 {
-    if (m_wpfLeakCheckPending)
+    if (m_leakCheckPending)
     {
         Log::Error(L"Call VerifyTestCleanup before reinitializing a WPF leak-detection test.");
         return E_UNEXPECTED;
@@ -2077,14 +2081,14 @@ wrl::ComPtr<test_infra::IWindowHelper> WindowHelper::PrepareHostForXamlInitializ
         return currentHelper;
     }
 
-    if (m_wpfCoreState == WpfCoreState::Active)
+    if (m_coreState == CoreState::Active)
     {
         return nullptr;
     }
 
-    LogThrow_IfFalse(m_wpfCoreState == WpfCoreState::Idle,
+    LogThrow_IfFalse(m_coreState == CoreState::Idle,
         E_UNEXPECTED, L"WPF shutdown did not complete; this host cannot be reinitialized.");
-    LogThrow_IfFailed(VerifyNoPendingWpfLeakCheck());
+    LogThrow_IfFailed(VerifyNoPendingLeakCheck());
 
     LOG_OUTPUT(L"Recreating the idle WPF host during InitializeXaml.");
     LogThrow_IfFailed(m_pTestServices->InitializeHost());
@@ -2674,19 +2678,19 @@ HRESULT WindowHelper::ShutdownXaml()
         Hosting::HostingMode hostingMode = Hosting::HostingMode::UAP;
         LogThrow_IfFailed(GetHostingMode(&hostingMode));
 
-        bool checkWpfLeaks = false;
+        bool checkLeaks = false;
         if (hostingMode == HostingMode::WPF)
         {
-            if (m_wpfCoreState == WpfCoreState::Idle)
+            if (m_coreState == CoreState::Idle)
             {
                 LOG_OUTPUT(L"WPF core is already idle.");
                 return S_OK;
             }
 
-            LogThrow_IfFalse(m_wpfCoreState == WpfCoreState::Active,
+            LogThrow_IfFalse(m_coreState == CoreState::Active,
                 E_UNEXPECTED, L"WPF shutdown is already in progress or previously failed.");
-            checkWpfLeaks = IsWpfLeakDetectionRequested();
-            m_wpfCoreState = WpfCoreState::ShuttingDown;
+            checkLeaks = IsWpfLeakDetectionRequested();
+            m_coreState = CoreState::ShuttingDown;
         }
 
         RunOnUIThread([&]() {
@@ -2789,7 +2793,7 @@ HRESULT WindowHelper::ShutdownXaml()
                 testHooks->SetRuntimeEnabledFeatureOverride(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableCoreShutdown, false, nullptr);
             });
 
-            m_wpfCoreState = WpfCoreState::Active;
+            m_coreState = CoreState::Active;
             return S_OK;
         }
 
@@ -2858,8 +2862,8 @@ HRESULT WindowHelper::ShutdownXaml()
 
         if (hostingMode == Hosting::HostingMode::WPF)
         {
-            m_wpfCoreState = WpfCoreState::Idle;
-            m_wpfLeakCheckPending = checkWpfLeaks && IsLeakDetectionEnabled();
+            m_coreState = CoreState::Idle;
+            m_leakCheckPending = checkLeaks && IsLeakDetectionEnabled();
             LOG_OUTPUT(L"WPF core is idle; host recreation deferred until InitializeXaml.");
         }
 
