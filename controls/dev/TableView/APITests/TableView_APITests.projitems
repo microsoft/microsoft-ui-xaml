@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
@@ -11,5 +11,19 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)TableViewTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_Columns_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_Sizing_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_Rows_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_Selection_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_Editing_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_AutomationPeer_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_Theming_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_ToolTips_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableViewSource_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_DataBinding_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_Sorting_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_Grouping_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_Virtualization_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_NegativePath_APITests.cs" />
   </ItemGroup>
 </Project>
