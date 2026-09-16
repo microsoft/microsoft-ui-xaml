@@ -19,4 +19,7 @@ public:
 private:
     // Bounds in root coordinates, clipped the way the framework clips them. Empty when not visible.
     winrt::Rect GetClippedBoundsInRoot();
+
+    // Intersects bounds (root coordinates) with the element's UIElement.Clip, if it has one.
+    static void ApplyElementClip(winrt::Rect& bounds, winrt::UIElement const& element);
 };

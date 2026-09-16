@@ -178,8 +178,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // The clip case Harshit asked about: the canvas is inside the tree and visible by its own
-        // Visibility, but an ancestor clip excludes it entirely, so it must report offscreen.
+        // Visible and in the tree, but an ancestor clip excludes it entirely, so it reports offscreen.
         [TestMethod]
         public void InkCanvasAutomationPeerReportsOffscreenWhenClippedOut()
         {
@@ -208,6 +207,71 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(peer.IsOffscreen(), "An InkCanvas clipped out by an ancestor should report itself as offscreen.");
                 Verify.AreEqual(0.0, bounds.Width, "An offscreen InkCanvas should report an empty rectangle.");
                 Verify.AreEqual(0.0, bounds.Height, "An offscreen InkCanvas should report an empty rectangle.");
+            });
+        }
+
+        // A clip set on the canvas itself, rather than on an ancestor.
+        [TestMethod]
+        public void InkCanvasAutomationPeerReportsOffscreenWhenSelfClippedOut()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var inkCanvas = new InkCanvas
+                {
+                    Width = 400,
+                    Height = 300,
+                    Clip = new RectangleGeometry { Rect = new Rect(0, 0, 0, 0) }
+                };
+
+                Content = inkCanvas;
+                Content.UpdateLayout();
+
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(inkCanvas);
+                Verify.IsNotNull(peer, "InkCanvas should create an automation peer.");
+
+                var bounds = peer.GetBoundingRectangle();
+                Log.Comment($"Self-clipped bounding rectangle: {bounds.X},{bounds.Y} {bounds.Width}x{bounds.Height}");
+
+                Verify.IsTrue(peer.IsOffscreen(), "An InkCanvas clipped out by its own Clip should report itself as offscreen.");
+                Verify.AreEqual(0.0, bounds.Width, "An offscreen InkCanvas should report an empty rectangle.");
+                Verify.AreEqual(0.0, bounds.Height, "An offscreen InkCanvas should report an empty rectangle.");
+            });
+        }
+
+        // A partial clip on the canvas itself must shrink the reported rectangle without making the
+        // canvas offscreen.
+        [TestMethod]
+        public void InkCanvasAutomationPeerClipsBoundsToOwnClip()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var unclipped = new InkCanvas { Width = 400, Height = 300 };
+                Content = unclipped;
+                Content.UpdateLayout();
+
+                var fullBounds = FrameworkElementAutomationPeer.CreatePeerForElement(unclipped).GetBoundingRectangle();
+
+                var inkCanvas = new InkCanvas
+                {
+                    Width = 400,
+                    Height = 300,
+                    Clip = new RectangleGeometry { Rect = new Rect(0, 0, 100, 75) }
+                };
+
+                Content = inkCanvas;
+                Content.UpdateLayout();
+
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(inkCanvas);
+                Verify.IsNotNull(peer, "InkCanvas should create an automation peer.");
+
+                var bounds = peer.GetBoundingRectangle();
+                Log.Comment($"Full: {fullBounds.Width}x{fullBounds.Height}, clipped: {bounds.Width}x{bounds.Height}");
+
+                // Comparing against the unclipped rectangle keeps this independent of display scale.
+                Verify.IsFalse(peer.IsOffscreen(), "A partially clipped InkCanvas should not report itself as offscreen.");
+                Verify.IsGreaterThan(bounds.Width, 0.0, "A partially clipped canvas should still report bounds.");
+                Verify.IsLessThan(bounds.Width, fullBounds.Width, "The reported width should be reduced by the clip.");
+                Verify.IsLessThan(bounds.Height, fullBounds.Height, "The reported height should be reduced by the clip.");
             });
         }
 

@@ -21,6 +21,26 @@ winrt::AutomationControlType InkCanvasAutomationPeer::GetAutomationControlTypeCo
     return winrt::AutomationControlType::Pane;
 }
 
+// The clip geometry carries its own transform, which the core applies to the geometry before the
+// element transform (CRectangle::InitializeRectangleClip), so apply it in the same order here.
+void InkCanvasAutomationPeer::ApplyElementClip(winrt::Rect& bounds, winrt::UIElement const& element)
+{
+    auto const clip = element.Clip();
+    if (!clip)
+    {
+        return;
+    }
+
+    auto clipBounds = clip.Rect();
+    if (auto const clipTransform = clip.Transform())
+    {
+        clipBounds = clipTransform.TransformBounds(clipBounds);
+    }
+
+    bounds = winrt::RectHelper::Intersect(
+        bounds, element.TransformToVisual(nullptr).TransformBounds(clipBounds));
+}
+
 // InkCanvas draws entirely through a child composition visual and has no XAML children, so the
 // framework finds no rendered content to measure and reports an empty rect. Derive the bounds from
 // the layout size instead, then re-apply the clipping that CFrameworkElementAutomationPeer would
@@ -46,6 +66,15 @@ winrt::Rect InkCanvasAutomationPeer::GetClippedBoundsInRoot()
 
     auto bounds = owner.TransformToVisual(nullptr).TransformBounds(localBounds);
 
+    // A clip set on the canvas itself hides it exactly as an ancestor clip does, and the ancestor
+    // walk below starts above it.
+    ApplyElementClip(bounds, owner);
+
+    if (bounds.Width <= 0.0f || bounds.Height <= 0.0f)
+    {
+        return { 0.0f, 0.0f, 0.0f, 0.0f };
+    }
+
     for (auto parent = winrt::VisualTreeHelper::GetParent(owner); parent; parent = winrt::VisualTreeHelper::GetParent(parent))
     {
         auto const ancestor = parent.try_as<winrt::FrameworkElement>();
@@ -59,10 +88,7 @@ winrt::Rect InkCanvasAutomationPeer::GetClippedBoundsInRoot()
             return { 0.0f, 0.0f, 0.0f, 0.0f };
         }
 
-        if (auto const clip = ancestor.Clip())
-        {
-            bounds = winrt::RectHelper::Intersect(bounds, ancestor.TransformToVisual(nullptr).TransformBounds(clip.Rect()));
-        }
+        ApplyElementClip(bounds, ancestor);
 
         // Scroll presenters clip to their viewport without setting UIElement.Clip.
         if (ancestor.try_as<winrt::ScrollContentPresenter>() || ancestor.try_as<winrt::ScrollPresenter>())
