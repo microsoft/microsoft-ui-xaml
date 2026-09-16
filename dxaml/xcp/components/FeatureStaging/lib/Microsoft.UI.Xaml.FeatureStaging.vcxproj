@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<!--
+    Velocity feature staging for WinUI 3.
+
+    This static library is the containment boundary for Velocity. It is the only project in the repo
+    that consumes Microsoft.Windows.Wil.Internal, which supplies the FeatureStaging build task that
+    turns FeatureStaging-Microsoft.UI.Xaml.featurestaging into a generated C++ header. Everything
+    else in the product keeps consuming the public Microsoft.Windows.ImplementationLibrary package
+    and only sees the plain functions declared in inc\XamlFeatureStaging.h.
+
+    Callers must link shcore.lib, which provides the feature-staging entry points
+    (GetFeatureEnabledState / RecordFeatureUsage / SubscribeFeatureStateChangeNotification). See
+    dxaml\xcp\dxaml\dllsrv\winrt\sources.props.
+-->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{689ad6f2-8184-4b92-b0fd-1d5d00607800}</ProjectGuid>
+
+        <!-- Tell WIL not to glob for every *.featurestaging file it can find under the repo root.
+             dxaml\common.props sets DisableProjectRootFeatureStagingXmlSearch for the same reason;
+             the internal WIL targets spell the property differently. -->
+        <ExcludeDefaultFeatureStagingItems>true</ExcludeDefaultFeatureStagingItems>
+
+        <!-- Generate the header into a stable, predictable location. -->
+        <FeatureStagingHeaderPath>$(MSBuildThisFileDirectory)FeatureStagingHeaders\</FeatureStagingHeaderPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AvailableItemName Include="FeatureXmls">
+            <Visible>true</Visible>
+        </AvailableItemName>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\common.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\FeatureStaging\inc;
+            $(FeatureStagingHeaderPath);
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <!--
+        The .featurestaging file is referenced three times on purpose, to work around limitations in
+        the WIL targets: once so the project is considered out of date when it changes, once as the
+        actual input to FeatureStagingBuilder, and once so it shows up in Solution Explorer.
+    -->
+    <ItemGroup>
+        <UpToDateCheckInput Include="..\FeatureStaging-Microsoft.UI.Xaml.featurestaging"/>
+        <FeatureXmls Include="..\FeatureStaging-Microsoft.UI.Xaml.featurestaging"/>
+        <None Include="..\FeatureStaging-Microsoft.UI.Xaml.featurestaging"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ClInclude Include="..\inc\XamlFeatureStaging.h"/>
+    </ItemGroup>
+
+    <!--
+        XamlFeatureStaging.cpp is compiled without the shared XAML precompiled header. The generated
+        Velocity header pulls in internal WIL headers, which must not be mixed into the shared PCH
+        that the rest of the product compiles against. This batches a separate CL task due to
+        %PrecompiledHeader = NotUsing, matching the pattern used by wrtdxamlfoundation.vcxproj.
+    -->
+    <Target Name="NonPreCompClCompile" AfterTargets="PreCompClCompileOptions">
+        <ItemGroup>
+            <ClCompile Include="XamlFeatureStaging.cpp">
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <PrecompiledHeaderFile />
+                <PrecompiledHeaderOutputFile />
+                <DisableAnalyzeExternal />
+                <AdditionalOptions Condition="'$(Platform)'=='arm64ec'">/arm64EC %(ClCompile.AdditionalOptions)</AdditionalOptions>
+            </ClCompile>
+        </ItemGroup>
+    </Target>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+
+    <!-- Supplies the FeatureStagingBuilder task that compiles @(FeatureXmls) into
+         $(FeatureStagingHeaderPath)FeatureStaging-Microsoft.UI.Xaml.h. -->
+    <ImportGroup Label="ExtensionTargets">
+        <Import Project="$(WilInternalTargetsFile)" Condition="Exists('$(WilInternalTargetsFile)')"/>
+    </ImportGroup>
+
+    <Target Name="EnsureWilInternalPackage" BeforeTargets="PrepareForBuild">
+        <Error Condition="!Exists('$(WilInternalTargetsFile)')"
+               Text="Velocity feature staging requires the $(WilInternalPackageName) NuGet package. Expected '$(WilInternalTargetsFile)'. Run a NuGet restore; if the package cannot be found, it still needs to be saved into the WinUI-Dependencies feed from its upstream source." />
+    </Target>
+</Project>

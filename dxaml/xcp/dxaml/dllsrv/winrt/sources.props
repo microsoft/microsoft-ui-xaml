@@ -103,6 +103,10 @@
               mfuuid.lib;
               muiload.lib;
               ninput.lib;
+              <!-- Provides the Velocity feature-staging entry points (GetFeatureEnabledState,
+                   RecordFeatureUsage, SubscribeFeatureStateChangeNotification) used by
+                   components\FeatureStaging. -->
+              shcore.lib;
               %(AdditionalDependencies);
             </AdditionalDependencies>
 

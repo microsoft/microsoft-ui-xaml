@@ -10,6 +10,7 @@
     <BasePackageName>Microsoft.WindowsAppSDK.Base</BasePackageName>
     <WebView2PackageName>Microsoft.Web.WebView2</WebView2PackageName>
     <WilPackageName>Microsoft.Windows.ImplementationLibrary</WilPackageName>
+    <WilInternalPackageName>Microsoft.Windows.Wil.Internal</WilInternalPackageName>
     <MicrosoftCsWinRtPackageName>Microsoft.Windows.CsWinRT</MicrosoftCsWinRtPackageName>
     <LocalizedMUIFilesPackageName>Microsoft.Internal.WinUILocalizationResources</LocalizedMUIFilesPackageName>
     <!-- Determine the configured versions based upon the architecture specific nuget packages -->
@@ -33,6 +34,7 @@
     <TaefNugetPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Taef.*?version="(.*?)"').Groups[1].Value)</TaefNugetPackageVersion>
     <MicrosoftNETCoreUniversalWindowsPlatformVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.NETCore.UniversalWindowsPlatform.*?version="(.*?)"').Groups[1].Value)</MicrosoftNETCoreUniversalWindowsPlatformVersion>
     <CurrentWilPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.ImplementationLibrary.*?version="(.*?)"').Groups[1].Value)</CurrentWilPackageVersion>
+    <CurrentWilInternalPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.Wil.Internal.*?version="(.*?)"').Groups[1].Value)</CurrentWilInternalPackageVersion>
     <WebView2Version>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Web.WebView2.*?version="(.*?)"').Groups[1].Value)</WebView2Version>
     <MuxCustomBuildTasksPackageVersion>1.0.125-winui3</MuxCustomBuildTasksPackageVersion>
     <MicrosoftSourceLinkAzureReposVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.SourceLink.AzureRepos.Git.*?version="(.*?)"').Groups[1].Value)</MicrosoftSourceLinkAzureReposVersion>

@@ -1,0 +1,24 @@
+<?xml version="1.0" standalone="yes"?>
+<featureStaging xmlns="http://microsoft.com/FeatureStaging-Schema.xsd"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://microsoft.com/FeatureStaging-Schema.xsd FeatureStaging-Schema.xsd">
+    <featureGroup>
+        <name>Microsoft.UI.Xaml</name>
+        <description>Velocity features for WinUI 3 (Microsoft.UI.Xaml.dll), shipped to apps through the WindowsAppSDK NuGet package.</description>
+        <features>
+            <feature>
+                <className>Feature_XamlVelocityPilot</className>
+                <!-- TODO: replace with a globally unique feature ID assigned by the Velocity team
+                     before ingesting this feature group. Feature ID and className are immutable
+                     once the feature is created in Velocity.
+
+                     NOTE: WindowsAppSDK already mints numeric change IDs for Containment v2 in
+                     os.2020 (onecoreuap\windows\FrameworkUdk\inc\public\Containment.h). Confirm with
+                     the Velocity team that IDs allocated here cannot collide with those. -->
+                <id>63541801</id>
+                <name>XamlVelocityPilot</name>
+                <description>Pilot feature proving the Velocity end-to-end loop in Microsoft.UI.Xaml.dll. Emits a trace only; no product behavior change.</description>
+                <stage>DisabledByDefault</stage>
+            </feature>
+        </features>
+    </featureGroup>
+</featureStaging>

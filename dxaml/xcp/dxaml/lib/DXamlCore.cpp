@@ -113,6 +113,7 @@
 #include "AutomaticDragHelper.h"
 #include "TextControlFlyoutHelper.h"
 #include "XamlTelemetry.h"
+#include "XamlFeatureStaging.h"
 #include "XamlOptionalChanges.g.h"
 
 #include "DXamlCoreTipTests.h"
@@ -458,6 +459,22 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
     #endif
 
     TraceInitializeCoreBegin();
+
+    // Velocity pilot: resolve the feature state from the Velocity configuration on the device and
+    // report it. The feature is DisabledByDefault and intentionally has no product effect beyond
+    // this trace; it exists to validate the end-to-end Velocity loop for WinUI 3.
+    //
+    // Resolved once per process rather than once per core: the Velocity state is machine-global, and
+    // holding it stable for the lifetime of the process means a cloud-side flip takes effect on the
+    // next app launch instead of part-way through a running app.
+    {
+        [[maybe_unused]] static const bool velocityPilotEnabled = []() noexcept
+            {
+                const bool enabled = XamlVelocity::IsXamlVelocityPilotEnabled();
+                XamlTelemetry::VelocityFeatureState("XamlVelocityPilot", enabled);
+                return enabled;
+            }();
+    }
 
     // Start TIP test
     auto initDxamlCoreTest = tip::start_and_watch_errors<DXamlInitializeCoreTest>();

@@ -64,6 +64,7 @@
             $(XcpPath)\components\ValueBoxer\inc;
             $(XcpPath)\components\simple\inc;
             $(XcpPath)\components\ContentRoot\inc;
+            $(XcpPath)\components\FeatureStaging\inc;
             $(XcpPath)\components\Switcher\inc;
         </CompIncludes>
     </PropertyGroup>
@@ -109,6 +110,7 @@
 
         <Complibs Remove="@(Complibs)"/>
         <Complibs Include="@(BaseComplibs)"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{689ad6f2-8184-4b92-b0fd-1d5d00607800}'" Include="$(XcpPath)\components\FeatureStaging\lib\Microsoft.UI.Xaml.FeatureStaging.vcxproj" Project="{689ad6f2-8184-4b92-b0fd-1d5d00607800}"/>
         <Complibs Condition="'$(ProjectGuid)'!='{a96cf4ea-7170-4aff-90a5-5fce1055270f}'" Include="$(XcpPath)\components\CValue\lib\Microsoft.UI.Xaml.CValue.vcxproj" Project="{a96cf4ea-7170-4aff-90a5-5fce1055270f}"/>
         <Complibs Condition="'$(ProjectGuid)'!='{38506cdd-c34a-404c-b6e2-4d1ed278da88}'" Include="$(XcpPath)\components\com\lib\Microsoft.UI.Xaml.Com.vcxproj" Project="{38506cdd-c34a-404c-b6e2-4d1ed278da88}"/>
         <Complibs Condition="'$(ProjectGuid)'!='{71ada981-d444-464c-833d-290206b05240}'" Include="$(XcpPath)\components\lifetime\lib\Microsoft.UI.Xaml.Lifetime.vcxproj" Project="{71ada981-d444-464c-833d-290206b05240}"/>

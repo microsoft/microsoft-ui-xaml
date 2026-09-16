@@ -82,6 +82,13 @@ public:
         uint64_t, ObjectPointer,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
+    // Reports the runtime state of a Velocity feature, as resolved from the Velocity configuration
+    // on the user's machine. Logged once per process so a rollout can be observed in telemetry.
+    DEFINE_TRACELOGGING_EVENT_PARAM2(VelocityFeatureState,
+        PCSTR, FeatureName,
+        bool, IsEnabled,
+        TraceLoggingLevel(WINEVENT_LEVEL_INFO));
+
 };
 
 struct PerfXamlEvent_RAII

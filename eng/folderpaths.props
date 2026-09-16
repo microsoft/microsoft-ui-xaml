@@ -158,6 +158,16 @@
     <AbiWinRtExePath>$(AbiWinRtPackageDirectory)bin\abi.exe</AbiWinRtExePath>
   </PropertyGroup>
 
+  <!-- Internal WIL paths.
+       Only dxaml\xcp\components\FeatureStaging imports these targets; they supply the build task
+       that turns a *.featurestaging file into a generated Velocity header. The rest of the product
+       uses the public Microsoft.Windows.ImplementationLibrary package, whose targets are imported
+       globally from eng\sdkconfig.props. -->
+  <PropertyGroup>
+    <WilInternalPkgDirectory>$(NugetPackageDirectory)\$(WilInternalPackageName).$(CurrentWilInternalPackageVersion)</WilInternalPkgDirectory>
+    <WilInternalTargetsFile>$(WilInternalPkgDirectory)\build\native\Microsoft.Windows.Wil.Internal.targets</WilInternalTargetsFile>
+  </PropertyGroup>
+
   <!-- TestInProduction paths -->
   <PropertyGroup Condition="Exists('$(NugetPackageDirectory)\Microsoft.Windows.TestInProduction')">
     <!-- Use the production package -->
