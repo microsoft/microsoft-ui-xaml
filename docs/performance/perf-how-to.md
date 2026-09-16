@@ -82,6 +82,8 @@ Pull requests can request an informational performance comparison by commenting 
 
 The comment is handled by the Azure Pipelines GitHub app, which queues the `WinUI-PRPerf` pipeline in Azure DevOps and supplies the pull request context.  Only users with write access to the repository can run the command, so untrusted fork pull requests cannot occupy the dedicated performance agent.
 
+The run is opt-in even though `WinUI-PRPerf.yml` declares a pull request trigger.  The trigger is required because Azure Pipelines rejects a comment-triggered run whose pipeline excludes the branch, so `pr: none` would break `/azp run` entirely.  Automatic builds are suppressed instead by the pipeline's **Require a team member's comment before building a pull request** setting (set to *On all pull requests*), which leaves the comment as the only way to start a run.
+
 The run compares the exact pull request commit against the exact target commit, measuring both sequentially on the same dedicated performance agent.  It never substitutes a nearby `main` build; when exact build artifacts are unavailable for either side the result is reported as `Inconclusive`.
 
 When the run finishes, read the marked pull request comment as one of:

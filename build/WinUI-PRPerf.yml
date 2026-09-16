@@ -2,7 +2,24 @@
 # Licensed under the MIT License.
 
 trigger: none
-pr: none
+
+# A pull request trigger must be declared for the `/azp run WinUI-PRPerf` comment
+# trigger to work at all: Azure Pipelines refuses a comment-triggered run when the
+# pipeline's PR triggers exclude the branch, and `pr: none` excludes every branch.
+# The run stays opt-in through the pipeline's "Require a team member's comment
+# before building a pull request" setting, which suppresses automatic PR builds
+# and leaves the comment as the only way in. See docs/performance/perf-how-to.md.
+#
+# autoCancel is false because a push while a perf run is in flight must not
+# discard measurements that are already partially collected.
+pr:
+  autoCancel: false
+  branches:
+    include:
+    - main
+    - winui3/main
+    - feature/*
+  drafts: true
 
 # All parameters default to empty so the pipeline can be queued directly from a
 # GitHub pull request comment with `/azp run WinUI-PRPerf`, which cannot supply
