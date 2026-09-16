@@ -20,10 +20,15 @@ pr:
 name: WinUI-GitHub-PR_$(Date:yyyyMMdd)$(Rev:.r)
 
 parameters:
+# Full and quick validation are mutually exclusive. Set both to false for context-only runs.
 - name: runFullValidation
   displayName: "Run full WinUI PR validation stages"
   type: boolean
   default: true
+- name: runQuickValidation
+  displayName: "Run quick WinUI PR validation (x86chk only, skip scenario tests; turn off full validation)"
+  type: boolean
+  default: false
 - name: MUXFinalRelease
   type: boolean
   default: false
@@ -33,10 +38,6 @@ parameters:
   default: true
 - name: runStaticAnalysis
   displayName: "Run Static Analysis (e.g., PREFast, APIScan)"
-  type: boolean
-  default: false
-- name: runQuickValidation
-  displayName: "Run quick WinUI PR validation (x86chk only, skip scenario tests)"
   type: boolean
   default: false
 
@@ -112,6 +113,10 @@ extends:
         variables:
           ob_outputDirectory: '$(Build.SourcesDirectory)\out'
         steps:
+        # Intentionally emit an invalid step to reject conflicting modes during template expansion.
+        - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.runQuickValidation, true)) }}:
+          - 'Choose either full or quick validation, not both': error
+
         - checkout: self
           submodules: false
           fetchDepth: 1
