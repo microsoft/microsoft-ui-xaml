@@ -1631,6 +1631,236 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // -------------------------------------------------------------------------------------------------------------
+        // Additional items/selection + popup churn coverage (parameterized).
+        //
+        // These extend the same "build a container, churn it while parented, track a CHILD object, verify it
+        // collects" leak-probe shape (see StressNavigationViewMenuChurn / StressTreeViewNodeChurn /
+        // StressComboBoxDropDownChurn) to the remaining container-realizing / popup controls in CreateControlSet()
+        // that had no dedicated churn scenario. They run through the shared RunChurnScenario harness, so each control
+        // is a few delegate rows and inherits the non-gating RunStress / SafeUI / VerifyCollected plumbing (a residual
+        // reference is reported as a warning, never a gating failure).
+
+        // RadioButtons realizes a RadioButton container per item and holds a selection model; churning the selection
+        // and the item collection exercises that container-generation + selection-retention path.
+        [TestMethod]
+        public void StressRadioButtonsSelectionChurn()
+        {
+            RunChurnScenario<RadioButtons>(
+                "StressRadioButtonsSelectionChurn",
+                (objects) =>
+                {
+                    var radioButtons = new RadioButtons();
+                    for (int m = 0; m < 8; m++)
+                    {
+                        var item = new RadioButton() { Content = string.Format("Option {0}", m) };
+                        if (m == 0)
+                        {
+                            objects["FirstItem"] = new WeakReference(item);
+                        }
+                        radioButtons.Items.Add(item);
+                    }
+                    return radioButtons;
+                },
+                (radioButtons, c) =>
+                {
+                    radioButtons.SelectedIndex = c % radioButtons.Items.Count;
+
+                    var extra = new RadioButton() { Content = string.Format("Extra {0}", c) };
+                    radioButtons.Items.Add(extra);
+                    radioButtons.Items.Remove(extra);
+                },
+                (radioButtons) =>
+                {
+                    radioButtons.SelectedIndex = -1;
+                    radioButtons.Items.Clear();
+                });
+        }
+
+        // MenuBar realizes a MenuBarItem per top-level menu, each owning a MenuFlyout whose MenuFlyoutItems are
+        // generated/torn down as items are added/removed. Churning both the MenuBarItem collection and each item's
+        // flyout-item collection exercises that nested container-generation/teardown path.
+        [TestMethod]
+        public void StressMenuBarItemChurn()
+        {
+            RunChurnScenario<MenuBar>(
+                "StressMenuBarItemChurn",
+                (objects) =>
+                {
+                    var menuBar = new MenuBar();
+                    for (int m = 0; m < 6; m++)
+                    {
+                        var menu = new MenuBarItem() { Title = string.Format("Menu {0}", m) };
+                        if (m == 0)
+                        {
+                            objects["FirstItem"] = new WeakReference(menu);
+                        }
+                        for (int f = 0; f < 4; f++)
+                        {
+                            menu.Items.Add(new MenuFlyoutItem() { Text = string.Format("Item {0}.{1}", m, f) });
+                        }
+                        menuBar.Items.Add(menu);
+                    }
+                    return menuBar;
+                },
+                (menuBar, c) =>
+                {
+                    var first = menuBar.Items[0];
+                    first.Items.Add(new MenuFlyoutItem() { Text = string.Format("Extra {0}", c) });
+                    first.Items.RemoveAt(first.Items.Count - 1);
+
+                    var extraMenu = new MenuBarItem() { Title = string.Format("Extra {0}", c) };
+                    menuBar.Items.Add(extraMenu);
+                    menuBar.Items.RemoveAt(menuBar.Items.Count - 1);
+                },
+                (menuBar) =>
+                {
+                    foreach (var item in menuBar.Items)
+                    {
+                        item.Items.Clear();
+                    }
+                    menuBar.Items.Clear();
+                });
+        }
+
+        // DropDownButton owns a MenuFlyout; opening it realizes the MenuFlyoutItem containers inside a popup and
+        // tears them down on close. Showing/hiding the flyout and mutating its items exercises the popup +
+        // flyout-item container generation/teardown path.
+        [TestMethod]
+        public void StressDropDownButtonFlyoutChurn()
+        {
+            RunChurnScenario<DropDownButton>(
+                "StressDropDownButtonFlyoutChurn",
+                (objects) => BuildFlyoutButton(objects, new DropDownButton() { Content = "menu" }),
+                (button, c) => ChurnFlyoutButton((MenuFlyout)button.Flyout, button, c),
+                (button) => TeardownFlyoutButton(button));
+        }
+
+        // SplitButton owns a Flyout on its secondary (drop-down) half; same popup + flyout-item container path as
+        // DropDownButton.
+        [TestMethod]
+        public void StressSplitButtonFlyoutChurn()
+        {
+            RunChurnScenario<SplitButton>(
+                "StressSplitButtonFlyoutChurn",
+                (objects) =>
+                {
+                    var button = new SplitButton() { Content = "split" };
+                    var flyout = BuildMenuFlyout(objects);
+                    button.Flyout = flyout;
+                    return button;
+                },
+                (button, c) => ChurnFlyoutButton((MenuFlyout)button.Flyout, button, c),
+                (button) =>
+                {
+                    var flyout = (MenuFlyout)button.Flyout;
+                    if (flyout != null)
+                    {
+                        flyout.Hide();
+                        flyout.Items.Clear();
+                    }
+                    button.Flyout = null;
+                });
+        }
+
+        // InfoBar realizes its content + action templates on open and tears them down on close. Toggling IsOpen and
+        // tracking the content child exercises that open/close content-lifetime path.
+        [TestMethod]
+        public void StressInfoBarOpenClose()
+        {
+            RunChurnScenario<InfoBar>(
+                "StressInfoBarOpenClose",
+                (objects) =>
+                {
+                    var content = new TextBlock() { Text = "content" };
+                    objects["Content"] = new WeakReference(content);
+                    return new InfoBar()
+                    {
+                        Title = "title",
+                        Message = "message",
+                        Content = content,
+                        IsOpen = true,
+                    };
+                },
+                (infoBar, c) => infoBar.IsOpen = !infoBar.IsOpen,
+                (infoBar) =>
+                {
+                    infoBar.IsOpen = false;
+                    infoBar.Content = null;
+                });
+        }
+
+        // TeachingTip hosts its content in a popup created on open and destroyed on close. Toggling IsOpen exercises
+        // that popup create/teardown + content-lifetime path.
+        [TestMethod]
+        public void StressTeachingTipOpenClose()
+        {
+            RunChurnScenario<TeachingTip>(
+                "StressTeachingTipOpenClose",
+                (objects) =>
+                {
+                    var content = new TextBlock() { Text = "content" };
+                    objects["Content"] = new WeakReference(content);
+                    return new TeachingTip()
+                    {
+                        Title = "tip",
+                        Subtitle = "subtitle",
+                        Content = content,
+                    };
+                },
+                (teachingTip, c) => teachingTip.IsOpen = !teachingTip.IsOpen,
+                (teachingTip) =>
+                {
+                    teachingTip.IsOpen = false;
+                    teachingTip.Content = null;
+                });
+        }
+
+        // Shared helpers for the flyout-button churners (DropDownButton / SplitButton), whose popup + flyout-item
+        // container lifetime path is identical.
+        private static MenuFlyout BuildMenuFlyout(Dictionary<string, WeakReference> objects)
+        {
+            var flyout = new MenuFlyout();
+            for (int m = 0; m < 6; m++)
+            {
+                var item = new MenuFlyoutItem() { Text = string.Format("Item {0}", m) };
+                if (m == 0)
+                {
+                    objects["FirstItem"] = new WeakReference(item);
+                }
+                flyout.Items.Add(item);
+            }
+            return flyout;
+        }
+
+        private static TButton BuildFlyoutButton<TButton>(Dictionary<string, WeakReference> objects, TButton button)
+            where TButton : Button
+        {
+            button.Flyout = BuildMenuFlyout(objects);
+            return button;
+        }
+
+        private static void ChurnFlyoutButton(MenuFlyout flyout, FrameworkElement target, int c)
+        {
+            flyout.ShowAt(target);
+            flyout.Hide();
+
+            var extra = new MenuFlyoutItem() { Text = string.Format("Extra {0}", c) };
+            flyout.Items.Add(extra);
+            flyout.Items.RemoveAt(flyout.Items.Count - 1);
+        }
+
+        private static void TeardownFlyoutButton(Button button)
+        {
+            var flyout = (MenuFlyout)button.Flyout;
+            if (flyout != null)
+            {
+                flyout.Hide();
+                flyout.Items.Clear();
+            }
+            button.Flyout = null;
+        }
+
+        // -------------------------------------------------------------------------------------------------------------
         // Coverage map: WinUI "Lifetime Issues" reliability/Watson bugs (WinUI_Bugs_2026-09-10, Technical area =
         // "Lifetime Issues", 38 items) -> the scenario that exercises each faulting path. "Generic peer churn" is the
         // AddRef/Release/Unpeg/TrackerClear/metadata/ComObject teardown traffic driven by every-pass creation,
@@ -2401,6 +2631,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         //   * InkToolbar       - requires a target InkCanvas to be attached.
         //   * CommandBarFlyout / RadioMenuFlyoutItem - flyout-only types, not standalone tree content.
         // ItemsRepeater is covered by its own dedicated realization/recycling scenario above.
+
+        // Parameterized items/selection + popup churn harness.
+        //
+        // The hand-written churners (StressNavigationViewMenuChurn / StressTreeViewNodeChurn /
+        // StressComboBoxDropDownChurn / ...) all share one shape that is what actually surfaces a managed lifetime
+        // leak: build a container, keep it parented across an interaction loop that fills the control's internal
+        // selection model + realized-container / popup cache, track a CHILD object with a WeakReference, then verify
+        // the child collects after forced GC. This harness generalizes that shape so the remaining container-realizing
+        // / popup controls can each be covered with a few delegate rows, inheriting the same non-gating
+        // RunStress / SafeUI / VerifyCollected plumbing (a residual reference is reported as a warning, never a gating
+        // failure). build() creates the control and registers the child object(s) to track into 'objects'; churn()
+        // runs one interaction iteration (open/close, select, add/remove); teardown() detaches children before the
+        // control is unparented.
+        private void RunChurnScenario<TControl>(
+            string scenarioName,
+            Func<Dictionary<string, WeakReference>, TControl> build,
+            Action<TControl, int> churn,
+            Action<TControl> teardown)
+            where TControl : UIElement
+        {
+            RunStress(scenarioName, (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var control = build(objects);
+                    objects["Control"] = new WeakReference(control);
+
+                    Content = control;
+                    Content.UpdateLayout();
+
+                    for (int c = 0; c < 5; c++)
+                    {
+                        churn(control, c);
+                        Content.UpdateLayout();
+                    }
+
+                    teardown(control);
+                    Content = null;
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
         private static Dictionary<string, UIElement> CreateControlSet()
         {
             return new Dictionary<string, UIElement>
