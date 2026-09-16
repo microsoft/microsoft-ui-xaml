@@ -457,12 +457,21 @@ void InkCanvas::DetachFromVisualLink()
 bool InkCanvas::IsSystemCompositor()
 {
     static bool isSystemCompositor = [] {
-        auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
-        // GetForSystemEngine takes any composition object (IInspectable); pass the compositor
-        // directly rather than allocating a throwaway visual just to probe the engine.
-        // CompositionEngine lives in the Microsoft.UI.Composition namespace (it was promoted out of
-        // the Experimental namespace in the InteractiveExperiences transport), so reference it there.
-        return winrt::Microsoft::UI::Composition::CompositionEngine::GetForSystemEngine(compositor) != nullptr;
+        // CompositionEngine is not activatable on every OS build; there GetForSystemEngine throws
+        // CLASS_E_CLASSNOTAVAILABLE, and the lifted path still renders ink.
+        try
+        {
+            auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+            // GetForSystemEngine takes any composition object (IInspectable); pass the compositor
+            // directly rather than allocating a throwaway visual just to probe the engine.
+            // CompositionEngine lives in the Microsoft.UI.Composition namespace (it was promoted out of
+            // the Experimental namespace in the InteractiveExperiences transport), so reference it there.
+            return winrt::Microsoft::UI::Composition::CompositionEngine::GetForSystemEngine(compositor) != nullptr;
+        }
+        catch (winrt::hresult_error const&)
+        {
+            return false;
+        }
     }();
     return isSystemCompositor;
 }
