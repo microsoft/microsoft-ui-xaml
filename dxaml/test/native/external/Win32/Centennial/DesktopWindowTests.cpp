@@ -10,6 +10,8 @@
 #include <ppltasks.h>
 #include <SafeEventRegistration.h>
 #include <TestCleanupWrapper.h>
+#include <WindowAutoCloser.h>
+#include <microsoft.ui.xaml.window.h>
 
 using namespace Microsoft::UI::Xaml::Controls;
 using namespace Microsoft::UI::Xaml::Tests::Common;
@@ -72,5 +74,92 @@ namespace Microsoft::UI::Xaml::Tests::DesktopWindow {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-}
+        static void VerifyWindowRedirectionSurface(bool skipRedirectionSurface)
+        {
+            TestCleanupWrapper cleanup;
+            WindowAutoCloser window;
 
+            RunOnUIThread([&]()
+            {
+                const auto changeId = xaml_settings::XamlChangeId::SkipWindowRedirectionSurface;
+                VERIFY_ARE_EQUAL(skipRedirectionSurface, xaml_settings::XamlOptionalChanges::IsChangeEnabled(changeId));
+
+                window.Attach(ref new Window());
+                wrl::ComPtr<IWindowNative> windowNative;
+                VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window.get())->QueryInterface(IID_PPV_ARGS(&windowNative)));
+
+                HWND windowHandle = nullptr;
+                VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+                VERIFY_IS_NOT_NULL(windowHandle);
+
+                wil::unique_hdc memoryDC(::CreateCompatibleDC(nullptr));
+                VERIFY_IS_NOT_NULL(memoryDC.get());
+                wil::unique_hbitmap bitmap(::CreateBitmap(1, 1, 1, 1, nullptr));
+                VERIFY_IS_NOT_NULL(bitmap.get());
+                const auto previousBitmap = ::SelectObject(memoryDC.get(), bitmap.get());
+                VERIFY_IS_NOT_NULL(previousBitmap);
+                VERIFY_ARE_NOT_EQUAL(HGDI_ERROR, previousBitmap);
+                auto restoreBitmap = wil::scope_exit([&]()
+                {
+                    ::SelectObject(memoryDC.get(), previousBitmap);
+                });
+
+                auto verifyWindowState = [&]()
+                {
+                    const bool hasNoRedirectionBitmap =
+                        (::GetWindowLongPtrW(windowHandle, GWL_EXSTYLE) & WS_EX_NOREDIRECTIONBITMAP) != 0;
+                    VERIFY_ARE_EQUAL(skipRedirectionSurface, hasNoRedirectionBitmap);
+
+                    auto eraseBackground = [&](COLORREF initialColor)
+                    {
+                        VERIFY_IS_TRUE(!!::SetPixelV(memoryDC.get(), 0, 0, initialColor));
+                        VERIFY_ARE_EQUAL(
+                            static_cast<LRESULT>(1),
+                            ::SendMessageW(windowHandle, WM_ERASEBKGND, reinterpret_cast<WPARAM>(memoryDC.get()), 0));
+                        const auto color = ::GetPixel(memoryDC.get(), 0, 0);
+                        VERIFY_ARE_NOT_EQUAL(CLR_INVALID, color);
+                        return color;
+                    };
+
+                    // Two starting colors distinguish a themed fill from no painting, regardless of the theme.
+                    const auto fromBlack = eraseBackground(RGB(0, 0, 0));
+                    const auto fromWhite = eraseBackground(RGB(255, 255, 255));
+                    if (skipRedirectionSurface)
+                    {
+                        VERIFY_ARE_EQUAL(RGB(0, 0, 0), fromBlack);
+                        VERIFY_ARE_EQUAL(RGB(255, 255, 255), fromWhite);
+                    }
+                    else
+                    {
+                        VERIFY_ARE_EQUAL(fromBlack, fromWhite);
+                    }
+                };
+
+                verifyWindowState();
+
+                TestServices::Utilities->ResetOptionalChanges();
+                auto restoreLock = wil::scope_exit([]()
+                {
+                    xaml_settings::XamlOptionalChanges::Lock();
+                });
+                if (!skipRedirectionSurface)
+                {
+                    VERIFY_IS_TRUE(xaml_settings::XamlOptionalChanges::EnableChange(changeId));
+                }
+                VERIFY_ARE_EQUAL(!skipRedirectionSurface, xaml_settings::XamlOptionalChanges::IsChangeEnabled(changeId));
+
+                verifyWindowState();
+            });
+        }
+
+        void DesktopWindowTests::ValidateDefaultRedirectionSurface()
+        {
+            VerifyWindowRedirectionSurface(false);
+        }
+
+        void DesktopWindowTests::ValidateSkippedRedirectionSurface()
+        {
+            VerifyWindowRedirectionSurface(true);
+        }
+
+}

@@ -27,6 +27,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(ValidateDesktopWindowLifeTime)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates DesktopWindow life time.")
             END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ValidateDefaultRedirectionSurface)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates the default HWND style and background erasure, including after the optional-change state changes.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ValidateSkippedRedirectionSurface)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates the opted-in HWND style and background erasure, including after the optional-change state changes.")
+                TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{SkipWindowRedirectionSurface:true}")
+            END_TEST_METHOD()
         };
     }
 } } } }
