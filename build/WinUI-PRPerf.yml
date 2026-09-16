@@ -58,6 +58,11 @@ parameters:
   - ado
   - none
 
+# Supplies the secret GitHubPRPerfToken used to post the results comment and
+# commit status back to GitHub.
+variables:
+- group: WinUI-InternalFeed
+
 resources:
   repositories:
   - repository: templates

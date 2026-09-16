@@ -48,6 +48,9 @@ variables:
 - template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
 - template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
 - group: WinUI-Variable-Library
+# Supplies the secret GitHubPRPerfToken used by the PR performance stage to post
+# its results comment and commit status back to GitHub.
+- group: WinUI-InternalFeed
 - name: WindowsContainerImage
   value: 'onebranch.azurecr.io/windows/ltsc2022/vse2022:latest'
 
