@@ -21,10 +21,19 @@ binaries, runtimes, and reports. Each run removes only its own fixture root.
 Collector startup and pipe readiness are mocked in most tests. Shutdown clients
 run as real processes to exercise Windows PowerShell exit-code handling and log
 capture. Three shutdown tests also run a collector fixture with a unique pipe that
-withholds its reply, verifying wall-clock timeout, cleanup, and test-result preservation. An inert
-`WinUI.Coverage.PipeAcl` type records ACL requests without loading Win32 code or
-changing any permissions. Always use a fresh process, not an existing collector
+withholds its reply, verifying wall-clock timeout, cleanup, and test-result
+preservation. Account discovery is mocked. Collection settings tests cover
+distinct collector/console accounts, deduplication, no logged-in console user,
+discovery and SID-resolution failures, and stale-settings cleanup. They verify
+that the generated `AllowedUsers` configuration preserves the checked-in
+instrumentation settings. Always use a fresh process, not an existing collector
 session.
+
+An existing-session regression uses a real fixture pipe and verifies that the
+wrapper fails without starting tests, changing permissions, or sending shutdown.
+Native smoke lifecycle regressions invoke its collection helper with fixture
+executables to cover successful shutdown, stalled clients and collectors, and
+failure cleanup. Process-exit assertions allow up to five seconds for termination.
 
 These are script contract tests, not a validation of native binary rewriting,
 PDB identity, the coverage report schema, real VS collector readiness, or
@@ -49,5 +58,10 @@ The fixture DLLs use `/PROFILE` to emit the linker metadata needed for native
 instrumentation. The smoke test does not verify the real WinUI build's linker settings.
 
 Each collector has a unique fixture-only session. The smoke test does not call the
-production collector wrapper or ACL script, change any pipe permissions, or stop
+production collector wrapper, change any pipe permissions, or stop
 unrelated processes. It is not end-to-end WinUI or low-integrity TAEF validation.
+
+Shutdown gives the client and collector a shared 60-second budget, configurable
+with `-ShutdownTimeoutSeconds`. Failure cleanup terminates only the owned
+processes and waits up to five seconds for each to exit; it does not retry the
+shutdown command.

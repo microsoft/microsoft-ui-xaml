@@ -13,28 +13,6 @@ foreach ($name in @('WINUI_COVERAGE_TEST_ROOT', 'WINUI_COVERAGE_TEST_MODE', 'WIN
     $script:savedEnvironment[$name] = [Environment]::GetEnvironmentVariable($name)
 }
 
-# This inert type prevents the real ACL script from loading or calling any Win32 APIs.
-# Run this suite in its own PowerShell process; never use it to set real pipe permissions.
-if ('WinUI.Coverage.PipeAcl' -as [type])
-{
-    throw 'Run coverage tests in a fresh PowerShell process. The pipe ACL type is already loaded.'
-}
-Add-Type -TypeDefinition @'
-namespace WinUI.Coverage
-{
-    public static class PipeAcl
-    {
-        public static string LastPipe;
-        public static bool Fail;
-        public static void SetNullDacl(string pipeName)
-        {
-            LastPipe = pipeName;
-            if (Fail) throw new System.InvalidOperationException("fixture ACL failure");
-        }
-    }
-}
-'@
-
 function Write-FixtureFile([string]$Path, [string]$Content = 'fixture')
 {
     New-Item -ItemType Directory -Path (Split-Path $Path) -Force | Out-Null
@@ -114,6 +92,16 @@ function Invoke-Collector([scriptblock]$RunTests)
 {
     & "$script:coverageScripts\Invoke-WithCodeCoverage.ps1" -PayloadDir $script:payload `
         -OutputFile $script:coverageOutput -RunTests $RunTests
+}
+
+function Assert-FixtureProcessExited([int]$ProcessId)
+{
+    $process = Get-Process -Id $ProcessId -ErrorAction SilentlyContinue
+    if ($process)
+    {
+        try { $process.WaitForExit(5000) | Should Be $true }
+        finally { $process.Dispose() }
+    }
 }
 
 function Invoke-PayloadPreparation
@@ -515,6 +503,8 @@ try
             Copy-Item -LiteralPath $script:compiledTool -Destination "$script:payload\CoverageTool\Microsoft.CodeCoverage.Console.exe" -Force
             Write-FixtureFile "$script:payload\_coverage-session-id.txt" $script:sessionId
             $script:coverageOutput = Join-Path $script:caseRoot 'results with spaces\coverage-slice.coverage'
+            $script:collectorAccount = [Security.Principal.SecurityIdentifier]::new('S-1-5-18').Translate([Security.Principal.NTAccount]).Value
+            $accountParts = $script:collectorAccount -split '\\', 2
             # Callbacks run inside other scripts, so share state explicitly across script scopes.
             $global:CoverageTestCollector = @{
                 TestsRan = 0
@@ -523,10 +513,20 @@ try
                 DateCalls = 0
                 DateStepSeconds = 1
                 FailOutputDirectory = $false
+                FailSessionRead = $false
+                FailOutputCheck = $false
+                FailOutputCleanup = $false
+                FailConsoleDiscovery = $false
+                FailSettingsRead = $false
                 StartedArguments = $null
                 CoverageOutput = $script:coverageOutput
                 SessionId = $script:sessionId
                 TestTool = $script:compiledTool
+                OwnerDomain = $accountParts[0]
+                OwnerUser = $accountParts[1]
+                OwnerReturnValue = 0
+                ConsoleUser = $script:collectorAccount
+                CimProcess = New-CimInstance -ClassName Win32_Process -Property @{ ProcessId = [uint32]$PID } -ClientOnly
             }
             $script:collector = [pscustomobject]@{
                 Id = 2147483001
@@ -544,8 +544,19 @@ try
             }
             $script:collector | Add-Member -MemberType ScriptMethod -Name Dispose -Value { $this.Disposed = $true }
             $global:CoverageTestCollector.Process = $script:collector
-            [WinUI.Coverage.PipeAcl]::LastPipe = $null
-            [WinUI.Coverage.PipeAcl]::Fail = $false
+
+            Mock Get-CimInstance { $global:CoverageTestCollector.CimProcess } -ParameterFilter { $ClassName -eq 'Win32_Process' }
+            Mock Get-CimInstance {
+                if ($global:CoverageTestCollector.FailConsoleDiscovery) { throw 'fixture console discovery failure' }
+                [pscustomobject]@{ UserName = $global:CoverageTestCollector.ConsoleUser }
+            } -ParameterFilter { $ClassName -eq 'Win32_ComputerSystem' }
+            Mock Invoke-CimMethod {
+                [pscustomobject]@{
+                    Domain = $global:CoverageTestCollector.OwnerDomain
+                    User = $global:CoverageTestCollector.OwnerUser
+                    ReturnValue = $global:CoverageTestCollector.OwnerReturnValue
+                }
+            } -ParameterFilter { $MethodName -eq 'GetOwner' }
 
             Mock Start-Process {
                 $global:CoverageTestCollector.StartedArguments = $ArgumentList
@@ -564,10 +575,24 @@ try
             Mock Test-Path {
                 $global:CoverageTestCollector.PipeChecks++
                 $global:CoverageTestCollector.PipeChecks -ge $global:CoverageTestCollector.ReadyAfter
-            } -ParameterFilter { $Path -like '\\.\pipe\CodeCoverage.pipe.*' }
+            } -ParameterFilter { $LiteralPath -like '\\.\pipe\CodeCoverage.pipe.*' }
             Mock New-Item { throw 'fixture output directory failure' } -ParameterFilter {
                 $global:CoverageTestCollector.FailOutputDirectory -and
                 $Path -eq (Split-Path $global:CoverageTestCollector.CoverageOutput)
+            }
+            Mock Get-Content { throw 'fixture session read failure' } -ParameterFilter {
+                $global:CoverageTestCollector.FailSessionRead -and $LiteralPath -like '*\_coverage-session-id.txt'
+            }
+            Mock Get-Content { '<not-valid-xml' } -ParameterFilter {
+                $global:CoverageTestCollector.FailSettingsRead -and $LiteralPath -like '*\coverage.config'
+            }
+            Mock Test-Path { throw 'fixture stale output check failure' } -ParameterFilter {
+                $global:CoverageTestCollector.FailOutputCheck -and
+                $LiteralPath -eq $global:CoverageTestCollector.CoverageOutput
+            }
+            Mock Remove-Item { throw 'fixture stale output cleanup failure' } -ParameterFilter {
+                $global:CoverageTestCollector.FailOutputCleanup -and
+                $LiteralPath -eq $global:CoverageTestCollector.CoverageOutput
             }
         }
 
@@ -575,12 +600,20 @@ try
             $global:CoverageTestCollector.ReadyAfter = 3
             Invoke-Collector {
                 $global:CoverageTestCollector.TestsRan++
-                [WinUI.Coverage.PipeAcl]::LastPipe | Should Be "\\.\pipe\CodeCoverage.pipe.$($global:CoverageTestCollector.SessionId)"
+                [xml]$settings = Get-Content -LiteralPath "$($global:CoverageTestCollector.CoverageOutput).config" -Raw
+                $settings.Configuration.CodeCoverage.AllowedUsers.User | Should Be "$($global:CoverageTestCollector.OwnerDomain)\$($global:CoverageTestCollector.OwnerUser)"
                 Write-FixtureFile $global:CoverageTestCollector.CoverageOutput 'new coverage'
                 & $global:CoverageTestCollector.TestTool test 0
             }
             $global:CoverageTestCollector.TestsRan | Should Be 1
-            ($global:CoverageTestCollector.StartedArguments -join '|') | Should Be "collect|--session-id|$script:sessionId|--server-mode|--settings|`"$script:coverageScripts\coverage.config`"|--output|`"$script:coverageOutput`""
+            ($global:CoverageTestCollector.StartedArguments -join '|') | Should Be "collect|--session-id|$script:sessionId|--server-mode|--settings|`"$script:coverageOutput.config`"|--output|`"$script:coverageOutput`""
+            Assert-MockCalled Get-CimInstance -Times 1 -Exactly -Scope It -ParameterFilter {
+                $ClassName -eq 'Win32_Process' -and $Filter -eq "ProcessId = $PID" -and $OperationTimeoutSec -eq 30
+            }
+            Assert-MockCalled Invoke-CimMethod -Times 1 -Exactly -Scope It -ParameterFilter {
+                $MethodName -eq 'GetOwner' -and $InputObject.ProcessId -eq $PID -and $OperationTimeoutSec -eq 30
+            }
+            Assert-MockCalled Write-Host -Times 1 -Exactly -Scope It -ParameterFilter { "$Object" -like 'Coverage allowed user:*S-1-5-18*' }
             Assert-MockCalled Start-Process -Times 1 -Exactly -Scope It -ParameterFilter {
                 $FilePath -eq "$script:payload\CoverageTool\Microsoft.CodeCoverage.Console.exe" -and
                 $RedirectStandardOutput -eq "$script:coverageOutput.log" -and
@@ -598,6 +631,120 @@ try
             $LASTEXITCODE | Should Be 0
         }
 
+        It 'allows a distinct console account without changing the instrumentation settings or checked-in config' {
+            $consoleAccount = [Security.Principal.SecurityIdentifier]::new('S-1-5-19').Translate([Security.Principal.NTAccount]).Value
+            $global:CoverageTestCollector.ConsoleUser = $consoleAccount
+            $originalHash = (Get-FileHash -LiteralPath "$script:coverageScripts\coverage.config").Hash
+            Invoke-Collector { & $global:CoverageTestCollector.TestTool test 0 }
+            [xml]$settings = Get-Content -LiteralPath "$script:coverageOutput.config" -Raw
+            $users = @($settings.Configuration.CodeCoverage.AllowedUsers.User)
+            $users.Count | Should Be 2
+            ($users -contains $script:collectorAccount) | Should Be $true
+            ($users -contains $consoleAccount) | Should Be $true
+            [void]$settings.Configuration.CodeCoverage.RemoveChild($settings.Configuration.CodeCoverage.AllowedUsers)
+            [xml]$original = Get-Content -LiteralPath "$script:coverageScripts\coverage.config" -Raw
+            $settings.OuterXml | Should Be $original.OuterXml
+            (Get-FileHash -LiteralPath "$script:coverageScripts\coverage.config").Hash | Should Be $originalHash
+            Assert-MockCalled Write-Host -Times 1 -Exactly -Scope It -ParameterFilter { "$Object" -like 'Coverage allowed user:*S-1-5-19*' }
+            Assert-MockCalled Get-CimInstance -Times 1 -Exactly -Scope It -ParameterFilter {
+                $ClassName -eq 'Win32_ComputerSystem' -and $OperationTimeoutSec -eq 30
+            }
+        }
+
+        It 'does not duplicate the same account with different casing' {
+            $global:CoverageTestCollector.ConsoleUser = $script:collectorAccount.ToUpperInvariant()
+            Invoke-Collector { & $global:CoverageTestCollector.TestTool test 0 }
+            [xml]$settings = Get-Content -LiteralPath "$script:coverageOutput.config" -Raw
+            @($settings.Configuration.CodeCoverage.AllowedUsers.User).Count | Should Be 1
+            $settings.Configuration.CodeCoverage.AllowedUsers.User | Should Be $script:collectorAccount
+        }
+
+        It 'allows only the collector account when no console user is logged in' {
+            $global:CoverageTestCollector.ConsoleUser = $null
+            Invoke-Collector { & $global:CoverageTestCollector.TestTool test 0 }
+            [xml]$settings = Get-Content -LiteralPath "$script:coverageOutput.config" -Raw
+            @($settings.Configuration.CodeCoverage.AllowedUsers.User).Count | Should Be 1
+            $settings.Configuration.CodeCoverage.AllowedUsers.User | Should Be $script:collectorAccount
+            Assert-MockCalled Write-Host -Times 1 -Exactly -Scope It -ParameterFilter { "$Object" -like 'Coverage console account: none*' }
+        }
+
+        foreach ($failure in @('return-code', 'missing-user', 'missing-domain'))
+        {
+            It "does not start a collector if process-owner discovery fails ($failure)" {
+                if ($failure -eq 'return-code') { $global:CoverageTestCollector.OwnerReturnValue = 2 }
+                if ($failure -eq 'missing-user') { $global:CoverageTestCollector.OwnerUser = '' }
+                if ($failure -eq 'missing-domain') { $global:CoverageTestCollector.OwnerDomain = '' }
+                Invoke-Collector { $global:CoverageTestCollector.TestsRan++; & $global:CoverageTestCollector.TestTool test 37 }
+                $global:CoverageTestCollector.TestsRan | Should Be 1
+                $LASTEXITCODE | Should Be 37
+                Assert-MockCalled Start-Process -Times 0 -Exactly -Scope It
+                Assert-MockCalled Write-Host -Times 1 -Scope It -ParameterFilter { "$Object" -like '*Cannot determine the coverage collector account*' }
+            }
+        }
+
+        It 'reports failed console discovery without starting a collector with default permissions' {
+            $global:CoverageTestCollector.FailConsoleDiscovery = $true
+            Invoke-Collector { & $global:CoverageTestCollector.TestTool test 37 }
+            $LASTEXITCODE | Should Be 37
+            Assert-MockCalled Start-Process -Times 0 -Exactly -Scope It
+            Assert-MockCalled Write-Host -Times 1 -Scope It -ParameterFilter { "$Object" -like '*Coverage setup failed:*fixture console discovery failure*' }
+        }
+
+        It 'reports failed settings creation without starting a collector with default permissions' {
+            $global:CoverageTestCollector.FailSettingsRead = $true
+            Invoke-Collector { & $global:CoverageTestCollector.TestTool test 37 }
+            $LASTEXITCODE | Should Be 37
+            Assert-MockCalled Start-Process -Times 0 -Exactly -Scope It
+            Assert-MockCalled Write-Host -Times 1 -Scope It -ParameterFilter { "$Object" -like '*Coverage setup failed:*' }
+        }
+
+        It 'fails before tests without opening, changing, or shutting down a real existing session pipe' {
+            $script:sessionId = 'coverage-existing-' + [guid]::NewGuid().ToString('N')
+            Write-FixtureFile "$script:payload\_coverage-session-id.txt" $script:sessionId
+            Write-FixtureFile $script:coverageOutput 'stale'
+            $existingPipe = [IO.Pipes.NamedPipeServerStream]::new("CodeCoverage.pipe.$script:sessionId")
+            try
+            {
+                { Invoke-Collector { $global:CoverageTestCollector.TestsRan++ } } | Should Throw "Coverage session '$script:sessionId' already exists"
+                $global:CoverageTestCollector.TestsRan | Should Be 0
+                Test-Path -LiteralPath $script:coverageOutput | Should Be $false
+                $existingPipe.SafePipeHandle.IsClosed | Should Be $false
+                $existingPipe.IsConnected | Should Be $false
+                Assert-MockCalled Start-Process -Times 0 -Exactly -Scope It
+                Assert-MockCalled Stop-Process -Times 0 -Exactly -Scope It
+                @(Get-ToolCalls 'shutdown').Count | Should Be 0
+                Assert-MockCalled Get-CimInstance -Times 0 -Exactly -Scope It
+                $script:collector.Disposed | Should Be $false
+                Assert-MockCalled Write-Host -Times 0 -Exactly -Scope It -ParameterFilter { "$Object" -like '*Coverage setup failed*' }
+                $client = [IO.Pipes.NamedPipeClientStream]::new('.', "CodeCoverage.pipe.$script:sessionId")
+                try
+                {
+                    $client.Connect(1000)
+                    $client.IsConnected | Should Be $true
+                }
+                finally { $client.Dispose() }
+            }
+            finally { $existingPipe.Dispose() }
+        }
+
+        It 'does not mistake another session with the same prefix for a collision' {
+            $script:sessionId = 'coverage-existing-' + [guid]::NewGuid().ToString('N')
+            Write-FixtureFile "$script:payload\_coverage-session-id.txt" $script:sessionId
+            $existingPipe = [IO.Pipes.NamedPipeServerStream]::new("CodeCoverage.pipe.$script:sessionId-other")
+            try
+            {
+                Invoke-Collector {
+                    $global:CoverageTestCollector.TestsRan++
+                    Write-FixtureFile $global:CoverageTestCollector.CoverageOutput 'coverage'
+                    & $global:CoverageTestCollector.TestTool test 0
+                }
+                $global:CoverageTestCollector.TestsRan | Should Be 1
+                Assert-MockCalled Start-Process -Times 1 -Exactly -Scope It
+                [IO.Directory]::GetFiles('\\.\pipe\', "CodeCoverage.pipe.$script:sessionId-other").Length | Should Be 1
+            }
+            finally { $existingPipe.Dispose() }
+        }
+
         It 'removes stale output before tests instead of accepting it as new coverage' {
             Write-FixtureFile $script:coverageOutput 'stale'
             Invoke-Collector {
@@ -610,8 +757,13 @@ try
         }
 
         It 'still invokes tests and preserves their native failure when the session file is absent' {
+            Write-FixtureFile $script:coverageOutput 'stale'
             Remove-Item -LiteralPath "$script:payload\_coverage-session-id.txt"
-            Invoke-Collector { $global:CoverageTestCollector.TestsRan++; & $global:CoverageTestCollector.TestTool test 37 }
+            Invoke-Collector {
+                $global:CoverageTestCollector.TestsRan++
+                Test-Path -LiteralPath $global:CoverageTestCollector.CoverageOutput | Should Be $false
+                & $global:CoverageTestCollector.TestTool test 37
+            }
             $global:CoverageTestCollector.TestsRan | Should Be 1
             $LASTEXITCODE | Should Be 37
             Assert-MockCalled Start-Process -Times 0 -Exactly -Scope It
@@ -619,11 +771,81 @@ try
         }
 
         It 'still invokes tests when the session ID is invalid' {
+            Write-FixtureFile $script:coverageOutput 'stale'
             Write-FixtureFile "$script:payload\_coverage-session-id.txt" 'invalid/session'
             Invoke-Collector { $global:CoverageTestCollector.TestsRan++; & $global:CoverageTestCollector.TestTool test 0 }
             $global:CoverageTestCollector.TestsRan | Should Be 1
+            Test-Path -LiteralPath $script:coverageOutput | Should Be $false
             Assert-MockCalled Start-Process -Times 0 -Exactly -Scope It
-            [WinUI.Coverage.PipeAcl]::LastPipe | Should BeNullOrEmpty
+            Assert-MockCalled Get-CimInstance -Times 0 -Exactly -Scope It
+        }
+
+        It 'clears stale output even when the session file cannot be read' {
+            Write-FixtureFile $script:coverageOutput 'stale'
+            Write-FixtureFile "$script:coverageOutput.config" 'stale settings'
+            $global:CoverageTestCollector.FailSessionRead = $true
+            Invoke-Collector { $global:CoverageTestCollector.TestsRan++; & $global:CoverageTestCollector.TestTool test 37 }
+            $global:CoverageTestCollector.TestsRan | Should Be 1
+            $LASTEXITCODE | Should Be 37
+            Test-Path -LiteralPath $script:coverageOutput | Should Be $false
+            Test-Path -LiteralPath "$script:coverageOutput.config" | Should Be $false
+            Assert-MockCalled Start-Process -Times 0 -Exactly -Scope It
+            Assert-MockCalled Write-Host -Times 1 -Scope It -ParameterFilter { "$Object" -like '*Coverage setup failed:*fixture session read failure*' }
+        }
+
+        foreach ($sessionPresent in @($true, $false))
+        {
+            It "stops before tests and suppresses the artifact when stale output cannot be removed (session present: $sessionPresent)" {
+                Write-FixtureFile $script:coverageOutput 'stale'
+                if (-not $sessionPresent) { Remove-Item -LiteralPath "$script:payload\_coverage-session-id.txt" }
+                $global:CoverageTestCollector.FailOutputCleanup = $true
+                { Invoke-Collector { $global:CoverageTestCollector.TestsRan++ } } | Should Throw 'Cannot clear previous coverage output'
+                $global:CoverageTestCollector.TestsRan | Should Be 0
+                [IO.File]::ReadAllText($script:coverageOutput) | Should Be 'stale'
+                Assert-MockCalled Start-Process -Times 0 -Exactly -Scope It
+                Assert-MockCalled Write-Host -Times 1 -Exactly -Scope It -ParameterFilter { "$Object" -eq '##vso[task.setvariable variable=skipPublish]true' }
+                @(Get-ToolCalls 'shutdown').Count | Should Be 0
+                Assert-MockCalled Get-CimInstance -Times 0 -Exactly -Scope It
+            }
+        }
+
+        It 'stops before tests and suppresses the artifact when previous output cannot be checked' {
+            Write-FixtureFile $script:coverageOutput 'stale'
+            $global:CoverageTestCollector.FailOutputCheck = $true
+            { Invoke-Collector { $global:CoverageTestCollector.TestsRan++ } } | Should Throw 'fixture stale output check failure'
+            $global:CoverageTestCollector.TestsRan | Should Be 0
+            Assert-MockCalled Start-Process -Times 0 -Exactly -Scope It
+            Assert-MockCalled Write-Host -Times 1 -Exactly -Scope It -ParameterFilter { "$Object" -eq '##vso[task.setvariable variable=skipPublish]true' }
+        }
+
+        It 'suppresses publication when a real file lock prevents stale output cleanup' {
+            Write-FixtureFile $script:coverageOutput 'stale'
+            $lockedFile = [IO.File]::Open($script:coverageOutput, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::None)
+            try
+            {
+                { Invoke-Collector { $global:CoverageTestCollector.TestsRan++ } } | Should Throw 'Cannot clear previous coverage output'
+                $global:CoverageTestCollector.TestsRan | Should Be 0
+                Assert-MockCalled Start-Process -Times 0 -Exactly -Scope It
+                Assert-MockCalled Write-Host -Times 1 -Exactly -Scope It -ParameterFilter { "$Object" -eq '##vso[task.setvariable variable=skipPublish]true' }
+            }
+            finally
+            {
+                $lockedFile.Dispose()
+            }
+            [IO.File]::ReadAllText($script:coverageOutput) | Should Be 'stale'
+        }
+
+        It 'suppresses publication when a real file lock prevents stale settings cleanup' {
+            Write-FixtureFile "$script:coverageOutput.config" 'stale settings'
+            $lockedFile = [IO.File]::Open("$script:coverageOutput.config", [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::None)
+            try
+            {
+                { Invoke-Collector { $global:CoverageTestCollector.TestsRan++ } } | Should Throw 'Cannot clear previous coverage output'
+                $global:CoverageTestCollector.TestsRan | Should Be 0
+                Assert-MockCalled Start-Process -Times 0 -Exactly -Scope It
+                Assert-MockCalled Write-Host -Times 1 -Exactly -Scope It -ParameterFilter { "$Object" -eq '##vso[task.setvariable variable=skipPublish]true' }
+            }
+            finally { $lockedFile.Dispose() }
         }
 
         It 'still invokes tests when the output directory cannot be created' {
@@ -653,6 +875,17 @@ try
             $LASTEXITCODE | Should Be 37
             Assert-MockCalled Write-Host -Times 1 -Scope It -ParameterFilter { "$Object" -like '*collector exited with code 28*' }
             Assert-MockCalled Stop-Process -Times 0 -Exactly -Scope It
+            @(Get-ToolCalls 'shutdown').Count | Should Be 0
+        }
+
+        It 'does not shut down a ready pipe after the launched collector has exited' {
+            $script:collector.HasExited = $true
+            Invoke-Collector { $global:CoverageTestCollector.TestsRan++; & $global:CoverageTestCollector.TestTool test 37 }
+            $global:CoverageTestCollector.TestsRan | Should Be 1
+            $LASTEXITCODE | Should Be 37
+            @(Get-ToolCalls 'shutdown').Count | Should Be 0
+            Assert-MockCalled Stop-Process -Times 0 -Exactly -Scope It
+            $script:collector.Disposed | Should Be $true
         }
 
         It 'still invokes tests and cleans up after pipe readiness times out' {
@@ -663,16 +896,27 @@ try
             $LASTEXITCODE | Should Be 37
             @(Get-ToolCalls 'shutdown').Count | Should Be 1
             Assert-MockCalled Write-Host -Times 1 -Scope It -ParameterFilter { "$Object" -like '*pipe did not appear within 30 seconds*' }
-            [WinUI.Coverage.PipeAcl]::LastPipe | Should BeNullOrEmpty
         }
 
-        It 'still invokes tests and cleans up after ACL setup fails' {
-            [WinUI.Coverage.PipeAcl]::Fail = $true
+        It 'does not send shutdown by session name if its collector exits during tests' {
+            Invoke-Collector {
+                $global:CoverageTestCollector.Process.HasExited = $true
+                & $global:CoverageTestCollector.TestTool test 37
+            }
+            $LASTEXITCODE | Should Be 37
+            @(Get-ToolCalls 'shutdown').Count | Should Be 0
+            Assert-MockCalled Stop-Process -Times 0 -Exactly -Scope It
+            $script:collector.Disposed | Should Be $true
+        }
+
+        It 'does not start a collector with an unresolvable account and preserves the test result' {
+            $global:CoverageTestCollector.ConsoleUser = 'missing-coverage-user-' + [guid]::NewGuid().ToString('N')
             Invoke-Collector { $global:CoverageTestCollector.TestsRan++; & $global:CoverageTestCollector.TestTool test 37 }
             $global:CoverageTestCollector.TestsRan | Should Be 1
             $LASTEXITCODE | Should Be 37
-            @(Get-ToolCalls 'shutdown').Count | Should Be 1
-            Assert-MockCalled Write-Host -Times 1 -Scope It -ParameterFilter { "$Object" -like '*Coverage setup failed:*fixture ACL failure*' }
+            Assert-MockCalled Start-Process -Times 0 -Exactly -Scope It
+            @(Get-ToolCalls 'shutdown').Count | Should Be 0
+            Assert-MockCalled Write-Host -Times 1 -Scope It -ParameterFilter { "$Object" -like '*Coverage setup failed:*Cannot resolve coverage account*' }
         }
 
         It 'preserves a native failure through nested RunTests callbacks and successful shutdown' {
@@ -759,6 +1003,7 @@ try
                 $global:CoverageTestCollector.StartCommand = Get-Command Start-Process -CommandType Cmdlet
                 $global:CoverageTestCollector.StopCommand = Get-Command Stop-Process -CommandType Cmdlet
                 Mock Start-Process {
+                    $global:CoverageTestCollector.StartedArguments = $ArgumentList
                     $process = & $global:CoverageTestCollector.StartCommand -FilePath $FilePath -ArgumentList $ArgumentList `
                         -PassThru -NoNewWindow -RedirectStandardOutput $RedirectStandardOutput -RedirectStandardError $RedirectStandardError
                     $global:CoverageTestCollector.OwnedProcesses += $process.Id
@@ -801,7 +1046,7 @@ try
                     $global:CoverageTestCollector.OwnedProcesses.Count | Should Be 2
                     foreach ($processId in $global:CoverageTestCollector.OwnedProcesses)
                     {
-                        Get-Process -Id $processId -ErrorAction SilentlyContinue | Should BeNullOrEmpty
+                        Assert-FixtureProcessExited $processId
                     }
                 }
                 finally
@@ -849,29 +1094,102 @@ try
         }
     }
 
-    Describe 'Coverage pipe ACL wrapper with inert Win32 replacement' {
+    Describe 'Native smoke collector lifecycle' {
+        $ast = [Management.Automation.Language.Parser]::ParseFile("$PSScriptRoot\Run-NativeSmoke.ps1", [ref]$null, [ref]$null)
+        $sliceFunction = $ast.Find({
+            param($node)
+            $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq 'Invoke-NativeSlice'
+        }, $false)
+        # Exercise the smoke helper without compiling native DLLs or running its entry point.
+        . ([scriptblock]::Create($sliceFunction.Extent.Text))
+
         BeforeEach {
-            [WinUI.Coverage.PipeAcl]::LastPipe = $null
-            [WinUI.Coverage.PipeAcl]::Fail = $false
-            Mock Write-Warning {}
+            New-CoverageFixture
+            $script:scripts = $script:coverageScripts
+            $script:slices = Join-Path $script:caseRoot 'slices'
+            $script:apps = @('app one', 'app two')
+            $script:sessionId = 'coverage-smoke-test-' + [guid]::NewGuid().ToString('N')
+            $script:ShutdownTimeoutSeconds = 2
+            New-Item -ItemType Directory -Path $script:slices | Out-Null
+            Copy-Item -LiteralPath $script:compiledTool -Destination "$script:payload\app one\CoverageRunner.exe"
+            $env:WINUI_COVERAGE_TEST_MODE = 'native-smoke'
         }
 
-        It 'scopes the ACL request to exactly the specified collector session' {
-            & "$script:coverageScripts\Set-CoveragePipeAcl.ps1" -SessionId 'unique-test-session'
-            [WinUI.Coverage.PipeAcl]::LastPipe | Should Be '\\.\pipe\CodeCoverage.pipe.unique-test-session'
-            Assert-MockCalled Write-Warning -Times 1 -Scope It
+        AfterEach {
+            foreach ($name in @('collector', 'shutdown'))
+            {
+                $pidFile = Join-Path $script:caseRoot "$name.pid"
+                if (Test-Path -LiteralPath $pidFile)
+                {
+                    $process = Get-Process -Id ([int](Get-Content -LiteralPath $pidFile)) -ErrorAction SilentlyContinue
+                    if ($process)
+                    {
+                        try
+                        {
+                            Stop-Process -Id $process.Id -ErrorAction Continue
+                            $process.WaitForExit(5000) | Should Be $true
+                        }
+                        finally { $process.Dispose() }
+                    }
+                }
+            }
         }
 
-        It 'rejects unsafe session IDs before requesting an ACL change' {
-            { & "$script:coverageScripts\Set-CoveragePipeAcl.ps1" -SessionId 'invalid/session' -ErrorAction Stop } | Should Throw 'does not match'
-            [WinUI.Coverage.PipeAcl]::LastPipe | Should BeNullOrEmpty
+        It 'collects a fixture slice and retains the real shutdown exit code' {
+            Invoke-NativeSlice 0
+            [IO.File]::ReadAllText("$script:slices\coverage-0.coverage") | Should Be 'coverage'
+            @(Get-ToolCalls 'shutdown').Count | Should Be 1
+            foreach ($name in @('collector', 'shutdown'))
+            {
+                Assert-FixtureProcessExited ([int](Get-Content -LiteralPath "$script:caseRoot\$name.pid"))
+            }
         }
 
-        It 'propagates ACL failures for the collector wrapper to handle' {
-            [WinUI.Coverage.PipeAcl]::Fail = $true
-            { & "$script:coverageScripts\Set-CoveragePipeAcl.ps1" -SessionId 'unique-test-session' } | Should Throw 'fixture ACL failure'
+        foreach ($mode in @('stall-shutdown', 'stall-collector'))
+        {
+            It "bounds $mode and terminates both owned processes without retrying shutdown" {
+                $env:WINUI_COVERAGE_TEST_MODE = $mode
+                $clock = [Diagnostics.Stopwatch]::StartNew()
+                { Invoke-NativeSlice 0 } | Should Throw 'within 2 seconds'
+                $clock.Elapsed.TotalSeconds | Should BeLessThan 15
+                @(Get-ToolCalls 'collect').Count | Should Be 1
+                @(Get-ToolCalls 'shutdown').Count | Should Be 1
+                Test-Path -LiteralPath "$script:caseRoot\shutdown-requested.txt" | Should Be $true
+                foreach ($name in @('collector', 'shutdown'))
+                {
+                    Assert-FixtureProcessExited ([int](Get-Content -LiteralPath "$script:caseRoot\$name.pid"))
+                }
+            }
+        }
+
+        It 'preserves runner failure and terminates its collector without starting shutdown' {
+            $env:WINUI_COVERAGE_TEST_MODE = 'fail-native-runner'
+            { Invoke-NativeSlice 0 } | Should Throw 'Native fixture failed with exit code 37'
+            @(Get-ToolCalls 'shutdown').Count | Should Be 0
+            Assert-FixtureProcessExited ([int](Get-Content -LiteralPath "$script:caseRoot\collector.pid"))
+        }
+
+        It 'reports the real failing shutdown exit code without retrying shutdown' {
+            $env:WINUI_COVERAGE_TEST_MODE = 'fail-native-shutdown'
+            { Invoke-NativeSlice 0 } | Should Throw 'Native fixture shutdown failed with exit code 26'
+            @(Get-ToolCalls 'shutdown').Count | Should Be 1
+            foreach ($name in @('collector', 'shutdown'))
+            {
+                Assert-FixtureProcessExited ([int](Get-Content -LiteralPath "$script:caseRoot\$name.pid"))
+            }
         }
     }
+
+    Describe 'Coverage artifact publication' {
+        It 'preserves cleanup-failure suppression in coverage jobs without changing the coverage-off probe condition' {
+            $template = Get-Content -LiteralPath "$PSScriptRoot\..\..\..\..\..\build\AzurePipelinesTemplates\WinUI-RunTestPassOnPipeline-Job.yml" -Raw
+            $probe = [regex]::Match($template, '(?ms)displayName: Check whether test-output artifact already exists.*?(?=  - task: PublishPipelineArtifact@1)')
+            $probe.Success | Should Be $true
+            $probe.Value | Should Match '(?m)^    \$\{\{ if eq\(parameters.collectCodeCoverage, true\) \}\}:\r?\n(?:      #[^\r\n]*\r?\n)*      condition: and\(always\(\), ne\(variables\[''skipPublish''\], ''true''\)\)\r?\n    \$\{\{ else \}\}:\r?\n      condition: always\(\)'
+            $template | Should Match '(?m)^  - task: PublishPipelineArtifact@1\r?\n    condition: and\(always\(\), ne\(variables\[''skipPublish''\], ''true''\)\)'
+        }
+    }
+
 }
 finally
 {

@@ -4,7 +4,11 @@
 # Exercises real VS instrumentation, collection, and report validation using tiny native fixtures.
 
 [CmdletBinding()]
-param([string]$CoverageToolPath)
+param(
+    [string]$CoverageToolPath,
+    [ValidateRange(1, 600)]
+    [int]$ShutdownTimeoutSeconds = 60
+)
 
 $ErrorActionPreference = 'Stop'
 $scripts = Split-Path $PSScriptRoot -Parent
@@ -30,6 +34,7 @@ function Invoke-NativeSlice([int]$Slice)
 {
     $output = Join-Path $slices "coverage-$Slice.coverage"
     $collector = $null
+    $shutdown = $null
     try
     {
         # This collector belongs only to this fixture. Its default ACL is never changed.
@@ -51,10 +56,23 @@ function Invoke-NativeSlice([int]$Slice)
         {
             throw "Native fixture failed with exit code $LASTEXITCODE."
         }
-        & $tool shutdown $sessionId | Out-Host
-        if ($LASTEXITCODE -ne 0 -or -not $collector.WaitForExit(60000))
+        $shutdownClock = [Diagnostics.Stopwatch]::StartNew()
+        $startInfo = [Diagnostics.ProcessStartInfo]::new($tool, "shutdown $sessionId")
+        $startInfo.UseShellExecute = $false
+        $startInfo.CreateNoWindow = $true
+        $shutdown = [Diagnostics.Process]::Start($startInfo)
+        if (-not $shutdown.WaitForExit($ShutdownTimeoutSeconds * 1000))
         {
-            throw 'Native fixture collector failed to shut down.'
+            throw "Native fixture shutdown did not finish within $ShutdownTimeoutSeconds seconds."
+        }
+        if ($shutdown.ExitCode -ne 0)
+        {
+            throw "Native fixture shutdown failed with exit code $($shutdown.ExitCode)."
+        }
+        $remainingMilliseconds = [int][Math]::Max(0, $ShutdownTimeoutSeconds * 1000 - $shutdownClock.ElapsedMilliseconds)
+        if (-not $collector.WaitForExit($remainingMilliseconds))
+        {
+            throw "Native fixture collector did not exit within $ShutdownTimeoutSeconds seconds."
         }
         if (-not (Test-Path -LiteralPath $output) -or (Get-Item -LiteralPath $output).Length -eq 0)
         {
@@ -63,18 +81,26 @@ function Invoke-NativeSlice([int]$Slice)
     }
     finally
     {
-        if ($collector)
+        foreach ($process in @($shutdown, $collector))
         {
-            if (-not $collector.HasExited)
+            if ($process)
             {
-                & $tool shutdown $sessionId | Out-Host
-                if (-not $collector.WaitForExit(10000))
+                try
                 {
-                    Stop-Process -Id $collector.Id -ErrorAction Continue
-                    $collector.WaitForExit()
+                    if (-not $process.HasExited)
+                    {
+                        Stop-Process -Id $process.Id -ErrorAction Continue
+                        if (-not $process.WaitForExit(5000))
+                        {
+                            Write-Warning "Native fixture PID $($process.Id) did not exit within 5 seconds after termination."
+                        }
+                    }
+                }
+                finally
+                {
+                    $process.Dispose()
                 }
             }
-            $collector.Dispose()
         }
     }
 }

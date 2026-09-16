@@ -158,7 +158,11 @@ jobs:
   # leaves skipPublish=false so the publish task itself surfaces real problems unchanged.
   - task: PowerShell@2
     displayName: Check whether test-output artifact already exists (retry-safety probe)
-    condition: always()
+    ${{ if eq(parameters.collectCodeCoverage, true) }}:
+      # Preserve suppression when the coverage wrapper cannot clear old output.
+      condition: and(always(), ne(variables['skipPublish'], 'true'))
+    ${{ else }}:
+      condition: always()
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:

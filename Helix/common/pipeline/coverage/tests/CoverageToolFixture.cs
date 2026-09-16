@@ -21,6 +21,8 @@ internal static class CoverageToolFixture
         string root = Environment.GetEnvironmentVariable("WINUI_COVERAGE_TEST_ROOT");
         string mode = Environment.GetEnvironmentVariable("WINUI_COVERAGE_TEST_MODE");
         File.AppendAllText(Path.Combine(root, "calls.txt"), string.Join("\t", args) + Environment.NewLine);
+        if (args[0] == "collect")
+            File.WriteAllText(Path.Combine(root, "collector.pid"), System.Diagnostics.Process.GetCurrentProcess().Id.ToString());
         if (args[0] == "shutdown")
             File.WriteAllText(Path.Combine(root, "shutdown.pid"), System.Diagnostics.Process.GetCurrentProcess().Id.ToString());
 
@@ -72,24 +74,36 @@ internal static class CoverageToolFixture
             return 0;
         }
 
-        if (mode == "stall-shutdown" && args[0] == "collect")
+        bool nativeSmoke = mode == "native-smoke" || mode == "fail-native-runner" ||
+            mode == "fail-native-shutdown" || mode == "stall-collector";
+        if ((mode == "stall-shutdown" || nativeSmoke) && args[0] == "collect")
         {
             using (var pipe = new NamedPipeServerStream("CodeCoverage.pipe." + Option(args, "--session-id")))
             {
-                pipe.WaitForConnection();
-                pipe.ReadByte();
-                Thread.Sleep(Timeout.Infinite);
+                // Readiness probes can open and close the pipe without sending a shutdown request.
+                while (true)
+                {
+                    pipe.WaitForConnection();
+                    if (pipe.ReadByte() == 1)
+                        break;
+                    pipe.Disconnect();
+                }
+                if (mode == "stall-shutdown" || mode == "stall-collector")
+                    Thread.Sleep(Timeout.Infinite);
+                File.WriteAllText(Option(args, "--output"), "coverage");
+                return 0;
             }
         }
 
-        if (mode == "stall-shutdown" && args[0] == "shutdown")
+        if ((mode == "stall-shutdown" || nativeSmoke) && args[0] == "shutdown")
         {
             using (var pipe = new NamedPipeClientStream(".", "CodeCoverage.pipe." + args[1]))
             {
                 pipe.Connect(10000);
                 pipe.WriteByte(1);
                 File.WriteAllText(Path.Combine(root, "shutdown-requested.txt"), "waiting for reply");
-                pipe.ReadByte();
+                if (mode != "stall-collector")
+                    pipe.ReadByte();
             }
         }
 
@@ -97,12 +111,15 @@ internal static class CoverageToolFixture
         {
             Console.Write(mode == "verbose-shutdown" ? new string('o', 262144) : "shutdown completed");
             Console.Error.Write(mode == "verbose-shutdown" ? new string('e', 262144) :
-                mode == "fail-shutdown" ? "fixture shutdown failure" : "");
-            return mode == "fail-shutdown" ? 26 : 0;
+                mode == "fail-shutdown" || mode == "fail-native-shutdown" ? "fixture shutdown failure" : "");
+            return mode == "fail-shutdown" || mode == "fail-native-shutdown" ? 26 : 0;
         }
 
         if (args[0] == "test")
             return int.Parse(args[1]);
+
+        if (args[0] == "0" || args[0] == "1")
+            return mode == "fail-native-runner" ? 37 : 0;
 
         return 27;
     }

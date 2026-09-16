@@ -197,7 +197,9 @@ jobs:
         enableUseOutputFromPreviousBuild: true
         artifactName: 'drop_$(buildFlavor)'
         targetPath: '$(artifactsDir)\CoverageSymbols'
-        itemPattern: 'Symbols/Product/*.pdb'
+        itemPattern: |
+          Symbols/Product/Microsoft.ui.xaml.pdb
+          Symbols/Product/Microsoft.UI.Xaml.Controls.pdb
 
     - task: PowerShell@2
       displayName: 'Instrument runtime DLLs for code coverage'

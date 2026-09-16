@@ -20,6 +20,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $collector = $null
+$sessionExists = $false
 $testExitCode = 0
 $tool = Join-Path $PayloadDir 'CoverageTool\Microsoft.CodeCoverage.Console.exe'
 
@@ -27,40 +28,104 @@ try
 {
     try
     {
+        foreach ($file in @($OutputFile, "$OutputFile.config"))
+        {
+            if (Test-Path -LiteralPath $file)
+            {
+                Remove-Item -LiteralPath $file
+            }
+        }
+    }
+    catch
+    {
+        # Artifact upload runs even after a failed test task.
+        Write-Host '##vso[task.setvariable variable=skipPublish]true'
+        throw "Cannot clear previous coverage output '$OutputFile' or its settings. The slice artifact will not be published. $($_.Exception.Message)"
+    }
+
+    try
+    {
         $sessionId = (Get-Content -LiteralPath (Join-Path $PayloadDir '_coverage-session-id.txt') -Raw).Trim()
         if ($sessionId -notmatch '^[a-zA-Z0-9-]+$')
         {
             throw 'The coverage payload has an invalid session ID.'
         }
-        New-Item -ItemType Directory -Path (Split-Path $OutputFile) -Force | Out-Null
-        if (Test-Path -LiteralPath $OutputFile)
+        $pipe = "\\.\pipe\CodeCoverage.pipe.$sessionId"
+        # Enumerate without opening a pipe that may belong to another collector.
+        $sessionExists = [IO.Directory]::GetFiles('\\.\pipe\', "CodeCoverage.pipe.$sessionId").Length -gt 0
+        if ($sessionExists)
         {
-            Remove-Item -LiteralPath $OutputFile
+            throw "Coverage session '$sessionId' already exists. Tests will not run; the existing collector will not be changed."
         }
+        New-Item -ItemType Directory -Path (Split-Path $OutputFile) -Force | Out-Null
+
+        # Query the process owner, not a possibly impersonated PowerShell thread.
+        $process = Get-CimInstance -ClassName Win32_Process -Filter "ProcessId = $PID" -OperationTimeoutSec 30
+        $owner = Invoke-CimMethod -InputObject $process -MethodName GetOwner -OperationTimeoutSec 30
+        if ($owner.ReturnValue -ne 0 -or [string]::IsNullOrWhiteSpace($owner.Domain) -or
+            [string]::IsNullOrWhiteSpace($owner.User))
+        {
+            throw "Cannot determine the coverage collector account (GetOwner returned '$($owner.ReturnValue)')."
+        }
+        $users = @("$($owner.Domain)\$($owner.User)")
+        Write-Host "Coverage collector account: $($users[0])"
+        $consoleUser = (Get-CimInstance -ClassName Win32_ComputerSystem -OperationTimeoutSec 30).UserName
+        if (-not [string]::IsNullOrWhiteSpace($consoleUser))
+        {
+            $users += $consoleUser
+            Write-Host "Coverage console account: $consoleUser"
+        }
+        else
+        {
+            Write-Host 'Coverage console account: none; allowing only the collector account.'
+        }
+
+        [xml]$settings = Get-Content -LiteralPath "$PSScriptRoot\coverage.config" -Raw
+        $allowedUsers = $settings.CreateElement('AllowedUsers')
+        foreach ($user in $users | Sort-Object -Unique)
+        {
+            # An unresolvable name can make the collector fall back to its defaults.
+            try
+            {
+                $sid = [Security.Principal.NTAccount]::new($user).Translate([Security.Principal.SecurityIdentifier])
+            }
+            catch
+            {
+                throw "Cannot resolve coverage account '$user' to a SID. $($_.Exception.Message)"
+            }
+            Write-Host "Coverage allowed user: $user ($($sid.Value))"
+            $entry = $settings.CreateElement('User')
+            $entry.InnerText = $user
+            [void]$allowedUsers.AppendChild($entry)
+        }
+        [void]$settings.Configuration.CodeCoverage.AppendChild($allowedUsers)
+        $settingsFile = "$OutputFile.config"
+        $settings.Save($settingsFile)
+        Write-Host "Coverage collection settings: $settingsFile"
 
         $collector = Start-Process -FilePath $tool -ArgumentList @(
             'collect', '--session-id', $sessionId, '--server-mode',
-            '--settings', "`"$PSScriptRoot\coverage.config`"", '--output', "`"$OutputFile`""
+            '--settings', "`"$settingsFile`"", '--output', "`"$OutputFile`""
         ) -PassThru -NoNewWindow -RedirectStandardOutput "$OutputFile.log" -RedirectStandardError "$OutputFile.err"
 
-        $pipe = "\\.\pipe\CodeCoverage.pipe.$sessionId"
         $deadline = (Get-Date).AddSeconds(30)
-        while (-not (Test-Path $pipe))
+        while ($true)
         {
             if ($collector.HasExited)
             {
                 throw "Coverage collector exited with code $($collector.ExitCode). See $OutputFile.err."
             }
+            if (Test-Path -LiteralPath $pipe) { break }
             if ((Get-Date) -ge $deadline)
             {
                 throw "Coverage collector pipe did not appear within 30 seconds. See $OutputFile.log."
             }
             Start-Sleep -Milliseconds 500
         }
-        & "$PSScriptRoot\Set-CoveragePipeAcl.ps1" -SessionId $sessionId
     }
     catch
     {
+        if ($sessionExists) { throw }
         # Coverage is experimental. A collector problem must not prevent the tests from running.
         Write-Host "##vso[task.logissue type=warning]Coverage setup failed: $($_.Exception.Message)"
     }
@@ -83,6 +148,10 @@ finally
         $shutdownError = $null
         try
         {
+            if ($collector.HasExited)
+            {
+                throw "Coverage collector exited with code $($collector.ExitCode) before shutdown."
+            }
             # Process.Start retains the handle; Windows PowerShell's Start-Process
             # can lose ExitCode when the child exits before WaitForExit.
             $shutdownClock = [Diagnostics.Stopwatch]::StartNew()
