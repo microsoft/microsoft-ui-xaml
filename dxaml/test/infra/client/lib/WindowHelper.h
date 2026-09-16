@@ -5,6 +5,7 @@
 
 #include "IdleSynchronizer.h"
 #include "TestPoolFilter.h"
+#include <memory>
 #include <vector>
 #include <windows.ui.viewmanagement.h>
 #include <microsoft.ui.input.h>
@@ -302,21 +303,31 @@ namespace Private { namespace Infrastructure {
         static HWND GetCurrentWindowHandle();
 
         void OverrideMetadataProvider(xaml_markup::IXamlMetadataProvider * provider);
-        HRESULT VerifyNoPendingLeakCheck() const;
+        HRESULT UnbindFromHost();
+        HRESULT RebindToHost(DWORD uiThreadId, test_infra::Hosting::IWin32Host* win32Host, bool isCoreInitialized);
 
         static wrl::ComPtr<msy::IDispatcherQueue> GetDispatcherForView(const wrl::ComPtr<wac::ICoreApplicationView>& view);
         static wrl::ComPtr<msy::IDispatcherQueue> GetDispatcherForMainView();
 
     private:
+        // Initializing and ShuttingDown remain set on failure, preventing reuse of a partially reset core.
         enum class CoreState
         {
             Active,
+            Initializing,
             ShuttingDown,
-            Idle
+            Idle,
+            HostReady, // A host created with initializeCore=false; the test owns core creation.
+            Unbound
         };
 
-        wrl::ComPtr<test_infra::IWindowHelper> ResolveXamlInitializationTarget();
-        void InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* customProvider);
+        void EnsureHostForXamlInitialization();
+        void InitializeXamlCore(
+            _In_ xaml_markup::IXamlMetadataProvider* customProvider,
+            _In_opt_ test_infra::ICustomMetadataRegistrar* registrar = nullptr);
+        void CloseMetadataRegistrar();
+        void UnregisterCoreCallbacks();
+        IdleSynchronizer& GetIdleSynchronizer();
         void VerifyActiveCoreCleanup();
         static bool IsWpfLeakDetectionRequested();
 
@@ -355,11 +366,9 @@ namespace Private { namespace Infrastructure {
         wrl::ComPtr<xaml::IApplication> m_spApp;
         EventRegistrationToken m_suspendedToken = {};
 
-        // We store a pointer to the current core dispatcher
-        // when this class is initialized so we can use
-        // it from non-UIThreads without having to schedule work
-        // on the UI thread to retrieve it.
-        IdleSynchronizer m_idleSynchronizer;
+        // Named idle events are opened on first use and discarded when their host is unbound.
+        DWORD m_uiThreadId;
+        std::unique_ptr<IdleSynchronizer> m_idleSynchronizer;
         static bool s_foregroundWindowCraterArmed;
         static bool s_isShutdownEnabled;
 

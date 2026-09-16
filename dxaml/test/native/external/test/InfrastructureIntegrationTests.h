@@ -57,5 +57,41 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
         };
+
+        class WpfWindowHelperTests : public WEX::TestClass<WpfWindowHelperTests>
+        {
+        public:
+            BEGIN_TEST_CLASS(WpfWindowHelperTests)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"Hosting:Mode", L"WPF")
+                TEST_CLASS_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            END_TEST_CLASS()
+
+            TEST_CLASS_SETUP(ClassSetup)
+            TEST_METHOD_SETUP(TestSetup)
+            TEST_METHOD_CLEANUP(TestCleanup)
+
+            BEGIN_TEST_METHOD(CachedHelperSurvivesConsecutiveIntervals)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates cached helper identity, idle cleanup, and input across consecutive WPF leak checks.")
+                TEST_METHOD_PROPERTY(L"Data:WpfLeakDetection", L"{true}")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(MetadataOverloadsUseReboundHost)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates provider and custom metadata initialization on the rebound WPF host.")
+                TEST_METHOD_PROPERTY(L"Data:WpfLeakDetection", L"{true}")
+                TEST_METHOD_PROPERTY(L"Data:UseRegistrar", L"{false,true}")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(DirectHostInitializationRetainsHelper)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates direct WPF host replacement, metadata cleanup, and cached helper input.")
+                TEST_METHOD_PROPERTY(L"Data:HostInitialization", L"{Default,Dpi,DpiWithoutCore}")
+                TEST_METHOD_PROPERTY(L"Data:DpiAwarenessContext", L"{PerMonitorV2}")
+            END_TEST_METHOD()
+
+        private:
+            Microsoft::UI::Xaml::Hosting::WindowsXamlManager^ _xamlManager;
+        };
     }
 } } } }

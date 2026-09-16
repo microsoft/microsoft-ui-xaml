@@ -758,6 +758,12 @@ HRESULT KeyboardHelper::SendKeyInput(UINT16 keyCode, bool down, bool scanCode, t
 {
     if (s_waitKind & test_infra::KeyboardWaitKind::KeyboardWaitKind_WaitForEvent)
     {
+        if (!m_keyboardInputHandle.IsValid())
+        {
+            // A coreless host has no keyboard event until the test initializes XAML.
+            m_keyboardInputHandle = OpenNamedEvent(m_uiThreadId, s_keyboardInputHandleName);
+            WEX::Common::Throw::LastErrorIf(!m_keyboardInputHandle.IsValid(), L"Failed to create KeyboardInputReceived handle.");
+        }
         LogThrow_IfFailed(WindowHelper::GetTestHooks()->EnableKeyboardInputEvent());
     }
 

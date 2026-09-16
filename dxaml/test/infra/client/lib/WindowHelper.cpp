@@ -68,10 +68,10 @@ bool WindowHelper::s_foregroundWindowCraterArmed = false;
 bool WindowHelper::s_isShutdownEnabled = false;
 
 WindowHelper::WindowHelper(DWORD uiThreadId, wrl::ComPtr<test_infra::Hosting::IWin32Host> win32Host, test_infra::ITestServicesStatics* testServices)
-    : m_pTestServices(testServices),
+    : m_uiThreadId(uiThreadId),
       m_win32Host(win32Host),
       m_gccollectCallback(nullptr),
-      m_idleSynchronizer(uiThreadId, m_pTestServices, this)
+      m_pTestServices(testServices)
 {
     Hosting::HostingMode hostingMode = Hosting::HostingMode::UAP;
     LogThrow_IfFailed(GetHostingMode(&hostingMode));
@@ -143,6 +143,101 @@ HRESULT WindowHelper::RuntimeClassInitialize()
     COM_END
 }
 
+HRESULT WindowHelper::UnbindFromHost()
+{
+    COM_START_GROUP(L"WindowHelper::UnbindFromHost")
+    {
+        LogThrow_IfFalse(!m_leakCheckPending,
+            E_UNEXPECTED, L"Call VerifyTestCleanup before replacing a WPF leak-detection host.");
+        LogThrow_IfFalse(m_coreState == CoreState::Active || m_coreState == CoreState::Idle || m_coreState == CoreState::HostReady,
+            E_UNEXPECTED, L"WPF host replacement requires completed initialization or shutdown.");
+
+        const bool isCoreActive = m_coreState == CoreState::Active;
+        // A failed unbind must not leave a usable helper pointing at the retiring host.
+        m_coreState = CoreState::Unbound;
+        CloseMetadataRegistrar();
+
+        RunOnUIThread([&]() {
+            if (isCoreActive)
+            {
+                UnregisterCoreCallbacks();
+                if (m_ensureSatelliteDLLCustomDPCleanup)
+                {
+                    LogThrow_IfFailed(GetTestHooks()->EnsureSatelliteDLLCustomDPCleanup());
+                }
+            }
+
+            // Keep test-owned references until after the retiring core's required leak check.
+            m_spPostTickCallback.Reset();
+            m_spPlayingSoundNodeCallback.Reset();
+            m_gccollectCallback.Reset();
+            m_win32Host.Reset();
+        });
+        m_idleSynchronizer.reset();
+    }
+    COM_END
+}
+
+HRESULT WindowHelper::RebindToHost(DWORD uiThreadId, test_infra::Hosting::IWin32Host* win32Host, bool isCoreInitialized)
+{
+    COM_START_GROUP(L"WindowHelper::RebindToHost")
+    {
+        LogThrow_IfFalse(m_coreState == CoreState::Unbound,
+            E_UNEXPECTED, L"Unbind WindowHelper before attaching a replacement WPF host.");
+        Throw::IfNull(win32Host);
+
+        // Registration is constructor-only; initialize the existing filters for the new host.
+        LogThrow_IfFailed(RuntimeClassInitialize());
+        LogThrow_IfFailed(RestoreForegroundWindow());
+        RpcClientEnsureConnected();
+        LogThrow_IfFailed(RpcResetInputInjection());
+
+        m_win32Host = win32Host;
+        m_uiThreadId = uiThreadId;
+        m_ensureSatelliteDLLCustomDPCleanup = false;
+        s_isShutdownEnabled = false;
+        s_foregroundWindowCraterArmed = false;
+        m_coreState = isCoreInitialized ? CoreState::Active : CoreState::HostReady;
+        LOG_OUTPUT(L"WindowHelper rebound to WPF UI thread %lu.", uiThreadId);
+    }
+    COM_END
+}
+
+IdleSynchronizer& WindowHelper::GetIdleSynchronizer()
+{
+    LogThrow_IfFalse(m_coreState != CoreState::Unbound,
+        E_UNEXPECTED, L"WindowHelper is not bound to a host.");
+    if (!m_idleSynchronizer)
+    {
+        // Coreless hosts do not have these events until the test initializes XAML.
+        m_idleSynchronizer = std::make_unique<IdleSynchronizer>(m_uiThreadId, m_pTestServices, this);
+    }
+    return *m_idleSynchronizer;
+}
+
+void WindowHelper::CloseMetadataRegistrar()
+{
+    if (m_spClosableMetadataRegistrar)
+    {
+        LogThrow_IfFailedWithMessage(m_spClosableMetadataRegistrar->Close(), L"Failed cleaning up custom metadata");
+        m_spClosableMetadataRegistrar.Reset();
+    }
+}
+
+void WindowHelper::UnregisterCoreCallbacks()
+{
+    // Call only on the live core's UI thread. The sound hook can create peers on an idle core.
+    auto testHooks = GetTestHooks();
+    if (m_spPostTickCallback)
+    {
+        testHooks->SetPostTickCallback(nullptr);
+    }
+    if (m_spPlayingSoundNodeCallback)
+    {
+        testHooks->SetPlayingSoundNodeCallback(nullptr);
+    }
+}
+
 HRESULT WindowHelper::SetupSimulatedAppPage(xaml_controls::IPage **ppPage)
 {
     COM_START_GROUP(L"WindowHelper::SetupSimulatedAppPage")
@@ -188,7 +283,7 @@ HRESULT WindowHelper::WaitForIdle(bool waitForBuildTreeWork)
 {
     COM_START_GROUP(L"WindowHelper::WaitForIdle")
     {
-        m_idleSynchronizer.WaitForIdle(HostingDispatcher::Get()->GetDispatcher().Get(), waitForBuildTreeWork);
+        GetIdleSynchronizer().WaitForIdle(HostingDispatcher::Get()->GetDispatcher().Get(), waitForBuildTreeWork);
         if ( m_win32Host != nullptr )
         {
             LogThrow_IfFailed( m_win32Host->DoEvents() );  // wait for idle dispatcher of WPF
@@ -201,7 +296,7 @@ HRESULT WindowHelper::WaitForTreeReset()
 {
     COM_START
     {
-        m_idleSynchronizer.WaitForRootVisualReset();
+        GetIdleSynchronizer().WaitForRootVisualReset();
     }
     COM_END
 }
@@ -210,7 +305,7 @@ HRESULT WindowHelper::PrepareForPopupMenuWait()
 {
     COM_START
     {
-        m_idleSynchronizer.PrepareForPopupMenuWait();
+        GetIdleSynchronizer().PrepareForPopupMenuWait();
     }
     COM_END
 }
@@ -219,7 +314,7 @@ HRESULT WindowHelper::WaitForPopupMenuCommandInvoked(_In_ UINT32 timeoutMillisec
 {
     COM_START
     {
-        *pSuccess = m_idleSynchronizer.WaitForPopupMenuCommandInvoked(std::chrono::milliseconds(timeoutMilliseconds));
+        *pSuccess = GetIdleSynchronizer().WaitForPopupMenuCommandInvoked(std::chrono::milliseconds(timeoutMilliseconds));
     }
     COM_END
 }
@@ -365,7 +460,7 @@ HRESULT WindowHelper::SynchronouslyTickUIThread(unsigned int ticks)
 {
     COM_START
     {
-        m_idleSynchronizer.SynchronouslyTickUIThread(ticks);
+        GetIdleSynchronizer().SynchronouslyTickUIThread(ticks);
     }
     COM_END
 }
@@ -498,7 +593,7 @@ HRESULT WindowHelper::WaitForAnimatedFacadePropertyChanges(int count)
         {
             GetTestHooks()->ScheduleWaitForAnimatedFacadePropertyChanges(count);
         });
-        m_idleSynchronizer.WaitForAnimatedFacadePropertyChangesComplete();
+        GetIdleSynchronizer().WaitForAnimatedFacadePropertyChangesComplete();
     }
     COM_END
 }
@@ -672,8 +767,8 @@ HRESULT WindowHelper::ResetWindowContentAndScaleWaitForIdle(float scale)
 
         if (hostingMode == HostingMode::WPF)
         {
-            LogThrow_IfFalse(m_coreState != CoreState::ShuttingDown,
-                E_UNEXPECTED, L"WPF shutdown did not complete; window content cannot be reset.");
+            LogThrow_IfFalse(m_coreState == CoreState::Active || m_coreState == CoreState::Idle,
+                E_UNEXPECTED, L"WPF host initialization or shutdown did not complete; window content cannot be reset.");
 
             if (m_coreState == CoreState::Idle)
             {
@@ -781,7 +876,7 @@ HRESULT WindowHelper::WaitForImplicitShowHideComplete()
 {
     COM_START
     {
-        m_idleSynchronizer.WaitForImplicitShowHideComplete();
+        GetIdleSynchronizer().WaitForImplicitShowHideComplete();
     }
     COM_END
 }
@@ -834,8 +929,8 @@ HRESULT WindowHelper::VerifyTestCleanup()
 
         if (hostingMode == HostingMode::WPF)
         {
-            LogThrow_IfFalse(m_coreState != CoreState::ShuttingDown,
-                E_UNEXPECTED, L"WPF shutdown did not complete; cleanup cannot be verified.");
+            LogThrow_IfFalse(m_coreState == CoreState::Active || m_coreState == CoreState::Idle,
+                E_UNEXPECTED, L"WPF host initialization or shutdown did not complete; cleanup cannot be verified.");
             const bool leakDetectionRequested = m_leakCheckPending || IsWpfLeakDetectionRequested();
             if (leakDetectionRequested && !ErrorHandlingHelper::ShouldIgnoreLeaks() && m_coreState != CoreState::Idle)
             {
@@ -1090,6 +1185,7 @@ void WindowHelper::SetWindowContentStatic(xaml::IUIElement* pElement, wrl::ComPt
     }
     else
     {
+        Throw::IfNull(win32Host.Get(), L"WindowHelper is not bound to a host.");
         LogThrow_IfFailed(win32Host->put_Content(pElement));
     }
 }
@@ -1110,6 +1206,7 @@ void WindowHelper::GetWindowContentStatic(xaml::IUIElement** ppElement, wrl::Com
     }
     else
     {
+        Throw::IfNull(win32Host.Get(), L"WindowHelper is not bound to a host.");
         wrl::ComPtr<IInspectable> spInsp;
         LogThrow_IfFailed(win32Host->get_Content(&spInsp));
 
@@ -2059,62 +2156,22 @@ HRESULT WindowHelper::CleanUpAfterTest()
     COM_END
 }
 
-HRESULT WindowHelper::VerifyNoPendingLeakCheck() const
+void WindowHelper::EnsureHostForXamlInitialization()
 {
-    if (m_leakCheckPending)
+    if (m_coreState == CoreState::Idle)
     {
-        Log::Error(L"Call VerifyTestCleanup before reinitializing a WPF leak-detection test.");
-        return E_UNEXPECTED;
+        // The shared host-replacement boundary rejects pending verification, then rebinds this object.
+        LogThrow_IfFailed(m_pTestServices->InitializeHost());
     }
-    return S_OK;
-}
-
-// Return the current helper, recreating its host only after WPF shutdown left it idle.
-// Callers keep this receiver alive and forward the complete initialization request
-// when the returned helper differs from this one. The result is never null.
-wrl::ComPtr<test_infra::IWindowHelper> WindowHelper::ResolveXamlInitializationTarget()
-{
-    wrl::ComPtr<test_infra::IWindowHelper> currentHelper;
-    LogThrow_IfFailed(m_pTestServices->get_WindowHelper(&currentHelper));
-    LogThrow_IfFalse(currentHelper != nullptr,
-        E_UNEXPECTED, L"XAML initialization requires a current WindowHelper.");
-
-    // Forward stale helpers to the current one; an active current helper needs no replacement.
-    if (currentHelper.Get() != static_cast<test_infra::IWindowHelper*>(this) ||
-        m_coreState == CoreState::Active)
-    {
-        return currentHelper;
-    }
-
-    LogThrow_IfFalse(m_coreState == CoreState::Idle,
-        E_UNEXPECTED, L"WPF shutdown did not complete; this host cannot be reinitialized.");
-
-    // InitializeHost rejects pending leak checks before replacing the host and its helpers.
-    LogThrow_IfFailed(m_pTestServices->InitializeHost());
-    LogThrow_IfFailed(m_pTestServices->get_WindowHelper(&currentHelper));
-    LogThrow_IfFalse(currentHelper && currentHelper.Get() != static_cast<test_infra::IWindowHelper*>(this),
-        E_UNEXPECTED, L"WPF host recreation did not replace WindowHelper.");
-
-    // The replacement starts Active, so the forwarded call initializes there
-    // rather than recreating another host.
-    LogThrow_IfFailed(currentHelper->RestoreForegroundWindow());
-    RpcClientEnsureConnected();
-    LogThrow_IfFailed(RpcResetInputInjection());
-    return currentHelper;
+    LogThrow_IfFalse(m_coreState == CoreState::Active || m_coreState == CoreState::HostReady,
+        E_UNEXPECTED, L"WPF host initialization or shutdown did not complete; this host cannot be initialized.");
 }
 
 HRESULT WindowHelper::InitializeXaml()
 {
     COM_START_GROUP(L"WindowHelper::InitializeXaml")
     {
-        // Host recreation can release TestServices' reference to this receiver.
-        wrl::ComPtr<WindowHelper> keepAlive(this);
-        auto target = ResolveXamlInitializationTarget();
-        if (target.Get() != static_cast<test_infra::IWindowHelper*>(this))
-        {
-            LogThrow_IfFailed(target->InitializeXaml());
-            return S_OK;
-        }
+        EnsureHostForXamlInitialization();
 
         // Since we're being initialized without a custom provider, we'll use the MUXC provider.
         wrl::ComPtr<xaml_markup::IXamlMetadataProvider> xamlControlsXamlMetadataProvider;
@@ -2218,8 +2275,18 @@ std::vector<std::pair<xaml_settings::XamlChangeId, bool>> GetXamlOptionalChanges
     return changeOverrides;
 }
 
-void WindowHelper::InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* customProvider)
+void WindowHelper::InitializeXamlCore(
+    _In_ xaml_markup::IXamlMetadataProvider* customProvider,
+    _In_opt_ test_infra::ICustomMetadataRegistrar* registrar)
 {
+    HostingMode hostingMode = HostingMode::UAP;
+    LogThrow_IfFailed(GetHostingMode(&hostingMode));
+    if (hostingMode == HostingMode::WPF)
+    {
+        m_coreState = CoreState::Initializing;
+        CloseMetadataRegistrar();
+    }
+
     // Since we shutdown xaml, we need to reset the foreground window check in case this test doesn't
     // actually set any window content. We also reset the shutdown enabled, since we run initialization at the beginning
     // of each test class in case the previous class shut us down.
@@ -2291,9 +2358,6 @@ void WindowHelper::InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* c
             }
         }
     });
-
-    HostingMode hostingMode = HostingMode::UAP;
-    LogThrow_IfFailed(GetHostingMode(&hostingMode));
 
     // Call into initialize xaml, this will mark all outstanding allocations as ignorable and initialize the framework.
     // It will no-op framework initialization if it's already initialized.
@@ -2390,7 +2454,14 @@ void WindowHelper::InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* c
     }
 #endif
 
-     ClearKeyState();
+    ClearKeyState();
+
+    if (registrar)
+    {
+        LogThrow_IfFailed(registrar->QueryInterface<wf::IClosable>(&m_spClosableMetadataRegistrar));
+        LogThrow_IfFailedWithMessage(registrar->RegisterMetadata(), L"Failed to register custom metadata");
+    }
+    m_coreState = CoreState::Active;
 }
 
 HRESULT WindowHelper::OnAppSuspended()
@@ -2509,20 +2580,8 @@ HRESULT WindowHelper::InitializeXamlWithCustomMetadata(_In_ xaml_markup::IXamlMe
     {
         Throw::IfNull(registrar);
 
-        wrl::ComPtr<WindowHelper> keepAlive(this);
-        auto target = ResolveXamlInitializationTarget();
-        if (target.Get() != static_cast<test_infra::IWindowHelper*>(this))
-        {
-            LogThrow_IfFailed(target->InitializeXamlWithCustomMetadata(customProvider, registrar));
-            return S_OK;
-        }
-
-        InitializeXamlCore(customProvider);
-
-        // Now tell the registrar to register
-        LogThrow_IfFailedWithMessage(registrar->RegisterMetadata(), L"Failed to register custom metadata");
-
-        LogThrow_IfFailed(registrar->QueryInterface<wf::IClosable>(&m_spClosableMetadataRegistrar));
+        EnsureHostForXamlInitialization();
+        InitializeXamlCore(customProvider, registrar);
     }
     COM_END
 }
@@ -2531,14 +2590,7 @@ HRESULT WindowHelper::InitializeXamlWithProvider(_In_ xaml_markup::IXamlMetadata
 {
     COM_START
     {
-        wrl::ComPtr<WindowHelper> keepAlive(this);
-        auto target = ResolveXamlInitializationTarget();
-        if (target.Get() != static_cast<test_infra::IWindowHelper*>(this))
-        {
-            LogThrow_IfFailed(target->InitializeXamlWithProvider(customProvider));
-            return S_OK;
-        }
-
+        EnsureHostForXamlInitialization();
         InitializeXamlCore(customProvider);
     }
     COM_END
@@ -2666,7 +2718,7 @@ HRESULT WindowHelper::ResetVisualTree()
             // also used to determine how and when third party components are registered/unregistered and  I don't want
             // to mess with this without more bake time.  So, what we will do is make sure the dispatcher is idle before
             // we reset the visual tree so all event will have been processed.
-            m_idleSynchronizer.WaitForIdleDispatcher(HostingDispatcher::Get()->GetDispatcher().Get());
+            GetIdleSynchronizer().WaitForIdleDispatcher(HostingDispatcher::Get()->GetDispatcher().Get());
         }
 
         RunOnUIThread([&]() {
@@ -2734,15 +2786,7 @@ HRESULT WindowHelper::ShutdownXaml()
 
         // Before we start shutting anything down, we need to tell the registrar (if we have one) to
         // clean up it's DP's.
-        if (m_spClosableMetadataRegistrar)
-        {
-            LogThrow_IfFailedWithMessage(m_spClosableMetadataRegistrar->Close(), L"Failed cleaning up custom metadata");
-
-            // Below methods have the potential to fail which would cause us to leave this method early
-            // so we want to reset the registrar here. We don't want to hold onto this guy in case the test class is finally
-            // cleaned up and we are holding a reference to it.
-            m_spClosableMetadataRegistrar.Reset();
-        }
+        CloseMetadataRegistrar();
 
         wrl::ComPtr<IXamlTestHooks> testHooks = nullptr;
 
@@ -2853,7 +2897,12 @@ HRESULT WindowHelper::ShutdownXaml()
         }
 
         LOG_OUTPUT(L"Tick event fired: %s. Shutting down xaml and cleaning up release queue", postTickEvent->HasFired() ? L"true" : L"false");
-        RunOnUIThread([this, &testHooks]() {
+        RunOnUIThread([this, &testHooks, hostingMode]() {
+            if (hostingMode == HostingMode::WPF)
+            {
+                // Unregister while the services are alive, but retain the delegates until verification.
+                UnregisterCoreCallbacks();
+            }
             if (m_ensureSatelliteDLLCustomDPCleanup)
             {
                 LogThrow_IfFailed(testHooks->EnsureSatelliteDLLCustomDPCleanup());

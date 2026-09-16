@@ -174,30 +174,30 @@ TestServices::WindowHelper->ShutdownXaml();
 TestServices::WindowHelper->VerifyTestCleanup();
 ```
 
-The WPF lifecycle separates shutdown, verification, and host replacement:
+| Operation | WPF behavior |
+| --- | --- |
+| `ShutdownXaml()` | Runs cleanup that needs a live core, then leaves that core idle. |
+| `VerifyTestCleanup()` | Runs any pending native leak check once, against the original core. |
+| Next `InitializeXaml()` | Recreates the host and rebinds the same `WindowHelper`, then restores theme and window-size defaults. |
 
-1. `ShutdownXaml()` runs cleanup that needs a live core, then leaves the original
-   core idle.
-2. `VerifyTestCleanup()` checks that same core, including any pending native leak
-   check. Each pending check is attempted once, even if it fails.
-3. The next `InitializeXaml()` recreates the host and restores the theme and
-   window-size defaults. All initialization overloads handle this handoff.
+All initialization overloads follow this sequence, including custom metadata.
+Direct `InitializeHost()` calls also preserve `WindowHelper` identity.
+Host replacement rejects pending leak checks. A failed check is reported in its
+cleanup, not retried against the next core.
 
-Host initialization, including direct `InitializeHost()` calls, rejects a pending
-leak check. Obtain dispatcher-bound helpers from `TestServices` after
-initialization, rather than caching them across host replacement.
+Cached `WindowHelper` references use the replacement host. `KeyboardHelper`,
+dispatcher, and host references must be obtained again after host replacement.
+Idle and keyboard event handles belong to the new UI thread and open on first use.
+This also supports `InitializeHost(..., initializeCore=false)`: the test creates
+the core before using XAML.
 
-After a successful WPF shutdown, repeated calls to `ShutdownXaml()`,
-`ResetWindowContentAndWaitForIdle()`, or `ResetWindowContentAndScaleWaitForIdle()`
-do nothing. Content reset must not create new XAML objects on the idle core.
+Callbacks are unregistered before core shutdown, but their references are retained
+until after verification. Custom metadata closes before shutdown or direct host
+replacement. Repeated shutdown and content-reset calls on an idle core do nothing;
+they must not create new XAML objects.
 
-Teardown unregisters the disposed WPF island's keyboard input site and clears the
-hidden window's island-startup content. This releases references held by the WPF
-parent window and the hidden XAML window before verification.
-
-Detection covers native residue after teardown, not whole-host or CLR retention.
-UAP behavior and leak opt-outs are unchanged. This adds no GC passes, exclusions,
-or class-level host teardown.
+Detection covers native residue after teardown, not CLR or whole-host retention.
+Existing leak opt-outs and UAP behavior are unchanged. No GC passes are added.
 
 ### Server Component
 
