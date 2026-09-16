@@ -1,0 +1,64 @@
+{
+  "value": [
+    {
+      "id": 100,
+      "definition": {
+        "id": 501
+      },
+      "sourceVersion": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "status": "completed",
+      "result": "succeeded",
+      "finishTime": "2026-09-15T08:00:00Z",
+      "artifacts": [
+        {
+          "name": "drop_amd64fre"
+        }
+      ]
+    },
+    {
+      "id": 200,
+      "definition": {
+        "id": 502
+      },
+      "sourceVersion": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "status": "completed",
+      "result": "succeeded",
+      "finishTime": "2026-09-15T08:30:00Z",
+      "artifacts": [
+        {
+          "name": "drop_amd64fre"
+        }
+      ]
+    },
+    {
+      "id": 201,
+      "definition": {
+        "id": 502
+      },
+      "sourceVersion": "cccccccccccccccccccccccccccccccccccccccc",
+      "status": "completed",
+      "result": "succeeded",
+      "finishTime": "2026-09-15T09:30:00Z",
+      "artifacts": [
+        {
+          "name": "drop_amd64fre"
+        }
+      ]
+    },
+    {
+      "id": 202,
+      "definition": {
+        "id": 502
+      },
+      "sourceVersion": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "status": "completed",
+      "result": "succeeded",
+      "finishTime": "2026-09-15T10:30:00Z",
+      "artifacts": [
+        {
+          "name": "symbols"
+        }
+      ]
+    }
+  ]
+}

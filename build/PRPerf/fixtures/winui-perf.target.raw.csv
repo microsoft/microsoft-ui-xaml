@@ -1,0 +1,9 @@
+scenario,metric,value,interval,grouping
+PRPerf-ObjectCreation,CPU/WallTime,999.0,Measured,Run:0
+PRPerf-ObjectCreation,CPU/WallTime,250.0,Measured,Run:1
+PRPerf-ObjectCreation,CPU/WallTime,252.0,Measured,Run:2
+PRPerf-ObjectCreation,CPU/WallTime,251.0,Measured,Run:3
+PRPerf-ObjectCreation,CPU/WallTime,249.0,Measured,Run:4
+PRPerf-ObjectCreation,CPU/WallTime,253.0,Measured,Run:5
+PRPerf-ObjectCreation,CPU/WallTime,250.5,Measured,Run:6
+PRPerf-ObjectCreation,CPU/WallTime,251.5,Measured,Run:7

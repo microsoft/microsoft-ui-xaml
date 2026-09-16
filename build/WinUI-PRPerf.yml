@@ -1,0 +1,89 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+trigger: none
+pr: none
+
+# All parameters default to empty so the pipeline can be queued directly from a
+# GitHub pull request comment with `/azp run WinUI-PRPerf`, which cannot supply
+# parameter values. When a value is empty the run derives it from the Azure
+# Pipelines PR context variables instead.
+parameters:
+- name: pullRequestId
+  type: string
+  default: ''
+- name: repositoryId
+  type: string
+  default: ''
+- name: sourceCommit
+  type: string
+  default: ''
+- name: targetCommit
+  type: string
+  default: ''
+- name: sourceBuildId
+  type: string
+  default: ''
+- name: targetBuildId
+  type: string
+  default: ''
+- name: requestIdentity
+  type: string
+  default: ''
+- name: useFixtures
+  type: boolean
+  default: true
+- name: publishProvider
+  type: string
+  default: github
+  values:
+  - github
+  - ado
+  - none
+
+resources:
+  repositories:
+  - repository: templates
+    type: git
+    name: OneBranch.Pipelines/GovernedTemplates
+    ref: refs/heads/main
+
+extends:
+  template: v2/Microsoft.NonOfficial.yml@templates
+  parameters:
+    featureFlags:
+      EnableCDPxPAT: false
+    platform:
+      name: windows_undocked
+    git:
+      submodules: false
+    globalsdl:
+      tsa:
+        enabled: false
+      enableXFGCheck: false
+      codeql:
+        tsandjs:
+          enabled: false
+        python:
+          enabled: false
+        psscriptanalyzer:
+          enable: false
+      prefast:
+        enabled: false
+      apiscan:
+        enabled: false
+      binskim:
+        enabled: false
+
+    stages:
+    - template: AzurePipelinesTemplates\WinUI-PRPerf-Run.yml@self
+      parameters:
+        useFixtures: ${{ parameters.useFixtures }}
+        pullRequestId: ${{ parameters.pullRequestId }}
+        repositoryId: ${{ parameters.repositoryId }}
+        sourceCommit: ${{ parameters.sourceCommit }}
+        targetCommit: ${{ parameters.targetCommit }}
+        sourceBuildId: ${{ parameters.sourceBuildId }}
+        targetBuildId: ${{ parameters.targetBuildId }}
+        requestIdentity: ${{ parameters.requestIdentity }}
+        publishProvider: ${{ parameters.publishProvider }}

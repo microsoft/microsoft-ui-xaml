@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "benchmarkConfigVersion": "pr-smoke-v1",
+  "commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "buildId": "1002",
+  "machine": {
+    "agentName": "PERF-01",
+    "osBuild": "26100",
+    "architecture": "amd64",
+    "flavor": "fre"
+  },
+  "scenarios": [{
+    "name": "ObjectCreation.BasicControls",
+    "metrics": [{
+      "name": "CpuTimeMs",
+      "unit": "ms",
+      "samples": [210.0, 330.0, 240.0, 360.0, 220.0, 345.0, 250.0]
+    }]
+  }]
+}

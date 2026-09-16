@@ -5,6 +5,7 @@
 - [Overview](#overview)
 - [Automatic monitoring of WinUI framework performance](#automatic-monitoring-of-winui-framework-performance)
 - [Self-service Dev performance test runs in Azure DevOps](#self-service-dev-performance-test-runs-in-azure-devops)
+- [Opt-in PR performance test](#opt-in-pr-performance-test)
 - [Manual testing of any executable on Dev machine](#manual-testing-of-any-executable-on-dev-machine)
   - [Provision machine](#provision-machine)
   - [Quiet OS activity (Optional)](#quiet-os-activity-optional)
@@ -70,6 +71,30 @@ If you would like to understand performance implications of your change, there i
 5. Repeat steps 1-4 for what you are comparing to baseline (trial).  Use a new Build Id and keep all the other fields **exactly the same**.
 
 The results will be found on the perf analysis network share under `experiments\<your-alias>\<userExperimentName>` or in perf run artifacts (see section above).
+
+## Opt-in PR performance test
+
+Pull requests can request an informational performance comparison by commenting the following on the GitHub pull request:
+
+```text
+/azp run WinUI-PRPerf
+```
+
+The comment is handled by the Azure Pipelines GitHub app, which queues the `WinUI-PRPerf` pipeline in Azure DevOps and supplies the pull request context.  Only users with write access to the repository can run the command, so untrusted fork pull requests cannot occupy the dedicated performance agent.
+
+The run compares the exact pull request commit against the exact target commit, measuring both sequentially on the same dedicated performance agent.  It never substitutes a nearby `main` build; when exact build artifacts are unavailable for either side the result is reported as `Inconclusive`.
+
+When the run finishes, read the marked pull request comment as one of:
+
+* `Passed` - all required scenario metrics stayed below the regression thresholds.
+* `Regression warning` - at least one required metric was at least 10% and at least 5 ms slower, with both target and PR coefficient of variation at most 15%.
+* `Inconclusive` - data was missing, invalid, failed, mismatched, noisy, superseded, or otherwise unparseable.  Treat this as "rerun or inspect artifacts", never as a pass.
+
+The result is always informational and must not be configured as a required status check.
+
+Use the comment's artifact and pipeline links for raw data, selected diagnostics, traces, and logs.  Rerunning updates the single marked comment rather than adding a new one; if a newer pull request commit appears before publication, the older result is marked `Superseded by a newer PR commit` and no longer reports as passing.
+
+The current MVP uses one warm-up and seven measured samples for the required PR smoke CPU scenarios in the `pr-smoke-v1` benchmark configuration.  Exact DWM bitmap create/delete timing is not represented by the mount/unmount measurements in this MVP.
 
 ## Manual testing of any executable on Dev machine
 
