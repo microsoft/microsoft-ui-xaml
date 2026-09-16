@@ -129,15 +129,8 @@ foreach($workItem in $workItemsToRun)
     Get-ChildItem -Path $workItemUploadRoot -Filter *_subresults.json | Move-Item -Destination $uploadRoot
 }
 
-# Upload crash dumps produced during this slice. Lifetime-stress dumps are renamed
-# "LifetimeStress-<scenario>-*.dmp" by RunHelixWorkItem.ps1 so a native lifetime crash is attributable without a
-# debugger; prioritize those and raise the cap so a lifetime crash dump is never crowded out of the upload by
-# unrelated dumps from other work items sharing this slice's dump folder.
-$maxDumpsToUpload = 10
-$allDumps = @(Get-ChildItem -Path $dumpsDir -Filter *.dmp)
-$lifetimeDumps = @($allDumps | Where-Object { $_.Name -like 'LifetimeStress-*' })
-$otherDumps = @($allDumps | Where-Object { $_.Name -notlike 'LifetimeStress-*' })
-$files = @($lifetimeDumps + $otherDumps) | Select-Object -First $maxDumpsToUpload
+# Upload at most 3 dumps from this run
+$files = Get-ChildItem -Path $dumpsDir -Filter *.dmp | Select-Object -First 3
 foreach($file in $files)
 {
     Move-Item $file.FullName $uploadRoot -Force
