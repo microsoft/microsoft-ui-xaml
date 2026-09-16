@@ -1,6 +1,6 @@
 # Experimental XAML source optimizations
 
-This hackathon prototype adds a **default-off, managed compiler pass** before
+This experimental feature adds a **default-off, managed compiler pass** before
 connection-ID rewriting and native XBF generation. It does not change GenXbf,
 the XBF format, or the runtime. GenXbf already optimizes instructions and packs
 supported constants; this pass supplies a simpler source representation.
@@ -100,61 +100,12 @@ event, and connection-ID edits. With the feature off, no optimization DOM is
 retained and the original editor path is used.
 
 Diagnostic compiler logs contain `perfXC_XamlOptimization` markers, such as
-`InlineThicknessPadding:Lowered=200`, grouped by rule and reason per file.
+`InlineThicknessPadding:Lowered=1`, grouped by rule and reason per file.
 They contain no literal source contents. Declines distinguish unsupported
 types/properties, decorated values, scopes, literals, and source shapes.
 The in-memory decisions also retain the original candidate line and column.
 
-## Measured compiler-integrated demonstration
-
-This is a **synthetic framework demonstration**, not a real-app optimization claim:
-the earlier repository corpus search found no unadorned inline Thickness instances.
-The following measurements use actual generated XAML/XBF from the changed compiler,
-not manually rewritten inputs or the earlier direct-source experiment.
-
-The same classed Grid scene contains 200 unnamed Borders, each with the literal
-`1,2,3,4`. Seven fresh processes ran randomized/interleaved warm construction
-comparisons; the statistical summaries are at process level, not individual scenes.
-Each process performed 100 warmups per label, then 24 blocks of 20 scenes per
-label (off-A1, off-A2, on, and code). A process summary is the median of its batch
-means; off averages its two label medians. The table averages the seven process
-summaries. Paired differences and percentages are computed per process, with
-two-sided Student-t 95% intervals using six degrees of freedom. Dispatcher and
-GC drains are outside the timed regions.
-
-The host uses the stable self-contained x64 Windows App SDK `1.8.260416003`,
-WinUI package `1.8.260415005`, XAML runtime file version `3.1.8.2604`, and
-.NET `8.0.31`, not the earlier native resource prototype.
-
-| Variant | Mean process-summary construction time |
-| --- | ---: |
-| Compiler optimization off | 1.052 ms |
-| Compiler optimization on | 0.768 ms |
-| Equivalent code construction control | 1.079 ms |
-
-The paired saving is **0.284 ms per scene (27.02%)**, with a reported 95% interval
-of **26.48%-27.57%**. The no-op A/A comparison is **-0.14%**, with an interval of
-**-1.17% to +0.89%**. These are local warm-construction results, not disk-cold
-launch, on-screen first-frame, retained-memory, leak, or real-app benefit claims.
-
-Compiler artifacts show 200 lowered candidates in the scene and 20 in the
-21-case value fixture. Each eligible Padding uses a packed setter instead of
-the temporary Thickness construction sequence. Scene XBF size decreases from
-**6,255 to 5,455 bytes**. Off/on/unchanged-on/off builds use the same intermediates
-without touching source between transitions; unchanged output timestamps stay
-stable, and feature-off output matches the pre-change compiler.
-
-All 21 actual off/on value cases agree, including zero/default local-value state,
-signed-zero component bits, ClearValue, isolation, and layout. The pure scene has
-201 tree nodes. Separate untimed rendering adds a 20-column/10-row arrangement,
-backgrounds, and one labeled TextBlock per Border after loading, giving 401 nodes.
-Off/on layout, nonblank 480x400 pixels, and 200 static TextBlock peer snapshots
-agree. Three code-versus-XBF signed-zero
-differences exist in the baseline: compiled XBF normalizes signs that code can
-preserve. They are recorded separately, not hidden or attributed to the optimizer.
-This finite matrix is not exhaustive production compatibility.
-
-### Reproduction artifacts
+## Building the compiler
 
 Build the compiler from the repository root using its existing wrapper:
 
@@ -164,23 +115,6 @@ Build the compiler from the repository root using its existing wrapper:
     '/m:2', '/nr:false'
 )
 ```
-
-The local demo project, build/measurement scripts, compiler/runtime fingerprints,
-generated XAML/XBF dumps, and raw samples are preserved under:
-
-```text
-%USERPROFILE%\.copilot\session-state\5be5573a-9111-461f-bdb6-b30e554ade37\files\FallbackCompilerProbe\
-    Run-CompilerTests.ps1
-    Demo\README.md
-    Demo\REPORT.md
-    Demo\artifacts\final-summary.json
-    Demo\results\measured-20260915-124211\
-```
-
-Follow the demo README for its project-local compiler staging and SDK adapter.
-The measured net472 compiler SHA256 is
-`71161FF0D76CDD3D510FC28C40894978250C101751725357B74A2344DAABB457`.
-These generated binaries and local measurement artifacts are not source changes.
 
 ## Focused compiler coverage
 
@@ -203,7 +137,7 @@ positions, connection IDs, excluded forms/scopes, deterministic and idempotent
 lowering, projection codegen classification, the default/pass/design-time gate,
 and saved-state flag transitions across pass one, pass two, and save/reload.
 
-Promotion beyond a hackathon requires real workload evidence, broader language
+Broader adoption requires workload evidence, broader language
 and SDK coverage, diagnostic/tooling compatibility review, and quantified benefit
 that exceeds measurement noise. The intentionally unsupported scopes must acquire
 their own semantic proof and coverage before the rule is widened.
