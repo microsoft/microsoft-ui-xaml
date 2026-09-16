@@ -197,11 +197,12 @@ extends:
     # Informational performance comparison. This stage is a leaf that no other
     # stage depends on, and its job sets continueOnError, so a perf failure can
     # never fail pull request validation. It runs only when the pull request
-    # carries the 'run-perf' label.
+    # carries the 'run-perf' label. It deliberately declares no dependsOn: it
+    # consumes no build output, so waiting on the product build would only
+    # delay informational feedback by hours.
     - ${{ if eq(parameters.runPerfTests, true) }}:
       - template: AzurePipelinesTemplates\WinUI-PRPerf-Run.yml
         parameters:
-          dependsOn: Build
           gateOnLabel: true
           continueOnError: true
           useFixtures: ${{ parameters.perfUseFixtures }}

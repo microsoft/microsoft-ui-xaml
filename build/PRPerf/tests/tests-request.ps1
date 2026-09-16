@@ -664,3 +664,20 @@ function Test-PerfGateCannotFailTheStageOnModuleLoadFailure {
         throw 'The gate must import its module inside the try/catch so a load failure skips perf instead of failing the stage.'
     }
 }
+
+
+function Test-PerfStageDoesNotWaitOnTheProductBuild {
+    # The perf stage neither consumes build output nor blocks the pull request, so
+    # queueing it behind the ~2.5 hour product build only delays informational
+    # feedback. Running it in parallel keeps the signal close to the push.
+    $callSite = Get-Content (Join-Path $root '..\WinUI-GitHub-PR.yml') -Raw
+    $match = [regex]::Match(
+        $callSite,
+        "(?s)- template: AzurePipelinesTemplates\\WinUI-PRPerf-Run\.yml\r?\n\s+parameters:\r?\n(?<params>.*?)(?:\r?\n\s{4}-\s|\z)")
+    if (-not $match.Success) {
+        throw 'The PR perf template call site was not found.'
+    }
+    if ($match.Groups['params'].Value -match '(?m)^\s*dependsOn:\s*\S') {
+        throw 'The perf stage must not declare dependsOn, so it runs in parallel with the product build.'
+    }
+}
