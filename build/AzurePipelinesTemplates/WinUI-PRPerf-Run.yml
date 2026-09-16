@@ -54,6 +54,11 @@ stages:
   displayName: Run PR performance comparison
   ${{ if ne(parameters.dependsOn, '') }}:
     dependsOn: ${{ parameters.dependsOn }}
+  # A stage with no dependsOn inherits the preceding stage, which would queue this
+  # informational comparison behind the entire pipeline. An empty list makes it a
+  # true leaf that starts immediately.
+  ${{ else }}:
+    dependsOn: []
   jobs:
   - ${{ if eq(parameters.gateOnLabel, true) }}:
     - job: GatePRPerf

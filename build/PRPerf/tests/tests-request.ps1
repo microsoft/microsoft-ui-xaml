@@ -681,3 +681,15 @@ function Test-PerfStageDoesNotWaitOnTheProductBuild {
         throw 'The perf stage must not declare dependsOn, so it runs in parallel with the product build.'
     }
 }
+
+
+function Test-PerfStageDeclaresNoImplicitStageDependency {
+    # Azure Pipelines makes a stage depend on the preceding stage unless it
+    # declares an explicit empty dependency, so simply omitting dependsOn put
+    # the perf stage at the end of the whole pipeline instead of alongside it.
+    $yaml = Get-Content (Join-Path $root '..\AzurePipelinesTemplates\WinUI-PRPerf-Run.yml') -Raw
+
+    if ($yaml -notmatch '(?m)^\s*dependsOn:\s*\[\]\s*$') {
+        throw 'The perf stage must declare "dependsOn: []" when no dependency is supplied, or it inherits the previous stage.'
+    }
+}
