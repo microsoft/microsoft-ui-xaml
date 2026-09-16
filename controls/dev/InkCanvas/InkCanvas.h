@@ -105,6 +105,9 @@ private:
 
     InkTelemetry::CanvasState m_telemetryState;
 
+    // Decided during the attach fork so the noexcept accessor never re-enters the compositor query.
+    InkTelemetry::CompositorEngine m_telemetryEngine{ InkTelemetry::CompositorEngine::Unknown };
+
     winrt::InkPresenter::StrokesCollected_revoker m_strokesCollectedTelemetryRevoker{};
     winrt::InkPresenter::StrokesErased_revoker m_strokesErasedTelemetryRevoker{};
 

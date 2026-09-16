@@ -5,8 +5,7 @@
 
 #include <cstdint>
 
-// Usage, reliability and performance signals for the inking stack. See docs/Telemetry.md for the
-// proposal and the measures each event feeds.
+// Usage, reliability and performance signals for the inking stack.
 namespace InkTelemetry
 {
     // Bumped when a field is added, removed or redefined so queries can pin a shape.

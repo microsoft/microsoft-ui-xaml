@@ -95,11 +95,13 @@ namespace InkTelemetry
             return version.c_str();
         }
 
+        // Must match what the events actually write, or this either skips events a session asked for
+        // or does the work for events ETW will drop: the writes carry no explicit level, so
+        // TraceLogging defaults them to VERBOSE, and their keyword is the measures keyword combined
+        // with the control keyword.
         bool IsProviderEnabled(uint64_t keyword) noexcept
         {
-            return g_IsTelemetryProviderEnabled &&
-                g_TelemetryProviderLevel >= WINEVENT_LEVEL_INFO &&
-                (g_TelemetryProviderMatchAnyKeyword & keyword || g_TelemetryProviderMatchAnyKeyword == 0);
+            return !!TraceLoggingProviderEnabled(g_hTelemetryProvider, WINEVENT_LEVEL_VERBOSE, keyword);
         }
     }
 
@@ -113,12 +115,12 @@ namespace InkTelemetry
 
     bool IsCanvasEnabled() noexcept
     {
-        return IsProviderEnabled(KEYWORD_INKCANVAS);
+        return IsProviderEnabled(MICROSOFT_KEYWORD_MEASURES | KEYWORD_INKCANVAS);
     }
 
     bool IsToolbarEnabled() noexcept
     {
-        return IsProviderEnabled(KEYWORD_INKTOOLBAR);
+        return IsProviderEnabled(MICROSOFT_KEYWORD_MEASURES | KEYWORD_INKTOOLBAR);
     }
 
     void BeginCanvasInitialization(CanvasState& state) noexcept
