@@ -422,3 +422,50 @@ function Test-RawConverterScopesToRequestedRealScenarioOnly {
     }
 }
 
+
+function Test-RawConverterRejectsMultipleShiftsInOneFile {
+    # perf\vis\reports.py separates baseline from trial with data_frame['shift'] == shifts[0]
+    # vs shifts[1]. A file holding two shifts is a baseline+trial pair, and blending both into
+    # one sample series would silently compare a commit against itself.
+    $csv = New-TestCsv 'multi-shift.raw.csv' @(
+        'shift,arch,version,scenario,metric,value,interval,grouping'
+        '0,amd64,1.0.0,Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,250,Measured,Run:1'
+        '1,amd64,2.0.0,Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,900,Measured,Run:1'
+    )
+    try {
+        Assert-Throws { Invoke-TestConversion -InputCsv @($csv) -Name 'multi-shift.json' } 'shift' 'Two shifts in one file must be rejected.'
+    } finally {
+        Remove-Item -LiteralPath $csv -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath (Join-Path $PSScriptRoot 'multi-shift.json') -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Test-RawConverterRejectsMultipleArchitecturesInOneFile {
+    # reports.py merges on arch, so a frame can legitimately span architectures. Averaging
+    # amd64 and x86 timings together would be meaningless.
+    $csv = New-TestCsv 'multi-arch.raw.csv' @(
+        'shift,arch,version,scenario,metric,value,interval,grouping'
+        '0,amd64,1.0.0,Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,250,Measured,Run:1'
+        '0,x86,1.0.0,Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,900,Measured,Run:1'
+    )
+    try {
+        Assert-Throws { Invoke-TestConversion -InputCsv @($csv) -Name 'multi-arch.json' } 'arch' 'Two architectures in one file must be rejected.'
+    } finally {
+        Remove-Item -LiteralPath $csv -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath (Join-Path $PSScriptRoot 'multi-arch.json') -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Test-RawConverterRejectsBlankScenarioPattern {
+    # -cmatch '' matches every row, which would defeat explicit scenario selection.
+    $csv = New-TestCsv 'blank-pattern.raw.csv' @(
+        'scenario,metric,value,interval,grouping'
+        'Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,250,Measured,Run:1'
+    )
+    try {
+        Assert-Throws { Invoke-TestConversion -InputCsv @($csv) -Name 'blank-pattern.json' -ScenarioPattern '   ' } 'ScenarioPattern' 'A blank scenario pattern must be rejected.'
+    } finally {
+        Remove-Item -LiteralPath $csv -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath (Join-Path $PSScriptRoot 'blank-pattern.json') -Force -ErrorAction SilentlyContinue
+    }
+}

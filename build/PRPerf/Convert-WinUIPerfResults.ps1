@@ -70,6 +70,9 @@ if ([string]::IsNullOrWhiteSpace($BuildId)) {
 if ([string]::IsNullOrWhiteSpace($AgentName)) {
     throw 'AgentName must not be blank.'
 }
+if ([string]::IsNullOrWhiteSpace($ScenarioPattern)) {
+    throw 'ScenarioPattern must not be blank; an empty pattern would match every scenario.'
+}
 
 $requiredHeaders = @('scenario', 'metric', 'value', 'interval', 'grouping')
 # perf\vis\reports.py and dashboard.py read arch, version and shift alongside the value
@@ -138,6 +141,19 @@ $parsedRows = @(
                 throw "CSV column '$header' appears more than once in '$($file.FullName)'."
             }
         }
+
+        # These columns are not used in the comparison, but they identify which measurement a
+        # row belongs to. reports.py separates baseline from trial by 'shift' and merges on
+        # 'arch', so a file spanning either holds more than one measurement. Averaging those
+        # together would silently compare a commit against itself, or blend architectures.
+        foreach ($identityHeader in $ignoredHeaders) {
+            if ($headers -cnotcontains $identityHeader) { continue }
+            $distinct = @($selectedRows | ForEach-Object { $_.$identityHeader } | Sort-Object -Unique)
+            if ($distinct.Count -gt 1) {
+                throw "CSV column '$identityHeader' has more than one value ($($distinct -join ', ')) in '$($file.FullName)'. Each input file must hold exactly one measurement; convert each side separately."
+            }
+        }
+
         $hasNumericRun = $headers -ccontains 'run'
 
         foreach ($row in $selectedRows) {
