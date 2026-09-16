@@ -160,6 +160,41 @@ Provides test helper functions such as:
 
 Most private API usage has been removed from Private.Infrastructure. It depends on an internal package for input injection.
 
+#### WPF leak detection
+
+Core tests opt into WPF native leak detection with the method property
+`Data:WpfLeakDetection={true}`. Existing method fixtures need no changes:
+
+```cpp
+// TestSetup
+TestServices::WindowHelper->InitializeXaml();
+
+// TestCleanup
+TestServices::WindowHelper->ShutdownXaml();
+TestServices::WindowHelper->VerifyTestCleanup();
+```
+
+For WPF, shutdown leaves the original core idle so verification can check it
+before the next `InitializeXaml()` recreates the host. All initialization overloads
+handle that handoff. Obtain dispatcher-bound helpers from `TestServices` after
+initialization, rather than caching them across host replacement.
+
+Verify an opted-in interval before restarting it; initialization rejects a
+pending leak check. Cleanup that requires a live core runs before shutdown-to-idle.
+After a successful WPF shutdown, repeated calls to
+`ResetWindowContentAndWaitForIdle()` or `ResetWindowContentAndScaleWaitForIdle()`
+do nothing. They must not create new XAML objects on the idle core.
+The next initialization restores the theme and window-size defaults.
+`VerifyTestCleanup()` still checks the retiring interval, including any pending
+leak check.
+WPF island disposal unregisters its keyboard input site so the parent WPF window
+does not retain the disposed host and its native XAML objects during verification.
+Test-only visual-tree reset also clears the hidden window's island-startup content
+before removing the core tree and disconnecting native peers.
+UAP behavior and leak opt-outs are unchanged.
+This check covers native residue after teardown, not whole-host or CLR retention.
+It does not add GC passes, exclusions, or class-level host teardown.
+
 ### Server Component
 
 Most of the test infra executes in the main test process. However, for some things we want to execute in a different

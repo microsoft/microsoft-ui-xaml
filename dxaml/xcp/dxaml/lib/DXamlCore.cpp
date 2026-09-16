@@ -1080,9 +1080,13 @@ Cleanup:
     return hr;
 }
 
+// Test-only shutdown path, used to reset the core between test runs.
 _Check_return_ HRESULT DXamlCore::DeinitializeInstanceToIdle()
 {
     RemoveAutoHideScrollBarsChangedHandler();
+
+    // Match full shutdown: the idle core must not retain the drag/drop manager.
+    DeleteDragDrop();
 
     if (m_pDOCoreApp)
     {

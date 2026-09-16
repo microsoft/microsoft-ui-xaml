@@ -10,6 +10,10 @@
 #   .\run-tests-on-vm.ps1 -VMName "MyVM" "MyTest" -FullCopy
 #   .\run-tests-on-vm.ps1 -VMName "MyVM" -Stop
 #
+# Unit tests for argument forwarding and result handling (no VM required).
+# Run from the repository root:
+#   powershell.exe -NoProfile -File tools\tests\run-tests-on-vm.UnitTests.ps1
+#
 # First run will prompt for VM credentials and cache them (encrypted, per-user).
 # Subsequent runs reuse the cached credential automatically.
 
@@ -518,6 +522,7 @@ function Invoke-TestsOnVM {
     )
 
     $testArgsDisplay = $TestArgs -join ' '
+    $isDiscoveryRun = [bool]($TestArgs -match '^[-/](list|listproperties|stat)$')
     Write-Host ""
     Write-Host "[3/3] Running tests on VM: runtests.cmd $testArgsDisplay" -ForegroundColor Cyan
     Write-Host "--------------------------------------------" -ForegroundColor DarkGray
@@ -527,7 +532,7 @@ function Invoke-TestsOnVM {
     # on the VM's active desktop. We tail the log file to stream output
     # back to the host in near-real-time.
     $exitCode = Invoke-Command -Session $Session -ScriptBlock {
-        param($dir, [string[]]$testArgs, $taskUser)
+        param($dir, [string[]]$testArgs, $taskUser, [bool]$isDiscoveryRun)
 
         # Escape an argument for safe embedding in a .cmd file.
         function Escape-CmdArg {
@@ -583,13 +588,53 @@ echo %ERRORLEVEL% > "$exitFile"
             $bytes = $ms.ToArray()
             $ms.Close()
 
-            $bytes = $bytes | Where-Object { $_ -ne 0 }
+            [byte[]]$bytes = @($bytes | Where-Object { $_ -ne 0 })
+            $offset = 0
             if ($bytes.Count -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
-                $bytes = $bytes[3..($bytes.Count - 1)]
-            } elseif ($bytes.Count -ge 1 -and ($bytes[0] -eq 0xFF -or $bytes[0] -eq 0xFE)) {
-                $bytes = $bytes[1..($bytes.Count - 1)]
+                $offset = 3
+            } elseif ($bytes.Count -ge 2 -and $bytes[0] -eq 0xFF -and $bytes[1] -eq 0xFE) {
+                $offset = 2
             }
-            return ([System.Text.Encoding]::UTF8.GetString([byte[]]$bytes) -split "`r?`n")
+            return ([System.Text.Encoding]::UTF8.GetString($bytes, $offset, $bytes.Length - $offset) -split "`r?`n")
+        }
+
+        function Get-TaefExitCode {
+            param(
+                [int]$ProcessExitCode,
+                [string[]]$LogLines,
+                [bool]$IsDiscoveryRun = $false
+            )
+
+            if ($ProcessExitCode -ne 0) { return $ProcessExitCode }
+
+            # Like TestPass.ParseTestWttFile in Helix\common\test\HelixTestHelpers.cs,
+            # reject cleanup errors even after a passing test-body result.
+            # This run-level check also rejects errors outside method cleanup.
+            if ($LogLines -match '^\s*(Error:|Summary of Errors Outside of Tests:)') {
+                Write-Host "ERROR: TAEF logged errors, including possible setup or cleanup failures." -ForegroundColor Red
+                return 1
+            }
+
+            if ($IsDiscoveryRun) { return 0 }
+
+            $summaryLine = $LogLines | Where-Object { $_ -match '^Summary:' } | Select-Object -Last 1
+            $summaryPattern = '^Summary:\s+Total=(?<Total>\d+),\s*Passed=(?<Passed>\d+),\s*Failed=(?<Failed>\d+),\s*Blocked=(?<Blocked>\d+),\s*Not Run=(?<NotRun>\d+),\s*Skipped=(?<Skipped>\d+)\s*$'
+            if ($summaryLine -notmatch $summaryPattern) {
+                Write-Host "ERROR: No complete TAEF result summary was found; the run may not have completed." -ForegroundColor Red
+                return 1
+            }
+
+            if ([int]$Matches.Total -eq 0) {
+                Write-Host "ERROR: No tests were selected." -ForegroundColor Red
+                return 1
+            }
+
+            if ([int]$Matches.Failed -gt 0 -or [int]$Matches.Blocked -gt 0 -or [int]$Matches.NotRun -gt 0) {
+                Write-Host "ERROR: The TAEF summary contains failed, blocked, or unexecuted tests." -ForegroundColor Red
+                return 1
+            }
+
+            return 0
         }
 
         function Read-LogTail {
@@ -627,13 +672,10 @@ echo %ERRORLEVEL% > "$exitFile"
             }
         }
 
-        # te.exe returns 0 even when tests fail. Parse the TAEF summary line.
-        if ($exitCode -eq 0 -and (Test-Path $logFile)) {
-            $logLines = Read-NormalizedLog $logFile
-            $summaryLine = $logLines | Where-Object { $_ -match 'Summary:\s+Total=\d+' } | Select-Object -Last 1
-            if ($summaryLine -match 'Failed=(\d+)') {
-                if ([int]$Matches[1] -gt 0) { $exitCode = 1 }
-            }
+        # TAEF can return 0 for cleanup errors even when its native exit is preserved.
+        if ($exitCode -eq 0) {
+            $exitCode = Get-TaefExitCode -ProcessExitCode $exitCode `
+                -LogLines @(Read-NormalizedLog $logFile) -IsDiscoveryRun $isDiscoveryRun
         }
 
         # Clean up
@@ -641,11 +683,15 @@ echo %ERRORLEVEL% > "$exitFile"
         Remove-Item $wrapperPath -ErrorAction SilentlyContinue
 
         $exitCode
-    } -ArgumentList $RemoteTestDir, (, $TestArgs), $TaskUser
+    } -ArgumentList $RemoteTestDir, $TestArgs, $TaskUser, $isDiscoveryRun
 
     Write-Host "--------------------------------------------" -ForegroundColor DarkGray
     if ($exitCode -eq 0) {
-        Write-Host "Tests PASSED." -ForegroundColor Green
+        if ($isDiscoveryRun) {
+            Write-Host "Test discovery completed." -ForegroundColor Green
+        } else {
+            Write-Host "Tests PASSED." -ForegroundColor Green
+        }
     } else {
         Write-Host "Tests FAILED (exit code $exitCode)." -ForegroundColor Red
     }

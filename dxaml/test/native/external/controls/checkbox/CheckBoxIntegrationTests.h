@@ -23,10 +23,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(CanInstantiate)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully create a CheckBox.")
+            TEST_METHOD_PROPERTY(L"Data:WpfLeakDetection", L"{true}")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanEnterAndLeaveLiveTree)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully add/remove a CheckBox from the live tree.")
+            TEST_METHOD_PROPERTY(L"Data:WpfLeakDetection", L"{true}")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanClickUsingTap)
