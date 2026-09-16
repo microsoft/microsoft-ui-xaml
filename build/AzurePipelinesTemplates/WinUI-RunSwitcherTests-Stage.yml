@@ -199,22 +199,31 @@ stages:
     - task: powershell@2
       condition: always()
       continueOnError: true
-      timeoutInMinutes: 120
+      timeoutInMinutes: 220
       displayName: '[Probe] Full master-backed suite under SwitcherMode (no regkey)'
       inputs:
         targetType: inline
         workingDirectory: $(testPayloadDirInner)
         script: |
           New-Item -ItemType Directory -Path "$(ob_outputDirectory)" -Force | Out-Null
-          $log = Join-Path "$(ob_outputDirectory)" 'fullsuite-switcher-probe.log'
-          .\runtests.cmd "*" -TestsWithMasterFilesOnly -HostingMode:UAP -forceHostingMode /p:SwitcherMode=true /p:SwitcherLafToken=$env:SWITCHER_LAF_TOKEN /reportLoadingIssue 2>&1 | Tee-Object -FilePath $log
-          $s = Select-String -Path $log -Pattern 'Summary:\s*Total=(\d+).*?Passed=(\d+).*?Failed=(\d+).*?Blocked=(\d+)' | Select-Object -Last 1
-          if ($s) {
-            Write-Host "##[section]FULL-SUITE PROBE RESULT: $($s.Line.Trim())"
-          } else {
-            Write-Host "##[warning]Full-suite probe produced no TAEF summary - likely ModuleSetup did not engage (see fullsuite-switcher-probe.log)."
+          $logUap = Join-Path "$(ob_outputDirectory)" 'fullsuite-switcher-probe.log'
+          $logWpf = Join-Path "$(ob_outputDirectory)" 'fullsuite-switcher-probe-wpf.log'
+          function Report-Summary($label,$log) {
+            $s = Select-String -Path $log -Pattern 'Summary:\s*Total=(\d+).*?Passed=(\d+).*?Failed=(\d+).*?Blocked=(\d+)' | Select-Object -Last 1
+            if ($s) { Write-Host "##[section]FULL-SUITE PROBE ($label): $($s.Line.Trim())" }
+            else    { Write-Host "##[warning]Full-suite probe ($label) produced no TAEF summary - likely did not engage (see $(Split-Path $log -Leaf))." }
           }
-          Write-Host "Full-suite probe exit=$LASTEXITCODE (non-gating)."
+          # Pass 1 - UAP hosting (packaged host; engages via taefhostapp App::OnLaunched)
+          Write-Host "##[group]UAP hosting pass"
+          .\runtests.cmd "*" -TestsWithMasterFilesOnly -HostingMode:UAP -forceHostingMode /p:SwitcherMode=true /p:SwitcherLafToken=$env:SWITCHER_LAF_TOKEN /reportLoadingIssue 2>&1 | Tee-Object -FilePath $logUap
+          Write-Host "##[endgroup]"
+          # Pass 2 - WPF hosting (desktop host) - completes the full ~1316 master-backed suite
+          Write-Host "##[group]WPF hosting pass"
+          .\runtests.cmd "*" -TestsWithMasterFilesOnly -HostingMode:WPF -forceHostingMode /p:SwitcherMode=true /p:SwitcherLafToken=$env:SWITCHER_LAF_TOKEN /reportLoadingIssue 2>&1 | Tee-Object -FilePath $logWpf
+          Write-Host "##[endgroup]"
+          Report-Summary 'UAP' $logUap
+          Report-Summary 'WPF' $logWpf
+          Write-Host "Full-suite probe (UAP + WPF) done (non-gating)."
       env:
         SWITCHER_LAF_TOKEN: $(CompositionSwitcherLafToken)
 
