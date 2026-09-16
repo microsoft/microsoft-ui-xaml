@@ -109,7 +109,15 @@ InkCanvas::InkCanvas()
 
 InkCanvas::~InkCanvas()
 {
-    InkTelemetry::ReportCanvasSessionSummary(m_telemetryState, CompositorEngineForTelemetry());
+    // Backstop for the Unloaded flush; summaryReported keeps it to one event. A throw from a
+    // destructor during teardown would terminate, so contain it.
+    try
+    {
+        InkTelemetry::ReportCanvasSessionSummary(m_telemetryState, CompositorEngineForTelemetry());
+    }
+    catch (...)
+    {
+    }
 
     // Ensure that we have torn down our dcomp stuff
     DetachFromVisualLink();
@@ -213,13 +221,21 @@ void InkCanvas::ReportUsageTelemetry(InkTelemetry::CompositorEngine engine) noex
         return;
     }
 
-    InkTelemetry::ReportCanvasUsage(
-        m_telemetryState,
-        engine,
-        static_cast<uint32_t>(m_inkPresenterProxy.InputDeviceTypes()),
-        static_cast<uint32_t>(m_inkPresenterProxy.HighContrastAdjustment()));
+    // Reading the presenter and subscribing are cross-ABI calls that can fail. Telemetry must never
+    // be the reason the canvas stops working, and this is noexcept, so contain everything here.
+    try
+    {
+        InkTelemetry::ReportCanvasUsage(
+            m_telemetryState,
+            engine,
+            static_cast<uint32_t>(m_inkPresenterProxy.InputDeviceTypes()),
+            static_cast<uint32_t>(m_inkPresenterProxy.HighContrastAdjustment()));
 
-    SubscribeToStrokeTelemetry();
+        SubscribeToStrokeTelemetry();
+    }
+    catch (...)
+    {
+    }
 }
 
 // Counts only: the handlers never look at stroke geometry, and the totals are emitted once in the
@@ -239,11 +255,17 @@ void InkCanvas::SubscribeToStrokeTelemetry() noexcept
         winrt::auto_revoke,
         [weakThis](auto const&, winrt::InkStrokesCollectedEventArgs const& args)
         {
-            if (auto strongThis = weakThis.get())
+            try
             {
-                auto const strokes = args.Strokes();
-                InkTelemetry::RecordStrokesCollected(
-                    winrt::get_self<InkCanvas>(strongThis)->m_telemetryState, strokes ? strokes.Size() : 0);
+                if (auto strongThis = weakThis.get())
+                {
+                    auto const strokes = args.Strokes();
+                    InkTelemetry::RecordStrokesCollected(
+                        winrt::get_self<InkCanvas>(strongThis)->m_telemetryState, strokes ? strokes.Size() : 0);
+                }
+            }
+            catch (...)
+            {
             }
         });
 
@@ -251,11 +273,17 @@ void InkCanvas::SubscribeToStrokeTelemetry() noexcept
         winrt::auto_revoke,
         [weakThis](auto const&, winrt::InkStrokesErasedEventArgs const& args)
         {
-            if (auto strongThis = weakThis.get())
+            try
             {
-                auto const strokes = args.Strokes();
-                InkTelemetry::RecordStrokesErased(
-                    winrt::get_self<InkCanvas>(strongThis)->m_telemetryState, strokes ? strokes.Size() : 0);
+                if (auto strongThis = weakThis.get())
+                {
+                    auto const strokes = args.Strokes();
+                    InkTelemetry::RecordStrokesErased(
+                        winrt::get_self<InkCanvas>(strongThis)->m_telemetryState, strokes ? strokes.Size() : 0);
+                }
+            }
+            catch (...)
+            {
             }
         });
 }
@@ -273,6 +301,17 @@ void InkCanvas::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEvent
     m_xamlRootChangedRevoker.revoke();
     m_sizeChangedRevoker.revoke();
     m_layoutUpdatedRevoker.revoke();
+
+    // Flush the roll-up here rather than relying on ~InkCanvas: closing the window tears the process
+    // down without destructing the tree, so the destructor is not a reliable emit point. The state's
+    // summaryReported flag keeps this to one event if the destructor does run later.
+    try
+    {
+        InkTelemetry::ReportCanvasSessionSummary(m_telemetryState, CompositorEngineForTelemetry());
+    }
+    catch (...)
+    {
+    }
 
     DetachFromVisualLink();
 }

@@ -52,11 +52,33 @@ InkToolbar::InkToolbar()
 
     // ButtonManager owns the button model; lifetime tied to this container.
     m_buttonManager = std::make_unique<ButtonManager>(get_weak());
+
+    // Closing the window ends the process without destructing the tree, so ~InkToolbar is not a
+    // reliable emit point for the session roll-up. Unloaded is.
+    m_unloadedRevoker = Unloaded(winrt::auto_revoke,
+        [this](auto const&, auto const&)
+        {
+            try
+            {
+                InkTelemetry::ReportToolbarSessionSummary(m_telemetryState);
+            }
+            catch (...)
+            {
+            }
+        });
 }
 
 InkToolbar::~InkToolbar()
 {
-    InkTelemetry::ReportToolbarSessionSummary(m_telemetryState);
+    // Backstop for the Unloaded flush; summaryReported keeps it to one event. A throw from a
+    // destructor during teardown would terminate, so contain it.
+    try
+    {
+        InkTelemetry::ReportToolbarSessionSummary(m_telemetryState);
+    }
+    catch (...)
+    {
+    }
 }
 
 // ---- Auto-population + ordering (faithful port of UWP @1943 / OrderChildren) ----------------
@@ -828,7 +850,14 @@ void InkToolbar::OnActiveToolChanged(winrt::DependencyPropertyChangedEventArgs c
     // Only a real switch counts; the initial auto-population assignment has no old tool.
     if (oldTool && newTool)
     {
-        InkTelemetry::RecordToolSwitch(m_telemetryState, static_cast<uint32_t>(newTool.ToolKind()));
+        // Telemetry-only work on a live control path, so it must not disturb the tool change.
+        try
+        {
+            InkTelemetry::RecordToolSwitch(m_telemetryState, static_cast<uint32_t>(newTool.ToolKind()));
+        }
+        catch (...)
+        {
+        }
     }
 
     if (oldTool)
@@ -1217,18 +1246,26 @@ winrt::AutomationPeer InkToolbar::OnCreateAutomationPeer()
 // Reported once per toolbar, after auto-population has settled on an active tool.
 void InkToolbar::ReportUsageTelemetry() noexcept
 {
-    auto const activeTool = ActiveTool();
-    auto const toolKind = activeTool
-        ? static_cast<uint32_t>(activeTool.ToolKind())
-        : static_cast<uint32_t>(winrt::InkToolbarTool::CustomTool) + 1;   // sentinel: no active tool
+    // Reading the dependency properties below can throw, and this is noexcept; telemetry must never
+    // be the reason the toolbar stops working.
+    try
+    {
+        auto const activeTool = ActiveTool();
+        auto const toolKind = activeTool
+            ? static_cast<uint32_t>(activeTool.ToolKind())
+            : static_cast<uint32_t>(winrt::InkToolbarTool::CustomTool) + 1;   // sentinel: no active tool
 
-    InkTelemetry::ReportToolbarUsage(
-        m_telemetryState,
-        static_cast<uint32_t>(InitialControls()),
-        static_cast<uint32_t>(Orientation()),
-        toolKind,
-        TargetInkCanvas() != nullptr,
-        TargetInkPresenter() != nullptr);
+        InkTelemetry::ReportToolbarUsage(
+            m_telemetryState,
+            static_cast<uint32_t>(InitialControls()),
+            static_cast<uint32_t>(Orientation()),
+            toolKind,
+            TargetInkCanvas() != nullptr,
+            TargetInkPresenter() != nullptr);
+    }
+    catch (...)
+    {
+    }
 }
 
 // ---- Ruler / stencil checked handlers (faithful ports; dial + ruler-event dropped) ----------

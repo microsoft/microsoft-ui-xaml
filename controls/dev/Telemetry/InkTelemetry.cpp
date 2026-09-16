@@ -46,50 +46,59 @@ namespace InkTelemetry
         }
 
         // File version of the module this code is linked into, which is the control version we ship.
+        // Every caller is noexcept, so nothing here may escape: the allocations below can throw
+        // bad_alloc, and a throw out of a noexcept frame would terminate the app over telemetry.
         char const* ControlVersion() noexcept
         {
             static std::string const version = [] () -> std::string {
-                HMODULE module{};
-                if (!GetModuleHandleExW(
-                        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                        reinterpret_cast<LPCWSTR>(&g_nextId),
-                        &module))
+                try
+                {
+                    HMODULE module{};
+                    if (!GetModuleHandleExW(
+                            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                            reinterpret_cast<LPCWSTR>(&g_nextId),
+                            &module))
+                    {
+                        return "unknown";
+                    }
+
+                    wchar_t path[MAX_PATH]{};
+                    if (GetModuleFileNameW(module, path, ARRAYSIZE(path)) == 0)
+                    {
+                        return "unknown";
+                    }
+
+                    DWORD handle{};
+                    DWORD const size = GetFileVersionInfoSizeW(path, &handle);
+                    if (size == 0)
+                    {
+                        return "unknown";
+                    }
+
+                    std::string buffer(size, '\0');
+                    // The handle argument is ignored by the API and must be zero.
+                    if (!GetFileVersionInfoW(path, 0, size, buffer.data()))
+                    {
+                        return "unknown";
+                    }
+
+                    VS_FIXEDFILEINFO* info{};
+                    UINT length{};
+                    if (!VerQueryValueW(buffer.data(), L"\\", reinterpret_cast<void**>(&info), &length) || !info)
+                    {
+                        return "unknown";
+                    }
+
+                    char text[64]{};
+                    sprintf_s(text, "%u.%u.%u.%u",
+                        HIWORD(info->dwFileVersionMS), LOWORD(info->dwFileVersionMS),
+                        HIWORD(info->dwFileVersionLS), LOWORD(info->dwFileVersionLS));
+                    return text;
+                }
+                catch (...)
                 {
                     return "unknown";
                 }
-
-                wchar_t path[MAX_PATH]{};
-                if (GetModuleFileNameW(module, path, ARRAYSIZE(path)) == 0)
-                {
-                    return "unknown";
-                }
-
-                DWORD handle{};
-                DWORD const size = GetFileVersionInfoSizeW(path, &handle);
-                if (size == 0)
-                {
-                    return "unknown";
-                }
-
-                std::string buffer(size, '\0');
-                // The handle argument is ignored by the API and must be zero.
-                if (!GetFileVersionInfoW(path, 0, size, buffer.data()))
-                {
-                    return "unknown";
-                }
-
-                VS_FIXEDFILEINFO* info{};
-                UINT length{};
-                if (!VerQueryValueW(buffer.data(), L"\\", reinterpret_cast<void**>(&info), &length) || !info)
-                {
-                    return "unknown";
-                }
-
-                char text[64]{};
-                sprintf_s(text, "%u.%u.%u.%u",
-                    HIWORD(info->dwFileVersionMS), LOWORD(info->dwFileVersionMS),
-                    HIWORD(info->dwFileVersionLS), LOWORD(info->dwFileVersionLS));
-                return text;
             }();
 
             return version.c_str();

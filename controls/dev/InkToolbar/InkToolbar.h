@@ -162,6 +162,7 @@ private:
 
     void ReportUsageTelemetry() noexcept;
     InkTelemetry::ToolbarState m_telemetryState;
+    winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
 
     // Tracks an open L3 for as long as it is open (registered for flyout Closed to prune).
     struct OpenFlyout
