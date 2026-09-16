@@ -111,15 +111,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var collapsedCanvas = new InkCanvas
                 {
                     Width = 400,
-                    Height = 300,
-                    Visibility = Visibility.Collapsed
+                    Height = 300
                 };
 
                 Content = collapsedCanvas;
                 Content.UpdateLayout();
 
+                // The peer has to be created while the canvas is still visible: XAML does not create
+                // an automation peer for a collapsed element, so CreatePeerForElement returns null.
                 var collapsedPeer = FrameworkElementAutomationPeer.CreatePeerForElement(collapsedCanvas);
                 Verify.IsNotNull(collapsedPeer, "InkCanvas should create an automation peer.");
+
+                collapsedCanvas.Visibility = Visibility.Collapsed;
+                Content.UpdateLayout();
                 Verify.IsTrue(collapsedPeer.IsOffscreen(), "A collapsed InkCanvas should report itself as offscreen.");
 
                 // Positioned far past the right edge of the content area, so no part of it intersects
