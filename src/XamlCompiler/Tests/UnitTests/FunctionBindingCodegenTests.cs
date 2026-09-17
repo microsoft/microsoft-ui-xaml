@@ -246,8 +246,6 @@ namespace UnitTests
             AssertGenerated(code, @"if \(obj\d+ != nullptr\)");
             AssertGenerated(code, @"obj\d+\.Value\(obj\d+\.Text\(\)\);");
         }
-    }
-}
 
         [TestMethod]
         public void FunctionBinding_RetrievesNamedElementArgumentInTemplate()
