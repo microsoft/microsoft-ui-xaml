@@ -392,3 +392,110 @@ function Test-GitHubStatusIsNeverFailingBecauseTheStageIsInformational {
     }
 }
 
+
+function Test-GitHubErrorDetailNamesSsoAuthorizationAs403Cause {
+    # The gate logged only "(403) Forbidden", which cannot distinguish a token that
+    # was never SSO-authorized for the org from an exhausted rate limit. Those need
+    # opposite fixes, so the cause has to reach the log.
+    $detail = Format-GitHubPRPerfErrorDetail -StatusCode 403 `
+        -Body '{"message":"Resource protected by organization SAML enforcement.","documentation_url":"https://docs.github.com/rest"}' `
+        -ResponseHeaders @{ 'X-GitHub-SSO' = 'required; url=https://github.com/orgs/microsoft/sso' }
+
+    if ($detail -notmatch '403') { throw "Detail must report the status code. Got: $detail" }
+    if ($detail -notmatch 'SAML enforcement') { throw "Detail must include GitHub's own message. Got: $detail" }
+    if ($detail -notmatch 'single sign-on') { throw "Detail must name SSO authorization as the cause. Got: $detail" }
+}
+
+function Test-GitHubErrorDetailNamesRateLimitAs403Cause {
+    # The other 403: an unauthenticated or exhausted token. Reporting the remaining
+    # quota distinguishes it from the SSO case without guesswork.
+    $detail = Format-GitHubPRPerfErrorDetail -StatusCode 403 `
+        -Body '{"message":"API rate limit exceeded for 20.1.2.3."}' `
+        -ResponseHeaders @{ 'X-RateLimit-Remaining' = '0'; 'X-RateLimit-Limit' = '60' }
+
+    if ($detail -notmatch 'rate limit') { throw "Detail must name the rate limit. Got: $detail" }
+    if ($detail -notmatch '0/60') { throw "Detail must report remaining quota. Got: $detail" }
+}
+
+function Test-GitHubErrorDetailNeverEchoesTheToken {
+    # This string is written to a public pipeline log, so it must carry diagnosis
+    # and nothing else. A leaked credential would be far worse than a silent gate.
+    $detail = Format-GitHubPRPerfErrorDetail -StatusCode 401 `
+        -Body '{"message":"Bad credentials"}' `
+        -ResponseHeaders @{ Authorization = 'Bearer ghp_supersecretvalue'; 'X-GitHub-SSO' = 'partial-results' }
+
+    if ($detail -match 'ghp_supersecretvalue') { throw "Detail leaked the token: $detail" }
+    if ($detail -match '(?i)authorization') { throw "Detail must not echo the Authorization header. Got: $detail" }
+    if ($detail -notmatch 'Bad credentials') { throw "Detail must include GitHub's message. Got: $detail" }
+}
+
+function Test-GateReportsWhetherATokenWasSupplied {
+    # An unset variable group and a rejected token both end in "skipping", but only
+    # one is fixed by authorizing a token. The log must say which.
+    $yaml = Get-Content (Join-Path $PSScriptRoot '..\..\AzurePipelinesTemplates\WinUI-PRPerf-Run.yml') -Raw
+    $gateStart = $yaml.IndexOf('name: gate')
+    $gateEnd = $yaml.IndexOf('- job: RunPRPerf')
+    $gate = $yaml.Substring($gateStart, $gateEnd - $gateStart)
+
+    if ($gate -notmatch 'Format-GitHubPRPerfErrorDetail') {
+        throw 'The gate must report GitHub failure detail instead of only the exception message.'
+    }
+    if ($gate -notmatch '(?i)token') {
+        throw 'The gate must report whether a token was supplied.'
+    }
+}
+
+function Test-PullRequestReadFallsBackToUnauthenticatedOnAuthFailure {
+    # microsoft/microsoft-ui-xaml is public, so reading labels needs no credential.
+    # The stage was skipping every pull request because the configured token is
+    # rejected with 403, which is a credential problem standing in the way of data
+    # that is public anyway. No write ever uses this path.
+    $attempts = @()
+    $invoker = {
+        param($Uri, $Headers)
+        $attempts += , $Headers
+        if ($Headers.ContainsKey('Authorization')) { throw 'The remote server returned an error: (403) Forbidden.' }
+        return [pscustomobject]@{ labels = @([pscustomobject]@{ name = 'run-perf' }) }
+    }.GetNewClosure()
+
+    $pr = Get-GitHubPRPerfPullRequest -Uri 'https://api.github.com/repos/o/r/pulls/1' -Token 'broken' -Invoker $invoker
+
+    if ($null -eq $pr) { throw 'Expected the unauthenticated retry to return the pull request.' }
+    if (-not (Test-GitHubPRPerfRequested -PullRequest $pr)) { throw 'Expected the retried read to expose the label.' }
+}
+
+function Test-PullRequestReadPrefersTheTokenWhenItWorks {
+    # The fallback must not become the normal path: an authenticated read has a far
+    # higher rate limit, and silently dropping the credential would make the gate
+    # fail intermittently once the shared unauthenticated quota is exhausted.
+    $sawAuthorization = $false
+    $invoker = {
+        param($Uri, $Headers)
+        if ($Headers.ContainsKey('Authorization')) { $script:sawAuthorization = $true }
+        return [pscustomobject]@{ labels = @() }
+    }
+
+    $null = Get-GitHubPRPerfPullRequest -Uri 'https://api.github.com/repos/o/r/pulls/1' -Token 'good' -Invoker $invoker
+    if (-not $script:sawAuthorization) { throw 'The first attempt must use the token.' }
+}
+
+function Test-PullRequestReadThrowsWhenBothAttemptsFail {
+    # A gate that cannot read labels must skip loudly, never assume the label is
+    # present. Swallowing this would run perf on every pull request.
+    $invoker = { param($Uri, $Headers) throw 'network down' }
+
+    $threw = $false
+    $errorRecord = $null
+    try { $null = Get-GitHubPRPerfPullRequest -Uri 'https://api.github.com/repos/o/r/pulls/1' -Token 'broken' -Invoker $invoker }
+    catch { $threw = $true; $errorRecord = $_ }
+
+    if (-not $threw) { throw 'Expected a total failure to surface to the caller.' }
+    # Without this the test passes while the function does not exist at all, since a
+    # CommandNotFoundException is also a throw.
+    if ($errorRecord.CategoryInfo.Reason -eq 'CommandNotFoundException') {
+        throw 'Get-GitHubPRPerfPullRequest does not exist.'
+    }
+    if ($errorRecord.Exception.Message -notmatch 'network down') {
+        throw "Expected the underlying failure to surface. Got: $($errorRecord.Exception.Message)"
+    }
+}

@@ -126,24 +126,37 @@ stages:
             # import is inside the guard as well: an informational stage must
             # never turn red just because it could not locate its own scripts.
             $shouldRun = $false
+            $tokenSupplied = -not [string]::IsNullOrWhiteSpace($env:GITHUB_PRPERF_TOKEN)
+            # An unlinked variable group and a token GitHub rejects both end in
+            # "skipping", but only one of them is fixed by authorizing a token.
+            Write-Host "GitHubPRPerfToken supplied: $tokenSupplied"
             try {
               Import-Module (Join-Path '$(prPerfSourcesDirectory)' 'build\PRPerf\PRPerfGitHub.psm1') -Force
               $context = Get-PRPerfContextFromPipeline
               $uri = "https://api.github.com/repos/$($context.Owner)/$($context.Repository)/pulls/$($context.PullRequestNumber)"
 
-              $headers = @{
-                Accept = 'application/vnd.github+json'
-                'X-GitHub-Api-Version' = '2022-11-28'
-                'User-Agent' = 'WinUI-PRPerf'
-              }
-              if (-not [string]::IsNullOrWhiteSpace($env:GITHUB_PRPERF_TOKEN)) {
-                $headers = New-GitHubPRPerfHeaders -Token $env:GITHUB_PRPERF_TOKEN
-              }
-
-              $pullRequest = Invoke-RestMethod -Uri $uri -Headers $headers -Method Get
+              $pullRequest = Get-GitHubPRPerfPullRequest -Uri $uri -Token $env:GITHUB_PRPERF_TOKEN
               $shouldRun = Test-GitHubPRPerfRequested -PullRequest $pullRequest
             } catch {
-              Write-Host "##vso[task.logissue type=warning]Could not read pull request labels, skipping the performance comparison. $($_.Exception.Message)"
+              # Invoke-RestMethod surfaces only "(403) Forbidden" in the exception
+              # message; the response body and headers carry the actual cause.
+              $detail = $_.Exception.Message
+              $response = $_.Exception.Response
+              if ($null -ne $response) {
+                $body = ''
+                $responseHeaders = @{}
+                try {
+                  $stream = $response.GetResponseStream()
+                  $body = (New-Object System.IO.StreamReader($stream)).ReadToEnd()
+                } catch { }
+                try {
+                  foreach ($name in $response.Headers.AllKeys) { $responseHeaders[$name] = $response.Headers[$name] }
+                } catch { }
+                try {
+                  $detail = Format-GitHubPRPerfErrorDetail -StatusCode ([int]$response.StatusCode) -Body $body -ResponseHeaders $responseHeaders
+                } catch { }
+              }
+              Write-Host "##vso[task.logissue type=warning]Could not read pull request labels, skipping the performance comparison. $detail"
               $shouldRun = $false
             }
 

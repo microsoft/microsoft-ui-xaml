@@ -139,5 +139,105 @@ function ConvertTo-GitHubPRPerfStatusState {
 
     return 'success'
 }
-Export-ModuleMember -Function New-GitHubPRPerfHeaders, Get-PRPerfContextFromPipeline, Get-GitHubPRPerfCommits, Test-GitHubPRPerfRequestCurrent, Test-GitHubPRPerfRequested, ConvertTo-GitHubPRPerfStatusState
+function Format-GitHubPRPerfErrorDetail {
+    <#
+        Turns a failed GitHub API response into a line a human can act on. The gate
+        previously logged only the exception message, which for Invoke-RestMethod is
+        "(403) Forbidden" with no body: that cannot distinguish a token never
+        authorized for the organization's single sign-on from an exhausted rate
+        limit, and those need opposite fixes.
+
+        The result is written to a pipeline log that is readable by anyone who can
+        see the build, so it deliberately reads only GitHub's own message plus
+        non-secret rate-limit and SSO headers. Request headers, which carry the
+        bearer token, are never echoed.
+    #>
+    param(
+        [int] $StatusCode,
+        [string] $Body,
+        [hashtable] $ResponseHeaders
+    )
+
+    $parts = @("HTTP $StatusCode")
+
+    $message = $null
+    if (-not [string]::IsNullOrWhiteSpace($Body)) {
+        try {
+            $message = ($Body | ConvertFrom-Json).message
+        } catch {
+            # A non-JSON body is still worth reporting, but only the leading portion:
+            # GitHub serves an HTML error page in some failure modes.
+            $message = $Body.Trim()
+            if ($message.Length -gt 200) { $message = $message.Substring(0, 200) }
+        }
+    }
+    if (-not [string]::IsNullOrWhiteSpace($message)) {
+        $parts += $message
+    }
+
+    if ($null -ne $ResponseHeaders) {
+        # Header lookup is explicit rather than case-insensitive indexing because the
+        # caller may pass an ordinary hashtable, which is case-sensitive by default.
+        $lookup = @{}
+        foreach ($key in $ResponseHeaders.Keys) {
+            $lookup[[string]$key.ToString().ToLowerInvariant()] = $ResponseHeaders[$key]
+        }
+
+        if ($lookup.ContainsKey('x-github-sso')) {
+            $parts += "the token has not been authorized for the organization's single sign-on: $($lookup['x-github-sso'])"
+        }
+
+        if ($lookup.ContainsKey('x-ratelimit-remaining')) {
+            $remaining = $lookup['x-ratelimit-remaining']
+            $limit = if ($lookup.ContainsKey('x-ratelimit-limit')) { $lookup['x-ratelimit-limit'] } else { '?' }
+            $parts += "rate limit $remaining/$limit remaining"
+        }
+    }
+
+    return ($parts -join ' | ')
+}
+
+function Get-GitHubPRPerfPullRequest {
+    <#
+        Reads a pull request, preferring the configured token and retrying once
+        without it.
+
+        microsoft/microsoft-ui-xaml is public, so pull request labels are readable
+        with no credential at all. The gate was skipping every pull request because
+        the configured token is rejected with 403, which meant a credential problem
+        was blocking access to data that is public anyway.
+
+        The token is still tried first, and only first: an authenticated read has a
+        far higher rate limit, so making the unauthenticated path the default would
+        turn the gate intermittent once the shared quota is exhausted. This path only
+        ever reads; posting the comment still requires a working token.
+    #>
+    param(
+        [string] $Uri,
+        [string] $Token,
+        [scriptblock] $Invoker
+    )
+
+    if ($null -eq $Invoker) {
+        $Invoker = { param($Uri, $Headers) Invoke-RestMethod -Uri $Uri -Headers $Headers -Method Get }
+    }
+
+    $anonymousHeaders = @{
+        Accept = 'application/vnd.github+json'
+        'X-GitHub-Api-Version' = '2022-11-28'
+        'User-Agent' = 'WinUI-PRPerf'
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($Token)) {
+        try {
+            return & $Invoker $Uri (New-GitHubPRPerfHeaders -Token $Token)
+        } catch {
+            Write-Host "##vso[task.logissue type=warning]The configured GitHub token was rejected reading $Uri ($($_.Exception.Message)). Retrying without it, which is sufficient for a public repository."
+        }
+    }
+
+    return & $Invoker $Uri $anonymousHeaders
+}
+
+Export-ModuleMember -Function New-GitHubPRPerfHeaders, Get-PRPerfContextFromPipeline, Get-GitHubPRPerfCommits, Test-GitHubPRPerfRequestCurrent, Test-GitHubPRPerfRequested, ConvertTo-GitHubPRPerfStatusState, Format-GitHubPRPerfErrorDetail, Get-GitHubPRPerfPullRequest
 
