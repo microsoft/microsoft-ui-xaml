@@ -279,6 +279,8 @@ reference becomes a compile error._
 
 ### CollectionMoveNotifications
 
+This value is available starting with WinUIContract 12 (WinAppSDK 3.0).
+
 This change addresses [microsoft/microsoft-ui-xaml#1503](https://github.com/microsoft/microsoft-ui-xaml/issues/1503).
 Enable it before XAML initialization:
 
