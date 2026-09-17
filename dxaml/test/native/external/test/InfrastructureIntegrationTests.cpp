@@ -377,9 +377,17 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                     });
                 }
 
-                LOG_OUTPUT(L"WPF interval %d: before ShutdownXaml.", interval);
-                helper->ShutdownXaml();
-                LOG_OUTPUT(L"WPF interval %d: after ShutdownXaml.", interval);
+                {
+                    // A mid-test shutdown must not validate or reset end-of-test state.
+                    auto resetTolerance = wil::scope_exit([]() {
+                        TestServices::Utilities->SetImageCompareTolerance(0);
+                    });
+                    TestServices::Utilities->SetImageCompareTolerance(1);
+                    LOG_OUTPUT(L"WPF interval %d: before ShutdownXaml.", interval);
+                    helper->ShutdownXaml();
+                    LOG_OUTPUT(L"WPF interval %d: after ShutdownXaml.", interval);
+                    VERIFY_ARE_EQUAL(1, TestServices::Utilities->GetImageCompareTolerance());
+                }
 
                 auto replacement = TestServices::WindowHelper;
                 auto replacementDispatcher = replacement->CurrentDispatcher;

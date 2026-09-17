@@ -177,11 +177,15 @@ mid-test reinitialization to check the next shutdown. This API does not add a TA
 data parameter or change the test's name.
 
 Keep the usual `InitializeXaml()` setup and `ShutdownXaml()` followed by
-`VerifyTestCleanup()` cleanup. For opted-in WPF tests, shutdown checks the old
-active core's cleanup, shuts it down, and scans native allocations **before**
-replacing the host. New host initialization resets allocation tracking, so a
-later scan would hide leaks. `VerifyTestCleanup()` retains its other checks but
-does not scan the replacement WPF core.
+`VerifyTestCleanup()` cleanup. For opted-in WPF tests, shutdown tears down XAML
+and scans native allocations **before** replacing the host. Host replacement
+fully shuts down the retiring XAML core and its STA thread, then initializes a
+new core and resets allocation tracking. A later scan would inspect the
+replacement core and miss these leaks.
+
+`ShutdownXaml()` does not call `VerifyTestCleanup()` or perform its full
+end-of-test validation. The fixture still calls `VerifyTestCleanup()` for those
+checks; it does not scan the replacement WPF core.
 
 WPF shutdown still replaces the host, STA UI thread, dispatcher, and helpers
 **before returning**. Reacquire `TestServices::WindowHelper`, `KeyboardHelper`,

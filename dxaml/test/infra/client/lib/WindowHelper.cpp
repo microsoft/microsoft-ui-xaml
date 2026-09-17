@@ -819,7 +819,7 @@ HRESULT WindowHelper::VerifyTestCleanup()
          Hosting::HostingMode hostingMode = Hosting::HostingMode::UAP;
         LogThrow_IfFailed(GetHostingMode(&hostingMode));
 
-        // WPF checks native leaks in ShutdownXaml, before host replacement resets tracking.
+        // The WPF test host checks native leaks in ShutdownXaml, before host replacement resets tracking.
         if (IsLeakDetectionEnabled() && hostingMode == HostingMode::UAP)
         {
             RunOnUIThread([] () {
@@ -2138,7 +2138,7 @@ void WindowHelper::InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* c
     s_isShutdownEnabled = false;
     s_foregroundWindowCraterArmed = false;
     m_ensureSatelliteDLLCustomDPCleanup = false;
-    m_wpfLeakDetectionRequested = false;
+    m_leakDetectionRequested = false;
 
     // Make sure we are tracking leaks for this test in case a previous test had disabled it.
     ErrorHandlingHelper::TrackLeaksForTest();
@@ -2575,14 +2575,14 @@ HRESULT WindowHelper::ResetVisualTree()
 
 void WindowHelper::EnableLeakDetection()
 {
-    m_wpfLeakDetectionRequested = true;
+    m_leakDetectionRequested = true;
 }
 
 HRESULT WindowHelper::ShutdownXaml()
 {
     COM_START_GROUP(L"WindowHelper::ShutdownXaml")
     {
-        const bool leakDetectionRequested = std::exchange(m_wpfLeakDetectionRequested, false);
+        const bool leakDetectionRequested = std::exchange(m_leakDetectionRequested, false);
 
         // InitializeHost replaces TestServices' owning reference before this call returns.
         wrl::ComPtr<WindowHelper> keepAlive(this);
@@ -2593,13 +2593,6 @@ HRESULT WindowHelper::ShutdownXaml()
         LogThrow_IfFailed(Utilities::IsOneCoreStatic(&isOneCore));
 
         const bool wpfLeakDetectionRequested = leakDetectionRequested && hostingMode == HostingMode::WPF;
-
-        if (wpfLeakDetectionRequested && !isOneCore)
-        {
-            // Clearing WPF content disposes the island. Check its active-core state now,
-            // rather than inspecting only the replacement core in the later TestCleanup.
-            LogThrow_IfFailed(VerifyTestCleanup());
-        }
 
         RunOnUIThread([&]() {
             HMODULE hModuleMuxc = GetModuleHandle(L"Microsoft.UI.Xaml.Controls.dll");
@@ -2780,8 +2773,11 @@ HRESULT WindowHelper::ShutdownXaml()
         {
             if (wpfLeakDetectionRequested)
             {
-                // Shutdown-local XAML references are out of scope. Scan before InitializeHost
-                // marks the retiring core's outstanding allocations ignorable.
+                // The call to m_pTestServices->InitializeHost() below causes WpfHost to shut down
+                // the WinUI core and the STA thread it was running on. Run leak detection now,
+                // with shutdown-local XAML references out of scope, before the core and thread
+                // are torn down. The replacement core resets allocation tracking, so the fixture's
+                // later VerifyTestCleanup call would inspect the new core and miss these leaks.
                 if (IsLeakDetectionEnabled())
                 {
                     LOG_OUTPUT(L"Checking the retiring WPF core before host replacement.");
