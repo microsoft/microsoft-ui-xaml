@@ -75,7 +75,8 @@ internal static class CoverageToolFixture
         }
 
         bool nativeSmoke = mode == "native-smoke" || mode == "fail-native-runner" ||
-            mode == "fail-native-shutdown" || mode == "stall-collector";
+            mode == "fail-native-shutdown" || mode == "stall-collector" ||
+            mode == "fail-native-collector";
         if ((mode == "stall-shutdown" || nativeSmoke) && args[0] == "collect")
         {
             using (var pipe = new NamedPipeServerStream("CodeCoverage.pipe." + Option(args, "--session-id")))
@@ -91,12 +92,16 @@ internal static class CoverageToolFixture
                 if (mode == "stall-shutdown" || mode == "stall-collector")
                     Thread.Sleep(Timeout.Infinite);
                 File.WriteAllText(Option(args, "--output"), "coverage");
-                return 0;
+                return mode == "fail-native-collector" ? 28 : 0;
             }
         }
 
         if ((mode == "stall-shutdown" || nativeSmoke) && args[0] == "shutdown")
         {
+            using (var collector = (mode == "native-smoke" || mode == "fail-native-collector")
+                ? System.Diagnostics.Process.GetProcessById(
+                    int.Parse(File.ReadAllText(Path.Combine(root, "collector.pid"))))
+                : null)
             using (var pipe = new NamedPipeClientStream(".", "CodeCoverage.pipe." + args[1]))
             {
                 pipe.Connect(10000);
@@ -104,6 +109,9 @@ internal static class CoverageToolFixture
                 File.WriteAllText(Path.Combine(root, "shutdown-requested.txt"), "waiting for reply");
                 if (mode != "stall-collector")
                     pipe.ReadByte();
+                // Exercise reading the collector exit code after it has already exited.
+                if (collector != null && !collector.WaitForExit(10000))
+                    return 29;
             }
         }
 

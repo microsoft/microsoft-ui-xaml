@@ -29,6 +29,10 @@ that the generated `AllowedUsers` configuration preserves the checked-in
 instrumentation settings. Always use a fresh process, not an existing collector
 session.
 
+Collector-exit tests check successful and failed real collectors that exit before
+the shutdown client returns. Nonzero or unavailable collector exit codes must
+produce warnings without replacing passing or failing test results.
+
 An existing-session regression uses a real fixture pipe and verifies that the
 wrapper fails without starting tests, changing permissions, or sending shutdown.
 Native smoke lifecycle regressions invoke its collection helper with fixture

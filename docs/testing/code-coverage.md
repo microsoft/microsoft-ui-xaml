@@ -1,437 +1,246 @@
 # Runtime code coverage (experimental)
 
-Runtime code coverage records execution of `Microsoft.ui.xaml.dll` (MUX) and
-`Microsoft.UI.Xaml.Controls.dll` (MUXC) during Azure Pipelines runtime tests.
-Instrumentation adds probes to loose copies of these DLLs in the test payload.
-The pipeline merges their execution data into reports for Visual Studio and
-the Azure DevOps **Code Coverage** tab.
+Coverage records execution of loose `Microsoft.ui.xaml.dll` (MUX) and
+`Microsoft.UI.Xaml.Controls.dll` (MUXC) copies in the runtime-test payload.
+Here, *loose* means DLL files outside an APPX/MSIX package, even if the host has
+package identity.
+Reports are available in Visual Studio format and Azure's **Code Coverage** tab.
+**Reports and downloadable coverage artifacts are currently MS internal only.**
 
-Coverage is opt-in and defaults to off. Enabling it does not change which build
-flavors, OSes, or tests run, and does not instrument shipped packages.
-The coverage flow does not enforce a percentage threshold.
-
-> Run coverage only on isolated, disposable test agents. The collector wrapper
-> relaxes the permissions on its named pipe. See [Collector access](#collector-access).
+**`CollectCodeCoverage` defaults to false.** Enabling it does not change test
+selection, build/OS matrices, triggers, or schedules. No coverage percentage
+threshold is enforced.
 
 ## Pipelines
 
-The coverage entry points are Azure Pipelines definitions backed by this GitHub
-repository, not GitHub Actions workflows.
+These pipelines are **MS internal only**:
 
-| Pipeline | YAML entry point | Coverage scope |
-| --- | --- | --- |
-| [WinUI-GitHub-PR (OneBranch)](https://dev.azure.com/microsoft/WinUI/_build?definitionId=195405) (MS internal) | [WinUI-GitHub-PR.yml](../../build/WinUI-GitHub-PR.yml) | DevTestSuite |
-| [WinUI-GitHub-Nightly](https://dev.azure.com/microsoft/WinUI/_build?definitionId=199443) (MS internal) | [WinUI-Nightly.yml](../../build/WinUI-Nightly.yml) | DevTestSuite |
-
-Both expose the boolean **CollectCodeCoverage** parameter, defaulting to
-**false**. They pass it to shared build and runtime-test templates as
-`collectCodeCoverage`. When it is false, template expansion omits coverage-specific
-build settings, payload preparation, instrumentation, symbol downloads, and merging.
-The test task invokes the test runner without the collector wrapper.
-
-The [RunTests stage](../../build/AzurePipelinesTemplates/WinUI-RunTests-Stage.yml)
-selects Win10-RS5, Win11-23H2, and Win11-25H2 for these entry points.
-The [payload matrix](../../build/AzurePipelinesTemplates/WinUI-CreateTestPayload-Job.yml)
-selects x86 Debug (`x86chk`), and the
-[test-job template](../../build/AzurePipelinesTemplates/WinUI-RunTestPassOnPipeline-Job.yml)
-splits each OS pass into 20 parallel jobs, called *slices*. Other build flavors,
-static tests, and scenario tests retain their normal pipeline behavior; they do
-not add data to this coverage report.
+- WinUI-GitHub-PR (OneBranch)
+- WinUI-GitHub-Nightly
 
 ## How coverage is wired
 
-| Phase | Work | Source |
-| --- | --- | --- |
-| Build | Pass `WinUICollectCodeCoverage=true` to MSBuild for the coverage-enabled build. | [WinUI-BuildWinUI-Stage.yml](../../build/AzurePipelinesTemplates/WinUI-BuildWinUI-Stage.yml) |
-| Prepare | Create the test payload, replace loose MUX/MUXC copies with final product DLLs, and download their two matching PDBs. | [WinUI-CreateTestPayload-Job.yml](../../build/AzurePipelinesTemplates/WinUI-CreateTestPayload-Job.yml) |
-| Instrument | Instrument the two runtime DLLs, distribute them and `static_covrun*.dll` to their payload locations, and bundle the collector. | [Instrument-CoveragePayload.ps1](../../Helix/common/pipeline/coverage/Instrument-CoveragePayload.ps1) |
-| Collect | Start one collector per slice, invoke the normal test runner, and shut down the collector to write its report. | [Invoke-WithCodeCoverage.ps1](../../Helix/common/pipeline/coverage/Invoke-WithCodeCoverage.ps1) |
-| Merge and publish | Download slice reports, validate and merge them, and publish Cobertura to the Code Coverage tab. | [WinUI-MergeCodeCoverage-Job.yml](../../build/AzurePipelinesTemplates/WinUI-MergeCodeCoverage-Job.yml) |
+| Phase | Implementation |
+| --- | --- |
+| Build | [Build template](../../build/AzurePipelinesTemplates/WinUI-BuildWinUI-Stage.yml) sets `WinUICollectCodeCoverage=true`. Debug MUXC gains linker fixup metadata; MUXC incremental linking is disabled. MUX already has fixups. |
+| Prepare | [Payload template](../../build/AzurePipelinesTemplates/WinUI-CreateTestPayload-Job.yml) replaces loose runtime copies with final product DLLs and downloads their two matching PDBs. |
+| Instrument | [Instrumentation script](../../Helix/common/pipeline/coverage/Instrument-CoveragePayload.ps1) distributes instrumented DLLs, `static_covrun*.dll`, and the bundled VS collector. |
+| Collect | [Collector wrapper](../../Helix/common/pipeline/coverage/Invoke-WithCodeCoverage.ps1) starts a collector per parallel test job (*slice*) around the normal test runner. |
+| Merge | [Merge job](../../build/AzurePipelinesTemplates/WinUI-MergeCodeCoverage-Job.yml) validates and merges successful-slice reports, populates Azure's **Code Coverage** tab, and saves downloadable reports. |
 
-### Build metadata and matching symbols
+Coverage instrumentation requires each DLL's matching PDB. Matching source code
+is not enough: a DLL from an earlier link must not be paired with a later link's PDB.
+Preparation therefore replaces all loose MUX/MUXC copies from test apps with the
+final product DLLs and uses their matching PDBs from the same build.
+When reusing outputs, choose a coverage-enabled build and keep those pairs together.
+PDBs temporarily placed beside DLLs for instrumentation are removed afterward.
 
-Native instrumentation needs linker fixup information in addition to the symbols
-used for debugging. The coverage build settings in
-[Microsoft.UI.Xaml.Common.targets](../../controls/dev/dll/Microsoft.UI.Xaml.Common.targets)
-add `/DEBUGTYPE:cv,fixup` to Debug MUXC and disable incremental linking for MUXC.
-MUX already emits the required fixup information. Coverage-off builds retain
-their normal linker settings.
+Instrumentation and merge agents require Visual Studio's native
+`Microsoft.CodeCoverage.Console.exe`; `dotnet-coverage` alone is insufficient.
+Test agents use the bundled collector. Only static native MUX/MUXC instrumentation
+is enabled. Hash markers detect inconsistent payloads and support same-session
+instrumentation retries.
 
-Test apps can carry component-package DLLs from an earlier link than the final
-product output. Even when the machine code is identical, the DLLs can identify
-different PDBs. As with debugging, the DLL's embedded PDB GUID and age must match
-the PDB used for instrumentation; a matching source commit or file version is
-not sufficient.
+Each agent uses a local collector with the run's `winui-<BuildId>` session ID.
+After launching the collector, the wrapper waits up to 30 seconds for its pipe.
+After tests return or throw, the wrapper requests shutdown. Its waits for the
+shutdown client and collector share a 60-second budget. Cleanup terminates remaining
+processes started by the wrapper. Forced job cancellation can interrupt cleanup.
+Setup/shutdown problems normally warn without replacing test results.
 
-The **Prepare final runtime copies for code coverage** task replaces every loose
-MUX/MUXC copy with the DLL from `drop\<buildFlavor>\Product`. The next download
-selects only `Symbols/Product/Microsoft.ui.xaml.pdb` and
-`Symbols/Product/Microsoft.UI.Xaml.Controls.pdb` from the same build.
-Instrumentation temporarily stages each PDB beside its DLL, then removes the
-staged PDB from the test payload. Product artifacts and signed test packages
-remain unchanged.
-
-If build-output reuse is configured, the binaries and symbols must come from the
-same coverage-enabled build. Queue-time variable permissions still apply.
-
-### Instrumentation and collection
-
-[Get-CoverageTool.ps1](../../Helix/common/pipeline/coverage/Get-CoverageTool.ps1)
-locates Visual Studio's `Microsoft.CodeCoverage.Console.exe`.
-Build and merge agents must provide the native coverage tool. `dotnet-coverage`
-alone does not support native instrumentation. The payload bundles the collector
-from the instrumentation agent and its dependencies so test agents do not need a
-Visual Studio or .NET CLI installation.
-
-[coverage.config](../../Helix/common/pipeline/coverage/coverage.config) enables
-static native instrumentation and disables dynamic native and managed
-instrumentation. The script instruments only MUX and MUXC, not every DLL in the
-payload. Hash markers track original and instrumented copies to detect
-inconsistent inputs and allow instrumentation retries for the same session.
-
-All OS payloads in a run use the session ID `winui-<BuildId>` because the test
-jobs copy the OS payloads into a common directory on each agent. Each slice starts
-its own local collector for that session and invokes
-[RunTestPassSliceOnBuildAgent.ps1](../../Helix/common/pipeline/RunTestPassSliceOnBuildAgent.ps1)
-with the normal arguments.
-
-The wrapper waits up to 30 seconds for the collector pipe. It attempts shutdown
-in `finally`, including when tests throw, with a default 60-second wall-clock
-budget for the shutdown client and collector. Stalled processes started by the
-wrapper are terminated. Except for the preflight failures below, collector setup
-and shutdown errors produce warnings without replacing the test runner's exit
-code or exception.
-
-Before loading the session, the wrapper removes any previous report and generated
-settings at the slice's output path. If it cannot check or remove those files,
-it stops before running tests and suppresses the slice's entire test-output
-artifact, including test logs.
-This prevents an old report from being published as data from the current attempt.
-
-Before starting a collector, the wrapper checks whether the session pipe already
-exists. If it does, the wrapper fails before running tests, changing pipe
-permissions, or sending a shutdown command. A launched collector that has already
-exited is also not sent a shutdown command by session name.
+Two preflight failures stop tests: an existing collector session, which is left
+untouched, and inability to check or remove stale reports/settings. The latter
+suppresses the entire slice artifact, including test logs, to prevent stale data
+from being published.
 
 ### Collector access
 
 The wrapper uses the supported
 [`AllowedUsers` setting](https://github.com/microsoft/codecoverage/blob/main/docs/configuration.md)
-to grant named accounts access to the collector's shared memory and pipes.
-It does not set a NULL DACL or change integrity labels.
+to grant named accounts access to collector shared memory and pipes.
 
-Each slice generates `<slice-report>.config` from the checked-in instrumentation
-settings. It includes the wrapper process's owner and, if present, the logged-in
-console user reported by `Win32_ComputerSystem.UserName`. Duplicate names are
-removed. Process ownership comes from `Win32_Process.GetOwner`, rather than the
-PowerShell thread identity, which can be impersonated during remoting.
-Each account must resolve to a SID before the collector starts. Account names
-and SIDs are logged, and the generated settings are kept beside the report.
-The checked-in settings are not modified.
+Generated `<slice-report>.config` allows the collector process owner
+(`Win32_Process.GetOwner`) and, if present, the console user
+(`Win32_ComputerSystem.UserName`). Names are deduplicated, resolved to SIDs, and
+logged. Querying the process owner avoids using an impersonated thread's identity.
+Checked-in settings stay unchanged.
 
-If no console user is logged in, the wrapper logs that fact and allows only the
-collector account. This does not provision a desktop or make interactive tests
-runnable. Account-discovery, SID-resolution, and settings-write failures use the
-existing coverage-setup warning policy: tests still run, but no collector starts.
-There is no retry with default permissions or a NULL DACL.
-Remote Desktop users and other test accounts are not enumerated automatically.
-
-A separate VM comparison used the same payload and versions described under
-[Hosting-mode limitations](#hosting-mode-limitations), with one representative
-from each of the five contributing desktop paths. It kept the instrumented DLLs
-and hosting modes unchanged and used a fresh collector for each test.
-
-| Collector permissions | Result across the five desktop representatives |
-| --- | --- |
-| Previous NULL-DACL workaround | All tests passed; all five reports covered MUX and MUXC. |
-| Default permissions, without the pipe ACL edit | All tests passed; all five reports were empty. |
-| Explicit `AllowedUsers`, without the pipe ACL edit | All tests passed; all five reports covered MUX and MUXC. |
-
-Repeating the controls API and interaction cases with both permission
-configurations produced identical covered MUXC source-line sets between the
-repeats and small MUX differences: 20 differing lines for the API test and eight
-for the interaction test. The initial runs also varied in telemetry and UI paths.
-These results establish collection from the tested hosts, not identical execution
-on every run.
-
-The VM's `AllowedUsers` configuration named the actual test account, whose SID
-matched the observed medium-integrity product hosts. The pipeline candidate
-replaces the previous NULL DACL with per-agent account discovery. It still needs
-lab validation with the actual pipeline accounts and OS matrix; the VM comparison
-did not validate that discovery on lab agents.
+Without a console user, only the collector account is allowed; this does not
+provision an interactive desktop. Remote Desktop and other test accounts are not
+automatically included. Account discovery, SID resolution, or settings failures
+prevent collector startup but still allow tests to run. The wrapper does not retry
+with broader permissions.
 
 ## Which tests contribute
 
-Coverage follows the binary that executes the product code, not the test's source
-directory. This table describes the contribution paths in the
-[test-job definitions](../../build/AzurePipelinesTemplates/WinUI-CreateTestPayload-Job.yml)
-and [payload layout](../../test/CreateTestPayload.ps1). A test contributes only
-when it runs an instrumented runtime copy that can communicate with the collector.
-The table describes eligibility, not a guarantee that every selected host contributes.
-An eligible test can pass without contributing coverage if its host cannot
-communicate with the collector. See the measured hosting-mode boundary below.
+Only execution in an instrumented MUX/MUXC copy that can reach the collector
+counts. These paths come from the [payload layout](../../test/CreateTestPayload.ps1):
 
-| Test family | Coverage eligibility |
+| Test family | Does coverage work? |
 | --- | --- |
-| Controls API tests under `controls/dev/.../APITests` | Eligible. They compile into the loose `MUXControlsTestApp.dll`, which TAEF runs against instrumented runtime copies. |
-| Controls interaction tests under `controls/dev/.../InteractionTests` | Eligible. `MUXControls.Test.dll` drives the unpackaged `MUXControlsTestApp.exe`. Product execution in the app can count; the test driver's own code does not. |
-| Other loose controls test apps, such as `TabViewTearOutApp` | Eligible when selected. Their co-located MUX/MUXC copies are instrumented too. |
-| Native integration tests under `dxaml/test/native/external` | Eligible for the selected UAP, WPF, and Win32Explicit groups. Their hosts consume loose payload files. |
-| Managed integration tests under `dxaml/test/managed` | Eligible for the selected WPF group. The pipeline does not schedule UAP-only managed tests. |
-| `Microsoft.UI.Xaml.Tests.Isolated.*` unit tests, including tests under `dxaml/xcp/components/.../unittests` | They run, but product code statically linked into their test DLLs is not instrumented. Only calls into an instrumented runtime DLL can contribute. |
-| `controls/test/IXMPTestApp` | No coverage for its embedded runtime copies. The self-contained `IXMPTestApp.appx` is left unchanged. |
-| Controls scenario/sample/Gallery tests | No. The separate `ScenarioTestSuite` flow does not enable coverage collection. |
+| Controls API and interaction tests | **Yes.** Verified for representative controls API and unpackaged interaction tests using loose MUX/MUXC copies. The test driver's code does not count. |
+| Other selected loose apps, including `TabViewTearOutApp` | **Yes, if** they execute instrumented MUX/MUXC copies and reach the collector. This path is eligible but has not been separately verified for every app. |
+| Native/managed dxaml desktop integration tests | **Yes.** Verified for representative native WPF, managed WPF, and native Win32Explicit tests. |
+| Native UAP tests | **No in the verified cases.** Tests passed but produced empty reports; see the hosting-mode limitation below. |
+| Isolated unit tests: statically linked product code | **No.** That code is not part of the instrumented runtime DLLs. Calls into instrumented MUX/MUXC DLLs can still contribute. |
+| `IXMPTestApp` and other embedded APPX/MSIX runtime copies | **No.** Embedded runtime copies are not instrumented; packages are neither rebuilt nor re-signed. |
+| Scenario/sample/Gallery tests | **No.** These run separately without coverage collection. |
 
-A packaged host is not necessarily excluded. Controls API tests use TAEF's
-`PackagedCWA` host with loose payload files. The
-[native dxaml host project](../../dxaml/test/infra/taefhostapp/taefhostapp.vcxproj)
-also deploys its executable and dependencies as loose files, rather than deploying
-its built APPX. Runtime copies inside an already-built APPX/MSIX package are not
-instrumented. Loose deployment avoids that exclusion but does not establish
-collector access for the host.
-
-Controls tests can cover both MUXC and the underlying MUX implementation. However,
-the metric includes only those two DLLs: test assemblies, compiler binaries,
-dependencies, and the separate `Microsoft.UI.Xaml.Controls.Tabular.dll` are not
-instrumented. Executing a statically linked copy of the same source code does not
-count as executing the instrumented runtime copy.
-
-Tests must also be built, enabled, and selected for the run's architecture, OS,
-hosting mode, and test query.
-Ignored tests and tests filtered out for that configuration do not contribute.
-Collection is per slice, not per individual test, so a merged report does not
-identify which test covered a particular line.
+Coverage can work even when Windows treats the test app as a packaged app.
+For example, controls API tests use TAEF's `PackagedCWA` mode but load instrumented
+DLLs from the test payload, rather than uninstrumented copies inside an APPX/MSIX
+package. Tests must still be built, enabled, and selected.
+Test assemblies and other product binaries, including Tabular, are not measured.
+Collection is per slice, not per test.
 
 ### Hosting-mode limitations
 
-Successful MUX/MUXC pipeline reports establish collection in aggregate. They do not
-establish coverage independently for WPF, Win32Explicit, UAP, or `PackagedCWA`.
-Measure representative tests separately to establish that boundary. A hosting-mode
-name or package identity alone does not establish the process's account,
-integrity level, or AppContainer restrictions.
+VM checks using collector 17.14.3, x86 Debug WinUI, and Windows 11 build 26678
+confirmed MUX/MUXC coverage with `AllowedUsers` for controls API, unpackaged
+interaction, native WPF, managed WPF, and native Win32Explicit representatives.
+Default collector permissions produced empty reports. Hosting modes and
+instrumented binaries were unchanged between comparisons.
 
-Representative checks with `Microsoft.CodeCoverage.Console` 17.14.3, an
-instrumented x86 Debug WinUI payload, and Windows 11 build 26678 produced the
-following results. Each test used a fresh collector and separate report with the
-NULL-DACL workaround. The tests retained their declared hosting modes.
+**Native UAP remains a coverage gap.** Representative tests passed but produced
+empty reports despite loading both instrumented DLLs and the coverage runtime.
+That host ran at low integrity in an AppContainer. The desktop comparison does not
+establish UAP support; UAP tests still run unchanged.
 
-| Execution path | Representative test | Observed runtime coverage |
-| --- | --- | --- |
-| Controls API, `PackagedCWA` | `ThemeResourcesTests.VerifyOverrides` | MUX and MUXC |
-| Controls interaction, unpackaged app | `RatingControlTests.BasicInteractionTest` | MUX and MUXC |
-| Native WPF | `BasicPointerTests::ProtectedCursorOnNonLiveElement` | MUX and MUXC |
-| Managed WPF | `WPFTests.VerifyPLMHandlerNoException` | MUX and MUXC |
-| Native Win32Explicit | `XamlIslandTests::IslandWithMuxcDoesntPoisonThread` | MUX and MUXC |
-| Native UAP | `BasicPointerTests::VisualTreeHelperHitTest` | None, although the test passed |
+A combined report can contain coverage from desktop tests even when UAP tests
+contribute nothing.
 
-All representatives in this table passed. The contributing product hosts ran at
-medium integrity without AppContainer restrictions. The API and dxaml desktop
-hosts had package identity; the interaction app did not.
+## Run coverage in Azure Pipelines
 
-The native UAP host, `taefhostapp.exe`, ran at low integrity in an AppContainer.
-It loaded the instrumented MUX and MUXC DLLs and the native coverage runtime,
-executed the WinUI hit-test assertions, and produced an empty report. Repeating
-that test reproduced the result. A separate WPF test using the same instrumented
-DLL paths produced coverage in both DLLs. Native UAP is therefore a demonstrated
-coverage gap for this configuration, not just an untested deployment path.
+1. Open **WinUI-GitHub-PR (OneBranch)** above, select **Run pipeline**, and choose
+   the branch containing the coverage changes.
+2. Enable **Collect runtime code coverage (experimental)** and leave
+   **Run full WinUI PR validation stages** (`runFullValidation`) enabled.
+3. Queue the run. Follow `Build`, then `RunTests` and `MergeCodeCoverage`.
+4. Inspect the **Code Coverage** tab, slice artifacts, and collector warnings.
 
-These checks characterize the tested payload, collector version, architecture,
-and OS; they are not a guarantee for every test or pipeline OS. A different
-Win32Explicit test, `WindowlessXamlIslandTests::ValidateUiaTree`, timed out.
-Two enabled `XamlIslandTests` alternatives passed and contributed coverage.
-In particular, `WindowsXamlManagerCreationScenarios` loaded and covered MUX alone;
-absence of MUXC from that report was not a collector-access failure.
-
-In isolated x86 and x64 native fixture checks with
-`Microsoft.CodeCoverage.Console` 17.14.3, low-integrity and no-capabilities
-AppContainer processes executed the instrumented code but produced no coverage
-with the NULL-DACL workaround. An x64 TAEF `RunAs:LowIL` fixture had the same
-result. Enabling `AllowLowIntegrityProcesses` and explicit `AllowedUsers` did not
-resolve those cases. The desktop `AllowedUsers` comparison described under
-[Collector access](#collector-access) does not establish collection from
-low-integrity or AppContainer hosts. These checks do not establish behavior for
-other collector versions.
-
-To establish a hosting-mode boundary, run a representative test separately using
-the real WinUI payload and its intended host. Record the OS, build flavor,
-collector version, and host's security context. Check for executed source lines in
-each runtime DLL the test is expected to exercise. Keep the payload and hosting
-mode unchanged when comparing collector configurations; do not change the host's
-security context merely to obtain coverage.
-
-## Run coverage manually
-
-For a PR validation run, open **WinUI-GitHub-PR (OneBranch)** from the pipeline
-table above.
-
-1. Select **Run pipeline**, then choose the GitHub branch to measure.
-2. Enable **Collect runtime code coverage (experimental)** (`CollectCodeCoverage`).
-3. Leave **Run full WinUI PR validation stages** (`runFullValidation`) enabled.
-   This option controls whether the product build and test stages run.
-4. Select **Run**. This queues a real build and lab test pass, not a YAML-only preview.
-5. Follow the `Build` and `RunTests` stages. Within `RunTests`, expect payload
-   instrumentation, the OS test jobs, and a final `MergeCodeCoverage` job.
-6. Open the run's **Code Coverage** tab for the summary and inspect the slice
-   warnings and artifacts described below.
-
-If the coverage checkbox is missing, confirm that the selected branch contains
-the parameter in `build/WinUI-GitHub-PR.yml`. Use **Run pipeline** to select new
-parameters; retrying jobs retains the original run's source version and parameters.
-If Azure DevOps requests resource authorization, a maintainer must authorize the
-required resource.
-
-Alternatively, with Azure CLI and the Azure DevOps extension authenticated to the
-Microsoft-internal WinUI project:
+With Azure CLI and its DevOps extension authenticated, substitute your organization
+URL, project, and pipeline ID:
 
 ```powershell
 az pipelines run `
-    --org https://dev.azure.com/microsoft `
-    --project WinUI `
-    --id 195405 `
+    --org "<organization-url>" `
+    --project "<project>" `
+    --id "<pipeline-id>" `
     --branch "<branch>" `
     --parameters CollectCodeCoverage=true runFullValidation=true
 ```
 
-For nightly coverage, use **WinUI-GitHub-Nightly** with `CollectCodeCoverage=true`.
-This enables collection in DevTestSuite without skipping nightly stages or changing
-other nightly parameters, including signing and publishing.
-Enabling coverage for a queued run does not change pipeline defaults or schedules.
+Nightly uses `CollectCodeCoverage=true` without changing other nightly parameters,
+including signing/publishing. Missing resources require maintainer authorization.
+If the checkbox is absent, check that the selected branch has the YAML parameter.
 
 ### Retrying failed test jobs
 
-`MergeCodeCoverage` depends on the selected runtime test-job groups and uses
-`succeeded()`. A failed or canceled dependency skips the merge rather than
-publishing coverage from an unfinished test pass.
+If flaky tests require **Rerun failed jobs**, the final coverage report uses only
+reports published with a successful status. Reports labeled failed or canceled are
+excluded. Already-published successful reports are reused, not replaced by a later
+attempt. Merging waits until the runtime-test jobs succeed.
 
-Use **Rerun failed jobs** for `RunTests` to retry the failed test jobs and their
-dependent merge job. Successful test jobs keep their existing artifacts. Once
-the dependencies succeed, the merge downloads reports only from artifacts whose
-names end in `_Succeeded`, including successful retries. Reports in `_Failed`
-and `_Canceled` artifacts remain available for diagnosis but are not merged.
-This prevents a failed attempt's corrupt or partial report from interfering with
-a successful retry.
-
-The existing test-output publisher reuses a `_Succeeded` artifact if it already
-exists, rather than replacing it with a later attempt. The merge filter selects
-successful-status artifacts, not the latest attempt of each slice.
-
-Start a new coverage-enabled run to try a pipeline change; retrying an older run
-retains its original YAML and parameters. These changes support retrying failed
-tests before coverage is published. They do not replace an already-published
-`MergeCodeCoverage` artifact; rerunning a merge after publication can still
-encounter an artifact-name collision.
-
-### Validate collector account access in the lab
-
-Use a coverage-enabled PR run with normal full validation and the normal test
-matrix. No additional pipeline parameter is needed for `AllowedUsers`.
-
-1. Check the `Run Tests` log for `Coverage collector account`, `Coverage console
-   account`, and `Coverage allowed user` entries. Confirm the named accounts cover
-   the actual test hosts. A missing console user or a different test account
-   requires investigation; do not broaden access to all local users.
-2. Inspect each slice's `.coverage.config`, `.coverage.log`, and `.coverage.err`.
-   Look for setup warnings, identity-mapping errors, and collector failures.
-3. Check that the expected slices arrived and that both MUX and MUXC have executed
-   source lines. Compare representative desktop hosting modes, not just the
-   merged percentage. Passing tests alone do not establish collector access.
-4. Confirm collector shutdown and the accepted native UAP coverage limitation.
-   Do not change TAEF hosting modes to make collection pass.
+This supports retries before coverage publication. Rerunning a merge after it
+has published can still fail because the `MergeCodeCoverage` artifact already exists.
 
 ## Reports and percentages
 
-The **MergeCodeCoverage** artifact contains the merged reports. Per-slice reports
-and collector logs are in the test-output artifacts, under the OS and build-flavor
-directories.
+Merged reports are in **MergeCodeCoverage**; slice files are in test-output
+artifacts under OS/build-flavor directories.
 
 | File | Purpose |
 | --- | --- |
-| `CodeCoverage/merged.cobertura.xml` | Source-line data passed to `PublishCodeCoverageResults@2` for the Azure Code Coverage tab. |
-| `CodeCoverage/merged.coverage` | Binary coverage report for Visual Studio. |
-| `coverage-<machine>-slice<N>.coverage` | A slice's input to the merge. |
-| `<slice-report>.config` | Exact per-slice collection settings, including the account allowlist. |
-| `<slice-report>.log` and `<slice-report>.err` | Collector standard output and standard error, where `<slice-report>` includes the `.coverage` extension. |
-| `<slice-report>.shutdown.log` and `<slice-report>.shutdown.err` | Shutdown-client standard output and standard error. |
+| `CodeCoverage/merged.cobertura.xml` | Input to the Azure coverage publisher. |
+| `CodeCoverage/merged.coverage` | Visual Studio report. |
+| `coverage-<machine>-slice<N>.coverage` | Slice report. |
+| `<slice-report>.config` | Generated settings and account allowlist. |
+| `<slice-report>.log`, `.err`, `.shutdown.log`, `.shutdown.err` | Collector and shutdown output; `<slice-report>` includes `.coverage`. |
 
-### Why Azure and Cobertura percentages can differ
+### What is Cobertura?
 
-Use the top-level **Code Coverage** summary when comparing results in Azure DevOps.
-Its source-line percentage can differ from the `line-rate` attribute at the root
-of the native collector's Cobertura XML:
+Cobertura is an XML format for code-coverage reports. It records source files,
+line numbers, and whether those lines executed during tests. Here, it is an output
+format, not a separate tool that runs the tests or collects coverage.
 
-- The native XML root and package summaries count method-level line entries.
-  A source line can appear in multiple methods or C++ template instantiations,
-  and in both runtime DLLs.
-- The Azure summary combines entries by source-file path and line number. A
-  location counts as covered if any of its entries has nonzero hits.
+The merge step uses the Visual Studio coverage tool to generate
+`merged.cobertura.xml` from the collected `.coverage` files. Azure's
+`PublishCodeCoverageResults@2` task reads that XML to populate the pipeline's
+**Code Coverage** tab.
 
-For example, suppose a report contains these four method-level entries:
+### Comparing line counts
 
-| Source location | Compiled instance | Has hits |
-| --- | --- | --- |
-| `Example.cpp`, line 10 | A | Yes |
-| `Example.cpp`, line 10 | B | No |
-| `Example.cpp`, line 11 | A | Yes |
-| `Example.cpp`, line 12 | A | No |
+The native Cobertura XML root counts method-level line entries, which can repeat
+across templates, methods, and DLLs. Independent source-line deduplication instead
+counts each normalized file/line location once, covered if any entry has hits.
+See [Open issues](#open-issues) for the unresolved Azure summary discrepancy.
 
-The method-entry calculation is **2 covered entries out of 4: 50%**.
-The unique-source-line calculation is **2 covered locations out of 3: 66.67%**.
-Both describe the same execution data. A covered source line does not imply
-that every compiled instance of it was exercised.
-
-For the unique-line metric, the denominator is the set of source locations
-represented in the report, not every line in the repository.
-A percentage for MUX and MUXC is not a percentage
-for all WinUI binaries or test configurations. Do not average slice percentages
-to obtain the total: the same locations can be exercised in multiple slices.
-Shared source locations can also appear in both modules, so adding their counts
-need not equal the combined unique-line count.
-
-When comparing runs, use the same counting rule and check the source revision,
-test selection, and report completeness. Do not label the raw XML root percentage
-as the Azure summary.
+Use the same counting rule; check revision, test selection, and completeness.
+Do not average slice percentages or add module totals: source locations overlap.
+Coverage is not a measure of every repository line or every compiled instance.
 
 ### Report completeness and failures
 
-Test outcomes and coverage collection are separate. Failed tests can leave useful
-coverage data, and passing tests do not prove that collection worked.
-The merge job waits for successful test dependencies and selects only
-`_Succeeded` test-output artifacts. Cancellation can interrupt collection,
-upload, or merging. See [Retrying failed test jobs](#retrying-failed-test-jobs).
-
 [Merge-CodeCoverage.ps1](../../Helix/common/pipeline/coverage/Merge-CodeCoverage.ps1)
-converts every downloaded slice report separately and requires source-line data
-before merging. This detects corrupt reports that the VS tool can otherwise skip
-while returning success. The merge job fails if there are no input files, if an
-input file is empty, if a conversion fails, or if a report has no source-line data.
+converts each downloaded report separately and requires source-line data because
+the VS tool can silently skip corrupt inputs. No inputs, empty reports, failed
+conversions, and reports without source-line data fail the merge.
 
-Validation checks the files that arrived; it does not enforce an expected slice
-count. A missing slice can leave a valid but incomplete aggregate. A canceled or
-interrupted collector can also produce a valid report containing only part of a
-test pass, so even a complete file count does not prove complete execution.
-Likewise, data from other processes in a slice can produce a valid report even
-when one hosting mode contributes nothing.
+Validation does not enforce the expected slice count or nonzero hits in each
+DLL. Missing individual reports can go unnoticed, and a valid report may be partial.
+Passing tests or publication alone do not prove coverage. Check all expected slices,
+collector account/SID logs, setup/shutdown warnings, and actual executed lines in
+both DLLs. Investigate account mismatches rather than broadening access to all users.
 
-Before relying on the percentage, check that the intended slices finished,
-inspect collector warnings, and confirm source-line data for both MUX and MUXC.
-For a failed slice, inspect its collector and shutdown logs alongside the test
-results. Do not infer report completeness from a successful publish task alone.
+## Open issues
+
+**Azure summary counting:** In buildId `157708100` (MS internal),
+Azure reported **61.67%**, while independent source-line
+deduplication gave **74.42%**. Those counts still differ, although the latest run
+below agrees at **74.43%**. The earlier difference remains unexplained; do not assume
+the metrics always agree or infer a collection failure from this alone.
+
+**Collector error policy:** Setup/shutdown errors still normally warn without
+failing tests. Fail-fast behavior for coverage-enabled runs has been proposed but
+is not implemented or validated.
+
+**Local build and VM coverage:** Collection has been demonstrated with custom
+orchestration, but the init/build scripts, [run-tests-on-vm.ps1](../../tools/run-tests-on-vm.ps1),
+and the [`test-on-vm` skill](../../.github/skills/test-on-vm/SKILL.md) have no dedicated
+coverage option. A local workflow needs a build-time opt-in, not just a test switch:
+set the existing `WinUICollectCodeCoverage=true` property and ensure the affected
+DLLs are relinked. This enables Debug MUXC fixup metadata and disables MUXC incremental
+linking; MUX already emits fixups. These settings prepare binaries for instrumentation
+but do not add probes. The workflow must then instrument matching DLL/PDB payload
+copies, deploy them, collect inside the VM, and retrieve reports using the existing
+coverage helpers.
+
+## Validation status
+
+Most recent coverage test: buildId `157773727` (MS internal),
+with `CollectCodeCoverage=true` and
+`runFullValidation=true`, **succeeded after retries**. All 60 runtime slices passed:
+20 per OS, with 58 retaining their first-attempt results. Two slices passed on retry
+after an agent failed to connect and a separate job reached its 100-minute limit.
+
+The merge was skipped on the unsuccessful attempt. After the retries, it validated
+and merged 60 successful-slice reports, excluding the old canceled report.
+Publication succeeded. Setup/shutdown log checks found no collector warnings in
+the 60 selected slices. Independent
+analysis confirmed executed source lines in both MUX and MUXC:
+**436,329 / 586,231 unique file/line locations (74.43%)** combined, matching Azure's
+summary. This was a coverage-on run, not a coverage-off lab validation.
+
+The collector-exit warning fix added after this run has passed local regression
+tests but has not yet been exercised in a pipeline.
 
 ## Maintaining the coverage flow
 
-Use the standalone
-[script regression suite and native smoke test](../../Helix/common/pipeline/coverage/tests/README.md)
-when changing coverage helpers. The smoke test exercises native instrumentation
-and merging; it does not exercise TAEF host permissions.
+Use the local [Pester suite and optional native smoke test](../../Helix/common/pipeline/coverage/tests/README.md)
+for script changes. Local validation passed 99 tests per PowerShell host and 54
+template comparisons. These local checks do not exercise Azure's retry scheduling
+or every TAEF host's collector access.
 
-For pipeline changes, compare coverage-off template expansion with the baseline
-for both PR and nightly entry points. Verify that coverage-specific settings and
-steps are absent and that normal matrices, test arguments, and publishing remain
-unchanged. With coverage enabled, verify payload preparation, both runtime modules,
-slice outputs, collector cleanup, and merge/publication without reducing the
-normal test scope. Changes to collector versions or permissions also require
-representative lab runs across the selected hosting modes.
-
-Coverage adds symbol downloads, payload and report storage, and instrumentation
-time. Merge validation performs one conversion per slice and uses temporary space
-for one Cobertura report before producing the final reports.
+Compare coverage-off PR/nightly expansion with baseline; keep enabled test scope.
+Collector changes need representative host checks. Coverage adds instrumentation,
+downloads, storage, and one validation conversion per slice.

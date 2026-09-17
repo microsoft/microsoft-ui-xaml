@@ -108,6 +108,14 @@ try
             '--settings', "`"$settingsFile`"", '--output', "`"$OutputFile`""
         ) -PassThru -NoNewWindow -RedirectStandardOutput "$OutputFile.log" -RedirectStandardError "$OutputFile.err"
 
+        # Retain the handle so Windows PowerShell can read ExitCode after the
+        # collector exits, even if it exits before WaitForExit is called.
+        $collectorHandle = $collector.Handle
+        if ($null -eq $collectorHandle -or $collectorHandle -eq [IntPtr]::Zero)
+        {
+            throw 'Cannot retain the coverage collector process handle.'
+        }
+
         $deadline = (Get-Date).AddSeconds(30)
         while ($true)
         {
@@ -175,6 +183,15 @@ finally
             if (-not $collector.WaitForExit($remainingMilliseconds))
             {
                 throw "Coverage collector did not exit within $ShutdownTimeoutSeconds seconds."
+            }
+            $collectorExitCode = $collector.ExitCode
+            if ($null -eq $collectorExitCode)
+            {
+                throw 'Coverage collector exit code is unavailable after shutdown.'
+            }
+            if ($collectorExitCode -ne 0)
+            {
+                throw "Coverage collector failed (exit $collectorExitCode). See $OutputFile.err."
             }
             if (-not (Test-Path -LiteralPath $OutputFile) -or (Get-Item -LiteralPath $OutputFile).Length -eq 0)
             {

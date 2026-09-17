@@ -530,8 +530,9 @@ try
             }
             $script:collector = [pscustomobject]@{
                 Id = 2147483001
+                Handle = [IntPtr]1
                 HasExited = $false
-                ExitCode = 28
+                ExitCode = 0
                 FinishOnWait = $true
                 WaitMilliseconds = 0
                 Disposed = $false
@@ -869,6 +870,7 @@ try
 
         It 'still invokes tests when the collector exits before its pipe appears' {
             $global:CoverageTestCollector.ReadyAfter = [int]::MaxValue
+            $script:collector.ExitCode = 28
             $script:collector.HasExited = $true
             Invoke-Collector { $global:CoverageTestCollector.TestsRan++; & $global:CoverageTestCollector.TestTool test 37 }
             $global:CoverageTestCollector.TestsRan | Should Be 1
@@ -948,6 +950,115 @@ try
             Assert-MockCalled Stop-Process -Times 0 -Exactly -Scope It
             [IO.File]::ReadAllText("$script:coverageOutput.shutdown.log") | Should Be 'shutdown completed'
             [IO.File]::ReadAllText("$script:coverageOutput.shutdown.err") | Should Be ''
+        }
+
+        foreach ($finalExitCode in @(28, $null))
+        {
+            foreach ($nativeExitCode in @(0, 37))
+            {
+                It "warns for final collector exit '$finalExitCode' with nonempty output and preserves test exit $nativeExitCode" {
+                    $script:collector.ExitCode = $finalExitCode
+                    $global:CoverageTestCollector.NativeExitCode = $nativeExitCode
+                    Invoke-Collector {
+                        Write-FixtureFile $global:CoverageTestCollector.CoverageOutput 'coverage'
+                        & $global:CoverageTestCollector.TestTool test $global:CoverageTestCollector.NativeExitCode
+                    }
+                    $LASTEXITCODE | Should Be $nativeExitCode
+                    [IO.File]::ReadAllText($script:coverageOutput) | Should Be 'coverage'
+                    @(Get-ToolCalls 'shutdown').Count | Should Be 1
+                    [IO.File]::ReadAllText("$script:coverageOutput.shutdown.log") | Should Be 'shutdown completed'
+                    if ($null -eq $finalExitCode)
+                    {
+                        Assert-MockCalled Write-Host -Times 1 -Exactly -Scope It -ParameterFilter {
+                            "$Object" -like '*Coverage collection failed:*collector exit code is unavailable after shutdown*'
+                        }
+                    }
+                    else
+                    {
+                        Assert-MockCalled Write-Host -Times 1 -Exactly -Scope It -ParameterFilter {
+                            "$Object" -like '*Coverage collection failed:*collector failed (exit 28)*'
+                        }
+                    }
+                    Assert-MockCalled Stop-Process -Times 0 -Exactly -Scope It
+                    $script:collector.Disposed | Should Be $true
+                }
+            }
+        }
+
+        foreach ($collectorMode in @('native-smoke', 'fail-native-collector'))
+        {
+            It "reads the real collector exit after successful shutdown with nonempty output ($collectorMode)" {
+                $env:WINUI_COVERAGE_TEST_MODE = $collectorMode
+                Write-FixtureFile "$script:payload\_coverage-session-id.txt" ('coverage-final-exit-' + [guid]::NewGuid().ToString('N'))
+                $global:CoverageTestCollector.StartCommand = Get-Command Start-Process -CommandType Cmdlet
+                $global:CoverageTestCollector.StopCommand = Get-Command Stop-Process -CommandType Cmdlet
+                $global:CoverageTestCollector.OwnedCollectorId = $null
+                Mock Start-Process {
+                    $process = & $global:CoverageTestCollector.StartCommand -FilePath $FilePath -ArgumentList $ArgumentList `
+                        -PassThru -NoNewWindow -RedirectStandardOutput $RedirectStandardOutput -RedirectStandardError $RedirectStandardError
+                    $global:CoverageTestCollector.OwnedCollectorId = $process.Id
+                    return $process
+                }
+                Mock Get-Date { [datetime]::Now }
+                Mock Start-Sleep { [Threading.Thread]::Sleep($Milliseconds) }
+                Mock Test-Path {
+                    [IO.Directory]::GetFiles('\\.\pipe\', [IO.Path]::GetFileName($LiteralPath)).Length -gt 0
+                } -ParameterFilter { $LiteralPath -like '\\.\pipe\CodeCoverage.pipe.*' }
+                try
+                {
+                    Invoke-Collector { & $global:CoverageTestCollector.TestTool test 0 }
+                    $LASTEXITCODE | Should Be 0
+                    [IO.File]::ReadAllText($script:coverageOutput) | Should Be 'coverage'
+                    @(Get-ToolCalls 'shutdown').Count | Should Be 1
+                    [IO.File]::ReadAllText("$script:coverageOutput.shutdown.log") | Should Be 'shutdown completed'
+                    [IO.File]::ReadAllText("$script:coverageOutput.shutdown.err") | Should Be ''
+                    Assert-MockCalled Write-Host -Times 0 -Exactly -Scope It -ParameterFilter {
+                        "$Object" -like '*Coverage setup failed*'
+                    }
+                    if ($collectorMode -eq 'fail-native-collector')
+                    {
+                        Assert-MockCalled Write-Host -Times 1 -Exactly -Scope It -ParameterFilter {
+                            "$Object" -like '*Coverage collection failed:*collector failed (exit 28)*'
+                        }
+                    }
+                    else
+                    {
+                        Assert-MockCalled Write-Host -Times 0 -Exactly -Scope It -ParameterFilter {
+                            "$Object" -like '*Coverage collection failed*'
+                        }
+                    }
+                    Assert-MockCalled Stop-Process -Times 0 -Exactly -Scope It
+                    foreach ($name in @('collector', 'shutdown'))
+                    {
+                        Assert-FixtureProcessExited ([int](Get-Content -LiteralPath "$script:caseRoot\$name.pid"))
+                    }
+                }
+                finally
+                {
+                    $ownedIds = @($global:CoverageTestCollector.OwnedCollectorId)
+                    $shutdownPidFile = Join-Path $script:caseRoot 'shutdown.pid'
+                    if (Test-Path -LiteralPath $shutdownPidFile)
+                    {
+                        $ownedIds += [int](Get-Content -LiteralPath $shutdownPidFile)
+                    }
+                    foreach ($ownedId in $ownedIds)
+                    {
+                        if ($null -ne $ownedId)
+                        {
+                            $process = Get-Process -Id $ownedId -ErrorAction SilentlyContinue
+                            if ($process)
+                            {
+                                try
+                                {
+                                    & $global:CoverageTestCollector.StopCommand -Id $ownedId -ErrorAction Continue
+                                    [void]$process.WaitForExit(5000)
+                                }
+                                finally { $process.Dispose() }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         It 'retains a fast failing shutdown exit code and captures its error log' {
