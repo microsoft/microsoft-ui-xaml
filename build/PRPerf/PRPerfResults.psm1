@@ -154,6 +154,7 @@ function Select-PRPerfMeasurementBinary {
         [Parameter(Mandatory)][string] $Root,
         [string[]] $Candidates = @(
             'Microsoft.UI.Xaml.dll',
+            'Microsoft.WinUI.dll',
             'Microsoft.UI.Xaml.Controls.dll',
             'Microsoft.UI.Xaml.Phone.dll'
         )

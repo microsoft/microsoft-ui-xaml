@@ -990,3 +990,14 @@ function Test-LocalComparisonWithoutABaselineStillMeasuresBothSides {
         Remove-Item -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue
     }
 }
+
+function Test-MeasurementBinarySelectionKnowsTheLiftedProductName {
+    # This repository's product binaries are named Microsoft.WinUI.dll rather than
+    # Microsoft.UI.Xaml.dll, so a candidate list that knows only the latter would
+    # reject a drop that does in fact contain something worth measuring.
+    $dir = New-PRPerfBinaryTree @('product\Microsoft.WinUI.dll', 'other\Irrelevant.dll')
+    try {
+        $selected = Select-PRPerfMeasurementBinary -Root $dir
+        Assert-Equal 'Microsoft.WinUI.dll' (Split-Path -Leaf $selected) 'The lifted product binary must be selectable.'
+    } finally { Remove-Item -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue }
+}
