@@ -149,6 +149,51 @@ function Assert-PRPerfResultSchema {
     }
 }
 
+function New-PRPerfLocalResult {
+    param(
+        [Parameter(Mandatory)][ValidatePattern('^[0-9a-fA-F]{40}$')][string] $Commit,
+        [Parameter(Mandatory)][string] $BuildId,
+        [Parameter(Mandatory)][string] $AgentName,
+        [Parameter(Mandatory)][string] $ScenarioName,
+        [double[]] $Samples = @(),
+        [string] $MetricName = 'WallTimeMs',
+        [string] $Unit = 'ms',
+        [string] $Architecture = 'amd64',
+        [string] $Flavor = 'chk'
+    )
+
+    # Refuse to emit a result that measured nothing. A zero-sample result would reach
+    # the comparer looking like data and could only mislead.
+    if (@($Samples).Count -eq 0) {
+        throw 'Refusing to produce a local perf result with no samples.'
+    }
+
+    [pscustomobject]@{
+        schemaVersion = 1
+        benchmarkConfigVersion = 'pr-smoke-v1'
+        commit = $Commit
+        buildId = $BuildId
+        machine = [pscustomobject]@{
+            agentName = $AgentName
+            osBuild = [string][System.Environment]::OSVersion.Version.Build
+            architecture = $Architecture
+            flavor = $Flavor
+        }
+        scenarios = @(
+            [pscustomobject]@{
+                name = $ScenarioName
+                metrics = @(
+                    [pscustomobject]@{
+                        name = $MetricName
+                        unit = $Unit
+                        samples = @($Samples)
+                    }
+                )
+            }
+        )
+    }
+}
+
 function New-PRPerfInconclusiveComparison {
     param(
         $Target,
@@ -600,7 +645,30 @@ function Compare-PRPerfFiles {
         $provenanceIssues += "Target and trial were both measured at commit '$measuredTargetCommit', so the comparison says nothing about the change."
     }
     if ($provenanceIssues.Count -gt 0) {
-        return New-PRPerfInconclusiveComparison -Target $target -Trial $trial -Issues $provenanceIssues
+        # A provenance problem invalidates the verdict, not the measurements. Report the
+        # numbers that were actually collected so the run is legible, but never let a
+        # metric inside an inconclusive report read as Passed.
+        $measured = $null
+        try {
+            $measured = Compare-PRPerfResults -Target $target -Trial $trial -Thresholds $thresholds
+        } catch {
+            $provenanceIssues += "Unable to compare PR performance results: $($_.Exception.Message)"
+        }
+
+        if ($null -ne $measured) {
+            $provenanceIssues += @($measured.issues)
+        }
+
+        $comparison = New-PRPerfInconclusiveComparison -Target $target -Trial $trial -Issues $provenanceIssues
+        if ($null -ne $measured) {
+            foreach ($scenario in @($measured.scenarios)) {
+                foreach ($metric in @($scenario.metrics)) {
+                    $metric.classification = 'Inconclusive'
+                }
+            }
+            $comparison.scenarios = @($measured.scenarios)
+        }
+        return $comparison
     }
 
     try {
@@ -613,4 +681,4 @@ function Compare-PRPerfFiles {
     }
 }
 
-Export-ModuleMember -Function Get-PRPerfStatistics, Read-PRPerfResult, Compare-PRPerfResults, Compare-PRPerfFiles
+Export-ModuleMember -Function Get-PRPerfStatistics, Read-PRPerfResult, Compare-PRPerfResults, Compare-PRPerfFiles, New-PRPerfLocalResult, Assert-PRPerfResultSchema

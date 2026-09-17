@@ -770,3 +770,131 @@ function Test-CLIPassesWhenNoCommitsAreSupplied {
     $comparison = Invoke-CompareCli @{}
     Assert-Equal 'Passed' $comparison.overallState 'Omitting commit context must not change the verdict.'
 }
+
+function Test-ProvenanceInconclusiveStillReportsTheMeasuredNumbers {
+    # A provenance problem (such as both sides being measured at the same commit)
+    # invalidates the verdict, not the measurements. Discarding the scenarios left
+    # a reader with an empty table and no way to see what was actually measured,
+    # which makes a real run indistinguishable from one that collected nothing.
+    $dir = Join-Path $PSScriptRoot "provenance-$([guid]::NewGuid())"
+    New-Item -ItemType Directory -Path $dir -Force | Out-Null
+    try {
+        $targetPath = Join-Path $dir 'target.json'
+        $trialPath = Join-Path $dir 'trial.json'
+        $thresholdPath = Join-Path $dir 'thresholds.json'
+        New-TestResult | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $targetPath -Encoding UTF8
+        New-TestResult -Samples @(101.0, 101.0, 101.0, 101.0, 101.0, 101.0, 101.0) |
+            ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $trialPath -Encoding UTF8
+        Get-TestThresholds | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $thresholdPath -Encoding UTF8
+
+        $comparison = Compare-PRPerfFiles `
+            -TargetPath $targetPath -TrialPath $trialPath -ThresholdPath $thresholdPath
+
+        Assert-Equal 'Inconclusive' $comparison.overallState 'Same-commit comparison must stay inconclusive.'
+        if (-not (@($comparison.issues) -match 'both measured at commit')) {
+            throw 'The same-commit reason must still be reported.'
+        }
+        if (@($comparison.scenarios).Count -eq 0) {
+            throw 'The measured scenarios must still be reported so the numbers are visible.'
+        }
+        $metric = $comparison.scenarios[0].metrics[0]
+        Assert-Equal 100.0 $metric.target.Median 'Target median must be reported.'
+        Assert-Equal 101.0 $metric.trial.Median 'Trial median must be reported.'
+        if ($metric.classification -eq 'Passed') {
+            throw 'A metric inside an inconclusive report must never read as Passed.'
+        }
+    } finally {
+        Remove-Item -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Test-LocalResultCarriesEverySampleAndItsProvenance {
+    $result = New-PRPerfLocalResult `
+        -Commit ('c' * 40) -BuildId '4242' -AgentName 'LAB-07' `
+        -ScenarioName 'Startup.LoadMicrosoftUiXaml' `
+        -Samples @(8.1, 8.4, 8.2, 8.6, 8.3, 8.5, 8.0)
+
+    Assert-Equal ('c' * 40) $result.commit 'Result must record the measured commit.'
+    Assert-Equal '4242' $result.buildId 'Result must record the build.'
+    Assert-Equal 'LAB-07' $result.machine.agentName 'Result must record the agent that measured it.'
+    Assert-Equal 'Startup.LoadMicrosoftUiXaml' $result.scenarios[0].name 'Scenario name mismatch.'
+    Assert-Equal 'WallTimeMs' $result.scenarios[0].metrics[0].name 'The metric must be named for what was measured.'
+    Assert-Equal 7 @($result.scenarios[0].metrics[0].samples).Count 'Every sample must be reported.'
+}
+
+function Test-LocalResultRefusesToInventSamples {
+    # Emitting a result with no samples would let a run that measured nothing flow
+    # into the comparer as though it were data.
+    $failed = $false
+    try {
+        New-PRPerfLocalResult -Commit ('c' * 40) -BuildId '1' -AgentName 'LAB-07' `
+            -ScenarioName 'Startup.LoadMicrosoftUiXaml' -Samples @()
+    } catch {
+        $failed = $true
+        if ($_.Exception -is [System.Management.Automation.CommandNotFoundException]) {
+            throw 'New-PRPerfLocalResult must exist.'
+        }
+    }
+    if (-not $failed) { throw 'A result with no samples must not be produced.' }
+}
+
+function Test-LocalResultPassesTheSchemaTheComparerEnforces {
+    $result = New-PRPerfLocalResult `
+        -Commit ('c' * 40) -BuildId '4242' -AgentName 'LAB-07' `
+        -ScenarioName 'Startup.LoadMicrosoftUiXaml' `
+        -Samples @(8.1, 8.4, 8.2, 8.6, 8.3, 8.5, 8.0)
+    $roundTripped = $result | ConvertTo-Json -Depth 12 | ConvertFrom-Json
+
+    try {
+        Assert-PRPerfResultSchema -Result $roundTripped
+    } catch {
+        throw "Locally measured results must satisfy the comparer schema: $($_.Exception.Message)"
+    }
+}
+
+function Test-MeasureRefusesAMissingBinary {
+    # Measuring a binary that is not there must fail loudly rather than quietly
+    # producing a result the comparer would treat as real data.
+    $out = Join-Path $PSScriptRoot "measure-$([guid]::NewGuid()).json"
+    $failed = $false
+    try {
+        & (Join-Path $root 'Measure-PRPerfLocalScenario.ps1') `
+            -BinaryPath (Join-Path $PSScriptRoot 'no-such-binary.dll') `
+            -Commit ('c' * 40) -BuildId '1' -AgentName 'LAB-07' -OutputPath $out
+    } catch {
+        $failed = $true
+        if ($_.Exception -is [System.Management.Automation.CommandNotFoundException]) {
+            throw 'Measure-PRPerfLocalScenario.ps1 must exist.'
+        }
+    }
+    try {
+        if (-not $failed) { throw 'Measuring a missing binary must fail.' }
+        if (Test-Path -LiteralPath $out) { throw 'No result file may be written when measurement fails.' }
+    } finally {
+        Remove-Item -LiteralPath $out -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Test-MeasureProducesSevenRealSamplesForARealBinary {
+    $out = Join-Path $PSScriptRoot "measure-$([guid]::NewGuid()).json"
+    try {
+        & (Join-Path $root 'Measure-PRPerfLocalScenario.ps1') `
+            -BinaryPath 'C:\Windows\System32\shlwapi.dll' `
+            -Commit ('c' * 40) -BuildId '99' -AgentName 'LAB-07' -OutputPath $out | Out-Null
+
+        if (-not (Test-Path -LiteralPath $out)) { throw 'A result file must be written.' }
+        $result = Get-Content -LiteralPath $out -Raw | ConvertFrom-Json
+        Assert-PRPerfResultSchema -Result $result
+        $samples = @($result.scenarios[0].metrics[0].samples)
+        Assert-Equal 7 $samples.Count 'Exactly seven samples are required.'
+        foreach ($sample in $samples) {
+            if ($sample -le 0) { throw "A measured sample must be positive. Got '$sample'." }
+        }
+        # Distinct timings prove these were measured rather than copied from one reading.
+        if (@($samples | Select-Object -Unique).Count -lt 2) {
+            throw 'Samples that are all identical are not real measurements.'
+        }
+    } finally {
+        Remove-Item -LiteralPath $out -Force -ErrorAction SilentlyContinue
+    }
+}
