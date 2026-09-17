@@ -683,6 +683,8 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                         List<MoveItemState> unmovedStates = null;
                         UIExecutor.Execute(() =>
                         {
+                            Verify.IsTrue(ReferenceEquals(editedState.Editor, FocusManager.GetFocusedElement(control.XamlRoot)),
+                                "The editor must have focus before the collection change.");
                             var movedItems = oldIndex == newIndex ? new Person[0] : source.Skip(oldIndex).Take(count).ToArray();
                             unmovedStates = source.Except(movedItems).Select(item => new MoveItemState(control, item)).ToList();
                             reboundItems.Clear();
@@ -716,7 +718,8 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                                 Verify.IsTrue(control.SelectedItems.Contains(item), "An unmoved item lost its selection.");
                             }
                             Verify.AreEqual(selectedItems.Length == 0 ? -1 : source.IndexOf(selectedItems[0]), control.SelectedIndex);
-                            Verify.IsTrue(ReferenceEquals(editedState.Editor, FocusManager.GetFocusedElement(control.XamlRoot)));
+                            Verify.IsTrue(ReferenceEquals(editedState.Editor, FocusManager.GetFocusedElement(control.XamlRoot)),
+                                "Adjusting an unchanged selected item's index must not transfer focus away from its editor.");
                             Verify.AreEqual("Uncommitted edit", editedState.Editor.Text);
                             Verify.AreEqual(2, editedState.Editor.SelectionStart);
                             Verify.AreEqual(5, editedState.Editor.SelectionLength);
@@ -731,7 +734,17 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                         Verify.AreEqual("Uncommitted edit", editedItem.LastName);
                     });
                     TestServices.WindowHelper.WaitForIdle();
-                    UIExecutor.Execute(() => Verify.AreEqual("Updated after Move", editedState.Label.Text));
+                    UIExecutor.Execute(() =>
+                    {
+                        Verify.AreEqual("Updated after Move", editedState.Label.Text);
+                        if (mode == ListViewSelectionMode.Single)
+                        {
+                            Person newSelection = source[4];
+                            control.SelectedItem = newSelection;
+                            Verify.IsTrue(ReferenceEquals(control.ContainerFromItem(newSelection), FocusManager.GetFocusedElement(control.XamlRoot)),
+                                "Selecting a different item must still move focus to its container.");
+                        }
+                    });
                     TestServices.WindowHelper.ResetWindowContentAndWaitForIdle();
                 }
             });

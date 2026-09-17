@@ -311,7 +311,10 @@ original collection directly still returns its final contents.
 
 This avoids invalidating unaffected realized items in controls such as
 `ListView` and `GridView`, preserving their containers, selection, bindings,
-and active editors. The moved items themselves still undergo removal and
+and active editors. With this opt-in, collection changes that only shift an
+unchanged selected item's index do not transfer focus. This also applies to
+ordinary insertions and removals before the selected item; selecting a different
+item still has its normal focus behavior. The moved items themselves still undergo removal and
 insertion: their containers, selection, and focus are not guaranteed to be
 preserved. There is no public vector Move event.
 
