@@ -270,7 +270,5 @@ Write-Host $ExtraArgs
 
 Write-Host ".\te.exe "Test\Microsoft.UI.Xaml.Tests.*.dll" "Test\MUXControls.Test.dll" "Test\UnpackagedApps\MUXControlsTestApp\MUXControlsTestApp.dll" "Test\IXMPTestApp.appx" "/p:SkipConsoleWindowMinimize" "/select:`"$queryArgs`"" $argsEx $ExtraArgs"
 .\te.exe "Test\Microsoft.UI.Xaml.Tests.*.dll" "Test\MUXControls.Test.dll" "Test\UnpackagedApps\MUXControlsTestApp\MUXControlsTestApp.dll" "Test\IXMPTestApp.appx" "/p:SkipConsoleWindowMinimize" "/select:`"$queryArgs`"" $argsEx $ExtraArgs
-$testExitCode = $LASTEXITCODE
 
 Pop-Location
-exit $testExitCode

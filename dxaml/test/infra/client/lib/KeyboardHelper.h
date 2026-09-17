@@ -14,8 +14,9 @@ namespace Private { namespace Infrastructure {
 
     public:
         KeyboardHelper(DWORD uiThreadId)
-            : m_uiThreadId(uiThreadId)
+            : m_keyboardInputHandle(OpenNamedEvent(uiThreadId, s_keyboardInputHandleName))
         {
+            WEX::Common::Throw::LastErrorIf(!m_keyboardInputHandle.IsValid(), L"Failed to create KeyboardInputReceived handle.");
         }
 
         IFACEMETHOD(RuntimeClassInitialize)();
@@ -75,7 +76,6 @@ namespace Private { namespace Infrastructure {
         bool MapKeyCode(std::wstring key, UINT16 &keyCode);
 
         static const wchar_t* s_keyboardInputHandleName;
-        const DWORD m_uiThreadId;
         Microsoft::UI::Xaml::Tests::Common::Handle m_keyboardInputHandle;
 
         HRESULT SendKeyInput(UINT16 keyCode, bool down, bool scanCode, test_infra::IWindowHelper* pWindowHelper);

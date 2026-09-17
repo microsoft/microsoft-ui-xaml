@@ -214,7 +214,7 @@ HRESULT TestServicesStatics::InitializeHostAndDpiAwarenessContextAndCore(boolean
     }
 
     LOG_OUTPUT(L"InitializeHost has been initiated.");
-    RETURN_IF_FAILED(DeInitializeHost());
+    FAIL_FAST_IF_FAILED(DeInitializeHost());
 
     HWND mainWindowHandle = {};
 
@@ -369,16 +369,9 @@ HRESULT TestServicesStatics::InitializeHostAndDpiAwarenessContextAndCore(boolean
         uiThreadId = ::GetCurrentThreadId();
     });
 
-    if (hostingMode == Hosting::HostingMode::WPF && m_spWindowHelper)
-    {
-        RETURN_IF_FAILED(m_spWindowHelper->RebindToHost(uiThreadId, m_spWin32Host.Get(), initCore));
-    }
-    else
-    {
-        auto windowHelper = wrl::Make<WindowHelper>(uiThreadId, m_spWin32Host, this);
-        FAIL_FAST_IF_FAILED(windowHelper->RuntimeClassInitialize());
-        m_spWindowHelper = windowHelper;
-    }
+    auto windowHelper = wrl::Make<WindowHelper>(uiThreadId, m_spWin32Host, this);
+    FAIL_FAST_IF_FAILED(windowHelper->RuntimeClassInitialize());
+    m_spWindowHelper = windowHelper;
 
     auto keyboardHelper = wrl::Make<KeyboardHelper>(uiThreadId);
     FAIL_FAST_IF_FAILED(keyboardHelper->RuntimeClassInitialize());
@@ -390,14 +383,10 @@ HRESULT TestServicesStatics::InitializeHostAndDpiAwarenessContextAndCore(boolean
 
 HRESULT TestServicesStatics::TestServicesStatics::DeInitializeHost()
 {
+    CloseWin32Host();
+
     Hosting::HostingMode hostingMode = Hosting::HostingMode::UAP;
     LogThrow_IfFailed(GetHostingMode(&hostingMode));
-    if (hostingMode == Hosting::HostingMode::WPF && m_spWindowHelper && m_spWin32Host)
-    {
-        // Unbind rejects pending leak checks before releasing the retiring host's resources.
-        RETURN_IF_FAILED(m_spWindowHelper->UnbindFromHost());
-    }
-    CloseWin32Host();
     HostingDispatcher::Get()->DeInit();
 
     return S_OK;

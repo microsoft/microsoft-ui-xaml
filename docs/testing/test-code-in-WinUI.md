@@ -162,42 +162,29 @@ Most private API usage has been removed from Private.Infrastructure. It depends 
 
 #### WPF leak detection
 
-Core tests opt into WPF native leak detection with the method property
-`Data:WpfLeakDetection={true}`. Existing method fixtures need no changes:
+Opt a core test into WPF native leak detection with:
 
 ```cpp
-// TestSetup
-TestServices::WindowHelper->InitializeXaml();
-
-// TestCleanup
-TestServices::WindowHelper->ShutdownXaml();
-TestServices::WindowHelper->VerifyTestCleanup();
+TEST_METHOD_PROPERTY(L"Data:WpfLeakDetection", L"{true}")
 ```
 
-| Operation | WPF behavior |
-| --- | --- |
-| `ShutdownXaml()` | Runs cleanup that needs a live core, then leaves that core idle. |
-| `VerifyTestCleanup()` | Runs any pending native leak check once, against the original core. |
-| Next `InitializeXaml()` | Recreates the host and rebinds the same `WindowHelper`, then restores theme and window-size defaults. |
+Keep the usual `InitializeXaml()` setup and `ShutdownXaml()` followed by
+`VerifyTestCleanup()` cleanup. For opted-in WPF tests, shutdown checks the old
+active core's cleanup, shuts it down, and scans native allocations **before**
+replacing the host. New host initialization resets allocation tracking, so a
+later scan would hide leaks. `VerifyTestCleanup()` retains its other checks but
+does not scan the replacement WPF core.
 
-All initialization overloads follow this sequence, including custom metadata.
-Direct `InitializeHost()` calls also preserve `WindowHelper` identity.
-Host replacement rejects pending leak checks. A failed check is reported in its
-cleanup, not retried against the next core.
+WPF shutdown still replaces the host, STA UI thread, dispatcher, and helpers
+**before returning**. Reacquire `TestServices::WindowHelper`, `KeyboardHelper`,
+and dispatcher references after shutdown or explicit `InitializeHost()`.
+The next `InitializeXaml()` uses that replacement; cached helpers do not follow it.
+For mid-test reinitialization, release test-owned XAML references and event
+registrations before shutdown: each opted-in shutdown is a leak-check interval.
 
-Cached `WindowHelper` references use the replacement host. `KeyboardHelper`,
-dispatcher, and host references must be obtained again after host replacement.
-Idle and keyboard event handles belong to the new UI thread and open on first use.
-This also supports `InitializeHost(..., initializeCore=false)`: the test creates
-the core before using XAML.
-
-Callbacks are unregistered before core shutdown, but their references are retained
-until after verification. Custom metadata closes before shutdown or direct host
-replacement. Repeated shutdown and content-reset calls on an idle core do nothing;
-they must not create new XAML objects.
-
-Detection covers native residue after teardown, not CLR or whole-host retention.
-Existing leak opt-outs and UAP behavior are unchanged. No GC passes are added.
+Detection is native-only, not CLR or whole-host leak detection. Existing leak
+opt-outs, OneCore/shutdown restrictions, UAP checks, and non-opted-in behavior
+are unchanged.
 
 ### Server Component
 

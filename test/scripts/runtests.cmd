@@ -1,2 +1,1 @@
-@powershell.exe -NonInteractive -NoProfile -ExecutionPolicy Bypass -File "%~dp0runtests.ps1" %*
-@exit /b %ERRORLEVEL%
+@powershell -NonInteractive -NoProfile -ExecutionPolicy Bypass %~d0%~p0\runtests.ps1 %*

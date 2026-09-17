@@ -279,265 +279,124 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        ref class RebindMetadataProvider sealed : public Markup::IXamlMetadataProvider
+        void InfrastructureIntegrationTests::ValidateWpfShutdownLeakDetection()
         {
-        public:
-            RebindMetadataProvider()
-            {
-                _provider = ref new XamlTypeInfo::XamlControlsXamlMetaDataProvider();
-            }
-
-            virtual Markup::IXamlType^ GetXamlType(::Windows::UI::Xaml::Interop::TypeName type)
-            {
-                ++LookupCount;
-                return _provider->GetXamlType(type);
-            }
-
-            virtual Markup::IXamlType^ GetXamlType(Platform::String^ fullName)
-            {
-                ++LookupCount;
-                return _provider->GetXamlType(fullName);
-            }
-
-            virtual Platform::Array<Markup::XmlnsDefinition>^ GetXmlnsDefinitions()
-            {
-                return _provider->GetXmlnsDefinitions();
-            }
-
-        internal:
-            unsigned int LookupCount = 0;
-
-        private:
-            Markup::IXamlMetadataProvider^ _provider;
-        };
-
-        ref class RebindMetadataRegistrar sealed : public ICustomMetadataRegistrar
-        {
-        public:
-            virtual void RegisterMetadata()
-            {
-                RunOnUIThread([&]() {
-                    RegisteredThreadId = GetCurrentThreadId();
-                    Property = DependencyProperty::RegisterAttached(
-                        L"WpfHostRebindValue", int::typeid, TextBox::typeid,
-                        ref new PropertyMetadata(static_cast<Platform::Object^>(0)));
-                });
-            }
-
-            virtual void Dispose()
-            {
-                if (!_isClosed)
-                {
-                    RunOnUIThread([&]() {
-                        ClosedThreadId = GetCurrentThreadId();
-                        Property = nullptr;
-                    });
-                    ++CloseCount;
-                    _isClosed = true;
-                }
-            }
-
-            virtual ~RebindMetadataRegistrar()
-            {
-                Dispose();
-            }
-
-        internal:
-            DependencyProperty^ Property;
-            DWORD RegisteredThreadId = 0;
-            DWORD ClosedThreadId = 0;
-            unsigned int CloseCount = 0;
-
-        private:
-            bool _isClosed = false;
-        };
-
-        static std::weak_ptr<int> TrackWpfCallbackReferences(WindowHelper^ helper)
-        {
-            auto lifetime = std::make_shared<int>(0);
-            helper->SetPostTickCallback(ref new PostTickCallback([lifetime]() { ++*lifetime; }));
-            helper->SetPlayingSoundNodeCallback(ref new PlayingSoundNodeCallback(
-                [lifetime](ElementSoundKind, bool, float, float, float, double) { ++*lifetime; }));
-            helper->SetGCCollectCallback(ref new GCCollectCallback([lifetime]() { ++*lifetime; }));
-            return lifetime;
-        }
-
-        static void VerifyReboundHostIsUsable(WindowHelper^ helper, DependencyProperty^ property = nullptr)
-        {
-            TextBox^ textBox = nullptr;
-            auto cleanup = wil::scope_exit([&]() {
-                RunOnUIThread([&]() { textBox = nullptr; });
-                helper->ResetWindowContentAndWaitForIdle();
-            });
-
-            RunOnUIThread([&]() {
-                textBox = ref new TextBox();
-                Automation::AutomationProperties::SetAutomationId(textBox, L"WpfRebindTextBox");
-                textBox->Width = 200;
-                textBox->Height = 40;
-                helper->WindowContent = textBox;
-                if (property)
-                {
-                    textBox->SetValue(property, 42);
-                    VERIFY_ARE_EQUAL(42, safe_cast<int>(textBox->GetValue(property)));
-                }
-                VERIFY_IS_TRUE(helper->CurrentDispatcher->HasThreadAccess);
-            });
-            helper->WaitForIdle();
-            RunOnUIThread([&]() {
-                VERIFY_IS_TRUE(helper->WindowContent == textBox);
-                VERIFY_IS_TRUE(textBox->IsLoaded);
-                VERIFY_IS_GREATER_THAN(textBox->ActualWidth, 0.0);
-            });
-
-            // Exercise both the rebound window and the replacement keyboard's thread-bound event.
-            TestServices::InputHelper->Tap(textBox);
-            TestServices::KeyboardHelper->PressKeySequence(L"a");
-            helper->WaitForIdle();
-            RunOnUIThread([&]() {
-                VERIFY_ARE_EQUAL(Platform::StringReference(L"a"), textBox->Text);
-            });
-        }
-
-        bool WpfWindowHelperTests::ClassSetup()
-        {
-            CommonTestSetupHelper::CommonTestClassSetup();
-            return true;
-        }
-
-        bool WpfWindowHelperTests::TestSetup()
-        {
+            // Match per-test setup before explicit host initialization. Otherwise the previous
+            // shutdown's EnableCoreShutdown flag makes WindowsXamlManager defer closing its core.
             TestServices::WindowHelper->InitializeXaml();
-            return true;
-        }
 
-        bool WpfWindowHelperTests::TestCleanup()
-        {
-            auto closeManager = wil::scope_exit([&]() {
-                if (_xamlManager)
-                {
-                    RunOnUIThread([&]() {
-                        delete _xamlManager;
-                        _xamlManager = nullptr;
-                    });
-                }
-            });
-            TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
-            TestServices::WindowHelper->ShutdownXaml();
-            TestServices::WindowHelper->VerifyTestCleanup();
-            return true;
-        }
-
-        void WpfWindowHelperTests::CachedHelperSurvivesConsecutiveIntervals()
-        {
-            auto helper = TestServices::WindowHelper;
-            for (int interval = 0; interval < 2; ++interval)
-            {
-                auto dispatcher = helper->CurrentDispatcher;
-                auto callbacks = TrackWpfCallbackReferences(helper);
-                VerifyReboundHostIsUsable(helper);
-                helper->ShutdownXaml();
-
-                const auto allocationCount = helper->GetAllocationCount();
-                helper->ShutdownXaml();
-                helper->ResetWindowContentAndWaitForIdle();
-                helper->ResetWindowContentAndScaleWaitForIdle(1.0f);
-                VERIFY_ARE_EQUAL(allocationCount, helper->GetAllocationCount());
-                VERIFY_IS_FALSE(callbacks.expired());
-                VERIFY_IS_TRUE(dispatcher == helper->CurrentDispatcher);
-
-                helper->VerifyTestCleanup();
-                helper->VerifyTestCleanup(); // A pending leak check is consumed only once.
-                VERIFY_IS_FALSE(callbacks.expired());
-                helper->InitializeXaml();
-                VERIFY_IS_TRUE(helper == TestServices::WindowHelper);
-                VERIFY_IS_TRUE(dispatcher != helper->CurrentDispatcher);
-                VERIFY_IS_TRUE(callbacks.expired());
-            }
-
-            auto activeDispatcher = helper->CurrentDispatcher;
-            helper->InitializeXaml();
-            VERIFY_IS_TRUE(activeDispatcher == helper->CurrentDispatcher);
-            VerifyReboundHostIsUsable(helper);
-        }
-
-        void WpfWindowHelperTests::MetadataOverloadsUseReboundHost()
-        {
-            bool useRegistrar = false;
-            VERIFY_SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"UseRegistrar", useRegistrar));
-
-            auto helper = TestServices::WindowHelper;
-            auto dispatcher = helper->CurrentDispatcher;
-            helper->ShutdownXaml();
-            helper->VerifyTestCleanup();
-
-            auto provider = ref new RebindMetadataProvider();
-            auto registrar = ref new RebindMetadataRegistrar();
-            if (useRegistrar)
-            {
-                helper->InitializeXaml(provider, registrar);
-            }
-            else
-            {
-                helper->InitializeXaml(provider);
-            }
-            VERIFY_IS_TRUE(helper == TestServices::WindowHelper);
-            VERIFY_IS_TRUE(dispatcher != helper->CurrentDispatcher);
-            VERIFY_IS_GREATER_THAN(provider->LookupCount, 0u);
-            if (useRegistrar)
-            {
-                RunOnUIThread([&]() {
-                    VERIFY_ARE_EQUAL(GetCurrentThreadId(), registrar->RegisteredThreadId);
-                });
-            }
-            VerifyReboundHostIsUsable(helper, registrar->Property);
-            helper->ShutdownXaml();
-            if (useRegistrar)
-            {
-                VERIFY_ARE_EQUAL(1u, registrar->CloseCount);
-                VERIFY_ARE_EQUAL(registrar->RegisteredThreadId, registrar->ClosedThreadId);
-                VERIFY_IS_NULL(registrar->Property);
-            }
-            helper->VerifyTestCleanup();
-        }
-
-        void WpfWindowHelperTests::DirectHostInitializationRetainsHelper()
-        {
             WEX::Common::String initialization;
             VERIFY_SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"HostInitialization", initialization));
+            bool isNegativeControl = false;
+            WEX::TestExecution::RuntimeParameters::TryGetValue(L"WpfLeakNegativeControl", isNegativeControl);
 
-            auto helper = TestServices::WindowHelper;
-            auto dispatcher = helper->CurrentDispatcher;
-            auto registrar = ref new RebindMetadataRegistrar();
-            helper->InitializeXaml(ref new RebindMetadataProvider(), registrar);
-            auto callbacks = TrackWpfCallbackReferences(helper);
-            VerifyReboundHostIsUsable(helper, registrar->Property);
+            // Explicit host initialization, like WindowedPopupHighDPI, precedes test content.
+            {
+                auto helper = TestServices::WindowHelper;
+                auto dispatcher = helper->CurrentDispatcher;
+                if (initialization == L"Default")
+                {
+                    TestServices::InitializeHost();
+                }
+                else
+                {
+                    VERIFY_ARE_EQUAL(WEX::Common::String(L"Dpi"), initialization);
+                    TestServices::InitializeHost(true);
+                }
+                VERIFY_IS_TRUE(helper != TestServices::WindowHelper);
+                VERIFY_IS_TRUE(dispatcher != TestServices::WindowHelper->CurrentDispatcher);
+            }
 
-            if (initialization == L"Default")
+            TestServices::WindowHelper->InitializeXaml();
+            auto shutdown = wil::scope_exit([]() {
+                TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+                TestServices::WindowHelper->ShutdownXaml();
+            });
+
+            for (int interval = 0; interval < 2; ++interval)
             {
-                TestServices::InitializeHost();
-            }
-            else if (initialization == L"Dpi")
-            {
-                TestServices::InitializeHost(true);
-            }
-            else
-            {
-                TestServices::InitializeHost(true, false);
-                RunOnUIThread([&]() {
-                    VERIFY_IS_NULL(xaml::Hosting::WindowsXamlManager::GetForCurrentThread());
-                    _xamlManager = xaml::Hosting::WindowsXamlManager::InitializeForCurrentThread();
+                auto helper = TestServices::WindowHelper;
+                auto dispatcher = helper->CurrentDispatcher;
+                DWORD retiringThreadId = 0;
+                auto releaseThreadId = std::make_shared<DWORD>(0);
+                auto lifetime = std::shared_ptr<int>(new int(0), [releaseThreadId](int* value) {
+                    *releaseThreadId = GetCurrentThreadId();
+                    delete value;
                 });
-            }
-            VERIFY_IS_TRUE(helper == TestServices::WindowHelper);
-            VERIFY_IS_TRUE(dispatcher != helper->CurrentDispatcher);
-            VERIFY_IS_TRUE(callbacks.expired());
-            VERIFY_ARE_EQUAL(1u, registrar->CloseCount);
-            VERIFY_ARE_EQUAL(registrar->RegisteredThreadId, registrar->ClosedThreadId);
-            VERIFY_IS_NULL(registrar->Property);
+                std::weak_ptr<int> callbacks = lifetime;
+                RunOnUIThread([&]() {
+                    retiringThreadId = GetCurrentThreadId();
+                    SolidColorBrush^ retainedBrush = nullptr;
+                    if (isNegativeControl && interval == 0)
+                    {
+                        LOG_OUTPUT(L"NEGATIVE CONTROL: retaining a native brush through the shutdown-time scan.");
+                        retainedBrush = ref new SolidColorBrush();
+                    }
+                    helper->SetPostTickCallback(ref new PostTickCallback([lifetime, retainedBrush]() {
+                        ++*lifetime;
+                        if (retainedBrush) { (void)retainedBrush->Opacity; }
+                    }));
+                    helper->SetPlayingSoundNodeCallback(ref new PlayingSoundNodeCallback(
+                        [lifetime](ElementSoundKind, bool, float, float, float, double) { ++*lifetime; }));
+                    helper->SetGCCollectCallback(ref new GCCollectCallback([lifetime]() { ++*lifetime; }));
+                });
+                lifetime.reset();
 
-            helper->InitializeXaml();
-            VerifyReboundHostIsUsable(helper);
+                {
+                    TextBox^ textBox = nullptr;
+                    auto cleanup = wil::scope_exit([&]() {
+                        RunOnUIThread([&]() { textBox = nullptr; });
+                        helper->ResetWindowContentAndWaitForIdle();
+                    });
+                    RunOnUIThread([&]() {
+                        textBox = ref new TextBox();
+                        Automation::AutomationProperties::SetAutomationId(textBox, L"WpfShutdownTextBox");
+                        textBox->Width = 200;
+                        textBox->Height = 40;
+                        helper->WindowContent = textBox;
+                        VERIFY_IS_TRUE(helper->CurrentDispatcher->HasThreadAccess);
+                    });
+                    helper->WaitForIdle();
+                    RunOnUIThread([&]() {
+                        VERIFY_IS_TRUE(helper->WindowContent == textBox);
+                        VERIFY_IS_TRUE(textBox->IsLoaded);
+                        VERIFY_IS_GREATER_THAN(textBox->ActualWidth, 0.0);
+                    });
+                    // Input must work on the new window and its thread-bound keyboard event.
+                    TestServices::InputHelper->Tap(textBox);
+                    TestServices::KeyboardHelper->PressKeySequence(L"a");
+                    helper->WaitForIdle();
+                    RunOnUIThread([&]() {
+                        VERIFY_ARE_EQUAL(Platform::StringReference(L"a"), textBox->Text);
+                    });
+                }
+
+                LOG_OUTPUT(L"WPF interval %d: before ShutdownXaml.", interval);
+                helper->ShutdownXaml();
+                LOG_OUTPUT(L"WPF interval %d: after ShutdownXaml.", interval);
+
+                auto replacement = TestServices::WindowHelper;
+                auto replacementDispatcher = replacement->CurrentDispatcher;
+                VERIFY_IS_TRUE(helper != replacement);
+                VERIFY_IS_TRUE(dispatcher != replacementDispatcher);
+                VERIFY_IS_TRUE(callbacks.expired());
+                VERIFY_ARE_EQUAL(retiringThreadId, *releaseThreadId);
+
+                LOG_OUTPUT(L"WPF interval %d: verifying cleanup twice; neither call may scan.", interval);
+                replacement->VerifyTestCleanup();
+                replacement->VerifyTestCleanup();
+                LOG_OUTPUT(L"WPF interval %d: initializing the already-replaced host.", interval);
+                if (interval == 0)
+                {
+                    replacement->InitializeXaml(ref new XamlTypeInfo::XamlControlsXamlMetaDataProvider());
+                }
+                else
+                {
+                    replacement->InitializeXaml();
+                }
+                VERIFY_IS_TRUE(replacement == TestServices::WindowHelper);
+                VERIFY_IS_TRUE(replacementDispatcher == replacement->CurrentDispatcher);
+            }
         }
 
     }
