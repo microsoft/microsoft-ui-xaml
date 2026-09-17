@@ -394,6 +394,7 @@ function Test-GitHubStatusIsNeverFailingBecauseTheStageIsInformational {
 
 
 function Test-GitHubErrorDetailNamesSsoAuthorizationAs403Cause {
+    Import-GitHubModule
     # The gate logged only "(403) Forbidden", which cannot distinguish a token that
     # was never SSO-authorized for the org from an exhausted rate limit. Those need
     # opposite fixes, so the cause has to reach the log.
@@ -407,6 +408,7 @@ function Test-GitHubErrorDetailNamesSsoAuthorizationAs403Cause {
 }
 
 function Test-GitHubErrorDetailNamesRateLimitAs403Cause {
+    Import-GitHubModule
     # The other 403: an unauthenticated or exhausted token. Reporting the remaining
     # quota distinguishes it from the SSO case without guesswork.
     $detail = Format-GitHubPRPerfErrorDetail -StatusCode 403 `
@@ -418,6 +420,7 @@ function Test-GitHubErrorDetailNamesRateLimitAs403Cause {
 }
 
 function Test-GitHubErrorDetailNeverEchoesTheToken {
+    Import-GitHubModule
     # This string is written to a public pipeline log, so it must carry diagnosis
     # and nothing else. A leaked credential would be far worse than a silent gate.
     $detail = Format-GitHubPRPerfErrorDetail -StatusCode 401 `
@@ -446,6 +449,7 @@ function Test-GateReportsWhetherATokenWasSupplied {
 }
 
 function Test-PullRequestReadFallsBackToUnauthenticatedOnAuthFailure {
+    Import-GitHubModule
     # microsoft/microsoft-ui-xaml is public, so reading labels needs no credential.
     # The stage was skipping every pull request because the configured token is
     # rejected with 403, which is a credential problem standing in the way of data
@@ -465,6 +469,7 @@ function Test-PullRequestReadFallsBackToUnauthenticatedOnAuthFailure {
 }
 
 function Test-PullRequestReadPrefersTheTokenWhenItWorks {
+    Import-GitHubModule
     # The fallback must not become the normal path: an authenticated read has a far
     # higher rate limit, and silently dropping the credential would make the gate
     # fail intermittently once the shared unauthenticated quota is exhausted.
@@ -480,6 +485,7 @@ function Test-PullRequestReadPrefersTheTokenWhenItWorks {
 }
 
 function Test-PullRequestReadThrowsWhenBothAttemptsFail {
+    Import-GitHubModule
     # A gate that cannot read labels must skip loudly, never assume the label is
     # present. Swallowing this would run perf on every pull request.
     $invoker = { param($Uri, $Headers) throw 'network down' }
@@ -497,5 +503,34 @@ function Test-PullRequestReadThrowsWhenBothAttemptsFail {
     }
     if ($errorRecord.Exception.Message -notmatch 'network down') {
         throw "Expected the underlying failure to surface. Got: $($errorRecord.Exception.Message)"
+    }
+}
+
+function Test-ErrorDetailFromRecordSurvivesAnErrorWithNoHttpResponse {
+    Import-GitHubModule
+    # Not every failure on this path is an HTTP error: DNS failures and proxy
+    # blocks throw with no Response at all. Reaching for a missing response must
+    # not itself throw, or a network problem would surface as a confusing
+    # property-access error instead of the real cause.
+    $record = $null
+    try { throw 'network down' } catch { $record = $_ }
+
+    $detail = Get-GitHubPRPerfErrorDetailFromRecord -ErrorRecord $record
+    if ($detail -notmatch 'network down') {
+        throw "Expected the original message to survive. Got: $detail"
+    }
+}
+
+function Test-TokenRejectionIsReportedWithDiagnosableDetail {
+    # The fallback catches the 403 before the gate's own handler can format it, so
+    # without this the only thing reaching the log is "(403) Forbidden" again --
+    # the exact blind spot the detail formatter was added to close.
+    $module = Get-Content (Join-Path $PSScriptRoot '..\PRPerfGitHub.psm1') -Raw
+    $start = $module.IndexOf('function Get-GitHubPRPerfPullRequest')
+    if ($start -lt 0) { throw 'Get-GitHubPRPerfPullRequest is missing.' }
+    $body = $module.Substring($start)
+
+    if ($body -notmatch 'Get-GitHubPRPerfErrorDetailFromRecord') {
+        throw 'The token-rejection warning must report formatted detail, not the bare exception message.'
     }
 }

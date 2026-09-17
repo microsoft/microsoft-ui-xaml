@@ -197,6 +197,32 @@ function Format-GitHubPRPerfErrorDetail {
     return ($parts -join ' | ')
 }
 
+function Get-GitHubPRPerfErrorDetailFromRecord {
+    <#
+        Extracts whatever diagnosis an error record can offer. Not every failure on
+        this path is an HTTP error -- DNS failures and proxy blocks arrive with no
+        Response at all -- so reaching for the response must never itself throw, or
+        a network problem would surface as a property-access error instead of the
+        real cause.
+    #>
+    param($ErrorRecord)
+
+    $detail = $ErrorRecord.Exception.Message
+    $response = $null
+    try { $response = $ErrorRecord.Exception.Response } catch { }
+    if ($null -eq $response) {
+        return $detail
+    }
+
+    $body = ''
+    $responseHeaders = @{}
+    try { $body = (New-Object System.IO.StreamReader($response.GetResponseStream())).ReadToEnd() } catch { }
+    try { foreach ($name in $response.Headers.AllKeys) { $responseHeaders[$name] = $response.Headers[$name] } } catch { }
+    try { $detail = Format-GitHubPRPerfErrorDetail -StatusCode ([int]$response.StatusCode) -Body $body -ResponseHeaders $responseHeaders } catch { }
+
+    return $detail
+}
+
 function Get-GitHubPRPerfPullRequest {
     <#
         Reads a pull request, preferring the configured token and retrying once
@@ -232,12 +258,13 @@ function Get-GitHubPRPerfPullRequest {
         try {
             return & $Invoker $Uri (New-GitHubPRPerfHeaders -Token $Token)
         } catch {
-            Write-Host "##vso[task.logissue type=warning]The configured GitHub token was rejected reading $Uri ($($_.Exception.Message)). Retrying without it, which is sufficient for a public repository."
+            Write-Host "##vso[task.logissue type=warning]The configured GitHub token was rejected reading $Uri ($(Get-GitHubPRPerfErrorDetailFromRecord -ErrorRecord $_)). Retrying without it, which is sufficient for a public repository."
         }
     }
 
     return & $Invoker $Uri $anonymousHeaders
 }
 
-Export-ModuleMember -Function New-GitHubPRPerfHeaders, Get-PRPerfContextFromPipeline, Get-GitHubPRPerfCommits, Test-GitHubPRPerfRequestCurrent, Test-GitHubPRPerfRequested, ConvertTo-GitHubPRPerfStatusState, Format-GitHubPRPerfErrorDetail, Get-GitHubPRPerfPullRequest
+Export-ModuleMember -Function New-GitHubPRPerfHeaders, Get-PRPerfContextFromPipeline, Get-GitHubPRPerfCommits, Test-GitHubPRPerfRequestCurrent, Test-GitHubPRPerfRequested, ConvertTo-GitHubPRPerfStatusState, Format-GitHubPRPerfErrorDetail, Get-GitHubPRPerfErrorDetailFromRecord, Get-GitHubPRPerfPullRequest
+
 
