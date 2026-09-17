@@ -21,6 +21,7 @@ namespace Private { namespace Infrastructure {
         bool GetIgnoreLeaksForTest() const;
         void SetIgnoreLeaksForTest(bool ignore);
 
+        static bool IsLeakDetectionForced();
         static void VerifyExpectedLeaks(const std::function<void()>& checkForLeaks);
 
     private:

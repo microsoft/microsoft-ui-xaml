@@ -28,6 +28,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateWpfExpectedLeakDetection)
             TEST_METHOD_PROPERTY(L"Description", L"Detects a deliberately retained native brush, then verifies a clean shutdown.")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateWpfForcedLeakDetection)
+            TEST_METHOD_PROPERTY(L"Description", L"Probes runtime-forced leak detection without a code opt-in. Retained-brush variations must fail only when forced.")
+            TEST_METHOD_PROPERTY(L"Classification", L"IntentionallyFailing")
+            TEST_METHOD_PROPERTY(L"Ignore", L"True")
+            TEST_METHOD_PROPERTY(L"Data:IgnoreLeaksForTest", L"{false,true}")
+            TEST_METHOD_PROPERTY(L"Data:RetainNativeObject", L"{false,true}")
+        END_TEST_METHOD()
     };
 
     bool InfrastructureLeakDetectionTests::ClassSetup()
@@ -76,6 +84,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                         });
                         retainedLifetime = lifetime;
                         auto brush = ref new SolidColorBrush();
+                        // WindowHelper keeps this callback and its lambda's captured brush alive
+                        // through the leak check in ShutdownXaml(), then releases the callback
+                        // on the retiring UI thread.
                         helper->SetPostTickCallback(ref new PostTickCallback([brush, lifetime]() {
                             (void)brush->Opacity;
                         }));
@@ -89,6 +100,37 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 VERIFY_ARE_EQUAL(retiringThreadId, *releaseThreadId);
             }
             TestServices::WindowHelper->VerifyTestCleanup();
+        }
+    }
+
+    void InfrastructureLeakDetectionTests::ValidateWpfForcedLeakDetection()
+    {
+        bool ignoreLeaks = false;
+        bool retainNativeObject = false;
+        VERIFY_SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"IgnoreLeaksForTest", ignoreLeaks));
+        VERIFY_SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"RetainNativeObject", retainNativeObject));
+
+        auto helper = TestServices::WindowHelper;
+        helper->InitializeXaml();
+        auto shutdown = wil::scope_exit([&]() {
+            helper->WaitForIdle();
+            helper->ResetWindowContentAndWaitForIdle();
+            helper->ShutdownXaml();
+        });
+
+        if (ignoreLeaks)
+        {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+        }
+
+        if (retainNativeObject)
+        {
+            RunOnUIThread([&]() {
+                auto brush = ref new SolidColorBrush();
+                helper->SetPostTickCallback(ref new PostTickCallback([brush]() {
+                    (void)brush->Opacity;
+                }));
+            });
         }
     }
 

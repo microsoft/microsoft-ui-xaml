@@ -131,7 +131,29 @@ bool LoggingHelper::GetIgnoreLeaksForTest() const
 
 void LoggingHelper::SetIgnoreLeaksForTest(bool ignore)
 {
-    m_ignoreLeaksForTest = ignore;
+    m_ignoreLeaksForTest = ignore && !IsLeakDetectionForced();
+}
+
+bool LoggingHelper::IsLeakDetectionForced()
+{
+    WEX::Common::NoThrowString value;
+    if (FAILED(WEX::TestExecution::RuntimeParameters::TryGetValue(L"ForceLeakDetection", value)))
+    {
+        return false;
+    }
+
+    if (value.IsEmpty() || value.CompareNoCase(L"true") == 0)
+    {
+        return true;
+    }
+
+    if (value.CompareNoCase(L"false") == 0)
+    {
+        return false;
+    }
+
+    WEX::Logging::Log::Error(L"ForceLeakDetection must be empty, 'true', or 'false'.");
+    return false;
 }
 
 void LoggingHelper::VerifyExpectedLeaks(const std::function<void()>& checkForLeaks)

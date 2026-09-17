@@ -169,6 +169,9 @@ the test, after its `InitializeXaml()` setup:
 TestServices::EnableLeakDetection();
 ```
 
+To check every test in a class, put this call in the shared test setup,
+immediately after `InitializeXaml()`. `CheckBoxIntegrationTests` uses this pattern.
+
 The opt-in applies only to the current initialized XAML lifetime. Repeated calls
 are harmless and do not reset allocation tracking. `ShutdownXaml()` consumes the
 request, including on failure. Every `InitializeXaml()` overload resets the opt-in,
@@ -193,9 +196,45 @@ The next `InitializeXaml()` uses that replacement; cached helpers do not follow 
 For mid-test reinitialization, release test-owned XAML references and event
 registrations before shutdown: each opted-in shutdown is a leak-check interval.
 
-Detection is native-only, not CLR or whole-host leak detection. Existing leak
-opt-outs, OneCore/shutdown restrictions, UAP checks, and non-opted-in behavior
-are unchanged.
+Detection is native-only, not CLR or whole-host leak detection. Without the
+runtime override below, existing leak opt-outs, OneCore/shutdown restrictions,
+UAP checks, and non-opted-in behavior are unchanged.
+
+##### Forcing leak detection from TAEF
+
+Pass `/p:ForceLeakDetection` to enable detection without adding
+`EnableLeakDetection()` calls to the selected tests. From the test payload
+directory:
+
+```powershell
+.\runtests.cmd "*ButtonIntegrationTests*" -HostingMode WPF /p:ForceLeakDetection
+```
+
+This is a TAEF runtime parameter, not a `te.exe` switch named
+`/ForceLeakDetection`. The VM runner also forwards it:
+
+```powershell
+.\initrun.ps1 .\tools\run-tests-on-vm.ps1 -VMName <vm> "*ButtonIntegrationTests*" -HostingMode WPF /p:ForceLeakDetection
+```
+
+The parameter accepts no value or `true` to enable the override. Omit it or pass
+`/p:ForceLeakDetection=false` to keep normal behavior; `false` does not disable
+explicit code opt-ins. Other values log an error.
+
+The override requests a native scan at every WPF `ShutdownXaml()`, including
+after reinitialization or host replacement. It also overrides
+`IgnoreLeaksForTest()`: unexpected native leak diagnostics remain errors rather
+than warnings. Explicit expected-leak requests retain their usual semantics.
+
+Use a checked build. The override does not add shutdown calls or bypass
+OneCore/shutdown restrictions, and it does not scan a replacement WPF core from
+`VerifyTestCleanup()`. UAP retains its existing scan location, with explicit
+leak opt-outs overridden.
+
+The output logs `ForceLeakDetection requested a WPF shutdown-time leak scan.`
+when the override is active. Confirm that the scan actually ran by looking for
+`Checking the retiring WPF core before host replacement.` followed by
+`Checking for leaks.`
 
 ##### Testing the leak detector
 
@@ -220,6 +259,14 @@ through `IgnoreLeaksForTest()`, cannot satisfy the expectation and fails the tes
 `SolidColorBrush` in a callback through the scan, then verifies that shutdown
 releases the callback on the retiring UI thread. It follows this with a clean
 shutdown that expects no leaks. The test is registered only in checked builds.
+
+`InfrastructureLeakDetectionTests::ValidateWpfForcedLeakDetection` is an ignored,
+intentionally failing diagnostic probe. Run it explicitly with
+`-RunIgnoredTests`. Its four variations combine retaining a native brush with
+calling `IgnoreLeaksForTest()`, without any code opt-in. Without the runtime
+override, all four pass without a scan. With `/p:ForceLeakDetection`, the two
+clean variations pass and the two retained-brush variations report errors and
+fail, including the variation that explicitly ignores leaks.
 
 ### Server Component
 

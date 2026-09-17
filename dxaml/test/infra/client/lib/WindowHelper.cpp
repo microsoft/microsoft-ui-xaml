@@ -2606,8 +2606,14 @@ HRESULT WindowHelper::ShutdownXaml()
         BOOLEAN isOneCore = FALSE;
         LogThrow_IfFailed(Utilities::IsOneCoreStatic(&isOneCore));
 
-        const bool wpfLeakDetectionRequested =
-            leakDetectionMode != LeakDetectionMode::Disabled && hostingMode == HostingMode::WPF;
+        const bool forceLeakDetection = LoggingHelper::IsLeakDetectionForced();
+        const bool wpfLeakDetectionRequested = hostingMode == HostingMode::WPF &&
+            (forceLeakDetection || leakDetectionMode != LeakDetectionMode::Disabled);
+
+        if (forceLeakDetection && hostingMode == HostingMode::WPF)
+        {
+            LOG_OUTPUT(L"ForceLeakDetection requested a WPF shutdown-time leak scan.");
+        }
 
         RunOnUIThread([&]() {
             HMODULE hModuleMuxc = GetModuleHandle(L"Microsoft.UI.Xaml.Controls.dll");
