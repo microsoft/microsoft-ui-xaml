@@ -66,6 +66,9 @@ param(
     [switch]$Invalidate,
     [string]$NewSha,
     [switch]$IReviewedTheSha,
+    # The commit the reviewer actually looked at. Publishing refuses if the PR head has moved on,
+    # so a commit pushed between the review and this run can never inherit that review.
+    [string]$ExpectedSha,
     [switch]$IReviewedTheBuildSurface,
     # One stable branch per fork PR instead of a fresh SHA-suffixed branch on every push.
     [switch]$ReuseBranch,
@@ -105,10 +108,15 @@ $script:BuildSurfaceDirs = @(
     '.github/'
     '.azuredevops/'
     '.config/'
+    'scripts/'
 )
-# Extensions that execute during a build wherever they live: MSBuild .props/.targets can run
-# arbitrary tasks, so a nested one is as dangerous as a root one. Only touched files are reported.
-$script:BuildSurfaceExts = @('.yml', '.yaml', '.props', '.targets', '.proj')
+# Extensions that execute during a build wherever they live. MSBuild files can run arbitrary
+# commands via <Exec> or UsingTask, and that includes ordinary project files, so a nested one is as
+# dangerous as a root one. This does mean a PR that merely adds a source file to a .vcxproj needs
+# the second acknowledgement; that is deliberate, because the same edit can add a build step.
+$script:BuildSurfaceExts = @(
+    '.yml', '.yaml', '.props', '.targets', '.proj', '.vcxproj', '.csproj', '.projitems', '.msbuildproj'
+)
 # Exact root-level filenames that steer restore/build tooling.
 $script:BuildSurfaceFiles = @(
     'nuget.config', 'global.json', 'directory.build.props', 'directory.build.targets',
@@ -116,22 +124,33 @@ $script:BuildSurfaceFiles = @(
 )
 
 function Test-IsBuildSurface([string]$Path) {
-    $p = $Path.Replace('\', '/')
-    foreach ($d in $script:BuildSurfaceDirs) { if ($p.ToLowerInvariant().StartsWith($d)) { return $true } }
-    foreach ($e in $script:BuildSurfaceExts) { if ($p.ToLowerInvariant().EndsWith($e)) { return $true } }
+    $p = $Path.Replace('\', '/').ToLowerInvariant()
+    foreach ($d in $script:BuildSurfaceDirs) { if ($p.StartsWith($d)) { return $true } }
+    foreach ($e in $script:BuildSurfaceExts) { if ($p.EndsWith($e)) { return $true } }
     $leaf = ($p -split '/')[-1]
-    if ($script:BuildSurfaceFiles -contains $leaf.ToLowerInvariant()) { return $true }
+    if ($script:BuildSurfaceFiles -contains $leaf) { return $true }
+    # Repository-root entry points (init.cmd, Build.cmd, init.ps1, ...): these are what a build
+    # actually invokes, so a change here is a change to the build regardless of file type.
+    if ($p -notmatch '/' -and $p -match '\.(cmd|bat|ps1|sh)$') { return $true }
     return $false
 }
 
-function Get-BuildSurfaceChanges {
-    # Uses the PR's own file list, so it is already scoped to the merge base.
-    $files = gh api "repos/$Repo/pulls/$PrNumber/files" --paginate --jq '.[].filename' 2>$null
-    return @($files | Where-Object { $_ -and (Test-IsBuildSurface $_) })
+# Files changed by the REVIEWED commit, taken from git rather than the pull-request files API.
+# The API is capped at 3,000 files, always describes the CURRENT head rather than $Sha, and a
+# failed request would read as "nothing to acknowledge" — each of which would let a build-surface
+# change through unacknowledged. Both commits must already be fetched.
+function Get-ChangedFiles([string]$FromSha, [string]$ToSha) {
+    $out = git diff --name-only "$FromSha...$ToSha"
+    if ($LASTEXITCODE -ne 0) { throw "git diff $FromSha...$ToSha failed (exit $LASTEXITCODE); refusing to publish." }
+    return @($out | Where-Object { $_ })
 }
 
-function Assert-BuildSurfaceReviewed {
-    $hits = @(Get-BuildSurfaceChanges)
+function Get-BuildSurfaceChanges([string[]]$Files) {
+    return @($Files | Where-Object { Test-IsBuildSurface $_ })
+}
+
+function Assert-BuildSurfaceReviewed([string[]]$Files, [string]$FromSha, [string]$ToSha) {
+    $hits = @(Get-BuildSurfaceChanges $Files)
     if (-not $hits) { return }
 
     Write-Host ""
@@ -143,21 +162,13 @@ function Assert-BuildSurfaceReviewed {
     Write-Host ""
 
     # Print the patches inline so the decision is made with the change in view, not from a filename.
-    # One compact JSON object per line (@json): iterating raw --jq text would split each multi-line
-    # patch into separate items.
-    $rows = gh api "repos/$Repo/pulls/$PrNumber/files" --paginate --jq '.[] | @json' 2>$null
-    foreach ($r in @($rows | Where-Object { $_ })) {
-        $o = $null
-        try { $o = $r | ConvertFrom-Json } catch { continue }
-        if ($hits -notcontains $o.filename) { continue }
-        Write-Host "=== $($o.filename) ===" -ForegroundColor Yellow
-        if ($o.patch) {
-            Write-Host $o.patch
-        } else {
-            # Binary or oversized — more reason to look, not less.
-            Write-Warning "  No inline diff available (binary or oversized). Inspect it manually:"
-            Write-Host   "  $($o.blob_url)"
-        }
+    # From git, so what is shown is exactly what will be published.
+    foreach ($h in $hits) {
+        Write-Host "=== $h ===" -ForegroundColor Yellow
+        $patch = git diff "$FromSha...$ToSha" -- $h
+        if ($LASTEXITCODE -ne 0) { throw "git diff for '$h' failed (exit $LASTEXITCODE); refusing to publish." }
+        if ($patch) { Write-Host ($patch -join [Environment]::NewLine) }
+        else { Write-Warning "  No textual diff (binary). Inspect it manually before acknowledging." }
         Write-Host ""
     }
 
@@ -198,7 +209,9 @@ function Get-ValidationState([string]$Sha) {
                  else { $c.conclusion }
         $results += [pscustomobject]@{
             Kind = 'check_run'; State = $state; Description = $c.output.title
-            Url = $c.html_url; Updated = $c.completed_at
+            # An in-flight run has no completed_at; fall back to started_at so a fresh pending
+            # result still sorts ahead of an older finished one.
+            Url = $c.html_url; Updated = if ($c.completed_at) { $c.completed_at } else { $c.started_at }
         }
     }
 
@@ -270,9 +283,23 @@ if ($CheckTrigger) {
             Write-Warning "  commit. It is missing for PRs branched from an older main, and a fork can delete it."
             Write-Warning "  Define the trigger in the pipeline UI instead."
         }
-        $covers = $filters | Where-Object { $_ -match 'validation' -or $_ -eq '+refs/heads/*' -or $_ -eq '*' }
-        if ($covers) { Write-Host "  OK: validation/* appears covered." }
-        else { Write-Warning "  Filters do not appear to cover validation/*; branch pushes will not build." }
+        # Azure DevOps filters are '+pattern' / '-pattern' (a bare pattern is an include). Evaluate
+        # both kinds against a real ref: an exclusion such as '-refs/heads/validation/*' matches on
+        # the word "validation" yet does the opposite of covering it.
+        $sample   = "refs/heads/$(Get-BranchPrefix)latest"
+        $included = $false
+        $excluded = $false
+        foreach ($f in $filters) {
+            $isExclude = $f.StartsWith('-')
+            $pattern   = $f.TrimStart('+', '-')
+            if (-not $pattern.StartsWith('refs/')) { $pattern = "refs/heads/$($pattern.TrimStart('/'))" }
+            # Glob, not regex: escape everything, then let '*' match any remaining path text.
+            $rx = '^' + [regex]::Escape($pattern).Replace('\*', '.*') + '$'
+            if ($sample -match $rx) { if ($isExclude) { $excluded = $true } else { $included = $true } }
+        }
+        if ($included -and -not $excluded) { Write-Host "  OK: $sample is covered." }
+        elseif ($excluded) { Write-Warning "  $sample is EXCLUDED by these filters; branch pushes will not build." }
+        else { Write-Warning "  Filters do not cover $sample; branch pushes will not build." }
     }
     return
 }
@@ -292,12 +319,22 @@ if ($Status) {
     return
 }
 
-function Invoke-BranchCleanup {
-    # Delete every validation ref for this fork PR: re-validations can leave orphaned per-SHA
-    # branches behind.
+function Invoke-BranchCleanup([string]$KeepSha) {
+    # Delete validation refs for this fork PR: re-validations can leave orphaned per-SHA branches
+    # behind. A ref already pointing at $KeepSha is kept, so a delayed synchronize event cannot
+    # remove a validation that was published for the head it is reporting about.
     $p = Get-BranchPrefix
-    $refs = gh api "repos/$Repo/git/matching-refs/heads/$p" --jq '.[].ref' 2>$null
-    $refs = @($refs | Where-Object { $_ })
+    $rows = gh api "repos/$Repo/git/matching-refs/heads/$p" --jq '.[] | [.ref, .object.sha] | @tsv' 2>$null
+    if ($LASTEXITCODE -ne 0) { throw "Listing refs under $p failed; not deleting anything." }
+    $refs = @()
+    foreach ($row in @($rows | Where-Object { $_ })) {
+        $parts = $row -split "`t"
+        if ($KeepSha -and $parts.Count -gt 1 -and $parts[1] -eq $KeepSha) {
+            Write-Host "Keeping $($parts[0]) — it already points at the current head."
+            continue
+        }
+        $refs += $parts[0]
+    }
     if (-not $refs) { Write-Host "Nothing to clean for $p."; return 0 }
 
     # This flow opens no PRs, but warn rather than delete silently if anything else left one on
@@ -322,7 +359,7 @@ if ($Invalidate) {
     # Deleting the branch does NOT retract the status on the OLD SHA — statuses are immutable
     # records on the commit they were written to. The merge gate re-blocks because the PR's NEW head
     # has no result of its own; removing the branch stops a stale build reporting late.
-    $removed = Invoke-BranchCleanup
+    $removed = Invoke-BranchCleanup -KeepSha $NewSha
     if ($removed -gt 0) {
         $short = if ($NewSha) { $NewSha.Substring(0, [Math]::Min(8, $NewSha.Length)) } else { '' }
         $tmpl = @'
@@ -345,16 +382,52 @@ if ($Publish) {
         throw "Refusing to publish: pass -IReviewedTheSha to confirm you reviewed exact SHA $Sha. " +
               "Publishing runs the fork's code in a credentialed pipeline."
     }
+    # The review is an assertion about ONE commit. If the fork advanced between the review and this
+    # run, that review does not describe what would be published.
+    if ($ExpectedSha -and -not ($Sha.StartsWith($ExpectedSha) -or $ExpectedSha.StartsWith($Sha))) {
+        throw "PR head is $Sha but the review was for $ExpectedSha. The fork pushed a new commit; " +
+              "re-review the current head and comment again."
+    }
+    # A closed PR gets no further synchronize or close event, so anything published now would never
+    # be invalidated or cleaned up.
+    if ($info.state -ne 'OPEN') {
+        throw "PR #$PrNumber is $($info.state); refusing to publish. Validation branches are removed " +
+              "when a PR closes, and a branch published now would be left behind."
+    }
 
-    # Surface build-instruction changes before anything is published: this is what stops a one-line
-    # pipeline edit disappearing into a large product diff.
-    Assert-BuildSurfaceReviewed
+    # Fetch the base branch first: the reviewed commit is classified against the merge base, so the
+    # diff is bound to $Sha instead of whatever the PR happens to point at later.
+    Write-Host "Fetching base branch $Base ..."
+    git fetch --no-tags $Remote $Base
+    if ($LASTEXITCODE -ne 0) { throw "git fetch of $Base failed (exit $LASTEXITCODE)." }
+    $baseSha = (git rev-parse FETCH_HEAD).Trim()
 
     Write-Host "Fetching pull/$PrNumber/head ..."
     git fetch --no-tags $Remote "pull/$PrNumber/head"
     if ($LASTEXITCODE -ne 0) { throw "git fetch of pull/$PrNumber/head failed (exit $LASTEXITCODE)." }
     $fetched = (git rev-parse FETCH_HEAD).Trim()
     if ($fetched -ne $Sha) { throw "Fetched SHA ($fetched) != PR head SHA ($Sha); aborting." }
+
+    $changed = Get-ChangedFiles $baseSha $Sha
+    Write-Host "$($changed.Count) file(s) changed since the merge base."
+
+    # GITHUB_TOKEN can never carry the 'workflows' permission — GitHub blocks that by design — so a
+    # push introducing workflow changes is rejected outright. Say so plainly rather than letting the
+    # push fail with an unrelated-looking error.
+    $wf = @($changed | Where-Object { $_.Replace('\','/').ToLowerInvariant().StartsWith('.github/workflows/') })
+    if ($wf -and $env:GITHUB_ACTIONS -eq 'true') {
+        throw @"
+This fork PR changes GitHub Actions workflow files:
+$($wf -join "`n")
+They cannot be published from a workflow: GITHUB_TOKEN is not permitted to push workflow changes,
+and that permission cannot be granted. Validate this PR from a maintainer machine instead
+(-Publish -QueueBuild), after reviewing those files with particular care.
+"@
+    }
+
+    # Surface build-instruction changes before anything is published: this is what stops a one-line
+    # pipeline edit disappearing into a large product diff.
+    Assert-BuildSurfaceReviewed $changed $baseSha $Sha
 
     # Re-read the PR head immediately before pushing, so a fork that advanced mid-run can never get
     # an unreviewed commit published.
@@ -366,6 +439,9 @@ if ($Publish) {
     # Push the IDENTICAL commit object — never a cherry-pick, rebase or merge. The shared SHA is the
     # whole mechanism: it is what makes the status appear on the fork PR. The leading '+' force-
     # updates the -ReuseBranch head (still fires the CI trigger); per-SHA branches never move.
+    # Baseline for the "did a build actually start" guard below, taken BEFORE the push.
+    $preResults = @(Get-ValidationState $Sha | ForEach-Object { $_.Url })
+
     Write-Host "Pushing identical commit to $Branch ..."
     git push $Remote "+$Sha`:refs/heads/$Branch"
     if ($LASTEXITCODE -ne 0) {
@@ -395,11 +471,13 @@ if ($Publish) {
     # succeeds and nothing runs, so a caller treating "published" as "validated" would report
     # success while the required check never arrives. Fail loudly instead.
     if ($WaitForStartMinutes -gt 0) {
-        Write-Host "Waiting up to $WaitForStartMinutes min for '$Context' to appear on $Sha ..."
+        Write-Host "Waiting up to $WaitForStartMinutes min for a NEW '$Context' result on $Sha ..."
         $deadline = (Get-Date).AddMinutes($WaitForStartMinutes)
         $started  = $null
         while ((Get-Date) -lt $deadline) {
-            $started = @(Get-ValidationState $Sha) | Select-Object -First 1
+            # Ignore results captured before the push: re-validating a SHA that was already built
+            # would otherwise satisfy this guard instantly, defeating its purpose.
+            $started = @(Get-ValidationState $Sha) | Where-Object { $preResults -notcontains $_.Url } | Select-Object -First 1
             if ($started) { break }
             Start-Sleep -Seconds 20
         }

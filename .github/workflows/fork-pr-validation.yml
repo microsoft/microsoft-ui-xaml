@@ -80,21 +80,23 @@ permissions:
   issues: write          # react to the command comment
 
 concurrency:
-  # Serialize lifecycle events per PR so an invalidate cannot race a running publish.
-  group: fork-validation-${{ github.event.issue.number || github.event.pull_request.number }}
+  # Serialize per PR, but keep publishes and lifecycle events in SEPARATE groups. Only one run can
+  # be pending per group, and a newer one evicts it even with cancel-in-progress: false — sharing a
+  # group would let a /validate comment silently drop a queued invalidate or cleanup.
+  group: fork-validation-${{ github.event_name == 'issue_comment' && 'cmd' || 'lifecycle' }}-${{ github.event.issue.number || github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
   validate:
-    # Coarse gate: PR comments from maintainers that mention the command. The Detect
-    # step below does the exact-match check.
+    # Coarse gate only: a PR comment that mentions the command. author_association is NOT a
+    # permission — MEMBER means "member of the organisation that owns this repository", which is a
+    # far larger set than the people who can write to it, and COLLABORATOR includes read-only
+    # access. The Verify permission step below is the real authorisation check; the Detect step
+    # does the exact-match check.
     if: >-
       github.event_name == 'issue_comment' &&
       github.event.issue.pull_request != null &&
-      contains(github.event.comment.body, '/validate') &&
-      (github.event.comment.author_association == 'OWNER' ||
-       github.event.comment.author_association == 'MEMBER' ||
-       github.event.comment.author_association == 'COLLABORATOR')
+      contains(github.event.comment.body, '/validate')
     runs-on: ubuntu-latest
     steps:
       - name: Detect command
@@ -130,6 +132,24 @@ jobs:
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
           echo "surface=$surface" >> "$GITHUB_OUTPUT"
 
+      - name: Verify commenter has write access
+        id: perm
+        if: steps.detect.outputs.match == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.event.comment.user.login }}
+        run: |
+          set -euo pipefail
+          # Ask for the actual repository permission. Anything short of write cannot authorise
+          # running fork code in a credentialed pipeline. Fails closed: an API error stops the job.
+          level=$(gh api "repos/$REPO/collaborators/$ACTOR/permission" --jq '.permission')
+          echo "$ACTOR has '$level' permission on $REPO"
+          case "$level" in
+            admin|maintain|write) ;;
+            *) echo "::error::$ACTOR lacks write access; refusing to validate."; exit 1 ;;
+          esac
+
       - name: Acknowledge the command
         if: steps.detect.outputs.match == 'true'
         env:
@@ -163,12 +183,19 @@ jobs:
           SURFACE_OK: ${{ steps.detect.outputs.surface }}
         run: |
           $ErrorActionPreference = 'Stop'
-          # A pinned SHA must still match the PR head, so we publish exactly what was reviewed.
+          # Bind this run to ONE commit and carry it into the script, which refuses to publish
+          # anything else. `/validate <sha>` binds to the commit the maintainer names — the only
+          # form that is tied to what they actually read. A plain `/validate` can only bind to the
+          # head as it is right now, so a commit pushed between reading and commenting would be
+          # published: prefer the pinned form when a fork is actively pushing.
+          $head = (gh pr view $env:PR --repo $env:REPO --json headRefOid --jq '.headRefOid').Trim()
           if ($env:PINNED_SHA) {
-            $head = (gh pr view $env:PR --repo $env:REPO --json headRefOid --jq '.headRefOid').Trim()
             if (-not $head.StartsWith($env:PINNED_SHA) -and -not $env:PINNED_SHA.StartsWith($head)) {
               throw "Pinned SHA '$($env:PINNED_SHA)' no longer matches PR head '$head'. Re-review and re-comment."
             }
+            $expected = $env:PINNED_SHA
+          } else {
+            $expected = $head
           }
 
           # The maintainer's comment is the review acknowledgement. -IReviewedTheBuildSurface is
@@ -180,6 +207,7 @@ jobs:
             Repo            = $env:REPO
             Publish         = $true
             IReviewedTheSha = $true
+            ExpectedSha     = $expected
             ReuseBranch     = $true
             # Fail rather than report success if the push starts no build in this window.
             WaitForStartMinutes = 8
@@ -194,6 +222,9 @@ jobs:
               if ($_.Exception.Message -match 'check appeared') {
                   "nobuild=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
               }
+              if ($_.Exception.Message -match 'not permitted to push workflow changes') {
+                  "wffiles=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+              }
               throw
           }
 
@@ -205,6 +236,7 @@ jobs:
           PR: ${{ github.event.issue.number }}
           OUTCOME: ${{ steps.publish.outcome }}
           NOBUILD: ${{ steps.publish.outputs.nobuild }}
+          WFFILES: ${{ steps.publish.outputs.wffiles }}
           SURFACE_OK: ${{ steps.detect.outputs.surface }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
@@ -218,6 +250,10 @@ jobs:
             printf '%s\n\n%s\n' \
               "❌ The validation branch was published, but **no build ever started**, so the required check would never arrive." \
               "That is a pipeline configuration problem, not a problem with this PR: the CI trigger on \`validation/fork-pr/*\` is probably inactive. Please ping a maintainer. [Workflow run]($RUN_URL)" > body.md
+          elif [ "$WFFILES" = "true" ]; then
+            printf '%s\n\n%s\n' \
+              "❌ This PR changes GitHub Actions workflow files, which this flow cannot publish: the token available to it is not permitted to push workflow changes, and that permission cannot be granted." \
+              "A maintainer must validate this PR from their own machine instead. [Workflow run]($RUN_URL)" > body.md
           elif [ "$SURFACE_OK" != "true" ]; then
             printf '%s\n\n%s\n\n%s\n\n%s\n' \
               "❌ Validation was refused. See the [workflow run]($RUN_URL)." \
