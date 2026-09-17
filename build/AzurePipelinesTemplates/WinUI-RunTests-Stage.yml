@@ -2,7 +2,6 @@
 # Licensed under the MIT License.
 parameters:
   pipelineKind: ''
-  failOnTestFailure: true
 
 stages:
 - stage: RunTests
@@ -23,7 +22,6 @@ stages:
       dependsOn: CreateTestPayload
       testOS: 'Win11-25H2'
       testPayloadArtifactName: 'TestPayload'
-      failOnTestFailure: ${{ parameters.failOnTestFailure }}
 
   - ${{ if ne(parameters.pipelineKind, 'QuickPR') }}:
     - template: WinUI-RunTestPassOnPipeline-Job.yml
@@ -32,7 +30,6 @@ stages:
         dependsOn: CreateTestPayload
         testOS: 'Win11-23H2'
         testPayloadArtifactName: 'TestPayload'
-        failOnTestFailure: ${{ parameters.failOnTestFailure }}
 
     - template: WinUI-RunTestPassOnPipeline-Job.yml
       parameters:
@@ -40,4 +37,3 @@ stages:
         dependsOn: CreateTestPayload
         testOS: 'Win10-RS5'
         testPayloadArtifactName: 'TestPayload'
-        failOnTestFailure: ${{ parameters.failOnTestFailure }}

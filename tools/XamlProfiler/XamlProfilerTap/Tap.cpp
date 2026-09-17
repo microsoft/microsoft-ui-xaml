@@ -26,6 +26,17 @@ static void TapLog(const std::wstring& msg)
     OutputDebugString((L"[XamlProfilerTap] " + msg + L"\n").c_str());
 }
 
+static uint64_t GetVisualId(winrt::Microsoft::UI::Composition::Visual const& visual)
+{
+    if (!visual)
+    {
+        return 0;
+    }
+
+    auto visualIdentity = visual.try_as<winrt::Microsoft::UI::Composition::IVisual>();
+    return visualIdentity ? reinterpret_cast<uint64_t>(winrt::get_abi(visualIdentity)) : 0;
+}
+
 BOOL WINAPI DllMain(HMODULE hModule, DWORD reason, LPVOID)
 {
     if (reason == DLL_PROCESS_ATTACH)
@@ -462,12 +473,11 @@ void XamlProfilerTap::HighlightElement(InstanceHandle element)
 
 // Highlight an IVisual / Composition-only node (one with no XAML peer handle).
 //
-// The profiler can't resolve these via XAML Diagnostics, so the producer (in mux's
-// WucVisualTreeProfiler) stamps each live visual's Comment with "xpid:<IVisual* as hex>".
-// That hex is exactly the node.Id the profiler shows. Here we walk the live Composition
-// tree (rooted at the XamlRoot content's element visual), find the visual whose Comment
-// matches, and adorn it in place with a translucent child SpriteVisual. The adorner rides
-// the target's transform (RelativeSizeAdjustment 1,1) so no coordinate math is needed.
+// The profiler can't resolve these via XAML Diagnostics, so the injected tap walks the
+// live Composition tree and compares each visual's in-process IVisual identity with the
+// node id emitted over ETW. The matched visual is adorned in place with a translucent
+// child SpriteVisual. The adorner rides the target's transform
+// (RelativeSizeAdjustment 1,1) so no coordinate math is needed.
 void XamlProfilerTap::HighlightVisual(uint64_t visualId)
 {
     namespace WUC = winrt::Microsoft::UI::Composition;
@@ -494,12 +504,8 @@ void XamlProfilerTap::HighlightVisual(uint64_t visualId)
         return;
     }
 
-    wchar_t targetBuf[40];
-    swprintf_s(targetBuf, L"xpid:%llx", visualId);
-    std::wstring target = targetBuf;
-
     // Search every live window's composition tree (one per XamlRoot) for the visual whose
-    // Comment matches; a picked visual can live in any window, not just the first one seen.
+    // identity matches; a picked visual can live in any window, not just the first one seen.
     std::vector<winrt::Microsoft::UI::Xaml::XamlRoot> roots = m_xamlRoots;
     if (roots.empty())
     {
@@ -507,11 +513,11 @@ void XamlProfilerTap::HighlightVisual(uint64_t visualId)
         return;
     }
 
-    // Depth-first search for the visual whose Comment matches, rooted at a given host visual.
+    // Depth-first search for the visual whose identity matches, rooted at a given host visual.
     WUC::Visual found{ nullptr };
     std::function<bool(WUC::Visual const&)> dfs = [&](WUC::Visual const& v) -> bool
     {
-        if (v.Comment() == winrt::hstring(target))
+        if (GetVisualId(v) == visualId)
         {
             found = v;
             return true;
@@ -544,14 +550,16 @@ void XamlProfilerTap::HighlightVisual(uint64_t visualId)
 
         // Not in this window's tree — tell the profiler which root was searched.
         wchar_t miss[160];
-        swprintf_s(miss, L"HighlightVisual: '%s' not found in root [%zu] XamlRoot=0x%p",
-            target.c_str(), thisIndex, (void*)winrt::get_abi(root));
+        swprintf_s(miss, L"HighlightVisual: visual id 0x%llx not found in root [%zu] XamlRoot=0x%p",
+            visualId, thisIndex, (void*)winrt::get_abi(root));
         SendTapInfo(miss);
     }
 
     if (!found)
     {
-        SendTapInfo(L"HighlightVisual: no live visual with matching Comment '" + target + L"' found in any tracked root");
+        wchar_t miss[96];
+        swprintf_s(miss, L"HighlightVisual: no live visual with id 0x%llx found in any tracked root", visualId);
+        SendTapInfo(miss);
         return;
     }
 
@@ -613,7 +621,9 @@ void XamlProfilerTap::HighlightVisual(uint64_t visualId)
     m_visualAdorner = adorner;
     m_visualAdornerParent = container;
 
-    TapLog(L"HighlightVisual: adorned live visual with Comment '" + target + L"'");
+    wchar_t success[80];
+    swprintf_s(success, L"HighlightVisual: adorned live visual id 0x%llx", visualId);
+    TapLog(success);
 }
 
 void XamlProfilerTap::ClearHighlight()
@@ -829,17 +839,15 @@ void XamlProfilerTap::CommitPick(InstanceHandle handle)
 {
     if (handle)
     {
-        // Report the composition visual responsible for the clicked element (its xpid
-        // comment) to the profiler log, so the user can see the specific sprite/container.
+        // Report the composition visual responsible for the clicked element.
         LogResponsibleVisual(handle);
 
         winrt::Windows::Data::Json::JsonObject obj = winrt::Windows::Data::Json::JsonObject();
         obj.SetNamedValue(L"TapType", winrt::Windows::Data::Json::JsonValue::CreateStringValue(L"Select"));
         SetNamedPointerValue(obj, L"Handle", handle);
 
-        // Also resolve the clicked element's composition visual id (its GetElementVisual:
-        // the xpid Comment if stamped, else the raw IVisual* pointer). The profiler uses
-        // it to find that visual node and glow its whole subtree in the IVisual/Comp tree.
+        // Also resolve GetElementVisual's IVisual identity. The profiler uses it to find
+        // that visual node and glow its whole subtree in the IVisual/Comp tree.
         uint64_t visualId = ResolveElementVisualId(handle);
         if (visualId)
             SetNamedPointerValue(obj, L"VisualId", static_cast<InstanceHandle>(visualId));
@@ -853,10 +861,8 @@ void XamlProfilerTap::CommitPick(InstanceHandle handle)
     StopPick();
 }
 
-// Resolve the clicked element's composition visual to a profiler-recognizable id: the
-// element's own (hand-in) visual from GetElementVisual. If that visual's Comment carries
-// the producer's "xpid:<hex>" stamp we return that hex (matches the profiler's WucVisual
-// node Id); otherwise we return the raw IVisual* pointer (get_abi) as the id.
+// Resolve the clicked element's composition visual to the same IVisual identity emitted
+// by the producer as the WucVisual node id.
 uint64_t XamlProfilerTap::ResolveElementVisualId(InstanceHandle handle)
 {
     namespace WUC = winrt::Microsoft::UI::Composition;
@@ -874,24 +880,10 @@ uint64_t XamlProfilerTap::ResolveElementVisualId(InstanceHandle handle)
         return 0;
 
     auto v = MUXH::ElementCompositionPreview::GetElementVisual(uie);
-
-    auto comment = v.Comment();
-    if (comment.size() >= 5 && std::wstring_view(comment).substr(0, 5) == L"xpid:")
-    {
-        uint64_t id = 0;
-        if (swscanf_s(comment.c_str() + 5, L"%llx", &id) == 1 && id)
-            return id;
-    }
-
-    return reinterpret_cast<uint64_t>(winrt::get_abi(v));
+    return GetVisualId(v);
 }
 
-// Resolve the clicked element to the composition visual responsible for painting it and
-// report that visual's identity + xpid Comment back to the profiler. We start from the
-// element's own (hand-in) visual; that container usually has no xpid stamp, so we descend
-// to the nearest descendant that carries an "xpid:" Comment -- that's the sprite/container
-// the producer recognizes as this element's visual. The id is get_abi(v) == the producer's
-// xpid == the node Id shown in the profiler.
+// Report the clicked element's composition visual identity.
 void XamlProfilerTap::LogResponsibleVisual(InstanceHandle handle)
 {
     namespace WUC = winrt::Microsoft::UI::Composition;
@@ -915,58 +907,16 @@ void XamlProfilerTap::LogResponsibleVisual(InstanceHandle handle)
     }
 
     auto elementVisual = MUXH::ElementCompositionPreview::GetElementVisual(uie);
+    std::wstring kind = L"Visual";
+    if (elementVisual.try_as<WUC::SpriteVisual>())          kind = L"SpriteVisual";
+    else if (elementVisual.try_as<WUC::ContainerVisual>())  kind = L"ContainerVisual";
 
-    // Walk the element's visual subtree for the first visual carrying an "xpid:" Comment.
-    WUC::Visual responsible{ nullptr };
-    std::wstring responsibleType;
-    std::function<bool(WUC::Visual const&)> findStamped = [&](WUC::Visual const& v) -> bool
-    {
-        auto comment = v.Comment();
-        if (comment.size() >= 5 && std::wstring_view(comment).substr(0, 5) == L"xpid:")
-        {
-            responsible = v;
-            if (v.try_as<WUC::SpriteVisual>())          responsibleType = L"SpriteVisual";
-            else if (v.try_as<WUC::ContainerVisual>())  responsibleType = L"ContainerVisual";
-            else                                        responsibleType = L"Visual";
-            return true;
-        }
-        if (auto c = v.try_as<WUC::ContainerVisual>())
-        {
-            for (auto const& child : c.Children())
-            {
-                if (findStamped(child))
-                    return true;
-            }
-        }
-        return false;
-    };
-    findStamped(elementVisual);
-
-    uint64_t elementVisualId = reinterpret_cast<uint64_t>(winrt::get_abi(elementVisual));
-
-    if (responsible)
-    {
-        uint64_t id = reinterpret_cast<uint64_t>(winrt::get_abi(responsible));
-        auto size = responsible.Size();
-        wchar_t msg[256];
-        swprintf_s(msg,
-            L"ResponsibleVisual: %s id=0x%llx comment='%s' size=(%.0f,%.0f)  [elementVisual=0x%llx]",
-            responsibleType.c_str(), id, responsible.Comment().c_str(),
-            size.x, size.y, elementVisualId);
-        SendTapInfo(msg);
-    }
-    else
-    {
-        // No xpid-stamped descendant: report the element's own (hand-in) visual instead.
-        std::wstring kind = L"Visual";
-        if (elementVisual.try_as<WUC::SpriteVisual>())          kind = L"SpriteVisual";
-        else if (elementVisual.try_as<WUC::ContainerVisual>())  kind = L"ContainerVisual";
-        wchar_t msg[256];
-        swprintf_s(msg,
-            L"ResponsibleVisual: no xpid-stamped visual found; element hand-in visual is %s id=0x%llx comment='%s'",
-            kind.c_str(), elementVisualId, elementVisual.Comment().c_str());
-        SendTapInfo(msg);
-    }
+    auto size = elementVisual.Size();
+    wchar_t msg[256];
+    swprintf_s(msg,
+        L"ResponsibleVisual: %s id=0x%llx size=(%.0f,%.0f)",
+        kind.c_str(), GetVisualId(elementVisual), size.x, size.y);
+    SendTapInfo(msg);
 }
 
 // Build the stack of overlapping elements at a point (in XamlRoot/host coordinates),

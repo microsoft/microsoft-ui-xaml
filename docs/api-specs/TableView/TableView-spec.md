@@ -500,6 +500,50 @@ Methods:
 | `GenerateElementCore(Object dataItem)` | Overridable method used by derived column types to create cell content. |
 | `IsReadOnly` (`Boolean`, default `false`) | Per-column opt-out. A read-only column is still a valid current cell for keyboard navigation, but cannot be edited. |
 | `CellEditingTemplate` (`DataTemplate`, default `null`) | Editing visual for any column type. A column with neither a `CellEditingTemplate` nor a built-in editor is not editable. |
+| `CellToolTipBinding` (`Binding`, default `null`) | Opt-in per-cell tooltip. The binding is evaluated against each row's data item; its value becomes the cell's tooltip content — a string, or anything a `ToolTip` can host. `null` or an empty string means no tooltip for that cell. Use an `IValueConverter` for computed content. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column (same shape as `TableViewTextColumn.Binding`). |
+| `HeaderToolTip` (`Object`, default `null`) | Opt-in tooltip for this column's header. The value is the tooltip's content — a string, or anything a `ToolTip` can host, but *not* a `ToolTip` itself: the control owns the `ToolTip` and its placement, so a `ToolTip` value is rejected and the header gets none. `null` or an empty string means no header tooltip. A `UIElement` is parented by that header's `ToolTip`, so each column needs its own instance. A dependency property, not a `Binding`: a header is not bound against a row, so there is nothing to defer. |
+
+### Cell tooltips
+
+Text cells render with `CharacterEllipsis` and no wrapping, so a value wider than its column is
+unreadable. `CellToolTipBinding` surfaces the full value:
+
+```xml
+<tabular:TableViewTextColumn Header="Notes"
+                             Binding="{Binding Notes}"
+                             CellToolTipBinding="{Binding Notes}" />
+```
+
+Because the tooltip is an ordinary binding it tracks the row's `DataContext`: a recycled row
+re-resolves its tooltips through the same inheritance that refreshes its cell text, and a source
+`PropertyChanged` updates a live tooltip in place. There is no invalidation API, and none is needed.
+
+The control owns the `ToolTip` and its placement (`PlacementMode.Mouse`), so the bound value is the
+tooltip's *content*, not a `ToolTip`. A `UIElement` is parented by that cell's `ToolTip`, so a
+converter must return a fresh element per evaluation. A tooltip the app sets inside the column's own
+cell template is never touched; the control's tooltip covers the rest of the cell.
+
+### Column header tooltips
+
+`HeaderToolTip` is the header-side counterpart, and covers the whole header cell — content, padding
+and sort affordance:
+
+```xml
+<tabular:TableViewTextColumn Header="Notes"
+                             Binding="{Binding Notes}"
+                             HeaderToolTip="Free-form notes captured at intake" />
+```
+
+Header cells are rebuilt rather than recycled, so the value is read from the column when the header
+is built and re-applied in place when it changes; there is no binding and no invalidation API.
+Placement and ownership match the cell path, including leaving an app-set tooltip alone.
+
+String content is reported as the header's UIA help text by
+`TableViewColumnHeaderAutomationPeer`, joined with the column's sort state when it has one — the
+header peer is virtual, so it publishes the text itself rather than through
+`AutomationProperties.HelpText`, and it reads the value from the column so the answer does not
+depend on whether the header is currently realized. As with cells, non-string content is
+mouse-only: pair it with `Header` text that carries the same information when it matters.
 
 ## TableViewTextColumn class
 
@@ -648,6 +692,16 @@ How an edit is being closed.
 | `TableViewBeginningEditEventArgs` | `Item`, `Column` (read-only); `Cancel` (settable) |
 | `TableViewCellEditEndingEventArgs` | `Item`, `Column`, `EditAction` (read-only); `Cancel` (settable) |
 
+### Cell tooltip accessibility
+
+The control owns the `ToolTip`; the bound value is its content, not a `ToolTip` to attach. A `UIElement` is parented by that cell's `ToolTip`, so a converter returns a fresh element per evaluation.
+
+- String tooltip text is published as the cell's `AutomationProperties.HelpText`, and retracted on recycle and when a cell edit begins.
+- `TableViewCellAutomationPeer` suppresses it at UIA query time when it equals the cell's own UIA text, so Narrator does not read it twice. Suppression is gated on the control's ownership record, so text the app set is never dropped, and it is resolved at query time because the cell's own binding may not have produced a value when the tooltip is applied.
+- The popup is **pointer-only**: cell focus in `TableView` is row-level, so there is no cell element for the framework's keyboard-tooltip path to fire on. The UIA pairing is what serves keyboard and screen-reader users, which is why it is not optional.
+- Placement is control-owned and fixed (`PlacementMode.Mouse`), matching `TabViewItem`. An app needing different placement uses a tooltip inside its own cell content template.
+- Non-string content is **mouse-only** and has no accessible representation: no `HelpText` is published (it cannot be stringified), and the cell wrapper is internal so an app cannot set `HelpText` on it either. Keyboard and screen-reader users get nothing. `TabViewItem` and `NavigationViewItem` refuse non-string tooltip content outright for this reason; `TableView` allows it, so **use a converter that returns text whenever the value must be accessible**. Reaching parity needs a public cell element, which is post-v1.
+
 ## Selection event args
 
 | Type | Members |
@@ -747,6 +801,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Object Header;
         Microsoft.UI.Xaml.DataTemplate HeaderTemplate;
         Microsoft.UI.Xaml.Controls.DataTemplateSelector HeaderTemplateSelector;
+        Object HeaderToolTip;
         Microsoft.UI.Xaml.GridLength Width;
         Double MinWidth;
         Double MaxWidth;
@@ -759,10 +814,12 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
 
         Boolean IsReadOnly;
         Microsoft.UI.Xaml.DataTemplate CellEditingTemplate;
+        Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
 
         static Microsoft.UI.Xaml.DependencyProperty HeaderProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateSelectorProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty HeaderToolTipProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty WidthProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty MinWidthProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty MaxWidthProperty { get; };

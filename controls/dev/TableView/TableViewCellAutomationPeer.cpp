@@ -9,6 +9,7 @@
 #include "TableViewColumnHeaderAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
+#include "TableViewToolTipHelpers.h"
 #include "TableViewCellAutomationPeer.properties.cpp"
 
 #include <string>
@@ -129,6 +130,28 @@ winrt::hstring TableViewCellAutomationPeer::GetCellValueText()
     return {};
 }
 
+hstring TableViewCellAutomationPeer::GetHelpTextCore()
+{
+    auto const helpText = __super::GetHelpTextCore();
+    if (helpText.empty())
+    {
+        return helpText;
+    }
+
+    auto const record = TableViewDetails::GetRecord(Owner().try_as<winrt::FrameworkElement>());
+
+    // Resolved here, not at attach, where the cell's binding may not have produced a value yet.
+    // Gated on the record so text the app set is never dropped.
+    if (record && !record->PublishedHelpText.empty() &&
+        helpText == record->PublishedHelpText &&
+        helpText == GetCellValueText())
+    {
+        return {};
+    }
+
+    return helpText;
+}
+
 int32_t TableViewCellAutomationPeer::GetRowIndex()
 {
     if (auto const row = m_row.get())
@@ -206,7 +229,13 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewCellAutomationPeer::
             if (auto const owner = winrt::get_self<TableViewRow>(row)->GetOwningTableView())
             {
                 auto const headerPeer = winrt::make<TableViewColumnHeaderAutomationPeer>(owner, column);
-                headers.push_back(ProviderFromPeer(headerPeer));
+
+                // A provider array must not contain nulls - UIA marshals every element. An empty
+                // array correctly reports "this cell has no reachable column header".
+                if (auto const provider = ProviderFromPeer(headerPeer))
+                {
+                    headers.push_back(provider);
+                }
             }
         }
     }

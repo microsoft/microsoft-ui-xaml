@@ -1546,7 +1546,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="InkToolbar">
-          <StackPanel x:Name="Panel" Orientation="Horizontal" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Margin="2,2,2,2" />
+          <StackPanel x:Name="Panel" Orientation="Horizontal" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}" Margin="2,2,2,2" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>

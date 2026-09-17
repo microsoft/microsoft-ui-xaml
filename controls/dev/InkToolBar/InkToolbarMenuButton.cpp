@@ -12,6 +12,7 @@
 #include "InkToolbarMenuButton.h"
 #include "InkToolbarMenuButtonAutomationPeer.h"
 #include "InkToolbar.h"
+#include "InkToolbarTrace.h"
 
 InkToolbarMenuButton::InkToolbarMenuButton()
 {
@@ -138,8 +139,9 @@ void InkToolbarMenuButton::UpdateMenuButtonToolTip()
     {
         localizedToolName = GetLocalizedToolName();
     }
-    catch (winrt::hresult_error const&)
+    catch (winrt::hresult_error const& e)
     {
+        InkToolbarLogHResult(e.code(), L"menu button name lookup");
     }
     if (!localizedToolName.empty())
     {
@@ -165,17 +167,31 @@ bool InkToolbarMenuButton::HasL3()
 
 bool InkToolbarMenuButton::IsL3Open()
 {
-    // Container-side open tracking is restored when InkToolbar_Partial is ported; report closed here.
+    if (auto toolbar = GetParentInkToolbar())
+    {
+        return winrt::get_self<InkToolbar>(toolbar)->IsL3Open(*this);
+    }
     return false;
 }
 
 void InkToolbarMenuButton::OpenL3()
 {
+    // Route through the toolbar so the stencil L3 content is built and the open flyout is tracked.
+    if (auto toolbar = GetParentInkToolbar())
+    {
+        winrt::get_self<InkToolbar>(toolbar)->OpenL3(*this);
+        return;
+    }
     winrt::FlyoutBase::ShowAttachedFlyout(*this);
 }
 
 void InkToolbarMenuButton::CloseL3()
 {
+    if (auto toolbar = GetParentInkToolbar())
+    {
+        winrt::get_self<InkToolbar>(toolbar)->CloseL3(*this);
+        return;
+    }
     if (auto flyout = winrt::FlyoutBase::GetAttachedFlyout(*this))
     {
         flyout.Hide();

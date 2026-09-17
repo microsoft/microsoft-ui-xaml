@@ -37,7 +37,7 @@ void InkToolbarPenButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarPenButton>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnMaxStrokeWidthPropertyChanged));
     }
     if (!s_MinStrokeWidthProperty)
     {
@@ -48,7 +48,7 @@ void InkToolbarPenButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarPenButton>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnMinStrokeWidthPropertyChanged));
     }
     if (!s_PaletteProperty)
     {
@@ -59,7 +59,7 @@ void InkToolbarPenButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarPenButton>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IVector<winrt::Brush>>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnPalettePropertyChanged));
     }
     if (!s_SelectedBrushProperty)
     {
@@ -70,7 +70,7 @@ void InkToolbarPenButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarPenButton>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Brush>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnSelectedBrushPropertyChanged));
     }
     if (!s_SelectedBrushIndexProperty)
     {
@@ -81,7 +81,7 @@ void InkToolbarPenButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarPenButton>(),
                 false /* isAttached */,
                 ValueHelper<int>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnSelectedBrushIndexPropertyChanged));
     }
     if (!s_SelectedStrokeWidthProperty)
     {
@@ -92,7 +92,7 @@ void InkToolbarPenButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarPenButton>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnSelectedStrokeWidthPropertyChanged));
     }
 }
 
@@ -105,6 +105,54 @@ void InkToolbarPenButtonProperties::ClearProperties()
     s_SelectedBrushIndexProperty = nullptr;
     s_SelectedStrokeWidthProperty = nullptr;
     InkToolbarToolButton::ClearProperties();
+}
+
+void InkToolbarPenButtonProperties::OnMaxStrokeWidthPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbarPenButton>();
+    winrt::get_self<InkToolbarPenButton>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarPenButtonProperties::OnMinStrokeWidthPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbarPenButton>();
+    winrt::get_self<InkToolbarPenButton>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarPenButtonProperties::OnPalettePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbarPenButton>();
+    winrt::get_self<InkToolbarPenButton>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarPenButtonProperties::OnSelectedBrushPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbarPenButton>();
+    winrt::get_self<InkToolbarPenButton>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarPenButtonProperties::OnSelectedBrushIndexPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbarPenButton>();
+    winrt::get_self<InkToolbarPenButton>(owner)->OnPropertyChanged(args);
+}
+
+void InkToolbarPenButtonProperties::OnSelectedStrokeWidthPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkToolbarPenButton>();
+    winrt::get_self<InkToolbarPenButton>(owner)->OnPropertyChanged(args);
 }
 
 void InkToolbarPenButtonProperties::MaxStrokeWidth(double value)

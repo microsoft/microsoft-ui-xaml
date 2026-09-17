@@ -6,9 +6,14 @@
 #include "TableView.h"
 #include "TableViewColumnHeaderAutomationPeer.g.h"
 
-// UIA peer for a TableView column header; reports header name, type, and bounds.
-// Distinct per-column RuntimeIds are not yet implemented; peers share the TableView
-// owner-derived identity. TableView ownership allows pre-realization enumeration.
+#include <array>
+#include <cstdint>
+
+// UIA peer for a TableView column header; reports header name, type, identity, and bounds.
+// The peer takes the TableView as its owner so headers can be enumerated before the header
+// templates realize. Because every header peer therefore shares the same owner, the identity
+// the owner would supply is not unique, so this peer derives its own stable per-column
+// RuntimeId and AutomationId from the column instead - see GetRuntimeIdCore.
 class TableViewColumnHeaderAutomationPeer :
     public ReferenceTracker<TableViewColumnHeaderAutomationPeer, winrt::implementation::TableViewColumnHeaderAutomationPeerT>
 {
@@ -19,8 +24,21 @@ public:
     hstring GetClassNameCore();
     hstring GetNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
-    // Header peers share the TableView owner, so RuntimeIds currently collide; expose
-    // visible column position so AT can distinguish columns until distinct RuntimeIds are implemented.
+    // Stable, distinct per-column identity. Both are derived from the column rather than the
+    // shared TableView owner, so headers are individually addressable by assistive technology.
+    winrt::com_array<int32_t> GetRuntimeIdCore();
+    hstring GetAutomationIdCore();
+    // Reports the column's current sort state, so a screen-reader user can tell a sorted header
+    // from an unsorted one without relying on the chevron.
+    hstring GetHelpTextCore();
+    // Invoke rather than Toggle: the sort cycle is not a two-state toggle, and the number of
+    // states depends on the column's SortCycle. Only offered for a column the control will
+    // actually sort - see GetPatternCore.
+    winrt::IInspectable GetPatternCore(winrt::PatternInterface patternInterface);
+
+    // IInvokeProvider
+    void Invoke();
+    // Complements the distinct RuntimeId: AT announces "column i of n" for spatial context.
     int32_t GetPositionInSetCore();
     int32_t GetSizeOfSetCore();
 
@@ -33,7 +51,11 @@ public:
 
 private:
     winrt::FrameworkElement GetHeaderElement();
+    bool IsSortableColumn();
     int32_t GetColumnIndex();
 
     winrt::weak_ref<winrt::TableViewColumn> m_column{ nullptr };
+    // Captured at construction from the column's stable IUnknown so identity survives the
+    // column being released; the peer must not resurrect the column just to report an id.
+    std::array<int32_t, 2> m_columnRuntimeIdParts{ 0, 0 };
 };

@@ -7,6 +7,7 @@
 #include "TableViewColumn.h"
 #include "TableViewRow.h"
 #include "TableViewCellsPanel.h"
+#include "TableViewToolTipHelpers.h"
 #include "TVDiag.h"
 
 #include <algorithm>
@@ -120,14 +121,21 @@ void TableView::PinFrozenColumnsForRow(const winrt::TableViewRow& row)
 
 void TableView::DetachAllColumnOwners()
 {
+    bool purgedSortState = false;
     for (auto const& weakCol : m_trackedColumns)
     {
         if (auto col = weakCol.get())
         {
             winrt::get_self<TableViewColumn>(col)->SetOwningTableViewInternal(nullptr);
+            purgedSortState |= PurgeColumnFromSortState(col);
         }
     }
     m_trackedColumns.clear();
+
+    if (purgedSortState)
+    {
+        QueueClearSortAfterColumnRemoval();
+    }
 }
 
 void TableView::TrackColumnsFromVector(winrt::IObservableVector<winrt::TableViewColumn> const& columns)
@@ -251,6 +259,13 @@ void TableView::OnColumnsVectorChanged(
             if (auto col = m_trackedColumns[index].get())
             {
                 winrt::get_self<TableViewColumn>(col)->SetOwningTableViewInternal(nullptr);
+                // A column that has left Columns must not stay the active sort. Reshaping here
+                // would run inside the VectorChanged callback, so the clear is deferred until the
+                // collection has settled.
+                if (PurgeColumnFromSortState(col))
+                {
+                    QueueClearSortAfterColumnRemoval();
+                }
             }
             m_trackedColumns.erase(m_trackedColumns.begin() + index);
         }
@@ -264,6 +279,10 @@ void TableView::OnColumnsVectorChanged(
             if (oldCol)
             {
                 winrt::get_self<TableViewColumn>(oldCol)->SetOwningTableViewInternal(nullptr);
+                if (PurgeColumnFromSortState(oldCol))
+                {
+                    QueueClearSortAfterColumnRemoval();
+                }
             }
             if (index < sender.Size())
             {
@@ -408,6 +427,26 @@ void TableView::OnColumnHeaderChanged(const winrt::TableViewColumn& column)
         winrt::get_self<TableViewColumn>(column)->ResetDesiredWidthInternal();
     }
     InvalidateMeasure();
+}
+
+void TableView::OnColumnHeaderToolTipChanged(const winrt::TableViewColumn& column)
+{
+    if (!column)
+    {
+        return;
+    }
+
+    // Only the realized header carries a tooltip; RebuildHeaders reads the current value when it runs.
+    auto const host = m_headerHost.get();
+    if (!host)
+    {
+        return;
+    }
+
+    if (auto const headerCell = TableViewCellsPanel::CellForColumn(host, column))
+    {
+        TableViewDetails::ApplyHeaderToolTip(headerCell, column.HeaderToolTip());
+    }
 }
 
 void TableView::OnColumnFrozenEdgeChanged(const winrt::TableViewColumn& column)

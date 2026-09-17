@@ -5,11 +5,191 @@
 #include "common.h"
 #include "TableView.h"
 #include "TableViewRow.h"
+#include "ResizeGripper.h"
+#include "TableViewGroupHeader.h"
 #include "GridCoordinateHelper.h"
+#include "ResourceAccessor.h"
+#include "Utils.h"
 
 #include <algorithm>
+#include <cmath>
 
 // Row keyboard navigation and its focus/measurement helpers live here.
+
+namespace
+{
+    bool IsKeyDown(winrt::VirtualKey key)
+    {
+        return (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(key) &
+            winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    }
+
+    // Row cells carry the same column Tag as header cells, so finding a tagged ancestor is not
+    // enough: the walk must actually reach the header host, or a focused cell (an open editor,
+    // most visibly) would resolve to a column and let arrow keys resize it.
+    // Returns the focused header cell in headerCell, so a caller that needs the cell does not have
+    // to scan the header band again to find what this walk already passed through.
+    winrt::TableViewColumn ResolveFocusedHeaderColumn(
+        const winrt::IInspectable& source,
+        const winrt::Panel& headerHost,
+        winrt::FrameworkElement& headerCell)
+    {
+        headerCell = nullptr;
+        if (!headerHost)
+        {
+            return nullptr;
+        }
+
+        winrt::TableViewColumn candidate{ nullptr };
+        auto current = source.try_as<winrt::DependencyObject>();
+        while (current)
+        {
+            if (current == headerHost)
+            {
+                return candidate;
+            }
+
+            if (!candidate)
+            {
+                if (auto const element = current.try_as<winrt::FrameworkElement>())
+                {
+                    candidate = element.Tag().try_as<winrt::TableViewColumn>();
+                    if (candidate)
+                    {
+                        headerCell = element;
+                    }
+                }
+            }
+            current = winrt::VisualTreeHelper::GetParent(current);
+        }
+
+        headerCell = nullptr;
+        return nullptr;
+    }
+
+    // The focused header is the element AT is on, so attribute the announcement to its peer.
+    void AnnounceColumnWidthOn(const winrt::IInspectable& announcer, const winrt::TableViewColumn& column)
+    {
+        auto const element = announcer.try_as<winrt::UIElement>();
+        if (!element || !column)
+        {
+            return;
+        }
+
+        auto peer = winrt::FrameworkElementAutomationPeer::FromElement(element);
+        if (!peer)
+        {
+            return;
+        }
+
+        winrt::hstring headerName = peer.GetName();
+        if (headerName.empty())
+        {
+            if (auto const stringable = column.Header().try_as<winrt::IStringable>())
+            {
+                headerName = stringable.ToString();
+            }
+        }
+
+        // Whole pixels: sub-pixel precision is noise in an announcement.
+        auto const width = winrt::to_hstring(static_cast<int32_t>(std::lround(column.ActualWidth())));
+
+        try
+        {
+            auto const format = ResourceAccessor::GetLocalizedStringResource(SR_TableViewColumnWidthChanged);
+            if (format.empty())
+            {
+                return;
+            }
+
+            peer.RaiseNotificationEvent(
+                winrt::AutomationNotificationKind::Other,
+                winrt::AutomationNotificationProcessing::MostRecent,
+                StringUtil::FormatString(format, headerName.c_str(), width.c_str()),
+                L"TableViewColumnWidthChangedActivityId");
+        }
+        catch (...)
+        {
+            // The host app may not merge the control's PRI; a missing string must not break resize.
+        }
+    }
+}
+
+// Both input paths end in DragCompleted, so the announcement lives there rather than in the key
+// handler: a pointer resize was otherwise completely silent to assistive technology.
+void TableView::AnnounceColumnWidth(const winrt::IInspectable& announcer, const winrt::TableViewColumn& column)
+{
+    AnnounceColumnWidthOn(announcer, column);
+}
+
+// Left/Right resizes the column whose header has focus; Shift takes the large step, and Ctrl is
+// accepted as an alias. Tab moves between headers, so the arrows are free to resize. Driving the
+// gripper's own Begin/Try/End keeps pointer and keyboard on one clamping path.
+bool TableView::TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& args)
+{
+    if (args.Handled())
+    {
+        return false;
+    }
+
+    // Escape aborts a pointer drag in flight; the host reverts to the width it captured at
+    // DragStarted. Checked before the arrow keys because it is valid regardless of focus.
+    if (args.Key() == winrt::Windows::System::VirtualKey::Escape)
+    {
+        if (auto const drag = m_activeColumnResizeDrag)
+        {
+            CancelColumnResizeDrag();
+            args.Handled(true);
+            return true;
+        }
+        return false;
+    }
+
+    const auto key = args.Key();
+    if (key != winrt::Windows::System::VirtualKey::Left &&
+        key != winrt::Windows::System::VirtualKey::Right)
+    {
+        return false;
+    }
+
+    // Alt is reserved: Alt alone opens the window menu.
+    if (IsKeyDown(winrt::VirtualKey::Menu))
+    {
+        return false;
+    }
+
+    if (!CanUserResizeColumns())
+    {
+        return false;
+    }
+
+    winrt::FrameworkElement headerCell{ nullptr };
+    auto const column = ResolveFocusedHeaderColumn(args.OriginalSource(), m_headerHost.get(), headerCell);
+    if (!column || !column.CanResize())
+    {
+        return false;
+    }
+
+    auto const gripper = FindResizeGripperInCell(headerCell);
+    if (!gripper)
+    {
+        return false;
+    }
+
+    // The gripper owns direction, the RTL mirror, the step size and the Shift multiplier: one
+    // implementation for both key paths.
+    if (!gripper.TryKeyboardStep(key))
+    {
+        return false;
+    }
+
+    // The gripper carries no UIA value, so the resize is otherwise silent. The announcement is
+    // raised from DragCompleted, which both input paths reach.
+
+    // Consume even at a bound, so the key does not fall through to focus navigation.
+    args.Handled(true);
+    return true;
+}
 
 void TableView::OnPreviewKeyDownForNavigation(
     const winrt::IInspectable& /*sender*/,
@@ -60,6 +240,13 @@ void TableView::OnKeyDownForNavigation(
         }
     }
 
+    // Column resize from a focused header: after the editing guard, so an open editor keeps its
+    // arrow keys, and before row navigation, since the header band is not part of it.
+    if (TryHandleHeaderColumnResizeKey(args))
+    {
+        return;
+    }
+
     // Registered with handledEventsToo so navigation can still run after the ancestor
     // PART_BodyScroller marks nav keys Handled for scrolling. But handledEventsToo also
     // surfaces keys a focused *descendant* consumed (e.g. an editor/ComboBox inside a
@@ -72,11 +259,18 @@ void TableView::OnKeyDownForNavigation(
         bool focusOnOurRow = false;
         if (auto const root = XamlRoot())
         {
-            if (auto const focusedRow = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::TableViewRow>())
+            // A group header is as much "one of our containers" as a data row: both are elements of
+            // m_rowsRepeater and both are valid arrow-navigation anchors. Recognizing only rows here
+            // ate keys pressed while a header had focus (the scroller marks nav keys Handled before
+            // this bubbling handler runs, so the guard returned early and no navigation happened).
+            if (auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::UIElement>())
             {
-                if (auto const repeater = m_rowsRepeater.get())
+                if (focused.try_as<winrt::TableViewRow>() || focused.try_as<winrt::TableViewGroupHeader>())
                 {
-                    focusOnOurRow = repeater.GetElementIndex(focusedRow) >= 0;
+                    if (auto const repeater = m_rowsRepeater.get())
+                    {
+                        focusOnOurRow = repeater.GetElementIndex(focused) >= 0;
+                    }
                 }
             }
         }
@@ -127,9 +321,7 @@ void TableView::OnKeyDownForNavigation(
     // Ctrl+Arrow moves the focus cursor WITHOUT selecting, matching ListViewBase. Without it a
     // keyboard-only user cannot review other rows and come back, and every row they pass through
     // raises SelectionChanged plus UIA selection events - a selection storm for a screen reader.
-    const bool isControlDown =
-        (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(winrt::VirtualKey::Control) &
-            winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    const bool isControlDown = IsKeyDown(winrt::VirtualKey::Control);
 
     // Focus was not on one of our rows (the user clicked a header, tabbed away and back, or closed
     // a dialog). With selection on, resume relative-navigation from the SELECTED row rather than
@@ -270,12 +462,20 @@ int32_t TableView::GetFocusedRowIndex() const
                 winrt::DependencyObject node = focused;
                 while (node)
                 {
-                    if (auto row = node.try_as<winrt::TableViewRow>())
+                    // Both data rows and group headers are elements of m_rowsRepeater, so either is a
+                    // valid focus anchor for arrow navigation. A header MUST be recognized here: if
+                    // it reports -1, relative navigation falls back to row 0 / the selected row and
+                    // fights the framework's built-in focus move (skipped rows, focus bouncing back
+                    // to the previous header, and selection landing on the wrong row).
+                    if (node.try_as<winrt::TableViewRow>() || node.try_as<winrt::TableViewGroupHeader>())
                     {
-                        const auto idx = repeater.GetElementIndex(row);
-                        if (idx >= 0)
+                        if (auto const element = node.try_as<winrt::UIElement>())
                         {
-                            return idx;
+                            const auto idx = repeater.GetElementIndex(element);
+                            if (idx >= 0)
+                            {
+                                return idx;
+                            }
                         }
                         // Nested TableViews can contribute inner rows; keep walking for ours.
                     }
@@ -297,18 +497,41 @@ int32_t TableView::GetEstimatedRowsPerPage()
         double rowH = GetDensityRowMinHeight(); // Density is the best fallback before realized rows can be sampled.
         if (auto repeater = m_rowsRepeater.get())
         {
+            // A grouped projection realizes group headers alongside data rows, and a header is
+            // typically taller than a row. Paging moves the focused *data* row, so measure a data
+            // row; only fall back to any realized element when no row has been realized yet.
+            double anyChildH = 0.0;
             const int32_t childCount = winrt::VisualTreeHelper::GetChildrenCount(repeater);
             for (int32_t i = 0; i < childCount; i++)
             {
-                if (auto el = winrt::VisualTreeHelper::GetChild(repeater, i).try_as<winrt::FrameworkElement>())
+                auto const child = winrt::VisualTreeHelper::GetChild(repeater, i);
+                auto const el = child.try_as<winrt::FrameworkElement>();
+                if (!el)
                 {
-                    const auto h = el.ActualHeight();
-                    if (h > 0)
-                    {
-                        rowH = h;
-                        break;
-                    }
+                    continue;
                 }
+
+                const auto h = el.ActualHeight();
+                if (h <= 0)
+                {
+                    continue;
+                }
+
+                if (child.try_as<winrt::TableViewRow>())
+                {
+                    anyChildH = h;
+                    break;
+                }
+
+                if (anyChildH <= 0)
+                {
+                    anyChildH = h;
+                }
+            }
+
+            if (anyChildH > 0)
+            {
+                rowH = anyChildH;
             }
         }
 

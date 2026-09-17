@@ -22,6 +22,7 @@ public:
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
     hstring GetClassNameCore();
     hstring GetNameCore();
+    hstring GetHelpTextCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
 
     // IGridItemProvider — per-cell coordinates in the owning TableView.

@@ -1,13 +1,14 @@
 # TableView sample
 
-A small, self-contained WinUI 3 desktop app that exercises the live public API of the
+A small WinUI 3 desktop app that exercises the live public API of the
 `Microsoft.UI.Xaml.Controls.Tabular.TableView` control. The left panel lets you tweak columns,
 sizing, headers, grid lines, density, backgrounds, and more while the table updates in real time.
 
-`TableView` currently ships as a **split binary** (`Microsoft.UI.Xaml.Controls.Tabular.dll`) that
-is not yet available through the WindowsAppSDK NuGet package, so this sample links the locally built
-control and needs a few build workarounds (described below). They all disappear once the control
-ships in-box. Deeper architecture notes live in [AGENTS.md](AGENTS.md).
+`TableView` ships in `Microsoft.UI.Xaml.Controls.Tabular.dll`, separate from the main framework DLL,
+but its API is published through the WindowsAppSDK NuGet package: type information reaches the
+public winmd, activation registrations are emitted, and the control's theme resources ship and
+resolve. So this sample is an **ordinary consumer** — it references the package and does nothing
+special, exactly like the [ChartApp](../ChartApp) samples.
 
 ## Prerequisites
 
@@ -20,57 +21,62 @@ ships in-box. Deeper architecture notes live in [AGENTS.md](AGENTS.md).
 
 ## Build
 
-From the repo root:
+`TableView` is not in any published `Microsoft.WindowsAppSDK.WinUI` package yet, so this sample can
+only build against a **locally packed** component. Building the project on its own resolves the
+package from the feed and fails with `CS0234: The type or namespace name 'Tabular' does not exist`.
 
-**1. Build the Tabular control** — produces `Microsoft.UI.Xaml.Controls.Tabular.dll` and its WinMD,
-which the sample consumes:
-
-```
-.\initrun.ps1 controls\Build.cmd tabular
-```
-
-**2. Build the sample:**
+The supported flow packs the component and passes the matching version for you:
 
 ```
-.\initrun.ps1 msb /q /restore Samples\TableViewSampleApp\TableViewSampleApp.csproj /p:Platform=x64 /p:RuntimeIdentifier=win-x64
+.\Build.cmd product
+.\Build.cmd samples
 ```
 
-### What the sample project does for you
+To iterate on just this app, pack once and point the build at that version:
 
-Because `TableView` is a split binary that isn't in WinAppSDK/NuGet yet, the project automates a few
-workarounds during build:
+```
+.\pack.component.cmd /version 3.0.0-mylocal
+.\initrun.ps1 msb /q /restore Samples\TableViewSampleApp\TableViewSampleApp.csproj /p:Platform=x64 /p:WinUIVersion=3.0.0-mylocal
+```
 
-- **Stages `Microsoft.UI.Xaml.Controls.Tabular.dll` next to the EXE.**
-  *Why:* the control is a separate binary; without the DLL, activation fails with
-  `CLASS_E_CLASSNOTAVAILABLE`.
-- **Regenerates the CsWinRT projection from the freshly built WinMD.**
-  *Why:* keeps the generated projection in sync with the built control and avoids `E_NOINTERFACE`
-  caused by stale metadata.
-- **Includes the TableView theme resources, sourced directly from the control.**
-  *Why:* the split binary doesn't deploy its theme resources to consuming apps; without them the
-  control renders unstyled or blank. The sample references the control's resources at their
-  canonical locations (and the built `generic.xaml`) rather than checking in copies, so they can
-  never drift from the control.
-- **Builds as a self-contained, unpackaged app** (`WindowsAppSdkSelfContained=true`,
-  `WindowsPackageType=None`).
-  *Why:* bundles the required Windows App Runtime dependencies for unpackaged execution.
-- **Merges the InteractiveExperiences app manifest.**
-  *Why:* registers the activatable classes missing from the local mock package; without it, startup
-  fails with `REGDB_E_CLASSNOTREG`.
+Re-run `pack.component.cmd` after every control change — NuGet caches by version, so reuse the
+version only if you also clear `packages\microsoft.windowsappsdk.winui\`, and prefer a fresh version
+string when in doubt.
 
 ## Run
-
-The self-contained, unpackaged executable is produced at:
 
 ```
 BuildOutput\obj\amd64chk\Samples\TableViewSampleApp\TableViewSampleApp.exe
 ```
 
-Launch it directly — the required control DLL and runtime dependencies are staged alongside it.
+## Using TableView in your own app
+
+Reference `Microsoft.WindowsAppSDK.WinUI` and use the control. In `App.xaml`, merge
+`XamlControlsResources` and `TabularControlsResources` — the latter is Tabular's own theme-resource
+dictionary, the exact analogue of `XamlControlsResources` for MUXC. Everything else the control
+needs (its default style, theme XBFs and `.pri`) resolves from the package, so there is no URI to
+configure and nothing to compile out of the control source tree.
+
+`TabularControlsResources` is required, not optional: `TableView`'s column-header style resolves
+`SortIndicatorForeground`, which is defined in Tabular's theme resources because `SortIndicator`
+ships in the Tabular DLL rather than in MUXC. Without the merge the app throws
+`XamlParseException 0x802B000A` during its first layout pass, which surfaces as a `0xC000027B`
+stowed exception a few seconds after launch.
+
+Declare columns, or the table renders rows with no header row and no cells:
+
+```xml
+<tabular:TableView x:Name="Table">
+  <tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}" />
+  <tabular:TableViewTextColumn Header="Age"  Binding="{Binding Age}" />
+</tabular:TableView>
+```
+
+`TableView` is `[MUX_PREVIEW]`, so C# usage raises `CS8305` and XAML usage raises `WMC1501`
+("for evaluation purposes only"). This sample suppresses `CS8305`; the XAML warnings are left
+visible on purpose.
 
 ## What it demonstrates
-
-The left panel exercises these live-tweakable API surfaces:
 
 - Column `Width` (Auto / Pixel / Star), `MinWidth`, `MaxWidth`
 - Add / remove / hide columns
@@ -84,13 +90,14 @@ The left panel exercises these live-tweakable API surfaces:
 - `EmptyTemplate`
 - `TableViewTextColumn` and `TableViewTemplateColumn` (custom cell content)
 
-## Known issue
+The **Filter / sort / group** page exercises the data-shaping surface:
 
-Using an `EmptyTemplate` that contains a `FontIcon` can crash at startup while the empty state is
-first shown. Prefer text or shape content in the `EmptyTemplate` until this is resolved.
+- `TableViewSource.Filter` / `ClearFilter` — text and predicate filters
+- `TableViewSource.GroupBy` / `ClearGroupBy` — grouping by a value-type key
+- `TableViewSource.Sort` / `ClearSort` — programmatic sort with `SortDirection`
+- `TableView.CanUserSortColumns`, `SortByColumn`, `ClearSort`, `Sorting` / `Sorted`
+- `GroupHeaderTemplate` (custom vs. built-in), `ExpandAllGroups` / `CollapseAllGroups`
 
 ## More detail
 
-For the full build architecture — why the projection is regenerated, why the app is built
-self-contained and unpackaged, how the theme resources and control DLL are staged, and how the
-app manifest is augmented — see [AGENTS.md](AGENTS.md).
+See [AGENTS.md](AGENTS.md).

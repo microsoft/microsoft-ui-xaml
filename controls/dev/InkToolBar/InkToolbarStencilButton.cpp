@@ -14,6 +14,7 @@
 #include "ButtonManager.h"
 #include "InkToolbar.h"
 #include "ResourceAccessor.h"
+#include "InkToolbarTrace.h"
 
 namespace
 {
@@ -60,7 +61,8 @@ namespace
     winrt::InkToolbarFlyoutItem MakeFlyoutItem(
         std::wstring_view name,
         std::wstring_view automationId,
-        wchar_t const* glyph)
+        wchar_t const* glyph,
+        wchar_t const* labelResourceKey)
     {
         winrt::InkToolbarFlyoutItem item{};
         item.Name(winrt::hstring{ name });
@@ -85,9 +87,18 @@ namespace
         winrt::Grid::SetColumn(icon, 0);
         grid.Children().Append(icon);
 
-        // The localized item name is a resource gap in the lift (empty); the TextBlock is still
-        // created so the layout matches the UWP two-column template.
+        // Localized display name for the flyout item (UWP stencil L3 Ruler/Protractor labels).
+        // Guard the lookup so a missing resource degrades to an empty label instead of propagating out
+        // of OnApplyTemplateCore (parity with InkToolbarToolButton::OnApplyTemplate).
         winrt::TextBlock text{};
+        try
+        {
+            text.Text(ResourceAccessor::GetLocalizedStringResource(labelResourceKey));
+        }
+        catch (winrt::hresult_error const& e)
+        {
+            InkToolbarLogHResult(e.code(), L"stencil flyout item label lookup");
+        }
         text.VerticalAlignment(winrt::VerticalAlignment::Center);
         text.Margin(winrt::ThicknessHelper::FromLengths(0, 0, 12, 0));
         winrt::Grid::SetColumn(text, 1);
@@ -163,8 +174,8 @@ void InkToolbarStencilButton::OnApplyTemplateCore()
             winrt::StackPanel panel{};
             panel.Name(L"InkToolbarStencilButtonFlyoutContent");
             panel.Margin(winrt::ThicknessHelper::FromLengths(0, 1, 0, 1));
-            panel.Children().Append(MakeFlyoutItem(STENCIL_RULERITEMNAME, L"InkToolbarStencilRuler", RULER_ICON));
-            panel.Children().Append(MakeFlyoutItem(STENCIL_PROTRACTORITEMNAME, L"InkToolbarStencilProtractor", PROTRACTOR_ICON));
+            panel.Children().Append(MakeFlyoutItem(STENCIL_RULERITEMNAME, L"InkToolbarStencilRuler", RULER_ICON, SR_InkToolbarStencilRulerName));
+            panel.Children().Append(MakeFlyoutItem(STENCIL_PROTRACTORITEMNAME, L"InkToolbarStencilProtractor", PROTRACTOR_ICON, SR_InkToolbarStencilProtractorName));
             flyout.Content(panel);
         }
     }
@@ -331,6 +342,7 @@ void InkToolbarStencilButton::SetupL3(wchar_t const* itemName)
         auto itemAsControl = FindChild(flyoutContent, itemName);
         if (!itemAsControl)
         {
+            InkToolbarLogHResult(E_UNEXPECTED, L"SetupL3: stencil L3 item missing");
             throw winrt::hresult_error(E_UNEXPECTED, L"SetupL3: stencil L3 item missing.");
         }
 

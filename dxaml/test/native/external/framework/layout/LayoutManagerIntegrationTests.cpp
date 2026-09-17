@@ -372,6 +372,93 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::WindowHelper->WaitForIdle();
     }
 
+    void LayoutManagerIntegrationTests::ValidateEffectiveViewportChangedWithNonInvertibleTransform()
+    {
+        TestCleanupWrapper cleanup;
+        TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
+
+        ViewportUserControl^ vuc = nullptr;
+        ScaleTransform^ scale = nullptr;
+        Border^ b = nullptr;
+        bool sawInvalidViewport = false;
+        bool sawFiniteViewport = false;
+
+        auto eventReg = CreateSafeEventRegistration(xaml::FrameworkElement, EffectiveViewportChanged);
+
+        LOG_OUTPUT(L"Build a viewport whose content is scaled by a non-zero factor.");
+        RunOnUIThread([&]()
+        {
+            b = ref new Border;
+            b->Height = 50;
+            b->Background = ref new SolidColorBrush(Microsoft::UI::Colors::Red);
+
+            scale = ref new ScaleTransform;
+            scale->ScaleX = 1.0;
+            scale->ScaleY = 1.0;
+
+            auto content = ref new Grid;
+            content->RenderTransform = scale;
+            content->Children->Append(b);
+
+            vuc = ref new ViewportUserControl;
+            vuc->Width = 100;
+            vuc->Height = 100;
+            vuc->Content = content;
+
+            auto g = ref new Grid;
+            g->Children->Append(vuc);
+            TestServices::WindowHelper->WindowContent = g;
+
+            eventReg.Attach(
+                safe_cast<xaml::FrameworkElement^>(b),
+                ref new wf::TypedEventHandler<xaml::FrameworkElement^, xaml::EffectiveViewportChangedEventArgs^>(
+                    [&](Platform::Object^ sender, xaml::EffectiveViewportChangedEventArgs^ e)
+            {
+                if (std::isinf(e->EffectiveViewport.Width))
+                {
+                    sawInvalidViewport = true;
+                }
+                else
+                {
+                    sawFiniteViewport = true;
+                }
+            }));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        VERIFY_IS_TRUE(sawFiniteViewport);
+
+        // A ScaleY of 0 is singular, so the global -> local conversion in the viewport walk has no
+        // inverse. Before the guard this failed the whole layout pass instead of reporting a viewport.
+        LOG_OUTPUT(L"Scale the content to 0 and run the viewport walk.");
+        sawInvalidViewport = false;
+        sawFiniteViewport = false;
+        RunOnUIThread([&]()
+        {
+            scale->ScaleY = 0.0;
+            InvalidateViewportHelper::InvalidateViewport(vuc);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        VERIFY_IS_TRUE(sawInvalidViewport);
+        VERIFY_IS_FALSE(sawFiniteViewport);
+
+        // The walk must also recover: a failed pass that leaves the viewport dirty flags inconsistent
+        // stops the target from ever being visited again.
+        LOG_OUTPUT(L"Restore the scale and verify the target is still served by the walk.");
+        sawInvalidViewport = false;
+        sawFiniteViewport = false;
+        RunOnUIThread([&]()
+        {
+            scale->ScaleY = 1.0;
+            InvalidateViewportHelper::InvalidateViewport(vuc);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        VERIFY_IS_TRUE(sawFiniteViewport);
+        VERIFY_IS_FALSE(sawInvalidViewport);
+    }
+
     void LayoutManagerIntegrationTests::ThrowsExceptionOnInvalidateViewportForNonScrollers()
     {
         TestCleanupWrapper cleanup;

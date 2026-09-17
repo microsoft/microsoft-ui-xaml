@@ -17,12 +17,13 @@ TabularControlsResources::TabularControlsResources()
 void TabularControlsResources::UpdateSource()
 {
 #ifdef TABULAR_BINARY_EMITS_THEME_RESOURCES
-    // Emit Tabular theme resources only after retargeting these MUXC-rooted URIs and build links together.
     const bool isPerf2026Enabled = false; // TODO: Decide based on opt-in flag, task.ms/60958581
 
     winrt::Uri uri{
         [isPerf2026Enabled]() -> hstring {
-            hstring packagePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/";
+            // Authority-less: a consuming app's build folds this component's PRI into its own and
+            // drops component root map names. Path must match AppxPriInitialPath.
+            hstring packagePrefix = L"ms-appx:///" MUXTABULARROOT_NAMESPACE_STR "/Themes/";
             hstring postfix = isPerf2026Enabled ? L"themeresources_perf2026.xaml" : L"themeresources.xaml";
 
             return packagePrefix + postfix;
@@ -59,13 +60,12 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
     controlProtected.DefaultStyleKey(box_value(className));
 
 #ifdef TABULAR_BINARY_EMITS_THEME_RESOURCES
-    // Set DefaultStyleResourceUri only after Tabular theme paths are retargeted from MUXC roots.
     if (auto control = controlProtected.try_as<winrt::IControl>())
     {
         const bool isPerf2026Enabled = false; // TODO: Decide based on opt-in flag, task.ms/60958581
         winrt::Uri uri{isPerf2026Enabled
-            ? L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/generic_perf2026.xaml"
-            : L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/generic.xaml"};
+            ? L"ms-appx:///" MUXTABULARROOT_NAMESPACE_STR "/Themes/generic_perf2026.xaml"
+            : L"ms-appx:///" MUXTABULARROOT_NAMESPACE_STR "/Themes/generic.xaml"};
         control.DefaultStyleResourceUri(uri);
     }
 #endif

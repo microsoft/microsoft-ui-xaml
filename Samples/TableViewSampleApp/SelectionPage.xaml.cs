@@ -2,9 +2,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-// Disambiguate the real split-binary types from the stale mock projection.
-using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
-using TableViewSelectionMode = Microsoft.UI.Xaml.Controls.Tabular.TableViewSelectionMode;
+using Microsoft.UI.Xaml.Controls.Tabular;
 
 namespace TableViewSampleApp;
 

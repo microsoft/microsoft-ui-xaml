@@ -29,15 +29,9 @@ namespace MUXControlsTestApp
             {
                 StatusText.Text = "EraseAllClicked";
             };
-            InkToolbar.EraserFlyoutItemClicked += (s, e) =>
-            {
-                // This event's TypedEventHandler shape is <EventArgs, Object>, so the
-                // strongly-typed args arrive as the sender.
-                StatusText.Text = "EraserFlyoutItemClicked: " + s.EraserFlyoutItemKind;
-            };
             InkToolbar.IsStencilButtonCheckedChanged += (s, e) =>
             {
-                StatusText.Text = "Stencil checked changed";
+                StatusText.Text = "Ruler (stencil) checked: " + InkToolbar.IsStencilButtonChecked;
             };
         }
     }

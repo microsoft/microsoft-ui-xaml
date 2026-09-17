@@ -202,6 +202,10 @@ steps:
         projectCaching: ${{ parameters.projectCaching }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
 
+  # Tabular builds as part of MUXControls.sln. Microsoft.UI.Xaml.Controls.Tabular.vcxproj carries
+  # build-order-only ProjectReferences to MergedWinMD and to MUXC's controls DLL, so the solution
+  # graph sequences MUXC -> Tabular on its own and no separate solution or step is needed.
+
   - script: |
      dir /b /s $(Build.SourcesDirectory)\packages\*.nupkg
     displayName: 'List contents of packages dir'

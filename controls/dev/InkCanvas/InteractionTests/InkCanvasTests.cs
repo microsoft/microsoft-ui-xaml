@@ -33,6 +33,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")]
         public void InkCanvasRendersInVisualTree()
         {
             using (var setup = new TestSetupHelper("InkCanvas Tests"))

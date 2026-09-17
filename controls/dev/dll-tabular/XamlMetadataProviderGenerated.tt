@@ -205,7 +205,10 @@ struct Entry
     {  
         WriteLine("#include \"" + type.Name + ".properties.h\"");
     }
-    
+
+    // A non-generated file defines its own ClearProperties method that we'll need to manually include.
+    WriteLine("#include \"TableViewToolTipHelpers.h\"");
+
     // The Tabular controls DLL hosts only TableView + its primitives; the MUXC-only helpers
     // (AutoSuggestBoxHelper / ComboBoxHelper / RecyclePool / RevealBrush) that the full MUXC
     // provider manually includes do not exist in this binary, so they are intentionally omitted.
@@ -224,6 +227,9 @@ namespace {
         
         // The Tabular controls DLL hosts only TableView + its primitives; the MUXC-only helpers
         // (AutoSuggestBoxHelper / ComboBoxHelper / RecyclePool / RevealBrush) are intentionally omitted.
+        //
+        // A non-generated file defines its own ClearProperties method that we'll need to manually call.
+        WriteLine("TableViewDetails::ClearCellToolTipProperties();");
     });
     WriteLine("");
 #>

@@ -32,6 +32,7 @@ public:
     winrt::TableView GetOwningTableView();
 
     // Overridable
+    virtual winrt::hstring GetSortMemberPathCore();
     virtual winrt::FrameworkElement GenerateElementCore(const winrt::IInspectable& dataItem);
     virtual winrt::FrameworkElement GenerateEditingElementCore(const winrt::IInspectable& dataItem);
     virtual winrt::IInspectable PrepareCellForEditCore(const winrt::FrameworkElement& editingElement, const winrt::RoutedEventArgs& editingEventArgs);
@@ -44,16 +45,31 @@ public:
     // Property-changed callback (single dispatch in IDL)
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
+    // Not a dependency property: the codegen does not project delegate-typed DPs, and a comparer
+    // has nothing to bind, animate or style anyway.
+    winrt::ITableViewSortComparer CustomSortComparer() const { return m_customSortComparer; }
+    void CustomSortComparer(winrt::ITableViewSortComparer const& value);
+
     // Derived columns call this when one of their own properties invalidates realized cell content.
     void NotifyCellContentChanged();
 
     // Keep the owner weak to avoid TableView -> Columns -> Column -> TableView cycles.
     bool SetOwningTableViewInternal(winrt::TableView const& owner);
 
+    // Setter lets XAML pass the Binding object through without evaluating it.
+    winrt::Microsoft::UI::Xaml::Data::Binding CellToolTipBinding();
+    void CellToolTipBinding(const winrt::Microsoft::UI::Xaml::Data::Binding& value);
+
     // Internal — layout: the owning TableView (TableView_Layout.cpp) resolves the final width for
     // every sizing mode (Pixel/Auto/Star) and pushes it here; the caller has already clamped to
     // Min/MaxWidth.
     void SetResolvedActualWidthInternal(double width);
+
+    // Internal - sorting: the owning TableView owns sort policy and pushes the resulting direction
+    // into this read-only DP, then republishes it to the realized header chevrons. The push is
+    // required rather than a binding: SortIndicatorDirection and SortDirection are distinct WinRT
+    // enums, so a {Binding} between them silently does nothing.
+    void SetSortStateInternal(winrt::SortDirection direction);
 
     // Internal — Auto size-to-content. The owning TableView pulls measured widths from the header
     // and realized row panels; ResolveColumnWidths derives the current measured max each pass and
@@ -71,5 +87,8 @@ private:
     // Monotonic max of pulled realized-cell measured widths for an Auto column (0 until first pull).
     double m_desiredWidth{ 0.0 };
 
+    tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_cellToolTipBinding{ this };
+
     weak_ref<winrt::TableView> m_owningTableView{ nullptr };
+    winrt::ITableViewSortComparer m_customSortComparer{ nullptr };
 };

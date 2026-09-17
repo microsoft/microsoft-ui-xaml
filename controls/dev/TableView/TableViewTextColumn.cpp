@@ -197,6 +197,21 @@ void TableViewTextColumn::CancelCellEditCore(const winrt::FrameworkElement& edit
     __super::CancelCellEditCore(editingElement, uneditedValue);
 }
 
+winrt::hstring TableViewTextColumn::GetSortMemberPathCore()
+{
+    // An explicit SortMemberPath always wins: it is how a consumer sorts on a field the cell does
+    // not display (e.g. show a formatted name, sort on a sequence number).
+    if (auto const explicitPath = SortMemberPath(); !explicitPath.empty())
+    {
+        return explicitPath;
+    }
+
+    // Otherwise sort on whatever the cell shows. The same source-qualification rule as editing
+    // applies - a binding against an explicit source names a path on THAT object, and sorting the
+    // rows by it would be meaningless.
+    return GetEditingPropertyPath();
+}
+
 winrt::hstring TableViewTextColumn::GetEditingPropertyPath() const
 {
     // Only reported for bindings against the row data item. When the binding names an explicit

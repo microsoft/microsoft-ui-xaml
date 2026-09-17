@@ -165,10 +165,10 @@ public:
             }
         }
 
-        if (i == size)
-        {
-            IFC(E_FAIL);
-        }
+        // If the cookie wasn't found, treat this as a no-op rather than a failure. This can legitimately
+        // happen if the event source was already cleared (e.g. via Clear(), which eagerly revokes all
+        // registrations when the owning object is closed/shut down) before the caller got a chance to
+        // explicitly unsubscribe with the token it was given from Add().
 
     Cleanup:
         RRETURN(hr);
@@ -184,7 +184,7 @@ public:
         return m_list[i];
     }
 
-    ~CGITCookieList()
+    void Clear()
     {
         XUINT32 size = m_list.size();
 
@@ -192,6 +192,13 @@ public:
         {
             ReleaseInterface(m_list[i]);
         }
+
+        m_list.clear();
+    }
+
+    ~CGITCookieList()
+    {
+        Clear();
     }
 
 private:
@@ -343,6 +350,24 @@ public:
         ReleaseInterface(pHandler);
 
         RRETURN(hr);
+    }
+
+    void Clear()
+    {
+        if (!m_fInitialized)
+        {
+            return;
+        }
+
+        Lock raiseLock(m_csRaise);
+        Lock addRemoveLock(m_csAddRemove);
+
+        m_pHandlers->Clear();
+
+        if (m_pHandlersCopy)
+        {
+            m_pHandlersCopy->Clear();
+        }
     }
 
 private:

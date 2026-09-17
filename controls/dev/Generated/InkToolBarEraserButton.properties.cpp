@@ -13,10 +13,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "InkToolbarEraserButton.g.cpp"
 
-GlobalDependencyProperty InkToolbarEraserButtonProperties::s_ArePrecisionErasersVisibleProperty{ nullptr };
 GlobalDependencyProperty InkToolbarEraserButtonProperties::s_IsClearAllVisibleProperty{ nullptr };
-GlobalDependencyProperty InkToolbarEraserButtonProperties::s_IsStrokeEraserVisibleProperty{ nullptr };
-GlobalDependencyProperty InkToolbarEraserButtonProperties::s_SelectedEraserProperty{ nullptr };
 
 InkToolbarEraserButtonProperties::InkToolbarEraserButtonProperties()
 {
@@ -26,17 +23,6 @@ InkToolbarEraserButtonProperties::InkToolbarEraserButtonProperties()
 void InkToolbarEraserButtonProperties::EnsureProperties()
 {
     InkToolbarToolButton::EnsureProperties();
-    if (!s_ArePrecisionErasersVisibleProperty)
-    {
-        s_ArePrecisionErasersVisibleProperty =
-            InitializeDependencyProperty(
-                L"ArePrecisionErasersVisible",
-                winrt::name_of<bool>(),
-                winrt::name_of<winrt::InkToolbarEraserButton>(),
-                false /* isAttached */,
-                ValueHelper<bool>::BoxedDefaultValue(),
-                nullptr);
-    }
     if (!s_IsClearAllVisibleProperty)
     {
         s_IsClearAllVisibleProperty =
@@ -46,52 +32,22 @@ void InkToolbarEraserButtonProperties::EnsureProperties()
                 winrt::name_of<winrt::InkToolbarEraserButton>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                nullptr);
-    }
-    if (!s_IsStrokeEraserVisibleProperty)
-    {
-        s_IsStrokeEraserVisibleProperty =
-            InitializeDependencyProperty(
-                L"IsStrokeEraserVisible",
-                winrt::name_of<bool>(),
-                winrt::name_of<winrt::InkToolbarEraserButton>(),
-                false /* isAttached */,
-                ValueHelper<bool>::BoxedDefaultValue(),
-                nullptr);
-    }
-    if (!s_SelectedEraserProperty)
-    {
-        s_SelectedEraserProperty =
-            InitializeDependencyProperty(
-                L"SelectedEraser",
-                winrt::name_of<winrt::InkToolbarEraserKind>(),
-                winrt::name_of<winrt::InkToolbarEraserButton>(),
-                false /* isAttached */,
-                ValueHelper<winrt::InkToolbarEraserKind>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnIsClearAllVisiblePropertyChanged));
     }
 }
 
 void InkToolbarEraserButtonProperties::ClearProperties()
 {
-    s_ArePrecisionErasersVisibleProperty = nullptr;
     s_IsClearAllVisibleProperty = nullptr;
-    s_IsStrokeEraserVisibleProperty = nullptr;
-    s_SelectedEraserProperty = nullptr;
     InkToolbarToolButton::ClearProperties();
 }
 
-void InkToolbarEraserButtonProperties::ArePrecisionErasersVisible(bool value)
+void InkToolbarEraserButtonProperties::OnIsClearAllVisiblePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
 {
-    [[gsl::suppress(con)]]
-    {
-    static_cast<InkToolbarEraserButton*>(this)->SetValue(s_ArePrecisionErasersVisibleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
-    }
-}
-
-bool InkToolbarEraserButtonProperties::ArePrecisionErasersVisible()
-{
-    return ValueHelper<bool>::CastOrUnbox(static_cast<InkToolbarEraserButton*>(this)->GetValue(s_ArePrecisionErasersVisibleProperty));
+    auto owner = sender.as<winrt::InkToolbarEraserButton>();
+    winrt::get_self<InkToolbarEraserButton>(owner)->OnPropertyChanged(args);
 }
 
 void InkToolbarEraserButtonProperties::IsClearAllVisible(bool value)
@@ -105,30 +61,4 @@ void InkToolbarEraserButtonProperties::IsClearAllVisible(bool value)
 bool InkToolbarEraserButtonProperties::IsClearAllVisible()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<InkToolbarEraserButton*>(this)->GetValue(s_IsClearAllVisibleProperty));
-}
-
-void InkToolbarEraserButtonProperties::IsStrokeEraserVisible(bool value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<InkToolbarEraserButton*>(this)->SetValue(s_IsStrokeEraserVisibleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
-    }
-}
-
-bool InkToolbarEraserButtonProperties::IsStrokeEraserVisible()
-{
-    return ValueHelper<bool>::CastOrUnbox(static_cast<InkToolbarEraserButton*>(this)->GetValue(s_IsStrokeEraserVisibleProperty));
-}
-
-void InkToolbarEraserButtonProperties::SelectedEraser(winrt::InkToolbarEraserKind const& value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<InkToolbarEraserButton*>(this)->SetValue(s_SelectedEraserProperty, ValueHelper<winrt::InkToolbarEraserKind>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::InkToolbarEraserKind InkToolbarEraserButtonProperties::SelectedEraser()
-{
-    return ValueHelper<winrt::InkToolbarEraserKind>::CastOrUnbox(static_cast<InkToolbarEraserButton*>(this)->GetValue(s_SelectedEraserProperty));
 }

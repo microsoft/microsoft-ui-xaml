@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TableViewRow.h"
+#include "TableViewToolTipHelpers.h"
 #include "TableView.h"
 #include "TableViewColumn.h"
 #include "TableViewCellsPanel.h"
@@ -783,6 +784,12 @@ void TableViewRow::RebuildCells()
             AttachCellContent(cellWrapper, cellElement);
         }
 
+        // Opt-in per-cell tooltip. Set once; the binding then tracks the row's inherited DataContext.
+        if (auto const toolTipBinding = column.CellToolTipBinding())
+        {
+            TableViewDetails::ApplyCellToolTipBinding(cellWrapper, toolTipBinding);
+        }
+
         host.Children().Append(cellWrapper);
     }
 
@@ -794,6 +801,29 @@ void TableViewRow::RebuildCells()
 
     RefreshGridLines();
     RefreshRowBackground();
+}
+
+// Recycle-out. Always walks: the restamp fast-path revives tooltips through the binding, so a
+// cached per-row flag would go stale and strand app content in the pool.
+void TableViewRow::ReleaseCellToolTips()
+{
+    if (auto const host = m_cellsHost.get())
+    {
+        ClearOwnedCellToolTips(host);
+    }
+}
+
+void TableViewRow::ClearOwnedCellToolTips(const winrt::Panel& host)
+{
+    auto const children = host.Children();
+    const uint32_t count = children.Size();
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        if (auto const cellWrapper = children.GetAt(i).try_as<winrt::Border>())
+        {
+            TableViewDetails::ClearOwnedToolTip(cellWrapper);
+        }
+    }
 }
 
 // Installs a generated display element as a cell's content, including the ContentPresenter wiring a
@@ -984,6 +1014,8 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
 
     m_editingColumn.set(column);
     m_editingCellWrapper.set(cellWrapper);
+    // An editor owns its cell; a tooltip over a live text box is noise.
+    TableViewDetails::ClearOwnedToolTip(cellWrapper);
     m_editingElement.set(editingElement);
 
     // The column decides how its editor is primed - focus, caret, selection are editor-specific,
@@ -1076,6 +1108,9 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
     m_editingCellWrapper.set(nullptr);
     m_editingElement.set(nullptr);
     m_editingDisplayElement.set(nullptr);
+
+    // The bound value did not change, so only an explicit re-apply restores what the edit retracted.
+    TableViewDetails::RefreshOwnedToolTip(cellWrapper);
 }
 
 void TableViewRow::AbandonCellEdit()
@@ -1084,7 +1119,8 @@ void TableViewRow::AbandonCellEdit()
     // pass, where moving focus re-enters the framework and trips the re-entrancy guard. Replacing
     // the child does not - and it must happen, or the row keeps showing a TextBox after the edit
     // closed, and over a different item once recycled.
-    if (auto const cellWrapper = m_editingCellWrapper.get())
+    auto const cellWrapper = m_editingCellWrapper.get();
+    if (cellWrapper)
     {
         cellWrapper.Child(m_editingDisplayElement.get());
     }
@@ -1093,6 +1129,9 @@ void TableViewRow::AbandonCellEdit()
     m_editingCellWrapper.set(nullptr);
     m_editingElement.set(nullptr);
     m_editingDisplayElement.set(nullptr);
+
+    // The cell is a display cell again; restore the tooltip the edit retracted.
+    TableViewDetails::RefreshOwnedToolTip(cellWrapper);
 }
 
 // Pointer entry point for editing, and the only place a pointer establishes the current cell.
