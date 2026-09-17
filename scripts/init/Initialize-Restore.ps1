@@ -43,9 +43,5 @@ if (Test-Path $postInitScript) {
     . $postInitScript -RepoRoot $repoRoot -Verbosity $Verbosity
 }
 
-if (Test-Path "$env:reporoot\docs\init-known-issues.md") {
-    type "$env:reporoot\docs\init-known-issues.md"
-}
-
 $duration = (([datetime]::Now - $startTime).TotalSeconds).ToString("N2")
-Write-Host Initialized environment for $env:_BuildArch $env:_BuildType `($duration s`)
+Write-Host "Dependency setup completed for $env:_BuildArch $env:_BuildType ($duration s)."

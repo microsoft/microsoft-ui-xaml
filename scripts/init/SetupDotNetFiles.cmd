@@ -3,5 +3,5 @@ rem Any files populated in this way should have their destination file added to 
 
 @echo off
 
-echo Initializing repo for %_DotNetMoniker%... 
+echo Configuring test host runtime for target framework %_DotNetMoniker% ^(separate from the build SDK^)...
 copy /y %1\dxaml\test\infra\taefhostappnetcore\WinRT.Host.runtimeconfig.json.%_DotNetMoniker% %1\dxaml\test\infra\taefhostappnetcore\WinRT.Host.runtimeconfig.json >NUL

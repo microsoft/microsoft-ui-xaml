@@ -11,11 +11,6 @@ if "%Platform%" == "Win32" (
     set controlsSubfolder=%controlsSubfolder%%Platform%
 )
 
-rem These processes can be left running after a build, so we need to kill them if so,
-rem since they can have handles open on files in the folders we're about to clean.
-call :callScript taskkill /im msbuild.exe /f 2> nul
-call :callScript taskkill /im VBCSCompiler.exe /f 2> nul
-
 :parseArgs
 if "%1"=="/all" (
     set subfolder=
@@ -39,11 +34,12 @@ shift
 goto:parseArgs
 
 :main
-rem MSBuild.exe can hold onto some things we'll be trying to delete, so let's kill that process first.
-taskkill /f /im MSBuild.exe > nul 2>&1
-
-rem Also, VBCSCompiler.
-taskkill /f /im VBCSCompiler.exe > nul 2>&1
+rem Processes may belong to other repos or be idle compiler servers. Never kill them.
+powershell.exe -NoProfile -Command "$ErrorActionPreference = 'Stop'; $processes = Get-CimInstance Win32_Process -Filter \"Name='MSBuild.exe' OR Name='VBCSCompiler.exe' OR Name='cl.exe' OR Name='link.exe'\"; if ($processes) { Write-Host 'WARNING: Build processes or compiler servers are running. They may be idle or belong to another repo.'; $processes | ForEach-Object { Write-Host ('  {0} (PID {1})' -f $_.Name, $_.ProcessId) }; Write-Host 'Continuing without stopping them. Do not clean this repo while a build in it is running.' }"
+if errorlevel 1 (
+    echo ERROR: Could not check for running build processes. Cleanup was not started.
+    exit /b 1
+)
 
 rem Some things fail if we don't have a temp folder, so we'll put back any that were present before cleaning
 rem to make sure that everything's still in good working order.
@@ -63,51 +59,42 @@ set packagingdir=%buildoutput%\packaging%subfolder%
 set mockdir=%buildoutput%\WindowsAppSDK
 set testpayloaddir=TestPayload%subfolder%
 
-echo Deleting %bindir%...
-if exist %reporoot%\%bindir% (rd /s /q %reporoot%\%bindir%)
-
-echo Deleting %objdir%...
-if exist %reporoot%\%objdir% (rd /s /q %reporoot%\%objdir%)
-
-echo Deleting %tempdir%...
-if exist %reporoot%\%tempdir% (rd /s /q %reporoot%\%tempdir%)
-
-echo Deleting %packagingdir%...
-if exist %reporoot%\%packagingdir% (rd /s /q %reporoot%\%packagingdir%)
-
-echo Deleting %mockdir%...
-if exist %reporoot%\%mockdir% (rd /s /q %reporoot%\%mockdir%)
-
-echo Deleting %testpayloaddir%...
-if exist %reporoot%\%testpayloaddir% (rd /s /q %reporoot%\%testpayloaddir%)
+for %%D in ("%bindir%" "%objdir%" "%tempdir%" "%packagingdir%" "%mockdir%" "%testpayloaddir%") do (
+    call :deleteDirectory "%reporoot%\%%~D"
+    if errorlevel 1 exit /b 1
+)
 
 if exist %LocalTempDir%\tempSubFolders.txt (
     for /f %%A in (%LocalTempDir%\tempSubFolders.txt) do (
         echo Recreating %buildoutput%\Temp\%%A...
-        md %reporoot%\%buildoutput%\Temp\%%A
+        if not exist "%reporoot%\%buildoutput%\Temp\%%A" md "%reporoot%\%buildoutput%\Temp\%%A"
+        if not exist "%reporoot%\%buildoutput%\Temp\%%A" (
+            echo ERROR: Could not recreate temporary directory %%A.
+            exit /b 1
+        )
     )
     
     del %LocalTempDir%\tempSubFolders.txt
 )
 
 if "%deletePackages%"=="1" (
-    if exist %reporoot%\packages (
-        echo Deleting packages...
-        rd /s /q %reporoot%\packages
-    )
-    
-    if exist %reporoot%\src\packages (
-        echo Deleting src\packages...
-        rd /s /q %reporoot%\src\packages
-    )
-    
-    if exist %reporoot%\src\XamlCompiler\packages (
-        echo Deleting src\XamlCompiler\packages...
-        rd /s /q %reporoot%\src\XamlCompiler\packages
+    for %%D in ("packages" "src\packages" "src\XamlCompiler\packages") do (
+        call :deleteDirectory "%reporoot%\%%~D"
+        if errorlevel 1 exit /b 1
     )
     
     echo Deleting %reporoot%\PackageStore...
     git clean -df %reporoot%\PackageStore
+    if errorlevel 1 exit /b 1
     echo Deleted NuGet packages - make sure to re-run init.cmd to restore packages.
 )
-endlocal
+endlocal & exit /b 0
+
+:deleteDirectory
+echo Deleting %~1...
+if exist "%~1" rd /s /q "%~1"
+if exist "%~1" (
+    echo ERROR: Could not delete "%~1". Check for locked files or a build using this directory.
+    exit /b 1
+)
+exit /b 0
