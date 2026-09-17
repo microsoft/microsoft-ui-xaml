@@ -20,11 +20,21 @@ description: Review changes in microsoft/microsoft-ui-xaml. Use when reviewing c
    or duplicate work with links to those PRs. If you cannot access the open
    PRs, state that this check could not be completed.
 
-4. **Check behavioral compatibility, even across major versions.** A semver
-   major version increase does not remove the need to protect existing apps.
+4. **Expect test coverage for every bug fix and new feature.** Bug fixes should
+   include regression tests that fail without the fix and pass with it. New
+   features should have tests for their intended behavior and relevant edge
+   cases. Use the repo's existing test patterns and flag missing coverage.
+
+5. **Consider behavioral compatibility, even across major versions.** WinUI apps
+   are historically very sensitive to behavioral changes that seem minor.  A semver
+   major version increase can still require care when changing existing behavior.
    Apps may depend on how WinUI APIs behave, including undocumented behavior
    or dependencies they took accidentally. For example, changing the order
    in which events fire can break apps even when API signatures stay the same.
-   Flag changes to observable behavior and explain how they could affect
-   existing apps. Check that intentional behavior changes have an explicit
-   compatibility assessment and tests covering the affected scenarios.
+   Highlight potential compatibility risks and consider whether the change
+   needs additional tests or a gradual rollout.
+
+   For behavioral changes, features can use `XamlOptionalChanges` to let apps
+   opt in to the new behavior first. These behaviors are expected to become
+   the default later, with apps able to opt out. Consider this approach when
+   a change could affect existing apps.

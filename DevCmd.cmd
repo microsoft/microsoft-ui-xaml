@@ -30,8 +30,10 @@ exit /b 0
 :begin
 pushd %~dp0
 
-rem Agents set NoDefaultCurrentDirectoryInExePath=1, disabling current-directory executable lookup.
-rem Add the Installer directory to PATH so VsDevCmd.bat can still invoke bare vswhere.exe.
+rem VsDevCmd.bat changes to the Visual Studio Installer directory and expects to
+rem run vswhere.exe by name from there. Agents set NoDefaultCurrentDirectoryInExePath=1,
+rem which disables current-directory executable lookup. Add the Installer directory
+rem to PATH so that lookup still works.
 set "PATH=%PATH%;%~dp0tools;%ProgramFiles(x86)%\Microsoft Visual Studio\Installer"
 set PrereleaseArg=
 

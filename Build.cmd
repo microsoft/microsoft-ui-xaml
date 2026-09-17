@@ -67,7 +67,7 @@ if "%1"=="/c" (
 ) else if "%1" == "/normalpri" (
     set _lowpriority=0
 ) else if "%1" == "/q" (
-    rem Quiet mode: show errors, stage progress, final result, and elapsed time.
+    rem Quiet mode: show errors, stage names, final result, and elapsed time.
     rem Useful for AI agents and CI/CD pipelines.
     set _quiet=1
     set _verbosity=/verbosity:quiet
@@ -279,11 +279,7 @@ if NOT "%PSModulePath%" == "" (
 )
 
 echo Building %_title%...
-if "%_quiet%"=="1" (
-    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%_scriptDir%tools\Invoke-MSBuildWithProgress.ps1" -Stage "%_title%" -BuildArguments "%_options%"
-) else (
-    %_command%
-)
+%_command%
 
 if ERRORLEVEL 1  (
     set _exitCode=!ERRORLEVEL!
@@ -380,12 +376,12 @@ echo        samples             Builds sample apps
 echo        all                 Builds the world
 echo.
 echo    Options:
-echo        /q              Quiet mode. Errors, MSBuild progress every minute, result, and elapsed time.
+echo        /q              Quiet mode. Errors, stage names, result, and elapsed time.
 echo        /i [flavor]     Initialize build environment inline (e.g. /i amd64chk, /i arm64fre).
 echo                        Runs init.cmd with /envcheck so no restore is performed. Use when
 echo                        the build environment has not been initialized in the current session.
 echo        /c              Deletes bin, obj, temp, and packaging directories before building. 
-echo                        Warns about running build processes; does not stop them. Do not clean during a build in this repo.
+echo                        Kills all existing instances of msbuild.exe, so should not be run alongside another build
 echo        /restore        Add the Nuget restore option
 echo        /graph          (experimental: requires VS 17.7+) Perform graph-based MSBuild scheduling. See: https://github.com/dotnet/msbuild/blob/main/documentation/specs/static-graph.md
 echo        /cache          (experimental: requires VS 17.8+) Perform a build with MSBuild project caching. Implies /graph. See: https://github.com/dotnet/msbuild/blob/main/documentation/specs/project-cache.md

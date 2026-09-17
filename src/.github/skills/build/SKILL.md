@@ -35,7 +35,7 @@ MSBuild entirely, replaying only the dirty compile/link steps in seconds.
 
 **Rules:**
 - Always prefix with `.\initrun.ps1`
-- Always pass `/q` for quiet output (errors, stage progress, result, and elapsed time)
+- Always pass `/q` for quiet output (errors only)
 - Set `initial_wait` to at least **300 seconds** — builds take 1-10+ minutes
 - **When the user asks to "build the repo" or just "build" without specifying a target, use `.\initrun.ps1 .\build.cmd /q` (full build).** 
 Only use `mux` or a single project when the user asks for a specific component or when you know exactly which files changed.
@@ -74,9 +74,9 @@ If you get build errors that seem to indicate missing dependencies, try running 
 
 | Flag | Effect |
 |------|--------|
-| `/q` | Quiet - errors, stage names, MSBuild progress every minute, final result, and elapsed time |
+| `/q` | Quiet — errors only, plus elapsed time |
 | `/b` | Reduced parallelism (`/m:2`) — prevents PCH virtual memory exhaustion on limited-memory machines |
-| `/c` | Clean build - deletes build outputs first. Warns about build processes but does not stop them. Do not use while a build in this repo is running. |
+| `/c` | Clean build — deletes BuildOutput first. Use on first build or when switching flavors |
 | `/restore` | NuGet restore before building |
 | `/nomock` | Skip mock package.  Use if you're only updating product and test code under`dxaml/` and don't need to run MUXControls or sample tests.) |
 | `/fake` | Dry run — print commands without executing |
