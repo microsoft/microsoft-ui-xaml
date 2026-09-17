@@ -295,6 +295,7 @@
   <Import Project="$(MUXCProjectRoot)dev\TabView\TestUI\TabView_TestUI.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\TabView\APITests\TabView_APITests.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\TableView\APITests\TableView_APITests.projitems" Label="Shared" Condition="$(FeatureTableViewEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\TableView\TestUI\TableView_TestUI.projitems" Label="Shared" Condition="$(FeatureTableViewEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\ComboBox\TestUI\ComboBox_TestUI.projitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\ComboBox\APITests\ComboBox_APITests.projitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\NumberBox\APITests\NumberBox_APITests.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />

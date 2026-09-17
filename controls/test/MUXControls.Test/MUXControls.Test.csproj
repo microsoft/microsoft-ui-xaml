@@ -113,6 +113,7 @@
   <Import Project="..\..\dev\RadialGradientBrush\InteractionTests\RadialGradientBrush_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true'" />
   <Import Project="..\..\dev\InfoBar\InteractionTests\InfoBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true'" />
   <Import Project="..\..\dev\Expander\InteractionTests\Expander_InteractionTests.projitems" Label="Shared" Condition="$(FeatureExpanderEnabled) == 'true'" />
+  <Import Project="..\..\dev\TableView\InteractionTests\TableView_InteractionTests.projitems" Label="Shared" Condition="$(FeatureTableViewEnabled) == 'true'" />
   <Import Project="..\..\dev\InkCanvas\InteractionTests\InkCanvas_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInkCanvasEnabled) == 'true'" />
   <Import Project="..\..\dev\InkToolbar\InteractionTests\InkToolbar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInkToolbarEnabled) == 'true'" />
   <Import Project="..\..\dev\PagerControl\InteractionTests\PagerControl_InteractionTests.projitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true'" />
