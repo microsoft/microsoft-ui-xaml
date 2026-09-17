@@ -976,6 +976,9 @@ namespace Private.Infrastructure
         HRESULT VerifyEventTracedById([in] int eventId, [in] UINT count);
         [overload("VerifyEventTraced")]
         HRESULT VerifyEventTracedMoreThanOnce([in] int eventId);
+
+        // Reset captured events/counts and exclude other processes and events emitted before this call.
+        HRESULT BeginCountingForCurrentProcess();
     }
 
     [version(NTDDI_WINBLUE)]
