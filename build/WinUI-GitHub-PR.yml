@@ -42,12 +42,8 @@ variables:
 - group: WinUI-Variable-Library
 - name: WindowsContainerImage
   value: 'onebranch.azurecr.io/windows/ltsc2022/vse2022:latest'
-# Runs the LifetimeStressTestSuite *Native scenarios in their aggressive native-crash reproduction variant on the
-# per-PR gate. The harness reads this from the environment (AggressiveNativeReproEnabled) and, when > 0, drives each
-# native-repro scenario in its most aggressive, most-likely-to-fault configuration (many more off-thread final
-# releases, deeper trees, more reparent/enter-leave churn) - the configuration that actually provokes a latent
-# native lifetime crash (use-after-free / premature native peer destruction / off-thread final release). NOTE: with
-# this on, an unfixed native lifetime bug faults the test host and can fail this shared PR gate.
+# Run the LifetimeStressTestSuite native scenarios in their aggressive repro variant on the PR gate.
+# An unfixed native lifetime bug can fault the test host and fail this shared gate.
 - name: WINUI_LIFETIME_STRESS_NATIVE
   value: 1
 

@@ -48,9 +48,8 @@ if(!(Test-Path $dumpsDir))
 }
 
 
-# If the work item proj directory is missing, the upstream CreateTestPayload job most likely did not publish
-# its test-payload artifact (canceled/timed out, e.g. in a hung 1ES post-job/SDL step). Fail with a clear,
-# actionable message instead of letting Get-ChildItem throw a cryptic PathNotFound error under $ErrorActionPreference=Stop.
+# Missing proj dir usually means the upstream CreateTestPayload job didn't publish its payload artifact.
+# Fail with a clear message instead of a cryptic Get-ChildItem PathNotFound.
 if (-not (Test-Path $WorkItemProjDir))
 {
     Throw "Work item proj dir '$WorkItemProjDir' does not exist. The upstream CreateTestPayload job likely did not publish its test-payload artifact (canceled/timed out), so no helix work item proj files were available to run."
@@ -129,10 +128,8 @@ foreach($workItem in $workItemsToRun)
     Get-ChildItem -Path $workItemUploadRoot -Filter *_subresults.json | Move-Item -Destination $uploadRoot
 }
 
-# Upload crash dumps produced during this slice. Lifetime-stress dumps are renamed
-# "LifetimeStress-<scenario>-*.dmp" by RunHelixWorkItem.ps1 so a native lifetime crash is attributable without a
-# debugger; prioritize those and raise the cap so a lifetime crash dump is never crowded out of the upload by
-# unrelated dumps from other work items sharing this slice's dump folder.
+# Upload dumps from this slice, prioritizing lifetime-stress dumps (renamed LifetimeStress-*) and raising the
+# cap so they aren't crowded out by unrelated dumps sharing the folder.
 $maxDumpsToUpload = 10
 $allDumps = @(Get-ChildItem -Path $dumpsDir -Filter *.dmp)
 $lifetimeDumps = @($allDumps | Where-Object { $_.Name -like 'LifetimeStress-*' })

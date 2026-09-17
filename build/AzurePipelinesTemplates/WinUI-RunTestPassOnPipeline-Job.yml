@@ -17,11 +17,8 @@ parameters:
 jobs:
 - job: ${{ parameters.runTestJobName }} #${{ parameters.testOS }}${{ parameters.buildPlatform }}${{ parameters.buildConfiguration }}
   dependsOn: ${{ parameters.dependsOn }}
-  # Use succeeded() rather than not(failed()): if the upstream CreateTestPayload job is canceled/skipped
-  # (e.g. a hung 1ES post-job/SDL step that never publishes its test-payload artifact), not(failed()) still
-  # evaluates true and this job runs without any payload, failing later with a cryptic
-  # "Get-ChildItem: Cannot find path ...\helixworkitems\... PathNotFound". Requiring success skips the run
-  # instead so the missing-payload cause is obvious.
+  # succeeded() rather than not(failed()): if CreateTestPayload is canceled/skipped it publishes no payload,
+  # and not(failed()) would still run this job, failing later with a cryptic PathNotFound.
   condition: succeeded()
   pool:
     type: windows
@@ -103,10 +100,8 @@ jobs:
       errorActionPreference: stop
       workingDirectory: $(Build.SourcesDirectory)\build\PipelineScripts
 
-  # PostTestRun: total the native lifetime crash/warning signals across every lifetime work item that ran on this
-  # shard and surface a single number (plus the LifetimeNativeCrashTotal variable) instead of requiring a manual
-  # scan of every shard's console log. Fail-open and non-gating: reports 0 on shards with no lifetime work items
-  # and never fails the stage. See Helix\common\pipeline\Report-LifetimeNativeCrashTotals.ps1.
+  # Total this shard's native lifetime crash/warning signals. Non-gating; reports 0 when no lifetime work
+  # items ran. See Helix\common\pipeline\Report-LifetimeNativeCrashTotals.ps1.
   - task: powershell@2
     displayName: 'PostTestRun: Total lifetime native crashes/warnings'
     condition: always()

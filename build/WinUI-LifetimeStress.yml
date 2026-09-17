@@ -1,22 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 #
-# WinUI Lifetime Stress (soak) pipeline.
-#
-# This scheduled pipeline exists to reintroduce the long-running "lifetime" coverage XAML used to have back in the
-# Win8 era: build WinUI and then run the lifetime stress suite for an extended period, watching for object-lifetime
-# crashes (use-after-free / premature native peer destruction / ref-counting bugs in the 3-layer peer model).
-#
-# It reuses the normal Build + RunTests stages. The differences from a Nightly run are two variables set below:
-# WINUI_LIFETIME_STRESS_MINUTES puts the LifetimeStressTestSuite tests
-# (controls/test/MUXControlsTestApp/LifetimeStressTests.cs) into soak mode so each lifetime scenario loops on a
-# wall-clock budget instead of a fixed (gate) iteration count; WINUI_LIFETIME_STRESS_NATIVE turns on the aggressive
-# native-crash reproduction variant of the *Native scenarios (the configuration that actually provokes a latent
-# native lifetime crash). Every other test still runs with its normal behavior. The suite is isolated into its own
-# TAEF/Helix work item, so a lifetime crash here does not cascade into unrelated tests.
-#
-# NOTE: This pipeline must be registered in Azure DevOps and its schedule/soak duration tuned there. The value
-# below is the default soak duration (in minutes) per lifetime scenario.
+# Scheduled lifetime-stress soak: build WinUI, then run the lifetime stress suite for an extended period to
+# catch object-lifetime crashes. Same stages as Nightly plus the soak variables below; register/tune in ADO.
 
 trigger: none
 name: $(versionFinal)
@@ -39,10 +25,8 @@ parameters: # parameters show up in the ADO UI at build-queue time
   default: false
 - name: lifetimeStressMinutes
   displayName: "Minutes to soak each lifetime stress scenario"
-  # NOTE: The shared RunTests job/step has a ~90 minute timeout. The lifetime suite runs as a single isolated
-  # work item, so the total added time is roughly (this value x number of lifetime scenarios). Keep the default
-  # comfortably inside that timeout; for a true multi-hour soak, raise this AND the timeoutInMinutes in
-  # WinUI-RunTestPassOnPipeline-Job.yml (or run this pipeline against a dedicated long-timeout job).
+  # RunTests has a ~90 min timeout and total time is roughly this x scenario count. For a longer soak, also
+  # raise timeoutInMinutes in WinUI-RunTestPassOnPipeline-Job.yml.
   type: number
   default: 10
 
@@ -50,16 +34,11 @@ variables:
 - template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
 - template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
 - group: WinUI-Variable-Library
-# Puts LifetimeStressTests into soak mode. The harness reads this from the environment and, when > 0, loops each
-# scenario until the budget elapses instead of using its default gate iteration count.
+# Soak mode: each scenario loops until this many minutes elapse instead of the default gate iteration count.
 - name: WINUI_LIFETIME_STRESS_MINUTES
   value: ${{ parameters.lifetimeStressMinutes }}
-# Enables the aggressive native-crash reproduction variant of the LifetimeStressTestSuite *Native scenarios. The
-# harness reads this from the environment (AggressiveNativeReproEnabled) and, when > 0, runs each native-repro
-# scenario in its most aggressive, most-likely-to-fault configuration (many more off-thread final releases, deeper
-# trees, more reparent/enter-leave churn) - the configuration that actually provokes a latent native lifetime crash
-# (use-after-free / premature native peer destruction / off-thread final release). Only this scheduled soak sets it,
-# so the per-PR gate keeps running the light, non-gating variant and can never crash the shared pipeline.
+# Aggressive native-crash repro variant of the native scenarios - the configuration that actually provokes a
+# latent native lifetime crash. Only the scheduled soak sets it, so the PR gate keeps the light variant.
 - name: WINUI_LIFETIME_STRESS_NATIVE
   value: 1
 

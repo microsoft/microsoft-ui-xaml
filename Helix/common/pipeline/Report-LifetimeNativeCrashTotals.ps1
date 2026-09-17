@@ -1,25 +1,14 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 #
-# PostTestRun aggregation for the lifetime stress suite.
-#
-# Every lifetime-stress work item writes its own per-work-item LifetimeNativeCrashReport.json (see
-# Helix/common/test/RunHelixWorkItem.ps1 -> Report-LifetimeNativeCrash), recording how many native host crashes
-# and native scenario warnings (thrown-exception / COMException reports) it produced. This script runs AFTER the
-# test run and totals those records across every work item that landed on this shard/slice, so the pipeline shows
-# a single "total native crash/warning" number instead of the reader having to scan every shard's console log by
-# hand.
-#
-# The LifetimeStressTestSuite runs as a single isolated work item, so on the shard that ran it this total is the
-# suite's native crash/warning total for the OS leg; shards that ran no lifetime work items simply total zero.
-# The step is intentionally fail-open and NON-GATING: it never fails the stage. It emits a non-gating warning and
-# sets the LifetimeNativeCrashTotal pipeline variable, and writes an aggregate LifetimeNativeCrashSummary.json.
+# Totals the per-work-item LifetimeNativeCrashReport.json files under a search root.
+# Non-gating: emits a warning, sets the LifetimeNativeCrashTotal variable, and writes LifetimeNativeCrashSummary.json.
 
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $true)]
-    [string]$SearchRoot,        # Root scanned recursively for per-work-item LifetimeNativeCrashReport.json files.
-    [string]$SummaryOutputPath  # Optional path for the aggregate summary; defaults to $SearchRoot\LifetimeNativeCrashSummary.json.
+    [string]$SearchRoot,        # Scanned recursively for LifetimeNativeCrashReport.json files.
+    [string]$SummaryOutputPath  # Defaults to $SearchRoot\LifetimeNativeCrashSummary.json.
 )
 
 $ErrorActionPreference = 'Continue'
@@ -33,13 +22,8 @@ if (-not (Test-Path $SearchRoot))
 
 $reportFiles = @(Get-ChildItem -Path $SearchRoot -Filter 'LifetimeNativeCrashReport.json' -Recurse -ErrorAction SilentlyContinue)
 
-# The LifetimeStressTestSuite runs only in the checked (chk) build flavor, because lifetime/TrackerHandle leak
-# detection needs the reference-tracker instrumentation that free (fre) builds do not carry. This step, however,
-# runs in every test-pass job (one per testOS x buildFlavor), so most jobs scan a $SearchRoot that never held a
-# lifetime work item. Writing a workItemCount=0 summary in those jobs produced a scatter of empty
-# LifetimeNativeCrashSummary.json files that look like the aggregation is broken. When no per-work-item report is
-# present, total zero, set the variable, and return WITHOUT writing an empty summary so the only summary that ever
-# lands in the artifacts is the populated one from the job that actually ran the suite.
+# No reports here means no lifetime work item ran in this configuration (the suite is chk-only). Total zero
+# and return without writing an empty summary, so only the job that ran the suite leaves one behind.
 if ($reportFiles.Count -eq 0)
 {
     Write-Host "Lifetime stress PostTestRun: no LifetimeNativeCrashReport.json under '$SearchRoot' (no lifetime work items ran in this configuration - the suite runs only in the chk flavor). Nothing to total; not writing an empty summary."
@@ -97,13 +81,13 @@ foreach ($wi in $perWorkItem)
 }
 Write-Host "============================================================"
 
-# Non-gating pipeline warning so the total is visible in the build summary without failing the stage.
+# Surface the total as a non-gating warning.
 if ($totalSignals -gt 0)
 {
     Write-Host "##vso[task.logissue type=warning]Lifetime stress: $totalSignals native crash/warning signal(s) on this shard (crashes=$totalCrashes, warnings=$totalWarnings)."
 }
 
-# Publish the total as a pipeline variable so a downstream step/job can consume or roll it up across shards.
+# Publish the total for downstream steps to consume.
 Write-Host "##vso[task.setvariable variable=LifetimeNativeCrashTotal]$totalSignals"
 
 $summary = [ordered]@{
