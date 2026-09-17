@@ -241,6 +241,27 @@ Test-Case 'A crash that produces no binary log is reported as a failure' {
     finally { Remove-StubRepo $root }
 }
 
+Test-Case 'A failed tool probe during a successful build is not reported as a failure' {
+    # The build scripts probe for optional tools while choosing a toolchain, and a failed
+    # probe prints an ordinary shell error. Treating that as a missing tool failed a
+    # complete build that produced every binary log and reported no diagnostic.
+    Reset-StubBehavior
+    $env:AGENTBUILD_TEST_OUTPUT = @(
+        '.buildtools directory not found, using msbuild from vswhere...',
+        "'vswhere.exe' is not recognized as an internal or external command,",
+        'operable program or batch file.',
+        'MSBuild version 18.9.1+a81b43525 for .NET Framework',
+        '   Elapsed: 00:43:12.11'
+    ) -join "`n"
+    $root = New-StubRepo -Initialized
+    try {
+        $result = Invoke-Wrapper -Root $root
+        Assert-Equal 0 $result.ExitCode 'A failed tool probe failed a successful build.'
+        Assert-True ($result.Output -match 'BUILD SUCCEEDED') 'Success was not reported.'
+    }
+    finally { Remove-StubRepo $root }
+}
+
 Test-Case 'A missing package error tells the caller to initialize instead of changing code' {
     Reset-StubBehavior
     $env:AGENTBUILD_TEST_OUTPUT = 'foo.vcxproj : error : This project references NuGet package(s) that are missing on this computer. The missing file is packages\Microsoft.Foo\build\Microsoft.Foo.props'

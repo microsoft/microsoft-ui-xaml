@@ -95,14 +95,19 @@ $script:ErrorPattern = '\berror\s+(MSB|C|LNK|CS|CVT|RC|AL)\d+\b'
 # passed, because that check only confirms the two directories exist and not that their
 # contents are complete or current. These patterns identify that case so the caller is
 # told to initialize again rather than treating it as a code error.
+#
+# Every pattern here has to name a restore or tool output specifically. The build scripts
+# probe for optional tools as a normal part of choosing a toolchain, and a failed probe
+# prints ordinary shell errors such as "is not recognized as an internal or external
+# command". Matching those failed a complete build that produced every binary log and
+# reported no diagnostic.
 $script:NeedsInitPatterns = @(
     'references NuGet package\(s\) that are missing',
     'The missing file is packages\\',
     'Unable to find package',
     '\berror\s+NU\d{4}\b',
     '\bMSB3644\b',
-    "Could not find .*\\\.tools\\",
-    'is not recognized as an internal or external command'
+    "Could not find .*\\\.tools\\"
 )
 
 function Test-NeedsInit {
