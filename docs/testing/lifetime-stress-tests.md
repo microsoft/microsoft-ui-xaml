@@ -63,8 +63,12 @@ test run, the **PostTestRun** step in
 runs [`Report-LifetimeNativeCrashTotals.ps1`](../../Helix/common/pipeline/Report-LifetimeNativeCrashTotals.ps1),
 which totals those records across every lifetime work item on the shard and surfaces a single count — printed to
 the log, emitted as a non-gating warning, published as the `LifetimeNativeCrashTotal` pipeline variable, and
-written to `LifetimeNativeCrashSummary.json`. The suite runs as one isolated work item, so the shard that ran it
-reports the leg's total and other shards report zero. Like everything else here, the step is non-gating.
+written to `LifetimeNativeCrashSummary.json`. The suite runs as one isolated work item in the **checked (chk)
+build flavor** (lifetime/TrackerHandle leak detection needs the reference-tracker instrumentation that free builds
+lack), so its `LifetimeNativeCrashSummary.json` in that job carries the leg's full total. Test-pass jobs that ran
+no lifetime work item (e.g. the fre flavor) total zero and **do not write a summary file**, so the only
+`LifetimeNativeCrashSummary.json` in the artifacts is the populated one. Like everything else here, the step is
+non-gating.
 
 Run modes (all optional; the default needs no configuration):
 

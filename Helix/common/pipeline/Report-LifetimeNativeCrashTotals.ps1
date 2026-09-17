@@ -33,6 +33,20 @@ if (-not (Test-Path $SearchRoot))
 
 $reportFiles = @(Get-ChildItem -Path $SearchRoot -Filter 'LifetimeNativeCrashReport.json' -Recurse -ErrorAction SilentlyContinue)
 
+# The LifetimeStressTestSuite runs only in the checked (chk) build flavor, because lifetime/TrackerHandle leak
+# detection needs the reference-tracker instrumentation that free (fre) builds do not carry. This step, however,
+# runs in every test-pass job (one per testOS x buildFlavor), so most jobs scan a $SearchRoot that never held a
+# lifetime work item. Writing a workItemCount=0 summary in those jobs produced a scatter of empty
+# LifetimeNativeCrashSummary.json files that look like the aggregation is broken. When no per-work-item report is
+# present, total zero, set the variable, and return WITHOUT writing an empty summary so the only summary that ever
+# lands in the artifacts is the populated one from the job that actually ran the suite.
+if ($reportFiles.Count -eq 0)
+{
+    Write-Host "Lifetime stress PostTestRun: no LifetimeNativeCrashReport.json under '$SearchRoot' (no lifetime work items ran in this configuration - the suite runs only in the chk flavor). Nothing to total; not writing an empty summary."
+    Write-Host "##vso[task.setvariable variable=LifetimeNativeCrashTotal]0"
+    return
+}
+
 $totalCrashes  = 0
 $totalWarnings = 0
 $perWorkItem   = New-Object System.Collections.Generic.List[object]
