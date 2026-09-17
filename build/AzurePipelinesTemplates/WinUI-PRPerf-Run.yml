@@ -272,6 +272,35 @@ stages:
           targetPath: $(trialArtifactRoot)\drop_amd64chk
 
       - task: PowerShell@2
+        displayName: Report what the drop contains
+        continueOnError: true
+        inputs:
+          targetType: inline
+          script: |
+            # The selector throws when it finds no candidate, but a throw on a tree that
+            # no longer exists once the agent is gone is not diagnosable. Record the shape
+            # of the drop in the same run that measures it.
+            $ErrorActionPreference = 'Continue'
+            $root = '$(trialArtifactRoot)'
+            if (-not (Test-Path -LiteralPath $root)) {
+              Write-Host "The drop was not downloaded to '$root'."
+              return
+            }
+            $binaries = @(Get-ChildItem -LiteralPath $root -Filter '*.dll' -File -Recurse -ErrorAction SilentlyContinue)
+            Write-Host ("drop root      = {0}" -f $root)
+            Write-Host ("total .dll     = {0}" -f $binaries.Count)
+            Write-Host 'WinUI binaries:'
+            $winui = @($binaries | Where-Object { $_.Name -like 'Microsoft.UI.Xaml*' } | Sort-Object FullName)
+            if ($winui.Count -eq 0) {
+              Write-Host '  <none>'
+              Write-Host 'Largest binaries present instead:'
+              $binaries | Sort-Object Length -Descending | Select-Object -First 15 |
+                ForEach-Object { Write-Host ("  {0,10:N0}  {1}" -f $_.Length, $_.FullName.Substring($root.Length)) }
+            } else {
+              $winui | ForEach-Object { Write-Host ("  {0,10:N0}  {1}" -f $_.Length, $_.FullName.Substring($root.Length)) }
+            }
+
+      - task: PowerShell@2
         displayName: Find an earlier build of this pull request to compare against
         continueOnError: true
         env:

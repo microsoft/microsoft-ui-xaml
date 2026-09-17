@@ -666,10 +666,12 @@ function Test-PerfGateCannotFailTheStageOnModuleLoadFailure {
 }
 
 
-function Test-PerfStageDoesNotWaitOnTheProductBuild {
-    # The perf stage neither consumes build output nor blocks the pull request, so
-    # queueing it behind the ~2.5 hour product build only delays informational
-    # feedback. Running it in parallel keeps the signal close to the push.
+function Test-PerfStageWaitsForTheBuildThatPublishesWhatItMeasures {
+    # This invariant was the opposite until the stage started measuring real binaries.
+    # As a leaf it began three seconds after the run and raced the artifact it reads:
+    # on run 157847891 the perf job ran 09:38:28-09:42:38 while drop_amd64chk was not
+    # published until 09:40:58, so the download would have found nothing. Fast feedback
+    # is worth less than feedback that contains measurements.
     $callSite = Get-Content (Join-Path $root '..\WinUI-GitHub-PR.yml') -Raw
     $match = [regex]::Match(
         $callSite,
@@ -677,8 +679,8 @@ function Test-PerfStageDoesNotWaitOnTheProductBuild {
     if (-not $match.Success) {
         throw 'The PR perf template call site was not found.'
     }
-    if ($match.Groups['params'].Value -match '(?m)^\s*dependsOn:\s*\S') {
-        throw 'The perf stage must not declare dependsOn, so it runs in parallel with the product build.'
+    if ($match.Groups['params'].Value -notmatch '(?m)^\s*dependsOn:\s*Build_MUXFinalRelease\s*$') {
+        throw 'The perf stage must depend on the stage that publishes the drop it measures.'
     }
 }
 

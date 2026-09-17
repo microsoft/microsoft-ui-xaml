@@ -206,6 +206,13 @@ extends:
           gateOnLabel: true
           continueOnError: true
           useFixtures: ${{ parameters.perfUseFixtures }}
+          # The measurement reads this build's own drop, which Build_MUXFinalRelease
+          # publishes roughly half an hour in. Left as a leaf the stage started three
+          # seconds after the run did and raced the artifact: on run 157847891 the perf
+          # job ran 09:38:28-09:42:38 while the drop appeared at 09:40:58, so the
+          # download would have found nothing. Waiting for the publisher costs about
+          # thirty minutes and is the difference between real numbers and none.
+          dependsOn: Build_MUXFinalRelease
           # The lab pool the pipeline's other test jobs already use, pinned to the same
           # image. The dedicated WinUI-PerfTest queue is not authorized for this pipeline
           # and its only agent is offline, which left the stage pending forever with no
