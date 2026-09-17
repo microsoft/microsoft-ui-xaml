@@ -898,3 +898,95 @@ function Test-MeasureProducesSevenRealSamplesForARealBinary {
         Remove-Item -LiteralPath $out -Force -ErrorAction SilentlyContinue
     }
 }
+
+function New-PRPerfBinaryTree {
+    param([string[]] $RelativePaths)
+    $dir = Join-Path $PSScriptRoot "bin-$([guid]::NewGuid())"
+    foreach ($relative in $RelativePaths) {
+        $full = Join-Path $dir $relative
+        New-Item -ItemType Directory -Path (Split-Path -Parent $full) -Force | Out-Null
+        Set-Content -LiteralPath $full -Value 'x' -Encoding ASCII
+    }
+    return $dir
+}
+
+function Test-MeasurementBinarySelectionPrefersTheWinUICore {
+    $dir = New-PRPerfBinaryTree @('a\Microsoft.UI.Xaml.dll', 'b\Microsoft.UI.Xaml.Controls.dll')
+    try {
+        $selected = Select-PRPerfMeasurementBinary -Root $dir
+        Assert-Equal 'Microsoft.UI.Xaml.dll' (Split-Path -Leaf $selected) 'The WinUI core binary must be preferred.'
+    } finally { Remove-Item -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue }
+}
+
+function Test-MeasurementBinarySelectionIsStableAcrossDuplicates {
+    # Two agents measuring different copies of the same name would compare different
+    # files without saying so, so selection must not depend on enumeration order.
+    $dir = New-PRPerfBinaryTree @('z\Microsoft.UI.Xaml.dll', 'a\Microsoft.UI.Xaml.dll')
+    try {
+        $first = Select-PRPerfMeasurementBinary -Root $dir
+        $second = Select-PRPerfMeasurementBinary -Root $dir
+        Assert-Equal $first $second 'Selection must be deterministic.'
+        if ($first -notmatch '\\a\\') { throw "Selection must be the lexicographically first path. Got '$first'." }
+    } finally { Remove-Item -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue }
+}
+
+function Test-MeasurementBinarySelectionFallsBackThroughCandidates {
+    $dir = New-PRPerfBinaryTree @('b\Microsoft.UI.Xaml.Controls.dll')
+    try {
+        $selected = Select-PRPerfMeasurementBinary -Root $dir
+        Assert-Equal 'Microsoft.UI.Xaml.Controls.dll' (Split-Path -Leaf $selected) 'Selection must fall back to the next candidate.'
+    } finally { Remove-Item -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue }
+}
+
+function Test-MeasurementBinarySelectionExplainsWhatItFound {
+    # An empty or unexpected drop must say what was there, because the alternative is
+    # a bare "not found" against a tree nobody can inspect after the agent is gone.
+    $dir = New-PRPerfBinaryTree @('b\Something.Else.dll')
+    try {
+        $message = $null
+        try { Select-PRPerfMeasurementBinary -Root $dir } catch { $message = $_.Exception.Message }
+        if ($null -eq $message) { throw 'Selection must fail when no candidate is present.' }
+        if ($message -notmatch 'Something\.Else\.dll') {
+            throw "The failure must report what was actually present. Got: $message"
+        }
+    } finally { Remove-Item -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue }
+}
+
+function Test-LocalComparisonWithoutABaselineStillMeasuresBothSides {
+    # With no baseline the run must still produce both result files, because measuring
+    # one side only leaves an empty table that reads exactly like a run that collected
+    # nothing. The comparer is what refuses to draw a conclusion from it.
+    $dir = Join-Path $PSScriptRoot "local-$([guid]::NewGuid())"
+    $trialRoot = Join-Path $dir 'trial\drop'
+    $out = Join-Path $dir 'out'
+    New-Item -ItemType Directory -Path $trialRoot -Force | Out-Null
+    Copy-Item 'C:\Windows\System32\shlwapi.dll' (Join-Path $trialRoot 'Microsoft.UI.Xaml.dll')
+    try {
+        & (Join-Path $root 'Invoke-PRPerfLocalComparison.ps1') `
+            -TrialRoot $trialRoot -TargetRoot (Join-Path $dir 'no-baseline') `
+            -TrialCommit ('a' * 40) -TrialBuildId '500' `
+            -AgentName 'LAB-07' -OutputDirectory $out `
+            -ThresholdPath (Join-Path $root 'pr-perf-thresholds-local.json') | Out-Null
+
+        foreach ($name in @('pr-results.json', 'target-results.json')) {
+            $path = Join-Path $out $name
+            if (-not (Test-Path -LiteralPath $path)) { throw "$name must be written." }
+            Assert-PRPerfResultSchema -Result (Get-Content -LiteralPath $path -Raw | ConvertFrom-Json)
+        }
+
+        $comparison = Compare-PRPerfFiles `
+            -TargetPath (Join-Path $out 'target-results.json') `
+            -TrialPath (Join-Path $out 'pr-results.json') `
+            -ThresholdPath (Join-Path $root 'pr-perf-thresholds-local.json')
+
+        Assert-Equal 'Inconclusive' $comparison.overallState 'A run with no baseline must not conclude anything.'
+        if (@($comparison.scenarios).Count -eq 0) {
+            throw 'The measured numbers must still be reported when there is no baseline.'
+        }
+        if (@($comparison.scenarios[0].metrics[0].target.Median) -le 0) {
+            throw 'The reported median must be a real measurement.'
+        }
+    } finally {
+        Remove-Item -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}

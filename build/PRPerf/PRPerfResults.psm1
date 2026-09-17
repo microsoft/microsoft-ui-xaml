@@ -149,6 +149,36 @@ function Assert-PRPerfResultSchema {
     }
 }
 
+function Select-PRPerfMeasurementBinary {
+    param(
+        [Parameter(Mandatory)][string] $Root,
+        [string[]] $Candidates = @(
+            'Microsoft.UI.Xaml.dll',
+            'Microsoft.UI.Xaml.Controls.dll',
+            'Microsoft.UI.Xaml.Phone.dll'
+        )
+    )
+
+    if (-not (Test-Path -LiteralPath $Root -PathType Container)) {
+        throw "Binary root was not found: $Root"
+    }
+
+    $allBinaries = @(Get-ChildItem -LiteralPath $Root -Filter '*.dll' -File -Recurse -ErrorAction SilentlyContinue)
+    foreach ($candidate in $Candidates) {
+        # Sorted so two agents measuring a drop that happens to contain more than one copy
+        # of the same name still choose the same file. Enumeration order is not guaranteed.
+        $matches = @($allBinaries | Where-Object { $_.Name -ieq $candidate } | Sort-Object FullName)
+        if ($matches.Count -gt 0) {
+            return $matches[0].FullName
+        }
+    }
+
+    $present = @($allBinaries | Select-Object -ExpandProperty Name -Unique | Sort-Object | Select-Object -First 25)
+    $summary = if ($present.Count -eq 0) { '<no .dll files at all>' } else { $present -join ', ' }
+    throw ("None of the candidate binaries ($($Candidates -join ', ')) were found under '$Root'. " +
+        "Binaries present: $summary")
+}
+
 function New-PRPerfLocalResult {
     param(
         [Parameter(Mandatory)][ValidatePattern('^[0-9a-fA-F]{40}$')][string] $Commit,
@@ -681,4 +711,4 @@ function Compare-PRPerfFiles {
     }
 }
 
-Export-ModuleMember -Function Get-PRPerfStatistics, Read-PRPerfResult, Compare-PRPerfResults, Compare-PRPerfFiles, New-PRPerfLocalResult, Assert-PRPerfResultSchema
+Export-ModuleMember -Function Get-PRPerfStatistics, Read-PRPerfResult, Compare-PRPerfResults, Compare-PRPerfFiles, New-PRPerfLocalResult, Assert-PRPerfResultSchema, Select-PRPerfMeasurementBinary

@@ -194,6 +194,13 @@ stages:
       trialArtifactRoot: $(Pipeline.Workspace)\trial
       artifactUrl: $(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)&view=artifacts&type=publishedArtifacts
       pipelineUrl: $(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)
+      # These describe what was actually measured, which is not always what was requested:
+      # the local scenario compares against whichever earlier build of this PR still has a
+      # drop, and reporting the requested commit instead would misstate the comparison.
+      # ADO leaves an undefined $(macro) as literal text, so both need a default here.
+      perfThresholdPath: $(prPerfSourcesDirectory)\build\PRPerf\pr-perf-thresholds.json
+      effectiveTargetCommit: ${{ parameters.targetCommit }}
+      effectiveTargetBuildId: ${{ parameters.targetBuildId }}
     steps:
     - checkout: self
       fetchDepth: 1
@@ -251,18 +258,64 @@ stages:
             Copy-Item -LiteralPath '$(prPerfSourcesDirectory)\build\PRPerf\fixtures\target-pass.json' -Destination '$(comparisonDirectory)\target-results.json'
             Copy-Item -LiteralPath '$(prPerfSourcesDirectory)\build\PRPerf\fixtures\trial-pass.json' -Destination '$(comparisonDirectory)\pr-results.json'
 
-    # Real measurement needs a completed build of the merge base to supply the baseline
-    # binaries, and looking that build up is not implemented yet. Without it the download
-    # below would run with an empty pipelineId and the converter with an empty commit, so
-    # the stage instead produces no result files and the comparison reports Inconclusive.
+    # Real measurement against the legacy harness needs a drop_amd64fre artifact that
+    # nothing publishes, a baseline build that is never looked up, and xperf plus a fixed
+    # Python install, neither of which exists on the lab image. This path instead measures
+    # the drop this build actually produced, using only what the agent actually has.
     - ${{ if and(ne(parameters.useFixtures, true), eq(parameters.targetBuildId, '')) }}:
-      - task: PowerShell@2
-        displayName: PR performance comparison is not wired for real measurement
+      - task: DownloadPipelineArtifact@2
+        displayName: Download this build's binaries
         continueOnError: true
         inputs:
-          targetType: inline
-          script: |
-            Write-Host '##vso[task.logissue type=warning]No targetBuildId was supplied, so there is no baseline build to compare against. Looking up a merge-base build is not implemented yet; the comparison will report Inconclusive.'
+          buildType: current
+          artifactName: drop_amd64chk
+          targetPath: $(trialArtifactRoot)\drop_amd64chk
+
+      - task: PowerShell@2
+        displayName: Find an earlier build of this pull request to compare against
+        continueOnError: true
+        env:
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+        inputs:
+          targetType: filePath
+          filePath: $(prPerfSourcesDirectory)\build\PRPerf\Find-PRPerfBaselineBuild.ps1
+          arguments: >-
+            -CollectionUri "$(System.CollectionUri)"
+            -Project "$(System.TeamProject)"
+            -DefinitionId "$(System.DefinitionId)"
+            -SourceBranch "$(Build.SourceBranch)"
+            -CurrentBuildId "$(Build.BuildId)"
+            -ArtifactName "drop_amd64chk"
+            -AccessToken "$(System.AccessToken)"
+
+      - task: DownloadPipelineArtifact@2
+        displayName: Download the baseline build's binaries
+        continueOnError: true
+        condition: and(succeeded(), ne(variables['perfBaselineBuildId'], ''))
+        inputs:
+          buildType: specific
+          project: $(System.TeamProjectId)
+          buildVersionToDownload: specific
+          pipelineId: $(perfBaselineBuildId)
+          artifactName: drop_amd64chk
+          targetPath: $(targetArtifactRoot)\drop_amd64chk
+
+      - task: PowerShell@2
+        displayName: Measure the PR and baseline binaries
+        continueOnError: true
+        inputs:
+          targetType: filePath
+          filePath: $(prPerfSourcesDirectory)\build\PRPerf\Invoke-PRPerfLocalComparison.ps1
+          arguments: >-
+            -TrialRoot "$(trialArtifactRoot)"
+            -TargetRoot "$(targetArtifactRoot)"
+            -TrialCommit "${{ parameters.sourceCommit }}"
+            -TrialBuildId "${{ parameters.sourceBuildId }}"
+            -BaselineCommit "$(perfBaselineCommit)"
+            -BaselineBuildId "$(perfBaselineBuildId)"
+            -AgentName "$(Agent.Name)"
+            -OutputDirectory "$(comparisonDirectory)"
+            -ThresholdPath "$(prPerfSourcesDirectory)\build\PRPerf\pr-perf-thresholds-local.json"
 
     - ${{ if and(ne(parameters.useFixtures, true), ne(parameters.targetBuildId, '')) }}:
       - task: DownloadPipelineArtifact@2
@@ -491,14 +544,14 @@ stages:
         arguments: >-
           -TargetPath "$(comparisonDirectory)\target-results.json"
           -TrialPath "$(comparisonDirectory)\pr-results.json"
-          -ThresholdPath "$(prPerfSourcesDirectory)\build\PRPerf\pr-perf-thresholds.json"
+          -ThresholdPath "$(perfThresholdPath)"
           -OutputDirectory "$(comparisonDirectory)"
           -ArtifactUrl "$(artifactUrl)"
           -PipelineUrl "$(pipelineUrl)"
           -SourceCommit "${{ parameters.sourceCommit }}"
-          -TargetCommit "${{ parameters.targetCommit }}"
+          -TargetCommit "$(effectiveTargetCommit)"
           -SourceBuildId "${{ parameters.sourceBuildId }}"
-          -TargetBuildId "${{ parameters.targetBuildId }}"
+          -TargetBuildId "$(effectiveTargetBuildId)"
           -RequestIdentity "${{ parameters.requestIdentity }}"
 
     - task: PowerShell@2
