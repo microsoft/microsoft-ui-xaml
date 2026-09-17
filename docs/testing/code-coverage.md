@@ -237,7 +237,7 @@ tests but has not yet been exercised in a pipeline.
 ## Maintaining the coverage flow
 
 Use the local [Pester suite and optional native smoke test](../../Helix/common/pipeline/coverage/tests/README.md)
-for script changes. Local validation passed 99 tests per PowerShell host and 54
+for script changes. Local validation passed 100 tests per PowerShell host and 54
 template comparisons. These local checks do not exercise Azure's retry scheduling
 or every TAEF host's collector access.
 

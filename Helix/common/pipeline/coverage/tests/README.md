@@ -33,6 +33,12 @@ Collector-exit tests check successful and failed real collectors that exit befor
 the shutdown client returns. Nonzero or unavailable collector exit codes must
 produce warnings without replacing passing or failing test results.
 
+An empty-slice regression calls the production test runner through the coverage
+callback with no matching work items. It verifies that the runner's `exit 0`
+returns to the callback, clears a prior nonzero exit code, and still allows the
+real fixture collector to shut down and write its report. Only the runner's
+unrelated `C:\dumps` existence check is mocked to keep it inside the fixture.
+
 An existing-session regression uses a real fixture pipe and verifies that the
 wrapper fails without starting tests, changing permissions, or sending shutdown.
 Native smoke lifecycle regressions invoke its collection helper with fixture

@@ -985,10 +985,15 @@ try
             }
         }
 
-        foreach ($collectorMode in @('native-smoke', 'fail-native-collector'))
+        foreach ($collectorMode in @('native-smoke', 'fail-native-collector', 'empty-slice'))
         {
-            It "reads the real collector exit after successful shutdown with nonempty output ($collectorMode)" {
-                $env:WINUI_COVERAGE_TEST_MODE = $collectorMode
+            $testName = if ($collectorMode -eq 'empty-slice') {
+                'shuts down its real collector and preserves success after the empty-slice runner exits'
+            } else {
+                "reads the real collector exit after successful shutdown with nonempty output ($collectorMode)"
+            }
+            It $testName {
+                $env:WINUI_COVERAGE_TEST_MODE = if ($collectorMode -eq 'empty-slice') { 'native-smoke' } else { $collectorMode }
                 Write-FixtureFile "$script:payload\_coverage-session-id.txt" ('coverage-final-exit-' + [guid]::NewGuid().ToString('N'))
                 $global:CoverageTestCollector.StartCommand = Get-Command Start-Process -CommandType Cmdlet
                 $global:CoverageTestCollector.StopCommand = Get-Command Stop-Process -CommandType Cmdlet
@@ -1006,7 +1011,36 @@ try
                 } -ParameterFilter { $LiteralPath -like '\\.\pipe\CodeCoverage.pipe.*' }
                 try
                 {
-                    Invoke-Collector { & $global:CoverageTestCollector.TestTool test 0 }
+                    if ($collectorMode -eq 'empty-slice')
+                    {
+                        $global:CoverageTestCollector.SliceRunner = Join-Path $script:coverageScripts '..\RunTestPassSliceOnBuildAgent.ps1'
+                        $global:CoverageTestCollector.WorkItemProjDir = Join-Path $script:caseRoot 'empty workitems'
+                        $global:CoverageTestCollector.Payload = $script:payload
+                        $global:CoverageTestCollector.UploadRoot = Split-Path $script:coverageOutput
+                        $global:CoverageTestCollector.ReturnedFromSlice = $false
+                        New-Item -ItemType Directory -Path $global:CoverageTestCollector.WorkItemProjDir | Out-Null
+                        # The runner's dump-directory setup must not touch the machine outside the fixture.
+                        Mock Test-Path { $true } -ParameterFilter { $Path -eq 'C:\dumps' }
+                        $global:LASTEXITCODE = 37
+                        Invoke-Collector {
+                            & $global:CoverageTestCollector.SliceRunner `
+                                -WorkItemProjFileNameFilter 'RunTestsInHelix-*.proj' `
+                                -WorkItemProjDir $global:CoverageTestCollector.WorkItemProjDir `
+                                -TestPayloadDir $global:CoverageTestCollector.Payload `
+                                -UploadRoot $global:CoverageTestCollector.UploadRoot `
+                                -JobPositionInPhase 1 -TotalJobsInPhase 20
+                            $global:CoverageTestCollector.ReturnedFromSlice = $true
+                        }
+                        $global:CoverageTestCollector.ReturnedFromSlice | Should Be $true
+                        Assert-MockCalled Write-Host -Times 1 -Exactly -Scope It -ParameterFilter {
+                            "$Object" -eq 'No work items matched for this agent. Skipping test execution.'
+                        }
+                        @(Get-ToolCalls 'test').Count | Should Be 0
+                    }
+                    else
+                    {
+                        Invoke-Collector { & $global:CoverageTestCollector.TestTool test 0 }
+                    }
                     $LASTEXITCODE | Should Be 0
                     [IO.File]::ReadAllText($script:coverageOutput) | Should Be 'coverage'
                     @(Get-ToolCalls 'shutdown').Count | Should Be 1
