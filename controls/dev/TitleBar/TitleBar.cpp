@@ -301,11 +301,17 @@ void TitleBar::UpdateIcon()
 
         if (const auto& nonClientPointerSource = GetInputNonClientPointerSource())
         {
-            m_windowRectChangedToken = nonClientPointerSource.WindowRectChanged({ this, &TitleBar::OnWindowRectChanged });
+            if (const auto nonClientPointerSource2 = nonClientPointerSource.try_as<winrt::Microsoft::UI::Input::IInputNonClientPointerSource2>())
+            {
+                m_windowRectChangedToken = nonClientPointerSource2.WindowRectChanged({ this, &TitleBar::OnWindowRectChanged });
+            }
         }
-        else if (m_inputNonClientPointerSource)
+        else if (m_inputNonClientPointerSource && m_windowRectChangedToken.value != 0)
         {
-            m_inputNonClientPointerSource.WindowRectChanged(m_windowRectChangedToken);
+            if (const auto nonClientPointerSource2 = m_inputNonClientPointerSource.try_as<winrt::Microsoft::UI::Input::IInputNonClientPointerSource2>())
+            {
+                nonClientPointerSource2.WindowRectChanged(m_windowRectChangedToken);
+            }
             m_windowRectChangedToken.value = 0;
         }
 
@@ -316,9 +322,12 @@ void TitleBar::UpdateIcon()
     {
         m_iconLayoutUpdatedRevoker.revoke();
 
-        if (m_inputNonClientPointerSource)
+        if (m_inputNonClientPointerSource && m_windowRectChangedToken.value != 0)
         {
-            m_inputNonClientPointerSource.WindowRectChanged(m_windowRectChangedToken);
+            if (const auto nonClientPointerSource2 = m_inputNonClientPointerSource.try_as<winrt::Microsoft::UI::Input::IInputNonClientPointerSource2>())
+            {
+                nonClientPointerSource2.WindowRectChanged(m_windowRectChangedToken);
+            }
             m_windowRectChangedToken.value = 0;
         }
 

@@ -115,7 +115,7 @@ _Check_return_ HRESULT FacadeAnimationHelper::StartSingleAnimation(_In_ WUComp::
 
         wrl::ComPtr<WUComp::ICompositionObjectStatics> compFactory;
         IFCFAILFAST(wf::GetActivationFactory(wrl_wrappers::HStringReference(
-            RuntimeClass_Microsoft_UI_Composition_CompositionObject).Get(), &compFactory));
+            RuntimeClass_Windows_UI_Composition_CompositionObject).Get(), &compFactory));
 
         IFC_RETURN(compFactory->StartAnimationWithIAnimationObject(animationObject.Get(), GetAnimationTarget(animation).Get(), ca.Get()));
     }

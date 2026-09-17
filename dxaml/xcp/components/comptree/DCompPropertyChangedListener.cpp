@@ -32,7 +32,13 @@ void DCompPropertyChangedListener::AttachToHandOffVisual(_In_ IInspectable* hand
         ASSERT(m_handOffVisual == nullptr);
 
         wrl::ComPtr<ExpComp::IExpCompositionPropertyChanged> visual;
-        IFCFAILFAST(handOffVisual->QueryInterface(IID_PPV_ARGS(&visual)));
+        const HRESULT queryResult = handOffVisual->QueryInterface(IID_PPV_ARGS(&visual));
+        if (queryResult == E_NOINTERFACE)
+        {
+            // System Composition does not expose the lifted experimental property-change listener.
+            return;
+        }
+        IFCFAILFAST(queryResult);
 
         IFCFAILFAST(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_Size, this));
         IFCFAILFAST(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_Offset, this));
@@ -60,7 +66,12 @@ void DCompPropertyChangedListener::AttachToPrependVisual(_In_ IInspectable* prep
         ASSERT(m_prependVisual == nullptr);
 
         wrl::ComPtr<ExpComp::IExpCompositionPropertyChanged> visual;
-        IFCFAILFAST(prependVisual->QueryInterface(IID_PPV_ARGS(&visual)));
+        const HRESULT queryResult = prependVisual->QueryInterface(IID_PPV_ARGS(&visual));
+        if (queryResult == E_NOINTERFACE)
+        {
+            return;
+        }
+        IFCFAILFAST(queryResult);
         IFCFAILFAST(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_Offset, this));
 
         m_prependVisual = prependVisual;
@@ -94,7 +105,12 @@ void DCompPropertyChangedListener::AttachToWUCClip(_In_ IInspectable* wucInsetCl
         ASSERT(m_wucInsetClip == nullptr);
 
         wrl::ComPtr<ExpComp::IExpCompositionPropertyChanged> insetClip;
-        IFCFAILFAST(wucInsetClip->QueryInterface(IID_PPV_ARGS(&insetClip)));
+        const HRESULT queryResult = wucInsetClip->QueryInterface(IID_PPV_ARGS(&insetClip));
+        if (queryResult == E_NOINTERFACE)
+        {
+            return;
+        }
+        IFCFAILFAST(queryResult);
 
         // Note: There's also anchor/center/offset/rotation/scale on the base clip which Xaml should also care about.
 

@@ -321,7 +321,6 @@
             </VisualStateManager.VisualStateGroups>
             <Border Width="{TemplateBinding MinWidth}">
               <controls:AnimatedIcon x:Name="Icon" Width="16" Height="16" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Center" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" AutomationProperties.AccessibilityView="Raw" local:AnimatedIcon.State="Normal" xmlns:local="using:Microsoft.UI.Xaml.Controls">
-                <animatedvisuals:AnimatedGlobalNavigationButtonVisualSource />
                 <controls:AnimatedIcon.FallbackIconSource>
                   <controls:FontIconSource Glyph="&#xE700;" FontSize="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FontSize }" />
                 </controls:AnimatedIcon.FallbackIconSource>

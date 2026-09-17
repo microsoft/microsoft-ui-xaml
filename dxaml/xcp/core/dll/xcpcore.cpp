@@ -578,7 +578,7 @@ ixp::ICompositionPathFactory* ActivationFactoryCache::GetPathFactory()
     if (!m_compositionPathFactory)
     {
         IFCFAILFAST(MuxGetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionPath).Get(),
+            wrl_wrappers::HStringReference(RuntimeClass_Windows_UI_Composition_CompositionPath).Get(),
             &m_compositionPathFactory));
     }
 

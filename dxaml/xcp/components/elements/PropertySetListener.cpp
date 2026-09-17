@@ -89,8 +89,10 @@ void PropertySetListener::OnAnimationStarted(
         PopulateAnimatedPropertyWithCurrentValue(facadeID);
 
         wrl::ComPtr<ExpComp::IExpCompositionPropertyChanged> notifier;
-        VERIFYHR(backingPropertySet->QueryInterface(IID_PPV_ARGS(&notifier)));
-        IFCFAILFAST(notifier->SetPropertyChangedListener(static_cast<ExpComp::ExpExpressionNotificationProperty>(m_propertyMapper.GetPropertyID(facadeID)), this));
+        if (SUCCEEDED(backingPropertySet->QueryInterface(IID_PPV_ARGS(&notifier))))
+        {
+            IFCFAILFAST(notifier->SetPropertyChangedListener(static_cast<ExpComp::ExpExpressionNotificationProperty>(m_propertyMapper.GetPropertyID(facadeID)), this));
+        }
     }
 }
 
@@ -102,8 +104,10 @@ void PropertySetListener::OnAnimationCompleted(
     if (ShouldTrackFacadeProperty(facadeID))
     {
         wrl::ComPtr<ExpComp::IExpCompositionPropertyChanged> notifier;
-        VERIFYHR(backingPropertySet->QueryInterface(IID_PPV_ARGS(&notifier)));
-        IFCFAILFAST(notifier->SetPropertyChangedListener(static_cast<ExpComp::ExpExpressionNotificationProperty>(m_propertyMapper.GetPropertyID(facadeID)), nullptr));
+        if (SUCCEEDED(backingPropertySet->QueryInterface(IID_PPV_ARGS(&notifier))))
+        {
+            IFCFAILFAST(notifier->SetPropertyChangedListener(static_cast<ExpComp::ExpExpressionNotificationProperty>(m_propertyMapper.GetPropertyID(facadeID)), nullptr));
+        }
     }
 }
 

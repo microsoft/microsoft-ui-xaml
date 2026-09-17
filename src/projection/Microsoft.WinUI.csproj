@@ -17,11 +17,12 @@
 
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <IsTrimmable>true</IsTrimmable>
+    <LiftedMRTProjectionTargetFrameworkMoniker Condition="'$(LiftedMRTProjectionTargetFrameworkMoniker)' == ''">$(WindowsAppSdkTargetFrameworkMoniker)</LiftedMRTProjectionTargetFrameworkMoniker>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Windows.ApplicationModel.Resources.Projection.dll">
-      <HintPath>$(LiftedMRTLibPath)\$(WindowsAppSdkTargetFrameworkMoniker)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
+      <HintPath>$(LiftedMRTLibPath)\$(LiftedMRTProjectionTargetFrameworkMoniker)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
       <Private>true</Private>
     </Reference>
   </ItemGroup>
@@ -40,6 +41,7 @@
   <ItemGroup>
     <CsWinRTInputs Include="$(PkgMicrosoft_Internal_WinUIDetails)\lib\uap10.0\Microsoft.UI.Text.winmd" />
     <CsWinRTInputs Include="$(LiftedMRTWinmdPath)\Microsoft.Windows.ApplicationModel.Resources.winmd" />
+    <CsWinRTInputs Include="$(WindowsSdkDir)References\$(WindowsTargetPlatformVersion)\Windows.Foundation.UniversalApiContract.winmd" />
     <CsWinRTInputs Include="$(ArtifactsBinDir)Product\Microsoft.UI.Xaml.winmd"
                    Condition="'$(BuildProjectReferences)' == 'false'" />
   </ItemGroup>

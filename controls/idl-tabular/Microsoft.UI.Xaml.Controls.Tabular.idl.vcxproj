@@ -62,6 +62,22 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="$(MUXCProjectRoot)MidlShared.props" />
+  <PropertyGroup>
+    <GetCppWinRTPlatformWinMDReferencesDependsOn>$(GetCppWinRTPlatformWinMDReferencesDependsOn);UseCurrentUniversalApiContractForSystemComposition</GetCppWinRTPlatformWinMDReferencesDependsOn>
+  </PropertyGroup>
+  <Target Name="UseCurrentUniversalApiContractForSystemComposition"
+          AfterTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <_LegacyUniversalApiContract Include="@(ReferencePath)"
+                                   Condition="'%(Filename)' == 'Windows.Foundation.UniversalApiContract'" />
+      <ReferencePath Remove="@(_LegacyUniversalApiContract)" />
+      <ReferencePath Include="$(WindowsSdkDir)References\$(WindowsTargetPlatformVersion)\Windows.Foundation.UniversalApiContract.winmd">
+        <IsSystemReference>true</IsSystemReference>
+        <WinMDFile>true</WinMDFile>
+        <ReferenceSourceTarget>ResolveAssemblyReference</ReferenceSourceTarget>
+      </ReferencePath>
+    </ItemGroup>
+  </Target>
   <ItemGroup>
     <ProjectReference Include="$(MUXProjectRoot)dxaml\xcp\dxaml\idl\winrt\controls\Microsoft.ui.xaml.controls.controls.vcxproj" />
     <ProjectReference Include="$(MUXProjectRoot)dxaml\xcp\dxaml\idl\winrt\core\Microsoft.ui.xaml.coretypes.vcxproj" />

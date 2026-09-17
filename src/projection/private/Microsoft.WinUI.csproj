@@ -7,11 +7,12 @@
     <TargetPlatformMinVersion>$(WindowsTargetPlatformMinVersion)</TargetPlatformMinVersion>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <IsTrimmable>true</IsTrimmable>
+    <LiftedMRTProjectionTargetFrameworkMoniker Condition="'$(LiftedMRTProjectionTargetFrameworkMoniker)' == ''">$(WindowsAppSdkTargetFrameworkMoniker)</LiftedMRTProjectionTargetFrameworkMoniker>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Windows.ApplicationModel.Resources.Projection.dll">
-      <HintPath>$(LiftedMRTLibPath)\$(WindowsAppSdkTargetFrameworkMoniker)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
+      <HintPath>$(LiftedMRTLibPath)\$(LiftedMRTProjectionTargetFrameworkMoniker)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
       <Private>true</Private>
     </Reference>
   </ItemGroup>

@@ -373,7 +373,7 @@ Microsoft::WRL::ComPtr<wgr::Effects::IGraphicsEffect> RevealFocusSource::CreateC
 
     wrl::ComPtr<WUComp::ICompositionEffectSourceParameterFactory> sourceParamFactory;
     IFCFAILFAST(wf::GetActivationFactory(
-        HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionEffectSourceParameter).Get(),
+        HStringReference(RuntimeClass_Windows_UI_Composition_CompositionEffectSourceParameter).Get(),
         &sourceParamFactory));
 
     wrl::ComPtr<WUComp::ICompositionEffectSourceParameter> param;

@@ -19,7 +19,7 @@ EffectPolicyHelper::EffectPolicyHelper(_In_ CCoreServices* coreServices, _In_ IE
 
     wrl::ComPtr<IActivationFactory> factory;
     IGNOREHR(wf::GetActivationFactory(
-        wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionCapabilities).Get(),
+        wrl_wrappers::HStringReference(RuntimeClass_Windows_UI_Composition_CompositionCapabilities).Get(),
         &factory));
 
     if (factory != nullptr)
