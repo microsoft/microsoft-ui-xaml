@@ -339,7 +339,7 @@ stages:
             -TrialRoot "$(trialArtifactRoot)"
             -TargetRoot "$(targetArtifactRoot)"
             -TrialCommit "${{ parameters.sourceCommit }}"
-            -TrialBuildId "${{ parameters.sourceBuildId }}"
+            -TrialBuildId "$(Build.BuildId)"
             -BaselineCommit "$(perfBaselineCommit)"
             -BaselineBuildId "$(perfBaselineBuildId)"
             -AgentName "$(Agent.Name)"

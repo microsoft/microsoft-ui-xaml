@@ -802,3 +802,13 @@ function Test-PerfJobReportsMeasurementToolingAvailability {
         throw 'The tooling probe is diagnostic only and must never fail the job.'
     }
 }
+
+function Test-MeasureStepUsesTheBuildThatProducedTheDrop {
+    # The trial drop is downloaded with buildType 'current', so the build that produced
+    # it is this build. Passing the request's sourceBuildId instead yields an empty
+    # string on label-triggered runs and the measurement never runs.
+    $yaml = Get-Content (Join-Path $root '..\AzurePipelinesTemplates\WinUI-PRPerf-Run.yml') -Raw
+    if ($yaml -notmatch '-TrialBuildId\s+"\$\(Build\.BuildId\)"') {
+        throw 'The measurement step must pass this build''s id as -TrialBuildId.'
+    }
+}

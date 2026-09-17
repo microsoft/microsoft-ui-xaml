@@ -3,7 +3,7 @@ param(
     [Parameter(Mandatory)][string] $TrialRoot,
     [Parameter(Mandatory)][string] $TargetRoot,
     [Parameter(Mandatory)][ValidatePattern('^[0-9a-fA-F]{40}$')][string] $TrialCommit,
-    [Parameter(Mandatory)][string] $TrialBuildId,
+    [Parameter(Mandatory)][AllowEmptyString()][string] $TrialBuildId,
     [string] $BaselineCommit = '',
     [string] $BaselineBuildId = '',
     [Parameter(Mandatory)][string] $AgentName,
@@ -13,6 +13,14 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'PRPerfResults.psm1') -Force
+
+# The schema insists on a non-empty build id because a result nobody can trace back to
+# a build is not evidence. When the pipeline cannot tell us one, say so explicitly
+# rather than losing the measurement over a blank field.
+if ([string]::IsNullOrWhiteSpace($TrialBuildId)) {
+    Write-Host "##vso[task.logissue type=warning]No build id was supplied for the PR side; recording it as 'unknown'."
+    $TrialBuildId = 'unknown'
+}
 
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $measure = Join-Path $PSScriptRoot 'Measure-PRPerfLocalScenario.ps1'

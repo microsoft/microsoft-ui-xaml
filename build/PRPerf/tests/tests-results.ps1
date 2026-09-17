@@ -1001,3 +1001,20 @@ function Test-MeasurementBinarySelectionKnowsTheLiftedProductName {
         Assert-Equal 'Microsoft.WinUI.dll' (Split-Path -Leaf $selected) 'The lifted product binary must be selectable.'
     } finally { Remove-Item -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue }
 }
+
+function Test-LocalComparisonSurvivesAMissingBuildId {
+    # The pipeline supplies the build id as metadata. An absent one is a gap in
+    # provenance, not a reason to produce no measurements at all -- failing to bind
+    # the parameter costs the whole run its numbers.
+    $script = Join-Path $root 'Invoke-PRPerfLocalComparison.ps1'
+    $out = Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid())
+    $err = $null
+    try {
+        & $script -TrialRoot (Join-Path $out 'no-such-trial') -TargetRoot (Join-Path $out 'no-such-target') `
+            -TrialCommit ('a' * 40) -TrialBuildId '' -AgentName 'agent' `
+            -OutputDirectory $out -ThresholdPath (Join-Path $root 'pr-perf-thresholds-local.json') 2>&1 | Out-Null
+    } catch { $err = $_.Exception.Message }
+    if ($err -and $err -match 'empty string') {
+        throw "An absent build id must not be a parameter-binding failure. Got: $err"
+    }
+}
