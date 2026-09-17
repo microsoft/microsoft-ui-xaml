@@ -165,7 +165,7 @@ extends:
           buildProductOnly: false
           dependsOn: ValidateGitHubPrContext
 
-    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false), eq(parameters.runQuickValidation, false)) }}:
+    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false)) }}:
       - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
         parameters:
           stageName: Build_MUXFinalRelease
@@ -185,12 +185,12 @@ extends:
           ${{ else }}:
             pipelineKind: PR
 
-    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.runQuickValidation, false)) }}:
+    - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml
         parameters:
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
 
-    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.runQuickValidation, false)) }}:
+    - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml
         parameters:
           pipelineKind: GitHubPR
