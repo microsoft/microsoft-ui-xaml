@@ -65,7 +65,7 @@ void ErrorHandlingHelper::TrackLeaksForTest()
         static_cast<ErrorHandlingHelper*>(errorHelper.Get())->m_spStackLogger->SetIgnoreLeaksForTest(false);
     }
 }
-void ErrorHandlingHelper::PerformLeakDetection()
+void ErrorHandlingHelper::PerformLeakDetection(bool expectLeaks)
 {
     auto testHooks = WindowHelper::GetTestHooks();
 
@@ -80,7 +80,16 @@ void ErrorHandlingHelper::PerformLeakDetection()
 
     LOG_OUTPUT(L"Checking for leaks.");
     RunOnUIThread([&] {
-        testHooks->PostTestCheckForLeaks(leakThreshold);
+        if (expectLeaks)
+        {
+            LoggingHelper::VerifyExpectedLeaks([&]() {
+                testHooks->PostTestCheckForLeaks(leakThreshold);
+            });
+        }
+        else
+        {
+            testHooks->PostTestCheckForLeaks(leakThreshold);
+        }
     });
 }
 

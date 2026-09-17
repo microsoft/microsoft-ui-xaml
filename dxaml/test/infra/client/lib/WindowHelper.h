@@ -287,7 +287,7 @@ namespace Private { namespace Infrastructure {
         static void IsInputPaneOpenStatic(_Out_ BOOLEAN* pIsInputPaneOpen);
         static void TryInputPaneHideStatic();
 
-        void EnableLeakDetection();
+        void EnableLeakDetection(bool expectLeaks);
         static bool IsLeakDetectionEnabled();
 
         static wrl::ComPtr<IXamlTestHooks> GetTestHooks();
@@ -308,6 +308,13 @@ namespace Private { namespace Infrastructure {
         static wrl::ComPtr<msy::IDispatcherQueue> GetDispatcherForMainView();
 
     private:
+        enum class LeakDetectionMode
+        {
+            Disabled,
+            NoLeaksExpected,
+            LeaksExpected
+        };
+
         void InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* customProvider);
 
         static HRESULT OnAppSuspended();
@@ -354,7 +361,7 @@ namespace Private { namespace Infrastructure {
         static bool s_isShutdownEnabled;
 
         bool m_ensureSatelliteDLLCustomDPCleanup = false;
-        bool m_leakDetectionRequested = false;
+        LeakDetectionMode m_leakDetectionMode = LeakDetectionMode::Disabled;
 
         // Delegate function the test can set to call it back after every UI thread tick
         wrl::ComPtr<test_infra::IPostTickCallback> m_spPostTickCallback;

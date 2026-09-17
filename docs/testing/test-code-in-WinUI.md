@@ -173,8 +173,7 @@ The opt-in applies only to the current initialized XAML lifetime. Repeated calls
 are harmless and do not reset allocation tracking. `ShutdownXaml()` consumes the
 request, including on failure. Every `InitializeXaml()` overload resets the opt-in,
 and a replacement host starts opted out. Call `EnableLeakDetection()` again after
-mid-test reinitialization to check the next shutdown. This API does not add a TAEF
-data parameter or change the test's name.
+mid-test reinitialization to check the next shutdown.
 
 Keep the usual `InitializeXaml()` setup and `ShutdownXaml()` followed by
 `VerifyTestCleanup()` cleanup. For opted-in WPF tests, shutdown tears down XAML
@@ -197,6 +196,30 @@ registrations before shutdown: each opted-in shutdown is a leak-check interval.
 Detection is native-only, not CLR or whole-host leak detection. Existing leak
 opt-outs, OneCore/shutdown restrictions, UAP checks, and non-opted-in behavior
 are unchanged.
+
+##### Testing the leak detector
+
+In a checked-build WPF infrastructure test, request a shutdown-time scan that
+must detect a leak:
+
+```cpp
+TestServices::EnableLeakDetection(true /* expectLeaks */);
+```
+
+The parameterless overload and `false` expect no leaks. Each call selects the
+expectation for the current XAML lifetime. Shutdown consumes it, including on
+failure, and initialization resets it along with the opt-in.
+
+Expected-leak mode records native leak diagnostics from the scanning thread as
+comments and fails the test if none are reported. Other errors, cleanup failures,
+and leaks outside that scan still fail normally. Skipping the scan, including
+through `IgnoreLeaksForTest()`, cannot satisfy the expectation and fails the test.
+`VerifyTestCleanup()` also reports an error if an expectation remains pending.
+
+`InfrastructureLeakDetectionTests::ValidateWpfExpectedLeakDetection` retains a
+`SolidColorBrush` in a callback through the scan, then verifies that shutdown
+releases the callback on the retiring UI thread. It follows this with a clean
+shutdown that expects no leaks. The test is registered only in checked builds.
 
 ### Server Component
 

@@ -819,6 +819,12 @@ HRESULT WindowHelper::VerifyTestCleanup()
          Hosting::HostingMode hostingMode = Hosting::HostingMode::UAP;
         LogThrow_IfFailed(GetHostingMode(&hostingMode));
 
+        if (m_leakDetectionMode == LeakDetectionMode::LeaksExpected)
+        {
+            m_leakDetectionMode = LeakDetectionMode::Disabled;
+            Log::Error(L"Expected-leak detection was not performed before test cleanup.");
+        }
+
         // The WPF test host checks native leaks in ShutdownXaml, before host replacement resets tracking.
         if (IsLeakDetectionEnabled() && hostingMode == HostingMode::UAP)
         {
@@ -2138,7 +2144,7 @@ void WindowHelper::InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* c
     s_isShutdownEnabled = false;
     s_foregroundWindowCraterArmed = false;
     m_ensureSatelliteDLLCustomDPCleanup = false;
-    m_leakDetectionRequested = false;
+    m_leakDetectionMode = LeakDetectionMode::Disabled;
 
     // Make sure we are tracking leaks for this test in case a previous test had disabled it.
     ErrorHandlingHelper::TrackLeaksForTest();
@@ -2573,16 +2579,24 @@ HRESULT WindowHelper::ResetVisualTree()
     COM_END
 }
 
-void WindowHelper::EnableLeakDetection()
+void WindowHelper::EnableLeakDetection(bool expectLeaks)
 {
-    m_leakDetectionRequested = true;
+    m_leakDetectionMode = expectLeaks ? LeakDetectionMode::LeaksExpected : LeakDetectionMode::NoLeaksExpected;
 }
 
 HRESULT WindowHelper::ShutdownXaml()
 {
     COM_START_GROUP(L"WindowHelper::ShutdownXaml")
     {
-        const bool leakDetectionRequested = std::exchange(m_leakDetectionRequested, false);
+        const auto leakDetectionMode = std::exchange(m_leakDetectionMode, LeakDetectionMode::Disabled);
+        const bool expectLeaks = leakDetectionMode == LeakDetectionMode::LeaksExpected;
+        bool leakDetectionPerformed = false;
+        auto verifyExpectedScan = wil::scope_exit([&]() {
+            if (expectLeaks && !leakDetectionPerformed)
+            {
+                Log::Error(L"Expected-leak detection was requested, but no WPF shutdown-time scan ran.");
+            }
+        });
 
         // InitializeHost replaces TestServices' owning reference before this call returns.
         wrl::ComPtr<WindowHelper> keepAlive(this);
@@ -2592,7 +2606,8 @@ HRESULT WindowHelper::ShutdownXaml()
         BOOLEAN isOneCore = FALSE;
         LogThrow_IfFailed(Utilities::IsOneCoreStatic(&isOneCore));
 
-        const bool wpfLeakDetectionRequested = leakDetectionRequested && hostingMode == HostingMode::WPF;
+        const bool wpfLeakDetectionRequested =
+            leakDetectionMode != LeakDetectionMode::Disabled && hostingMode == HostingMode::WPF;
 
         RunOnUIThread([&]() {
             HMODULE hModuleMuxc = GetModuleHandle(L"Microsoft.UI.Xaml.Controls.dll");
@@ -2781,9 +2796,10 @@ HRESULT WindowHelper::ShutdownXaml()
                 if (IsLeakDetectionEnabled())
                 {
                     LOG_OUTPUT(L"Checking the retiring WPF core before host replacement.");
-                    RunOnUIThread([]() {
-                        ErrorHandlingHelper::PerformLeakDetection();
+                    RunOnUIThread([expectLeaks]() {
+                        ErrorHandlingHelper::PerformLeakDetection(expectLeaks);
                     });
+                    leakDetectionPerformed = true;
                 }
 
                 RunOnUIThread([&]() {

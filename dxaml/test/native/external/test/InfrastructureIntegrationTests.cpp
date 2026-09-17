@@ -287,8 +287,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             WEX::Common::String initialization;
             VERIFY_SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"HostInitialization", initialization));
-            bool isNegativeControl = false;
-            WEX::TestExecution::RuntimeParameters::TryGetValue(L"WpfLeakNegativeControl", isNegativeControl);
 
             // Explicit host initialization, like WindowedPopupHighDPI, precedes test content.
             {
@@ -310,13 +308,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->InitializeXaml();
             auto shutdown = wil::scope_exit([]() {
                 TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
-                LOG_OUTPUT(L"WPF final cleanup: before ShutdownXaml; leak detection must be disabled.");
                 TestServices::WindowHelper->ShutdownXaml();
-                LOG_OUTPUT(L"WPF final cleanup: after ShutdownXaml.");
             });
 
             for (int interval = 0; interval < 2; ++interval)
             {
+                LOG_OUTPUT(L"WPF shutdown interval %d.", interval);
+
                 // Repeated requests must still produce only one shutdown-time scan.
                 TestServices::EnableLeakDetection();
                 TestServices::EnableLeakDetection();
@@ -332,15 +330,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 std::weak_ptr<int> callbacks = lifetime;
                 RunOnUIThread([&]() {
                     retiringThreadId = GetCurrentThreadId();
-                    SolidColorBrush^ retainedBrush = nullptr;
-                    if (isNegativeControl && interval == 0)
-                    {
-                        LOG_OUTPUT(L"NEGATIVE CONTROL: retaining a native brush through the shutdown-time scan.");
-                        retainedBrush = ref new SolidColorBrush();
-                    }
-                    helper->SetPostTickCallback(ref new PostTickCallback([lifetime, retainedBrush]() {
+                    helper->SetPostTickCallback(ref new PostTickCallback([lifetime]() {
                         ++*lifetime;
-                        if (retainedBrush) { (void)retainedBrush->Opacity; }
                     }));
                     helper->SetPlayingSoundNodeCallback(ref new PlayingSoundNodeCallback(
                         [lifetime](ElementSoundKind, bool, float, float, float, double) { ++*lifetime; }));
@@ -383,9 +374,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                         TestServices::Utilities->SetImageCompareTolerance(0);
                     });
                     TestServices::Utilities->SetImageCompareTolerance(1);
-                    LOG_OUTPUT(L"WPF interval %d: before ShutdownXaml.", interval);
                     helper->ShutdownXaml();
-                    LOG_OUTPUT(L"WPF interval %d: after ShutdownXaml.", interval);
                     VERIFY_ARE_EQUAL(1, TestServices::Utilities->GetImageCompareTolerance());
                 }
 
@@ -396,10 +385,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 VERIFY_IS_TRUE(callbacks.expired());
                 VERIFY_ARE_EQUAL(retiringThreadId, *releaseThreadId);
 
-                LOG_OUTPUT(L"WPF interval %d: verifying cleanup twice; neither call may scan.", interval);
+                // Repeated cleanup must not scan the replacement core.
                 replacement->VerifyTestCleanup();
                 replacement->VerifyTestCleanup();
-                LOG_OUTPUT(L"WPF interval %d: initializing the already-replaced host.", interval);
                 if (interval == 0)
                 {
                     replacement->InitializeXaml(ref new XamlTypeInfo::XamlControlsXamlMetaDataProvider());
@@ -412,7 +400,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 VERIFY_IS_TRUE(replacementDispatcher == replacement->CurrentDispatcher);
             }
 
-            LOG_OUTPUT(L"WPF final cleanup: reinitialization must discard this leak-detection opt-in.");
+            // Reinitialization must discard a pending leak-detection request.
             TestServices::EnableLeakDetection();
             if (initialization == L"Default")
             {
