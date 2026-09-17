@@ -211,6 +211,7 @@ stages:
 
     - task: PowerShell@2
       displayName: Tag PR performance run
+      continueOnError: true
       inputs:
         targetType: inline
         script: |
@@ -228,6 +229,7 @@ stages:
     - ${{ if eq(parameters.useFixtures, true) }}:
       - task: PowerShell@2
         displayName: Copy PR perf fixtures
+        continueOnError: true
         inputs:
           targetType: inline
           script: |
@@ -243,6 +245,7 @@ stages:
     - ${{ if and(ne(parameters.useFixtures, true), eq(parameters.targetBuildId, '')) }}:
       - task: PowerShell@2
         displayName: PR performance comparison is not wired for real measurement
+        continueOnError: true
         inputs:
           targetType: inline
           script: |
@@ -251,6 +254,7 @@ stages:
     - ${{ if and(ne(parameters.useFixtures, true), ne(parameters.targetBuildId, '')) }}:
       - task: DownloadPipelineArtifact@2
         displayName: Download target build artifacts
+        continueOnError: true
         inputs:
           buildType: specific
           project: $(System.TeamProjectId)
@@ -261,6 +265,7 @@ stages:
 
       - task: DownloadPipelineArtifact@2
         displayName: Download trial build artifacts
+        continueOnError: true
         inputs:
           buildType: specific
           project: $(System.TeamProjectId)
@@ -271,6 +276,7 @@ stages:
 
       - task: PowerShell@2
         displayName: Validate paired PR perf artifacts
+        continueOnError: true
         inputs:
           targetType: inline
           script: |
@@ -285,6 +291,7 @@ stages:
 
       - task: PowerShell@2
         displayName: Run target PR performance scenarios
+        continueOnError: true
         env:
           PerfArtifactsDir: $(targetPerfArtifactsDir)
           USEREXPERIMENTSPATH: ${{ parameters.requestIdentity }}
@@ -298,6 +305,7 @@ stages:
 
       - task: PowerShell@2
         displayName: Convert target raw performance results
+        continueOnError: true
         inputs:
           targetType: filePath
           filePath: $(prPerfSourcesDirectory)\build\PRPerf\Convert-WinUIPerfResults.ps1
@@ -311,6 +319,7 @@ stages:
 
       - task: PowerShell@2
         displayName: Preserve target PR performance diagnostics
+        continueOnError: true
         inputs:
           targetType: inline
           script: |
@@ -367,6 +376,7 @@ stages:
 
       - task: PowerShell@2
         displayName: Clear target raw performance results
+        continueOnError: true
         inputs:
           targetType: inline
           script: |
@@ -375,6 +385,7 @@ stages:
 
       - task: PowerShell@2
         displayName: Run trial PR performance scenarios
+        continueOnError: true
         env:
           PerfArtifactsDir: $(trialPerfArtifactsDir)
           USEREXPERIMENTSPATH: ${{ parameters.requestIdentity }}
@@ -388,6 +399,7 @@ stages:
 
       - task: PowerShell@2
         displayName: Convert trial raw performance results
+        continueOnError: true
         inputs:
           targetType: filePath
           filePath: $(prPerfSourcesDirectory)\build\PRPerf\Convert-WinUIPerfResults.ps1
@@ -401,6 +413,7 @@ stages:
 
       - task: PowerShell@2
         displayName: Preserve trial PR performance diagnostics
+        continueOnError: true
         inputs:
           targetType: inline
           script: |
@@ -457,6 +470,7 @@ stages:
 
     - task: PowerShell@2
       displayName: Compare PR performance results
+      continueOnError: true
       condition: always()
       inputs:
         targetType: filePath
@@ -476,6 +490,7 @@ stages:
 
     - task: PowerShell@2
       displayName: Create fallback PR perf comparison artifact
+      continueOnError: true
       condition: always()
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -654,6 +669,7 @@ stages:
 
     - task: PowerShell@2
       displayName: Verify PR perf comparison artifact contents
+      continueOnError: true
       condition: always()
       inputs:
         targetType: inline
@@ -670,6 +686,7 @@ stages:
     - ${{ if eq(parameters.publishProvider, 'ado') }}:
       - task: PowerShell@2
         displayName: Publish PR perf result (Azure DevOps)
+        continueOnError: true
         condition: always()
         env:
           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -690,6 +707,7 @@ stages:
     - ${{ if eq(parameters.publishProvider, 'github') }}:
       - task: PowerShell@2
         displayName: Publish PR perf result (GitHub)
+        continueOnError: true
         condition: always()
         env:
           GITHUB_PRPERF_TOKEN: $(GitHubPRPerfToken)

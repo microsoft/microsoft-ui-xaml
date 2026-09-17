@@ -717,6 +717,38 @@ function Test-PerfJobOnlyRequestsTheDedicatedPoolWhenAsked {
     }
 }
 
+function Test-NoPerfStepCanFailTheStage {
+    # 1ES strips job-level continueOnError during template expansion: the expanded
+    # YAML for this pipeline contains no job-level continueOnError at all, only
+    # step-level ones. The whole design rests on perf never failing a pull request,
+    # so the guarantee has to live where it actually survives expansion.
+    $yaml = Get-Content (Join-Path $root '..\AzurePipelinesTemplates\WinUI-PRPerf-Run.yml') -Raw
+    $jobStart = $yaml.IndexOf('- job: GatePRPerf')
+    if ($jobStart -lt 0) {
+        throw 'Could not locate the perf jobs in the template.'
+    }
+    $jobsText = $yaml.Substring($jobStart)
+
+    $taskMatches = @([regex]::Matches($jobsText, '(?m)^(\s*)- task: \S+\s*$'))
+    if ($taskMatches.Count -eq 0) {
+        throw 'Expected the perf jobs to declare tasks.'
+    }
+
+    $offenders = @()
+    for ($i = 0; $i -lt $taskMatches.Count; $i++) {
+        $start = $taskMatches[$i].Index
+        $end = if ($i + 1 -lt $taskMatches.Count) { $taskMatches[$i + 1].Index } else { $jobsText.Length }
+        $stepText = $jobsText.Substring($start, $end - $start)
+        if ($stepText -notmatch '(?m)^\s*continueOnError:\s*true\s*$') {
+            $offenders += ($stepText -split "`n")[0].Trim()
+        }
+    }
+
+    if ($offenders.Count -gt 0) {
+        throw ("Every perf step must set continueOnError so the informational stage cannot fail the run. Missing on: {0}" -f ($offenders -join '; '))
+    }
+}
+
 function Test-PerfJobPinsTheImageWheneverItNamesAPool {
     # Every other test job in this pipeline pairs its custom pool with an
     # ImageOverride demand. Without one the agent is handed an arbitrary image, so
