@@ -162,11 +162,19 @@ Most private API usage has been removed from Private.Infrastructure. It depends 
 
 #### WPF leak detection
 
-Opt a core test into WPF native leak detection with:
+Opt a core test into WPF native leak detection by calling this at the start of
+the test, after its `InitializeXaml()` setup:
 
 ```cpp
-TEST_METHOD_PROPERTY(L"Data:WpfLeakDetection", L"{true}")
+TestServices::EnableLeakDetection();
 ```
+
+The opt-in applies only to the current initialized XAML lifetime. Repeated calls
+are harmless and do not reset allocation tracking. `ShutdownXaml()` consumes the
+request, including on failure. Every `InitializeXaml()` overload resets the opt-in,
+and a replacement host starts opted out. Call `EnableLeakDetection()` again after
+mid-test reinitialization to check the next shutdown. This API does not add a TAEF
+data parameter or change the test's name.
 
 Keep the usual `InitializeXaml()` setup and `ShutdownXaml()` followed by
 `VerifyTestCleanup()` cleanup. For opted-in WPF tests, shutdown checks the old

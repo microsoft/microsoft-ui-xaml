@@ -310,11 +310,17 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->InitializeXaml();
             auto shutdown = wil::scope_exit([]() {
                 TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+                LOG_OUTPUT(L"WPF final cleanup: before ShutdownXaml; leak detection must be disabled.");
                 TestServices::WindowHelper->ShutdownXaml();
+                LOG_OUTPUT(L"WPF final cleanup: after ShutdownXaml.");
             });
 
             for (int interval = 0; interval < 2; ++interval)
             {
+                // Repeated requests must still produce only one shutdown-time scan.
+                TestServices::EnableLeakDetection();
+                TestServices::EnableLeakDetection();
+
                 auto helper = TestServices::WindowHelper;
                 auto dispatcher = helper->CurrentDispatcher;
                 DWORD retiringThreadId = 0;
@@ -396,6 +402,17 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 }
                 VERIFY_IS_TRUE(replacement == TestServices::WindowHelper);
                 VERIFY_IS_TRUE(replacementDispatcher == replacement->CurrentDispatcher);
+            }
+
+            LOG_OUTPUT(L"WPF final cleanup: reinitialization must discard this leak-detection opt-in.");
+            TestServices::EnableLeakDetection();
+            if (initialization == L"Default")
+            {
+                TestServices::WindowHelper->InitializeXaml();
+            }
+            else
+            {
+                TestServices::WindowHelper->InitializeXaml(ref new XamlTypeInfo::XamlControlsXamlMetaDataProvider());
             }
         }
 

@@ -43,11 +43,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     //
     void CheckBoxIntegrationTests::CanInstantiate()
     {
+        TestServices::EnableLeakDetection();
         Generic::DependencyObjectTests<xaml_controls::CheckBox>::CanInstantiate();
     }
 
     void CheckBoxIntegrationTests::CanEnterAndLeaveLiveTree()
     {
+        TestServices::EnableLeakDetection();
         Generic::FrameworkElementTests<xaml_controls::CheckBox>::CanEnterAndLeaveLiveTree();
     }
 

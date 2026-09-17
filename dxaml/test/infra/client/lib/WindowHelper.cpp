@@ -20,6 +20,7 @@
 #include <dxgi.h>
 #include <xmllite.h>
 #include <stdio.h>
+#include <utility>
 #include <dcomp.h>
 #include "IXamlTestHooks-win.h"
 #include <windows.applicationmodel.core.h>
@@ -2137,6 +2138,7 @@ void WindowHelper::InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* c
     s_isShutdownEnabled = false;
     s_foregroundWindowCraterArmed = false;
     m_ensureSatelliteDLLCustomDPCleanup = false;
+    m_wpfLeakDetectionRequested = false;
 
     // Make sure we are tracking leaks for this test in case a previous test had disabled it.
     ErrorHandlingHelper::TrackLeaksForTest();
@@ -2571,10 +2573,17 @@ HRESULT WindowHelper::ResetVisualTree()
     COM_END
 }
 
+void WindowHelper::EnableLeakDetection()
+{
+    m_wpfLeakDetectionRequested = true;
+}
+
 HRESULT WindowHelper::ShutdownXaml()
 {
     COM_START_GROUP(L"WindowHelper::ShutdownXaml")
     {
+        const bool leakDetectionRequested = std::exchange(m_wpfLeakDetectionRequested, false);
+
         // InitializeHost replaces TestServices' owning reference before this call returns.
         wrl::ComPtr<WindowHelper> keepAlive(this);
 
@@ -2583,17 +2592,7 @@ HRESULT WindowHelper::ShutdownXaml()
         BOOLEAN isOneCore = FALSE;
         LogThrow_IfFailed(Utilities::IsOneCoreStatic(&isOneCore));
 
-        bool wpfLeakDetectionRequested = false;
-        if (hostingMode == HostingMode::WPF)
-        {
-            WEX::Common::String value;
-            if (SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"WpfLeakDetection", value)))
-            {
-                wpfLeakDetectionRequested = value.CompareNoCase(L"true") == 0;
-                LogThrow_IfFalse(wpfLeakDetectionRequested || value.CompareNoCase(L"false") == 0,
-                    E_INVALIDARG, L"WpfLeakDetection must be true or false.");
-            }
-        }
+        const bool wpfLeakDetectionRequested = leakDetectionRequested && hostingMode == HostingMode::WPF;
 
         if (wpfLeakDetectionRequested && !isOneCore)
         {
