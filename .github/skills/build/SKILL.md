@@ -62,7 +62,7 @@ Run them yourself; do not ask the user to.
 1. Missing tools, packages, or restore outputs — run `.\init.cmd <flavor>` once and retry.
 2. `C3859` or `C1076` precompiled header memory failures — retry once with `-BuildArguments /b`.
 3. `C1853` stale precompiled header failures — retry once with `-BuildArguments '/c','/b'`.
-4. `MSB4217` task host exit, or a following `MSB4027` — retry once with `-BuildArguments /m:1`.
+4. `MSB4217` task host exit, or a following `MSB4027` — retry once with `-BuildArguments /b`.
 5. Anything else — stop and report the failing project, the error, the exit code, and the
    binary log path.
 
@@ -109,8 +109,7 @@ Pass these through `-BuildArguments`.
 | Flag | Effect |
 |---|---|
 | `/c` | Clean build. Deletes `BuildOutput` first. Use when switching flavors |
-| `/b` | Reduced parallelism (`/m:2`). Avoids precompiled header memory exhaustion |
-| `/m:1` | Single MSBuild process. Use after `MSB4217` |
+| `/b` | Reduced parallelism (`/m:2`). Avoids precompiled header memory exhaustion, and helps after `MSB4217` |
 | `/restore` | NuGet restore before building |
 | `/nomock` | Skip the mock package. Only when changing `dxaml/` product and test code |
 | `/fake` | Print the commands without running them |
@@ -185,13 +184,18 @@ Stale precompiled headers, typically after a Visual Studio update.
 
 ### `MSB4217: Task host node exited prematurely`
 
-Retry once with a single MSBuild process:
+Retry once with reduced parallelism:
 
 ```powershell
-.\.github\skills\build\Invoke-AgentBuild.ps1 -BuildArguments /m:1
+.\.github\skills\build\Invoke-AgentBuild.ps1 -BuildArguments /b
 ```
 
-If the serial retry fails, stop and report both errors, the exit code, and the binary log.
+`Build.cmd` chooses the process count itself and accepts only `/b` (`/m:2`) and `/m`
+(one process per core). It rejects `/m:1` as an unrecognized option, so a fully serial
+build is not available through the supported entry point.
+
+If the reduced-parallelism retry fails, stop and report both errors, the exit code, and
+the binary log.
 
 ### Missing Spectre mitigation libraries
 

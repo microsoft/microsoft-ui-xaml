@@ -52,7 +52,7 @@ and never repeat the same failing command indefinitely:
 1. Missing tools, packages, or restore outputs — run `.\init.cmd <flavor>` once, then retry.
 2. `C3859` or `C1076` (precompiled header memory) — retry once with `-BuildArguments /b`.
 3. `C1853` (stale precompiled header) — retry once with `-BuildArguments '/c','/b'`.
-4. `MSB4217` task host exit, or a following `MSB4027` — retry once with `-BuildArguments /m:1`.
+4. `MSB4217` task host exit, or a following `MSB4027` — retry once with `-BuildArguments /b`.
 5. Anything else — stop, and report the failing project, the error, and the binary log path.
 
 Never report success from a smaller build than the one you were asked for. A plain

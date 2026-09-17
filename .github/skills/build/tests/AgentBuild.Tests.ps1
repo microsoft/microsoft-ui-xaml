@@ -454,6 +454,48 @@ Test-Case 'Guidance does not reference script options that were never added' {
     }
 }
 
+Test-Case 'Documented build flags are ones Build.cmd actually accepts' {
+    # Build.cmd rejects anything it cannot parse and prints its usage instead of
+    # building, so documenting a flag it does not accept sends the caller nowhere.
+    # /m:1 was documented as the remedy for MSB4217 and is rejected: Build.cmd
+    # chooses the process count itself and offers only /b and /m.
+    $buildCmd = Get-Content -LiteralPath (Join-Path $repoRoot 'Build.cmd') -Raw
+    $accepted = @([regex]::Matches($buildCmd, '"%1"=="(/[^"]+)"') |
+        ForEach-Object { $_.Groups[1].Value.ToLowerInvariant() })
+    Assert-True ($accepted.Count -gt 0) 'No options were parsed out of Build.cmd.'
+
+    $files = @(
+        (Join-Path $repoRoot 'AGENTS.md'),
+        (Join-Path $repoRoot '.github\copilot-instructions.md'),
+        (Join-Path $repoRoot '.github\skills\build\SKILL.md')
+    )
+
+    foreach ($file in $files) {
+        $name = Split-Path $file -Leaf
+        $content = Get-Content -LiteralPath $file -Raw
+
+        $documented = New-Object System.Collections.Generic.List[string]
+
+        # Flags passed through -BuildArguments, e.g. -BuildArguments '/c','/b'
+        foreach ($use in [regex]::Matches($content, "-BuildArguments\s+(?<flags>(?:'?/[\w:.]+'?[,\s]*)+)")) {
+            foreach ($flag in [regex]::Matches($use.Groups['flags'].Value, '/[\w:.]+')) {
+                $documented.Add($flag.Value)
+            }
+        }
+
+        # Flags listed in a table of build options, e.g. | `/b` | Reduced parallelism |
+        foreach ($row in [regex]::Matches($content, '(?m)^\|\s*`(/[\w:.]+)`\s*\|')) {
+            $documented.Add($row.Groups[1].Value)
+        }
+
+        foreach ($flag in $documented) {
+            if ($accepted -notcontains $flag.ToLowerInvariant()) {
+                throw "$name documents the build flag '$flag', which Build.cmd does not accept."
+            }
+        }
+    }
+}
+
 Test-Case 'The wrapper never writes to the repository build scripts' {
     $wrapperContent = Get-Content -LiteralPath $wrapper -Raw
     foreach ($guard in @('Set-Content', 'Out-File', 'Add-Content')) {
