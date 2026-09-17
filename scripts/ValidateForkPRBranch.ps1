@@ -190,7 +190,10 @@ function Get-PrInfo {
 function Get-ValidationState([string]$Sha) {
     $results = @()
 
+    # Both reads must succeed: an API error that silently returned nothing would look like "no
+    # result", which the publish-time baseline below would read as "this result is new".
     $statusJson = gh api "repos/$Repo/commits/$Sha/status" --jq ".statuses[] | select(.context==`"$Context`")" 2>$null
+    if ($LASTEXITCODE -ne 0) { throw "Reading commit statuses for $Sha failed (exit $LASTEXITCODE)." }
     foreach ($line in @($statusJson | Where-Object { $_ })) {
         $s = $line | ConvertFrom-Json
         $results += [pscustomobject]@{
@@ -200,6 +203,7 @@ function Get-ValidationState([string]$Sha) {
     }
 
     $checkJson = gh api "repos/$Repo/commits/$Sha/check-runs?per_page=100" --jq ".check_runs[] | select(.name==`"$Context`")" 2>$null
+    if ($LASTEXITCODE -ne 0) { throw "Reading check runs for $Sha failed (exit $LASTEXITCODE)." }
     foreach ($line in @($checkJson | Where-Object { $_ })) {
         $c = $line | ConvertFrom-Json
         # Normalise check-run vocabulary onto commit-status vocabulary: an unfinished run is
@@ -222,7 +226,9 @@ function Get-ValidationState([string]$Sha) {
 function Wait-Validation([string]$Sha) {
     $deadline = (Get-Date).AddMinutes($TimeoutMinutes)
     do {
-        $all   = @(Get-ValidationState $Sha)
+        # A transient API error must not end a long wait; the next poll retries.
+        try { $all = @(Get-ValidationState $Sha) }
+        catch { Write-Warning $_.Exception.Message; Start-Sleep -Seconds 30; continue }
         $cur   = $all | Select-Object -First 1
         $state = if ($cur) { $cur.State } else { 'none' }
         Write-Host ("[{0:HH:mm:ss}] {1} -> {2}  {3}" -f (Get-Date), $Context, $state, $cur.Description)
@@ -477,7 +483,11 @@ and that permission cannot be granted. Validate this PR from a maintainer machin
         while ((Get-Date) -lt $deadline) {
             # Ignore results captured before the push: re-validating a SHA that was already built
             # would otherwise satisfy this guard instantly, defeating its purpose.
-            $started = @(Get-ValidationState $Sha) | Where-Object { $preResults -notcontains $_.Url } | Select-Object -First 1
+            try {
+                $started = @(Get-ValidationState $Sha) | Where-Object { $preResults -notcontains $_.Url } | Select-Object -First 1
+            } catch {
+                Write-Warning $_.Exception.Message   # retry on the next poll
+            }
             if ($started) { break }
             Start-Sleep -Seconds 20
         }
