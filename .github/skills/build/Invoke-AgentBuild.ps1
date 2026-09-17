@@ -146,6 +146,11 @@ function Invoke-Captured {
         [string[]]$ArgumentList
     )
 
+    # Tools in the build chain write progress to stderr even when they succeed, and
+    # 'Stop' turns a redirected stderr line into a terminating error. This assignment is
+    # function scoped, so the caller's preference is unaffected.
+    $ErrorActionPreference = 'Continue'
+
     $lines = New-Object System.Collections.Generic.List[string]
     & $FilePath @ArgumentList 2>&1 | ForEach-Object {
         $line = [string]$_

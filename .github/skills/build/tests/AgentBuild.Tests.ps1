@@ -98,6 +98,11 @@ if ($env:AGENTBUILD_TEST_OUTPUT) {
     foreach ($line in ($env:AGENTBUILD_TEST_OUTPUT -split "`n")) { Write-Output $line }
 }
 
+# Real build tools write progress to stderr while succeeding, e.g. "Cloning into ...".
+if ($env:AGENTBUILD_TEST_STDERR) {
+    [Console]::Error.WriteLine($env:AGENTBUILD_TEST_STDERR)
+}
+
 if ($env:AGENTBUILD_TEST_BINLOG -eq "1") {
     $outputDir = Join-Path $PSScriptRoot "BuildOutput"
     if (-not (Test-Path -LiteralPath $outputDir)) {
@@ -125,6 +130,7 @@ function Reset-StubBehavior {
     $env:AGENTBUILD_TEST_EXIT = $null
     $env:AGENTBUILD_TEST_BINLOG = '1'
     $env:AGENTBUILD_TEST_INIT_FAIL = $null
+    $env:AGENTBUILD_TEST_STDERR = $null
 }
 
 function Invoke-Wrapper {
@@ -162,6 +168,22 @@ Test-Case 'A successful build exits 0 and reports the binary log' {
         Assert-Equal 0 $result.ExitCode 'Successful build did not exit 0.'
         Assert-True ($result.Output -match 'BUILD SUCCEEDED') 'Success was not reported.'
         Assert-True ($result.Output -match 'MUXControls\.amd64chk\.binlog') 'Binary log path was not reported on success.'
+    }
+    finally { Remove-StubRepo $root }
+}
+
+Test-Case 'Progress written to stderr by a successful tool does not abort the build' {
+    # git and other build tools write progress to stderr while succeeding. With
+    # $ErrorActionPreference = 'Stop', a redirected stderr line becomes a terminating
+    # error and the wrapper exits before the build starts.
+    Reset-StubBehavior
+    $env:AGENTBUILD_TEST_STDERR = "Cloning into 'Samples/WinUIGallery'..."
+    $root = New-StubRepo -Initialized
+    try {
+        $result = Invoke-Wrapper -Root $root
+        Assert-Equal 0 $result.ExitCode 'A benign stderr message failed the build.'
+        Assert-True ($result.Output -match 'BUILD SUCCEEDED') 'Success was not reported.'
+        Assert-True ($result.Output -match 'Cloning into') 'The stderr line was not captured in the output.'
     }
     finally { Remove-StubRepo $root }
 }
