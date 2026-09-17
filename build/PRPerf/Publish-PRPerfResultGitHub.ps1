@@ -22,6 +22,20 @@ $markdown = New-PRPerfMarkdown `
     -ArtifactUrl $ArtifactUrl `
     -PipelineUrl $PipelineUrl
 
+function Invoke-GitHubWrite {
+    param(
+        [Parameter(Mandatory)] [string] $Operation,
+        [Parameter(Mandatory)] [scriptblock] $Action
+    )
+
+    try {
+        & $Action
+    } catch {
+        $detail = Get-GitHubPRPerfErrorDetailFromRecord -ErrorRecord $_
+        throw "Could not $Operation. $detail"
+    }
+}
+
 $title = switch ($comparison.overallState) {
     'Passed' { 'Perf regression test passed' }
     'RegressionWarning' { 'Performance regression warning' }
@@ -38,7 +52,7 @@ $headers = New-GitHubPRPerfHeaders -Token $Token
 $sourceSha = [string]$comparison.trial.commit
 
 if (-not [string]::IsNullOrWhiteSpace($ExpectedSourceCommit)) {
-    $currentPR = Invoke-RestMethod -Method Get -Uri "$baseUrl/pulls/$PullRequestNumber" -Headers $headers
+    $currentPR = Get-GitHubPRPerfPullRequest -Uri "$baseUrl/pulls/$PullRequestNumber" -Token $Token
     $isSuperseded = -not (Test-GitHubPRPerfRequestCurrent `
         -ExpectedSourceCommit $ExpectedSourceCommit `
         -CurrentPullRequest $currentPR)
@@ -85,22 +99,26 @@ if ($null -ne $existing) {
     $body = @{
         body = $markdown
     } | ConvertTo-Json -Depth 10
-    Invoke-RestMethod `
-        -Method Patch `
-        -Uri "$baseUrl/issues/comments/$($existing.id)" `
-        -Headers $headers `
-        -Body $body `
-        -ContentType 'application/json' | Out-Null
+    Invoke-GitHubWrite -Operation 'update the PR perf comment' -Action {
+        Invoke-RestMethod `
+            -Method Patch `
+            -Uri "$baseUrl/issues/comments/$($existing.id)" `
+            -Headers $headers `
+            -Body $body `
+            -ContentType 'application/json' | Out-Null
+    }
 } else {
     $body = @{
         body = $markdown
     } | ConvertTo-Json -Depth 10
-    Invoke-RestMethod `
-        -Method Post `
-        -Uri "$baseUrl/issues/$PullRequestNumber/comments" `
-        -Headers $headers `
-        -Body $body `
-        -ContentType 'application/json' | Out-Null
+    Invoke-GitHubWrite -Operation 'post the PR perf comment' -Action {
+        Invoke-RestMethod `
+            -Method Post `
+            -Uri "$baseUrl/issues/$PullRequestNumber/comments" `
+            -Headers $headers `
+            -Body $body `
+            -ContentType 'application/json' | Out-Null
+    }
 }
 
 $statusBody = @{
@@ -109,9 +127,11 @@ $statusBody = @{
     target_url = $PipelineUrl
     context = 'winui-perf'
 } | ConvertTo-Json -Depth 10
-Invoke-RestMethod `
-    -Method Post `
-    -Uri "$baseUrl/statuses/$sourceSha" `
-    -Headers $headers `
-    -Body $statusBody `
-    -ContentType 'application/json' | Out-Null
+Invoke-GitHubWrite -Operation 'publish the PR perf commit status' -Action {
+    Invoke-RestMethod `
+        -Method Post `
+        -Uri "$baseUrl/statuses/$sourceSha" `
+        -Headers $headers `
+        -Body $statusBody `
+        -ContentType 'application/json' | Out-Null
+}

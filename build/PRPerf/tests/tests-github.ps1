@@ -534,3 +534,85 @@ function Test-TokenRejectionIsReportedWithDiagnosableDetail {
         throw 'The token-rejection warning must report formatted detail, not the bare exception message.'
     }
 }
+
+function Test-PublisherSupersedeCheckSurvivesARejectedToken {
+    # The supersede check reads the pull request, which on a public repository needs
+    # no credential. Doing it with a raw authenticated call meant a rejected token
+    # aborted the publisher before it reached the one call that genuinely needs
+    # auth, turning a credential problem into a total loss of output.
+    Import-GitHubModule
+    $comparisonPath = New-GitHubComparisonFile
+    $global:GitHubRestCalls = @()
+    try {
+        function global:Invoke-RestMethod {
+            param([string] $Method, [string] $Uri, $Headers, [string] $Body, [string] $ContentType)
+            $global:GitHubRestCalls += [pscustomobject]@{ Method = $Method; Uri = $Uri; Authenticated = [bool]$Headers.Authorization }
+            if ($Uri -like '*/pulls/12*') {
+                if ($Headers.Authorization) { throw 'The remote server returned an error: (401) Unauthorized.' }
+                return [pscustomobject]@{ head = [pscustomobject]@{ sha = ('a' * 40) } }
+            }
+            if ($Method -eq 'Get') { return @() }
+            return [pscustomobject]@{ id = 1 }
+        }
+
+        & (Join-Path $root 'Publish-PRPerfResultGitHub.ps1') `
+            -Owner 'microsoft' -Repository 'microsoft-ui-xaml' -PullRequestNumber 12 `
+            -ComparisonPath $comparisonPath -ArtifactUrl 'https://artifacts' `
+            -PipelineUrl 'https://pipeline' -Token 'rejected-token' `
+            -ExpectedSourceCommit ('a' * 40)
+
+        $retried = @($global:GitHubRestCalls | Where-Object { $_.Uri -like '*/pulls/12*' -and -not $_.Authenticated })
+        if ($retried.Count -eq 0) {
+            throw 'The supersede check must retry the pull request read without the rejected token.'
+        }
+        $posted = @($global:GitHubRestCalls | Where-Object { $_.Method -eq 'Post' -and $_.Uri -like '*/issues/12/comments*' })
+        if ($posted.Count -eq 0) {
+            throw 'The publisher must still reach the comment once the read succeeds.'
+        }
+    } finally {
+        Remove-Item function:global:Invoke-RestMethod -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $comparisonPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Test-PublisherNamesTheOperationWhenWritingFails {
+    # A bare "(401) Unauthorized" under an ADO "exited with code 1" says nothing
+    # about which call failed or why, which cost a whole pipeline round trip to
+    # diagnose. Write failures must name the operation and carry GitHub's detail.
+    Import-GitHubModule
+    $comparisonPath = New-GitHubComparisonFile
+    try {
+        function global:Invoke-RestMethod {
+            param([string] $Method, [string] $Uri, $Headers, [string] $Body, [string] $ContentType)
+            if ($Uri -like '*/pulls/12*') { return [pscustomobject]@{ head = [pscustomobject]@{ sha = ('a' * 40) } } }
+            if ($Method -eq 'Get') { return @() }
+            throw 'The remote server returned an error: (401) Unauthorized.'
+        }
+
+        $failureMessage = $null
+        try {
+            & (Join-Path $root 'Publish-PRPerfResultGitHub.ps1') `
+                -Owner 'microsoft' -Repository 'microsoft-ui-xaml' -PullRequestNumber 12 `
+                -ComparisonPath $comparisonPath -ArtifactUrl 'https://artifacts' `
+                -PipelineUrl 'https://pipeline' -Token 'rejected-token'
+        } catch {
+            $failureMessage = $_.Exception.Message
+        }
+
+        if ($null -eq $failureMessage) {
+            throw 'The publisher must still fail when the comment cannot be written.'
+        }
+        if ($failureMessage -notmatch 'comment') {
+            throw "The failure must name the operation that failed. Actual: $failureMessage"
+        }
+        if ($failureMessage -notmatch '401') {
+            throw "The failure must carry the underlying GitHub detail. Actual: $failureMessage"
+        }
+        if ($failureMessage -match 'rejected-token') {
+            throw 'The failure must never echo the token.'
+        }
+    } finally {
+        Remove-Item function:global:Invoke-RestMethod -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $comparisonPath -Force -ErrorAction SilentlyContinue
+    }
+}
