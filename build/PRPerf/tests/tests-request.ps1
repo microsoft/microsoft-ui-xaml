@@ -712,7 +712,59 @@ function Test-PerfJobOnlyRequestsTheDedicatedPoolWhenAsked {
     }
 
     $callSite = Get-Content (Join-Path $root '..\WinUI-GitHub-PR.yml') -Raw
-    if ($callSite -match '(?m)^\s*perfPoolName:\s*\S') {
-        throw 'The PR pipeline must not request the dedicated perf pool until measurement is wired.'
+    if ($callSite -match '(?m)^\s*perfPoolName:\s*WinUI-PerfTest\s*$') {
+        throw 'The PR pipeline must not request the unauthorized, offline WinUI-PerfTest pool.'
+    }
+}
+
+function Test-PerfJobPinsTheImageWheneverItNamesAPool {
+    # Every other test job in this pipeline pairs its custom pool with an
+    # ImageOverride demand. Without one the agent is handed an arbitrary image, so
+    # the tooling a measurement needs is present or absent at random and a run
+    # cannot be reproduced. A named pool must always carry demands.
+    $yaml = Get-Content (Join-Path $root '..\AzurePipelinesTemplates\WinUI-PRPerf-Run.yml') -Raw
+
+    if ($yaml -notmatch '(?m)^- name: perfPoolDemands\s*$') {
+        throw 'The template must expose a perfPoolDemands parameter so the image can be pinned.'
+    }
+    if ($yaml -notmatch [regex]::Escape("if ne(parameters.perfPoolDemands, '')")) {
+        throw 'Demands must only be emitted when perfPoolDemands is supplied.'
+    }
+    if ($yaml -notmatch '(?m)^\s*demands: \$\{\{ parameters\.perfPoolDemands \}\}\s*$') {
+        throw 'The perf job must forward perfPoolDemands to the pool.'
+    }
+
+    $callSite = Get-Content (Join-Path $root '..\WinUI-GitHub-PR.yml') -Raw
+    $namesAPool = $callSite -match '(?m)^\s*perfPoolName:\s*(\S+)\s*$'
+    $pinsAnImage = $callSite -match '(?m)^\s*perfPoolDemands:\s*\S'
+    if ($namesAPool -and -not $pinsAnImage) {
+        throw 'The PR pipeline names a perf pool without pinning an image via perfPoolDemands.'
+    }
+}
+
+function Test-PerfJobReportsMeasurementToolingAvailability {
+    # Pointing the job at a shared lab pool only helps if that image actually
+    # carries the tracing tools the harness shells out to. Reporting what is
+    # present turns a silent no-op into evidence, and must never fail the job.
+    $yaml = Get-Content (Join-Path $root '..\AzurePipelinesTemplates\WinUI-PRPerf-Run.yml') -Raw
+
+    foreach ($probe in @('xperf', 'wpr', 'python')) {
+        if ($yaml -notmatch [regex]::Escape($probe)) {
+            throw "The perf job must report whether '$probe' is available on the agent image."
+        }
+    }
+    if ($yaml -notmatch 'whoami') {
+        throw 'The perf job must report whether it is elevated, which ETW tracing requires.'
+    }
+
+    $probeStep = [regex]::Match(
+        $yaml,
+        '(?ms)^\s*- task: powershell@2\s*\r?\n\s*displayName: Report measurement tooling availability.*?(?=^\s*- task: |\Z)',
+        [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    if (-not $probeStep.Success) {
+        throw 'The perf job must contain a "Report measurement tooling availability" step.'
+    }
+    if ($probeStep.Value -notmatch 'continueOnError:\s*true') {
+        throw 'The tooling probe is diagnostic only and must never fail the job.'
     }
 }

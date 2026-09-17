@@ -56,6 +56,12 @@ parameters:
 - name: perfPoolName
   type: string
   default: ''
+# ImageOverride demand for the pool above. Every other test job in this pipeline
+# pins its image; without one the agent is handed an arbitrary image and whether
+# the tracing tools exist becomes a coin flip, so a run cannot be reproduced.
+- name: perfPoolDemands
+  type: string
+  default: ''
 
 stages:
 - stage: RunPRPerf
@@ -161,6 +167,8 @@ stages:
       ${{ if ne(parameters.perfPoolName, '') }}:
         isCustom: true
         name: ${{ parameters.perfPoolName }}
+      ${{ if ne(parameters.perfPoolDemands, '') }}:
+        demands: ${{ parameters.perfPoolDemands }}
     variables:
       ob_outputDirectory: $(Build.ArtifactStagingDirectory)
       prPerfSourcesDirectory: $(Agent.BuildDirectory)\s\microsoft-ui-xaml
@@ -178,6 +186,28 @@ stages:
       fetchDepth: 1
       fetchTags: false
       path: s\microsoft-ui-xaml
+
+    - task: PowerShell@2
+      displayName: Report measurement tooling availability
+      continueOnError: true
+      inputs:
+        targetType: inline
+        script: |
+          # Diagnostic only. The harness shells out to WPR/xperf and a fixed Python
+          # install, and ETW tracing plus .appx deployment both need elevation. Which
+          # of those an agent image actually carries is the open question that decides
+          # whether real measurement can run here at all, so report it rather than
+          # discovering it as a silent no-op mid-run.
+          $ErrorActionPreference = 'Continue'
+          foreach ($tool in @('xperf.exe', 'wpr.exe', 'python.exe')) {
+            $found = @(Get-Command $tool -ErrorAction SilentlyContinue | Select-Object -First 1)
+            Write-Host ('{0,-12} = {1}' -f $tool, $(if ($found.Count -gt 0) { $found[0].Source } else { '<not found>' }))
+          }
+          Write-Host ('c:\python311\python.exe = {0}' -f (Test-Path 'c:\python311\python.exe'))
+          $identity = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
+          Write-Host ('elevated     = {0}' -f $identity.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
+          Write-Host ('whoami       = {0}' -f $identity.Identity.Name)
+          Write-Host ('os build     = {0}' -f [Environment]::OSVersion.Version)
 
     - task: PowerShell@2
       displayName: Tag PR performance run

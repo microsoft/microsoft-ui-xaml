@@ -206,6 +206,14 @@ extends:
           gateOnLabel: true
           continueOnError: true
           useFixtures: ${{ parameters.perfUseFixtures }}
+          # The lab pool the pipeline's other test jobs already use, pinned to the same
+          # image. The dedicated WinUI-PerfTest queue is not authorized for this pipeline
+          # and its only agent is offline, which left the stage pending forever with no
+          # error; this pool is authorized and reachable today. Shared lab hardware is
+          # noisier than a dedicated perf box, which the run-to-run variation guard in
+          # Compare-PRPerfFiles absorbs by reporting Inconclusive rather than a verdict.
+          perfPoolName: WinDevPool-Test
+          perfPoolDemands: ImageOverride -equals Win11-25H2
           # Real PR provenance, so that if fixture data is ever used on an actual pull request
           # the commit check in Compare-PRPerfFiles sees the mismatch and reports Inconclusive
           # instead of presenting recorded data as a measurement of this PR.
