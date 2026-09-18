@@ -499,5 +499,40 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             return tabViewItem;
         }
+
+        [TestMethod]
+        public void ClosingTabWhenAddTabButtonNotVisibleDoesNotThrow()
+        {
+            TabView tabView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tabView = new TabView();
+                tabView.IsAddTabButtonVisible = false;
+                var tab1 = CreateTabViewItem("Tab 1");
+                var tab2 = CreateTabViewItem("Tab 2");
+                tabView.TabItems.Add(tab1);
+                tabView.TabItems.Add(tab2);
+
+                Content = tabView;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tabView.SelectedIndex = 0;
+                var firstTab = tabView.TabItems[0] as TabViewItem;
+                firstTab.Focus(FocusState.Programmatic);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Verify removing the left-most tab with IsAddTabButtonVisible=false does not throw");
+                tabView.TabItems.RemoveAt(0);
+                Verify.AreEqual(1, tabView.TabItems.Count);
+            });
+        }
     }
 }
