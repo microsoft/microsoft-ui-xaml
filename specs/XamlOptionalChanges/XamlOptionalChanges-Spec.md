@@ -249,6 +249,7 @@ descriptions evolve.
 | Value      | Numeric  | Description                            | Default  |
 |------------|----------|----------------------------------------|----------|
 | `Perf2026` | 60952725 | Breaking perf changes shipped in 2026. | Disabled |
+| `CollectionMoveNotifications` | 1503 | Adapt collection Move notifications without resetting the entire list. | Disabled |
 
 _Spec note: The team will add new values here as future optional changes
 are introduced.  When a value is promoted to default-on it will be marked
@@ -275,6 +276,58 @@ reference becomes a compile error._
 * When a change becomes **permanent**, its `XamlChangeId` value is
   removed from the enum.  Any remaining reference is a compile error —
   no special annotation is needed.
+
+### CollectionMoveNotifications
+
+This value is available starting with WinUIContract 12 (WinAppSDK 3.0).
+
+This change addresses [microsoft/microsoft-ui-xaml#1503](https://github.com/microsoft/microsoft-ui-xaml/issues/1503).
+Enable it before XAML initialization:
+
+```csharp
+XamlOptionalChanges.EnableChange(XamlChangeId.CollectionMoveNotifications);
+```
+
+By default, a `NotifyCollectionChangedAction.Move` from an `IBindableVector`
+that also implements `INotifyCollectionChanged` (for example,
+`ObservableCollection<T>`) becomes a single `CollectionChange.Reset`. This
+compatibility behavior remains unchanged unless the application enables
+`CollectionMoveNotifications`. The performance opt-in does not enable this
+change implicitly.
+
+With the change enabled, WinUI adapts a move of one or more contiguous items
+to `ItemRemoved` notifications at the old starting index, followed by
+`ItemInserted` notifications at successive new indices. The new starting
+index is the range's index in the final collection. A same-index move emits
+no vector notifications. Move arguments must contain equally sized, nonempty
+old/new item ranges and valid indices; invalid arguments produce
+`E_INVALIDARG`. Genuine Reset and ordinary Add, Remove, and Replace
+notifications retain their existing behavior.
+
+The application source is already in its final state when it raises Move.
+WinUI does not modify that source again. Preparing the notifications does not
+copy or enumerate the collection. Instead, the adapted vector exposes each intermediate state while delivering
+its notifications. Count, indexed access, IndexOf, vector views, and enumeration
+through the adapted collection agree with that state. Reading the application's
+original collection directly still returns its final contents.
+
+This avoids invalidating unaffected realized items in controls such as
+`ListView` and `GridView`, preserving their containers, selection, bindings,
+and active editors. With this opt-in, collection changes that only shift an
+unchanged selected item's index do not transfer focus. This also applies to
+ordinary insertions and removals before the selected item; selecting a different
+item still has its normal focus behavior. The moved items themselves still undergo removal and
+insertion: their containers, selection, and focus are not guaranteed to be
+preserved. There is no public vector Move event.
+
+Do not mutate the collection from a Move notification handler. Writes through
+the adapted vector during these notifications fail with
+`E_ILLEGAL_METHOD_CALL`. A reentrant change made directly to the application
+source invalidates the temporary view (`E_CHANGED_STATE` on reads); WinUI
+abandons the remaining synthetic notifications and publishes a Reset against
+the actual source after the current notification unwinds. If a notification
+handler fails, WinUI also restores the source view and attempts a Reset,
+propagating the original failure.
 
 ## XamlOptionalChanges class
 

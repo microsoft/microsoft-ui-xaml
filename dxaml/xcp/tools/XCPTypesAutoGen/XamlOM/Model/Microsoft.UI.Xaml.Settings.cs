@@ -9,6 +9,7 @@ namespace Microsoft.UI.Xaml.Settings
     // through XamlOptionalChanges. Each value corresponds to a specific feature,
     // fix, or behavioral change documented in the WinUI release notes.
     [Contract(typeof(Microsoft.UI.Xaml.WinUIContract), 11)]
+    [Contract(2, typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.WinAppSDK_3_0)]
     [DXamlIdlGroup("coretypes2")]
     [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
     public enum XamlChangeId
@@ -20,6 +21,8 @@ namespace Microsoft.UI.Xaml.Settings
         OptimizeApplyStyles = 61697456,
         DefaultStyleOptimizations = 60995620,
         DeferContextFlyoutInit = 61098986,
+        [Version(2)]
+        CollectionMoveNotifications = 1503,
     }
 
     // Provides static methods to opt in to or out of individual breaking or
