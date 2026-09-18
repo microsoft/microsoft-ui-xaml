@@ -5,8 +5,8 @@
 Run in a fresh process from the repository root:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Helix\common\pipeline\coverage\tests\Run-Tests.ps1
-pwsh.exe -NoProfile -File .\Helix\common\pipeline\coverage\tests\Run-Tests.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build\PipelineScripts\coverage\tests\Run-Tests.ps1
+pwsh.exe -NoProfile -File .\build\PipelineScripts\coverage\tests\Run-Tests.ps1
 ```
 
 Requirements: Windows, .NET Framework's C# compiler, and Pester 3.4.0 (included
@@ -17,6 +17,10 @@ The tests execute the production scripts against unique fixture directories
 inside this directory. A small executable replaces the coverage tool and
 vswhere. It records arguments, returns native exit codes, and creates fixture
 binaries, runtimes, and reports. Each run removes only its own fixture root.
+
+Payload preparation tests call `Prepare-CoveragePayload.ps1` directly with product
+and payload directories, just as the pipeline does. They do not extract executable
+code from YAML or depend on the preparation task's display name or indentation.
 
 Collector startup and pipe readiness are mocked in most tests. Shutdown clients
 run as real processes to exercise Windows PowerShell exit-code handling and log
@@ -56,7 +60,7 @@ WinUI tests, expand pipeline YAML, or simulate Azure's retry scheduling.
 With Visual Studio x64 C++ tools and native code coverage installed:
 
 ```powershell
-pwsh.exe -NoProfile -File .\Helix\common\pipeline\coverage\tests\Run-NativeSmoke.ps1
+pwsh.exe -NoProfile -File .\build\PipelineScripts\coverage\tests\Run-NativeSmoke.ps1
 ```
 
 This builds two tiny native DLLs and a runner, executes production instrumentation

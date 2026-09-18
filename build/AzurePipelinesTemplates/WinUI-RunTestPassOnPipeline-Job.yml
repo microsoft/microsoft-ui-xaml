@@ -100,7 +100,7 @@ jobs:
       ${{ if eq(parameters.collectCodeCoverage, true) }}:
         targetType: inline
         script: |
-          & "$(Build.SourcesDirectory)\Helix\common\pipeline\coverage\Invoke-WithCodeCoverage.ps1" `
+          & "$(Build.SourcesDirectory)\build\PipelineScripts\coverage\Invoke-WithCodeCoverage.ps1" `
             -PayloadDir "$(testPayloadDir)" `
             -OutputFile "$(uploadRootInner)\coverage-$env:COMPUTERNAME-slice$(System.JobPositionInPhase).coverage" `
             -RunTests {
