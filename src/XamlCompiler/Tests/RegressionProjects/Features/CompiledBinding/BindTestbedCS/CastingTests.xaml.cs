@@ -123,11 +123,7 @@ namespace BindTestbed
 
         public static explicit operator Thickness(CastingTests inst)
         {
-#if DESKTOP
             return new Thickness(5.0,5.0,5.0,5.0);
-#else
-            return ThicknessHelper.FromUniformLength(5.0);
-#endif
         }
     }
 

@@ -3,21 +3,33 @@
  Licensed under the MIT License. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <AdHocApp>true</AdHocApp>
-        <GenerateProjectSpecificOutputFolder>true</GenerateProjectSpecificOutputFolder>
+        <!-- Use the locally built compiler task and targets for every regression project; this must
+             be set before importing the parent props. Additionally, set
+             SkipXamlCompilerProjectReferences to enable the missing-compiler diagnostic. -->
+        <UseXamlCompiler Condition="'$(UseXamlCompiler)' == ''">true</UseXamlCompiler>
+        <SkipXamlCompilerProjectReferences Condition="'$(SkipXamlCompilerProjectReferences)' == ''">true</SkipXamlCompilerProjectReferences>
+
+        <!-- Disable Windows App SDK package validation for ARM64EC test payloads; WinUI's build
+             targets support them. -->
+        <ValidateArm64EcConfiguration Condition="'$(Platform)' == 'ARM64EC'">false</ValidateArm64EcConfiguration>
     </PropertyGroup>
 
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+        
     <PropertyGroup>
-        <UseLocalSDK>true</UseLocalSDK>
+        <CommonFilesPath>$(MSBuildThisFileDirectory)Common\</CommonFilesPath>
         <AdHocApp>true</AdHocApp>
+        <GenerateProjectSpecificOutputFolder>true</GenerateProjectSpecificOutputFolder>
+        <UseLocalSDK>true</UseLocalSDK>
+        <!-- Override the product C++/WinRT pin with the version required by these regression
+             projects and their generated-code baselines. -->
+        <CppWinRTVersion>2.0.250303.1</CppWinRTVersion>
         <!-- Suppress WinMDExp warnings WME0010 since the Microsoft.UI.Xaml.Markup.IXamlMetadataProvider GetXamlType method is automatically renamed -->
         <WinMdExpNoWarn>0010;$(WinMdExpNoWarn)</WinMdExpNoWarn>
     </PropertyGroup>
     
     <PropertyGroup Condition="$(MSBuildProjectExtension)=='.csproj'">
-        <RuntimeIdentifiers>win10-x86; win10-x86-aot; win10-x64; win10-x64-aot; win10-arm64; win10-arm64-aot</RuntimeIdentifiers>
-        <EnableTypeInfoReflection>false</EnableTypeInfoReflection>
-        <GenerateProjectSpecificOutputFolder>true</GenerateProjectSpecificOutputFolder>
+        <RuntimeIdentifiers>win-x86; win-x64; win-arm64</RuntimeIdentifiers>
     </PropertyGroup>
 
     <ItemDefinitionGroup>
@@ -37,6 +49,30 @@
         </Reference>
     </ItemDefinitionGroup>
 
-    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" /> 
-    <Import Project="$(ConsumeBinariesProps)"/>
+    <PropertyGroup>
+         <!-- Our obj/bin paths get long enough to the point they break signtool.exe in the SDK ( APPX1204 file not found errors).
+              Trim some of the extraneous common path to a more managable one.
+         -->
+        <OutDir>$(OutDir.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</OutDir>        
+        <IntDir>$(IntDir.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</IntDir>
+        <BaseIntermediateOutputPath>$(BaseIntermediateOutputPath.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</BaseIntermediateOutputPath>
+        <IntermediateOutputPath>$(IntermediateOutputPath.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</IntermediateOutputPath>
+        <!-- eng\folderpaths.props derives GeneratedFilesDir before this file shortens
+             BaseIntermediateOutputPath, so recompute it from the corrected path. -->
+        <GeneratedFilesDir>$(BaseIntermediateOutputPath)generated\</GeneratedFilesDir>
+        <!-- Projects that share a source directory can opt in to isolated codegen by setting
+             GeneratedFilesSubdirectory in their Globals group. A .vcxproj cannot set
+             GeneratedFilesDir there directly because folderpaths.props overwrites it when
+             Microsoft.Cpp.Default.props imports this file. -->
+        <GeneratedFilesDir Condition="'$(GeneratedFilesSubdirectory)' != ''">$(BaseIntermediateOutputPath)$(GeneratedFilesSubdirectory)\generated\</GeneratedFilesDir>
+        <!-- Isolate XAML saved state for projects that share a source directory so each
+             generated-files directory is evaluated independently. -->
+        <XamlSavedStateFileName Condition="'$(GeneratedFilesSubdirectory)' != ''">XamlSaveStateFile.$(GeneratedFilesSubdirectory).xml</XamlSavedStateFileName>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- Write managed and native codegen to $(GeneratedFilesDir), the stable path mapped to
+             TestMasters by CodegenTargets.txt and shared by CodegenTests and copynewmasters.cmd. -->
+        <XamlGeneratedOutputPath>$(GeneratedFilesDir)</XamlGeneratedOutputPath>
+    </PropertyGroup>
 </Project>
