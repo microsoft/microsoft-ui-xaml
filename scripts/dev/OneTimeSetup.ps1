@@ -115,11 +115,17 @@ else
 
 function Install-MSBuild
 {
+$configPath = "$PSScriptRoot\..\..\.vsconfig_buildtools"
+if (!(Test-Path $configPath))
+{
+    Write-Error "Could not find .vsconfig_buildtools at $configPath. Please ensure the repository is fully checked out."
+    return
+}
+
 # Install MSBuild Tools 2022
 # Use the current official Visual Studio Build Tools installer URL.
 Download -Uri https://aka.ms/vs/17/release/vs_BuildTools.exe -OutFile vs_buildtools.exe
 # Note: Not passing "--quiet" because the install takes a long time, making it important to see the progress
-$configPath = if (Test-Path "$PSScriptRoot\..\..\.vsconfig_buildtools") { "$PSScriptRoot\..\..\.vsconfig_buildtools" } else { "$PSScriptRoot\..\..\.vsconfig" }
 $installed = LaunchSetupAndWait vs_buildtools.exe  -ArgumentList " --add Microsoft.VisualStudio.Workload.MSBuildTools --config `"$configPath`" --wait"
 if (!$installed)
 {
