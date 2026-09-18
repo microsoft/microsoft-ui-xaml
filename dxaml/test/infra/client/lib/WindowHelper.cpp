@@ -2108,6 +2108,10 @@ std::vector<std::pair<xaml_settings::XamlChangeId, bool>> GetXamlOptionalChanges
             {
                 changeId = xaml_settings::XamlChangeId_DeferContextFlyoutInit;
             }
+            else if (_wcsicmp(name.c_str(), L"SkipWindowRedirectionSurface") == 0)
+            {
+                changeId = xaml_settings::XamlChangeId_SkipWindowRedirectionSurface;
+            }
 
             if (changeId == xaml_settings::XamlChangeId__Reserved)
             {
@@ -2188,6 +2192,9 @@ void WindowHelper::InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* c
         optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_OptimizeApplyStyles, &mutated);
         optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_DefaultStyleOptimizations, &mutated);
         optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_DeferContextFlyoutInit, &mutated);
+        // SkipWindowRedirectionSurface is deliberately not enabled here. It changes how every test window
+        // paints (no GDI redirection surface at all), so it is opted into per test through the
+        // Data:XamlOptionalChanges test property rather than turned on for the whole suite.
 
         // Apply per-test overrides from XamlOptionalChanges test data.
         for (const auto& [changeId, enabled] : changeOverrides)
