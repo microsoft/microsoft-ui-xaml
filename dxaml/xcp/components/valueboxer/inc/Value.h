@@ -363,10 +363,7 @@ namespace DirectUI
             IFC_RETURN(ctl::ComObject<Reference<T>>::CreateInstance(&ref));
             IFC_RETURN(ref->SetValue(value));
 
-            ctl::ComPtr<wf::IReference<T>> refAsI;
-            IFC_RETURN(ref.As(&refAsI));
-
-            *ppValue = refAsI.Detach();
+            *ppValue = ctl::interface_cast<wf::IReference<T>>(ref.Detach());
             return S_OK;
         }
 

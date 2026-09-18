@@ -4,9 +4,9 @@ These changes reduce repeated implementation code in `Microsoft.ui.xaml.dll`.
 They do not change public interfaces, metadata, compiler/linker options, or
 security settings. Measurements use the x64 Release build with PGO disabled.
 
-## Commit summary
+## Starting commit summary (`a8b8ae4c1`)
 
-This commit combines the three measured reductions below and adds seven
+The starting commit combines the three measured reductions below and adds seven
 regression tests across the ValueBoxer and COM suites.
 
 | Change included in this commit | Additional DLL savings |
@@ -122,7 +122,7 @@ call init.cmd amd64fre /nopgo /envcheck /notitle && call Build.cmd mux /q
 Compiler, linker, and resource compiler command logs match the original
 baseline. All eight exported ordinal/name identities are unchanged.
 
-## Regression coverage and limitations
+## Regression coverage and limitations of the starting commit
 
 The isolated suites have 17 passing tests: 13 ValueBoxer and four COM tests.
 New coverage includes:
@@ -148,3 +148,89 @@ Neither benchmark measures application-level performance.
 No UI interaction, application startup, whole-application memory, OOM fault
 injection, x86, or ARM64 validation has been performed. Neither runtime class
 name candidate has had a second independent relink.
+
+## Follow-up: transfer newly created typed references directly
+
+File: `dxaml\xcp\components\valueboxer\inc\Value.h`
+
+In `PropertyValue::CreateTypedReference<T>`, replace the temporary interface
+smart pointer and `QueryInterface` with:
+
+```cpp
+*ppValue = ctl::interface_cast<wf::IReference<T>>(ref.Detach());
+```
+
+The factory creates a concrete `Reference<T>` with no controlling outer object.
+Its `QueryInterfaceImpl` returns exactly this embedded `IReference<T>` forwarder.
+The cast transfers the factory's existing owning reference instead of adding
+one through `QueryInterface` and releasing the factory reference afterward.
+The caller still receives one owning reference to the same interface.
+
+The output-pointer check, allocation, initialization, `SetValue`, failure
+cleanup, and `S_OK` return remain unchanged. This includes the fallible HSTRING
+duplication used by the `TypeName` value specialization. General-purpose
+interface queries and enum-reference creation remain unchanged. No public
+interface, class layout, generated source, or metadata definition changes.
+
+### Measurements
+
+All values are bytes, using the same x64 Release build with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| Starting commit, fresh baseline | 14,424,064 | 14,423,040 | 14,433,688 |
+| Direct typed-reference transfer | 14,419,456 | 14,418,432 | 14,428,832 |
+| Incremental reduction | 4,608 | 4,608 | 4,856 |
+| Cumulative reduction from original baseline | 115,712 | 115,712 | 115,944 |
+
+This change saves **4,608 bytes (4.5 KiB)** in the actual DLL file. Cumulative
+file savings are **115,712 bytes (113 KiB)** from the original 14,535,168-byte
+baseline. Raw `.text` shrinks by 4,096 bytes and `.rdata` by 512 bytes.
+
+As supporting attribution, SizeBench reports the two out-of-line
+`CreateTypedReference` representatives falling from 555 to 315 bytes.
+The `CreateReference` family, which can inline this helper, falls from 7,187
+bytes across 24 representatives to 2,572 bytes across 15 representatives.
+These family totals are not summed or substituted for whole-file savings.
+
+The original source was restored byte-for-byte and rebuilt, reproducing all
+three baseline metrics. Reapplying the candidate and rebuilding reproduced all
+three candidate metrics. The restored baseline and repeated candidate both
+compiled affected code and performed an LTCG link; these were not no-op
+incremental builds.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260918-162516-8800db1c`.
+The `000-baseline`, `001-direct-typed-reference`, `002-baseline-rebuilt`, and
+`003-direct-typed-reference-repeat` directories contain read-only DLL/PDB
+copies, SHA-256 hashes, source patches, build logs/binlogs, SizeBench snapshots,
+query results, and tool identity sidecars. `verification.json`,
+`repeat-command-comparison.json`, `export-security-comparison.json`,
+`metadata-comparison.json`, and `progress.json` record the comparison and
+handoff.
+
+All measurements use the frozen deployment at
+`D:\SizeBench\artifacts\cli-frozen\winui-template-folding-20260918-1428`.
+Its managed identity is
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+The full deployment manifest and file hashes were verified on both sides.
+Initialization and build used the same command process:
+
+```bat
+call init.cmd amd64fre /nopgo /envcheck /notitle && set PGOBuildMode && set Configuration && set Platform && set VCToolsVersion && call Build.cmd mux /q
+```
+
+Logs confirm `PGOBuildMode=Off`, `Configuration=Release`, `Platform=x64`, and
+`VCToolsVersion=14.44.35207`. All 430 command-tlog hashes match between the
+rebuilt control and repeated candidate. Eight export ordinal/name identities,
+PE security flags, and five built WinMD file hashes are unchanged.
+
+**Tests not run, as requested.** The regression results above belong to the
+starting commit, not this follow-up. Source review found that the cast uses
+the same forwarder and transfers the same ownership. It removes interface
+dispatch and a reference-count increment/decrement pair without introducing
+new runtime work. Compilation does not prove runtime correctness, and this
+turn did not measure application performance, exercise failure injection, or
+validate other architectures.
