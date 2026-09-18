@@ -580,11 +580,13 @@ function Compare-PRPerfResults {
                 }
                 $noisy = $targetRawStats.CoefficientOfVariation -gt $maxCoefficientOfVariation -or
                     $trialRawStats.CoefficientOfVariation -gt $maxCoefficientOfVariation
+                $absoluteForMetric = Get-PRPerfAbsoluteThreshold -Thresholds $Thresholds `
+                    -MetricName $metricName -Default $absoluteRegressionMs
                 if ($noisy -or $null -eq $percentDelta) {
                     $classification = 'Inconclusive'
-                } elseif ($absoluteDelta -ge $absoluteRegressionMs -and $percentDelta -ge $percentRegression) {
+                } elseif ($absoluteDelta -ge $absoluteForMetric -and $percentDelta -ge $percentRegression) {
                     $classification = 'Regressed'
-                } elseif ($absoluteDelta -le -$absoluteRegressionMs -and $percentDelta -le -$percentRegression) {
+                } elseif ($absoluteDelta -le -$absoluteForMetric -and $percentDelta -le -$percentRegression) {
                     $classification = 'Improved'
                 } else {
                     $classification = 'Passed'
@@ -712,8 +714,37 @@ function Compare-PRPerfFiles {
     }
 }
 
-function Select-PRPerfMainBaselineBuild {
+function Get-PRPerfAbsoluteThreshold {
     <#
+    .SYNOPSIS
+    The smallest absolute move that counts as real, for one metric.
+
+    .DESCRIPTION
+    The agreed floor exists so a large percentage swing on a tiny number is not reported as a
+    regression. One flat floor only works while every metric has a similar magnitude. Metrics
+    taken from a real app launch do not, so a metric may raise its own floor.
+
+    An override that cannot be read as a finite number falls back to the agreed floor. Letting
+    a malformed value through would set the bar arbitrarily high and mean nothing could ever
+    be reported again, which is the one failure mode nobody would notice.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)] $Thresholds,
+        [Parameter(Mandatory)][string] $MetricName,
+        [Parameter(Mandatory)] $Default
+    )
+
+    $overrides = Get-PRPerfPropertyValue -InputObject $Thresholds -Name 'absoluteRegressionMsByMetric'
+    if ($null -eq $overrides) { return $Default }
+
+    $override = Get-PRPerfPropertyValue -InputObject $overrides -Name $MetricName
+    if (-not (Test-PRPerfFiniteNumber -Value $override)) { return $Default }
+
+    return [double]$override
+}
+
+function Select-PRPerfMainBaselineBuild {    <#
     .SYNOPSIS
     Chooses the main-branch build to compare a pull request against.
 

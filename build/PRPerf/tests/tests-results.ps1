@@ -1074,3 +1074,48 @@ function Test-MainBaselineDoesNotTrustTheOrderItIsGivenBuildsIn {
 
     Assert-Equal '200' $chosen.id 'The highest build id must win regardless of input order.'
 }
+
+function Test-AbsoluteThresholdCanBeRaisedForAnIndividualMetric {
+    # A flat 5 ms bar suits a millisecond-scale measurement. A real app launch produces
+    # metrics of very different magnitude, where 5 ms is inside the noise and would report a
+    # regression on every run. Each metric needs its own floor.
+    $thresholds = Get-TestThresholds
+    $thresholds | Add-Member -NotePropertyName absoluteRegressionMsByMetric `
+        -NotePropertyValue ([pscustomobject]@{ CpuTimeMs = 20.0 }) -Force
+
+    $comparison = Compare-PRPerfResults `
+        -Target (New-TestResult -Samples @(50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0)) `
+        -Trial (New-TestResult -Samples @(55.0, 55.0, 55.0, 55.0, 55.0, 55.0, 55.0)) `
+        -Thresholds $thresholds
+
+    Assert-Equal 'Passed' $comparison.overallState 'A metric-specific floor of 20 ms must absorb a 5 ms move.'
+}
+
+function Test-AbsoluteThresholdStillAppliesToMetricsWithoutAnOverride {
+    # An override for one metric must not quietly disarm the bar for every other metric.
+    $thresholds = Get-TestThresholds
+    $thresholds | Add-Member -NotePropertyName absoluteRegressionMsByMetric `
+        -NotePropertyValue ([pscustomobject]@{ SomeOtherMetricMs = 20.0 }) -Force
+
+    $comparison = Compare-PRPerfResults `
+        -Target (New-TestResult -Samples @(50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0)) `
+        -Trial (New-TestResult -Samples @(55.0, 55.0, 55.0, 55.0, 55.0, 55.0, 55.0)) `
+        -Thresholds $thresholds
+
+    Assert-Equal 'RegressionWarning' $comparison.overallState 'An unrelated override must not relax this metric.'
+}
+
+function Test-AnUnusableOverrideFallsBackToTheAgreedThreshold {
+    # A malformed override must not silently become an infinitely high bar, which would
+    # mean nothing could ever be reported as a regression again.
+    $thresholds = Get-TestThresholds
+    $thresholds | Add-Member -NotePropertyName absoluteRegressionMsByMetric `
+        -NotePropertyValue ([pscustomobject]@{ CpuTimeMs = 'twenty' }) -Force
+
+    $comparison = Compare-PRPerfResults `
+        -Target (New-TestResult -Samples @(50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0)) `
+        -Trial (New-TestResult -Samples @(55.0, 55.0, 55.0, 55.0, 55.0, 55.0, 55.0)) `
+        -Thresholds $thresholds
+
+    Assert-Equal 'RegressionWarning' $comparison.overallState 'A malformed override must fall back to the agreed 5 ms.'
+}
