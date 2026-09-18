@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Reflection.Adds;
 using System.Runtime.InteropServices;
 using System.Text;
-using Microsoft.UI.Xaml.Markup.Compiler.Lmr.Internal;
+using Debug = System.Diagnostics.Debug;
 
 using System.Reflection;  
 
