@@ -27,8 +27,6 @@
 #include <Microsoft.UI.Dispatching.Interop.h>
 #include <Microsoft.Windows.ApplicationModel.Resources.h>
 #include "GamepadKeyRoutingLightup.h"
-#include "XamlOptionalChanges.g.h"
-#include "XamlOptionalChanges_Partial.h"
 #include <OptionalChangeState.h>
 
 using namespace RuntimeFeatureBehavior;
@@ -167,10 +165,6 @@ _Check_return_ HRESULT FrameworkApplication::RemoveIslandImpl(_In_ xaml_hosting:
 _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IApplicationInitializationCallback* pCallback)
 {
     g_spApplicationInitializationCallback = pCallback;
-
-    // Application.Start() is the full-app entry point. Lock optional changes before reading
-    // them so app code cannot modify the selected behavior after startup has begun.
-    std::ignore = XamlOptionalChanges::LockInternal();
 
     // Determine which AppPolicyWindowingModel the application is using.
     //
