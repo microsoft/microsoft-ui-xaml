@@ -96,7 +96,7 @@ public MainWindow()
 _Note: TitleBar currently needs to be set explicitly in the grid.row and referenced_
 _by Window in codebehind as shown above._
 _Improvements to Window are being considered to avoid this extra grid layout and codebehind._
-_Please see Appendix of [Functional Spec](titleBar-functional-spec.md)._
+_Please see Appendix of [Dev Spec](titleBar-dev-spec.md)._
 
 ## Scenario: TitleBar with WinUI Controls Integration
 TitleBar with common WinUI Controls: `AutoSuggestBox`, `PersonPicture`, `AppBarButton`.
