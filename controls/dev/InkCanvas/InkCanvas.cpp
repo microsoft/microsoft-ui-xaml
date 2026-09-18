@@ -550,10 +550,7 @@ void InkCanvas::AttachToLiftedCompositor()
     auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
 
     m_systemVisualLink = ContentExternalLinkHelper::OutputLink::Create(compositor);
-
-    // Leaving this at the default (true) composes the ink above all sibling XAML, so an element laid
-    // over the canvas is hidden by ink while still receiving pointer input.
-    m_systemVisualLink.IsAboveContent(false);
+    m_systemVisualLink.IsAboveContent(true);
 
     winrt::com_ptr<IDCompositionTarget> target = m_systemVisualLink.DCompTarget();
     SetInkRootVisual(target.get());
