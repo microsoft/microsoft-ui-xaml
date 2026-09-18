@@ -54,6 +54,10 @@ private:
     void PositionPreviewStroke();
     void OnPreviewGridSizeChanged(winrt::IInspectable const& sender, winrt::SizeChangedEventArgs const& args);
     void ConfigureHighContrast();
+    void UpdateHighContrast();
+    // Undoes every template-part subscription. OnApplyTemplate can run more than once, and the handlers
+    // below are bound to a raw 'this', so they must be revoked before re-wiring or the stale ones dangle.
+    void DetachTemplateHandlers();
     bool IsHighContrast() const;
     void OnHighContrastChanged(winrt::Windows::UI::ViewManagement::AccessibilitySettings const& sender, winrt::IInspectable const& args);
 
@@ -71,6 +75,7 @@ private:
 
     void OnL3PointerPressed();
     void OnL3PointerReleased(bool isColor);
+    void OnL3KeyDown(winrt::KeyRoutedEventArgs const& args);
     static bool AreSame(double a, double b);
 
     winrt::weak_ref<winrt::InkToolbar> m_inkToolbar;
@@ -103,5 +108,10 @@ private:
 
     winrt::Windows::UI::ViewManagement::AccessibilitySettings m_accessibilitySettings{ nullptr };
     winrt::event_token m_highContrastChangedToken{};
+
+    // Palette item templates swapped by UpdateHighContrast (UWP m_originalColorPickerItemTemplate /
+    // m_highContrastColorPickerItemTemplate). The high-contrast one outlines each swatch.
+    winrt::DataTemplate m_originalColorPickerItemTemplate{ nullptr };
+    winrt::DataTemplate m_highContrastColorPickerItemTemplate{ nullptr };
 };
 
