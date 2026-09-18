@@ -18,11 +18,12 @@ which is driven by **one MSBuild property, `XamlProfilerEnabled`**, declared in
 sees any of it: **zero code, zero binary size, zero ETW events.**
 
 - **Off (default):** `XamlProfilerEnabled` is `false`, so `XAMLPROFILER_ENABLED`
-  is never defined, the dedicated `.cpp` is not compiled, and no events are emitted.
+  is never defined, the dedicated profiler sources are not compiled, and no profiler
+  events are emitted.
 - **On:** flip the flag to `true` (one line) and rebuild.
 
-The property is **force-disabled outside `Configuration==Debug`**, so retail/fre
-builds never get the producer even if the flag is left on.
+The normal project settings disable the property outside `Configuration==Debug`,
+so retail/fre builds do not get the producer when the local flag is left on.
 
 ---
 
@@ -39,14 +40,14 @@ builds never get the producer even if the flag is left on.
 - **To turn ON:** change the first line's value to `true`, then rebuild.
 - **To turn OFF:** change it back to `false` (the default).
 
-The second line is a guard: it re-forces `false` in any non-Debug configuration,
-so enabling the profiler can never leak into a retail/fre build.
+The second line resets the local setting to `false` in non-Debug configurations.
+Do not override the property globally to `true` for a shipping build.
 
 ---
 
 ## What the property drives (no manual edits needed here)
 
-`XamlProfilerEnabled` gates three build sites via `Condition="'$(XamlProfilerEnabled)'=='true'"`.
+`XamlProfilerEnabled` gates the build sites below via `Condition="'$(XamlProfilerEnabled)'=='true'"`.
 You should not need to touch these — they follow the single switch above.
 
 ### Site 1 — macro define (`<PreprocessorDefinitions>`)
@@ -64,37 +65,51 @@ Two define sites exist because `DBG=1` itself is defined in both `Xaml.Cpp.Targe
 and `LibraryCompile.props`; `XAMLPROFILER_ENABLED` mirrors that reach so every
 consumer project gets the macro.
 
-### Site 3 — the dedicated `.cpp` compilation
+### Dedicated `.cpp` compilation
 **File:** `dxaml\xcp\components\comptree\lib\Microsoft.UI.Xaml.CompTree.vcxproj`
 ```xml
 <ClCompile Condition="'$(XamlProfilerEnabled)'=='true'" Include="..\WucVisualTreeProfiler.cpp"/>
 ```
-`WucVisualTreeProfiler.cpp` is the only dedicated profiler translation unit. It has
-a top-of-file `#error` safeguard that fires if it is ever compiled with
-`XAMLPROFILER_ENABLED` undefined — because all three sites share the same
-`XamlProfilerEnabled` property, they now stay in sync automatically.
+**File:** `dxaml\xcp\components\base\lib\Microsoft.UI.Xaml.Base.vcxproj`
+```xml
+<ClCompile Condition="'$(XamlProfilerEnabled)'=='true'" Include="..\XamlLaunchTrace.cpp"/>
+```
+Both production translation units have a top-of-file `#error` safeguard that fires
+if compiled with `XAMLPROFILER_ENABLED` undefined. Source inclusion and the macro
+definitions share the same `XamlProfilerEnabled` property.
+
+The launch test source and header in
+`dxaml\xcp\components\base\unittests\Microsoft.UI.Xaml.Tests.Isolated.Base.vcxproj`
+are conditioned on that property too. The launch test class is registered only in
+profiler-enabled builds; other Base tests are unaffected.
+
+The launch producer uses the existing `Microsoft-Windows-XAML-Profiler` provider,
+not the standard XAML provider. Its core member, TLS/counters, startup scope, and
+callback/frame calls are all guarded, not replaced with always-present no-ops.
+See [XAML launch boundary observations](../../../docs/design-notes/launch-phase-markers.md)
+for the event contract.
 
 ### Cosmetic (header project-membership, no build effect)
-Two `ClInclude` entries (in `Microsoft.UI.Xaml.CompTree.vcxproj` and
-`Microsoft.UI.Xaml.Base.vcxproj`) are also gated on the property. Headers are never
-compiled and are self-guarded (`#ifdef XAMLPROFILER_ENABLED` around their whole body),
-so these only affect Solution Explorer / project membership.
+Profiler-specific `ClInclude` entries are gated on the property as well. Headers
+are not independent compilation units; their declarations are self-guarded with
+`#ifdef XAMLPROFILER_ENABLED`. The project entries control project membership,
+while the header guards and guarded includes provide compilation exclusion.
 
 ---
 
 ## Verifying the switch works
 
 1. Set `XamlProfilerEnabled` to `false` (default).
-2. Build: `.\initrun.ps1 build.cmd mux /q`
-   - A clean build with the profiler removed should succeed, and the output
-     `Microsoft.ui.xaml.dll` is measurably smaller than the profiler-on build
-     (~50 KB) — physical proof the code was excluded.
-   - If it fails with the `#error` from `WucVisualTreeProfiler.cpp`, the
-     `XamlProfilerEnabled` guard is out of sync (should not happen with the single
-     property).
-3. Attach the profiler / collect a trace → **no XamlProfiler events** should appear.
-4. Set `XamlProfilerEnabled` to `true`, rebuild → the DLL returns to full size and
-   events flow again.
+2. Build: `.\Build.cmd mux /i x64chk /q`. Confirm the dedicated profiler sources
+   are absent from evaluated compile items and profiler declarations/state/calls
+   are absent from preprocessed code. A profiler-only source's `#error` indicates
+   out-of-sync build settings.
+3. Confirm profiler event metadata is absent from the resulting DLL. Binary size
+   alone, or an empty ETW capture, is not proof that state and calls were removed.
+4. Set `XamlProfilerEnabled` to `true` and rebuild consistently, including tests.
+   Confirm the launch test class is present and passes, and that subscribed
+   profiler events are delivered. Use separate outputs or rebuild when switching
+   modes so stale objects or precompiled headers cannot mask a problem.
 
 ---
 
@@ -103,5 +118,5 @@ so these only affect Solution Explorer / project membership.
 - The profiler is scoped to `Configuration==Debug` (chk) via the guard line in
   `Xaml.Cpp.Props`. To ship the profiler in a specific fre flavor, adjust that guard
   rather than the individual sites.
-- All three build sites and the two cosmetic header entries reference the single
+- All build sites and profiler-specific header entries reference the single
   `XamlProfilerEnabled` property, so there is exactly one place to change.
