@@ -21,8 +21,9 @@ different flavor, and `-Detailed` for full output.
 - Run build and setup commands yourself. Do not ask the user to run them.
 - When asked to build the repository without a named target, perform the complete default
   build. Never report success based on a smaller component build.
-- On failure, follow the recovery policy in [`AGENTS.md`](../AGENTS.md): apply the bounded
-  retries it lists, then stop and report the error and the binary log path.
+- On failure, follow the recovery policy in
+  [`skills/build/SKILL.md`](skills/build/SKILL.md): apply the bounded retries it lists,
+  then stop and report the error and the binary log path.
 
 ## Skills
 
