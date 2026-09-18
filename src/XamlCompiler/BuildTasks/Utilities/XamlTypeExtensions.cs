@@ -688,11 +688,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         }
 
 
-        public static bool IsContractVersionAttribute(this Type type)
-        {
-            return type.FullName.Equals(KnownTypes.ContractVersionAttribute);
-        }
-
         internal static bool HasCreateFromStringMethod(this XamlType type)
         {
             DirectUIXamlType duiType = GetDirectUIXamlType(type);
