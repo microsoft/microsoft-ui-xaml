@@ -1,32 +1,32 @@
-{
-  "schemaVersion": 1,
-  "benchmarkConfigVersion": "pr-smoke-v1",
-  "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "buildId": "1001",
-  "machine": {
-    "agentName": "PERF-01",
-    "osBuild": "26200",
-    "architecture": "amd64",
-    "flavor": "fre"
-  },
-  "scenarios": [
-    {
-      "name": "Lifecycle-MinApp.Cpp.MUX",
-      "metrics": [
-        {
-          "name": "CpuTimeMs",
-          "unit": "ms",
-          "samples": [
-            250.0,
-            252.0,
-            251.0,
-            249.0,
-            253.0,
-            250.5,
-            251.5
-          ]
-        }
-      ]
-    }
-  ]
+﻿{
+    "schemaVersion":  1,
+    "benchmarkConfigVersion":  "pr-smoke-v1",
+    "commit":  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "buildId":  "1001",
+    "machine":  {
+                    "agentName":  "PERF-01",
+                    "osBuild":  "26200",
+                    "architecture":  "amd64",
+                    "flavor":  "fre"
+                },
+    "scenarios":  [
+                      {
+                          "name":  "Lifecycle-MinApp.Cpp.MUX",
+                          "metrics":  [
+                                          {
+                                              "name":  "CpuTimeMs",
+                                              "unit":  "ms",
+                                              "samples":  [
+                                                              250,
+                                                              252,
+                                                              251,
+                                                              249,
+                                                              253,
+                                                              250.5,
+                                                              251.5
+                                                          ]
+                                          }
+                                      ]
+                      }
+                  ]
 }
