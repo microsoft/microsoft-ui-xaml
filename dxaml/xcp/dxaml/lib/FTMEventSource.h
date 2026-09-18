@@ -219,9 +219,7 @@ class CFTMEventSource
 public:
     CFTMEventSource() :
         m_fInitialized(FALSE),
-        m_fInRaise(FALSE),
-        m_pHandlers(NULL),
-        m_pHandlersCopy(NULL)
+        m_pHandlers(NULL)
     {
         BOOL fRet;
         HRESULT hr;
@@ -252,7 +250,6 @@ public:
         DeleteCriticalSection(&m_csAddRemove);
         DeleteCriticalSection(&m_csRaise);
         delete m_pHandlers;
-        delete m_pHandlersCopy;
     }
 
     _Check_return_ HRESULT Add(_In_ THANDLER* pHandler, _Out_ EventRegistrationToken* pToken)
@@ -267,10 +264,7 @@ public:
         {
             Lock lock(m_csAddRemove);
 
-            CGITCookieList<THANDLER>* pList = NULL;
-            IFC(GetHandlersListForAddRemove(&pList));
-
-            IFC(pList->Add(pGITCookie));
+            IFC(m_pHandlers->Add(pGITCookie));
         }
 
         pToken->value = pGITCookie->GetCookie();
@@ -291,10 +285,7 @@ public:
         {
             Lock lock(m_csAddRemove);
 
-            CGITCookieList<THANDLER>* pList = NULL;
-            IFC(GetHandlersListForAddRemove(&pList));
-
-            IFC(pList->Remove(dwCookie));
+            IFC(m_pHandlers->Remove(dwCookie));
         }
 
     Cleanup:
@@ -307,19 +298,21 @@ public:
         Lock lock(m_csRaise);
         XUINT32 size;
         THANDLER* pHandler = NULL;
+        CGITCookieList<THANDLER>* pHandlers = NULL;
 
         IFCEXPECT(m_fInitialized);
 
         {
             Lock lock2(m_csAddRemove);
-            m_fInRaise = TRUE;
+            // Close can clear the source synchronously from a handler.
+            IFC(CGITCookieList<THANDLER>::Copy(m_pHandlers, &pHandlers));
         }
 
-        size = m_pHandlers->GetSize();
+        size = pHandlers->GetSize();
 
         for (XUINT32 i = 0; i < size; i++)
         {
-            CGITCookie<THANDLER>* pGITCookie = m_pHandlers->Get(i);
+            CGITCookie<THANDLER>* pGITCookie = pHandlers->Get(i);
             if (pGITCookie)
             {
                 IFC(pGITCookie->GetInterface(&pHandler));
@@ -332,22 +325,9 @@ public:
             }
         }
 
-        {
-            Lock lock2(m_csAddRemove);
-
-            if (m_pHandlersCopy)
-            {
-                CGITCookieList<THANDLER>* pTempList = m_pHandlers;
-                m_pHandlers = m_pHandlersCopy;
-                m_pHandlersCopy = NULL;
-                delete pTempList;
-            }
-
-            m_fInRaise = FALSE;
-        }
-
     Cleanup:
         ReleaseInterface(pHandler);
+        delete pHandlers;
 
         RRETURN(hr);
     }
@@ -363,46 +343,18 @@ public:
         Lock addRemoveLock(m_csAddRemove);
 
         m_pHandlers->Clear();
-
-        if (m_pHandlersCopy)
-        {
-            m_pHandlersCopy->Clear();
-        }
     }
 
 private:
     // state
     bool m_fInitialized;
-    bool m_fInRaise;
 
     // locks
     CRITICAL_SECTION m_csAddRemove;
     CRITICAL_SECTION m_csRaise;
 
-    // lists of GIT cookies
+    // list of GIT cookies
     CGITCookieList<THANDLER>* m_pHandlers;
-    CGITCookieList<THANDLER>* m_pHandlersCopy;
-
-    _Check_return_ HRESULT GetHandlersListForAddRemove(_Outptr_ CGITCookieList<THANDLER>** ppList)
-    {
-        HRESULT hr = S_OK;
-
-        if (m_fInRaise)
-        {
-            if (!m_pHandlersCopy)
-            {
-                IFC(CGITCookieList<THANDLER>::Copy(m_pHandlers, &m_pHandlersCopy));
-            }
-            *ppList = m_pHandlersCopy;
-        }
-        else
-        {
-            *ppList = m_pHandlers;
-        }
-
-    Cleanup:
-        RRETURN(hr);
-    }
 
     class Lock
     {
