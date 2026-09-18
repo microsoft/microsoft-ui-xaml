@@ -25,6 +25,17 @@ parameters:
   default: ''
 - name: useFixtures
   type: boolean
+# Launching a real app and tracing it needs appx deployment, a trace session and a
+# decoder to all work on a lab agent. Until that is proven, the working comparison must
+# not be able to be disturbed by it, so it stays off unless it is asked for.
+- name: runXamlTrace
+  type: boolean
+  default: false
+# The payload is produced by a different stage, whose artifact name carries the test
+# operating system and build flavour, so it is named here rather than guessed.
+- name: xamlTracePayloadArtifact
+  type: string
+  default: 'ScenarioTestPayload_Win11-25H2_x64fre'
 - name: publishProvider
   type: string
   default: github
@@ -352,6 +363,28 @@ stages:
             -AgentName "$(Agent.Name)"
             -OutputDirectory "$(comparisonDirectory)"
             -ThresholdPath "$(prPerfSourcesDirectory)\build\PRPerf\pr-perf-thresholds-local.json"
+
+      - ${{ if eq(parameters.runXamlTrace, true) }}:
+        - task: DownloadPipelineArtifact@2
+          displayName: Download the app payload to trace
+          continueOnError: true
+          inputs:
+            buildType: current
+            artifactName: ${{ parameters.xamlTracePayloadArtifact }}
+            targetPath: $(Agent.TempDirectory)\prperf-payload
+
+        - task: PowerShell@2
+          displayName: Measure XAML startup regions from an app launch
+          continueOnError: true
+          inputs:
+            # Windows PowerShell, because deploying an appx package is not something
+            # PowerShell 7 does without reaching back into it anyway.
+            pwsh: false
+            targetType: filePath
+            filePath: $(prPerfSourcesDirectory)\build\PRPerf\Measure-PRPerfXamlTrace.ps1
+            arguments: >-
+              -PayloadRoot "$(Agent.TempDirectory)\prperf-payload"
+              -OutputPath "$(comparisonDirectory)\xaml-regions.json"
 
     - ${{ if and(ne(parameters.useFixtures, true), ne(parameters.targetBuildId, '')) }}:
       - task: DownloadPipelineArtifact@2
@@ -855,6 +888,7 @@ stages:
               ArtifactUrl        = '$(artifactUrl)'
               PipelineUrl        = '$(pipelineUrl)'
               Token              = $token
+              XamlRegionsPath    = '$(comparisonDirectory)\xaml-regions.json'
             }
 
             if ($expectedSourceCommit -match '^[0-9a-fA-F]{40}$') {
