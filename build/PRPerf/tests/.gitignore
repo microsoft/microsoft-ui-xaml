@@ -1,0 +1,5 @@
+# Byproducts of running the suite; nothing here is an input.
+*.json
+!fixtures/
+artifacts-*/
+

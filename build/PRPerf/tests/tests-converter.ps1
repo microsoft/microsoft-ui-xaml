@@ -20,14 +20,25 @@ function Assert-Throws([scriptblock] $Action, [string] $Pattern, [string] $Messa
     throw "$Message Expected an exception."
 }
 
+function Get-TestScratchDirectory {
+    # Tests used to write their inputs and outputs next to themselves, which left
+    # byproducts in the repository and made the working tree dirty just by running
+    # the suite. Everything transient goes to a scratch directory instead.
+    if (-not $script:TestScratchDirectory) {
+        $script:TestScratchDirectory = Join-Path ([System.IO.Path]::GetTempPath()) "prperf-tests-$([guid]::NewGuid())"
+        New-Item -ItemType Directory -Path $script:TestScratchDirectory -Force | Out-Null
+    }
+    return $script:TestScratchDirectory
+}
+
 function New-TestCsv([string] $Name, [string[]] $Lines) {
-    $path = Join-Path $PSScriptRoot $Name
+    $path = Join-Path (Get-TestScratchDirectory) $Name
     $Lines | Set-Content -LiteralPath $path -Encoding UTF8
     return $path
 }
 
 function Invoke-TestConversion([string[]] $InputCsv, [string] $Name = 'converted.json', [string] $ScenarioPattern) {
-    $output = Join-Path $PSScriptRoot $Name
+    $output = Join-Path (Get-TestScratchDirectory) $Name
     $extra = @{}
     if ($ScenarioPattern) { $extra['ScenarioPattern'] = $ScenarioPattern }
     & $converter `
@@ -45,7 +56,7 @@ function New-TestArtifactPair(
     [switch] $MismatchedLayout,
     [switch] $PutTargetPackageAtArbitraryPath
 ) {
-    $base = Join-Path $PSScriptRoot "artifacts-$([guid]::NewGuid())"
+    $base = Join-Path (Get-TestScratchDirectory) "artifacts-$([guid]::NewGuid())"
     $target = Join-Path $base 'target'
     $trial = Join-Path $base 'trial'
     $relativeApps = 'drop_amd64fre\Test\perf\apps'
