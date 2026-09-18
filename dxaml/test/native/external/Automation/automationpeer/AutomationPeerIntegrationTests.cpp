@@ -355,6 +355,9 @@ void AutomationPeerIntegrationTests::VerifyContainerWithAutomationNameHasAP()
 
 void AutomationPeerIntegrationTests::VerifyContainerWithLabeledByHasAP()
 {
+    TestServices::EnableLeakDetection();
+    TestCleanupWrapper cleanup;
+
     VerifyContainerWithLabeledByHasAPMarkup();
     LOG_OUTPUT(L"\r\n");
     VerifyContainerWithLabeledByHasAPCodebehind();
