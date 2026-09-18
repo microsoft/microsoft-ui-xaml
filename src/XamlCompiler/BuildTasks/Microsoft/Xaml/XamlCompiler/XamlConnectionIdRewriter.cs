@@ -10,11 +10,17 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
     using System.Linq;
     using System.Text;
     using CodeGen;
+    using Optimization;
+    using XamlDom;
 
     internal class XamlConnectionIdRewriter
     {
         private string[] xamlLines;
         private List<XamlCompileError> errors = new List<XamlCompileError>();
+
+        public XamlDomObject OptimizationRoot { get; set; }
+        public IReadOnlyList<XamlOptimizationDecision> OptimizationDecisions { get; private set; } =
+            Array.Empty<XamlOptimizationDecision>();
 
         private static char[] Whitespace = { ' ', '\r', '\n', '\t' };
         private static char[] QuoteCharacters = { '"', '\'' };
@@ -123,6 +129,18 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
         private string ProcessLines(IXamlClassCodeInfo classCodeInfo, IXamlFileCodeInfo fileCodeInfo)
         {
+            if (OptimizationRoot != null && !classCodeInfo.IsApplication)
+            {
+                var result = XamlOptimizationPipeline.Analyze(OptimizationRoot, xamlLines);
+                OptimizationDecisions = result.Decisions;
+                foreach (var edit in result.Edits)
+                {
+                    ReplaceWithSpaces(
+                        new SourcePos { Row = edit.StartLine, Col = edit.StartColumn },
+                        new SourcePos { Row = edit.EndLine, Col = edit.EndColumn });
+                }
+            }
+
             List<ConnectionIdElement> connectionIdElementList = fileCodeInfo.ConnectionIdElements.Where(
                 c =>
                 c.HasRewritableAttributes)
