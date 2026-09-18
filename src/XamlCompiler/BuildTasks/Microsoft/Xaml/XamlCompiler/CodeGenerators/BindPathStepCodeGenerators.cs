@@ -11,6 +11,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         ICodeGenOutput PathExpression { get; }
         ICodeGenOutput UpdateCallParam { get; }
         ICodeGenOutput PathSetExpression(ICodeGenOutput input);
+        ICodeGenOutput InstanceCallExpression(string instanceName);
         ICodeGenOutput MemberAccessOperator { get; }
     }
 
@@ -114,6 +115,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             // Derived steps should all be implementing UpdateCallParam.
             get { throw new NotImplementedException(); }
         }
+
+        public virtual ICodeGenOutput InstanceCallExpression(string instanceName)
+        {
+            // Only function steps are ever invoked on a separately retrieved instance.
+            throw new NotImplementedException();
+        }
     }
 
     internal class RootStepCodeGenerator : BindPathStepCodeGenerator<RootStep>
@@ -169,9 +176,23 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         {
             get
             {
+                if (!string.IsNullOrEmpty(Instance.UpdateCallParamOverride))
+                {
+                    // A named element in a template is held in a field on the bindings class rather
+                    // than as a member of the namescope it belongs to, so it is read straight from
+                    // there. The element root it hangs off stands in for that namescope and has no
+                    // expression of its own to reach the element through.
+                    string bindingsField = Instance.UpdateCallParamOverride;
+                    return new LanguageSpecificString(
+                        () => $"this->{bindingsField}",
+                        () => bindingsField,
+                        () => $"this.{bindingsField}",
+                        () => $"Me.{bindingsField}");
+                }
+
                 var parentPathExpression = Instance.Parent.CodeGen().PathExpression;
                 var parentMemberAccessOperator = Instance.Parent.CodeGen().MemberAccessOperator;
-                string fieldName = !string.IsNullOrEmpty(Instance.UpdateCallParamOverride) ? Instance.UpdateCallParamOverride : Instance.FieldName;
+                string fieldName = Instance.FieldName;
 
                 return new LanguageSpecificString(
                     () => parentPathExpression.CppCXName() + parentMemberAccessOperator.CppCXName() + fieldName,
@@ -482,6 +503,23 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         public override ICodeGenOutput UpdateCallParam
         {
             get { return new LanguageSpecificString(() => String.Empty); }
+        }
+
+        /// <summary>
+        /// The call expression for this function, invoked on an instance held in a local instead of
+        /// by re-evaluating the path that produces it. Used when <see cref="FunctionStep.InstanceStep"/>
+        /// has to be null checked before the call, so that the path is only walked once.
+        /// </summary>
+        public override ICodeGenOutput InstanceCallExpression(string instanceName)
+        {
+            MethodStep method = Instance.Method;
+            var memberAccessOperator = method.Parent.CodeGen().MemberAccessOperator;
+            var paramList = method.Parameters.ForCall();
+            return new LanguageSpecificString(
+                () => $"{instanceName}{memberAccessOperator.CppCXName()}{method.MethodName}({paramList})",
+                () => $"{instanceName}{memberAccessOperator.CppWinRTName()}{method.MethodName}({paramList})",
+                () => $"{instanceName}.{method.MethodName}({paramList})",
+                () => $"{instanceName}.{method.MethodName}({paramList})");
         }
     }
 }

@@ -1919,7 +1919,8 @@ this.Write("(obj);\r\n");
 
                  }
                  Output_Update_Steps(bindStep.ValueType.IsNullable, "this", bindStep.Children, true, "phase");
-                 Output_Update_Steps(bindStep.ValueType.IsNullable, "this", bindStep.Dependents, false, "phase");
+                 // Dependents are function bindings: a null value is a valid argument, not an unresolved path.
+                 Output_Update_Steps(false, "this", bindStep.Dependents, false, "phase");
                  foreach (int distinctPhase in bindStep.DistinctPhases)
                  {
                      Output_Binding_Phased_SetValue(distinctPhase, true, bindStep, false);
@@ -3601,13 +3602,38 @@ this.Write(";\r\n");
 
              }
          }
+         BindPathStep instanceStep = functionStep.InstanceStep;
+         if (instanceStep != null) {
+this.Write("                ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(instanceStep.ValueType));
+
+this.Write(" ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(KnownStrings.FunctionInstanceName));
+
+this.Write(";\r\n                if (!");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(instanceStep.TryGetValueCodeName));
+
+this.Write("(out ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(KnownStrings.FunctionInstanceName));
+
+this.Write(")");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(instanceStep.ValueType.IsNullable ? " || " + KnownStrings.FunctionInstanceName + " == null" : ""));
+
+this.Write(") { return; }\r\n");
+
+         }
 this.Write("                ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(functionStep.ValueType));
 
 this.Write(" result = ");
 
-this.Write(this.ToStringHelper.ToStringWithCulture(functionStep.CodeGen().PathExpression));
+this.Write(this.ToStringHelper.ToStringWithCulture(instanceStep == null ? functionStep.CodeGen().PathExpression : functionStep.CodeGen().InstanceCallExpression(KnownStrings.FunctionInstanceName)));
 
 this.Write(";\r\n");
 
@@ -3633,7 +3659,7 @@ this.Write(this.ToStringHelper.ToStringWithCulture(step.ValueType));
 
 this.Write(" val)\r\n            {\r\n");
 
-         if (step is RootStep || !step.Parent.IsIncludedInUpdate) {
+         if (!step.IsRetrievedThroughParent) {
 this.Write("                val = ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(step.CodeGen().PathExpression));
