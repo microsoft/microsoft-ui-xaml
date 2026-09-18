@@ -19,11 +19,13 @@ Import-Module (Join-Path $root 'PRPerfGitHub.psm1') -Force
 
 $comparison = Get-Content -LiteralPath $ComparisonPath -Raw | ConvertFrom-Json
 $xamlRegions = Get-PRPerfXamlRegions -Path $XamlRegionsPath
+$xamlTraceApp = Get-PRPerfXamlTraceApp -Path $XamlRegionsPath
 $markdown = New-PRPerfMarkdown `
     -Comparison $comparison `
     -ArtifactUrl $ArtifactUrl `
     -PipelineUrl $PipelineUrl `
-    -XamlRegions $xamlRegions
+    -XamlRegions $xamlRegions `
+    -XamlTraceApp $xamlTraceApp
 
 function Invoke-GitHubWrite {
     param(
@@ -75,7 +77,8 @@ if (-not [string]::IsNullOrWhiteSpace($ExpectedSourceCommit)) {
             -Comparison $comparison `
             -ArtifactUrl $ArtifactUrl `
             -PipelineUrl $PipelineUrl `
-            -XamlRegions $xamlRegions
+            -XamlRegions $xamlRegions `
+            -XamlTraceApp $xamlTraceApp
         $marker = '<!-- winui-pr-perf-result -->'
         $markdownWithoutMarker = [regex]::Replace($markdown, "^\s*$([regex]::Escape($marker))\s*", '', 1)
         $markdown = "$marker`n## Superseded by a newer PR commit`n`n$supersededIssue`n`n$markdownWithoutMarker"

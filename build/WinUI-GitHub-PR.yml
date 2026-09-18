@@ -206,6 +206,10 @@ extends:
           gateOnLabel: true
           continueOnError: true
           useFixtures: ${{ parameters.perfUseFixtures }}
+          # Launch a real app and read the XAML startup regions out of a trace of it. It
+          # cannot change the verdict and it cannot remove anything from the comment: when
+          # it measures nothing the comment renders exactly as it does without it.
+          runXamlTrace: true
           # The measurement reads this build's own drop, which Build_MUXFinalRelease
           # publishes roughly half an hour in. Left as a leaf the stage started three
           # seconds after the run did and raced the artifact: on run 157847891 the perf

@@ -38,6 +38,13 @@ parameters:
 - name: xamlTracePayloadArtifact
   type: string
   default: ''
+# An app already on the agent needs no payload at all. The operating system performance
+# gates measure app life cycle exactly this way: their table installs an appx for some
+# apps and names the inbox version for others. Candidates are tried in order, because a
+# lab image is not guaranteed to carry any particular app.
+- name: xamlTraceApp
+  type: string
+  default: 'Microsoft.WindowsCalculator_8wekyb3d8bbwe!App;windows.immersivecontrolpanel_cw5n1h2txyewy!microsoft.windows.immersivecontrolpanel;Microsoft.Windows.Photos_8wekyb3d8bbwe!App'
 - name: publishProvider
   type: string
   default: github
@@ -375,6 +382,7 @@ stages:
             artifactName: ${{ parameters.xamlTracePayloadArtifact }}
             targetPath: $(Agent.TempDirectory)\prperf-payload
 
+      - ${{ if eq(parameters.runXamlTrace, true) }}:
         - task: PowerShell@2
           displayName: Measure XAML startup regions from an app launch
           continueOnError: true
@@ -385,6 +393,7 @@ stages:
             targetType: filePath
             filePath: $(prPerfSourcesDirectory)\build\PRPerf\Measure-PRPerfXamlTrace.ps1
             arguments: >-
+              -AppUserModelId "${{ parameters.xamlTraceApp }}"
               -PayloadRoot "$(Agent.TempDirectory)\prperf-payload"
               -OutputPath "$(comparisonDirectory)\xaml-regions.json"
 

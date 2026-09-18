@@ -47,8 +47,29 @@ function Get-PRPerfXamlRegions {
     return $regions
 }
 
+function Get-PRPerfXamlTraceApp {
+    <#
+    .SYNOPSIS
+    The app the trace measured, if one was recorded.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][AllowEmptyString()][string] $Path)
+
+    if ([string]::IsNullOrWhiteSpace($Path) -or -not (Test-Path -LiteralPath $Path -PathType Leaf)) { return '' }
+    try {
+        $parsed = Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
+    } catch {
+        return ''
+    }
+    if ($null -eq $parsed) { return '' }
+
+    $property = $parsed.PSObject.Properties['app']
+    if ($null -eq $property) { return '' }
+    return [string]$property.Value
+}
+
 function Get-PRPerfXamlRegionSection {
-    param($XamlRegions)
+    param($XamlRegions, [string] $XamlTraceApp)
 
     if ($null -eq $XamlRegions) { return @() }
     $names = @($XamlRegions.Keys)
@@ -56,11 +77,18 @@ function Get-PRPerfXamlRegionSection {
     # The comparison that did work must then read exactly as it would have anyway.
     if ($names.Count -eq 0) { return @() }
 
-    $lines = @(
-        '',
-        '### XAML startup regions (informational, no baseline)',
-        '',
-        '| Region | PR build |',
+    # Naming the app is what keeps the section honest. A reader who sees a XAML number
+    # beside a pull request verdict will otherwise take it as this pull request's XAML,
+    # and an app that uses the system XAML has not touched the branch's code at all.
+    $heading = '### XAML startup regions (informational, not attributed to this pull request)'
+    $lines = @('', $heading, '')
+    if (-not [string]::IsNullOrWhiteSpace($XamlTraceApp)) {
+        $lines += @("Measured by launching ``$(ConvertTo-PRPerfMarkdownCell $XamlTraceApp)``, with no baseline to compare against.", '')
+    } else {
+        $lines += @('Measured from a single app launch, with no baseline to compare against.', '')
+    }
+    $lines += @(
+        '| Region | Measured |',
         '|---|---:|'
     )
     foreach ($name in $names) {
@@ -79,7 +107,11 @@ function New-PRPerfMarkdown {
         # Measured on the pull request build alone. There is deliberately no baseline: the
         # two sides need different framework packages installed, which cannot both be
         # present at once, so these are reported as an observation and never as a verdict.
-        $XamlRegions = $null
+        $XamlRegions = $null,
+
+        # The app whose launch produced those regions. Naming it is what stops a reader
+        # taking a number beside a pull request verdict as this pull request's XAML.
+        [AllowEmptyString()][string] $XamlTraceApp = ''
     )
 
     $title = switch ($Comparison.overallState) {
@@ -128,7 +160,7 @@ function New-PRPerfMarkdown {
         "Target: ``$($Comparison.target.commit)`` (build $($Comparison.target.buildId)$baselineKind)",
         "PR: ``$($Comparison.trial.commit)`` (build $($Comparison.trial.buildId))"
     )
-    $lines += Get-PRPerfXamlRegionSection -XamlRegions $XamlRegions
+    $lines += Get-PRPerfXamlRegionSection -XamlRegions $XamlRegions -XamlTraceApp $XamlTraceApp
     $lines += @(
         '',
         "[Artifacts]($ArtifactUrl) | [Pipeline run]($PipelineUrl)"
@@ -153,4 +185,4 @@ function Find-PRPerfComment {
     return $null
 }
 
-Export-ModuleMember -Function New-PRPerfMarkdown, Find-PRPerfComment, Get-PRPerfXamlRegions
+Export-ModuleMember -Function New-PRPerfMarkdown, Find-PRPerfComment, Get-PRPerfXamlRegions, Get-PRPerfXamlTraceApp

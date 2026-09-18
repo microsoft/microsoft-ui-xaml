@@ -460,16 +460,37 @@ function Test-MarkdownOmitsXamlRegionsWhenNoneWereMeasured {
 }
 
 function Test-MarkdownReportsMeasuredXamlRegions {
-    # These numbers come from one app launch on the pull request build only, with nothing
-    # to compare against, so they are reported as an observation and never as a verdict.
+    # These numbers come from launching one named app, with nothing to compare against.
+    # The app is named in the comment because a reader who sees a XAML number beside a
+    # pull request verdict will otherwise take it as this pull request's XAML.
     $comparison = New-TestComparison
     $markdown = New-PRPerfMarkdown -Comparison $comparison -ArtifactUrl 'https://artifacts' -PipelineUrl 'https://pipeline' `
-        -XamlRegions ([ordered]@{ XamlInitializeMs = 25.5; XamlFrameMs = 250.25 })
+        -XamlRegions ([ordered]@{ XamlInitializeMs = 25.5; XamlFrameMs = 250.25 }) `
+        -XamlTraceApp 'Microsoft.WindowsCalculator_8wekyb3d8bbwe!App'
 
     if ($markdown -notlike '*XamlInitializeMs*') { throw 'A measured region must be listed.' }
     if ($markdown -notlike '*25.50*') { throw 'A measured region value must be shown.' }
     if ($markdown -notlike '*250.25*') { throw 'A measured region value must be shown.' }
-    if ($markdown -notlike '*no baseline*') { throw 'The section must say these numbers have nothing to compare against.' }
+    if ($markdown -notlike '*Microsoft.WindowsCalculator_8wekyb3d8bbwe!App*') { throw 'The app that was measured must be named.' }
+    if ($markdown -notlike '*not attributed to this pull request*') { throw 'The section must disclaim attribution to the pull request.' }
+}
+
+function Test-XamlTraceAppIsReadFromTheTraceFile {
+    $path = Join-Path ([System.IO.Path]::GetTempPath()) "prperf-trace-$([guid]::NewGuid()).json"
+    Set-Content -LiteralPath $path -Value '{ "app": "Contoso.App_abc!App", "XamlInitializeMs": 25.5 }'
+    try {
+        Assert-Equal 'Contoso.App_abc!App' (Get-PRPerfXamlTraceApp -Path $path) 'The measured app must be read back.'
+        $regions = Get-PRPerfXamlRegions -Path $path
+        Assert-Equal 1 @($regions.Keys).Count 'The app name must not be rendered as though it were a duration.'
+    } finally {
+        Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Test-XamlTraceAppIsEmptyWhenTheTraceFileIsAbsent {
+    $app = Get-PRPerfXamlTraceApp -Path (Join-Path ([System.IO.Path]::GetTempPath()) "prperf-missing-$([guid]::NewGuid()).json")
+
+    Assert-Equal '' $app 'A missing trace file must name no app.'
 }
 
 function Test-MarkdownXamlRegionsNeverChangeTheVerdict {

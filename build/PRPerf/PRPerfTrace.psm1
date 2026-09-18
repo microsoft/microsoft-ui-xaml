@@ -45,29 +45,88 @@ function ConvertTo-PRPerfTraceTimestamp {
 }
 
 function Get-PRPerfTraceEvents {
+    <#
+        Streams the decoded trace rather than loading it into a document.
+
+        A few seconds of this provider decodes to tens of megabytes: a real capture of a
+        Calculator launch produced 40 MB, which took 64 seconds to walk as a document and
+        about two to stream. Only a handful of events in it matter, so there is no reason
+        to hold the rest in memory at all.
+    #>
     param([Parameter(Mandatory)][string] $Xml)
 
-    $document = [xml]$Xml
-    $events = @()
+    $events = [System.Collections.Generic.List[object]]::new()
 
-    foreach ($node in $document.SelectNodes("//*[local-name()='Event']")) {
-        $provider = $node.SelectSingleNode("*[local-name()='System']/*[local-name()='Provider']")
-        if ($null -eq $provider) { continue }
-        # Event ids are only unique within a provider, so another provider's event 17 would
-        # otherwise be read as a XAML startup and produce a confidently wrong number.
-        if ([string]$provider.GetAttribute('Guid') -ine $script:XamlProviderGuid) { continue }
+    $settings = [System.Xml.XmlReaderSettings]::new()
+    $settings.IgnoreComments = $true
+    $settings.IgnoreWhitespace = $true
+    $settings.DtdProcessing = [System.Xml.DtdProcessing]::Ignore
+    $settings.ConformanceLevel = [System.Xml.ConformanceLevel]::Fragment
 
-        $eventId = $node.SelectSingleNode("*[local-name()='System']/*[local-name()='EventID']")
-        $timeCreated = $node.SelectSingleNode("*[local-name()='System']/*[local-name()='TimeCreated']")
-        $execution = $node.SelectSingleNode("*[local-name()='System']/*[local-name()='Execution']")
-        if ($null -eq $eventId -or $null -eq $timeCreated -or $null -eq $execution) { continue }
+    $stringReader = [System.IO.StringReader]::new($Xml)
+    $reader = [System.Xml.XmlReader]::Create($stringReader, $settings)
+    try {
+        $isXaml = $false
+        $eventId = $null
+        $expectingEventId = $false
+        $processId = $null
+        $threadId = $null
+        $time = $null
 
-        $events += [pscustomobject]@{
-            EventId = [int]$eventId.InnerText
-            ProcessId = [string]$execution.GetAttribute('ProcessID')
-            ThreadId = [string]$execution.GetAttribute('ThreadID')
-            Time = ConvertTo-PRPerfTraceTimestamp -SystemTime ([string]$timeCreated.GetAttribute('SystemTime'))
+        while ($reader.Read()) {
+            if ($reader.NodeType -eq [System.Xml.XmlNodeType]::Element) {
+                switch ($reader.LocalName) {
+                    'System' {
+                        $isXaml = $false; $eventId = $null; $processId = $null; $threadId = $null; $time = $null
+                    }
+                    'Provider' {
+                        # Event ids are only unique within a provider, so another provider's
+                        # event 17 would otherwise be read as a XAML startup.
+                        $isXaml = ([string]$reader.GetAttribute('Guid') -ieq $script:XamlProviderGuid)
+                    }
+                    'EventID' {
+                        # The value arrives as the following text node. Reading the element
+                        # content here would move the reader past elements this loop still
+                        # needs to see, which is how a timestamp goes missing.
+                        $expectingEventId = -not $reader.IsEmptyElement
+                    }
+                    'TimeCreated' { $time = [string]$reader.GetAttribute('SystemTime') }
+                    'Execution' {
+                        $processId = [string]$reader.GetAttribute('ProcessID')
+                        $threadId = [string]$reader.GetAttribute('ThreadID')
+                    }
+                }
+                continue
+            }
+
+            if ($expectingEventId -and
+                ($reader.NodeType -eq [System.Xml.XmlNodeType]::Text -or
+                 $reader.NodeType -eq [System.Xml.XmlNodeType]::CDATA)) {
+                $parsed = 0
+                if ([int]::TryParse($reader.Value.Trim(), [ref]$parsed)) { $eventId = $parsed }
+                $expectingEventId = $false
+                continue
+            }
+
+            if ($reader.NodeType -eq [System.Xml.XmlNodeType]::EndElement -and $reader.LocalName -eq 'System') {
+                $expectingEventId = $false
+                if (-not $isXaml) { continue }
+                if ($null -eq $eventId -or $null -eq $time -or $null -eq $processId) { continue }
+                # Only the events these regions are built from are worth keeping.
+                if ($eventId -ne $script:RegionStartEventId -and
+                    @($script:RegionStopEventIds.EventId) -notcontains $eventId) { continue }
+
+                $events.Add([pscustomobject]@{
+                    EventId = $eventId
+                    ProcessId = $processId
+                    ThreadId = $threadId
+                    Time = ConvertTo-PRPerfTraceTimestamp -SystemTime $time
+                })
+            }
         }
+    } finally {
+        $reader.Dispose()
+        $stringReader.Dispose()
     }
 
     return $events

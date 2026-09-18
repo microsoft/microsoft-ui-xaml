@@ -1,6 +1,10 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][string] $PayloadRoot,
+    # Either deploy a payload and measure what it contains, or name an app that is already
+    # on the machine. The operating system performance gates this borrows from do both:
+    # their app table installs an appx for Calculator and uses the inbox version for Photos.
+    [string] $PayloadRoot = '',
+    [string] $AppUserModelId = '',
     [Parameter(Mandatory)][string] $OutputPath,
     [string] $AppPackageNamePattern = '*CppDesktopSampleApp*',
     [int] $SampleCount = 3,
@@ -116,6 +120,29 @@ function Install-PayloadPackages {
     }
 }
 
+function Resolve-InstalledAppUserModelId {
+    <#
+        Takes the apps worth trying in order and returns the first one this machine
+        actually has. A lab image is not guaranteed to carry any particular app, and
+        guessing wrong should mean measuring nothing rather than failing loudly.
+    #>
+    param([string[]] $Candidates)
+
+    $installed = @(Get-AppxPackage)
+    foreach ($candidate in $Candidates) {
+        $trimmed = "$candidate".Trim()
+        if ([string]::IsNullOrWhiteSpace($trimmed)) { continue }
+
+        $family = ($trimmed -split '!')[0]
+        if (@($installed | Where-Object { $_.PackageFamilyName -ieq $family }).Count -gt 0) {
+            Write-Note "Found $trimmed on this machine."
+            return $trimmed
+        }
+        Write-Note "$trimmed is not installed here."
+    }
+    throw "None of the named apps are installed: $($Candidates -join ', ')."
+}
+
 function Get-MeasuredAppUserModelId {
     param([string] $NamePattern)
 
@@ -133,10 +160,11 @@ function Get-MeasuredAppUserModelId {
     }
 }
 
-function Assert-ProcessUsesMeasuredXaml {
+function Report-LoadedXaml {
     <#
-        Without this the numbers could come from a XAML that has nothing to do with the
-        pull request, and would look perfectly reasonable while measuring the wrong code.
+        Says which XAML the launched app actually loaded. An app that uses the system
+        XAML has not touched this branch's code at all, and the number it produces is a
+        real measurement of the wrong thing, so the log has to make that visible.
     #>
     param([int] $ProcessId)
 
@@ -147,12 +175,12 @@ function Assert-ProcessUsesMeasuredXaml {
         return
     }
 
-    $xaml = @($modules | Where-Object { $_.ModuleName -ilike 'Microsoft.UI.Xaml.dll' }) | Select-Object -First 1
-    if ($null -eq $xaml) {
-        Write-Note 'The launched app has not loaded Microsoft.UI.Xaml.dll.'
+    $loaded = @($modules | Where-Object { $_.ModuleName -imatch '^(Microsoft\.UI\.Xaml|Windows\.UI\.Xaml)\.dll$' })
+    if ($loaded.Count -eq 0) {
+        Write-Note 'The launched app loaded no recognisable XAML.'
         return
     }
-    Write-Note "The launched app loaded $($xaml.FileName)."
+    foreach ($module in $loaded) { Write-Note "The launched app loaded $($module.FileName)." }
 }
 
 function Measure-OneLaunch {
@@ -179,7 +207,7 @@ function Measure-OneLaunch {
             if ($null -eq $process) { break }
             if ($process.MainWindowHandle -ne [IntPtr]::Zero) { Start-Sleep -Seconds 2; break }
         }
-        if ($Index -eq 0) { Assert-ProcessUsesMeasuredXaml -ProcessId $processId }
+        if ($Index -eq 0) { Report-LoadedXaml -ProcessId $processId }
     } finally {
         $null = Invoke-PRPerfNative wpr.exe @('-stop', $etl)
         if ($processId -ne 0) { Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue }
@@ -199,18 +227,27 @@ function Measure-OneLaunch {
 
 $workingDirectory = Join-Path ([System.IO.Path]::GetTempPath()) "prperf-xaml-$([guid]::NewGuid())"
 $measurements = @{}
+$measuredApp = ''
 try {
     if (-not (Test-Path -LiteralPath $WprpPath -PathType Leaf)) { throw "Recording profile not found: $WprpPath" }
     New-Item -ItemType Directory -Path $workingDirectory -Force | Out-Null
     Add-Type -TypeDefinition $script:ActivationSource -Language CSharp
 
-    Install-PayloadPackages -Root $PayloadRoot
-    $app = Get-MeasuredAppUserModelId -NamePattern $AppPackageNamePattern
-    Write-Note "Measuring $($app.AppUserModelId)."
+    # An app that is already on the machine needs no deployment at all. The operating
+    # system performance gates this borrows from work the same way: their table installs
+    # an appx for some apps and names the inbox version for others.
+    if (-not [string]::IsNullOrWhiteSpace($AppUserModelId)) {
+        $measuredApp = Resolve-InstalledAppUserModelId -Candidates ($AppUserModelId -split ';')
+    } else {
+        if ([string]::IsNullOrWhiteSpace($PayloadRoot)) { throw 'Neither an app nor a payload to deploy was named.' }
+        Install-PayloadPackages -Root $PayloadRoot
+        $measuredApp = (Get-MeasuredAppUserModelId -NamePattern $AppPackageNamePattern).AppUserModelId
+    }
+    Write-Note "Measuring $measuredApp."
 
     for ($run = 0; $run -lt ($WarmupCount + $SampleCount); $run++) {
         try {
-            $regions = Measure-OneLaunch -AppUserModelId $app.AppUserModelId -WorkingDirectory $workingDirectory -Index $run
+            $regions = Measure-OneLaunch -AppUserModelId $measuredApp -WorkingDirectory $workingDirectory -Index $run
         } catch {
             Write-Note "Launch $run did not produce a trace: $($_.Exception.Message)"
             continue
@@ -237,15 +274,22 @@ try {
 }
 
 $report = [ordered]@{}
+# The app is recorded alongside the numbers so the comment can name what was measured.
+# A XAML duration with no app beside it reads as this pull request's XAML.
+if (-not [string]::IsNullOrWhiteSpace($measuredApp)) { $report['app'] = $measuredApp }
+
+$regionCount = 0
 foreach ($name in @($measurements.Keys | Sort-Object)) {
     $samples = @($measurements[$name])
     if ($samples.Count -eq 0) { continue }
     $report[$name] = [math]::Round((Get-PRPerfStatistics -Samples $samples).Median, 2)
+    $regionCount++
 }
 
-if ($report.Count -eq 0) {
-    # Writing an empty file would be indistinguishable from a real measurement of nothing.
-    # Leaving it absent is what tells the comment to carry on without this section.
+if ($regionCount -eq 0) {
+    # A file naming an app but holding no durations would be a measurement of nothing
+    # dressed as a result. Leaving it absent is what tells the comment to carry on
+    # without this section at all.
     Write-Note 'Nothing was measured, so no result file was written.'
     exit 0
 }
