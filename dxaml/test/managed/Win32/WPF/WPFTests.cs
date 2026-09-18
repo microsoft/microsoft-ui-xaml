@@ -96,6 +96,9 @@ namespace Microsoft.UI.Xaml.Tests.Hosting.Win32.WPF
         public void Cleanup()
         {
             TestServices.WindowHelper.DetachMemoryManagerEvents();
+            // Managed tests check for leaks during class cleanup, not after each test.
+            TestServices.ErrorHandlingHelper.IgnoreLeaksForTest();
+
             base.CommonClassCleanup();
         }
 

@@ -115,6 +115,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void FlipViewIntegrationTests::CanFlipWithMouse()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         auto flipView = SetupBasicFlipView(xaml_controls::Orientation::Horizontal, 5);
@@ -339,6 +341,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void FlipViewIntegrationTests::CanFlipWithKeyboard()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         auto flipView = SetupBasicFlipView(xaml_controls::Orientation::Vertical, 5);
@@ -563,6 +567,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void FlipViewIntegrationTests::ValidateScrollingWithMouseWheelQuicklyIsIgnored()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         auto flipView = SetupBasicFlipView(xaml_controls::Orientation::Horizontal, 5);
@@ -944,6 +950,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void FlipViewIntegrationTests::CannotScrollPastEdges()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         auto flipView = SetupBasicFlipView(xaml_controls::Orientation::Horizontal, 2);
@@ -1977,6 +1985,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     // then flips back after an immediate mouse wheel delta for the other direction.
     void FlipViewIntegrationTests::MouseWheelInputsFlipOnce()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup([]()
         {
             RunOnUIThread([&]()

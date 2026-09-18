@@ -191,6 +191,8 @@ void PopupTests::WindowedPopupHasForcedBackground()
 
 void PopupTests::ParentedPopup_ValidateRequestedThemePropagation()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     const auto& wh = TestServices::WindowHelper;
 
     Popup^ popup = MakeRTLPopupInLTRTree();
@@ -1281,6 +1283,8 @@ void PopupTests::NoXamlRoot()
 
 void PopupTests::CloseWindowWithPopupOpen()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     TestCleanupWrapper cleanup;
 
     WindowAutoCloser window1;

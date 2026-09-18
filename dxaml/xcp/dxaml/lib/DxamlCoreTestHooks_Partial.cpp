@@ -767,7 +767,17 @@ IFACEMETHODIMP_(void) DxamlCoreTestHooks::RequestReplayPreviousPointerUpdate_Tem
 
 IFACEMETHODIMP_(void) DxamlCoreTestHooks::ResetVisualTree()
 {
-    m_pDXamlCoreNoRef->GetHandle()->ResetCoreWindowVisualTree();
+    auto coreServices = m_pDXamlCoreNoRef->GetHandle();
+    if (coreServices->GetInitializationType() == InitializationType::IslandsOnly)
+    {
+        if (auto window = m_pDXamlCoreNoRef->GetDummyWindowNoRef())
+        {
+            // Clear hidden island-startup content while its deployment still exists, so both
+            // the Window's references and CApplication's cached root controls are released.
+            IFCFAILFAST(window->put_Content(nullptr));
+        }
+    }
+    coreServices->ResetCoreWindowVisualTree();
 }
 
 static HRESULT EnsureClassInitialized(

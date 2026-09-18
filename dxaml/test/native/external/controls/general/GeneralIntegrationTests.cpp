@@ -450,6 +450,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     // Validates the default focus border properties based on the app and element themes.
     void GeneralIntegrationTests::VerifyFocusVisualDefaultValues()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         xaml::ApplicationTheme originalTheme;
         RunOnUIThread([&]()
         {

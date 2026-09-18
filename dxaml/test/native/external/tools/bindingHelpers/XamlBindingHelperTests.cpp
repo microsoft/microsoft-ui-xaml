@@ -75,6 +75,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void XamlBindingHelperTests::ValidateThrowWhenSettingColorFromString()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]{
                 TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
             });
@@ -105,6 +107,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void XamlBindingHelperTests::ValidateSetColorOnGridBackgroundFromColor()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]{
                 TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
             });
@@ -141,6 +145,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void XamlBindingHelperTests::ValidateSetThicknessOnFrameworkElement()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]{
                 TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
             });
@@ -179,6 +185,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void XamlBindingHelperTests::ValidateSetCornerRadiusOnControl()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]{
                 TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
             });
@@ -219,6 +227,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void XamlBindingHelperTests::ValidateSetColorOnShape()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]{
                 TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
             });

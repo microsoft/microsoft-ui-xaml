@@ -196,14 +196,26 @@ function Stop-VMTests {
             Write-Host "  No scheduled task found." -ForegroundColor Gray
         }
 
-        $teProcs = Get-Process -Name "te", "TE.ProcessHost" -ErrorAction SilentlyContinue
-        if ($teProcs) {
-            $teProcs | ForEach-Object {
+        $testProcs = Get-Process | Where-Object {
+            if ($_.ProcessName -in @("te", "TE.ProcessHost")) {
+                return $true
+            }
+
+            try {
+                return $_.Path -and $_.Path.StartsWith("$dir\", [System.StringComparison]::OrdinalIgnoreCase)
+            } catch {
+                return $false
+            }
+        }
+
+        if ($testProcs) {
+            $testProcs | ForEach-Object {
                 Write-Host "  Killing $($_.ProcessName) (PID $($_.Id))..." -ForegroundColor Yellow
                 Stop-Process -Id $_.Id -Force
             }
+            $testProcs | Wait-Process -ErrorAction SilentlyContinue
         } else {
-            Write-Host "  No te.exe or TE.ProcessHost.exe running." -ForegroundColor Gray
+            Write-Host "  No test payload processes running." -ForegroundColor Gray
         }
 
         Remove-Item "$dir\_run-wrapper.cmd" -ErrorAction SilentlyContinue
@@ -630,9 +642,13 @@ echo %ERRORLEVEL% > "$exitFile"
         # te.exe returns 0 even when tests fail. Parse the TAEF summary line.
         if ($exitCode -eq 0 -and (Test-Path $logFile)) {
             $logLines = Read-NormalizedLog $logFile
+            # Cleanup errors can follow a passing body; comments beginning with "Error:" are not failures.
+            if ($logLines -match '^\s*Summary of Errors Outside of Tests:') {
+                $exitCode = 1
+            }
             $summaryLine = $logLines | Where-Object { $_ -match 'Summary:\s+Total=\d+' } | Select-Object -Last 1
-            if ($summaryLine -match 'Failed=(\d+)') {
-                if ([int]$Matches[1] -gt 0) { $exitCode = 1 }
+            if ($summaryLine -match '(?:Failed|Blocked)=[1-9]\d*') {
+                $exitCode = 1
             }
         }
 
@@ -641,7 +657,7 @@ echo %ERRORLEVEL% > "$exitFile"
         Remove-Item $wrapperPath -ErrorAction SilentlyContinue
 
         $exitCode
-    } -ArgumentList $RemoteTestDir, (, $TestArgs), $TaskUser
+    } -ArgumentList $RemoteTestDir, $TestArgs, $TaskUser
 
     Write-Host "--------------------------------------------" -ForegroundColor DarkGray
     if ($exitCode -eq 0) {
@@ -706,6 +722,9 @@ if (-not $TestName) {
 
 # -- Run -----------------------------------------------------------------
 try {
+    # Test apps can survive a failed TAEF run and keep payload binaries locked.
+    Stop-VMTests -Session $session -RemoteTestDir $RemoteTestDir
+
     $payloadDir = New-TestPayload -RepoRoot $repoRoot -Platform $Platform -Configuration $Configuration `
                                   -Flavor $Flavor -Mode $Mode -SkipPayload:$SkipPayload
 

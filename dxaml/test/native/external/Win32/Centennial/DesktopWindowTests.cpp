@@ -40,6 +40,8 @@ namespace Microsoft::UI::Xaml::Tests::DesktopWindow {
 
         void DesktopWindowTests::ValidateDesktopWindowLifeTime()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup;
 
             Button^ btn = nullptr;

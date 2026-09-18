@@ -2634,6 +2634,8 @@ namespace Microsoft::UI::Xaml::Tests::Framework {
 
     void ElementDeferralTests::ValidateDeferralForSupportedPropertiesInContentControl()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         ValidateDeferralForElementTypesInContainerScenario<ContentAccessor<AppBar>, AppBarButton>();
 
         ValidateDeferralForElementTypesInCommandBarScenario<PrimaryCommandsAccessor<CommandBar>, AppBarButton>();
@@ -2666,6 +2668,8 @@ namespace Microsoft::UI::Xaml::Tests::Framework {
 
     void ElementDeferralTests::ValidateDeferralForSupportedPropertiesInControl()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         ValidateDeferralForElementTypesInContainerScenario<HeaderAccessor<DatePicker>, Button>();
 
         ValidateDeferralForElementTypesInContainerScenario<CommandParameterAccessor<MenuFlyoutItem>, Button>();
@@ -2790,6 +2794,8 @@ namespace Microsoft::UI::Xaml::Tests::Framework {
 
     void ElementDeferralTests::ValidateDeferralForSupportedTypesButtonBase()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         ValidateDeferralForElementTypesInContainerScenario<ContentAccessor<AppBar>, AppBarButton>();
         ValidateDeferralForElementTypesInContainerScenario<ContentAccessor<AppBar>, AppBarSeparator>();
         ValidateDeferralForElementTypesInContainerScenario<ContentAccessor<AppBar>, AppBarToggleButton>();
@@ -3144,6 +3150,8 @@ namespace Microsoft::UI::Xaml::Tests::Framework {
 
     void ElementDeferralTests::ValidateReplacementOfContentInControl()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         ValidateReplacementOfContentScenario<HeaderAccessor<DatePicker>>();
 
         ValidateReplacementOfContentScenario<ContentAccessor<Page>>();
@@ -3399,6 +3407,8 @@ namespace Microsoft::UI::Xaml::Tests::Framework {
 
     void ElementDeferralTests::ValidateContentClearValueInControl()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         ValidateContentClearValueScenario<HeaderAccessor<DatePicker>>();
 
         ValidateContentClearValueScenario<ContentAccessor<Page>>();

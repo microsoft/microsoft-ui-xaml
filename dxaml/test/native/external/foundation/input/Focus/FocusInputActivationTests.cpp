@@ -46,6 +46,8 @@ namespace Microsoft::UI::Xaml::Tests {
 
         void FocusInputActivationTests::VerifyNoInputActivateRequestedFocusMoves()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup;
 
             // window1

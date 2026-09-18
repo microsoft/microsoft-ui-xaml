@@ -65,6 +65,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetEnums()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto cleanup = XamlDiagnosticsTestHelpers::SetupGridAndWait();
 
             unsigned int enumCount = 0;
@@ -91,6 +93,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCreateInstance()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             LogThrow_IfFailed(wrl::MakeAndInitialize<VisualTreeServiceCallback>(&callback));
             auto cleanup = XamlDiagnosticsTestHelpers::SetupGridAndWait([&] {
@@ -141,6 +145,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetSetClearProperty()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -170,6 +176,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestSetPropertyBinding()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto content = ref new Platform::String(
             L"<UserControl xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='root'>"
@@ -232,6 +240,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCanSetAutoOnWidthProperty()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -247,6 +257,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetComponents()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto cleanup = XamlDiagnosticsTestHelpers::SetupGridAndWait();
 
             wrl::ComPtr<IInspectable> spDispatcher;
@@ -268,6 +280,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetHandlesAndIInspectables()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -458,6 +472,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestRegisterInstance()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto cleanup = XamlDiagnosticsTestHelpers::SetupGridAndWait();
 
             InstanceHandle handle = 0;
@@ -484,6 +500,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         // then unadvise and change the tree. We should verify that the cache is still empty, aka we didn't get any callback.
         void XamlDiagnosticsTests::TestUnadviseVisualTreeChange()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto cleanup = XamlDiagnosticsTestHelpers::SetupGridAndWait();
             wrl::ComPtr<VisualTreeServiceCallback> callback = m_connectionHelper->Advise();
 
@@ -507,6 +525,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestUiLayer()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto cleanup = XamlDiagnosticsTestHelpers::SetupGridAndWait();
 
             RunOnUIThread([&]()
@@ -520,6 +540,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetThemeResourceProperties()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
 
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::userControlWithCustomButtonStyleString, callback);
@@ -534,6 +556,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCanSetValueOnCustomProperty()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/PageWithCustomUserControl.xaml");
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(componentLocation, callback);
@@ -554,6 +578,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestProvideSourceForURI()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/external/foundation/graphics/image/SimpleImageWithUri.xaml");
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(componentLocation, callback);
@@ -572,6 +598,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCanSetURISource()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/external/foundation/graphics/image/SimpleImageWithUri.xaml");
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(componentLocation, callback);
@@ -603,6 +631,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestProvideSourceForFontFamily()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -614,6 +644,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCanSetSourceForFontFamily()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -638,6 +670,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestBackgroundOnGrid()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -669,6 +703,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCorrectBaseValueSourceOnRowAndColumnDefinitions()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -683,6 +719,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestAutoOnSetters()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::userControlWithCustomButtonStyleString, callback);
 
@@ -705,6 +743,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestSetEnum()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
 
             auto text = ref new Platform::String(L"<Grid x:Name='root' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' Background='Red' Projection='{x:Null}' Margin='1,1,2,3' Height='45' Width='45'>"
@@ -740,6 +780,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCreateColorAndSetToBrushProperty()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -832,6 +874,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestMultipleCallbacks()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback1 = m_connectionHelper->Advise();
             wrl::ComPtr<VisualTreeServiceCallback> callback2;
             LogThrow_IfFailed(wrl::MakeAndInitialize<VisualTreeServiceCallback>(&callback2));
@@ -853,6 +897,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestDataBoundProperties()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/PageWithCustomUserControl.xaml");
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(componentLocation, callback);
@@ -879,6 +925,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetHandleToOwnedObject()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/PageWithNonDOBinding.xaml");
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(componentLocation, callback);
@@ -918,6 +966,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetCalendarDatePickerDefault()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -990,6 +1040,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetCalendarViewProperties()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -1039,6 +1091,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetPropertyValueAndIndex()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -1065,6 +1119,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetPropertyIndexAttached()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -1090,6 +1146,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetPropertyIndexAndValueCustom()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/PageWithCustomUserControl.xaml");
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(componentLocation, callback);
@@ -1118,6 +1176,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetPropertyIndexAndValueCollection()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -1134,6 +1194,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestAppAnalysisIntegrationWithLVT()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             RuleTesterHelper helper(L"AA0009", L"IntegrationWithLVT");
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/PageWithDevirtualizedListView_Panel.xaml");
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -1147,6 +1209,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestPropertyChainBinding()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = LoadXamlFromFunction(XamlDiagnosticsTestHelpers::SetupGroupedListView, callback);
 
@@ -1158,6 +1222,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestMetadataNullValueBits()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -1173,6 +1239,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCreateInstanceDependencyProperty()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto cleanup = XamlDiagnosticsTestHelpers::SetupGridAndWait();
 
             //Basic validation checks that creating a DependencyProperty works
@@ -1187,6 +1255,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestObjectIdentity()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -1206,6 +1276,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestResourceDataTemplate()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/PageWithCustomUserControlUsingStaticResourceDataTemplate.xaml");
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(componentLocation, callback);
@@ -1213,6 +1285,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::VerifyDontCleanupPropertiesForLiveElements()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::stackPanelWithButtonString, callback);
 
@@ -1236,6 +1310,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestThemeResourceInStyle()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             //Modify a Style's property when another property in the Style uses a ThemeResource,
             //and verify it worked.
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/PageWithThemeResourceStyle.xaml");
@@ -1290,6 +1366,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestChangeSetterProperty()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
 
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::buttonWithCustomStyleDuplicatedSettersString, callback);
@@ -1324,6 +1402,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestClearRenderProperty()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::stackPanelWithButtonString, callback);
 
@@ -1340,6 +1420,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetPropertyNull()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
                 wrl::ComPtr<VisualTreeServiceCallback> callback;
                 auto cleanup = XamlDiagnosticsTests::SetupGridWithCallback(callback);
 
@@ -1357,6 +1439,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestEvaluatedValue()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = SetupGridWithCallback(callback);
 
@@ -1427,6 +1511,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestBasedOnSetterChange()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             //Verify that a change to an existing Setter's Value property in Style A, which is used as the
             //BasedOn Style by Style B,
             //affects an object that uses Style B.
@@ -1500,6 +1586,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestChangedBasedOnProperty()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             //Try changing the BasedOn property of a Style and ensure objects are updated properly
             //The new Style contains new values for the Background and Foreground - Background should remain
             //overwritten, but the new Foreground value should appear on the object
@@ -1539,6 +1627,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestClearPropertyBinding()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::resourcesStaticResourceInBindingString, callback);
 
@@ -1557,6 +1647,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::GetPropertyIndexFailsForInvalidProperty()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -1572,6 +1664,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::GetAttachedPropertyWithUnknownOwnerType()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto attachedString = ref new Platform::String(L"<Grid x:Name='root'"
                         L"  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
@@ -1591,6 +1685,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::VerifyGetBuiltinStyleProperties()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             RunOnUIThread([&]()
             {
                 // The MUXC theme resources clash with these verifications, so we'll clear them out first.
@@ -1624,6 +1720,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::VerifySourceChainReflectsPrecedence()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             // Set window size to something that will trigger the trigger
             ::Windows::Foundation::Size size(400, 400);
             TestServices::WindowHelper->SetWindowSizeOverride(size);
@@ -1679,6 +1777,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::VerifyOnDemandTransitionCollections()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             ::Windows::Foundation::Size size(400, 400);
             TestServices::WindowHelper->SetWindowSizeOverride(size);
 
@@ -1697,6 +1797,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::GetPropertyChainReturnsDesiredSize()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -1724,6 +1826,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::CorrectlyValidateFakeProperties()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto xamlText = ref new Platform::String(
             L"<Grid x:Name='root' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' Background='Red' Height='45' Width='45'>"
             L"  <Grid x:Name='child' Background='Red'>"
@@ -1779,6 +1883,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::ClearTypesOnNonPlatformTypes()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto xamlText = ref new Platform::String(
                 L"<Grid x:Name='root' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' Background='Red' Height='45' Width='45'>"
                 L"  <PersonPicture x:Name='personPicture'  ProfilePicture='ms-appx:///resources/native/external/foundation/graphics/image/Image0.jpg' />"
@@ -1795,6 +1901,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::ValidateCorrectNamescopes()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto xamlText = ref new Platform::String(
                 L"<Grid x:Name='root' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' Background='Red' Height='45' Width='45'>"
                 L"  <ScrollViewer x:Name='scrolly'/>"
@@ -1814,6 +1922,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCanSetNull()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto xamlText = ref new Platform::String(
                 L"<Grid x:Name='root' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' Background='Red' Height='45' Width='45'>"
                 L"</Grid>");
@@ -1840,6 +1950,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCanGetSetSimpleProperty()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto xamlText = ref new Platform::String(
                 L"<Grid x:Name='root' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' Background='Red' Height='45' Width='45'>"
                 L"</Grid>");
@@ -1920,6 +2032,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCanGetSetNonDP()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/PageWithCustomUserControl.xaml");
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(componentLocation, callback);
@@ -1960,6 +2074,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCanUseIPropertyValueTypes()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto xamlText = ref new Platform::String(
                 L"<Grid x:Name='root' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
                 L"    <TimePicker x:Name='timePicker' />"
@@ -2101,6 +2217,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::ModifyMediaPlayerElementSource()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto xamlText = ref new Platform::String(
                 L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
                 L"  <MediaPlayerElement x:Name='theMedia' Source='ms-appx:///resources/native/foundation/graphics/Media/CastingVideo.mp4' />"

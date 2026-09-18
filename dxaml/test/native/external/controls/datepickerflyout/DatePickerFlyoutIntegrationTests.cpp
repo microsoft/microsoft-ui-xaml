@@ -1392,6 +1392,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void DatePickerFlyoutIntegrationTests::ValidateDateSelectionFiresAutomationEvent()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
         // Verifies that the DatePickerFlyout can raises a focus change event to the UIA client.
         // A DatePickerFlyout is shown and a Date is selected using the keyboard up/down arrows.

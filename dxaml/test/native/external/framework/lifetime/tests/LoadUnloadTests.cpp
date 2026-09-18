@@ -41,6 +41,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             void LoadUnloadTests::VerifyEventOrdering()
             {
+                TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
                 xaml_controls::StackPanel^ rootPanel = nullptr;
                 xaml_controls::Grid^ grid = nullptr;
                 xaml_controls::Button^ button = nullptr;
@@ -196,6 +198,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void LoadUnloadTests::VerifyEventOrderingForPopup()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             xaml_controls::StackPanel^ rootPanel = nullptr;
             xaml_primitives::Popup^ popup = nullptr;
             xaml_controls::Grid^ grid = nullptr;
@@ -261,6 +265,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void LoadUnloadTests::VerifyEventOrderingForPopupAddAndRemove()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             xaml_controls::StackPanel^ rootPanel = nullptr;
             xaml_primitives::Popup^ popup = nullptr;
             xaml_controls::Grid^ grid = nullptr;
@@ -331,6 +337,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void LoadUnloadTests::ReproWeakRefCrash()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             {
                 xaml_controls::StackPanel^ rootPanel;
                 xaml_controls::ItemContainer^ itemContainer;

@@ -1080,9 +1080,19 @@ Cleanup:
     return hr;
 }
 
+// Test-only shutdown path, used to reset the core between test runs.
 _Check_return_ HRESULT DXamlCore::DeinitializeInstanceToIdle()
 {
     RemoveAutoHideScrollBarsChangedHandler();
+
+#if XCP_MONITOR
+    // UAP tests reuse the core and window after idle shutdown. Keep the manager because the
+    // window caches its drag/drop mode and would not reapply it to a replacement manager.
+    // WPF tests create the manager after the allocation baseline, then scan for leaks before
+    // replacing the host/core. The manager survives that scan and is deleted by full core shutdown.
+    // Exclude only the manager's allocation, not any test allocations it still references.
+    XcpDebugSetLeakDetectionFlag(m_pDragDrop, true);
+#endif
 
     if (m_pDOCoreApp)
     {

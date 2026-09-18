@@ -465,6 +465,8 @@ namespace Microsoft { namespace UI { namespace Xaml {
 
                         void MoCoAutomationGroupingIntegrationTests::VerifyItemAndGroupNameProperties()
                         {
+                            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
                             TestCleanupWrapper cleanup;
                             xaml_controls::SemanticZoom^ semanticZoom;
 

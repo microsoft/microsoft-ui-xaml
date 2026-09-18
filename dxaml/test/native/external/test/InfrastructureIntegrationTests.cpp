@@ -278,7 +278,126 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 tb->TextChanged -= tbTextChangedToken;
             });
         }
-        
+
+        void InfrastructureIntegrationTests::ValidateWpfShutdownLeakDetection()
+        {
+            // Match per-test setup before explicit host initialization. Otherwise the previous
+            // shutdown's EnableCoreShutdown flag makes WindowsXamlManager defer closing its core.
+            TestServices::WindowHelper->InitializeXaml();
+
+            WEX::Common::String initialization;
+            VERIFY_SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"HostInitialization", initialization));
+
+            // Explicit host initialization, like WindowedPopupHighDPI, precedes test content.
+            {
+                auto helper = TestServices::WindowHelper;
+                auto dispatcher = helper->CurrentDispatcher;
+                if (initialization == L"Default")
+                {
+                    TestServices::InitializeHost();
+                }
+                else
+                {
+                    VERIFY_ARE_EQUAL(WEX::Common::String(L"Dpi"), initialization);
+                    TestServices::InitializeHost(true);
+                }
+                VERIFY_IS_TRUE(helper != TestServices::WindowHelper);
+                VERIFY_IS_TRUE(dispatcher != TestServices::WindowHelper->CurrentDispatcher);
+            }
+
+            TestServices::WindowHelper->InitializeXaml();
+            auto shutdown = wil::scope_exit([]() {
+                TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+                TestServices::WindowHelper->ShutdownXaml();
+            });
+
+            for (int interval = 0; interval < 2; ++interval)
+            {
+                LOG_OUTPUT(L"WPF shutdown interval %d.", interval);
+
+                auto helper = TestServices::WindowHelper;
+                auto dispatcher = helper->CurrentDispatcher;
+                DWORD retiringThreadId = 0;
+                auto releaseThreadId = std::make_shared<DWORD>(0);
+                auto lifetime = std::shared_ptr<int>(new int(0), [releaseThreadId](int* value) {
+                    *releaseThreadId = GetCurrentThreadId();
+                    delete value;
+                });
+                std::weak_ptr<int> callbacks = lifetime;
+                RunOnUIThread([&]() {
+                    retiringThreadId = GetCurrentThreadId();
+                    helper->SetPostTickCallback(ref new PostTickCallback([lifetime]() {
+                        ++*lifetime;
+                    }));
+                    helper->SetPlayingSoundNodeCallback(ref new PlayingSoundNodeCallback(
+                        [lifetime](ElementSoundKind, bool, float, float, float, double) { ++*lifetime; }));
+                    helper->SetGCCollectCallback(ref new GCCollectCallback([lifetime]() { ++*lifetime; }));
+                });
+                lifetime.reset();
+
+                {
+                    TextBox^ textBox = nullptr;
+                    auto cleanup = wil::scope_exit([&]() {
+                        RunOnUIThread([&]() { textBox = nullptr; });
+                        helper->ResetWindowContentAndWaitForIdle();
+                    });
+                    RunOnUIThread([&]() {
+                        textBox = ref new TextBox();
+                        Automation::AutomationProperties::SetAutomationId(textBox, L"WpfShutdownTextBox");
+                        textBox->Width = 200;
+                        textBox->Height = 40;
+                        helper->WindowContent = textBox;
+                        VERIFY_IS_TRUE(helper->CurrentDispatcher->HasThreadAccess);
+                    });
+                    helper->WaitForIdle();
+                    RunOnUIThread([&]() {
+                        VERIFY_IS_TRUE(helper->WindowContent == textBox);
+                        VERIFY_IS_TRUE(textBox->IsLoaded);
+                        VERIFY_IS_GREATER_THAN(textBox->ActualWidth, 0.0);
+                    });
+                    // Input must work on the new window and its thread-bound keyboard event.
+                    TestServices::InputHelper->Tap(textBox);
+                    TestServices::KeyboardHelper->PressKeySequence(L"a");
+                    helper->WaitForIdle();
+                    RunOnUIThread([&]() {
+                        VERIFY_ARE_EQUAL(Platform::StringReference(L"a"), textBox->Text);
+                    });
+                }
+
+                {
+                    // A mid-test shutdown must not validate or reset end-of-test state.
+                    auto resetTolerance = wil::scope_exit([]() {
+                        TestServices::Utilities->SetImageCompareTolerance(0);
+                    });
+                    TestServices::Utilities->SetImageCompareTolerance(1);
+                    helper->ShutdownXaml();
+                    VERIFY_ARE_EQUAL(1, TestServices::Utilities->GetImageCompareTolerance());
+                }
+
+                auto replacement = TestServices::WindowHelper;
+                auto replacementDispatcher = replacement->CurrentDispatcher;
+                VERIFY_IS_TRUE(helper != replacement);
+                VERIFY_IS_TRUE(dispatcher != replacementDispatcher);
+                VERIFY_IS_TRUE(callbacks.expired());
+                VERIFY_ARE_EQUAL(retiringThreadId, *releaseThreadId);
+
+                // Repeated cleanup must not scan the replacement core.
+                replacement->VerifyTestCleanup();
+                replacement->VerifyTestCleanup();
+                if (interval == 0)
+                {
+                    replacement->InitializeXaml(ref new XamlTypeInfo::XamlControlsXamlMetaDataProvider());
+                }
+                else
+                {
+                    replacement->InitializeXaml();
+                }
+                VERIFY_IS_TRUE(replacement == TestServices::WindowHelper);
+                VERIFY_IS_TRUE(replacementDispatcher == replacement->CurrentDispatcher);
+            }
+
+        }
+
     }
 
 } } } }
