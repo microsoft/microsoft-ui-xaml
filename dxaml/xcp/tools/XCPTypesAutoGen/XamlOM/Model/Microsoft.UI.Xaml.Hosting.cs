@@ -340,6 +340,7 @@ namespace Microsoft.UI.Xaml.Hosting
 
     [Contract(typeof(WinUIContract), 5, ForcePrimaryInterfaceGeneration = true)]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 6)]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     [DXamlIdlGroup("coretypes2")]
     [CodeGen(partial: true)]
     [FrameworkTypePattern]
@@ -368,5 +369,13 @@ namespace Microsoft.UI.Xaml.Hosting
         {
             return default(WindowsXamlManager);
         }
+
+	    [VelocityFeature("Feature_ExperimentalApi")]
+	    [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+	    public static event Windows.Foundation.EventHandler<Windows.Foundation.Object> WinUIProcessShutdownStarting;
+
+	    [VelocityFeature("Feature_ExperimentalApi")]
+	    [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+	    public static event Windows.Foundation.EventHandler<Windows.Foundation.Object> WinUIProcessShutdownCompleted;
     }
 }

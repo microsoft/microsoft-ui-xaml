@@ -22,17 +22,8 @@ namespace XamlUtil
 
     inline bool IsXamlRunningOnThread()
     {
-        if (IsXamlLoaded())
-        {
-            try
-            {
-                // Creating a button will throw a RPC_E_WRONG_THREAD HRESULT if XAML's not running on the thread.
-                auto b = winrt::Microsoft::UI::Xaml::Controls::Button();
-                return true;
-            }
-            catch (winrt::hresult_wrong_thread) {}
-        }
-        return false;
+        return IsXamlLoaded() &&
+            winrt::Microsoft::UI::Xaml::Hosting::WindowsXamlManager::GetForCurrentThread() != nullptr;
     }
 
 }

@@ -11,7 +11,12 @@
 
 #pragma once
 
-
+#include <FeatureFlags.h>
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi) 
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE override
+#else
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE
+#endif
 #define __WindowsXamlManager_GUID "3b953d5c-2c9f-4e49-88a7-c030616de1f0"
 
 #pragma region forwarders
@@ -31,6 +36,7 @@ namespace ctl
         IFACEMETHOD(add_XamlShutdownCompletedOnThread)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Hosting::WindowsXamlManager*, ABI::Microsoft::UI::Xaml::Hosting::XamlShutdownCompletedOnThreadEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_XamlShutdownCompletedOnThread(pValue, pToken); }
         IFACEMETHOD(remove_XamlShutdownCompletedOnThread)(EventRegistrationToken token) override { return This()->remove_XamlShutdownCompletedOnThread(token); }
     };
+    
 }
 #pragma endregion
 
@@ -43,6 +49,8 @@ namespace DirectUI
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager, WindowsXamlManagerGenerated >
         , public ABI::Windows::Foundation::IClosable
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager2, WindowsXamlManagerGenerated >
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+#endif
     {
         friend class DirectUI::WindowsXamlManager;
 
@@ -52,6 +60,8 @@ namespace DirectUI
             INTERFACE_ENTRY(WindowsXamlManagerGenerated, ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager)
             INTERFACE_ENTRY(WindowsXamlManagerGenerated, ABI::Windows::Foundation::IClosable)
             INTERFACE_ENTRY(WindowsXamlManagerGenerated, ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager2)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+#endif
         END_INTERFACE_MAP(WindowsXamlManagerGenerated, ctl::WeakReferenceSource)
 
     public:
@@ -60,6 +70,12 @@ namespace DirectUI
 
         // Event source typedefs.
         typedef CEventSource<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Hosting::WindowsXamlManager*, ABI::Microsoft::UI::Xaml::Hosting::XamlShutdownCompletedOnThreadEventArgs*>, ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager, ABI::Microsoft::UI::Xaml::Hosting::IXamlShutdownCompletedOnThreadEventArgs> XamlShutdownCompletedOnThreadEventSourceType;
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        typedef CEventSource<ABI::Windows::Foundation::IEventHandler<IInspectable*>, IInspectable, IInspectable> WinUIProcessShutdownStartingEventSourceType;
+#endif
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        typedef CEventSource<ABI::Windows::Foundation::IEventHandler<IInspectable*>, IInspectable, IInspectable> WinUIProcessShutdownCompletedEventSourceType;
+#endif
 
 
         // Properties.
@@ -96,10 +112,16 @@ namespace DirectUI
        public ctl::AbstractActivationFactory
         , public ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerStatics
         , public ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerStatics2
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        , public ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerStaticsFeature_ExperimentalApi
+#endif
     {
         BEGIN_INTERFACE_MAP(WindowsXamlManagerFactory, ctl::AbstractActivationFactory)
             INTERFACE_ENTRY(WindowsXamlManagerFactory, ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerStatics)
             INTERFACE_ENTRY(WindowsXamlManagerFactory, ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerStatics2)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+            INTERFACE_ENTRY(WindowsXamlManagerFactory, ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerStaticsFeature_ExperimentalApi)
+#endif
         END_INTERFACE_MAP(WindowsXamlManagerFactory, ctl::AbstractActivationFactory)
 
     public:
@@ -116,6 +138,10 @@ namespace DirectUI
         IFACEMETHOD(GetForCurrentThread)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager** ppResult) override;
 
         // Static events.
+        IFACEMETHOD(add_WinUIProcessShutdownStarting)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        IFACEMETHOD(remove_WinUIProcessShutdownStarting)(EventRegistrationToken token) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        IFACEMETHOD(add_WinUIProcessShutdownCompleted)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        IFACEMETHOD(remove_WinUIProcessShutdownCompleted)(EventRegistrationToken token) FEATURE_EXPERIMENTALAPI_OVERRIDE;
 
     protected:
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;

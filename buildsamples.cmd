@@ -34,6 +34,8 @@ call :buildSamplesSolution %reporoot%\Samples\WinUICppIsland2SampleApp\WinUICppI
 if ERRORLEVEL 1 goto:eof
 call :buildSamplesSolution %reporoot%\Samples\WinUICppIslandsSampleApp\WinUICppIslandsSampleApp.sln
 if ERRORLEVEL 1 goto:eof
+call :buildSamplesSolution %reporoot%\Samples\WinUICsIslandsSampleApp\WinUICsIslandsSampleApp.sln /m
+if ERRORLEVEL 1 goto:eof
 call :buildSamplesSolution %reporoot%\Samples\DisableXamlGeneratedMain\DisableXamlGeneratedMain.sln
 if ERRORLEVEL 1 goto:eof
 REM The C# projects in the solution above are single-project MSIX apps and so only emit their MSIX 
