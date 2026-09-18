@@ -13,7 +13,9 @@
 #include <XamlTailored.h>
 #include <Collection.h>
 #include <algorithm>
+#include <initializer_list>
 #include <limits>
+#include <utility>
 
 #include <CustomTypeMetadataProvider.h>
 #include <NavigationThemeTransitionTestPage.xaml.h>
@@ -60,6 +62,7 @@ namespace
     bool TryGetTransitionAnimationTiming(
         StoryboardVector^ storyboards,
         Platform::String^ targetProperty,
+        double initialValue,
         TransitionAnimationTiming& timing)
     {
         unsigned int matchingAnimations = 0;
@@ -77,23 +80,29 @@ namespace
                 }
 
                 const auto begin = storyboardBegin + (animation->BeginTime ? animation->BeginTime->Value.Duration : 0LL);
+                double previousValue = initialValue;
+                long long previousTime = 0;
 
-                // Transition delays can be hold keyframes, rather than Timeline.BeginTime.
-                for (unsigned int i = 1; i < animation->KeyFrames->Size; ++i)
+                // Time-zero keyframes establish the initial value. Otherwise, even a single
+                // keyframe can interpolate from the base value supplied by the caller.
+                for (unsigned int i = 0; i < animation->KeyFrames->Size; ++i)
                 {
-                    auto previous = animation->KeyFrames->GetAt(i - 1);
                     auto current = animation->KeyFrames->GetAt(i);
-                    if (previous->Value != current->Value)
+                    const auto currentTime = current->KeyTime.TimeSpan.Duration;
+                    if (currentTime > 0 && previousValue != current->Value)
                     {
                         auto firstChange = dynamic_cast<xaml_animation::DiscreteDoubleKeyFrame^>(current)
-                            ? current->KeyTime.TimeSpan.Duration
-                            : previous->KeyTime.TimeSpan.Duration;
+                            ? currentTime
+                            : previousTime;
                         timing.earliestStart = (std::min)(timing.earliestStart, begin + firstChange);
                         timing.latestStart = (std::max)(timing.latestStart, begin + firstChange);
                         timing.latestEnd = (std::max)(timing.latestEnd, begin + animation->KeyFrames->GetAt(animation->KeyFrames->Size - 1)->KeyTime.TimeSpan.Duration);
                         ++matchingAnimations;
                         break;
                     }
+
+                    previousValue = current->Value;
+                    previousTime = currentTime;
                 }
             }
         }
@@ -107,7 +116,7 @@ namespace
         long long expectedStartMilliseconds)
     {
         TransitionAnimationTiming timing;
-        VERIFY_IS_TRUE(TryGetTransitionAnimationTiming(storyboards, targetProperty, timing));
+        VERIFY_IS_TRUE(TryGetTransitionAnimationTiming(storyboards, targetProperty, 0.0, timing));
         VERIFY_ARE_EQUAL(expectedStartMilliseconds * 10000LL, timing.earliestStart);
         VERIFY_ARE_EQUAL(expectedStartMilliseconds * 10000LL, timing.latestStart);
         return timing.latestEnd;
@@ -143,7 +152,9 @@ namespace
         long long removalStart = (std::numeric_limits<long long>::max)();
         long long removalEnd = 0;
         long long firstMovementStart = (std::numeric_limits<long long>::max)();
+        long long lastMovementEnd = 0;
         long long additionStart = (std::numeric_limits<long long>::max)();
+        long long initialAdditionStart = 0;
         auto storyboardMonitor = ref new StoryboardMonitorWrapper();
         auto detachMonitor = wil::scope_exit([&]() { storyboardMonitor->DetachStartedHandler(); });
 
@@ -212,9 +223,15 @@ namespace
             if (hasAddDelete)
             {
                 auto bounds = xaml_controls::Primitives::LayoutInformation::GetLayoutSlot(target);
-                VerifyTransitionAnimationStartsAt(
+                TransitionAnimationTiming timing;
+                VERIFY_IS_TRUE(TryGetTransitionAnimationTiming(
                     CreateTransitionStoryboards(addDelete, target, xaml::TransitionTrigger::Load, bounds, bounds),
-                    opacityProperty, 300);
+                    opacityProperty, 0.0, timing));
+                // The platform theme contributes its own opacity delay in addition to
+                // the 300 ms collection scheduling offset.
+                VERIFY_IS_GREATER_THAN_OR_EQUAL(timing.earliestStart, 300 * 10000LL);
+                VERIFY_ARE_EQUAL(timing.earliestStart, timing.latestStart);
+                initialAdditionStart = timing.earliestStart;
             }
         });
 
@@ -240,7 +257,7 @@ namespace
                     TransitionAnimationTiming timing;
                     if (animationTarget == removedContainer && removedContainer != nullptr)
                     {
-                        if (TryGetTransitionAnimationTiming(storyboards, opacityProperty, timing))
+                        if (TryGetTransitionAnimationTiming(storyboards, opacityProperty, 1.0, timing))
                         {
                             sawRemoval = true;
                             removalStart = (std::min)(removalStart, timing.earliestStart);
@@ -249,11 +266,12 @@ namespace
                     }
                     else if (animationTarget == target || animationTarget == lastSurvivor)
                     {
-                        if (TryGetTransitionAnimationTiming(storyboards, translationProperty, timing))
+                        if (TryGetTransitionAnimationTiming(storyboards, translationProperty, 0.0, timing))
                         {
                             sawFirstSurvivor |= animationTarget == target;
                             sawLastSurvivor |= animationTarget == lastSurvivor;
                             firstMovementStart = (std::min)(firstMovementStart, timing.earliestStart);
+                            lastMovementEnd = (std::max)(lastMovementEnd, timing.latestEnd);
 
                             if (!checkedRepositionSuppression && hasAddDelete && batch != ItemsControlTransitionBatch::Add)
                             {
@@ -281,7 +299,7 @@ namespace
                     {
                         auto container = dynamic_cast<xaml_controls::ContentPresenter^>(animationTarget);
                         if (container && dynamic_cast<Platform::String^>(container->Content) == addedItem &&
-                            TryGetTransitionAnimationTiming(storyboards, opacityProperty, timing))
+                            TryGetTransitionAnimationTiming(storyboards, opacityProperty, 0.0, timing))
                         {
                             sawAddition = true;
                             additionStart = (std::min)(additionStart, timing.earliestStart);
@@ -343,13 +361,14 @@ namespace
         if (hasAddDelete && batch != ItemsControlTransitionBatch::Remove)
         {
             VERIFY_IS_TRUE(sawAddition);
+            VERIFY_IS_LESS_THAN_OR_EQUAL(lastMovementEnd, additionStart);
             if (batch == ItemsControlTransitionBatch::RemoveAndAppend)
             {
-                VERIFY_IS_GREATER_THAN_OR_EQUAL(additionStart, 600 * 10000LL);
+                VERIFY_ARE_EQUAL(initialAdditionStart + 300 * 10000LL, additionStart);
             }
             else
             {
-                VERIFY_ARE_EQUAL(300 * 10000LL, additionStart);
+                VERIFY_ARE_EQUAL(initialAdditionStart, additionStart);
             }
         }
 
@@ -396,6 +415,67 @@ bool ThemeTransitionTests::TestCleanup()
     test_infra::TestServices::WindowHelper->ShutdownXaml();
     TestServices::WindowHelper->VerifyTestCleanup();
     return true;
+}
+
+void ThemeTransitionTests::ValidateItemsControlTransitionTimingHelper()
+{
+    RunOnUIThread([&]()
+    {
+        auto verifyTiming = [](
+            std::initializer_list<std::pair<long long, double>> keyframes,
+            double initialValue,
+            bool discrete,
+            bool expectAnimation,
+            long long expectedStart,
+            long long expectedEnd)
+        {
+            Platform::String^ property = L"(UIElement.TransitionTarget).Opacity";
+            auto storyboard = ref new xaml_animation::Storyboard();
+            auto animation = ref new xaml_animation::DoubleAnimationUsingKeyFrames();
+            wf::TimeSpan storyboardBegin = { 25 * 10000LL };
+            wf::TimeSpan animationBegin = { 50 * 10000LL };
+            storyboard->BeginTime = storyboardBegin;
+            animation->BeginTime = animationBegin;
+            xaml_animation::Storyboard::SetTargetProperty(animation, property);
+
+            for (const auto& entry : keyframes)
+            {
+                xaml_animation::DoubleKeyFrame^ keyframe;
+                if (discrete)
+                {
+                    keyframe = ref new xaml_animation::DiscreteDoubleKeyFrame();
+                }
+                else
+                {
+                    keyframe = ref new xaml_animation::LinearDoubleKeyFrame();
+                }
+                xaml_animation::KeyTime keyTime = {};
+                keyTime.TimeSpan.Duration = entry.first * 10000LL;
+                keyframe->KeyTime = keyTime;
+                keyframe->Value = entry.second;
+                animation->KeyFrames->Append(keyframe);
+            }
+            storyboard->Children->Append(animation);
+            auto storyboards = ref new StoryboardVector();
+            storyboards->Append(storyboard);
+
+            TransitionAnimationTiming timing;
+            VERIFY_ARE_EQUAL(expectAnimation, TryGetTransitionAnimationTiming(storyboards, property, initialValue, timing));
+            if (expectAnimation)
+            {
+                VERIFY_ARE_EQUAL((75 + expectedStart) * 10000LL, timing.earliestStart);
+                VERIFY_ARE_EQUAL((75 + expectedStart) * 10000LL, timing.latestStart);
+                VERIFY_ARE_EQUAL((75 + expectedEnd) * 10000LL, timing.latestEnd);
+            }
+        };
+
+        verifyTiming({ {100, 0.0} }, 1.0, false, true, 0, 100);
+        verifyTiming({ {100, 0.0} }, 1.0, true, true, 100, 100);
+        verifyTiming({ {100, 0.0} }, 0.0, false, false, 0, 0);
+        verifyTiming({ {0, 0.0}, {466, 0.0}, {799, 1.0} }, 1.0, false, true, 466, 799);
+        verifyTiming({ {0, 40.0}, {220, 40.0}, {553, 0.0} }, 0.0, false, true, 220, 553);
+        verifyTiming({}, 0.0, false, false, 0, 0);
+    });
 }
 
 void ThemeTransitionTests::ValidateItemsControlDeleteTransitionStoryboards()
