@@ -49,6 +49,8 @@ static ComPtr<xaml_settings_abi::IXamlOptionalChangesStatics> GetStatics()
 }
 
 static const auto c_iconNoGrid = xaml_settings_abi::XamlChangeId_IconNoGridOptimization;
+static const auto c_skipWindowRedirectionSurface = static_cast<xaml_settings_abi::XamlChangeId>(
+    xaml_settings::XamlChangeId::SkipWindowRedirectionSurface);
 
 // ---------------------------------------------------------------------------
 // Setup / Cleanup
@@ -168,6 +170,19 @@ void XamlOptionalChangesTests::IsChangeEnabledWorksAfterLock()
     // Query still works after lock
     VERIFY_SUCCEEDED(statics->IsChangeEnabled(c_iconNoGrid, &val));
     VERIFY_IS_TRUE(!!val);
+}
+
+void XamlOptionalChangesTests::SkipWindowRedirectionSurfaceValueIsRecognized()
+{
+    auto statics = GetStatics();
+    BOOLEAN mutated = FALSE;
+    BOOLEAN enabled = FALSE;
+
+    VERIFY_SUCCEEDED(statics->EnableChange(c_skipWindowRedirectionSurface, &mutated));
+    VERIFY_IS_TRUE(!!mutated);
+
+    VERIFY_SUCCEEDED(statics->IsChangeEnabled(c_skipWindowRedirectionSurface, &enabled));
+    VERIFY_IS_TRUE(!!enabled);
 }
 
 void XamlOptionalChangesTests::UnrecognizedValueContract()

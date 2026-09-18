@@ -2212,6 +2212,8 @@ namespace DirectUI
         OptimizeApplyStyles = 61697456,
         DefaultStyleOptimizations = 60995620,
         DeferContextFlyoutInit = 61098986,
+        SkipWindowRedirectionSurface = 63530879,
+        WindowPlaceholderVisual = 63530880,
     };
     DEFINE_ENUM_FLAG_OPERATORS(XamlChangeId);
 

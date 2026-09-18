@@ -240,6 +240,11 @@ namespace Private { namespace Infrastructure {
             _Outptr_ wfc::IVectorView<xaml::Window*>** windows
             ) override;
 
+        IFACEMETHOD(HasWindowPlaceholder)(
+            _In_ xaml::IWindow* window,
+            _Out_ BOOLEAN* hasPlaceholder
+            ) override;
+
         IFACEMETHOD(DetachMemoryManagerEvents)() override;
 
         IFACEMETHOD(GetElementRenderedVisuals)(_In_ xaml::IUIElement* element, wfc::IVector<IInspectable*>* visuals);

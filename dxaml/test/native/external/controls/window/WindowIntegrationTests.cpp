@@ -11,6 +11,7 @@
 #include <SafeEventRegistration.h>
 #include <TestCleanupWrapper.h>
 #include <ControlHelper.h>
+#include <DisableRenderingScopeGuard.h>
 #include <WindowAutoCloser.h>
 #include <microsoft.ui.xaml.window.h> // for IWindowNative
 
@@ -62,6 +63,41 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             windowHeight,
             outerWidthInDips - windowWidth,
             outerHeightInDips - windowHeight);
+    }
+
+    // Returns the top-level HWND backing a Window. The HWND exists as soon as the Window is
+    // created, so this is safe to call before Activate().
+    HWND GetWindowHandleForWindow(xaml::Window^ window)
+    {
+        IWindowNative* windowNative = nullptr;
+        VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window)->QueryInterface(__uuidof(IWindowNative), (void**)&windowNative));
+
+        HWND windowHandle = nullptr;
+        const HRESULT hr = windowNative->get_WindowHandle(&windowHandle);
+
+        windowNative->Release();
+        windowNative = nullptr;
+
+        VERIFY_SUCCEEDED(hr);
+        return windowHandle;
+    }
+
+    bool HasNoRedirectionBitmapExtendedStyle(HWND windowHandle)
+    {
+        return (::GetWindowLongPtr(windowHandle, GWL_EXSTYLE) & WS_EX_NOREDIRECTIONBITMAP) != 0;
+    }
+
+    bool HasWindowPlaceholder(xaml::Window^ window)
+    {
+        return !!TestServices::WindowHelper->HasWindowPlaceholder(window);
+    }
+
+    xaml::Window^ LoadWindowWithContent()
+    {
+        return safe_cast<xaml::Window^>(xaml_markup::XamlReader::Load(
+            L"<Window xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+            L"  <Grid x:Name='rootPanel' Background='Red'/>"
+            L"</Window>"));
     }
 
     bool WindowIntegrationTests::ClassSetup()
@@ -2516,5 +2552,221 @@ void WindowIntegrationTests::ContentSetInMarkupIsReleasedWhenCleared()
 #endif
     }
 
+    void WindowIntegrationTests::WindowPlaceholderIsUsedUntilFirstFrame()
+    {
+        TestCleanupWrapper cleanup;
+
+        WindowAutoCloser window1;
+
+        {
+            // Rendering is disabled for the whole window lifetime up to the assertion below:
+            // a frame that ran between creation and activation would connect the island content
+            // permanently, and activation would then (correctly) skip the placeholder.
+            DisableRenderingScopeGuard disableRendering;
+
+            HWND windowHandle = nullptr;
+            RunOnUIThread([&]()
+            {
+                window1.Attach(LoadWindowWithContent());
+                windowHandle = GetWindowHandleForWindow(window1.get());
+            });
+
+            VERIFY_IS_NOT_NULL(windowHandle);
+
+            LOG_OUTPUT(L"----- The HWND is created without a redirection surface, before it is ever activated -----");
+            VERIFY_IS_TRUE(HasNoRedirectionBitmapExtendedStyle(windowHandle));
+
+            LOG_OUTPUT(L"----- No placeholder exists before the window is activated -----");
+            VERIFY_IS_FALSE(HasWindowPlaceholder(window1.get()));
+
+            RunOnUIThread([&]()
+            {
+                window1->Activate();
+            });
+
+            LOG_OUTPUT(L"----- Activation installs the placeholder before the first frame -----");
+            VERIFY_IS_TRUE(HasWindowPlaceholder(window1.get()));
+        }
+
+        LOG_OUTPUT(L"----- The first rendered frame replaces the placeholder with the real content -----");
+        TestServices::WindowHelper->WaitForIdle();
+
+        VERIFY_IS_FALSE(HasWindowPlaceholder(window1.get()));
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(!!window1->Visible);
+
+            auto rootPanel = safe_cast<xaml_controls::Grid^>(window1->Content);
+            VERIFY_IS_NOT_NULL(rootPanel);
+            VERIFY_IS_GREATER_THAN(rootPanel->ActualWidth, 0.0);
+            VERIFY_IS_GREATER_THAN(rootPanel->ActualHeight, 0.0);
+        });
+
+        LOG_OUTPUT(L"----- Activating again after the first frame does not reinstall the placeholder -----");
+        {
+            // Rendering stays disabled across this second Activate(): if activation reinstalled a
+            // placeholder, nothing could clear it before the assertion below. A FALSE result
+            // therefore proves the placeholder path is confined to the initial activation.
+            DisableRenderingScopeGuard disableRendering;
+
+            RunOnUIThread([&]()
+            {
+                window1->Activate();
+            });
+
+            VERIFY_IS_FALSE(HasWindowPlaceholder(window1.get()));
+        }
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        VERIFY_IS_FALSE(HasWindowPlaceholder(window1.get()));
+    }
+
+    void WindowIntegrationTests::WindowPlaceholderIsNotUsedWhenDisabled()
+    {
+        TestCleanupWrapper cleanup;
+
+        WindowAutoCloser window1;
+
+        {
+            DisableRenderingScopeGuard disableRendering;
+
+            HWND windowHandle = nullptr;
+            RunOnUIThread([&]()
+            {
+                window1.Attach(LoadWindowWithContent());
+                windowHandle = GetWindowHandleForWindow(window1.get());
+            });
+
+            VERIFY_IS_NOT_NULL(windowHandle);
+
+            LOG_OUTPUT(L"----- The HWND keeps its redirection surface when the change is disabled -----");
+            VERIFY_IS_FALSE(HasNoRedirectionBitmapExtendedStyle(windowHandle));
+
+            RunOnUIThread([&]()
+            {
+                window1->Activate();
+            });
+
+            // A FALSE result here is meaningful rather than vacuous: the query fails (and throws)
+            // unless the window resolves to a desktop window whose island has a render data entry,
+            // which is the same state in which WindowPlaceholderIsUsedUntilFirstFrame observes a
+            // placeholder. So FALSE means "an entry exists and holds no placeholder visual", not
+            // "placeholder state could not be determined".
+            LOG_OUTPUT(L"----- No placeholder is installed, even before the first frame -----");
+            VERIFY_IS_FALSE(HasWindowPlaceholder(window1.get()));
+        }
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"----- ...and still none after the window has rendered -----");
+        VERIFY_IS_FALSE(HasWindowPlaceholder(window1.get()));
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(!!window1->Visible);
+
+            auto rootPanel = safe_cast<xaml_controls::Grid^>(window1->Content);
+            VERIFY_IS_NOT_NULL(rootPanel);
+            VERIFY_IS_GREATER_THAN(rootPanel->ActualWidth, 0.0);
+            VERIFY_IS_GREATER_THAN(rootPanel->ActualHeight, 0.0);
+        });
+    }
+
+    void WindowIntegrationTests::WindowPlaceholderSurvivesCloseBeforeFirstFrame()
+    {
+        TestCleanupWrapper cleanup;
+
+        {
+            WindowAutoCloser window1;
+            DisableRenderingScopeGuard disableRendering;
+
+            RunOnUIThread([&]()
+            {
+                window1.Attach(LoadWindowWithContent());
+                window1->Activate();
+            });
+
+            LOG_OUTPUT(L"----- The window is closed while its placeholder is still installed -----");
+            VERIFY_IS_TRUE(HasWindowPlaceholder(window1.get()));
+
+            window1.Close();
+        }
+
+        // Resume rendering and let the framework tick: tearing down an island that still owned a
+        // placeholder must not fault or leave stale render data behind.
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"----- A subsequent window still goes through the full placeholder lifetime -----");
+        WindowAutoCloser window2;
+
+        {
+            DisableRenderingScopeGuard disableRendering;
+
+            RunOnUIThread([&]()
+            {
+                window2.Attach(LoadWindowWithContent());
+                window2->Activate();
+            });
+
+            VERIFY_IS_TRUE(HasWindowPlaceholder(window2.get()));
+        }
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        VERIFY_IS_FALSE(HasWindowPlaceholder(window2.get()));
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(!!window2->Visible);
+        });
+    }
+
+    void WindowIntegrationTests::WindowPlaceholderIsTrackedPerWindow()
+    {
+        TestCleanupWrapper cleanup;
+
+        WindowAutoCloser window1;
+        WindowAutoCloser window2;
+
+        {
+            DisableRenderingScopeGuard disableRendering;
+
+            RunOnUIThread([&]()
+            {
+                window1.Attach(LoadWindowWithContent());
+                window2.Attach(LoadWindowWithContent());
+            });
+
+            LOG_OUTPUT(L"----- Activating one window does not install a placeholder in the other -----");
+            RunOnUIThread([&]()
+            {
+                window1->Activate();
+            });
+
+            VERIFY_IS_TRUE(HasWindowPlaceholder(window1.get()));
+            VERIFY_IS_FALSE(HasWindowPlaceholder(window2.get()));
+
+            LOG_OUTPUT(L"----- Each opted-in window gets its own placeholder -----");
+            RunOnUIThread([&]()
+            {
+                window2->Activate();
+            });
+
+            VERIFY_IS_TRUE(HasWindowPlaceholder(window1.get()));
+            VERIFY_IS_TRUE(HasWindowPlaceholder(window2.get()));
+
+            LOG_OUTPUT(L"----- Closing one window leaves the other window's placeholder alone -----");
+            window2.Close();
+
+            VERIFY_IS_TRUE(HasWindowPlaceholder(window1.get()));
+        }
+
+        LOG_OUTPUT(L"----- The remaining window's placeholder is replaced once rendering resumes -----");
+        TestServices::WindowHelper->WaitForIdle();
+
+        VERIFY_IS_FALSE(HasWindowPlaceholder(window1.get()));
+    }
 
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::Window

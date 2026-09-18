@@ -48,6 +48,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"Verifies IsChangeEnabled still returns correct value after Lock")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(SkipWindowRedirectionSurfaceValueIsRecognized)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verifies the SkipWindowRedirectionSurface value can be enabled and queried")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(UnrecognizedValueContract)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verifies unrecognized values: pre-lock Enable/Disable returns FALSE, post-lock both throw E_ILLEGAL_STATE_CHANGE")
