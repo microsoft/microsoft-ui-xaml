@@ -3256,6 +3256,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void StateTriggersIntegrationTests::UserControlResourceDictionary1()
         {
+            TestServices::EnableLeakDetection();
+
             Platform::String^ xamlContents =
                 L"<UserControl xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
                 L"        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'"
@@ -4305,5 +4307,4 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         }
      }
 } } } }
-
 

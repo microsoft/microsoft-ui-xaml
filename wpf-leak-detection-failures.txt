@@ -1,4 +1,3 @@
-Microsoft::UI::Xaml::Tests::Adaptability::StateTriggersIntegrationTests::UserControlResourceDictionary1
 Microsoft::UI::Xaml::Tests::Adaptability::VsmSetterIntegrationTests::VerifyVisualStateSetterDoesNotIncorrectlyClearValueDuringTransition
 Microsoft::UI::Xaml::Tests::Automation::AutomationPeer::AutomationPeerIntegrationTests::VerifyContainerWithAutomationNameHasAP
 Microsoft::UI::Xaml::Tests::Automation::AutomationPeer::AutomationPeerIntegrationTests::VerifyContainerWithLabeledByHasAP
