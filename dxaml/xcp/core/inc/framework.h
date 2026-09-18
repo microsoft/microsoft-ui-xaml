@@ -73,6 +73,8 @@ protected:
         _In_ CStyle *pStyleNew,
         _In_ BaseValueSource baseValueSource);
 
+    _Check_return_ HRESULT EnsureInitialStyleApplied();
+
     _Check_return_ HRESULT AcceleratedBorderRenderCommon(
         _In_ const SharedRenderParams& sharedRP,
         _In_ const D2DRenderParams& d2dRP,
