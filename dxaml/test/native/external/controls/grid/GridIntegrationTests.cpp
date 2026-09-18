@@ -38,6 +38,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     bool GridIntegrationTests::TestSetup()
     {
         TestServices::WindowHelper->InitializeXaml(ref new MetadataProvider());
+        TestServices::EnableLeakDetection();
         return true;
     }
 

@@ -26,6 +26,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     bool PasswordBoxIntegrationTests::TestSetup()
     {
         test_infra::TestServices::WindowHelper->InitializeXaml();
+        TestServices::EnableLeakDetection();
         return true;
     }
 
