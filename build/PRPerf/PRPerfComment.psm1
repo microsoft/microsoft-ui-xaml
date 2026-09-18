@@ -36,13 +36,24 @@ function Get-PRPerfXamlRegions {
         return $regions
     }
     if ($null -eq $parsed) { return $regions }
+    # An array or a bare scalar has properties of its own, like Count and Length, and those
+    # would be rendered as though they were measured durations.
+    if ($parsed -isnot [psobject] -or $parsed -is [array] -or $parsed -is [string] -or $parsed -is [valuetype]) {
+        Write-Host "Ignoring XAML region file '$Path' because it does not contain an object."
+        return $regions
+    }
 
-    foreach ($property in $parsed.PSObject.Properties) {
-        # Anything that is not a plain number cannot be a duration, and rendering it would
-        # put a meaningless figure in front of a reviewer as though it had been measured.
-        $value = $property.Value -as [double]
-        if ($null -eq $value -or -not [double]::IsFinite($value)) { continue }
-        $regions[$property.Name] = $value
+    try {
+        foreach ($property in $parsed.PSObject.Properties) {
+            # Anything that is not a plain number cannot be a duration, and rendering it would
+            # put a meaningless figure in front of a reviewer as though it had been measured.
+            $value = $property.Value -as [double]
+            if ($null -eq $value -or [double]::IsNaN($value) -or [double]::IsInfinity($value)) { continue }
+            $regions[$property.Name] = $value
+        }
+    } catch {
+        Write-Host "Ignoring XAML region file '$Path': $($_.Exception.Message)"
+        return [ordered]@{}
     }
     return $regions
 }

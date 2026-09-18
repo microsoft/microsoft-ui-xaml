@@ -553,3 +553,35 @@ function Test-XamlRegionsIgnoreValuesThatAreNotNumbers {
         Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
     }
 }
+
+function Test-XamlRegionsLoadUnderWindowsPowerShell {
+    $path = Join-Path ([System.IO.Path]::GetTempPath()) "prperf-wps-$([guid]::NewGuid()).json"
+    '{"app":"Contoso!App","XamlInitializeMs":318.46,"XamlFrameMs":514.17}' | Set-Content -Path $path -Encoding UTF8
+    try {
+        $module = Join-Path $root 'PRPerfComment.psm1'
+        $script = "Import-Module '$module' -Force; " +
+                  "`$r = Get-PRPerfXamlRegions -Path '$path'; " +
+                  "foreach (`$k in `$r.Keys) { Write-Output (`$k + '=' + `$r[`$k]) }"
+        $output = & "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -Command $script 2>&1
+        $text = ($output | Out-String)
+        if ($LASTEXITCODE -ne 0) { throw "Windows PowerShell exited $LASTEXITCODE. Output: $text" }
+        if ($text -match 'Exception|does not contain a method') { throw "Windows PowerShell reported an error: $text" }
+        if ($text -notmatch 'XamlInitializeMs=318\.46') { throw "Region missing under Windows PowerShell: $text" }
+        if ($text -match 'app=') { throw "Non-numeric value survived under Windows PowerShell: $text" }
+    } finally {
+        Remove-Item -Path $path -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Test-XamlRegionsIgnoreNonObjectJson {
+    foreach ($content in @('[1,2,3]', '"just a string"', '42')) {
+        $path = Join-Path ([System.IO.Path]::GetTempPath()) "prperf-shape-$([guid]::NewGuid()).json"
+        $content | Set-Content -Path $path -Encoding UTF8
+        try {
+            $regions = Get-PRPerfXamlRegions -Path $path
+            Assert-Equal 0 $regions.Count "JSON that is not an object must yield no regions (content '$content')."
+        } finally {
+            Remove-Item -Path $path -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
