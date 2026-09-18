@@ -196,14 +196,26 @@ function Stop-VMTests {
             Write-Host "  No scheduled task found." -ForegroundColor Gray
         }
 
-        $teProcs = Get-Process -Name "te", "TE.ProcessHost" -ErrorAction SilentlyContinue
-        if ($teProcs) {
-            $teProcs | ForEach-Object {
+        $testProcs = Get-Process | Where-Object {
+            if ($_.ProcessName -in @("te", "TE.ProcessHost")) {
+                return $true
+            }
+
+            try {
+                return $_.Path -and $_.Path.StartsWith("$dir\", [System.StringComparison]::OrdinalIgnoreCase)
+            } catch {
+                return $false
+            }
+        }
+
+        if ($testProcs) {
+            $testProcs | ForEach-Object {
                 Write-Host "  Killing $($_.ProcessName) (PID $($_.Id))..." -ForegroundColor Yellow
                 Stop-Process -Id $_.Id -Force
             }
+            $testProcs | Wait-Process -ErrorAction SilentlyContinue
         } else {
-            Write-Host "  No te.exe or TE.ProcessHost.exe running." -ForegroundColor Gray
+            Write-Host "  No test payload processes running." -ForegroundColor Gray
         }
 
         Remove-Item "$dir\_run-wrapper.cmd" -ErrorAction SilentlyContinue
@@ -710,6 +722,9 @@ if (-not $TestName) {
 
 # -- Run -----------------------------------------------------------------
 try {
+    # Test apps can survive a failed TAEF run and keep payload binaries locked.
+    Stop-VMTests -Session $session -RemoteTestDir $RemoteTestDir
+
     $payloadDir = New-TestPayload -RepoRoot $repoRoot -Platform $Platform -Configuration $Configuration `
                                   -Flavor $Flavor -Mode $Mode -SkipPayload:$SkipPayload
 
