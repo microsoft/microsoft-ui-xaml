@@ -224,8 +224,17 @@ namespace DirectUI
 
     _Check_return_ HRESULT CompositionTarget::GetCompositorForCurrentThread(_Outptr_ WUComp::ICompositor** compositor)
     {
+        DXamlCore *pdxc = DXamlCore::GetCurrent();
+
+        // Cleanup running during core shutdown through ShutdownAllPeers() can query the compositor
+        // and handles the failure itself, so don't originate an error for it.
+        if (pdxc && DXamlCore::IsShuttingDownStatic())
+        {
+            return CheckActivationAllowed();
+        }
+
         IFC_RETURN(CheckActivationAllowed());
-        
+
         IFCPTR_RETURN(compositor);
         *compositor = DXamlCore::GetCurrent()->GetHandle()->GetCompositor();
         AddRefInterface(*compositor);
