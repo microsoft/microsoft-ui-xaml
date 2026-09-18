@@ -110,6 +110,12 @@ locally or on a VM, run testmachine-prerun.cmd once and then use runtests.cmd th
 Microsoft.UI.Xaml.Controls.dll tests can also be run by opening controls\MUXControls.sln in Visual Studio, building within Visual Studio,
 and then selecting the tests to run via Test Explorer.
 
+The GitHub PR and nightly entry points expose `CollectCodeCoverage`, defaulting to
+false, for MUX/MUXC coverage in DevTestSuite. It does not change the build or test
+matrix or enable coverage in ScenarioTestSuite. See
+[Runtime code coverage](../testing/code-coverage.md) for pipeline wiring, manual
+runs, report interpretation, and limitations.
+
 ### WinUI-RunStaticTests-Stage
 WinUI-RunStaticTests-Stage.yml
 
