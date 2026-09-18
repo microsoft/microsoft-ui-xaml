@@ -230,6 +230,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::PrepareDragTests()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             // During the first drag and drop operation, DataExchangeHost.exe steals focus from the test window.
@@ -246,6 +248,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
         //------------------------------------------------------------------------
         void BasicDragDropTests::CanDragUsingCoreDragOperation()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
@@ -583,6 +587,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::ValidateDragOperationDeferral()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
@@ -792,6 +798,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanDefaultMouseDrag()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
@@ -1445,6 +1453,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanSetCustomDragVisualWithBitmapUriSource()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             SetCustomDragVisualWithBitmapUriSourceHelper();
@@ -1452,6 +1462,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanSetCustomDragVisualWithBitmapUriSourceSmallerSize()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             SetCustomDragVisualWithBitmapUriSourceHelper(true /*smaller decoding size*/);
@@ -1459,6 +1471,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanSetCustomDragVisualWithBitmapSetSource()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
@@ -1656,6 +1670,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanSetPreparedCustomDragVisualWithBitmapUriSource()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
@@ -1829,6 +1845,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
         // BEFORE the DragVisual is really used in Drag and Drop
         void BasicDragDropTests::CanSetPreparedCustomDragVisualWithBitmapSetSource()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
@@ -2026,6 +2044,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanSetAllDragVisualSettings()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
@@ -2206,6 +2226,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanUseSoftwareBitmapAndDeferral()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
@@ -2419,6 +2441,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanTakeDeferralOnDragStarting()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
@@ -2637,6 +2661,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::ProvidesDragUIOverrideOnLeave()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
@@ -2717,6 +2743,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::DoNotRaiseMultipleDragEnterOnTreeChange()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
@@ -2836,6 +2864,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanDoTouchListReordering()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             PerformTouchListReordering(false /* useLegacyPanel */);
@@ -2843,6 +2873,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanCancelDragProgrammatically()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
@@ -2923,6 +2955,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::ClearUIOverridesWhenSwitchingTarget()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
@@ -3312,6 +3346,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::ValidateThatLightDismissPopupDoesNotDismissWhenStartingDragDrop()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
@@ -3390,6 +3426,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanSetCanDragOnListViewItem()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
@@ -3630,6 +3668,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanReorderAndDropOnItems()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
@@ -3776,6 +3816,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanCollapseDraggedElement()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
@@ -3939,6 +3981,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanReorderWithLegacyPanel()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             PerformTouchListReordering(true /* useLegacyPanel */);
@@ -4080,6 +4124,8 @@ L"<ItemsPanelTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::AllowedOperationsPassThrough()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
@@ -4191,6 +4237,8 @@ L"<ItemsPanelTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
         
         void BasicDragDropTests::CanDragToFromWindowedPopups()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]()

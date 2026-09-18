@@ -996,6 +996,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void HubIntegrationTests::ValidateSemanticZoomedOutView()
     {
+        // WPF shutdown reports CDirectManipulationViewportEventHandler allocations
+        // from CreateViewport during repeated Hub-to-GridView semantic zoom checks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;

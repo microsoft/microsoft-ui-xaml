@@ -1148,6 +1148,13 @@ _Check_return_ HRESULT DXamlCore::DeinitializeInstanceToIdle()
 
     m_state = State::Idle;
 
+    // Closed desktop windows leave unused map capacity until full core shutdown.
+    // Release it before the idle-shutdown leak scan, without hiding unclosed windows.
+    if (m_handleToDesktopWindowMap.empty())
+    {
+        m_handleToDesktopWindowMap.shrink_to_fit();
+    }
+
     // If another test leaked, there could be leftover objects in these maps. Ignore
     // any re-allocations caused by shrink_to_fit.
 #if XCP_MONITOR

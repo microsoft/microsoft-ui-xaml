@@ -1392,6 +1392,8 @@ void PrimitiveTests::LinearGradientTextWUCFull()
 
 void PrimitiveTests::RegressionTest_11908060()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, Canvas, SizeChangedEventArgs,
+    // and associated event-source/weak-reference allocations from this visual tree.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     const auto& wh = TestServices::WindowHelper;

@@ -41,6 +41,8 @@ bool GlobalBoundsTests::TestCleanup()
 
 void GlobalBoundsTests::GetGlobalBounds()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, Grid, Border, SizeChangedEventArgs,
+    // and associated event-source/weak-reference allocations from the bounds-test setup.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     auto wh = TestServices::WindowHelper;
@@ -91,6 +93,8 @@ void GlobalBoundsTests::GetGlobalBounds()
 
 void GlobalBoundsTests::GetGlobalBounds_RenderTransform()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, Grid, Border, SizeChangedEventArgs,
+    // and associated event-source/weak-reference allocations from the bounds-test setup.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     auto wh = TestServices::WindowHelper;
@@ -150,6 +154,8 @@ void GlobalBoundsTests::GetGlobalBounds_RenderTransform()
 
 void GlobalBoundsTests::GetGlobalBounds_IncludesChildBounds()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, Grid, Border, SizeChangedEventArgs,
+    // and associated event-source/weak-reference allocations from the bounds-test setup.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     auto wh = TestServices::WindowHelper;
@@ -205,6 +211,8 @@ void GlobalBoundsTests::GetGlobalBounds_IncludesChildBounds()
 
 void GlobalBoundsTests::GetGlobalBounds_Clip()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, Grid, Border, SizeChangedEventArgs,
+    // and associated event-source/weak-reference allocations from the bounds-test setup.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     auto wh = TestServices::WindowHelper;
@@ -284,6 +292,8 @@ void GlobalBoundsTests::GetGlobalBounds_Clip()
 
 void GlobalBoundsTests::GetGlobalBounds_LayoutClip()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, Grid, Border, SizeChangedEventArgs,
+    // and associated event-source/weak-reference allocations from the bounds-test setup.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     auto wh = TestServices::WindowHelper;
@@ -320,6 +330,8 @@ void GlobalBoundsTests::GetGlobalBounds_LayoutClip()
 
 void GlobalBoundsTests::GetGlobalBounds_LayoutClipAsParentClip()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, Grid, Border, SizeChangedEventArgs,
+    // and associated event-source/weak-reference allocations from the bounds-test setup.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     auto wh = TestServices::WindowHelper;
@@ -377,6 +389,8 @@ void GlobalBoundsTests::GetGlobalBounds_LayoutClipAsParentClip()
 
 void GlobalBoundsTests::GetGlobalBounds_WindowClip()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, Grid, Border, SizeChangedEventArgs,
+    // and associated event-source/weak-reference allocations from the bounds-test setup.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     auto wh = TestServices::WindowHelper;
@@ -432,6 +446,8 @@ void GlobalBoundsTests::CompareElementIterators(std::vector<UIElement^>& expecte
 
 void GlobalBoundsTests::GetGlobalBounds_LTEEscapesClips()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, Canvas, SizeChangedEventArgs,
+    // and associated event-source/weak-reference allocations from the LTE bounds setup.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     auto wh = TestServices::WindowHelper;
@@ -719,6 +735,8 @@ void GlobalBoundsTests::FindElementsInHostCoordinatesCommon(bool include3D)
 
 void GlobalBoundsTests::FindElementsInHostCoordinates()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, Canvas, SizeChangedEventArgs,
+    // and associated event-source/weak-reference allocations from the hit-test setup.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     FindElementsInHostCoordinatesCommon(false /* include3D */);
@@ -726,6 +744,8 @@ void GlobalBoundsTests::FindElementsInHostCoordinates()
 
 void GlobalBoundsTests::FindElementsInHostCoordinates3D()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, Canvas, SizeChangedEventArgs,
+    // and associated event-source/weak-reference allocations from the hit-test setup.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     FindElementsInHostCoordinatesCommon(true /* include3D */);
@@ -733,6 +753,8 @@ void GlobalBoundsTests::FindElementsInHostCoordinates3D()
 
 void GlobalBoundsTests::FindElementsInHostCoordinatesWPF()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, Canvas, SizeChangedEventArgs,
+    // and associated event-source/weak-reference allocations from the hit-test setup.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     auto wh = TestServices::WindowHelper;
@@ -1011,6 +1033,8 @@ void GlobalBoundsTests::FindElementsInHostCoordinates_BaseItemChrome()
 
 void GlobalBoundsTests::GetGlobalBounds_ChildHas3D()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, Grid, Border, SizeChangedEventArgs,
+    // and associated event-source/weak-reference allocations from the bounds-test setup.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     auto wh = TestServices::WindowHelper;
@@ -1052,6 +1076,8 @@ void GlobalBoundsTests::GetGlobalBounds_ChildHas3D()
 
 void GlobalBoundsTests::ProjectionMakesConcavePolygon()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, Canvas, SizeChangedEventArgs,
+    // and associated event-source/weak-reference allocations from the projection setup.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     const auto& wh = TestServices::WindowHelper;

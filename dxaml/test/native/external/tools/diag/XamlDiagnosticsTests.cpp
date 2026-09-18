@@ -65,6 +65,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetEnums()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             auto cleanup = XamlDiagnosticsTestHelpers::SetupGridAndWait();
@@ -93,6 +94,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCreateInstance()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -145,6 +147,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetSetClearProperty()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -176,6 +179,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestSetPropertyBinding()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -240,6 +244,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCanSetAutoOnWidthProperty()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -257,6 +262,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetComponents()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             auto cleanup = XamlDiagnosticsTestHelpers::SetupGridAndWait();
@@ -280,6 +286,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetHandlesAndIInspectables()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -472,6 +479,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestRegisterInstance()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             auto cleanup = XamlDiagnosticsTestHelpers::SetupGridAndWait();
@@ -500,6 +508,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         // then unadvise and change the tree. We should verify that the cache is still empty, aka we didn't get any callback.
         void XamlDiagnosticsTests::TestUnadviseVisualTreeChange()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             auto cleanup = XamlDiagnosticsTestHelpers::SetupGridAndWait();
@@ -525,6 +534,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestUiLayer()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             auto cleanup = XamlDiagnosticsTestHelpers::SetupGridAndWait();
@@ -540,6 +550,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetThemeResourceProperties()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -556,6 +567,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCanSetValueOnCustomProperty()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/PageWithCustomUserControl.xaml");
@@ -578,6 +590,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestProvideSourceForURI()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/external/foundation/graphics/image/SimpleImageWithUri.xaml");
@@ -598,6 +611,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCanSetURISource()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/external/foundation/graphics/image/SimpleImageWithUri.xaml");
@@ -631,6 +645,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestProvideSourceForFontFamily()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -644,6 +659,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCanSetSourceForFontFamily()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -670,6 +686,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestBackgroundOnGrid()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -703,6 +720,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCorrectBaseValueSourceOnRowAndColumnDefinitions()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -719,6 +737,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestAutoOnSetters()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -743,6 +762,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestSetEnum()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -780,6 +800,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCreateColorAndSetToBrushProperty()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -874,6 +895,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestMultipleCallbacks()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback1 = m_connectionHelper->Advise();
@@ -897,6 +919,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestDataBoundProperties()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/PageWithCustomUserControl.xaml");
@@ -925,6 +948,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetHandleToOwnedObject()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/PageWithNonDOBinding.xaml");
@@ -966,6 +990,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetCalendarDatePickerDefault()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -1040,6 +1065,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetCalendarViewProperties()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -1091,6 +1117,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetPropertyValueAndIndex()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -1119,6 +1146,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetPropertyIndexAttached()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -1146,6 +1174,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetPropertyIndexAndValueCustom()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/PageWithCustomUserControl.xaml");
@@ -1176,6 +1205,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetPropertyIndexAndValueCollection()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -1194,6 +1224,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestAppAnalysisIntegrationWithLVT()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             RuleTesterHelper helper(L"AA0009", L"IntegrationWithLVT");
@@ -1209,6 +1240,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestPropertyChainBinding()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -1222,6 +1254,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestMetadataNullValueBits()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -1239,6 +1272,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCreateInstanceDependencyProperty()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             auto cleanup = XamlDiagnosticsTestHelpers::SetupGridAndWait();
@@ -1255,6 +1289,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestObjectIdentity()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -1276,6 +1311,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestResourceDataTemplate()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/PageWithCustomUserControlUsingStaticResourceDataTemplate.xaml");
@@ -1285,6 +1321,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::VerifyDontCleanupPropertiesForLiveElements()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -1310,6 +1347,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestThemeResourceInStyle()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             //Modify a Style's property when another property in the Style uses a ThemeResource,
@@ -1366,6 +1404,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestChangeSetterProperty()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -1402,6 +1441,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestClearRenderProperty()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -1420,6 +1460,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestGetPropertyNull()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
                 wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -1439,6 +1480,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestEvaluatedValue()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -1511,6 +1553,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestBasedOnSetterChange()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             //Verify that a change to an existing Setter's Value property in Style A, which is used as the
@@ -1586,6 +1629,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestChangedBasedOnProperty()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             //Try changing the BasedOn property of a Style and ensure objects are updated properly
@@ -1627,6 +1671,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestClearPropertyBinding()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -1647,6 +1692,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::GetPropertyIndexFailsForInvalidProperty()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -1664,6 +1710,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::GetAttachedPropertyWithUnknownOwnerType()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -1685,6 +1732,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::VerifyGetBuiltinStyleProperties()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             RunOnUIThread([&]()
@@ -1720,6 +1768,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::VerifySourceChainReflectsPrecedence()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             // Set window size to something that will trigger the trigger
@@ -1777,6 +1826,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::VerifyOnDemandTransitionCollections()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             ::Windows::Foundation::Size size(400, 400);
@@ -1797,6 +1847,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::GetPropertyChainReturnsDesiredSize()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -1826,6 +1877,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::CorrectlyValidateFakeProperties()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             auto xamlText = ref new Platform::String(
@@ -1883,6 +1935,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::ClearTypesOnNonPlatformTypes()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             auto xamlText = ref new Platform::String(
@@ -1901,6 +1954,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::ValidateCorrectNamescopes()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             auto xamlText = ref new Platform::String(
@@ -1922,6 +1976,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCanSetNull()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             auto xamlText = ref new Platform::String(
@@ -1950,6 +2005,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCanGetSetSimpleProperty()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             auto xamlText = ref new Platform::String(
@@ -2032,6 +2088,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCanGetSetNonDP()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/PageWithCustomUserControl.xaml");
@@ -2074,6 +2131,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::TestCanUseIPropertyValueTypes()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             auto xamlText = ref new Platform::String(
@@ -2217,6 +2275,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void XamlDiagnosticsTests::ModifyMediaPlayerElementSource()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its focus event source, and diagnostics RuntimeElement allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             auto xamlText = ref new Platform::String(

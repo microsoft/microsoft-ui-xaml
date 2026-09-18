@@ -47,6 +47,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void TextBoxScrollingTests::ScrollWithWrappingText()
         {
+            // WPF shutdown reports CDirectManipulationViewportEventHandler allocated by
+            // CDirectManipulationService::CreateViewportEventHandler for ScrollViewer manipulation.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             // We expect the scroll to go to the textbox, thus only scrolling that individual box.

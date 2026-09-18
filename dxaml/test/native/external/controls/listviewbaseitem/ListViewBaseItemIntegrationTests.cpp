@@ -1614,6 +1614,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void IntegrationTests::VerifyDragOverStateForGVI()
     {
+        // WPF shutdown reports the PendingDragDropActionQueue allocated by
+        // DropOperationTarget::Initialize during this GridView drag-over test.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;

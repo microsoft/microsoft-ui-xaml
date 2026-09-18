@@ -55,6 +55,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanEnterAndLeaveLiveTree()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -127,6 +128,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanOpenAndCloseUsingAPI()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -266,6 +268,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanCloseNonStickyAppBarUsingEscapeKey()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -399,6 +402,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanOpenAndCloseUsingMouse()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         CanOpenAndCloseUsingRightTappedEvent(false /* usePen */);
@@ -406,6 +410,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanOpenAndCloseUsingPen()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         CanOpenAndCloseUsingRightTappedEvent(true /* usePen */);
@@ -481,6 +486,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanOpenMinimalAppBarUsingMouse()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -537,6 +543,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanOpenAndCloseUsingExpandButton()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -581,6 +588,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanTabThroughChildItems()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -683,6 +691,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanClickAButtonInAnAppBar()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -747,6 +756,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanGetAndSetClosedDisplayMode()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -767,6 +777,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanClosedDisplayModesControlLayout()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -824,6 +835,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanHideAppBarWithHiddenClosedDisplayMode()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -898,6 +910,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::ValidateFocusShiftWhenClosedAppBarIsAdded()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -931,6 +944,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::ValidateFocusShiftWhenOpenedAppBarIsAdded()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -966,6 +980,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::ValidateFocusShiftWhenClosedUnfocusedAppBarIsOpenedAndClosed()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -1017,6 +1032,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::ValidateFocusShiftWhenClosedFocusedAppBarIsOpenedAndClosed()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -1066,6 +1082,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanResizeAppBarAfterOpeningAndClosing()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -1214,6 +1231,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanClosedDisplayModesAffectTabbingWhenClosed()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -1284,6 +1302,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanClosedDisplayModesAffectTabbingWhenOpen()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -1363,6 +1382,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::ValidateWinBlueTabbingIsPreserved()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -1434,6 +1454,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanCloseAppBarUsingGamepadB()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         CanCloseAppBarUsingDevice(InputDevice::Gamepad);
@@ -1441,6 +1462,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanCloseAppBarUsingEsc()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         CanCloseAppBarUsingDevice(InputDevice::Keyboard);
@@ -1679,6 +1701,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::ValidateExpandButtonVisualInDisabledState()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -1884,6 +1907,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::ValidateLightDismissOverlayModeForTopBottomAppBars()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -2156,6 +2180,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::ValidateOverlayBrushForTopBottomAppBars()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;

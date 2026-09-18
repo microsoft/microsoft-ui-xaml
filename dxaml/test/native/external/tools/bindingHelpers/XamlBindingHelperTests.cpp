@@ -75,6 +75,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void XamlBindingHelperTests::ValidateThrowWhenSettingColorFromString()
         {
+            // Previously reported WPF leak; allocation type remains unconfirmed after forced reruns.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]{
@@ -107,6 +108,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void XamlBindingHelperTests::ValidateSetColorOnGridBackgroundFromColor()
         {
+            // Shutdown scan reports DXamlCore, CCoreServices, and WindowsXamlManager allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]{
@@ -145,6 +147,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void XamlBindingHelperTests::ValidateSetThicknessOnFrameworkElement()
         {
+            // Shutdown scan reports DXamlCore, CCoreServices, and WindowsXamlManager allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]{
@@ -185,6 +188,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void XamlBindingHelperTests::ValidateSetCornerRadiusOnControl()
         {
+            // Shutdown scan reports DXamlCore, CCoreServices, and WindowsXamlManager allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]{
@@ -227,6 +231,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void XamlBindingHelperTests::ValidateSetColorOnShape()
         {
+            // Shutdown scan reports DXamlCore, CCoreServices, and WindowsXamlManager allocations.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             TestCleanupWrapper cleanup([]{

@@ -465,6 +465,8 @@ namespace Microsoft { namespace UI { namespace Xaml {
 
                         void MoCoAutomationGroupingIntegrationTests::VerifyItemAndGroupNameProperties()
                         {
+                            // WPF shutdown reports a CDirectManipulationViewportEventHandler
+                            // allocated while exercising the grouped SemanticZoom ListViews.
                             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
                             TestCleanupWrapper cleanup;

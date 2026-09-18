@@ -1622,6 +1622,8 @@ void HitTestBasic::LTESkipsSubtreeCommon(bool isDepthOnLTE)
 
 void HitTestBasic::LTESkipsSubtree_DepthUnderLTE()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, its TakeFocusRequested event source,
+    // and Canvas/weak-reference allocations from LTESkipsSubtreeCommon.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     LTESkipsSubtreeCommon(false /* isDepthOnLTE */);
@@ -1629,6 +1631,8 @@ void HitTestBasic::LTESkipsSubtree_DepthUnderLTE()
 
 void HitTestBasic::LTESkipsSubtree_DepthOnLTE()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, its TakeFocusRequested event source,
+    // and Canvas/weak-reference allocations from LTESkipsSubtreeCommon.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     LTESkipsSubtreeCommon(true /* isDepthOnLTE */);

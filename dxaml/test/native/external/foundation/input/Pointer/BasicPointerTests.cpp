@@ -683,6 +683,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void BasicPointerTests::ProtectedCursorOnNonLiveElement()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, Grid, Border, SizeChangedEventArgs,
+            // and associated event-source/weak-reference allocations from this setup.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             Grid^ mainGrid = nullptr;

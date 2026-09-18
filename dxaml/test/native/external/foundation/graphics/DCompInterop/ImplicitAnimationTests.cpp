@@ -1921,6 +1921,7 @@ void ImplicitAnimationTests::ShowAnimation2WUCFull()
 
 void ImplicitAnimationTests::ShowAnimation3WUCFull()
 {
+    // Previously reported WPF leak; allocation type remains unconfirmed after forced reruns.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
@@ -2671,6 +2672,7 @@ void ImplicitAnimationTests::ShowAnimation8WUCFull()
 
 void ImplicitAnimationTests::HideAnimationCollapse1WUCFull()
 {
+    // Previously reported WPF leak; allocation type remains unconfirmed after forced reruns.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);

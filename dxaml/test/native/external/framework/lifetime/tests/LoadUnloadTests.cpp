@@ -41,6 +41,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             void LoadUnloadTests::VerifyEventOrdering()
             {
+                // WPF shutdown reports the StackPanel peer, DesktopWindowXamlSource, and its focus event source.
                 TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
                 xaml_controls::StackPanel^ rootPanel = nullptr;
@@ -198,6 +199,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void LoadUnloadTests::VerifyEventOrderingForPopup()
         {
+            // WPF shutdown reports the StackPanel peer, DesktopWindowXamlSource, and its focus event source.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             xaml_controls::StackPanel^ rootPanel = nullptr;
@@ -265,6 +267,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void LoadUnloadTests::VerifyEventOrderingForPopupAddAndRemove()
         {
+            // WPF shutdown reports StackPanel, Border, and SizeChangedEventArgs peers plus DesktopWindowXamlSource.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             xaml_controls::StackPanel^ rootPanel = nullptr;
@@ -337,6 +340,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void LoadUnloadTests::ReproWeakRefCrash()
         {
+            // WPF shutdown reports StackPanel and ExternalObjectReference peers plus DesktopWindowXamlSource.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             {

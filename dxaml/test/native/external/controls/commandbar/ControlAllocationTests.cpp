@@ -37,6 +37,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void ControlAllocationTests::MeasureCommandBarAllocations()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;

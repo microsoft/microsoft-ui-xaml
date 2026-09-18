@@ -60,6 +60,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::CanEnterAndLeaveLiveTree()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -99,6 +100,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::CanReapplyTemplate()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -624,6 +626,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::CanResizeCommandBarAfterOpeningAndClosing()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -686,6 +689,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::CanUseLargeAppBarButton()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -1130,6 +1134,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateArrowKeys()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -1546,6 +1551,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateFirstElementIsNotFocusedWhenClosingCommandBar()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -1692,6 +1698,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::CanReopenInClosedHandler()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -1936,6 +1943,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::DoesCycleFocusWhenOpen()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         auto expectedFocusSequence = L"[S1][P1][P2][P3][M][P3][P2][P1][S1][M]";
@@ -2056,6 +2064,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::CanTabIntoOverflowMenuWhenTopOrBottom()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -2643,6 +2652,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateDefaultLayoutPositionPropagates()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -2880,6 +2890,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     // Validate the dynamic overflow behavior with on and off IsDynamicOverflowEnabled property
     void CommandBarIntegrationTests::ValidateDynamicOverflowOnOff()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -2921,6 +2932,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateDynamicOverflowByChangingWindowsSizeOverride()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -2941,6 +2953,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateDynamicOverflowAddRemovePrimaryItems()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -2998,6 +3011,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateDynamicOverflowAppBarSeparator()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -3064,6 +3078,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateFireDynamicOverflowItemsChangingEvent()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -3112,6 +3127,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateDynamicOverflowOrderBasic()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -3200,6 +3216,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateDynamicOverflowWithContentControl()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -4428,6 +4445,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateMoreButtonCanShowWithoutSizeChanging()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;

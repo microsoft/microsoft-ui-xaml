@@ -450,6 +450,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     // Validates the default focus border properties based on the app and element themes.
     void GeneralIntegrationTests::VerifyFocusVisualDefaultValues()
     {
+        // WPF shutdown reports DesktopWindowXamlSource, its TakeFocusRequested
+        // event source, and CScrollContentPresenter after the focus-visual theme checks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         xaml::ApplicationTheme originalTheme;

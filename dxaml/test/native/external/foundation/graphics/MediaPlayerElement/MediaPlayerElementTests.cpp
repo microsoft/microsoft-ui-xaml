@@ -481,6 +481,8 @@ void MediaPlayerElementTests::ConfigureThenRemoveDefaultMediaPlayer()
 
 void MediaPlayerElementTests::PausesMediaPlayerWhenWindowCloses()
 {
+    // WPF shutdown reports HWND-to-Window map storage allocated by
+    // DesktopWindowImpl::OnCreate when this test creates its Window.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     auto playingEvent = std::make_shared<Event>();

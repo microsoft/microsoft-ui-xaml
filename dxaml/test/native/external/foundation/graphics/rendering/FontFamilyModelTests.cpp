@@ -45,6 +45,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void FontFamilyModelTests::ValidateVariableFontUsage()
         {
+            // Previously reported WPF leak; allocation type remains unconfirmed after forced reruns.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             RuntimeEnabledFeatureOverride featureForceTypographicModel(RuntimeFeatureBehavior::RuntimeEnabledFeature::ForceDWriteTypographicModel, true);

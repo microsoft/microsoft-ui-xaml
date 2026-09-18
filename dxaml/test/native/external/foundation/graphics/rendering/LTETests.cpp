@@ -107,6 +107,8 @@ void LTETests::Insert3Rectangles(GridView^ gridView)
 
 void LTETests::PortalingMediaElement()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, its TakeFocusRequested event source,
+    // and Canvas/weak-reference allocations after portaling the media element.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     const auto& wh = TestServices::WindowHelper;
@@ -181,6 +183,8 @@ void LTETests::PortalingMediaElement()
 
 void LTETests::PortalingSwapChainPanel()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, Canvas, SizeChangedEventArgs,
+    // and associated event-source/weak-reference allocations after portaling the panel.
     TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
     const auto& wh = TestServices::WindowHelper;

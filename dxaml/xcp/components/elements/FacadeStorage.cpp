@@ -288,6 +288,13 @@ void FacadeStorage::ClearDOFacadeStorage(_In_ const CDependencyObject* object)
 
 void FacadeStorage::ShrinkToFit()
 {
+    if (m_doFacadeMap.empty())
+    {
+        // No objects need the cached glue expressions. Release the cache before
+        // trimming its storage, but preserve it when facade objects remain.
+        m_facadeGlueExpressionMap.clear();
+    }
+
     m_doFacadeMap.shrink_to_fit();
     m_facadeGlueExpressionMap.shrink_to_fit();
 }

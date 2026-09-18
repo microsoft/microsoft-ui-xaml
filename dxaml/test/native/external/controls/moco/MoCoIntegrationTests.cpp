@@ -2155,6 +2155,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void MoCoIntegrationTests::ValidateMultipleSelectionModeRangeSelection()
     {
+        // WPF shutdown reports ListViewItem peers and ContainerContentChangingEventArgs
+        // from the ListView used for range-selection checks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -2867,6 +2869,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void MoCoIntegrationTests::CanDragMulitpleItemsInListView()
     {
+        // WPF shutdown reports ListViewItem peers and ContainerContentChangingEventArgs
+        // from the ListView used for the multi-item drag.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -3844,6 +3848,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void MoCoIntegrationTests::VerifyTabOutOfListViewToAppBar()
     {
+        // WPF shutdown reports LayoutBoundsChangedHelper, the XamlRoot Changed event
+        // source, and CRootScrollViewer after tabbing from the ListView to the Page's AppBar.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -4517,6 +4523,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void MoCoIntegrationTests::VerifyEdgeScrollingWithReorder()
     {
+        // WPF shutdown reports the PendingDragDropActionQueue allocated by
+        // DropOperationTarget::Initialize during the edge-scrolling reorder.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -4629,6 +4637,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void MoCoIntegrationTests::VerifyRemoveSelectedDraggedItemFromItemsList()
     {
+        // WPF shutdown reports the PendingDragDropActionQueue allocated by
+        // DropOperationTarget::Initialize when dragging the item removed from the list.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -4794,6 +4804,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void MoCoIntegrationTests::VerifyDraggedItemsContentNotNullWithCCC()
     {
+        // WPF shutdown reports the PendingDragDropActionQueue allocated by
+        // DropOperationTarget::Initialize during the ContainerContentChanging drag test.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -5020,6 +5032,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void MoCoIntegrationTests::VerifyDropIntoFolder()
     {
+        // WPF shutdown reports the PendingDragDropActionQueue allocated by
+        // DropOperationTarget::Initialize during the drop into a folder item.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -5312,6 +5326,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void MoCoIntegrationTests::ValidateGlyphAndCaptionVisibilityDuringReorder()
     {
+        // WPF shutdown reports the PendingDragDropActionQueue allocated by
+        // DropOperationTarget::Initialize during the reorder drag-visual checks.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -5521,6 +5537,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void MoCoIntegrationTests::ValidateInsertFromOutsideAfterLastItem()
     {
+        // WPF shutdown reports the PendingDragDropActionQueue allocated by
+        // DropOperationTarget::Initialize during the external drop after the last item.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;

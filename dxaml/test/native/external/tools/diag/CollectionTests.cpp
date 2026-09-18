@@ -60,6 +60,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CollectionTests::TestCollections()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its TakeFocusRequested event source,
+            // and diagnostics RuntimeElement allocations from SignalRootMutation during island attachment.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -107,6 +109,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CollectionTests::TestNestedCollections()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its TakeFocusRequested event source,
+            // and diagnostics RuntimeElement allocations from SignalRootMutation during island attachment.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -220,6 +224,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CollectionTests::VerifyDontLeakCollection()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its TakeFocusRequested event source,
+            // and diagnostics RuntimeElement allocations from SignalRootMutation during island attachment.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback = m_connectionHelper->Advise();
@@ -375,6 +381,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CollectionTests::VerifyRowDefinitionsReportAsCollections()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its TakeFocusRequested event source,
+            // and diagnostics RuntimeElement allocations from SignalRootMutation during island attachment.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             wrl::ComPtr<VisualTreeServiceCallback> callback;
@@ -592,6 +600,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CollectionTests::ClearingSettersUpdatesApp()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its TakeFocusRequested event source,
+            // and diagnostics RuntimeElement allocations from SignalRootMutation during island attachment.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             auto content = ref new Platform::String(
@@ -656,6 +666,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CollectionTests::RemovingSettersFromImplicitStyleUpdatesApp()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its TakeFocusRequested event source,
+            // and diagnostics RuntimeElement allocations from SignalRootMutation during island attachment.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             auto content = ref new Platform::String(

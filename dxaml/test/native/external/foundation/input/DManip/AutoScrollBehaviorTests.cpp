@@ -267,6 +267,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         // it at the end of the list via auto-scroll. Simulates a mouse-based reordering.
         void AutoScrollBehaviorTests::AutoScrollVerticallyInListView()
         {
+            // WPF shutdown reports the thread-local PendingDragDropActionQueue object
+            // allocated by DropOperationTarget::Initialize during the drag.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
             AutoScrollVerticallyInListView(false /*alsoScrollWithMouseWheel*/);

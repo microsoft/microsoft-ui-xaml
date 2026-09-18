@@ -1392,6 +1392,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void DatePickerFlyoutIntegrationTests::ValidateDateSelectionFiresAutomationEvent()
     {
+        // WPF shutdown reports CUIAHostWindow objects created for the XamlIslandRoot
+        // and date picker popup automation providers.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;

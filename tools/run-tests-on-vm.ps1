@@ -643,7 +643,7 @@ echo %ERRORLEVEL% > "$exitFile"
         if ($exitCode -eq 0 -and (Test-Path $logFile)) {
             $logLines = Read-NormalizedLog $logFile
             # Cleanup errors can follow a passing body; comments beginning with "Error:" are not failures.
-            if ($logLines -match '^\s*Summary of Errors Outside of Tests:') {
+            if ($logLines -match '^\s*Summary of Errors Outside of Tests(?: \(showing \d+ of \d+\))?:') {
                 $exitCode = 1
             }
             $summaryLine = $logLines | Where-Object { $_ -match 'Summary:\s+Total=\d+' } | Select-Object -Last 1

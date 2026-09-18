@@ -2538,6 +2538,7 @@ namespace Framework { namespace DataBinding {
 
     void BindingIntegrationTests::BindingCustomPropertyProviderOneWayIndexLookup()
     {
+        // WPF shutdown reports the SolidColorBrush peer created for the indexed binding source.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         RunOnUIThread([&] {
@@ -3440,6 +3441,7 @@ namespace Framework { namespace DataBinding {
 
     void BindingIntegrationTests::CollectionViewBinding()
     {
+        // WPF shutdown reports an aggregated DependencyObject peer after the collection-view bindings.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         RunOnUIThread([&]

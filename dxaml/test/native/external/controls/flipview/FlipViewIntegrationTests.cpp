@@ -115,6 +115,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void FlipViewIntegrationTests::CanFlipWithMouse()
     {
+        // WPF shutdown reports a CDirectManipulationViewportEventHandler
+        // allocated for the FlipView viewport in this mouse-navigation test.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -341,6 +343,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void FlipViewIntegrationTests::CanFlipWithKeyboard()
     {
+        // WPF shutdown reports a CDirectManipulationViewportEventHandler
+        // allocated for the FlipView viewport in this keyboard-navigation test.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -567,6 +571,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void FlipViewIntegrationTests::ValidateScrollingWithMouseWheelQuicklyIsIgnored()
     {
+        // WPF shutdown reports a CDirectManipulationViewportEventHandler
+        // allocated for the FlipView viewport in this rapid-wheel-input test.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -950,6 +956,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void FlipViewIntegrationTests::CannotScrollPastEdges()
     {
+        // WPF shutdown reports a CDirectManipulationViewportEventHandler
+        // allocated for the FlipView viewport in this scroll-edge test.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
@@ -1985,6 +1993,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     // then flips back after an immediate mouse wheel delta for the other direction.
     void FlipViewIntegrationTests::MouseWheelInputsFlipOnce()
     {
+        // WPF shutdown reports a CDirectManipulationViewportEventHandler
+        // allocated for the FlipView viewport in this wheel-delay test.
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup([]()
