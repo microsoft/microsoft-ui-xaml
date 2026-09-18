@@ -264,5 +264,40 @@ namespace UnitTests
                 @"global::LibManagedDll\.NamedElementForPathing obj;\s*" +
                 @"if \(TryGet_helper\(out obj\) && obj != null\)");
         }
+
+        /// <summary>
+        /// A named element argument is rooted at the element root rather than at the data root, so
+        /// it can schedule the binding while the data root the function is invoked on is still
+        /// null. The two roots are distinct steps that share an empty code name.
+        /// </summary>
+        [TestMethod]
+        public void FunctionBinding_RetrievesDataRootForNamedElementArgumentInTemplate()
+        {
+            string code = GenerateBindings(
+                String.Format(NamedElementTemplate, "<TextBlock Text='{x:Bind FormatTitle(helper.Value)}'/>"),
+                CodeGenLanguage.CSharp);
+
+            AssertGenerated(code,
+                @"global::LibManagedDll\.BindPathParserClass instance;\s*" +
+                @"if \(!TryGet_\(out instance\) \|\| instance == null\) \{ return; \}\s*" +
+                @"global::System\.String result = instance\.FormatTitle\(p0\);");
+        }
+
+        /// <summary>
+        /// A function whose argument is the very step it is invoked on is still scheduled by that
+        /// step becoming null, so the instance has to be retrieved even though the argument and the
+        /// instance share a path.
+        /// </summary>
+        [TestMethod]
+        public void FunctionBinding_RetrievesInstanceWhenArgumentIsTheInstance()
+        {
+            string code = GenerateBindings(
+                "<TextBlock Text='{x:Bind InnerClass.Describe(InnerClass)}'/>", CodeGenLanguage.CSharp);
+
+            AssertGenerated(code,
+                @"global::LibManagedDll\.AnotherClassForPathing instance;\s*" +
+                @"if \(!TryGet_InnerClass\(out instance\) \|\| instance == null\) \{ return; \}\s*" +
+                @"global::System\.String result = instance\.Describe\(p0\);");
+        }
     }
 }

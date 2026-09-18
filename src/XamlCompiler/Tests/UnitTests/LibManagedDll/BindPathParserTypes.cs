@@ -13,6 +13,8 @@ namespace LibManagedDll
         public string StringFunction() { return "StringFunction"; }
 
         public string Format(string value) { return String.Format("Format: {0}", value); }
+
+        public string Describe(AnotherClassForPathing other) { return other == null ? "null" : "self"; }
     }
 
     public class NamedElementForPathing : FrameworkElement
