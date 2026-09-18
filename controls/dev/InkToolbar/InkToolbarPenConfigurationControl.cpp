@@ -18,6 +18,7 @@
 #include "InkToolbar.h"
 #include "InkToolbarPenButton.h"
 #include "InkToolbarTrace.h"
+#include "ResourceAccessor.h"
 
 #include <winrt/Microsoft.UI.Xaml.Shapes.h>
 #include <winrt/Windows.UI.ViewManagement.h>
@@ -195,8 +196,24 @@ void InkToolbarPenConfigurationControl::ConfigureStrokeWidthSlider(winrt::Contro
 void InkToolbarPenConfigurationControl::ConfigureLocalizableElements(winrt::Control const& me)
 {
     UNREFERENCED_PARAMETER(me);
-    // Titles/automation names come from string resources (a lift resource gap) - left to the template's
-    // default text. Structure preserved; nothing to set without a resource provider.
+
+    // The template ships English defaults for these two headings, so they must be replaced here or
+    // they never localize.
+    if (auto colorsTitle = GetTemplateChild(L"PenColorPaletteTitle").try_as<winrt::TextBlock>())
+    {
+        if (auto text = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarPenConfigurationColorsLabel); !text.empty())
+        {
+            colorsTitle.Text(text);
+        }
+    }
+
+    if (auto sizeTitle = GetTemplateChild(L"PenStrokeWidthTitle").try_as<winrt::TextBlock>())
+    {
+        if (auto text = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarPenConfigurationSizeLabel); !text.empty())
+        {
+            sizeTitle.Text(text);
+        }
+    }
 }
 
 void InkToolbarPenConfigurationControl::RemoveColorPicker(winrt::Control const& me)

@@ -58,26 +58,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="InkToolbarBallpointPenButtonLabel" xml:space="preserve">
-    <value>Pen</value>
-    <comment>Label shown on the InkToolbar ballpoint-pen tool button.</comment>
-  </data>
-  <data name="InkToolbarPencilButtonLabel" xml:space="preserve">
-    <value>Pencil</value>
-    <comment>Label shown on the InkToolbar pencil tool button.</comment>
-  </data>
-  <data name="InkToolbarHighlighterButtonLabel" xml:space="preserve">
-    <value>Highlighter</value>
-    <comment>Label shown on the InkToolbar highlighter tool button.</comment>
-  </data>
-  <data name="InkToolbarEraserButtonLabel" xml:space="preserve">
-    <value>Eraser</value>
-    <comment>Label shown on the InkToolbar eraser tool button.</comment>
-  </data>
-  <data name="InkToolbarToolButtonLabel" xml:space="preserve">
-    <value>Tool</value>
-    <comment>Default label shown on an InkToolbar tool button whose tool kind is unrecognized.</comment>
-  </data>
   <data name="InkToolbarBallpointPenButtonName" xml:space="preserve">
     <value>Ballpoint pen</value>
     <comment>Tooltip and accessible name for the InkToolbar ballpoint-pen tool button.</comment>
@@ -121,5 +101,13 @@
   <data name="InkToolbarClearAllLabel" xml:space="preserve">
     <value>Erase all ink</value>
     <comment>Display label for the InkToolbar eraser flyout clear-all item. UWP IDS_INKTOOLBAR_ERASERCLEARALL = "Erase all ink" (verified against Windows.UI.Xaml.InkControls.dll resource 6400).</comment>
+  </data>
+  <data name="InkToolbarPenConfigurationColorsLabel" xml:space="preserve">
+    <value>Colors</value>
+    <comment>Heading above the colour palette in the InkToolbar pen configuration flyout.</comment>
+  </data>
+  <data name="InkToolbarPenConfigurationSizeLabel" xml:space="preserve">
+    <value>Size</value>
+    <comment>Heading above the stroke-width slider in the InkToolbar pen configuration flyout.</comment>
   </data>
 </root>
