@@ -18,6 +18,7 @@
 #include "InteractionManager.h"
 #include "FrameworkInputViewHandler.h"
 #include "TextInputProducerHelper.h"
+#include "ImeFocusPark.h"
 
 // Uncomment for DManip debug outputs.
 //#define DM_DEBUG
@@ -428,6 +429,10 @@ public:
 
     // Called when the focus is changed from the focus manager
     static BOOL IsTextEditableControl(_In_ const CDependencyObject* const pObject);
+
+    // Forwards the central focus-changed notification to the legacy-IME focus park (if installed) so it
+    // can park/stand-down TSF focus based on whether the newly focused element is text-editable.
+    void NotifyFocusChangedForImePark(_In_opt_ CDependencyObject* pFocusedElement);
 
     // Helper method to retrieve the underlying input HWND from an IslandInputSite. Note that these hwnds will always
     // exist, even in a world when islands themselves might no longer be backed by hwnds.
@@ -1669,6 +1674,10 @@ private:
 
     // This is used to disable text insertion when a KeyDown event gets handled
     TextInputProducerHelper m_textInputProducerHelper;
+
+    // Legacy-IME (IMM/CUAS) text-input focus park. Only initialized when the per-app opt-in
+    // (RuntimeEnabledFeature::EnableLegacyImeAuxiliaryUi) is set; otherwise unused.
+    ImeFocusPark m_imeFocusPark;
 
     xref_ptr<KeyTipManager> m_keyTipManager;
 

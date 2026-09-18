@@ -66,6 +66,7 @@ namespace RuntimeFeatureBehavior
         { L"DenyRoundedCalendarViewBaseItemChrome", RuntimeEnabledFeature::DenyRoundedCalendarViewBaseItemChrome, false, 0, 0 },
         { L"EnableUWPWindow", RuntimeEnabledFeature::EnableUWPWindow, false, 0, 0 },
         { L"EnableReentrancyChecks", RuntimeEnabledFeature::EnableReentrancyChecks, false, 0, 0 },
+        { L"EnableLegacyImeAuxiliaryUi", RuntimeEnabledFeature::EnableLegacyImeAuxiliaryUi, false, 0, 0 },
         #if DBG
         { L"CaptureTrackerPtrCallStack", RuntimeEnabledFeature::CaptureTrackerPtrCallStack, false, 0, 0 },
         #endif
