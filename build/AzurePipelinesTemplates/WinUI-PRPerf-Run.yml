@@ -31,11 +31,13 @@ parameters:
 - name: runXamlTrace
   type: boolean
   default: false
-# The payload is produced by a different stage, whose artifact name carries the test
-# operating system and build flavour, so it is named here rather than guessed.
+# The payload comes from the scenario test stage, which only runs on a full validation
+# run, so on an ordinary pull request run there is nothing to download. It is named
+# explicitly rather than guessed: build 157958208 published no payload artifact at all,
+# and a wrong name would look like a working configuration that silently measures nothing.
 - name: xamlTracePayloadArtifact
   type: string
-  default: 'ScenarioTestPayload_Win11-25H2_x64fre'
+  default: ''
 - name: publishProvider
   type: string
   default: github
@@ -364,7 +366,7 @@ stages:
             -OutputDirectory "$(comparisonDirectory)"
             -ThresholdPath "$(prPerfSourcesDirectory)\build\PRPerf\pr-perf-thresholds-local.json"
 
-      - ${{ if eq(parameters.runXamlTrace, true) }}:
+      - ${{ if and(eq(parameters.runXamlTrace, true), ne(parameters.xamlTracePayloadArtifact, '')) }}:
         - task: DownloadPipelineArtifact@2
           displayName: Download the app payload to trace
           continueOnError: true

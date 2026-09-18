@@ -5,7 +5,7 @@ param(
     [string] $AppPackageNamePattern = '*CppDesktopSampleApp*',
     [int] $SampleCount = 3,
     [int] $WarmupCount = 1,
-    [int] $LaunchTimeoutSeconds = 60,
+    [int] $LaunchTimeoutSeconds = 20,
     [string] $WprpPath
 )
 
