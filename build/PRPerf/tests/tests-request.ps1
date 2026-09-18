@@ -812,3 +812,13 @@ function Test-MeasureStepUsesTheBuildThatProducedTheDrop {
         throw 'The measurement step must pass this build''s id as -TrialBuildId.'
     }
 }
+
+function Test-YamlTellsTheComparerWhichKindOfBaselineWasUsed {
+    # The comment must say whether it compared against main or against this pull request's
+    # own earlier build. If the pipeline never passes the kind through, the comment silently
+    # reads like a main comparison when it is not one.
+    $yaml = Get-Content -Raw (Join-Path $root '..\AzurePipelinesTemplates\WinUI-PRPerf-Run.yml')
+    if ($yaml -notmatch '-BaselineKind\s+"\$\(perfBaselineKind\)"') {
+        throw 'The compare step does not pass the baseline kind through.'
+    }
+}

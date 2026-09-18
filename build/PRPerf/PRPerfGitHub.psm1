@@ -265,6 +265,43 @@ function Get-GitHubPRPerfPullRequest {
     return & $Invoker $Uri $anonymousHeaders
 }
 
-Export-ModuleMember -Function New-GitHubPRPerfHeaders, Get-PRPerfContextFromPipeline, Get-GitHubPRPerfCommits, Test-GitHubPRPerfRequestCurrent, Test-GitHubPRPerfRequested, ConvertTo-GitHubPRPerfStatusState, Format-GitHubPRPerfErrorDetail, Get-GitHubPRPerfErrorDetailFromRecord, Get-GitHubPRPerfPullRequest
+function Test-GitHubPRPerfCommitIsAncestor {
+    <#
+        Answers whether Candidate is contained in Descendant's history.
+
+        The perf job checks out with fetchDepth 1, so the local clone cannot answer
+        an ancestry question. GitHub's compare endpoint can, without any history:
+        compare/<Candidate>...<Descendant> reports Descendant relative to Candidate,
+        so "ahead" means Descendant already contains Candidate.
+
+        A failure answers no. Treating an unanswerable comparison as yes could pick a
+        main build carrying work this pull request has never seen and then blame its
+        cost on this author.
+    #>
+    param(
+        [Parameter(Mandatory)][string] $Candidate,
+        [Parameter(Mandatory)][string] $Descendant,
+        [Parameter(Mandatory)] $Headers,
+        [Parameter(Mandatory)][string] $Repository,
+        [scriptblock] $Invoke
+    )
+
+    if ($null -eq $Invoke) {
+        $Invoke = { param($Uri, $RequestHeaders) Invoke-RestMethod -Uri $Uri -Headers $RequestHeaders -Method Get }
+    }
+
+    $uri = "https://api.github.com/repos/$Repository/compare/$Candidate...$Descendant"
+    try {
+        $comparison = & $Invoke $uri $Headers
+    } catch {
+        Write-Host "##vso[task.logissue type=warning]Could not compare $Candidate with $Descendant ($(Get-GitHubPRPerfErrorDetailFromRecord -ErrorRecord $_)). Treating it as not an ancestor."
+        return $false
+    }
+
+    $status = [string]$comparison.status
+    return $status -eq 'ahead' -or $status -eq 'identical'
+}
+
+Export-ModuleMember -Function New-GitHubPRPerfHeaders, Get-PRPerfContextFromPipeline, Get-GitHubPRPerfCommits, Test-GitHubPRPerfRequestCurrent, Test-GitHubPRPerfRequested, ConvertTo-GitHubPRPerfStatusState, Format-GitHubPRPerfErrorDetail, Get-GitHubPRPerfErrorDetailFromRecord, Get-GitHubPRPerfPullRequest, Test-GitHubPRPerfCommitIsAncestor
 
 

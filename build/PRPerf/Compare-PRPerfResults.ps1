@@ -10,6 +10,7 @@ param(
     [string] $TargetCommit = '',
     [string] $SourceBuildId = '',
     [string] $TargetBuildId = '',
+    [string] $BaselineKind = '',
     [string] $RequestIdentity = ''
 )
 
@@ -24,6 +25,12 @@ $comparison = Compare-PRPerfFiles `
     -ThresholdPath $ThresholdPath `
     -ExpectedTargetCommit $TargetCommit `
     -ExpectedTrialCommit $SourceCommit
+
+# Record which side the baseline actually came from so the comment cannot imply the delta
+# is attributable to this pull request when it was only compared with its own earlier build.
+if (-not [string]::IsNullOrWhiteSpace($BaselineKind)) {
+    $comparison.target | Add-Member -NotePropertyName baselineKind -NotePropertyValue $BaselineKind -Force
+}
 if ($comparison.overallState -eq 'Inconclusive' -and
     (-not [string]::IsNullOrWhiteSpace($SourceCommit) -or
      -not [string]::IsNullOrWhiteSpace($TargetCommit) -or

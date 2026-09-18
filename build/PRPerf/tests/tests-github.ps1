@@ -616,3 +616,36 @@ function Test-PublisherNamesTheOperationWhenWritingFails {
         Remove-Item -LiteralPath $comparisonPath -Force -ErrorAction SilentlyContinue
     }
 }
+
+function Test-AncestryTrueWhenTheMainBuildIsBehindThePullRequestBase {
+    # compare/<candidate>...<prBase> describes prBase relative to candidate. "ahead" means
+    # prBase contains the candidate, so the candidate is real "before this change" code.
+    Import-GitHubModule
+    $result = Test-GitHubPRPerfCommitIsAncestor -Candidate ('a' * 40) -Descendant ('b' * 40) `
+        -Headers @{} -Repository 'o/r' -Invoke { [pscustomobject]@{ status = 'ahead' } }
+    Assert-Equal $true $result 'An "ahead" comparison must be treated as ancestry.'
+}
+
+function Test-AncestryTrueWhenTheCommitsAreIdentical {
+    Import-GitHubModule
+    $result = Test-GitHubPRPerfCommitIsAncestor -Candidate ('a' * 40) -Descendant ('a' * 40) `
+        -Headers @{} -Repository 'o/r' -Invoke { [pscustomobject]@{ status = 'identical' } }
+    Assert-Equal $true $result 'The same commit must count as ancestry.'
+}
+
+function Test-AncestryFalseWhenHistoriesDiverged {
+    # Diverged main contains work this pull request has never seen. Charging that cost to
+    # this author would be wrong, so it must not be used as a baseline.
+    Import-GitHubModule
+    $result = Test-GitHubPRPerfCommitIsAncestor -Candidate ('a' * 40) -Descendant ('b' * 40) `
+        -Headers @{} -Repository 'o/r' -Invoke { [pscustomobject]@{ status = 'diverged' } }
+    Assert-Equal $false $result 'Diverged history must not be treated as ancestry.'
+}
+
+function Test-AncestryFalseWhenGitHubCannotAnswer {
+    # Unknown must never be optimistically read as yes.
+    Import-GitHubModule
+    $result = Test-GitHubPRPerfCommitIsAncestor -Candidate ('a' * 40) -Descendant ('b' * 40) `
+        -Headers @{} -Repository 'o/r' -Invoke { throw 'network down' }
+    Assert-Equal $false $result 'An unanswerable comparison must not claim ancestry.'
+}

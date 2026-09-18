@@ -712,4 +712,38 @@ function Compare-PRPerfFiles {
     }
 }
 
-Export-ModuleMember -Function Get-PRPerfStatistics, Read-PRPerfResult, Compare-PRPerfResults, Compare-PRPerfFiles, New-PRPerfLocalResult, Assert-PRPerfResultSchema, Select-PRPerfMeasurementBinary
+function Select-PRPerfMainBaselineBuild {
+    <#
+    .SYNOPSIS
+    Chooses the main-branch build to compare a pull request against.
+
+    .DESCRIPTION
+    A pull request build is main merged with the pull request, so a main commit that is an
+    ancestor of it is code the pull request already contains. Measuring that gives a real
+    "before this change" side. A main commit that is NOT an ancestor contains work the pull
+    request has never seen, and blaming its cost on this author would be wrong, so those are
+    refused outright rather than used as an approximation.
+
+    Builds are ordered newest first internally, so the caller does not have to. Ancestry and
+    artifact checks are injected so the choice can be tested without a repository or a build
+    service.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][AllowEmptyCollection()] $Builds,
+        [Parameter(Mandatory)][scriptblock] $IsAncestor,
+        [Parameter(Mandatory)][scriptblock] $HasArtifact
+    )
+
+    foreach ($build in (@($Builds) | Sort-Object -Property @{ Expression = { [int64]$_.id } } -Descending)) {
+        $sha = [string]$build.sourceVersion
+        if ([string]::IsNullOrWhiteSpace($sha)) { continue }
+        if (-not (& $IsAncestor $sha)) { continue }
+        if (-not (& $HasArtifact ([string]$build.id))) { continue }
+        return $build
+    }
+
+    return $null
+}
+
+Export-ModuleMember -Function Get-PRPerfStatistics, Read-PRPerfResult, Compare-PRPerfResults, Compare-PRPerfFiles, New-PRPerfLocalResult, Assert-PRPerfResultSchema, Select-PRPerfMeasurementBinary, Select-PRPerfMainBaselineBuild

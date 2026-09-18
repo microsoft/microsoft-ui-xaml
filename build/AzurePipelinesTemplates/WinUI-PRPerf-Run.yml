@@ -218,8 +218,12 @@ stages:
           # of those an agent image actually carries is the open question that decides
           # whether real measurement can run here at all, so report it rather than
           # discovering it as a silent no-op mid-run.
+          #
+          # tracerpt/wpaexporter decide whether an ETW trace can be decoded on the agent,
+          # which is what a real app-launch scenario would need. Probing them now answers
+          # that for free instead of costing a separate hour-long run later.
           $ErrorActionPreference = 'Continue'
-          foreach ($tool in @('xperf.exe', 'wpr.exe', 'python.exe')) {
+          foreach ($tool in @('xperf.exe', 'wpr.exe', 'python.exe', 'tracerpt.exe', 'wpaexporter.exe', 'dotnet.exe')) {
             $found = @(Get-Command $tool -ErrorAction SilentlyContinue | Select-Object -First 1)
             Write-Host ('{0,-12} = {1}' -f $tool, $(if ($found.Count -gt 0) { $found[0].Source } else { '<not found>' }))
           }
@@ -301,7 +305,7 @@ stages:
             }
 
       - task: PowerShell@2
-        displayName: Find an earlier build of this pull request to compare against
+        displayName: Find a build to compare this pull request against
         continueOnError: true
         env:
           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -316,6 +320,8 @@ stages:
             -CurrentBuildId "$(Build.BuildId)"
             -ArtifactName "drop_amd64chk"
             -AccessToken "$(System.AccessToken)"
+            -PullRequestNumber "$(System.PullRequest.PullRequestNumber)"
+            -GitHubToken "$(GitHubPRPerfToken)"
 
       - task: DownloadPipelineArtifact@2
         displayName: Download the baseline build's binaries
@@ -581,6 +587,7 @@ stages:
           -TargetCommit "$(effectiveTargetCommit)"
           -SourceBuildId "${{ parameters.sourceBuildId }}"
           -TargetBuildId "$(effectiveTargetBuildId)"
+          -BaselineKind "$(perfBaselineKind)"
           -RequestIdentity "${{ parameters.requestIdentity }}"
 
     - task: PowerShell@2

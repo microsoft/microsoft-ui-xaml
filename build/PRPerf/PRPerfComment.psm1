@@ -49,9 +49,17 @@ function New-PRPerfMarkdown {
             $lines += "- $(ConvertTo-PRPerfMarkdownCell $issue)"
         }
     }
+    $baselineKind = ''
+    $kindProperty = $Comparison.target.PSObject.Properties['baselineKind']
+    if ($null -ne $kindProperty -and -not [string]::IsNullOrWhiteSpace([string]$kindProperty.Value)) {
+        # A main baseline attributes the delta to this pull request. A same-branch baseline
+        # only compares the pull request with its own earlier self. Saying which one was
+        # used keeps the reader from over-reading the number.
+        $baselineKind = ", $(ConvertTo-PRPerfMarkdownCell ([string]$kindProperty.Value)) baseline"
+    }
     $lines += @(
         '',
-        "Target: ``$($Comparison.target.commit)`` (build $($Comparison.target.buildId))",
+        "Target: ``$($Comparison.target.commit)`` (build $($Comparison.target.buildId)$baselineKind)",
         "PR: ``$($Comparison.trial.commit)`` (build $($Comparison.trial.buildId))",
         '',
         "[Artifacts]($ArtifactUrl) | [Pipeline run]($PipelineUrl)"

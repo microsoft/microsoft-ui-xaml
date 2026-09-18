@@ -1018,3 +1018,59 @@ function Test-LocalComparisonSurvivesAMissingBuildId {
         throw "An absent build id must not be a parameter-binding failure. Got: $err"
     }
 }
+
+function Test-MainBaselinePicksNewestAncestorWithArtifact {
+    # The PR build is a merge of the PR into main, so a main commit that is an ancestor of
+    # it is code the PR already contains. That is the honest "before" side. The newest such
+    # commit is the closest one to the branch point.
+    $builds = @(
+        [pscustomobject]@{ id = '30'; sourceVersion = ('c' * 40) }   # newest, not an ancestor
+        [pscustomobject]@{ id = '20'; sourceVersion = ('b' * 40) }   # ancestor, has artifact
+        [pscustomobject]@{ id = '10'; sourceVersion = ('a' * 40) }   # older ancestor
+    )
+    $ancestors = @(('b' * 40), ('a' * 40))
+    $chosen = Select-PRPerfMainBaselineBuild -Builds $builds `
+        -IsAncestor { param($sha) $ancestors -contains $sha } `
+        -HasArtifact { param($id) $true }
+
+    Assert-Equal '20' $chosen.id 'The newest ancestor with an artifact must be chosen.'
+}
+
+function Test-MainBaselineSkipsAnAncestorWhoseArtifactIsGone {
+    # Retention removes drops silently. Picking one we cannot download would waste the run.
+    $builds = @(
+        [pscustomobject]@{ id = '20'; sourceVersion = ('b' * 40) }
+        [pscustomobject]@{ id = '10'; sourceVersion = ('a' * 40) }
+    )
+    $chosen = Select-PRPerfMainBaselineBuild -Builds $builds `
+        -IsAncestor { param($sha) $true } `
+        -HasArtifact { param($id) $id -eq '10' }
+
+    Assert-Equal '10' $chosen.id 'A build whose artifact is gone must be skipped.'
+}
+
+function Test-MainBaselineReturnsNothingWhenNoCommitIsAnAncestor {
+    # Better to report no main baseline and fall back than to compare against main code the
+    # pull request has never seen, which would attribute someone else's change to this PR.
+    $builds = @([pscustomobject]@{ id = '20'; sourceVersion = ('b' * 40) })
+    $chosen = Select-PRPerfMainBaselineBuild -Builds $builds `
+        -IsAncestor { param($sha) $false } `
+        -HasArtifact { param($id) $true }
+
+    if ($null -ne $chosen) { throw "Expected no baseline, got build '$($chosen.id)'." }
+}
+
+function Test-MainBaselineDoesNotTrustTheOrderItIsGivenBuildsIn {
+    # The closest main commit is the most honest baseline, so the choice must not depend on
+    # how the build service happened to order its response.
+    $builds = @(
+        [pscustomobject]@{ id = '10'; sourceVersion = ('a' * 40) }
+        [pscustomobject]@{ id = '200'; sourceVersion = ('b' * 40) }
+        [pscustomobject]@{ id = '30'; sourceVersion = ('c' * 40) }
+    )
+    $chosen = Select-PRPerfMainBaselineBuild -Builds $builds `
+        -IsAncestor { param($sha) $true } `
+        -HasArtifact { param($id) $true }
+
+    Assert-Equal '200' $chosen.id 'The highest build id must win regardless of input order.'
+}

@@ -421,3 +421,19 @@ function Test-ComparatorWritesMarkdownWithExactlyOneMarker {
     }
 }
 
+
+function Test-MarkdownNamesTheKindOfBaselineItComparedAgainst {
+    # A main baseline and a same-branch baseline mean very different things. Rendering them
+    # identically would let a reader believe a number was attributed to this pull request
+    # when it was not.
+    $comparison = New-TestComparison
+    $comparison.target | Add-Member -NotePropertyName baselineKind -NotePropertyValue 'same-branch' -Force
+    $markdown = New-PRPerfMarkdown -Comparison $comparison -ArtifactUrl 'https://artifacts' -PipelineUrl 'https://pipeline'
+    if ($markdown -notlike '*same-branch*') { throw "The baseline kind is missing from the comment.`n$markdown" }
+}
+
+function Test-MarkdownLeavesTheTargetLineAloneWhenTheKindIsUnknown {
+    $comparison = New-TestComparison
+    $markdown = New-PRPerfMarkdown -Comparison $comparison -ArtifactUrl 'https://artifacts' -PipelineUrl 'https://pipeline'
+    if ($markdown -notlike "*(build $($comparison.target.buildId))*") { throw "The plain target line was damaged.`n$markdown" }
+}
