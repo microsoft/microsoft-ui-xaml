@@ -493,13 +493,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void VsmSetterIntegrationTests::VerifyVisualStateSetterDoesNotIncorrectlyClearValueDuringTransition()
         {
+            TestServices::EnableLeakDetection();
+
             xaml_controls::Control^ root = nullptr;
             xaml_controls::Border^ border = nullptr;
             int propertyChangedCount = 0;
             long long eventToken = 0;
             TestCleanupWrapper cleanup([&]()
             {
-                border->UnregisterPropertyChangedCallback(xaml_controls::Border::BackgroundProperty, eventToken);
+                RunOnUIThread([&]()
+                {
+                    border->UnregisterPropertyChangedCallback(xaml_controls::Border::BackgroundProperty, eventToken);
+                    border = nullptr;
+                    root = nullptr;
+                });
+                TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
             });
 
 
