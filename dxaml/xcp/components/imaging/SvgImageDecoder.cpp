@@ -20,15 +20,19 @@
 #include <Corep.h>
 #include <d2d1_3.h>
 #include <WicService.h>
+#include <d3d11device.h>
+#include <D3D11SharedDeviceGuard.h>
 
 using namespace DirectUI;
 
 bool SvgImageDecoder::s_testHook_ForceDeviceLostOnCreatingSvgDecoder = false;
 
 SvgImageDecoder::SvgImageDecoder(
-    ctl::ComPtr<ID2D1Factory1> d2dFactory
+    ctl::ComPtr<ID2D1Factory1> d2dFactory,
+    _In_opt_ CD3D11Device* graphicsDevice
     )
     : m_d2dFactory(std::move(d2dFactory))
+    , m_graphicsDevice(xref::get_weakref(graphicsDevice))
 {
 }
 
@@ -59,6 +63,14 @@ _Check_return_ HRESULT SvgImageDecoder::DecodeFrame(
 
     ASSERT(width > 0 && height > 0);
 
+    if (auto graphicsDevice = m_graphicsDevice.lock())
+    {
+        if (SUCCEEDED(DecodeFrameWithDevice(graphicsDevice.get(), encodedImageData, width, height, bitmapSource)))
+        {
+            return S_OK;
+        }
+    }
+
     auto spWicFactory = WicService::GetInstance().GetFactory();
     WICPixelFormatGUID pixelFormat = GUID_WICPixelFormat32bppPBGRA;
     wrl::ComPtr<IWICBitmap> wicBitmap;
@@ -83,6 +95,17 @@ _Check_return_ HRESULT SvgImageDecoder::DecodeFrame(
     wrl::ComPtr<ID2D1DeviceContext5> d2dDeviceContext5;
     IFC_RETURN(renderTarget.As(&d2dDeviceContext5));
 
+    IFC_RETURN(DrawSvg(encodedImageData, width, height, d2dDeviceContext5.Get()));
+    bitmapSource = std::move(wicBitmap);
+    return S_OK;
+}
+
+_Check_return_ HRESULT SvgImageDecoder::DrawSvg(
+    _In_ EncodedImageData& encodedImageData,
+    uint32_t width,
+    uint32_t height,
+    _In_ ID2D1DeviceContext5* d2dDeviceContext5)
+{
     wrl::ComPtr<IStream> istream;
     IFC_RETURN(encodedImageData.CreateIStream(istream));
 
@@ -248,6 +271,55 @@ _Check_return_ HRESULT SvgImageDecoder::DecodeFrame(
     d2dDeviceContext5->DrawSvgDocument(svgContainerDocument.Get());
     IFC_RETURN(d2dDeviceContext5->EndDraw());
 
-    bitmapSource = std::move(wicBitmap);
+    return S_OK;
+}
+
+_Check_return_ HRESULT SvgImageDecoder::DecodeFrameWithDevice(
+    _In_ CD3D11Device* graphicsDevice,
+    _In_ EncodedImageData& encodedImageData,
+    uint32_t width,
+    uint32_t height,
+    _Out_ wrl::ComPtr<IWICBitmapSource>& bitmapSource)
+{
+    IFC_RETURN(graphicsDevice->EnsureD2DResources());
+    wrl::ComPtr<ID2D1DeviceContext> context;
+    {
+        CD3D11SharedDeviceGuard guard;
+        IFC_RETURN(graphicsDevice->TakeLockAndCheckDeviceLost(&guard));
+        // Keep WARP on the WIC path to avoid the extra readback surfaces.
+        if (graphicsDevice->IsWarpDevice())
+        {
+            return DXGI_ERROR_UNSUPPORTED;
+        }
+        IFC_RETURN(graphicsDevice->GetD2DDevice(&guard)->CreateDeviceContext(
+            D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, &context));
+    }
+
+    // Like DrawDummyText, use a private context without holding the shared lock over drawing/readback.
+    wrl::ComPtr<ID2D1DeviceContext5> svgContext;
+    IFC_RETURN(context.As(&svgContext));
+    const auto format = D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);
+    const auto targetProperties = D2D1::BitmapProperties1(D2D1_BITMAP_OPTIONS_TARGET, format, 96.0f, 96.0f);
+    wrl::ComPtr<ID2D1Bitmap1> target;
+    IFC_RETURN(svgContext->CreateBitmap(D2D1::SizeU(width, height), nullptr, 0, &targetProperties, &target));
+    svgContext->SetTarget(target.Get());
+    IFC_RETURN(DrawSvg(encodedImageData, width, height, svgContext.Get()));
+    svgContext->SetTarget(nullptr);
+
+    const auto readbackProperties = D2D1::BitmapProperties1(
+        D2D1_BITMAP_OPTIONS_CPU_READ | D2D1_BITMAP_OPTIONS_CANNOT_DRAW, format, 96.0f, 96.0f);
+    wrl::ComPtr<ID2D1Bitmap1> readback;
+    IFC_RETURN(svgContext->CreateBitmap(D2D1::SizeU(width, height), nullptr, 0, &readbackProperties, &readback));
+    IFC_RETURN(readback->CopyFromBitmap(nullptr, target.Get(), nullptr));
+
+    D2D1_MAPPED_RECT mapped = {};
+    IFC_RETURN(readback->Map(D2D1_MAP_OPTIONS_READ, &mapped));
+    auto unmap = wil::scope_exit([&] { IGNOREHR(readback->Unmap()); });
+    uint32_t bufferSize = 0;
+    IFC_RETURN(UInt32Mult(mapped.pitch, height, &bufferSize));
+    wrl::ComPtr<IWICBitmap> bitmap;
+    IFC_RETURN(WicService::GetInstance().GetFactory()->CreateBitmapFromMemory(
+        width, height, GUID_WICPixelFormat32bppPBGRA, mapped.pitch, bufferSize, mapped.bits, &bitmap));
+    bitmapSource = std::move(bitmap);
     return S_OK;
 }

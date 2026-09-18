@@ -115,6 +115,7 @@ public:
     _Check_return_ HRESULT ReleaseScratchResources();
 
     bool ShouldAttemptToUseA8Textures() const;
+    bool IsWarpDevice() const;
 
     void ReturnToSysMemBitsPool(_In_ SystemMemoryBits *pSysMemBits);
 
