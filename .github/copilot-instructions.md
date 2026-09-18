@@ -1,6 +1,7 @@
 # Copilot Instructions for WinUI
 
-Full guidance for agents is in [`AGENTS.md`](../AGENTS.md) at the repository root. The
+Repository-wide guidance for agents is in [`AGENTS.md`](../AGENTS.md) at the repository
+root, and the build detail is in [`skills/build/SKILL.md`](skills/build/SKILL.md). The
 essentials are repeated here so this file stands on its own.
 
 ## Building
@@ -12,9 +13,6 @@ essentials are repeated here so this file stands on its own.
 This initializes the repository on first use and returns a non-zero exit code when the
 build fails. Do not trust `build.cmd`'s exit code directly: it can report `0` for a failed
 build. Allow at least 300 seconds; a first full build takes over an hour.
-
-Add `-Target mux` or `-Target product` for a smaller build, `-Flavor <flavor>` for a
-different flavor, and `-Detailed` for full output.
 
 ## Rules
 
