@@ -9,6 +9,8 @@ namespace RichTextServices
 {
     namespace Internal
     {
+        class LsTextFormatter;
+
         //---------------------------------------------------------------------------
         //
         //  LsTextLineBreak
@@ -23,7 +25,7 @@ namespace RichTextServices
 
             // Constructor.
             LsTextLineBreak(
-                _In_ Ptls6::PLSC pLineServicesContext,
+                _In_ LsTextFormatter *pTextFormatter,
                 _In_ Ptls6::PLSBREAKRECLINE pBreakRecord
                 );
 
@@ -32,6 +34,12 @@ namespace RichTextServices
 
             // Gets LineServices BreakRecord.
             Ptls6::PLSBREAKRECLINE GetLsBreakRecord() const;
+
+            // Gets the formatter that owns the LineServices context used to produce the wrapped
+            // BreakRecord. A break record is bound to the exact LS context that created it, so
+            // continuation formatting must run on this formatter. Non ref-counting accessor - the
+            // returned formatter is kept alive by this object's own reference (see m_pTextFormatter).
+            TextFormatter* GetTextFormatter() const override;
 
         protected:
 
@@ -43,8 +51,10 @@ namespace RichTextServices
             Ptls6::PLSBREAKRECLINE m_pBreakRecord;
                 // Pointer to wrapped LineServices BreakRecord.
 
-            Ptls6::PLSC m_pLineServicesContext;
-                // Line services contenxt.
+            LsTextFormatter *m_pTextFormatter;
+                // Owner of the LineServices context used to destroy the wrapped BreakRecord.
+                // Held with a reference so the context outlives this cached break record,
+                // mirroring LsTextLine's ownership of the formatter.
         };
 
         //---------------------------------------------------------------------------

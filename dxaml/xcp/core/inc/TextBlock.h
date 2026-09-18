@@ -125,9 +125,12 @@ public:
     // CUIElement override to update the gripper positions
     _Check_return_ HRESULT ArrangeCore(XRECTF finalRect) override;
 
-    // Get TextFormatter instance.
+    // Get TextFormatter instance. When pPreferredTextFormatter is supplied and still available in
+    // the cache, it is picked in preference to an arbitrary cached formatter so continuation
+    // formatting runs on the formatter that produced the previous line break.
     _Check_return_ HRESULT GetTextFormatter(
-        _Outptr_ RichTextServices::TextFormatter** ppTextFormatter
+        _Outptr_ RichTextServices::TextFormatter** ppTextFormatter,
+        _In_opt_ RichTextServices::TextFormatter* pPreferredTextFormatter = nullptr
         );
     // Release TextFormatter instance.
     void ReleaseTextFormatter(

@@ -807,10 +807,11 @@ _Check_return_ HRESULT CTextBlock::GetActualHeight(_Out_ float* pHeight)
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CTextBlock::GetTextFormatter(
-    _Outptr_ TextFormatter **ppTextFormatter
+    _Outptr_ TextFormatter **ppTextFormatter,
+    _In_opt_ TextFormatter *pPreferredTextFormatter
     )
 {
-    IFC_RETURN(CTextFormatterFactory::GetTextFormatter(GetContext(), ppTextFormatter));
+    IFC_RETURN(CTextFormatterFactory::GetTextFormatter(GetContext(), ppTextFormatter, pPreferredTextFormatter));
 
     return S_OK;
 }
