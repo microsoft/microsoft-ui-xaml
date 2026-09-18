@@ -77,6 +77,17 @@
                     <Setter Target="RootGrid.Background" Value="Transparent" />
                   </VisualState.Setters>
                 </VisualState>
+                <VisualState x:Name="CheckedDisabled">
+                  <VisualState.Setters>
+                    <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundCheckedDisabled}" />
+                    <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundCheckedDisabled}" />
+                    <Setter Target="PrimaryButtonBorder.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushCheckedDisabled}" />
+                    <Setter Target="SecondaryButtonBorder.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushCheckedDisabled}" />
+                    <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundCheckedDisabled}" />
+                    <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundCheckedDisabled}" />
+                    <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource SplitButtonBorderBrushCheckedDivider}" />
+                  </VisualState.Setters>
+                </VisualState>
                 <VisualState x:Name="FlyoutOpen">
                   <VisualState.Setters>
                     <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundPressed}" />

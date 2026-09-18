@@ -47,7 +47,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
 
     public class GamepadHelper
     {
-        public static void PressButton(UIObject obj, GamepadButton button)
+        public static void PressButton(UIObject obj, GamepadButton button, Action whilePressed = null)
         {
             var keyInputReceivedUIObject = FindElement.ById("__KeyInputReceived");
 
@@ -67,22 +67,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             array[0].virtualKeyCode = (ushort)button;
             NativeMethods.InjectKeyboardInput(array, 1);
 
-
-            // Wait until app reports it received the input
-            if(keyInputReceivedUIObject == null)
+            try
             {
-                // Fallback if we don't find out helper
-                Wait.ForMilliseconds(50);
-            }
-            else
-            {
-                var keyInputReceivedCheckbox = new CheckBox(keyInputReceivedUIObject);
-                keyInputReceivedCheckbox.GetToggledWaiter().TryWait(TimeSpan.FromMilliseconds(50));
-            }
+                // Wait until app reports it received the input
+                if(keyInputReceivedUIObject == null)
+                {
+                    // Fallback if we don't find out helper
+                    Wait.ForMilliseconds(50);
+                }
+                else
+                {
+                    var keyInputReceivedCheckbox = new CheckBox(keyInputReceivedUIObject);
+                    keyInputReceivedCheckbox.GetToggledWaiter().TryWait(TimeSpan.FromMilliseconds(50));
+                }
 
-            Wait.ForIdle();
-            array[0].flags = KEY_EVENT_FLAGS.KEYUP;
-            NativeMethods.InjectKeyboardInput(array, 1);
+                Wait.ForIdle();
+                whilePressed?.Invoke();
+            }
+            finally
+            {
+                array[0].flags = KEY_EVENT_FLAGS.KEYUP;
+                NativeMethods.InjectKeyboardInput(array, 1);
+            }
         }
 
         #region Keyboard Structures
