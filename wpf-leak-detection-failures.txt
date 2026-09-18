@@ -1,4 +1,3 @@
-Microsoft::UI::Xaml::Tests::Automation::AutomationPeer::AutomationPeerIntegrationTests::VerifyContainerWithAutomationNameHasAP
 Microsoft::UI::Xaml::Tests::Automation::AutomationPeer::AutomationPeerIntegrationTests::VerifyContainerWithLabeledByHasAP
 Microsoft::UI::Xaml::Tests::Controls::AppBar::AppBarAutomationIntegrationTests::VerifyAutomationProperties
 Microsoft::UI::Xaml::Tests::Controls::AppBar::AppBarAutomationIntegrationTests::VerifyAutomationWindowPattern

@@ -345,6 +345,9 @@ void AutomationPeerIntegrationTests::VerifyScrollItemPattern()
 
 void AutomationPeerIntegrationTests::VerifyContainerWithAutomationNameHasAP()
 {
+    TestServices::EnableLeakDetection();
+    TestCleanupWrapper cleanup;
+
     VerifyContainerWithAutomationNameHasAPMarkup();
     LOG_OUTPUT(L"\r\n");
     VerifyContainerWithAutomationNameHasAPCodebehind();
