@@ -347,7 +347,7 @@ if ($ExclusionPathspecsFileFullPath) {
     (Get-Content $ExclusionPathspecsFileFullPath | Where { $_ -notmatch "^#" -and -not [string]::IsNullOrWhiteSpace($_) }) -Join "`r`n" | Set-Content -NoNewline -Path $TempDirectory\processedExclusionPathspecsFile.txt
 
     Push-Location $SourceRepositoryDirectory
-    Run-LoggedCommand("git rm -rf --pathspec-from-file='$TempDirectory\processedExclusionPathspecsFile.txt'")
+    Run-LoggedCommand("git rm -rf --ignore-unmatch --pathspec-from-file='$TempDirectory\processedExclusionPathspecsFile.txt'")
     Pop-Location
 }
 
