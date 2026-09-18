@@ -1,5 +1,28 @@
-# Byproducts of running the suite; nothing here is an input.
-*.json
-!fixtures/
+# Byproducts of running the suite. The fixtures the tests and the pipeline read
+# live in build\PRPerf\fixtures, not here, so nothing in this list is an input.
+converted*.json
+numeric-run.json
+mixed-files.json
+run-disagreement.json
+unknown-column.json
+missing-column.json
+duplicate-run.json
+missing-run.json
+ambiguous-interval.json
+real-multi.json
+multi-shift.json
+multi-arch.json
+blank-pattern.json
+*-value.json
+publisher-*.json
+github-comparison-*.json
+dispatch-*.json
+measure-*.json
+invalid-*.json
 artifacts-*/
-
+comparison-output-*/
+provenance-*/
+fallback-*/
+fixtures-duplicate-*/
+bin-*/
+local-*/
