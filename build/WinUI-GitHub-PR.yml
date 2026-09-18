@@ -35,11 +35,17 @@ parameters:
   displayName: "Run Static Analysis (e.g., PREFast, APIScan)"
   type: boolean
   default: false
+- name: useBuildOutputFromBuildId
+  displayName: "Reuse output from build ID (manual runs only)"
+  type: string
+  default: ''
 
 variables:
 - template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
 - template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
 - group: WinUI-Variable-Library
+- name: useBuildOutputFromBuildId
+  value: ${{ parameters.useBuildOutputFromBuildId }}
 - name: WindowsContainerImage
   value: 'onebranch.azurecr.io/windows/ltsc2022/vse2022:latest'
 
@@ -168,6 +174,13 @@ extends:
       - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
         parameters:
           pipelineKind: PR
+
+    # Composition switcher tests on a ge_current agent under /p:SwitcherMode=true. The stage template lives
+    # in THIS repo (self, not @WinUIInternal) because it is part of the switcher work. It unlocks the
+    # CompositionEngine LAF via the CompositionSwitcherLafToken variable (ADO Library group WinUI-InternalFeed,
+    # referenced by name only — the value never appears in this public yaml).
+    - ${{ if eq(parameters.runFullValidation, true) }}:
+      - template: AzurePipelinesTemplates\WinUI-RunSwitcherTests-Stage.yml
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml
