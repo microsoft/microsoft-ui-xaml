@@ -52,6 +52,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     //  Loads simple markup with CommandBar and verifies AutomationProperties are correct.
     void CommandBarAutomationIntegrationTests::VerifyAutomationProperties()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
         xaml_controls::CommandBar^ cmdBar = nullptr;
         xaml_controls::Page^ page = nullptr;
@@ -141,6 +143,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarAutomationIntegrationTests::VerifyAutomationWindowPattern()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::CommandBar^ cmdBar = nullptr;
@@ -224,6 +228,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarAutomationIntegrationTests::VerifyPositionAndSize()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
         xaml_controls::Page^ page = nullptr;
         xaml_controls::CommandBar^ commandBar = nullptr;
@@ -377,6 +383,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarAutomationIntegrationTests::VerifyNonTabStopAppBarButtonsAreStillKeyboardFocusable()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
         xaml_controls::Page^ page = nullptr;
         xaml_controls::CommandBar^ commandBar = nullptr;

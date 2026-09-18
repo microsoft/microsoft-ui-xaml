@@ -230,6 +230,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::PrepareDragTests()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             // During the first drag and drop operation, DataExchangeHost.exe steals focus from the test window.
             // Moreover, on drop, another window might get focus for a brief lapse of time.
             // We suspect this could be a source of instability in dnd tests. Let's run this prep test in its own
@@ -244,6 +246,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
         //------------------------------------------------------------------------
         void BasicDragDropTests::CanDragUsingCoreDragOperation()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             auto rectLoadedEvent = std::make_shared<Event>();
@@ -579,6 +583,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::ValidateDragOperationDeferral()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             EnsureDataExchangeHostStarted();
@@ -786,6 +792,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanDefaultMouseDrag()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             EnsureDataExchangeHostStarted();
@@ -1437,16 +1445,22 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanSetCustomDragVisualWithBitmapUriSource()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             SetCustomDragVisualWithBitmapUriSourceHelper();
         }
 
         void BasicDragDropTests::CanSetCustomDragVisualWithBitmapUriSourceSmallerSize()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             SetCustomDragVisualWithBitmapUriSourceHelper(true /*smaller decoding size*/);
         }
 
         void BasicDragDropTests::CanSetCustomDragVisualWithBitmapSetSource()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             EnsureDataExchangeHostStarted();
@@ -1642,6 +1656,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanSetPreparedCustomDragVisualWithBitmapUriSource()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             EnsureDataExchangeHostStarted();
@@ -1813,6 +1829,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
         // BEFORE the DragVisual is really used in Drag and Drop
         void BasicDragDropTests::CanSetPreparedCustomDragVisualWithBitmapSetSource()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             EnsureDataExchangeHostStarted();
@@ -2008,6 +2026,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanSetAllDragVisualSettings()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             auto rectLoadedEvent = std::make_shared<Event>();
@@ -2186,6 +2206,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanUseSoftwareBitmapAndDeferral()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             auto rectLoadedEvent = std::make_shared<Event>();
@@ -2397,6 +2419,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanTakeDeferralOnDragStarting()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             auto rectLoadedEvent = std::make_shared<Event>();
@@ -2613,6 +2637,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::ProvidesDragUIOverrideOnLeave()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             auto rectLoadedEvent = std::make_shared<Event>();
@@ -2691,6 +2717,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::DoNotRaiseMultipleDragEnterOnTreeChange()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             auto rectLoadedEvent = std::make_shared<Event>();
@@ -2808,11 +2836,15 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanDoTouchListReordering()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             PerformTouchListReordering(false /* useLegacyPanel */);
         }
 
         void BasicDragDropTests::CanCancelDragProgrammatically()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             auto rectLoadedEvent = std::make_shared<Event>();
@@ -2891,6 +2923,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::ClearUIOverridesWhenSwitchingTarget()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             auto rectLoadedEvent = std::make_shared<Event>();
@@ -3110,10 +3144,10 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::DeferralOnEnterShouldNotBreakLeave()
         {
-            TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
-
             // Leak: BasicDragDropTests::DeferralOnEnterShouldNotBreakLeave leaks Border (440 bytes)
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
+            TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             auto rectLoadedEvent = std::make_shared<Event>();
             auto rectDropCompletedEvent = std::make_shared<Event>();
@@ -3278,6 +3312,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::ValidateThatLightDismissPopupDoesNotDismissWhenStartingDragDrop()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             ListView^ listView;
@@ -3354,6 +3390,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanSetCanDragOnListViewItem()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             ListView^ listView = nullptr;
@@ -3592,6 +3630,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanReorderAndDropOnItems()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             ::Windows::Foundation::Point listviewCenter;
@@ -3736,6 +3776,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanCollapseDraggedElement()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             auto rectLoadedEvent = std::make_shared<Event>();
@@ -3897,6 +3939,8 @@ L"<ResourceDictionary xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::CanReorderWithLegacyPanel()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             PerformTouchListReordering(true /* useLegacyPanel */);
         }
 
@@ -4036,6 +4080,8 @@ L"<ItemsPanelTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
         void BasicDragDropTests::AllowedOperationsPassThrough()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]() { BasicDragDropTests::DndTestCleanup(); });
 
             ListView ^root = nullptr;
@@ -4145,6 +4191,8 @@ L"<ItemsPanelTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
         
         void BasicDragDropTests::CanDragToFromWindowedPopups()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup([]()
                 {
                     BasicDragDropTests::DndTestCleanup();
@@ -4826,4 +4874,3 @@ L"<ItemsPanelTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presen
 
     } } }
 } } } }
-

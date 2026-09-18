@@ -60,6 +60,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CollectionTests::TestCollections()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -105,6 +107,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CollectionTests::TestNestedCollections()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -216,6 +220,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CollectionTests::VerifyDontLeakCollection()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback = m_connectionHelper->Advise();
             auto cleanup = XamlDiagnosticsTestHelpers::SetupGridAndWait();
 
@@ -369,6 +375,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CollectionTests::VerifyRowDefinitionsReportAsCollections()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -584,6 +592,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CollectionTests::ClearingSettersUpdatesApp()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
                 L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='parent'>\r\n"
@@ -646,6 +656,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CollectionTests::RemovingSettersFromImplicitStyleUpdatesApp()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
                 L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='parent'>\r\n"

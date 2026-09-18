@@ -60,6 +60,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::CanEnterAndLeaveLiveTree()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::CommandBar^ cmdBar = nullptr;
@@ -97,6 +99,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::CanReapplyTemplate()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::CommandBar^ cmdBar = nullptr;
@@ -620,6 +624,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::CanResizeCommandBarAfterOpeningAndClosing()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::Page^ page = nullptr;
@@ -680,6 +686,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::CanUseLargeAppBarButton()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
         TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
 
@@ -1122,6 +1130,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateArrowKeys()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::CommandBar^ cmdBar = nullptr;
@@ -1536,6 +1546,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateFirstElementIsNotFocusedWhenClosingCommandBar()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::TextBox^ textBox = nullptr;
@@ -1680,6 +1692,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::CanReopenInClosedHandler()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::CommandBar^ cmdBar = nullptr;
@@ -1922,6 +1936,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::DoesCycleFocusWhenOpen()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         auto expectedFocusSequence = L"[S1][P1][P2][P3][M][P3][P2][P1][S1][M]";
         DoesCycleFocusWhenOpenWorker(Location::Inline, 5, expectedFocusSequence);
         DoesCycleFocusWhenOpenWorker(Location::Top, 5, expectedFocusSequence);
@@ -2040,6 +2056,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::CanTabIntoOverflowMenuWhenTopOrBottom()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::Page^ page = nullptr;
@@ -2625,6 +2643,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateDefaultLayoutPositionPropagates()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::CommandBar^ cmdBar = nullptr;
@@ -2860,6 +2880,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     // Validate the dynamic overflow behavior with on and off IsDynamicOverflowEnabled property
     void CommandBarIntegrationTests::ValidateDynamicOverflowOnOff()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         const unsigned int numButtonsToAddExtraToPrimary = 5;
@@ -2899,6 +2921,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateDynamicOverflowByChangingWindowsSizeOverride()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         unsigned int numButtonsToAddExtraToPrimary = 0;
@@ -2917,6 +2941,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateDynamicOverflowAddRemovePrimaryItems()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         const unsigned int numButtonsToAddExtraToPrimary = 5;
@@ -2972,6 +2998,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateDynamicOverflowAppBarSeparator()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         unsigned int numButtonsToAddExtraToPrimary = 0;
@@ -3036,6 +3064,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateFireDynamicOverflowItemsChangingEvent()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         unsigned int numButtonsToAddExtraToPrimary = 2;
@@ -3082,6 +3112,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateDynamicOverflowOrderBasic()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         unsigned int numButtonsToAddExtraToPrimary = 2;
@@ -3168,6 +3200,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateDynamicOverflowWithContentControl()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         const unsigned int numButtonsToAddExtraToPrimary = 5;
@@ -4394,6 +4428,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateMoreButtonCanShowWithoutSizeChanging()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::CommandBar^ cmdBar = nullptr;

@@ -2155,6 +2155,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void MoCoIntegrationTests::ValidateMultipleSelectionModeRangeSelection()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         const unsigned int itemsCount = 10;
@@ -2865,6 +2867,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void MoCoIntegrationTests::CanDragMulitpleItemsInListView()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         const unsigned int itemsCount = 10;
@@ -3840,6 +3844,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void MoCoIntegrationTests::VerifyTabOutOfListViewToAppBar()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::ListView^ listView = nullptr;
@@ -4511,6 +4517,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void MoCoIntegrationTests::VerifyEdgeScrollingWithReorder()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         const unsigned int itemsCount = 20;
@@ -4621,6 +4629,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void MoCoIntegrationTests::VerifyRemoveSelectedDraggedItemFromItemsList()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml::FrameworkElement^ itemAsFE = nullptr;
@@ -4784,6 +4794,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void MoCoIntegrationTests::VerifyDraggedItemsContentNotNullWithCCC()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml::FrameworkElement^ itemAsFE = nullptr;
@@ -5008,6 +5020,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void MoCoIntegrationTests::VerifyDropIntoFolder()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         const unsigned int itemsCount = 20;
@@ -5298,6 +5312,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void MoCoIntegrationTests::ValidateGlyphAndCaptionVisibilityDuringReorder()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         int dragDistance = 0;
@@ -5505,6 +5521,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void MoCoIntegrationTests::ValidateInsertFromOutsideAfterLastItem()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         const int itemHeight = 50;

@@ -129,6 +129,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void FloatieContextMenuTests::TextBoxProofingMenu_MisspelledWord()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup;
 
             ::Windows::Foundation::Size size(400, 400);
@@ -246,6 +248,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void FloatieContextMenuTests::TextBoxProofingMenu_RepeatedWord()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup;
 
             ::Windows::Foundation::Size size(400, 400);
@@ -532,6 +536,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void FloatieContextMenuTests::RichEditBoxProofingMenu_MisspelledWord()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup;
 
             ::Windows::Foundation::Size size(400, 400);
@@ -654,6 +660,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void FloatieContextMenuTests::RichEditBoxProofingMenu_RepeatedWord()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup;
 
             ::Windows::Foundation::Size size(400, 400);

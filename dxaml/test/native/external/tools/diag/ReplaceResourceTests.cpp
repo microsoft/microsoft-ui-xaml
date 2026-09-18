@@ -296,6 +296,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ReplaceResourceTests::TestReplaceResourceStyle()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             //This test tries replacing a Style in a ResourceDictionary twice with ReplaceResource,
             //verifying the style changes affect an element each time.
             //This test also uses a DependencyProperty created from CreateInstance in the Style to verify

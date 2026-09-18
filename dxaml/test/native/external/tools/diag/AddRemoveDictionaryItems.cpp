@@ -61,6 +61,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::AddItemBasic()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::SetupAppAndMergedDictionaries, callback);
 
@@ -100,6 +102,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::RemoveItemBasic()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::SetupAppAndMergedDictionaries, callback);
 
@@ -142,6 +146,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::CanResolveNewlyAddedItem()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             // We want to make sure that the resolved color matches the current application theme
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::SetupAppAndMergedDictionaries, callback);
@@ -167,6 +173,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::CannotResolveRemovedItem()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::SetupAppAndMergedDictionaries, callback);
             auto button = callback->GetElementByName(L"buttonNoResource");
@@ -194,11 +202,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::CanAddStyle()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestAddStyle(false);
         }
 
         void AddRemoveDictionaryItemTests::CanAddImplicitStyle()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestAddStyle(true);
         }
 
@@ -261,6 +273,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::CanRemoveImplicitStyle()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::resourcesInDictionaryString, callback);
 
@@ -282,6 +296,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::CanAddPropertyValueReferences()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::SetupAppAndMergedDictionaries, callback);
 
@@ -327,6 +343,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::CanAddToStandaloneDictionary()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/MainPage.xaml");
             auto cleanup = m_connectionHelper->Advise(componentLocation, callback);
@@ -350,11 +368,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::ErrorOnAddingWrongTypeToSiblingDictionary()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestAddToSiblingMergedDictionary(L"Windows.Foundation.Double", L"20.2", true);
         }
 
         void AddRemoveDictionaryItemTests::UpdatesOnAddToSiblingDictionary()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestAddToSiblingMergedDictionary(L"Microsoft.UI.Xaml.Media.Brush", L"Green", false);
         }
 
@@ -421,6 +443,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::UpdatesOnRemovingFromSiblingDictionary()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             // The ellipse references resource 'a' which is a solid color brush. When we remove brush 'a' from the dictionary, the resolution logic should now find
             // the brush in the theme dictionary collection
             auto content = ref new Platform::String(
@@ -449,6 +473,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::ErrorOnRemovingFromSiblingDictionary()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             // The ellipse references resource 'a' which is a solid color brush. When we remove brush 'a' from the dictionary, the resolution logic will now find the x:Double
             // in the sibling resource dictionary and this should fail since our resource resolution logic searches through merged dictionaries first before looking in themed
             auto content = ref new Platform::String(
@@ -507,6 +533,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::ReresolveResourceFromElementStyleProperty()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
                 L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>\r\n"
@@ -546,6 +574,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::TestImplicitStyleSetterDependency()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
                 L"<Grid x:Name='grandparent' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>\r\n"
@@ -600,6 +630,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::TestImplicitStyleSetterDependencyAppResources()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
                 L"<Grid x:Name='grandparent' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>\r\n"
@@ -649,6 +681,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::AddRemoveImplicitStyleSetters()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
                 L"<Grid x:Name='grandparent' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>\r\n"
@@ -707,6 +741,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::CanAddNonDOToDictionary()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
                 L"<Grid x:Name='root' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>\r\n"
@@ -724,6 +760,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::CanAddRemoveNullValues()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
                 L"<Grid x:Name='root' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>\r\n"
@@ -743,6 +781,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::VerifyAddRemoveProperlyUpdates()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto executeTest = [&](wrl::ComPtr<VisualTreeServiceCallback> callback) {
                 LOG_OUTPUT(L"Validating the outside template case");
                 {
@@ -846,6 +886,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::ValidateCanReuseKeys()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             // Visual Studio reuses keys. Make sure that we keep keys around
             auto content = ref new Platform::String(
                 L"<Grid x:Name='root' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
@@ -875,6 +917,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::ValidateCanRenameItems()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
              auto content = ref new Platform::String(
                 L"<Grid x:Name='root' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>\r\n"
@@ -898,6 +942,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void AddRemoveDictionaryItemTests::VerifyRemoveThicknessResourceUsedByStyleSetter()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
                 L"<StackPanel x:Name='root' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>\r\n"

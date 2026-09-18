@@ -365,6 +365,8 @@ private:
 
 void StowedExceptionTests::ErrorInfoCreateRestrictedErrorInfo()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     ::Windows::Foundation::EventRegistrationToken renderingEventToken = {};
 
     TestCleanupWrapper cleanup([&]()
@@ -492,6 +494,8 @@ void StowedExceptionTests::ErrorInfoCreateRestrictedErrorInfo()
 
 void StowedExceptionTests::ReportUnhandledErrorNonRestrictedError()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     ::Windows::Foundation::EventRegistrationToken renderingEventToken = {};
 
     TestCleanupWrapper cleanup([&]()

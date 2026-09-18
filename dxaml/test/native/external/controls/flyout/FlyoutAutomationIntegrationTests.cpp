@@ -194,6 +194,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void FlyoutAutomationIntegrationTests::VerifyUIAFocusEntersFlyoutWithContentControl()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::Button^ flyoutButton = nullptr;

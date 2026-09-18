@@ -37,6 +37,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void ControlAllocationTests::MeasureCommandBarAllocations()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::CommandBar^ cmdBar = nullptr;

@@ -287,6 +287,7 @@ namespace Private { namespace Infrastructure {
         static void IsInputPaneOpenStatic(_Out_ BOOLEAN* pIsInputPaneOpen);
         static void TryInputPaneHideStatic();
 
+        void EnableLeakDetection(bool expectLeaks);
         static bool IsLeakDetectionEnabled();
 
         static wrl::ComPtr<IXamlTestHooks> GetTestHooks();
@@ -353,6 +354,7 @@ namespace Private { namespace Infrastructure {
         static bool s_isShutdownEnabled;
 
         bool m_ensureSatelliteDLLCustomDPCleanup = false;
+        bool m_expectLeaks = false;
 
         // Delegate function the test can set to call it back after every UI thread tick
         wrl::ComPtr<test_infra::IPostTickCallback> m_spPostTickCallback;

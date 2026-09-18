@@ -55,6 +55,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanEnterAndLeaveLiveTree()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::AppBar^ appBar = nullptr;
@@ -125,6 +127,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanOpenAndCloseUsingAPI()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::AppBar^ appBar = nullptr;
@@ -262,6 +266,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanCloseNonStickyAppBarUsingEscapeKey()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::Button^ stickyTopExpandButton = nullptr;
@@ -393,11 +399,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanOpenAndCloseUsingMouse()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         CanOpenAndCloseUsingRightTappedEvent(false /* usePen */);
     }
 
     void AppBarIntegrationTests::CanOpenAndCloseUsingPen()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         CanOpenAndCloseUsingRightTappedEvent(true /* usePen */);
     }
 
@@ -471,6 +481,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanOpenMinimalAppBarUsingMouse()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         auto page = SetupTopBottomInlineAppBarsPage();
@@ -525,6 +537,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanOpenAndCloseUsingExpandButton()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::Page^ page = SetupClosedDisplayModeTestEnvironment(true /* setClosedDisplayModeValues */);
@@ -567,6 +581,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanTabThroughChildItems()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::AppBar^ appBar = nullptr;
@@ -667,6 +683,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanClickAButtonInAnAppBar()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::AppBar^ appBar = nullptr;
@@ -729,6 +747,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanGetAndSetClosedDisplayMode()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::Page^ page = nullptr;
@@ -747,6 +767,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanClosedDisplayModesControlLayout()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         auto validationRules = ref new Platform::String(DefaultUIElementTreeValidationRules);
@@ -802,6 +824,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanHideAppBarWithHiddenClosedDisplayMode()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         auto page = SetupClosedDisplayModeTestEnvironment(true /* setClosedDisplayModeValues */);
@@ -874,6 +898,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::ValidateFocusShiftWhenClosedAppBarIsAdded()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         auto page = SetupFocusShiftTestPage();
@@ -905,6 +931,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::ValidateFocusShiftWhenOpenedAppBarIsAdded()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         auto page = SetupFocusShiftTestPage();
@@ -938,6 +966,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::ValidateFocusShiftWhenClosedUnfocusedAppBarIsOpenedAndClosed()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         auto page = SetupFocusShiftTestPage();
@@ -987,6 +1017,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::ValidateFocusShiftWhenClosedFocusedAppBarIsOpenedAndClosed()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         auto page = SetupFocusShiftTestPage();
@@ -1034,6 +1066,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanResizeAppBarAfterOpeningAndClosing()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         auto page = SetupClosedDisplayModeTestEnvironment(true /* setClosedDisplayModeValues */);
@@ -1180,6 +1214,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanClosedDisplayModesAffectTabbingWhenClosed()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
         xaml_controls::Page^ rootPage = nullptr;
         xaml_controls::Button^ button = nullptr;
@@ -1248,6 +1284,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanClosedDisplayModesAffectTabbingWhenOpen()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
         xaml_controls::Page^ rootPage = nullptr;
         xaml_controls::Button^ button = nullptr;
@@ -1325,6 +1363,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::ValidateWinBlueTabbingIsPreserved()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
         xaml_controls::Page^ rootPage = nullptr;
         xaml_controls::Button^ button = nullptr;
@@ -1394,11 +1434,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::CanCloseAppBarUsingGamepadB()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         CanCloseAppBarUsingDevice(InputDevice::Gamepad);
     }
 
     void AppBarIntegrationTests::CanCloseAppBarUsingEsc()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         CanCloseAppBarUsingDevice(InputDevice::Keyboard);
     }
 
@@ -1635,6 +1679,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::ValidateExpandButtonVisualInDisabledState()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::AppBar^ appBar = nullptr;
@@ -1838,6 +1884,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::ValidateLightDismissOverlayModeForTopBottomAppBars()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::Page^ page = nullptr;
@@ -2108,6 +2156,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarIntegrationTests::ValidateOverlayBrushForTopBottomAppBars()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::Page^ page = nullptr;

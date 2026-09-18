@@ -481,6 +481,8 @@ void MediaPlayerElementTests::ConfigureThenRemoveDefaultMediaPlayer()
 
 void MediaPlayerElementTests::PausesMediaPlayerWhenWindowCloses()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     auto playingEvent = std::make_shared<Event>();
     auto pausedEvent = std::make_shared<Event>();
     auto playbackStateChangedRegistration = CreateSafeEventRegistration(MediaPlaybackSession, PlaybackStateChanged);

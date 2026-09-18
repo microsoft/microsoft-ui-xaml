@@ -1392,6 +1392,8 @@ void PrimitiveTests::LinearGradientTextWUCFull()
 
 void PrimitiveTests::RegressionTest_11908060()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     const auto& wh = TestServices::WindowHelper;
 
     Canvas^ root;

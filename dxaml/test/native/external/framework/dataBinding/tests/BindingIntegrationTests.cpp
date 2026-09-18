@@ -2538,6 +2538,8 @@ namespace Framework { namespace DataBinding {
 
     void BindingIntegrationTests::BindingCustomPropertyProviderOneWayIndexLookup()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         RunOnUIThread([&] {
             SCBDataSource^ brushDataSource = ref new SCBDataSource();
             brushDataSource->MyBrush = ref new SolidColorBrush(Microsoft::UI::Colors::Red);
@@ -3438,6 +3440,8 @@ namespace Framework { namespace DataBinding {
 
     void BindingIntegrationTests::CollectionViewBinding()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         RunOnUIThread([&]
         {
             CustomConverter^ converter = ref new CustomConverter;

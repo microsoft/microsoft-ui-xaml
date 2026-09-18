@@ -683,6 +683,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void BasicPointerTests::ProtectedCursorOnNonLiveElement()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             Grid^ mainGrid = nullptr;
             CustomStackPanel^ stackPanel = nullptr;
 

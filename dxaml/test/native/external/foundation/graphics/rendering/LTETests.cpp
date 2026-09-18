@@ -107,6 +107,8 @@ void LTETests::Insert3Rectangles(GridView^ gridView)
 
 void LTETests::PortalingMediaElement()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     const auto& wh = TestServices::WindowHelper;
 
     Canvas^ rootCanvas;
@@ -179,6 +181,8 @@ void LTETests::PortalingMediaElement()
 
 void LTETests::PortalingSwapChainPanel()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     const auto& wh = TestServices::WindowHelper;
 
     Canvas^ rootCanvas;

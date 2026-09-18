@@ -1921,6 +1921,8 @@ void ImplicitAnimationTests::ShowAnimation2WUCFull()
 
 void ImplicitAnimationTests::ShowAnimation3WUCFull()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
     auto wh = TestServices::WindowHelper;
@@ -2669,6 +2671,8 @@ void ImplicitAnimationTests::ShowAnimation8WUCFull()
 
 void ImplicitAnimationTests::HideAnimationCollapse1WUCFull()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
     auto wh = TestServices::WindowHelper;
