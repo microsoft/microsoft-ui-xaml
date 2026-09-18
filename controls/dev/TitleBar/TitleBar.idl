@@ -75,6 +75,11 @@ unsealed runtimeclass TitleBarTemplateSettings : Microsoft.UI.Xaml.DependencyObj
     static Microsoft.UI.Xaml.DependencyProperty IconElementProperty{ get; };
 }
 
+}
+
+namespace MU_XAP_NAMESPACE
+{
+
 [MUX_PUBLIC_V8]
 [webhosthidden]
 unsealed runtimeclass TitleBarAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
