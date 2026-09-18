@@ -12,6 +12,7 @@
 #include "CornerRadius.h"
 #include "StaticStore.h"
 #include "Value.h"
+#include "DXamlTypes.h"
 
 class CThemeResourceExtension;
 class CCoreServices;
@@ -129,15 +130,6 @@ using namespace DirectUI;
 
 // Reference
 
-#define REFERENCE_ELEMENT_NAME_IMPL(TYPE, NAME) \
-    template<> _Check_return_ HRESULT DirectUI::ReferenceBase<TYPE>::GetRuntimeClassNameImpl(_Out_ HSTRING* pClassName)\
-    {\
-        HRESULT hr = S_OK;\
-        IFC(wrl_wrappers::HStringReference(L"Windows.Foundation.IReference`1<" NAME L">", SZ_COUNT(NAME) + 33).CopyTo(pClassName));\
-    Cleanup:\
-        RRETURN(hr);\
-    }\
-
 REFERENCE_ELEMENT_NAME_IMPL(xaml::CornerRadius, L"Microsoft.UI.Xaml.CornerRadius");
 REFERENCE_ELEMENT_NAME_IMPL(xaml::Duration, L"Microsoft.UI.Xaml.Duration");
 REFERENCE_ELEMENT_NAME_IMPL(wut::FontWeight, L"Windows.UI.Text.FontWeight");
@@ -151,6 +143,7 @@ REFERENCE_ELEMENT_NAME_IMPL(xaml_media::Media3D::Matrix3D, L"Microsoft.UI.Xaml.M
 REFERENCE_ELEMENT_NAME_IMPL(wxaml_interop::TypeName, L"Microsoft.UI.Xaml.Interop.TypeName");
 REFERENCE_ELEMENT_NAME_IMPL(wf::DateTime, L"Windows.Foundation.DateTime");
 REFERENCE_ELEMENT_NAME_IMPL(xaml_docs::TextRange, L"Microsoft.UI.Xaml.Documents.TextRange");
+REFERENCE_ELEMENT_NAME_IMPL(xaml::Visibility, L"Microsoft.UI.Xaml.Visibility");
 
 void DirectUI::ReferenceDetails::ReferenceTraits<wxaml_interop::TypeName>::Destroy(wxaml_interop::TypeName& member)
 {

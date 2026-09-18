@@ -58,7 +58,7 @@ typedef std::wstring string;
     template<> _Check_return_ HRESULT DirectUI::ReferenceBase<TYPE>::GetRuntimeClassNameImpl(_Out_ HSTRING* pClassName)\
     {\
         HRESULT hr = S_OK;\
-        IFC(wrl_wrappers::HStringReference(L"Windows.Foundation.IReference`1<" NAME L">", SZ_COUNT(NAME) + 33).CopyTo(pClassName));\
+        IFC(WindowsCreateString(STR_LEN_PAIR(L"Windows.Foundation.IReference`1<" NAME L">"), pClassName));\
     Cleanup:\
         RRETURN(hr);\
     }\

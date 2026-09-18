@@ -27,6 +27,10 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD(Validate_CValueBoxer_ConvertToFramework)
 
             TEST_METHOD(Validate_IValueBoxer_BoxUnboxSimple)
+            TEST_METHOD(Validate_IValueBoxer_UnboxReferenceValues)
+            TEST_METHOD(Validate_IValueBoxer_UnboxReferenceNullArguments)
+            TEST_METHOD(Validate_IValueBoxer_UnboxReferenceFailures)
+            TEST_METHOD(Validate_ReferenceRuntimeClassNames)
         };
     }
 } } } }

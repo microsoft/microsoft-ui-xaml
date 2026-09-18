@@ -118,7 +118,7 @@ namespace DirectUI
 
             ctl::ComPtr<wf::IReference<T>> spObjAsRef;
 
-            IFC_RETURN(ctl::do_query_interface(spObjAsRef, box));
+            IFC_RETURN(box->QueryInterface(IID_PPV_ARGS(spObjAsRef.ReleaseAndGetAddressOf())));
             IFC_RETURN(spObjAsRef->get_Value(value));
 
             return S_OK;

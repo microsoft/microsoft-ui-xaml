@@ -17,6 +17,27 @@ using namespace DirectUI;
 
 namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace ValueBoxer {
 
+    template<typename T>
+    class TestReference final : public wrl::RuntimeClass<wf::IReference<T>>
+    {
+        InspectableClass(L"ValueBoxerTests.TestReference", BaseTrust);
+
+    public:
+        T value{};
+        HRESULT getValueResult = S_OK;
+        UINT getValueCalls = 0;
+
+        IFACEMETHODIMP get_Value(_Out_ T* result) override
+        {
+            ++getValueCalls;
+            if (SUCCEEDED(getValueResult))
+            {
+                *result = value;
+            }
+            return getValueResult;
+        }
+    };
+
     bool BasicValueBoxerUnitTests::ClassSetup()
     {
         THROW_IF_FAILED(DirectUI::StaticLockGlobalInit());
@@ -599,5 +620,130 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
 
             VERIFY_IS_TRUE(value == unboxedValue);
         }
+    }
+
+    void BasicValueBoxerUnitTests::Validate_IValueBoxer_UnboxReferenceValues()
+    {
+        auto scalar = wrl::Make<TestReference<INT>>();
+        scalar->value = -55;
+        INT scalarValue = 0;
+        THROW_IF_FAILED(IValueBoxer::UnboxValue<INT>(scalar.Get(), &scalarValue));
+        VERIFY_ARE_EQUAL(scalar->value, scalarValue);
+        VERIFY_ARE_EQUAL(1u, scalar->getValueCalls);
+        scalar->AddRef();
+        VERIFY_ARE_EQUAL(1ul, scalar->Release());
+
+        auto point = wrl::Make<TestReference<wf::Point>>();
+        point->value = { 12.5f, -3.0f };
+        wf::Point pointValue{};
+        THROW_IF_FAILED(IValueBoxer::UnboxValue(point.Get(), &pointValue));
+        VERIFY_ARE_EQUAL(point->value.X, pointValue.X);
+        VERIFY_ARE_EQUAL(point->value.Y, pointValue.Y);
+        VERIFY_ARE_EQUAL(1u, point->getValueCalls);
+        point->AddRef();
+        VERIFY_ARE_EQUAL(1ul, point->Release());
+
+        auto size = wrl::Make<TestReference<wf::Size>>();
+        size->value = { 42.0f, 24.0f };
+        wf::Size sizeValue{};
+        THROW_IF_FAILED(IValueBoxer::UnboxValue(size.Get(), &sizeValue));
+        VERIFY_ARE_EQUAL(size->value.Width, sizeValue.Width);
+        VERIFY_ARE_EQUAL(size->value.Height, sizeValue.Height);
+        VERIFY_ARE_EQUAL(1u, size->getValueCalls);
+        size->AddRef();
+        VERIFY_ARE_EQUAL(1ul, size->Release());
+    }
+
+    void BasicValueBoxerUnitTests::Validate_IValueBoxer_UnboxReferenceNullArguments()
+    {
+        INT value = 123;
+        VERIFY_ARE_EQUAL(E_POINTER, IValueBoxer::UnboxValue<INT>(nullptr, &value));
+        VERIFY_ARE_EQUAL(123, value);
+        VERIFY_ARE_EQUAL(E_POINTER, IValueBoxer::UnboxValue<INT>(nullptr, nullptr));
+
+        auto reference = wrl::Make<TestReference<INT>>();
+        VERIFY_ARE_EQUAL(E_POINTER, IValueBoxer::UnboxValue<INT>(reference.Get(), nullptr));
+        VERIFY_ARE_EQUAL(0u, reference->getValueCalls);
+        reference->AddRef();
+        VERIFY_ARE_EQUAL(1ul, reference->Release());
+    }
+
+    void BasicValueBoxerUnitTests::Validate_IValueBoxer_UnboxReferenceFailures()
+    {
+        auto point = wrl::Make<TestReference<wf::Point>>();
+        wf::Size sizeValue{ 42.0f, 24.0f };
+        VERIFY_ARE_EQUAL(E_NOINTERFACE, IValueBoxer::UnboxValue(point.Get(), &sizeValue));
+        VERIFY_ARE_EQUAL(42.0f, sizeValue.Width);
+        VERIFY_ARE_EQUAL(24.0f, sizeValue.Height);
+        VERIFY_ARE_EQUAL(0u, point->getValueCalls);
+        point->AddRef();
+        VERIFY_ARE_EQUAL(1ul, point->Release());
+
+        auto reference = wrl::Make<TestReference<INT>>();
+        reference->getValueResult = E_ACCESSDENIED;
+        INT value = 123;
+        VERIFY_ARE_EQUAL(E_ACCESSDENIED, IValueBoxer::UnboxValue<INT>(reference.Get(), &value));
+        VERIFY_ARE_EQUAL(123, value);
+        VERIFY_ARE_EQUAL(1u, reference->getValueCalls);
+        reference->AddRef();
+        VERIFY_ARE_EQUAL(1ul, reference->Release());
+
+        reference->getValueResult = S_FALSE;
+        reference->value = -55;
+        VERIFY_ARE_EQUAL(S_OK, IValueBoxer::UnboxValue<INT>(reference.Get(), &value));
+        VERIFY_ARE_EQUAL(-55, value);
+        VERIFY_ARE_EQUAL(2u, reference->getValueCalls);
+        reference->AddRef();
+        VERIFY_ARE_EQUAL(1ul, reference->Release());
+    }
+
+    template<typename T, size_t N>
+    static void ValidateReferenceRuntimeClassName(const T& value, const WCHAR (&expectedName)[N])
+    {
+        ctl::ComPtr<IInspectable> reference;
+        if constexpr (std::is_enum_v<T>)
+        {
+            THROW_IF_FAILED(PropertyValue::CreateEnumReference(value, &reference));
+        }
+        else
+        {
+            THROW_IF_FAILED(PropertyValue::CreateReference(value, &reference));
+        }
+
+        #pragma warning(suppress: 6387) // Exercise the invalid output pointer.
+        VERIFY_ARE_EQUAL(E_INVALIDARG, reference->GetRuntimeClassName(nullptr));
+
+        wrl_wrappers::HString retainedName;
+        {
+            wrl_wrappers::HString name;
+            THROW_IF_FAILED(reference->GetRuntimeClassName(name.GetAddressOf()));
+            THROW_IF_FAILED(name.CopyTo(retainedName.GetAddressOf()));
+        }
+
+        wrl_wrappers::HString secondName;
+        THROW_IF_FAILED(reference->GetRuntimeClassName(secondName.GetAddressOf()));
+        reference.Reset();
+
+        UINT32 length = 0;
+        VERIFY_ARE_EQUAL(0, wcscmp(expectedName, retainedName.GetRawBuffer(&length)));
+        VERIFY_ARE_EQUAL(static_cast<UINT32>(N - 1), length);
+        VERIFY_ARE_EQUAL(0, wcscmp(expectedName, secondName.GetRawBuffer(&length)));
+        VERIFY_ARE_EQUAL(static_cast<UINT32>(N - 1), length);
+    }
+
+    void BasicValueBoxerUnitTests::Validate_ReferenceRuntimeClassNames()
+    {
+        ValidateReferenceRuntimeClassName(
+            xaml::CornerRadius{},
+            L"Windows.Foundation.IReference`1<Microsoft.UI.Xaml.CornerRadius>");
+        ValidateReferenceRuntimeClassName(
+            wu::Color{},
+            L"Windows.Foundation.IReference`1<Windows.UI.Color>");
+        ValidateReferenceRuntimeClassName(
+            xaml_animation::RepeatBehavior{},
+            L"Windows.Foundation.IReference`1<Microsoft.UI.Xaml.Media.Animation.RepeatBehavior>");
+        ValidateReferenceRuntimeClassName(
+            xaml::Visibility_Visible,
+            L"Windows.Foundation.IReference`1<Microsoft.UI.Xaml.Visibility>");
     }
 } } } } }
