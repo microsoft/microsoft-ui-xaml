@@ -11,6 +11,42 @@ function ConvertTo-PRPerfMarkdownCell($Value) {
     return $cell.Replace('\', '\\').Replace('|', '\|')
 }
 
+function Get-PRPerfXamlRegions {
+    <#
+    .SYNOPSIS
+    The measured XAML regions, if a trace produced any.
+
+    .DESCRIPTION
+    Every failure here is silent and yields nothing. The regions are an extra observation
+    on top of a comparison that already works, so losing the whole comment because the
+    trace file was missing or half written would trade a useful result for no result.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][AllowEmptyString()][string] $Path)
+
+    $regions = [ordered]@{}
+    if ([string]::IsNullOrWhiteSpace($Path) -or -not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        return $regions
+    }
+
+    try {
+        $parsed = Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
+    } catch {
+        Write-Host "Ignoring unreadable XAML region file '$Path': $($_.Exception.Message)"
+        return $regions
+    }
+    if ($null -eq $parsed) { return $regions }
+
+    foreach ($property in $parsed.PSObject.Properties) {
+        # Anything that is not a plain number cannot be a duration, and rendering it would
+        # put a meaningless figure in front of a reviewer as though it had been measured.
+        $value = $property.Value -as [double]
+        if ($null -eq $value -or -not [double]::IsFinite($value)) { continue }
+        $regions[$property.Name] = $value
+    }
+    return $regions
+}
+
 function Get-PRPerfXamlRegionSection {
     param($XamlRegions)
 
@@ -117,4 +153,4 @@ function Find-PRPerfComment {
     return $null
 }
 
-Export-ModuleMember -Function New-PRPerfMarkdown, Find-PRPerfComment
+Export-ModuleMember -Function New-PRPerfMarkdown, Find-PRPerfComment, Get-PRPerfXamlRegions

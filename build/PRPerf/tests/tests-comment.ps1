@@ -483,3 +483,52 @@ function Test-MarkdownXamlRegionsNeverChangeTheVerdict {
     }
     if ($markdown -like '*Performance result inconclusive*') { throw 'Region numbers must not make the run inconclusive.' }
 }
+
+function Test-XamlRegionsAreEmptyWhenTheTraceFileIsAbsent {
+    # The trace step is allowed to be switched off or to fail, so its file is often not
+    # there. That is an ordinary outcome and must not disturb the comment.
+    $regions = Get-PRPerfXamlRegions -Path (Join-Path ([System.IO.Path]::GetTempPath()) "prperf-missing-$([guid]::NewGuid()).json")
+
+    Assert-Equal 0 @($regions.Keys).Count 'A missing trace file must yield no regions.'
+}
+
+function Test-XamlRegionsAreEmptyWhenTheTraceFileIsUnreadable {
+    # A half written or truncated file must lose only the informational section. Losing
+    # the whole comment over it would trade a working result for a broken one.
+    $path = Join-Path ([System.IO.Path]::GetTempPath()) "prperf-bad-$([guid]::NewGuid()).json"
+    Set-Content -LiteralPath $path -Value '{ this is not json'
+    try {
+        $regions = Get-PRPerfXamlRegions -Path $path
+        Assert-Equal 0 @($regions.Keys).Count 'An unreadable trace file must yield no regions.'
+    } finally {
+        Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Test-XamlRegionsAreReadFromTheTraceFile {
+    $path = Join-Path ([System.IO.Path]::GetTempPath()) "prperf-trace-$([guid]::NewGuid()).json"
+    Set-Content -LiteralPath $path -Value '{ "XamlInitializeMs": 25.5, "XamlFrameMs": 250.25 }'
+    try {
+        $regions = Get-PRPerfXamlRegions -Path $path
+
+        Assert-Equal 25.5 $regions['XamlInitializeMs'] 'A measured region must be read back.'
+        Assert-Equal 250.25 $regions['XamlFrameMs'] 'A measured region must be read back.'
+    } finally {
+        Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Test-XamlRegionsIgnoreValuesThatAreNotNumbers {
+    # Anything that is not a plain number cannot be a duration. Rendering it would put a
+    # meaningless figure in front of a reviewer as though it had been measured.
+    $path = Join-Path ([System.IO.Path]::GetTempPath()) "prperf-trace-$([guid]::NewGuid()).json"
+    Set-Content -LiteralPath $path -Value '{ "XamlInitializeMs": 25.5, "XamlFrameMs": "unknown" }'
+    try {
+        $regions = Get-PRPerfXamlRegions -Path $path
+
+        Assert-Equal 25.5 $regions['XamlInitializeMs'] 'The usable region must survive.'
+        Assert-Equal 1 @($regions.Keys).Count 'A value that is not a number must be dropped.'
+    } finally {
+        Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue
+    }
+}
