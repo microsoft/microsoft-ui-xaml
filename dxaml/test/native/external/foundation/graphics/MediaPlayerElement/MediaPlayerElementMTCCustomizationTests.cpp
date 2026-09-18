@@ -29,9 +29,52 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool MediaPlayerElementMTCCustomizationTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool MediaPlayerElementMTCCustomizationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool MediaPlayerElementMTCCustomizationTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool MediaPlayerElementMTCCustomizationTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+xaml_controls::MediaPlayerElement^ MediaPlayerElementMTCCustomizationTestsUap::SetupMediaPlayerElementUI()
+        {
+            TestServices::WindowHelper->SetWindowSizeOverride(Size(600, 400));
+            xaml_controls::MediaPlayerElement^ mpe;
+            xaml_controls::Grid^ grid;
+            RunOnUIThread([&]()
+            {
+                LOG_OUTPUT(L"Creating in XAML...");
+                grid = safe_cast<xaml_controls::Grid^>(xaml_markup::XamlReader::Load(
+                    L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                    L"  <MediaPlayerElement x:Name='theMedia' AreTransportControlsEnabled='true' />"
+                    L"</Grid>"));
+
+                mpe = safe_cast<xaml_controls::MediaPlayerElement^>(grid->FindName(L"theMedia"));
+                VERIFY_IS_NOT_NULL(mpe);
+                auto testMediaTransportControls = mpe->TransportControls;
+                VERIFY_IS_NOT_NULL(testMediaTransportControls);
+                TestServices::WindowHelper->WindowContent = grid;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            return mpe;
+        }
+
 
         bool MediaPlayerElementMTCCustomizationTests::TestSetup()
         {
@@ -179,7 +222,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         //------------------------------------------------------------------------
         // Test case: FullWindow Button Customizaton Test
         //------------------------------------------------------------------------
-        void MediaPlayerElementMTCCustomizationTests::FullWindowButtonCustomizationTest()
+        void MediaPlayerElementMTCCustomizationTestsUap::FullWindowButtonCustomizationTest()
         {
 #if false // DISABLE_FULL_WINDOW
             TestCleanupWrapper cleanup;
@@ -516,7 +559,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         //------------------------------------------------------------------------
         // Test case: FullWindow and Zoom Buttons Customizaton Test
         //------------------------------------------------------------------------
-        void MediaPlayerElementMTCCustomizationTests::FullWindowAndZoomButtonsCustomizationTest()
+        void MediaPlayerElementMTCCustomizationTestsUap::FullWindowAndZoomButtonsCustomizationTest()
         {
 #if false // DISABLE_FULL_WINDOW
             TestCleanupWrapper cleanup;
@@ -1056,7 +1099,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        void MediaPlayerElementMTCCustomizationTests::FullWindowModeShouldRestrictTabsToMTC()
+        void MediaPlayerElementMTCCustomizationTestsUap::FullWindowModeShouldRestrictTabsToMTC()
         {
             TestCleanupWrapper cleanup;
 
@@ -1284,7 +1327,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         //------------------------------------------------------------------------
         // Test case:Show/Hide Customizaton Test
         //------------------------------------------------------------------------
-        void MediaPlayerElementMTCCustomizationTests::ShowHideTest()
+        void MediaPlayerElementMTCCustomizationTestsUap::ShowHideTest()
         {
             TestCleanupWrapper cleanup;
 
@@ -1345,7 +1388,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         //------------------------------------------------------------------------
         // Test case: CompactOverlay Button Customizaton Test
         //------------------------------------------------------------------------
-        void MediaPlayerElementMTCCustomizationTests::CompactOverlayTest()
+        void MediaPlayerElementMTCCustomizationTestsUap::CompactOverlayTest()
         {
 #if false // DISABLE_COMPACT_OVERLAY
             TestCleanupWrapper cleanup;
@@ -1404,7 +1447,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         //------------------------------------------------------------------------
         // Test case: CompactOverlay button and Stop button Customizaton Test
         //------------------------------------------------------------------------
-        void MediaPlayerElementMTCCustomizationTests::CompactOverlayAndStopButtonCustomizationTest()
+        void MediaPlayerElementMTCCustomizationTestsUap::CompactOverlayAndStopButtonCustomizationTest()
         {
 #if false // DISABLE_COMPACT_OVERLAY
             TestCleanupWrapper cleanup;

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <RuntimeEnabledFeatureOverride.h>
 
 #include <CommonInputHelper.h>
@@ -20,6 +21,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"1bb20c90-a558-491b-b76d-55bdb9a46911;57e0de30-efb3-4001-9ccc-b38032fd1974;bdc5c68b-03c1-4217-832c-4c09f99946f4")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -34,21 +36,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(CanEnterAndLeaveLiveTree)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully add/remove a SplitView from the live tree.")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(ValidateUIElementTree)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates the UIElement tree of the SplitView control in its various configurations.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Move windowed popups to lifted input
-            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(ValidateLightDismissBehavior)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that the SplitView control Overlay and CompactOverlay modes support light dismiss, whereas Inline and CompactInline modes do not.")
-            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // TODO: UtilitiesRoutineHelper::IsOneCore does not return true on OneCore
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"Ignore", L"True") // Disabled due to #38065901
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanSetCompactPaneLengthProperty)
@@ -114,24 +101,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that apps can change the CompactPaneLength property and have it take effect.")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(VerifyGamepadFocusBehavior)
-            TEST_METHOD_PROPERTY(L"Description", L"Verfies that only the overlay pane traps focus within the pane until it is open")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(ValidateFootprint)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates the ActualWidth of SplitView's Content and Pane content in various configurations.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(CanNotShiftTabOutOfPaneWhenContentsIsListView)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that users can't shift-tab out of the light-dismissible pane when the pane content is a ListView.")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(VerifyKeyboardFocusBehavior)
-            TEST_METHOD_PROPERTY(L"Description", L"Verfies that the overlay pane will capture keyboard focus when opened and cycles focus within the pane when tab is pressed repeatedly.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateLightDismissOverlayMode)
@@ -147,19 +118,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the brush used for the overlay matches the 'SplitViewLightDismissOverlayBackground' resource.")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(ValidateOverlayUIETree)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates UIElement tree with an overlay-enabled SplitView.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Move windowed popups to lifted input
-            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(OpenSplitViewWithNoElementsFocused)
-            TEST_METHOD_PROPERTY(L"Description", L"When a SplitView is opened when nothing has focus, it should correctly focus its Pane")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(DoesNotFireOpenedOrClosedEventOnDisplayModeChange)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the Opened event is not re-fired if changing display modes while open.")
         END_TEST_METHOD()
@@ -168,24 +126,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that the opened &closed events fire even when SplitView is re-templated to excluded the DisplayModesStates state group.")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(CanDragFromPane)
-            TEST_METHOD_PROPERTY(L"Description", L"Verifies that we can drag an item from the SplitView pane to another location.")
-            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // TODO: 31563479 - Mouse input helper doesn't work on OneCore
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"Ignore", L"True")
-        END_TEST_METHOD()
-
     private:
-        void ValidateLightDismissBehaviorWorker(
-            xaml_controls::SplitViewDisplayMode displayMode,
-            xaml_controls::SplitViewPanePlacement placement,
-            xaml::FlowDirection flowDirection,
-            bool shouldLightDismiss
-            );
 
-        void VerifyKeyboardFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode displayMode, xaml_controls::SplitViewPanePlacement placement);
 
-        void VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode displayMode, xaml_controls::SplitViewPanePlacement placement, InputDevice device);
 
         void ValidateElementResizeCountForTransitionsWorker(
             xaml_controls::SplitViewDisplayMode displayMode,
@@ -206,12 +149,85 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CanNotShiftTabOutOfPaneWhenContentsIsListViewWorker(xaml_controls::SplitViewDisplayMode displayMode);
 
+        Platform::String^ GetResourcesPath() const;
+
+        Microsoft::UI::Xaml::Tests::Common::RuntimeEnabledFeatureOverride featureDisableTransitionsForTest;
+    };
+
+    class SplitViewIntegrationTestsUap : public WEX::TestClass<SplitViewIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(SplitViewIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"SplitViewIntegrationTests")
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"1bb20c90-a558-491b-b76d-55bdb9a46911;57e0de30-efb3-4001-9ccc-b38032fd1974;bdc5c68b-03c1-4217-832c-4c09f99946f4")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
         // Builds up a tree of SplitView elements that are configured in all the various
         // state combinations that we care about.
         static xaml_controls::Panel^ BuildAllStatesTree();
+        void ValidateLightDismissBehaviorWorker(
+            xaml_controls::SplitViewDisplayMode displayMode,
+            xaml_controls::SplitViewPanePlacement placement,
+            xaml::FlowDirection flowDirection,
+            bool shouldLightDismiss
+            );
+        void VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode displayMode, xaml_controls::SplitViewPanePlacement placement, InputDevice device);
+        void VerifyKeyboardFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode displayMode, xaml_controls::SplitViewPanePlacement placement);
 
-        Platform::String^ GetResourcesPath() const;
+    public:
+        BEGIN_TEST_METHOD(ValidateUIElementTree)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the UIElement tree of the SplitView control in its various configurations.")
+            TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Move windowed popups to lifted input
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateLightDismissBehavior)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that the SplitView control Overlay and CompactOverlay modes support light dismiss, whereas Inline and CompactInline modes do not.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // TODO: UtilitiesRoutineHelper::IsOneCore does not return true on OneCore
+            TEST_METHOD_PROPERTY(L"Ignore", L"True") // Disabled due to #38065901
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyGamepadFocusBehavior)
+            TEST_METHOD_PROPERTY(L"Description", L"Verfies that only the overlay pane traps focus within the pane until it is open")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateFootprint)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the ActualWidth of SplitView's Content and Pane content in various configurations.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyKeyboardFocusBehavior)
+            TEST_METHOD_PROPERTY(L"Description", L"Verfies that the overlay pane will capture keyboard focus when opened and cycles focus within the pane when tab is pressed repeatedly.")
+            TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateOverlayUIETree)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates UIElement tree with an overlay-enabled SplitView.")
+            TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Move windowed popups to lifted input
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(OpenSplitViewWithNoElementsFocused)
+            TEST_METHOD_PROPERTY(L"Description", L"When a SplitView is opened when nothing has focus, it should correctly focus its Pane")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(CanDragFromPane)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that we can drag an item from the SplitView pane to another location.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // TODO: 31563479 - Mouse input helper doesn't work on OneCore
+            TEST_METHOD_PROPERTY(L"Ignore", L"True")
+        END_TEST_METHOD()
+
+    private:
         Microsoft::UI::Xaml::Tests::Common::RuntimeEnabledFeatureOverride featureDisableTransitionsForTest;
     };
 

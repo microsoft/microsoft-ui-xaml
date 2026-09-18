@@ -22,9 +22,107 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     //
     bool ListViewIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool ListViewIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ListViewIntegrationTestsUap::TestCleanup()
+    {
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+String^ ListViewIntegrationTestsUap::GetResourcesPath() const
+    {
+        return GetPackageFolder() + L"resources\\native\\enterprise\\listviewbase\\";
+    }
+
+Platform::Collections::Vector<Platform::Object^>^ ListViewIntegrationTestsUap::GetGroupedData(bool getLargeDataSet) const
+    {
+        auto groupedData = ref new Platform::Collections::Vector<Platform::Object^>();
+
+        if (getLargeDataSet)
+        {
+            for (unsigned int i = 0; i < 4; ++i)
+            {
+                Microsoft::UI::Xaml::Tests::Common::GroupedHeader^ group = nullptr;
+
+                switch (i)
+                {
+                case 0:
+                    group = ref new Microsoft::UI::Xaml::Tests::Common::GroupedHeader(L"Tennis");
+                    VERIFY_IS_NOT_NULL(group);
+
+                    group->Append(L"Roger Federer");
+                    group->Append(L"Rafael Nadal");
+                    group->Append(L"Novak Djokovic");
+                    group->Append(L"Andy Murray");
+                    group->Append(L"Grigor Dimitrov");
+                    break;
+
+                case 1:
+                    group = ref new Microsoft::UI::Xaml::Tests::Common::GroupedHeader(L"Soccer");
+                    VERIFY_IS_NOT_NULL(group);
+
+                    group->Append(L"Cristiano Ronaldo");
+                    group->Append(L"Lionel Messi");
+                    group->Append(L"Neymar");
+                    group->Append(L"Andres Iniesta");
+                    group->Append(L"Gareth Bale");
+                    group->Append(L"Xavi");
+                    group->Append(L"James Rodriguez");
+                    group->Append(L"Ronaldinho");
+                    group->Append(L"Arjen Robben");
+                    break;
+
+                case 2:
+                    group = ref new Microsoft::UI::Xaml::Tests::Common::GroupedHeader(L"Basketball");
+                    VERIFY_IS_NOT_NULL(group);
+
+                    group->Append(L"Allen Iverson");
+                    group->Append(L"Dwayne Wade");
+                    group->Append(L"LeBron James");
+                    group->Append(L"Kevin Durant");
+                    group->Append(L"Kobe Bryant");
+                    break;
+
+                case 3:
+                    group = ref new Microsoft::UI::Xaml::Tests::Common::GroupedHeader(L"Formula 1");
+                    VERIFY_IS_NOT_NULL(group);
+
+                    group->Append(L"Alain Prost");
+                    group->Append(L"Ayrton Senna");
+                    group->Append(L"Michael Schumacher");
+                    group->Append(L"Niki Lauda");
+                    group->Append(L"Sebastian Vettel");
+                    break;
+                }
+
+                groupedData->Append(group);
+            }
+
+            return groupedData;
+        }
+
+        Microsoft::UI::Xaml::Tests::Common::GroupedHeader^ group = ref new Microsoft::UI::Xaml::Tests::Common::GroupedHeader(L"1");
+        group->Append(L"11");
+        group->Append(L"12");
+        groupedData->Append(group);
+
+        group = ref new Microsoft::UI::Xaml::Tests::Common::GroupedHeader(L"2");
+        group->Append(L"21");
+        group->Append(L"22");
+        groupedData->Append(group);
+
+        return groupedData;
+    }
+
 
     bool ListViewIntegrationTests::ClassCleanup()
     {
@@ -37,7 +135,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         return true;
     }
 
-    void ListViewIntegrationTests::AnimateItemIntoViewWithGamepad()
+    void ListViewIntegrationTestsUap::AnimateItemIntoViewWithGamepad()
     {
         TestCleanupWrapper cleanup;
 
@@ -316,7 +414,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void ListViewIntegrationTests::AnimateZoomableItemIntoView()
+    void ListViewIntegrationTestsUap::AnimateZoomableItemIntoView()
     {
         TestCleanupWrapper cleanup;
 
@@ -491,7 +589,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void ListViewIntegrationTests::AnimateItemIntoViewProgrammatically()
+    void ListViewIntegrationTestsUap::AnimateItemIntoViewProgrammatically()
     {
         TestCleanupWrapper cleanup;
 
@@ -667,7 +765,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void ListViewIntegrationTests::BringItemIntoShrunkViewWithGamepad()
+    void ListViewIntegrationTestsUap::BringItemIntoShrunkViewWithGamepad()
     {
         TestCleanupWrapper cleanup([]()
         {

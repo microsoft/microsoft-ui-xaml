@@ -20,7 +20,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool SymbolIconIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
 
@@ -144,7 +144,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void SymbolIconIntegrationTests::ValidateSymbolsRS3()
+    void SymbolIconIntegrationTestsUap::ValidateSymbolsRS3()
     {
         WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -189,6 +189,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         openedEvent->WaitForDefault();
 
         TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+    }
+
+
+    bool SymbolIconIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool SymbolIconIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool SymbolIconIntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
     }
 
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::SymbolIcon

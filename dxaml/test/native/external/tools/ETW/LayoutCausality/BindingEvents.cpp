@@ -38,10 +38,23 @@ namespace Tools { namespace ETW { namespace LayoutCausality {
         // input from being routed to the app. It will also wait for the
         // debugger to attach when the waitForDebugger runtime parameter is
         // specified.
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
 
         return true;
     }
+
+    bool BindingEventTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool BindingEventTestsUap::TestCleanup()
+    {
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
     bool BindingEventTests::TestCleanup()
     {
@@ -63,7 +76,7 @@ namespace Tools { namespace ETW { namespace LayoutCausality {
         }
     };
 
-    void BindingEventTests::CanTraceTwoWayBinding()
+    void BindingEventTestsUap::CanTraceTwoWayBinding()
     {
         TestCleanupWrapper cleanup;
 

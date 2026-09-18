@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <RuntimeEnabledFeatureOverride.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
@@ -15,6 +16,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
                 TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_HOSTING_MODE(UAP)
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -28,7 +30,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD(OverrideLookupOnPage)
             TEST_METHOD(ThemeChange)
             BEGIN_TEST_METHOD(PickupOverrideFromAppXAML)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
             END_TEST_METHOD()
             TEST_METHOD(HighContrast)
             TEST_METHOD(NoopForResourceDictionary)

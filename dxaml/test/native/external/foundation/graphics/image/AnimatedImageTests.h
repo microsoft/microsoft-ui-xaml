@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Foundation { namespace Graphics { namespace Image {
@@ -21,6 +22,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 #if defined(_WIN64) // Disable the test on 64-bit build because of floating point differences between x87 and sse instructions
                 TEST_CLASS_PROPERTY(L"Ignore", L"TRUE")
 #endif
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -52,59 +54,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(SimpleImageElement)
-                TEST_METHOD_PROPERTY(L"Description", L"Renders an animated image.")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // IsPlaying by default
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(AnimatedSetUri)
                 TEST_METHOD_PROPERTY(L"Description", L"See if a URI based image animates.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(AnimatedSetSource)
-                TEST_METHOD_PROPERTY(L"Description", L"See if a SetSource based image animates.")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(AnimatedSetSourceNotInTree)
-                TEST_METHOD_PROPERTY(L"Description", L"SetSource is called on the image not being in the live tree.")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(AnimatedSetSourceAsyncPreLiveTree)
-                TEST_METHOD_PROPERTY(L"Description", L"See if a SetSourceAsync based image animates (before it is live in tree).")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(AnimatedSetSourceAsyncPostLiveTree)
-                TEST_METHOD_PROPERTY(L"Description", L"See if a SetSourceAsync based image animates (after it is live in tree).")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(AnimatedSWBrush)
                 TEST_METHOD_PROPERTY(L"Description", L"Validate animated image decode path for SW surface.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(PlateauScale)
-                TEST_METHOD_PROPERTY(L"Description", L"Check that animation is not interrupted by plateau scale change.")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // TODO: ETWWaiterProxy does not detect an ImageAnimationEndInfo_value event in WPF hosting mode.
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(DeviceLost)
@@ -118,6 +77,75 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         private:
             Platform::String^ GetImagePath(Platform::String ^imageFileName) const;
         };
+
+    class AnimatedImageTestsUap : public WEX::TestClass<AnimatedImageTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(AnimatedImageTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"02f4717a-a120-494b-a28e-9a2cbd41ca58;bd1463b3-e5f2-4d54-9394-63a431c53a6e;d04573b8-e899-4822-bb72-9f4743c89d36")
+
+#if defined(_WIN64) // Disable the test on 64-bit build because of floating point differences between x87 and sse instructions
+                TEST_CLASS_PROPERTY(L"Ignore", L"TRUE")
+#endif
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"AnimatedImageTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        Platform::String^ GetImagePath(Platform::String ^imageFileName) const;
+
+    public:
+        BEGIN_TEST_METHOD(SimpleImageElement)
+        TEST_METHOD_PROPERTY(L"Description", L"Renders an animated image.")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // IsPlaying by default
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(AnimatedSetSource)
+        TEST_METHOD_PROPERTY(L"Description", L"See if a SetSource based image animates.")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        // Illegal to wait on a task in a Windows Runtime STA
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(AnimatedSetSourceNotInTree)
+        TEST_METHOD_PROPERTY(L"Description", L"SetSource is called on the image not being in the live tree.")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Illegal to wait on a task in a Windows Runtime STA
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(AnimatedSetSourceAsyncPreLiveTree)
+        TEST_METHOD_PROPERTY(L"Description", L"See if a SetSourceAsync based image animates (before it is live in tree).")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Illegal to wait on a task in a Windows Runtime STA
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(AnimatedSetSourceAsyncPostLiveTree)
+        TEST_METHOD_PROPERTY(L"Description", L"See if a SetSourceAsync based image animates (after it is live in tree).")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Illegal to wait on a task in a Windows Runtime STA
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(PlateauScale)
+        TEST_METHOD_PROPERTY(L"Description", L"Check that animation is not interrupted by plateau scale change.")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        // TODO: ETWWaiterProxy does not detect an ImageAnimationEndInfo_value event in WPF hosting mode.
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+
+        END_TEST_METHOD()
+    };
 
     } } }
 } } } }

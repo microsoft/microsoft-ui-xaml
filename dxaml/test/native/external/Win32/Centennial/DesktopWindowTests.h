@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace DesktopWindow {
@@ -15,9 +16,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"IsolationLevel", L"Method")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
-                TEST_CLASS_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_CLASS_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_CLASS_PROPERTY(L"ThreadingModel", L"STA")
+                TEST_CLASS_HOSTING_MODE(WPF)
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)

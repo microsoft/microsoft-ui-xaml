@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 using namespace Microsoft::UI::Xaml::Controls;
 
@@ -17,6 +18,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
                             TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
                             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
                             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                            TEST_CLASS_HOSTING_MODE(UAP)
                         END_TEST_CLASS()
 
                         TEST_CLASS_SETUP(ClassSetup)
@@ -26,22 +28,37 @@ namespace Microsoft { namespace UI { namespace Xaml {
                         BEGIN_TEST_METHOD(VerifyZoomingTraceWheel)
                             TEST_METHOD_PROPERTY(L"Description", L"Validates that the correct event is fired when Semantic Zoom zooms in or out with the mouse wheel.")
                             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-                        END_TEST_METHOD()
-
-                        BEGIN_TEST_METHOD(VerifyZoomingTracePinch)
-                            TEST_METHOD_PROPERTY(L"Description", L"Validates that the correct event is fired when Semantic Zoom zooms in or out with pinch.")
-                            TEST_METHOD_PROPERTY(L"Ignore", L"True") //Disabling this test, it is proving to be unstable in CINCH runs.
-                            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
                         END_TEST_METHOD()
 
                         BEGIN_TEST_METHOD(VerifyZoomingTraceTap)
                             TEST_METHOD_PROPERTY(L"Description", L"Validates that the correct event is fired when Semantic Zoom zooms in with tap.")
-                            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
                         END_TEST_METHOD()
 
                         void SetUpPage(Grid^ &grid, SemanticZoom^ &seZo, GridView^ &innerView, GridView^ &outerView, GridViewItem^ &innerItem, GridViewItem^ &outerItem);
                     };
+
+    class SeZoZoomTraceWpf
+    {
+    public:
+        BEGIN_TEST_CLASS(SeZoZoomTraceWpf)
+                            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"SeZoZoomTrace")
+                            TEST_CLASS_HOSTING_MODE_DEFAULT()
+                        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+        void SetUpPage(Grid^ &grid, SemanticZoom^ &seZo, GridView^ &innerView, GridView^ &outerView, GridViewItem^ &innerItem, GridViewItem^ &outerItem);
+
+        BEGIN_TEST_METHOD(VerifyZoomingTracePinch)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the correct event is fired when Semantic Zoom zooms in or out with pinch.")
+        TEST_METHOD_PROPERTY(L"Ignore", L"True") //Disabling this test, it is proving to be unstable in CINCH runs.
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+    };
                 }
             }
         }

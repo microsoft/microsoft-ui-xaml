@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 #include <CommonInputHelper.h>
 
@@ -20,6 +21,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"309fb554-f012-4ac9-bcf1-833e4a372493;375cd7bd-e448-4315-b2a1-bc02d75b0c4f")
+            TEST_CLASS_HOSTING_MODE(UAP)
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -30,33 +32,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         //
         // Platform:Any
         //
-        BEGIN_TEST_METHOD(AnimateItemIntoViewWithGamepad)
-            TEST_METHOD_PROPERTY(L"Description", L"Navigates through items with the gamepad left and right buttons.")
-            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
-        END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(AnimateGridViewInScrollViewerWithGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Navigates through items, header and footer, nested in ScrollViewer, with the gamepad left and right buttons.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateNavigationDoesNotHorizontallyWrapWithGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Navigates through a GridView with the gamepad buttons and validates that we do not wrap around when we reach the horizontal edge of the GridView.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // WPF: Multiple XY focus failures in WPF mode
+            // WPF: Multiple XY focus failures in WPF mode
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateNavigationDoesNotVerticallyWrapWithGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Navigates through a GridView with the gamepad buttons and validates that we do not wrap around when we reach the vertical edge of the GridView.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // WPF: Multiple XY focus failures in WPF mode
+            // WPF: Multiple XY focus failures in WPF mode
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(BringItemIntoShrunkViewWithGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Navigates through items with the gamepad left and right buttons using a shrunk ApplicationView.VisibleBounds rectangle.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CodeAuthoredItemTemplateReceivesDataContext)
@@ -79,6 +74,31 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         void ValidateNavigationDoesNotWrapWithGamepad(bool testHorizontalWrapping);
 
         String^ GetResourcesPath() const;
+    };
+
+    class GridViewIntegrationTestsWpf : public WEX::TestClass<GridViewIntegrationTestsWpf>
+    {
+    public:
+        BEGIN_TEST_CLASS(GridViewIntegrationTestsWpf)
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"309fb554-f012-4ac9-bcf1-833e4a372493;375cd7bd-e448-4315-b2a1-bc02d75b0c4f")
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"GridViewIntegrationTests")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        String^ GetResourcesPath() const;
+
+    public:
+        BEGIN_TEST_METHOD(AnimateItemIntoViewWithGamepad)
+        TEST_METHOD_PROPERTY(L"Description", L"Navigates through items with the gamepad left and right buttons.")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        END_TEST_METHOD()
     };
 
 } } } } } }

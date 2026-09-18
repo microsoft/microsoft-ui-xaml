@@ -35,7 +35,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         bool CollectionTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
 
             return true;
         }
@@ -58,7 +58,31 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             return true;
         }
 
-        void CollectionTests::TestCollections()
+        bool CollectionTestsWpf::ClassSetup()
+        {
+            XAML_HOSTING_MODE_CLASS_SETUP();
+            return true;
+        }
+
+        bool CollectionTestsWpf::ClassCleanup()
+        {
+            return true;
+        }
+
+        bool CollectionTestsWpf::TestSetup()
+        {
+            TestServices::WindowHelper->InitializeXaml(ref new MetadataProvider(), ref new CustomMetadataRegistrar<shared_types::CustomUserControl>());
+            return EnsureTapLoaded();
+        }
+
+        bool CollectionTestsWpf::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            test_infra::TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+        void CollectionTestsWpf::TestCollections()
         {
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
@@ -103,7 +127,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        void CollectionTests::TestNestedCollections()
+        void CollectionTestsWpf::TestNestedCollections()
         {
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
@@ -214,7 +238,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         }
 
-        void CollectionTests::VerifyDontLeakCollection()
+        void CollectionTestsWpf::VerifyDontLeakCollection()
         {
             wrl::ComPtr<VisualTreeServiceCallback> callback = m_connectionHelper->Advise();
             auto cleanup = XamlDiagnosticsTestHelpers::SetupGridAndWait();
@@ -367,7 +391,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
              });
         }
 
-        void CollectionTests::VerifyRowDefinitionsReportAsCollections()
+        void CollectionTestsWpf::VerifyRowDefinitionsReportAsCollections()
         {
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
@@ -582,7 +606,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_ARE_EQUAL(Microsoft::UI::Colors::Black, GetColorProperty(ellipse.Handle, L"Fill", BaseValueSourceLocal));
         }
 
-        void CollectionTests::ClearingSettersUpdatesApp()
+        void CollectionTestsWpf::ClearingSettersUpdatesApp()
         {
             auto content = ref new Platform::String(
                 L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
@@ -644,7 +668,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             });
         }
 
-        void CollectionTests::RemovingSettersFromImplicitStyleUpdatesApp()
+        void CollectionTestsWpf::RemovingSettersFromImplicitStyleUpdatesApp()
         {
             auto content = ref new Platform::String(
                 L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"

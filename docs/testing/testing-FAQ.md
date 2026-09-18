@@ -94,7 +94,7 @@ In the Nightly build, we also run x86chk tests on RS5 and 19H1.
 
 ### How many tests do we have? How long do they take to run?
 We have about 8000 tests. There are two types of tests, native written in C++ and managed in C# (.net 5 with cs/winrt).
-Native tests run in both HostingModes UWP and WPF.
+Each native external test class runs in one declared hosting mode: UWP, WPF, or Win32Explicit.
 However managed tests can only be ran in WPF mode. Reason being managed tests built on .net 5 and there is no official
 support for .net 5 in UWP.
 End-to-end, these tests take about 8 hours to run in total. Including machine creation and
@@ -113,7 +113,6 @@ Example:
 ```cpp
   BEGIN_TEST_METHOD(VerifyRangeFromPointWithHiDPI)
       TEST_METHOD_PROPERTY(L"Description", L"Validates that RangeFromPoint takes the DPI setting into account.")
-      TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
       TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
   END_TEST_METHOD()
 ```
@@ -126,7 +125,6 @@ Add the following line before the test implementation.
 ```cpp
   [TestMethod]
   [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-  [TestProperty("Hosting:Mode", "UAP")]
   [TestProperty("Ignore", "TRUE")]
   public void MenuFlyout()
   {
@@ -180,26 +178,30 @@ You can choose to run tests with the simpler [runtests.cmd](#runtests.cmd) synta
 [te.exe](#te.exe) syntax.
 
 ### RunTests.cmd
-We have a simple wrapper to run tests: `runtests.cmd`. By default this will run tests in UWP HostingMode. Only native
-C++ tests can be run in UWP mode. If you run managed C# tests in UWP mode, it will fail on launch with reason "blocked".
+We have a simple wrapper to run tests: `runtests.cmd`. Each test class chooses its own hosting mode.
+The default selection includes all matching tests, even when they require different modes.
+Managed C# tests use WPF.
+Managed tests that require UAP remain ignored until that hosting mode is supported.
 The syntax for using this command is:
 
 `runtests.cmd <partial_test_name> [<optional_parameters>]`
 
 The script will automatically assume a wildcard before the given test name. It also runs with the `/p:SkipConsoleWindowMinimize` flag.
 There are more details on these flags below.
+When selecting tests with `-fromFile`, blank lines are ignored. An empty list is an error
+and does not run any tests.
 
 **Examples:**
 
-This will run all tests that end with the name "ResizeTest". Default HostingMode is UWP:
+This runs all tests that end with the name "ResizeTest", each in its declared mode:
 
 `runtests.cmd ResizeTest`
 
-This will run all tests that end with the name "ResizeTest" in WPF hosting mode:
+This selects only tests that end with "ResizeTest" and declare WPF hosting:
 
 `runtests.cmd -wpfMode ResizeTest`
 
-There's also a "win32Explicit" hosting mode:
+This selects a test that declares Win32Explicit hosting. The mode argument is optional:
 
 `runtests.cmd -win32explicit TwoIslandsInSameWindow`
 
@@ -225,7 +227,6 @@ Some highlights include:
 We also have custom properties used by our test infra
 * `/p:WaitForDebugger` <- waits to run until a debugger is attached ([details](#pwaitfordebugger))
 * `/p:WaitForAppDebugger` <- waits to run until a debugger is attached to the test application ([details](#pwaitforappdebugger))
-* `/p:HostingMode=WPF` <- runs in WPF hosting mode ([details](#phostingmodewpf))
 * `/p:SkipConsoleWindowMinimize`  <- prevents command window from minimizing during test run ([details](#pskipconsolewindowminimize))
 * `/p:GoSlow` <- slow down test execution so you can watch it run ([details](#pgoslow))
 
@@ -246,11 +247,11 @@ managed tests today, because it doesn’t tickle the runtime bits that make .NET
 For managed, UIA-based tests, like the ones in MUXControls.Test.dll, use this to pause until a debugger is attached to
 the test application.
 
-**`/p:HostingMode=WPF`**
-If you need to run a suite of tests in WPF mode where some have been filtered out of the WPF suite,
-then you need to use /select: like this (and not use /name)
-`/select:"((@Hosting:Mode='*WPF*')AND(@Name='*WhateverYouWouldPutInTheNameParameter*'))"`.
-It's important that there are no spaces.
+**Hosting-mode selection**
+Do not pass `/p:HostingMode`. Each test class declares its host.
+To select only WPF tests, use `/select:"(@Hosting:Mode='WPF')AND(@Name='*testname*')"`
+or `runtests.cmd -HostingMode WPF testname`.
+See [hosting declarations](test-code-in-WinUI.md#uwp-or-wpf-host) when adding a test.
 
 **`/p:SkipConsoleWindowMinimize`**
 Arghh! Every time I run a test, the command window minimizes!

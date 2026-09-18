@@ -22,7 +22,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
 bool GlobalBoundsTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
 
@@ -37,6 +37,40 @@ bool GlobalBoundsTests::TestCleanup()
     test_infra::TestServices::WindowHelper->ShutdownXaml();
     TestServices::WindowHelper->VerifyTestCleanup();
     return true;
+}
+
+bool GlobalBoundsTestsUap::ClassSetup()
+{
+    XAML_HOSTING_MODE_CLASS_SETUP();
+    return true;
+}
+
+bool GlobalBoundsTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+bool GlobalBoundsTestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+void GlobalBoundsTestsUap::CompareElementIterators(std::vector<UIElement^>& expected, ::Windows::Foundation::Collections::IIterable<UIElement^>^ actual)
+{
+    auto iExpected = expected.begin();
+    auto iActual = actual->First();
+
+    while (iExpected != expected.end() && iActual->HasCurrent)
+    {
+        VERIFY_IS_TRUE(*iExpected == iActual->Current, L"Hit test result should match expected element.");
+        iExpected++;
+        iActual->MoveNext();
+    }
+    VERIFY_IS_TRUE(iExpected == expected.end(), L"Should have matched all elements in the expected list.");
+    VERIFY_IS_FALSE(iActual->HasCurrent, L"Hit test result should have the expected number of elements.");
 }
 
 void GlobalBoundsTests::GetGlobalBounds()
@@ -762,7 +796,7 @@ void GlobalBoundsTests::FindElementsInHostCoordinatesWPF()
     });
 }
 
-void GlobalBoundsTests::FindElementsInHostCoordinates_SwapChainPanel()
+void GlobalBoundsTestsUap::FindElementsInHostCoordinates_SwapChainPanel()
 {
     const auto& wh = TestServices::WindowHelper;
 

@@ -37,6 +37,7 @@ namespace Microsoft.UI.Xaml.Tests
         
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void TestDataTemplateGeneration()
         {
             UIExecutor.Execute(() =>
@@ -130,6 +131,7 @@ namespace Microsoft.UI.Xaml.Tests
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]   // DCPP: Test fails on WPF from failure to activate DMManager
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyElementFromDataTemplateSelectorGetsArranged()
         {
             // Regression coverage for: 
@@ -178,6 +180,7 @@ namespace Microsoft.UI.Xaml.Tests
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]   // DCPP: Test fails on WPF from failure to activate DMManager
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyRecyclingBetweenTemplateAndSelector()
         {
             // Getting an element directly from the template and then recycling it through a selector should work.

@@ -23,9 +23,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool InteractionTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool InteractionTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool InteractionTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool InteractionTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
     bool InteractionTests::TestSetup()
     {
@@ -355,7 +375,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         rightTappedEvent.WaitForDefault();
     }
 
-    void InteractionTests::DoesReceiveDragEvents()
+    void InteractionTestsUap::DoesReceiveDragEvents()
     {
         VELOCITY_TESTGUARD_XAML2018
 
@@ -423,7 +443,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         dragLeaveEvent.WaitForDefault();
     }
 
-    void InteractionTests::DoesReceiveDropEvent()
+    void InteractionTestsUap::DoesReceiveDropEvent()
     {
         VELOCITY_TESTGUARD_XAML2018
 

@@ -27,7 +27,7 @@ Platform::String^ MediaPlayerElementTests::GetResourcesPath() const
 
 bool MediaPlayerElementTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
 

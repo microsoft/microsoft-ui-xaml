@@ -23,7 +23,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool BasicGestureManipulationTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
+            return true;
+        }
+
+        bool BasicGestureManipulationTestsUap::ClassSetup()
+        {
+            XAML_HOSTING_MODE_CLASS_SETUP();
+            return true;
+        }
+
+        bool BasicGestureManipulationTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+        bool BasicGestureManipulationTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
             return true;
         }
 
@@ -286,7 +305,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         //------------------------------------------------------------------------
         // Test case: Drag a Rectangle horizontally with mouse using Gesture.
         //------------------------------------------------------------------------
-        void BasicGestureManipulationTests::DragARectangle()
+        void BasicGestureManipulationTestsUap::DragARectangle()
         {
             TestCleanupWrapper cleanup;
             std::shared_ptr<Event> manipulationCompletedEvent = std::make_shared<Event>();
@@ -492,25 +511,25 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         }
 
         // Scale a Rectangle with touch using a Gesture in a scrollable and zoomable ScrollViewer.
-        void BasicGestureManipulationTests::ScaleARectangleInScrollViewer()
+        void BasicGestureManipulationTestsUap::ScaleARectangleInScrollViewer()
         {
             ScaleARectangleInScrollViewer(false /*useInertia*/, false /*setManipulationModeInPointerPressed*/);
         }
 
         // Scale a Rectangle with touch using a Gesture in a scrollable and zoomable ScrollViewer with inertia.
-        void BasicGestureManipulationTests::ScaleARectangleInScrollViewerWithInertia()
+        void BasicGestureManipulationTestsUap::ScaleARectangleInScrollViewerWithInertia()
         {
             ScaleARectangleInScrollViewer(true /*useInertia*/, false /*setManipulationModeInPointerPressed*/);
         }
 
         // Scale a Rectangle with touch using a Gesture in a scrollable and zoomable ScrollViewer after setting ManipulationMode
         // in Rectangle's PointerPressed handler.
-        void BasicGestureManipulationTests::SetSystemAndScaleInPointerPressed()
+        void BasicGestureManipulationTestsUap::SetSystemAndScaleInPointerPressed()
         {
             ScaleARectangleInScrollViewer(false /*useInertia*/, true /*setManipulationModeInPointerPressed*/);
         }
 
-        void BasicGestureManipulationTests::ScaleARectangleInScrollViewer(bool useInertia, bool setManipulationModeInPointerPressed)
+        void BasicGestureManipulationTestsUap::ScaleARectangleInScrollViewer(bool useInertia, bool setManipulationModeInPointerPressed)
         {
             TestCleanupWrapper cleanup;
 
@@ -684,7 +703,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         }
 
         // Reset Gesture scaling in PointerPressed handler and zoom in ScrollViewer with DManip.
-        void BasicGestureManipulationTests::ResetScaleInPointerPressed()
+        void BasicGestureManipulationTestsUap::ResetScaleInPointerPressed()
         {
             TestCleanupWrapper cleanup;
 

@@ -55,9 +55,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool PropertySystemIntegrationTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool PropertySystemIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool PropertySystemIntegrationTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool PropertySystemIntegrationTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
 
         bool PropertySystemIntegrationTests::TestSetup()
         {
@@ -1249,7 +1269,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void PropertySystemIntegrationTests::VerifyThreadException_DependencyObject()
+        void PropertySystemIntegrationTestsUap::VerifyThreadException_DependencyObject()
         {
             TestCleanupWrapper cleanup;
             DisableErrorReportingScopeGuard disableErrors;
@@ -1300,7 +1320,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             if (secondaryView) { delete secondaryView; }
         }
 
-        void PropertySystemIntegrationTests::VerifyThreadException_MultiParentShareableDO()
+        void PropertySystemIntegrationTestsUap::VerifyThreadException_MultiParentShareableDO()
         {
             TestCleanupWrapper cleanup;
             DisableErrorReportingScopeGuard disableErrors;
@@ -1362,7 +1382,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             if (secondaryView) { delete secondaryView; }
         }
 
-        void PropertySystemIntegrationTests::VerifyThreadException_ShareableDO()
+        void PropertySystemIntegrationTestsUap::VerifyThreadException_ShareableDO()
         {
             TestCleanupWrapper cleanup;
             DisableErrorReportingScopeGuard disableErrors;
@@ -1428,7 +1448,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             if (secondaryView) { delete secondaryView; }
         }
 
-        void PropertySystemIntegrationTests::VerifyThreadException_NoParentShareableDO()
+        void PropertySystemIntegrationTestsUap::VerifyThreadException_NoParentShareableDO()
         {
             TestCleanupWrapper cleanup;
             DisableErrorReportingScopeGuard disableErrors;
@@ -1481,7 +1501,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             if (secondaryView) { delete secondaryView; }
         }
 
-        void PropertySystemIntegrationTests::VerifyThreadException_DataBinding()
+        void PropertySystemIntegrationTestsUap::VerifyThreadException_DataBinding()
         {
             TestCleanupWrapper cleanup;
             DisableErrorReportingScopeGuard disableErrors;
@@ -1545,7 +1565,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             if (secondaryView) { delete secondaryView; }
         }
 
-        void PropertySystemIntegrationTests::VerifyThreadException_ContentControlContent()
+        void PropertySystemIntegrationTestsUap::VerifyThreadException_ContentControlContent()
         {
             TestCleanupWrapper cleanup;
             DisableErrorReportingScopeGuard disableErrors;
@@ -1597,7 +1617,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             if (secondaryView) { delete secondaryView; }
         }
 
-        void PropertySystemIntegrationTests::VerifyThreadException_CustomDependencyProperty()
+        void PropertySystemIntegrationTestsUap::VerifyThreadException_CustomDependencyProperty()
         {
             TestCleanupWrapper cleanup;
             DisableErrorReportingScopeGuard disableErrors;

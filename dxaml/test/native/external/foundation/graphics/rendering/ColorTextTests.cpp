@@ -30,9 +30,34 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool ColorTextTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool ColorTextTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ColorTextTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool ColorTextTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+Platform::String^ ColorTextTestsUap::GetResourcesPath() const
+        {
+            return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\rendering\\";
+        }
+
 
         bool ColorTextTests::TestSetup()
         {
@@ -76,7 +101,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         //------------------------------------------------------------------------
         // Test case: Changes the ColorFont properties and verifies correct updated rendering.
         //------------------------------------------------------------------------
-        void ColorTextTests::PropertyChanges()
+        void ColorTextTestsUap::PropertyChanges()
         {
             // Clear out the current window content before injecting MockDComp, to
             // MockDComp doesn't capture an image for anything currently in the content,

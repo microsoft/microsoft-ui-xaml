@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <WUCRenderingScopeGuard.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
@@ -18,19 +19,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e6d4a8e5-be97-431f-871b-4937e816c8b3;24aa2bdf-d1ac-40bb-bb77-63c409a5da27")
                 TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
             TEST_METHOD_SETUP(TestSetup)
 
             TEST_METHOD_CLEANUP(TestCleanup)
-
-            BEGIN_TEST_METHOD(EmbeddedInlineElementPlacement)
-                TEST_METHOD_PROPERTY(L"Description", L"Test the embedded inline element placement when window size is changed.")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp node
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(EmbeddedInlineElementPlacementBidi)
                 TEST_METHOD_PROPERTY(L"Ignore",L"TRUE") // re-enable when bug fix for 038422 is FIed to RSMQ branch.
@@ -62,18 +57,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(CopySelection_Keyboard)
                 TEST_METHOD_PROPERTY(L"Description", L"Test copy selection through Ctrl+C")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(CopySelection_API)
                 TEST_METHOD_PROPERTY(L"Description", L"Test copy selection through API")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(SelectionChangedEvent)
-                TEST_METHOD_PROPERTY(L"Description", L"Verify that the SelectionChanged event fires")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: RichTextBlockTests::SelectionChangedEvent isn't loading content on WPF
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TextUpdatesWithFocus)
@@ -112,24 +99,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(JupRtblXamlP0)
-                TEST_METHOD_PROPERTY(L"Description", L"Jupiter RichTextBlock - XamlP0 tests (Ported from legacy:JupRtblXamlP0)")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Different text offsets
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(EmptyOverflowHasNullTextPatternAndCanNavigatePast)
                 TEST_METHOD_PROPERTY(L"Description", L"An empty RichTextBlockOverflow with no baseline RichTextBlock should not return a valid textpattern to Narrator")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(EmptyRichTextBlockWithOverflowHasNoText)
                 TEST_METHOD_PROPERTY(L"Description", L"An empty RichTextBlock that has an overflow should return a null text range, not crash")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(InlineUIContainerDirections)
-                TEST_METHOD_PROPERTY(L"Description", L"Verify positioning of InlineUIContainer when text reading order is reverse of FlowDirection")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Different text offsets
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyInlineUIContainerIsChildOfCorrectRange)
@@ -162,6 +137,53 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             void IsTextTrimmedPropertyAndEventHelper(Platform::String^ textBlockName, Platform::String^ textContent);
             void IsTextTrimmedBindingHelper(Platform::String^ textBlockName, Platform::String^ textContent);
         };
+
+    class RichTextBlockTestsUap : public WEX::TestClass<RichTextBlockTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(RichTextBlockTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e6d4a8e5-be97-431f-871b-4937e816c8b3;24aa2bdf-d1ac-40bb-bb77-63c409a5da27")
+                TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"RichTextBlockTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        inline Platform::String^ GetResourcesPath() const;
+
+    public:
+        BEGIN_TEST_METHOD(EmbeddedInlineElementPlacement)
+        TEST_METHOD_PROPERTY(L"Description", L"Test the embedded inline element placement when window size is changed.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Missing comp node
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(SelectionChangedEvent)
+        TEST_METHOD_PROPERTY(L"Description", L"Verify that the SelectionChanged event fires")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        // DCPP: RichTextBlockTests::SelectionChangedEvent isn't loading content on WPF
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(JupRtblXamlP0)
+        TEST_METHOD_PROPERTY(L"Description", L"Jupiter RichTextBlock - XamlP0 tests (Ported from legacy:JupRtblXamlP0)")
+        // Different text offsets
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(InlineUIContainerDirections)
+        TEST_METHOD_PROPERTY(L"Description", L"Verify positioning of InlineUIContainer when text reading order is reverse of FlowDirection")
+        // Different text offsets
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+    };
 
     } }
 } } } }

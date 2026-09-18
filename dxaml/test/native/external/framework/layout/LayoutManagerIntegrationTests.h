@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Framework { namespace Layout {
 
@@ -15,6 +16,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"f62323d4-fd46-4c98-aa85-334db95ba8f6;27f34780-4ef6-4102-929f-29737dfda1b9")
             TEST_METHOD_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -24,10 +26,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             //
             // Platform:Any
             //
-            BEGIN_TEST_METHOD(ValidateEffectiveViewportChanged)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates that the EffectiveViewportChanged event fires correctly.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidateEffectiveViewportChangedUnregistration)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that the EffectiveViewportChanged event can be unregistered correctly.")
@@ -44,6 +42,27 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             BEGIN_TEST_METHOD(ThrowsExceptionOnInvalidateViewportForNonScrollers)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that calling InvalidateViewport throws an exception unless the element has been registered as a scroller.")
             END_TEST_METHOD()
+    };
+
+    class LayoutManagerIntegrationTestsUap : public WEX::TestClass<LayoutManagerIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(LayoutManagerIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"f62323d4-fd46-4c98-aa85-334db95ba8f6;27f34780-4ef6-4102-929f-29737dfda1b9")
+            TEST_METHOD_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"LayoutManagerIntegrationTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+        BEGIN_TEST_METHOD(ValidateEffectiveViewportChanged)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the EffectiveViewportChanged event fires correctly.")
+        END_TEST_METHOD()
     };
 
 } } } } } } // Microsoft::UI::Xaml::Tests::Framework::Layout

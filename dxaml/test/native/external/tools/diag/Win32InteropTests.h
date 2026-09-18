@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <memory>
 #include <map>
 #include <tuple>
@@ -33,6 +34,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"IsolationLevel", L"Class")
                 TEST_CLASS_PROPERTY(L"Ignore", L"TRUE")     // TODO: DCPP: lifted hwnd Xaml islands
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -44,7 +46,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             BEGIN_TEST_METHOD(VerifyMutationEventsUsingDesktopWindowXamlSource)
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
                 TEST_METHOD_PROPERTY(L"UAP:AppXManifest", APPXMANIFEST_WINDOWS_VERSION_CURRENT_CENTENNIAL)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"UAP:Host", L"PackagedCwa")
                 TEST_METHOD_PROPERTY(L"UAP:Praid", L"XamlNativeTAEFTests")
                 TEST_METHOD_PROPERTY(L"ThreadingModel", L"STA")
@@ -53,7 +54,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             BEGIN_TEST_METHOD(UseDesktopWindowXamlSourceSystemBackdrop)
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"UAP:Praid", L"XamlNativeTAEFTests")
                 TEST_METHOD_PROPERTY(L"ThreadingModel", L"STA")
                 TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
@@ -61,7 +61,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             BEGIN_TEST_METHOD(SetDisconnectedDesktopWindowXamlSourceSystemBackdrop)
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"UAP:Praid", L"XamlNativeTAEFTests")
                 TEST_METHOD_PROPERTY(L"ThreadingModel", L"STA")
             END_TEST_METHOD()            

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Foundation { namespace Text {
@@ -26,6 +27,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89;3192b2bd-30c5-4c19-a6c1-9856b940df63")
                 TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -94,11 +96,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Validates PasswordBox can fire OnHolding event")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(CheckFiresManipulationEvents)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates PasswordBox can fire manipulation events")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") //not stable on WPF
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(ValidatePasswordCharValidation)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates PasswordBox correctly validates passwords")
             END_TEST_METHOD()
@@ -129,57 +126,41 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(ValidateCorrectAcceleratorKeyMessageForRevealButtonValues)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates the correct accelerator key message is delivered by the PasswordBox for different values of PasswordRevealMode.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidateRevealButtonAKMessageDoesNotOverwritePreviousMessage)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates PasswordRevealMode AcceleratorKey messages do not overwrite previous messages.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidateCtrlDeleteBehavior)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates PasswordBox's behavior on Ctrl+Delete input.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidatePasswordBinding)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates PasswordBox's behavior for binding on password Text.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(ValidatePasswordBoxPlaceholderVisibility)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates PasswordBox's placeholder text visibility.")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidatePasswordBoxPlaceholderVisibility_Backspace)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates PasswordBox's placeholder text visibility after clearing password through backspace.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidatePasswordBoxPlaceholderVisibility_ClearValue)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates PasswordBox's placeholder text visibility after calling ClearValue.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidatePasswordBoxPlaceholderVisibility_EmptyString)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates PasswordBox's placeholder text visibility after settings the password to an empty string.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidatePasteFromClipboard)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates PasswordBox's PasteFromClipboard API.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidateCanPasteClipboardContent)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates PasswordBox's CanPasteClipboardContent API.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
         private:
@@ -200,5 +181,39 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             void ValidatePasswordSetAndGet(const WCHAR* setString, xaml_controls::PasswordBox^ passwordBox, xaml_controls::TextBlock^ bindingTextBlock);
             void ValidatePasswordBoxPlaceholderVisibilityHelper(PasswordBoxTests::PasswordClearMethod clearMethod);
         };
+
+    class PasswordBoxTestsUap : public WEX::TestClass <PasswordBoxTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(PasswordBoxTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89;3192b2bd-30c5-4c19-a6c1-9856b940df63")
+                TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"PasswordBoxTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_CLASS_CLEANUP(ClassCleanup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        Platform::String^ GetPathToFiles() const;
+
+    public:
+        BEGIN_TEST_METHOD(CheckFiresManipulationEvents)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates PasswordBox can fire manipulation events")
+        //not stable on WPF
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidatePasswordBoxPlaceholderVisibility)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates PasswordBox's placeholder text visibility.")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+    };
     } }
 } } } }

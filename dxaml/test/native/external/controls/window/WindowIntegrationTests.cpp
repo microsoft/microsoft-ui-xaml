@@ -66,9 +66,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool WindowIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool WindowIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool WindowIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool WindowIntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
     bool WindowIntegrationTests::TestSetup()
     {
@@ -86,7 +106,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     //
     // Test Cases
     //
-    void WindowIntegrationTests::CanHideAndShowWindow()
+    void WindowIntegrationTestsUap::CanHideAndShowWindow()
     {
         TestCleanupWrapper cleanup;
 
@@ -121,7 +141,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         visibilityChangedEvent->WaitForDefault();
     }
 
-    void WindowIntegrationTests::CanGetSetTitle()
+    void WindowIntegrationTestsUap::CanGetSetTitle()
     {
         TestCleanupWrapper cleanup;
 

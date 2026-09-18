@@ -24,12 +24,77 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool AppBarAutomationIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
 
         // Disable control state transitions to reduce test execution time.
         m_featureDisableTransitionsForTest.Initialize(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableTransitionsForTest, true);
         return true;
     }
+
+    bool AppBarAutomationIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        m_featureDisableTransitionsForTest.Initialize(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableTransitionsForTest, true);
+        return true;
+    }
+
+    bool AppBarAutomationIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool AppBarAutomationIntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    xaml_controls::AppBar^ AppBarAutomationIntegrationTestsUap::SetupAppBar(bool isOpen, bool setAppBarAutomationName)
+    {
+        xaml_controls::AppBar^ appBar = nullptr;
+        xaml_controls::Page^ page = nullptr;
+
+        auto spHasLoadedEvent = std::make_shared<Event>();
+        auto spHasUnloadedEvent = std::make_shared<Event>();
+
+        auto loadedRegistration = CreateSafeEventRegistration(xaml_controls::AppBar, Loaded);
+        auto unloadedRegistration = CreateSafeEventRegistration(xaml_controls::AppBar, Unloaded);
+
+        // Setup our environment.
+        RunOnUIThread([&]()
+        {
+            appBar = ref new xaml_controls::AppBar();
+
+            if (setAppBarAutomationName)
+            {
+                xaml_automation::AutomationProperties::SetName(appBar, "TestAppBar");
+            }
+
+            page = TestServices::WindowHelper->SetupSimulatedAppPage();
+
+            loadedRegistration.Attach(appBar, ref new xaml::RoutedEventHandler([spHasLoadedEvent](Platform::Object^ sender, xaml::RoutedEventArgs^ e) {
+                spHasLoadedEvent->Set();
+            }));
+
+            unloadedRegistration.Attach(appBar, ref new xaml::RoutedEventHandler([spHasUnloadedEvent](Platform::Object^ sender, xaml::RoutedEventArgs^ e) {
+                spHasUnloadedEvent->Set();
+            }));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Open AppBar and wait for Loaded
+        RunOnUIThread([&]()
+        {
+            page->TopAppBar = appBar;
+            appBar->IsOpen = isOpen;
+        });
+        spHasLoadedEvent->WaitForDefault();
+
+        return appBar;
+    }
+
 
     bool AppBarAutomationIntegrationTests::TestSetup()
     {
@@ -172,7 +237,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::WindowHelper->WaitForIdle();
     }
 
-    void AppBarAutomationIntegrationTests::VerifyNoLightDismissInTreeWhenCollapsed()
+    void AppBarAutomationIntegrationTestsUap::VerifyNoLightDismissInTreeWhenCollapsed()
     {
         TestCleanupWrapper cleanup;
 

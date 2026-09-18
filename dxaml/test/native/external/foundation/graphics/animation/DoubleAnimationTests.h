@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <WUCRenderingScopeGuard.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Foundation { namespace Graphics {
@@ -17,6 +18,7 @@ public:
 
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
         TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"02f4717a-a120-494b-a28e-9a2cbd41ca58;bd1463b3-e5f2-4d54-9394-63a431c53a6e;b7d949c9-6779-44c5-b16b-1f51e18f3866")
+        TEST_CLASS_HOSTING_MODE_DEFAULT()
     END_TEST_CLASS()
 
     TEST_CLASS_SETUP(ClassSetup)
@@ -227,16 +229,6 @@ public:
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
-    BEGIN_TEST_METHOD(TransformAnimationRealizations1WUCFull)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Zoom scale not applied
-        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-    END_TEST_METHOD()
-
-    BEGIN_TEST_METHOD(TransformAnimationRealizations2WUCFull)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Zoom scale not applied
-        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-    END_TEST_METHOD()
-
     BEGIN_TEST_METHOD(TransformAnimationLTEChildWUCFull)
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
@@ -248,13 +240,6 @@ public:
 
     BEGIN_TEST_METHOD(RTLAnimationWUC)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-    END_TEST_METHOD()
-
-    BEGIN_TEST_METHOD(DeviceLostDuringAnimationWUCFull)
-        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Test hangs
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
@@ -328,6 +313,45 @@ private:
     void SimulateCPGStartMenuTestFrameAnalysisScenario();
     void ManyAnimationsFrameAnalysisScenario();
 };
+
+    class DoubleAnimationTestsUap : public WEX::TestClass<DoubleAnimationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(DoubleAnimationTestsUap)
+        TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+        TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+
+        TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+        TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"02f4717a-a120-494b-a28e-9a2cbd41ca58;bd1463b3-e5f2-4d54-9394-63a431c53a6e;b7d949c9-6779-44c5-b16b-1f51e18f3866")
+        TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"DoubleAnimationTests")
+        TEST_CLASS_HOSTING_MODE(UAP)
+    END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        void TransformAnimationRealizationsHelper(bool animateRootGrid);
+
+    public:
+        BEGIN_TEST_METHOD(TransformAnimationRealizations1WUCFull)
+        // Zoom scale not applied
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(TransformAnimationRealizations2WUCFull)
+        // Zoom scale not applied
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DeviceLostDuringAnimationWUCFull)
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Test hangs
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+    };
 
 } } } } } }
 

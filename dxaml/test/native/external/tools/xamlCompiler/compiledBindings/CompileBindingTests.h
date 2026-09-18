@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 #include <memory>
 #include <map>
@@ -29,11 +30,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e22a917c-ad18-4a09-bff9-d3ca3e5ee0b8")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_HOSTING_MODE(UAP)
              END_TEST_CLASS()
 
             BEGIN_TEST_METHOD(OneTimeBindingTest)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that one time binding works as expected.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
             END_TEST_METHOD()
 
             TEST_CLASS_SETUP(ClassSetup)

@@ -22,7 +22,7 @@ using namespace MockDComp;
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Convergence {
 
-        void ThemeResourcesTests::TestThemeResourcesFor_Current()
+        void ThemeResourcesTestsUap::TestThemeResourcesFor_Current()
         {
             CurrentOSMaxVersionTested = L"current";
             RunOnUIThread([&]()
@@ -264,7 +264,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void ThemeResourcesTests::RootVisualBackgroundHighContrast()
+        void ThemeResourcesTestsUap::RootVisualBackgroundHighContrast()
         {
             TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
@@ -1346,9 +1346,126 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             // input from being routed to the app. It will also wait for the
             // debugger to attach when the waitForDebugger runtime parameter is
             // specified.
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool ThemeResourcesTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ThemeResourcesTestsUap::TestSetup()
+        {
+            //
+            // It's very important to have your test clean up the window contents
+            // when it completes. When creating new tests be sure to copy this
+            // method over or implement it in a similar way. By cleaning
+            // up the window content and waiting for the page to go idle you ensure
+            // that if your test fails while the UI element tree is being torn down
+            // that the failure is associated with your test and doesn't occur
+            // nondeterministically in the future. By waiting for the page to go
+            // idle you ensure that all transitions have completed and that jupiter
+            // is in a 'tabula rasa' state for the next test.
+            //
+            // Use the TestCleanupWrapper in each test method to handle cleanup, even
+            // in cases of failure or repeated runs. Use VerifyTestCleanup here to
+            // ensure that the test was cleaned up correctly.
+            //
+            TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool ThemeResourcesTestsUap::TestCleanup()
+        {
+            //
+            // It's very important to have your test clean up the window contents
+            // when it completes. When creating new tests be sure to copy this
+            // method over or implement it in a similar way. By cleaning
+            // up the window content and waiting for the page to go idle you ensure
+            // that if your test fails while the UI element tree is being torn down
+            // that the failure is associated with your test and doesn't occur
+            // nondeterministically in the future. By waiting for the page to go
+            // idle you ensure that all transitions have completed and that jupiter
+            // is in a 'tabula rasa' state for the next test.
+            //
+            // Use the TestCleanupWrapper in each test method to handle cleanup, even
+            // in cases of failure or repeated runs. Use VerifyTestCleanup here to
+            // ensure that the test was cleaned up correctly.
+            //
+            TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+void ThemeResourcesTestsUap::VerifyDoubleThemeResource(String^ resourceName, bool shouldSucceed)
+        {
+            String^ xaml =
+                L"<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
+                L"Height='{ThemeResource " + resourceName +  L"}'></Canvas>";
+
+            TryLoadXaml(resourceName, xaml, shouldSucceed);
+        }
+
+void ThemeResourcesTestsUap::VerifyColorThemeResource(String^ resourceName, bool shouldSucceed)
+        {
+            String^ xaml =
+                L"<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
+                L"Background='{ThemeResource " + resourceName +  L"}'></Canvas>";
+
+            TryLoadXaml(resourceName, xaml, shouldSucceed);
+        }
+
+void ThemeResourcesTestsUap::VerifyThicknessThemeResource(String^ resourceName, bool shouldSucceed)
+        {
+            String^ xaml =
+                L"<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
+                L"Margin='{ThemeResource " + resourceName +  L"}'></Canvas>";
+
+            TryLoadXaml(resourceName, xaml, shouldSucceed);
+        }
+
+void ThemeResourcesTestsUap::VerifyRootVisualHighContrastHelper(HighContrastTheme theme, Platform::String^ highContrastResource)
+        {
+            RunOnUIThread([&]()
+            {
+                TestServices::ThemingHelper->HighContrastTheme = theme;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, highContrastResource);
+        }
+
+void ThemeResourcesTestsUap::TryLoadXaml(String^ resourceName, String^ xaml, bool shouldSucceed)
+        {
+            DisableErrorReportingScopeGuard disableErrors;
+
+            bool succeeded = false;
+            String^ exceptionString;
+
+            try
+            {
+                Microsoft::UI::Xaml::Markup::XamlReader::Load(xaml);
+                succeeded = true;
+            }
+            catch (Platform::COMException ^ex)
+            {
+                exceptionString = ex->ToString();
+                succeeded = false;
+            }
+
+            VERIFY_IS_TRUE(
+                shouldSucceed == succeeded,
+                WEX::Common::String().Format(
+                    L"Expected loading ThemeResource %s to %s for OSMaxVersionTested %s, and it %s.",
+                    resourceName->Data(),
+                    shouldSucceed ? L"succeed" : L"fail",
+                    CurrentOSMaxVersionTested->Data(),
+                    succeeded ? L"succeeded" : L"failed"
+                    ));
+        }
+
 
         bool ThemeResourcesTests::TestSetup()
         {

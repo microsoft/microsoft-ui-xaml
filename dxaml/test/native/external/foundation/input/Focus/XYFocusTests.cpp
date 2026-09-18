@@ -36,9 +36,51 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool XYFocusTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool XYFocusTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool XYFocusTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool XYFocusTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
+xaml_primitives::Popup^ XYFocusTestsUap::GetContainingPopup(FrameworkElement^ element)
+        {
+            auto popups = xaml_media::VisualTreeHelper::GetOpenPopupsForXamlRoot(TestServices::WindowHelper->WindowContent->XamlRoot);
+
+            for (auto popup : popups)
+            {
+                auto popupChild = safe_cast<xaml::FrameworkElement^>(popup->Child);
+                if (popupChild->Name == element->Name)
+                {
+                    return popup;
+                }
+                else
+                {
+                    if (popupChild->FindName(element->Name))
+                    {
+                        return popup;
+                    }
+                }
+            }
+            return nullptr;
+        }
+
 
         bool XYFocusTests::ClassCleanup()
         {
@@ -183,7 +225,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         //            Sets focus on the first focusable element,
         //            Verifies that Media transport controls are focusable using Auto-Focus
         //--------------------------------------------------------------------------------
-        void XYFocusTests::MediaTransportControlsTest()
+        void XYFocusTestsUap::MediaTransportControlsTest()
         {
         // TODO: Convert ME tests to MPE.
 #if false
@@ -1387,7 +1429,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void XYFocusTests::ToggleSwitchWithLongHeaderStillGainsFocus()
+        void XYFocusTestsUap::ToggleSwitchWithLongHeaderStillGainsFocus()
         {
             TestCleanupWrapper cleanup;
 
@@ -1446,7 +1488,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             VERIFY_IS_TRUE(gotFocusToggleEvent->HasFired());
         }
 
-        void XYFocusTests::ValidateScopedSearch()
+        void XYFocusTestsUap::ValidateScopedSearch()
         {
             // Leak: TemplateContent peer not being unpegged
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
@@ -1601,7 +1643,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        void XYFocusTests::EngagedElementCanStillNavigateThroughPopupsOpenedDuringEngagement()
+        void XYFocusTestsUap::EngagedElementCanStillNavigateThroughPopupsOpenedDuringEngagement()
         {
             TestCleanupWrapper cleanup;
 
@@ -1755,7 +1797,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void XYFocusTests::EngagedElementCanDistinguishBetweenPopupsOpenedBeforeAndAfterEngagement()
+        void XYFocusTestsUap::EngagedElementCanDistinguishBetweenPopupsOpenedBeforeAndAfterEngagement()
         {
             TestCleanupWrapper cleanup;
 
@@ -1910,7 +1952,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void XYFocusTests::EngagedElementCanNavigateToPopupOpenedByAnotherPopup()
+        void XYFocusTestsUap::EngagedElementCanNavigateToPopupOpenedByAnotherPopup()
         {
             TestCleanupWrapper cleanup;
 
@@ -2274,7 +2316,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             btn3_gotFocusEvent->WaitForDefault();
         }
 
-        void XYFocusTests::CandidatesThatAreFullyContainedWithinElementShouldBeIgnored()
+        void XYFocusTestsUap::CandidatesThatAreFullyContainedWithinElementShouldBeIgnored()
         {
             TestCleanupWrapper cleanup;
 
@@ -2309,7 +2351,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void XYFocusTests::UsingFocusHintRectShouldIncludeFocusedElement()
+        void XYFocusTestsUap::UsingFocusHintRectShouldIncludeFocusedElement()
         {
             TestCleanupWrapper cleanup;
 
@@ -2340,7 +2382,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void XYFocusTests::XYFocusIgnoresOcclusivity()
+        void XYFocusTestsUap::XYFocusIgnoresOcclusivity()
         {
             TestCleanupWrapper cleanup;
 

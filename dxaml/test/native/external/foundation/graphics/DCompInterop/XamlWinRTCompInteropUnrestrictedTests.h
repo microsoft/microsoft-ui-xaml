@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 #include <RegKeyHelper.h>
 
@@ -17,6 +18,7 @@ public:
         TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
         TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+        TEST_CLASS_HOSTING_MODE_DEFAULT()
     END_TEST_CLASS()
 
     TEST_CLASS_SETUP(ClassSetup)
@@ -280,12 +282,6 @@ public:
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
-    BEGIN_TEST_METHOD(CompositorTest)
-        TEST_METHOD_PROPERTY(L"Description", L"Verifies the app has access to the Compositor")
-        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Test requires Window::Current that is not available in Win32
-    END_TEST_METHOD()
-
     BEGIN_TEST_METHOD(Translation1WUCFull)
         TEST_METHOD_PROPERTY(L"Description", L"Verifies basic usage of Translation property")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
@@ -377,5 +373,28 @@ private:
     void ElementCulling_LayoutClip();
     void ElementCulling_Transform();
 };
+
+    class XamlWinRTCompInteropUnrestrictedTestsUap : public WEX::TestClass<XamlWinRTCompInteropUnrestrictedTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(XamlWinRTCompInteropUnrestrictedTestsUap)
+        TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+        TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+        TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+        TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+        TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"XamlWinRTCompInteropUnrestrictedTests")
+        TEST_CLASS_HOSTING_MODE(UAP)
+    END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+        BEGIN_TEST_METHOD(CompositorTest)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies the app has access to the Compositor")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Test requires Window::Current that is not available in Win32
+        END_TEST_METHOD()
+    };
 } } } } } }
 

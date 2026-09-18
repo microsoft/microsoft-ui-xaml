@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <RuntimeEnabledFeatureOverride.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Controls { namespace AppBar {
@@ -17,6 +18,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"ab3da967-c6a7-4e5b-b3c4-c53c6c46175c")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"IsolationLevel", L"Test") //DCPP: Crash in Microsoft.UI.Input.dll!UIAutomationIslandForwarder::EnsureAutomationHostProvider(HWND__ * hwnd)
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -25,11 +27,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(VerifyAutomationProperties)
             TEST_METHOD_PROPERTY(L"Description", L"Verify AutomationProperties for AppBar.")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(VerifyNoLightDismissInTreeWhenCollapsed)
-            TEST_METHOD_PROPERTY(L"Description", L"Verify that there is no light dismiss button in the UIA tree when the AppBar is collapsed")
-            TEST_CLASS_PROPERTY(L"Hosting:Mode", L"UAP")    // WPF_HOSTING_MODE_FAILURE: Close Button is found in UIA tree.
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyLightDismissInTreeWhenExpanded)
@@ -47,6 +44,36 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         static WCHAR s_automationName[];
         static WCHAR s_automationId[];
 
+        Microsoft::UI::Xaml::Tests::Common::RuntimeEnabledFeatureOverride m_featureDisableTransitionsForTest;
+    };
+
+    class AppBarAutomationIntegrationTestsUap : public WEX::TestClass<AppBarAutomationIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(AppBarAutomationIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"AppBarAutomationIntegrationTests")
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"ab3da967-c6a7-4e5b-b3c4-c53c6c46175c")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"IsolationLevel", L"Test") //DCPP: Crash in Microsoft.UI.Input.dll!UIAutomationIslandForwarder::EnsureAutomationHostProvider(HWND__ * hwnd)
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        xaml_controls::AppBar^ SetupAppBar(bool isOpen, bool setAppBarAutomationName = true);
+
+    public:
+        BEGIN_TEST_METHOD(VerifyNoLightDismissInTreeWhenCollapsed)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that there is no light dismiss button in the UIA tree when the AppBar is collapsed")
+            // WPF_HOSTING_MODE_FAILURE: Close Button is found in UIA tree.
+        END_TEST_METHOD()
+
+    private:
         Microsoft::UI::Xaml::Tests::Common::RuntimeEnabledFeatureOverride m_featureDisableTransitionsForTest;
     };
 

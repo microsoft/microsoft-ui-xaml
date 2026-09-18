@@ -30,9 +30,35 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             // input from being routed to the app. It will also wait for the
             // debugger to attach when the waitForDebugger runtime parameter is
             // specified.
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool SampleIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool SampleIntegrationTestsUap::TestCleanup()
+        {
+            // It's very important to have your test clean up the window contents
+            // when it completes. When creating new tests be sure to copy this
+            // method over or implement it in a similar way. By cleaning
+            // up the window content and waiting for the page to go idle you ensure
+            // that if your test fails while the UI element tree is being torn down
+            // that the failure is associated with your test and doesn't occur
+            // nondeterministically in the future. By waiting for the page to go
+            // idle you ensure that all transitions have completed and that jupiter
+            // is in a 'tabula rasa' state for the next test.
+            //
+            // Use the TestCleanupWrapper in each test method to handle cleanup, even
+            // in cases of failure or repeated runs. Use VerifyTestCleanup here to
+            // ensure that the test was cleaned up correctly.
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
 
         bool SampleIntegrationTests::TestCleanup()
         {
@@ -115,7 +141,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             }
         }
 
-        void SampleIntegrationTests::SimpleDCompValidation()
+        void SampleIntegrationTestsUap::SimpleDCompValidation()
         {
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
 

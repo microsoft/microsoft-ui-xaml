@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <UIAutomation.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Controls { namespace Flyout {
@@ -19,7 +20,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"465cba5c-d9c4-40ac-933a-f238efc26016;e7de4cca-1436-4030-80b9-56ef01aa1cae;b34da8d2-333d-40a9-a19c-94b1f9785580")
             TEST_CLASS_PROPERTY(L"IsolationLevel", L"Test") //DCPP: Crash in Microsoft.UI.Input.dll!UIAutomationIslandForwarder::EnsureAutomationHostProvider(HWND__ * hwnd)
-            TEST_CLASS_PROPERTY(L"ThreadingModel", L"MTA")
+            TEST_CLASS_HOSTING_MODE_DEFAULT_WITH_THREADING(L"MTA")
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -42,12 +43,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(VerifyAutomationNameAndIdPropagateToPresenter)
             TEST_METHOD_PROPERTY(L"Description", L"Verify that a flyout with an Automation ID and name propagate them to the presenter.")
-            TEST_CLASS_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyAutomationNameAndIdDoNotOverwritePresenterValues)
             TEST_METHOD_PROPERTY(L"Description", L"Verify that a flyout with an Automation ID and name does not propagate them to the presenter if they already have values.")
-            TEST_CLASS_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
     private:

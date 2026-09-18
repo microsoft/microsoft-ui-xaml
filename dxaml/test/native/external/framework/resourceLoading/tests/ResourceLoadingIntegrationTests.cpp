@@ -39,10 +39,39 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         // input from being routed to the app. It will also wait for the
         // debugger to attach when the waitForDebugger runtime parameter is
         // specified.
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
 
         return true;
     }
+
+    bool ResourceLoadingIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ResourceLoadingIntegrationTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool ResourceLoadingIntegrationTestsUap::TestCleanup()
+    {
+        // It's very important to have your test clean up the window contents
+        // when it completes. When creating new tests be sure to copy this
+        // method over or implement it in a similar way. By cleaning
+        // up the window content and waiting for the page to go idle you ensure
+        // that if your test fails while the UI element tree is being torn down
+        // that the failure is associated with your test and doesn't occur
+        // non-deterministically in the future. By waiting for the page to go
+        // idle you ensure that all transitions have completed and that jupiter
+        // is in a 'tabula rasa' state for the next test.
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
         bool ResourceLoadingIntegrationTests::TestSetup()
         {
@@ -356,7 +385,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
      }
 
-    void ResourceLoadingIntegrationTests::VerifyCanReplaceGenericXaml()
+    void ResourceLoadingIntegrationTestsUap::VerifyCanReplaceGenericXaml()
     {
         TestCleanupWrapper cleanup([]()
         {
@@ -433,7 +462,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         });
     }
 
-    void ResourceLoadingIntegrationTests::VerifyIncompleteGenericXamlReplacement()
+    void ResourceLoadingIntegrationTestsUap::VerifyIncompleteGenericXamlReplacement()
     {
         TestCleanupWrapper cleanup([]()
         {

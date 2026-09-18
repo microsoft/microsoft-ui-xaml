@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 #include <RuntimeEnabledFeatureOverride.h>
 
@@ -26,6 +27,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"a77e56a5-6336-4de8-840a-6750d0e0239c")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -33,13 +35,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD_SETUP(TestSetup)
 
             TEST_METHOD_CLEANUP(TestCleanup)
-
-            BEGIN_TEST_METHOD(MediaTransportControlsTest)
-                TEST_METHOD_PROPERTY(L"Description", L"Verifies automatic focus when Media Transport controls are showing")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Te.ProcessHost.exe crash
-                TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // _MEDIA_REMOVED_
-            END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(LargeDistanceBetweenFocusableElements)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies automatic focus transition betweeen distant elements")
@@ -135,40 +130,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(ToggleSwitchWithLongHeaderStillGainsFocus)
-                TEST_METHOD_PROPERTY(L"Description", L"A Toggle button is special because it's focusable area does not scale with it's header, meaning that our hittesting logic needs to be special cased.")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")  // DCPP Test: XYFocusTests::ToggleSwitchWithLongHeaderStillGainsFocus is unreliable in WPF hosting mode
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(ValidateScopedSearch)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates that we always honor the search scope passed into focusmgr irrespective of concepts of engagement and multiple visual roots")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Crash in test dll
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(EngagedElementCanStillNavigateThroughPopupsOpenedDuringEngagement)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates that when a popup is opened during engagement, we include it in the candidate list when finding the next focusable element")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Event timed out
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(EngagedElementDoesNotNavigateThroughPopupsOpenedBeforeEngagement)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that when a popup is opened before engagement occurred, we do not include it in the candidate list when finding the next focusable element")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(EngagedElementCanDistinguishBetweenPopupsOpenedBeforeAndAfterEngagement)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates that we can distinguish between when to consider a popup as a candidate based on when it was opened")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Crash in test dll
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(EngagedElementCanNavigateToPopupOpenedByAnotherPopup)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates that popups opened from other popups are still considered if it happened during engagement")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Event timed out
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(EnsureClipBoundsBeingUsedWhenScoringElementsInsideSplitView)
@@ -186,30 +150,87 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(CandidatesThatAreFullyContainedWithinElementShouldBeIgnored)
-                TEST_METHOD_PROPERTY(L"Description", L"When an element is fully within the focused element, we should ignore it due to the focus cone")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Crash in WUX.dll
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(UsingFocusHintRectShouldIncludeFocusedElement)
-                TEST_METHOD_PROPERTY(L"Description", L"When we pass in a focus hint rect, the focused element should be part of the candidate list")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(XYFocusIgnoresOcclusivity)
-                TEST_METHOD_PROPERTY(L"Description", L"When using private api: IgnoreOcclusivity, we should choose a candidate even when occluded")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            END_TEST_METHOD()
-
         private:
             Microsoft::UI::Xaml::UIElement^ SetupTest(Platform::String^ xamlFile, Platform::String^ rootPanelName);
             inline Platform::String^ GetResourcesPath() const;
             xaml_primitives::Popup^ GetContainingPopup(FrameworkElement^ element);
             void XYFocusUsesDirectionOverrideInternal(FocusElementType elementType);
         };
+
+    class XYFocusTestsUap : public WEX::TestClass<XYFocusTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(XYFocusTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"a77e56a5-6336-4de8-840a-6750d0e0239c")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"XYFocusTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        xaml_primitives::Popup^ GetContainingPopup(FrameworkElement^ element);
+
+    public:
+        BEGIN_TEST_METHOD(MediaTransportControlsTest)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies automatic focus when Media Transport controls are showing")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Te.ProcessHost.exe crash
+        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // _MEDIA_REMOVED_
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ToggleSwitchWithLongHeaderStillGainsFocus)
+        TEST_METHOD_PROPERTY(L"Description", L"A Toggle button is special because it's focusable area does not scale with it's header, meaning that our hittesting logic needs to be special cased.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // DCPP Test: XYFocusTests::ToggleSwitchWithLongHeaderStillGainsFocus is unreliable in WPF hosting mode
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateScopedSearch)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that we always honor the search scope passed into focusmgr irrespective of concepts of engagement and multiple visual roots")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        // Crash in test dll
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(EngagedElementCanStillNavigateThroughPopupsOpenedDuringEngagement)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that when a popup is opened during engagement, we include it in the candidate list when finding the next focusable element")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Event timed out
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(EngagedElementCanDistinguishBetweenPopupsOpenedBeforeAndAfterEngagement)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that we can distinguish between when to consider a popup as a candidate based on when it was opened")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Crash in test dll
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(EngagedElementCanNavigateToPopupOpenedByAnotherPopup)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that popups opened from other popups are still considered if it happened during engagement")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Event timed out
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(CandidatesThatAreFullyContainedWithinElementShouldBeIgnored)
+        TEST_METHOD_PROPERTY(L"Description", L"When an element is fully within the focused element, we should ignore it due to the focus cone")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Crash in WUX.dll
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(UsingFocusHintRectShouldIncludeFocusedElement)
+        TEST_METHOD_PROPERTY(L"Description", L"When we pass in a focus hint rect, the focused element should be part of the candidate list")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(XYFocusIgnoresOcclusivity)
+        TEST_METHOD_PROPERTY(L"Description", L"When using private api: IgnoreOcclusivity, we should choose a candidate even when occluded")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        END_TEST_METHOD()
+    };
 
     } }
 } } } }

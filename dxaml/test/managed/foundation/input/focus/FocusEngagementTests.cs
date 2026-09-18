@@ -153,6 +153,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "Verify Focus engagement behavior when opening a MenuFlyout")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyFocusEngagementOnMenuFlyout()
         {
             StackPanel rootPanel = null;

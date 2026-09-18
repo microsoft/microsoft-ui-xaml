@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <WUCRenderingScopeGuard.h>
 
 using namespace Microsoft::UI::Xaml::Tests::Common;
@@ -19,6 +20,7 @@ public:
 
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
         TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"1d91ef47-c885-45e2-a578-7aaf1a1b1296;24aa2bdf-d1ac-40bb-bb77-63c409a5da27;d04573b8-e899-4822-bb72-9f4743c89d36")
+        TEST_CLASS_HOSTING_MODE_DEFAULT()
     END_TEST_CLASS()
 
     TEST_CLASS_SETUP(ClassSetup)
@@ -55,13 +57,6 @@ public:
     BEGIN_TEST_METHOD(PointerDownThemeAnimation)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-    END_TEST_METHOD()
-
-    BEGIN_TEST_METHOD(PointerDownThemeAnimationWithTransformGroup)
-        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DComp verification fails because a PrependVisual's TransformMatrix
-                                                        // is different
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(PointerUpThemeAnimation)
@@ -129,23 +124,6 @@ public:
         TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
     END_TEST_METHOD()
 
-    BEGIN_TEST_METHOD(DrillInThemeAnimation)
-        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // MockDComp crash
-        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-    END_TEST_METHOD()
-
-    BEGIN_TEST_METHOD(DrillOutThemeAnimation)
-        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // MockDComp crash
-        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-    END_TEST_METHOD()
-
-    BEGIN_TEST_METHOD(FadeOutThemeAnimationNoDurationWUCFull)
-        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // MockDComp crash
-    END_TEST_METHOD()
-
 private:
     inline Platform::String^ GetResourcesPath() const;
 
@@ -168,6 +146,63 @@ private:
 
     bool VerifyMasterPointFuzzy(wf::Point& pt, wf::Point& ptMaster);
 };
+
+    class ThemeAnimationTestsUap : public WEX::TestClass<ThemeAnimationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(ThemeAnimationTestsUap)
+        TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+        TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+
+        TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+        TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"1d91ef47-c885-45e2-a578-7aaf1a1b1296;24aa2bdf-d1ac-40bb-bb77-63c409a5da27;d04573b8-e899-4822-bb72-9f4743c89d36")
+        TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"ThemeAnimationTests")
+        TEST_CLASS_HOSTING_MODE(UAP)
+    END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        void PointerThemeAnimationTest(
+        Platform::String^ fileName,
+        Platform::String^ storyboardName,
+        Platform::String^ variationName
+        );
+        void ThemeAnimationTest(
+        Platform::String^ fileName,
+        Platform::String^ storyboardName,
+        Platform::String^ variationName,
+        DCompRendering dcompRendering = DCompRendering::WUCCompleteSynchronousCompTree
+        );
+        inline Platform::String^ GetResourcesPath() const;
+
+    public:
+        BEGIN_TEST_METHOD(PointerDownThemeAnimationWithTransformGroup)
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        // DComp verification fails because a PrependVisual's TransformMatrix
+        // is different
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DrillInThemeAnimation)
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // MockDComp crash
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DrillOutThemeAnimation)
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // MockDComp crash
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(FadeOutThemeAnimationNoDurationWUCFull)
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // MockDComp crash
+        END_TEST_METHOD()
+    };
 
 } } } } } }
 

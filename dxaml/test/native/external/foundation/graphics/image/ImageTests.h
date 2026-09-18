@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <WUCRenderingScopeGuard.h>
 #include "ImageTestEngine.h"
 
@@ -23,6 +24,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 #if defined(_WIN64) // Disable the test on 64-bit build because of floating point differences between x87 and sse instructions
                 TEST_CLASS_PROPERTY(L"Ignore", L"TRUE")
 #endif
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -62,13 +64,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Renders a simple image element using a relative path to reference the image with explicit xaml syntax.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(PlateauScaleChange)
-                TEST_METHOD_PROPERTY(L"Description", L"Renders a simple image element and changes the plateau scale.")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Zoom scale not applied
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
@@ -203,14 +198,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(StreamCleanupAndRestore)
-                TEST_METHOD_PROPERTY(L"Description", L"[ImageTestEngine] Loads an image as a stream and attempts to cleanup the hardware resources and verifies they are decoded to element size.")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // MockDComp crash
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(Opacity50)
                 TEST_METHOD_PROPERTY(L"Description", L"[ImageTestEngine] Loads an image with 50% opacity.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
@@ -236,14 +223,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"[ImageTestEngine] Loads an image and uses the DecodePixelHeight API to control decoding size.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(DecodePixelWidthAndHeightWUCFull)
-                TEST_METHOD_PROPERTY(L"Description", L"[ImageTestEngine] Loads an image and uses the DecodePixelWidth/DecodePixelHeight API to control decoding size.")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // MockDComp crash
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
@@ -418,22 +397,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(DownloadProgressStreamSource)
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(DownloadProgressStreamSourceAsync)
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(DontReloadImageFromStream)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(ToggleUriSource)
                 TEST_METHOD_PROPERTY(L"Description", L"Set Uri to A, then change to B, then set back to A")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
@@ -469,6 +432,74 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             void DownloadProgressTestHelper(TestImageEnums::LoadApi loadApi);
             void LoadHelper(xaml_imaging::BitmapImage ^bitmapImage, TestImageEnums::LoadApi loadApi);
         };
+
+    class ImageTestsUap : public WEX::TestClass<ImageTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(ImageTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"02f4717a-a120-494b-a28e-9a2cbd41ca58;bd1463b3-e5f2-4d54-9394-63a431c53a6e;d04573b8-e899-4822-bb72-9f4743c89d36")
+
+#if defined(_WIN64) // Disable the test on 64-bit build because of floating point differences between x87 and sse instructions
+                TEST_CLASS_PROPERTY(L"Ignore", L"TRUE")
+#endif
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"ImageTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        inline Platform::String^ GetResourcesPath() const;
+        void DecodePixelWidthAndHeightInternal(Microsoft::UI::Xaml::Tests::Common::DCompRendering rendering);
+        void DownloadProgressTestHelper(TestImageEnums::LoadApi loadApi);
+        void LoadHelper(xaml_imaging::BitmapImage ^bitmapImage, TestImageEnums::LoadApi loadApi);
+
+    public:
+        BEGIN_TEST_METHOD(PlateauScaleChange)
+        TEST_METHOD_PROPERTY(L"Description", L"Renders a simple image element and changes the plateau scale.")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        // Zoom scale not applied
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(StreamCleanupAndRestore)
+        TEST_METHOD_PROPERTY(L"Description", L"[ImageTestEngine] Loads an image as a stream and attempts to cleanup the hardware resources and verifies they are decoded to element size.")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // MockDComp crash
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DecodePixelWidthAndHeightWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"[ImageTestEngine] Loads an image and uses the DecodePixelWidth/DecodePixelHeight API to control decoding size.")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // MockDComp crash
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DownloadProgressStreamSource)
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Illegal to wait on a task in a Windows Runtime STA
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DownloadProgressStreamSourceAsync)
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        // Illegal to wait on a task in a Windows Runtime STA
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DontReloadImageFromStream)
+        // Illegal to wait on a task in a Windows Runtime STA
+        END_TEST_METHOD()
+    };
 
     } } }
 } } } }

@@ -197,6 +197,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "If another element is occluding the focused element, the focus rect should be occluded as well.  Currently occlusion isn't perfect in all cases.")]
         [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to rendering scopeguard not working in WPF yet
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void OccludedFocusedElement()
         {
@@ -360,6 +361,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestProperty("Description", "Ensure focus rect displays underneath a 'shy header' rather than on top.  (Shy header implementation modeled after RS2-era Groove app)")]
         [TestProperty("IsolationLevel", "Method")]  // There are some lifetime problems with this test that result in the next test crashing.
                                                     // Likely because of the way it uses MockDComp and hand-off visuals.
+        // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Hosting:Mode", "UAP")]
         public void ShyHeader()
         {
@@ -474,6 +476,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "The focused element is inside a ScrollViewer and is occluded by another element in the ScrollViewer.")]
         [TestProperty("Hosting:Mode", "UAP")] // fails with a crash in WPF Islands
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void FocusedElementOccludedInScrollViewer()
         {
@@ -618,6 +621,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "When a button is clipped by a parent, the focus rect should be nudged rather than clipped")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void ButtonContainerClipsFocusRect()
         {
@@ -657,6 +661,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "Bring newly focused MenuFlyoutItem into view when root element is a Canvas")]
         [TestProperty("Hosting:Mode", "UAP")]   
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void BringFocusedMenuFlyoutItemIntoViewWithRootCanvas()
         {
             BringFocusedMenuFlyoutItemIntoView(useRootCanvas: true);
@@ -665,6 +670,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "Bring newly focused MenuFlyoutItem into view when root element is a ScrollViewer")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void BringFocusedMenuFlyoutItemIntoViewWithRootScrollViewer()
         {
             BringFocusedMenuFlyoutItemIntoView(useRootCanvas: false);
@@ -890,6 +896,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "When the user presses shift-f10 to show a button flyout, the FocusState of the MenuFlyoutItem should be 'Keyboard' so that the focus rect shows")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ButtonContextFlyoutShowsFocusRectAfterShiftF10()
         {
             using (TestServices.Utilities.CreateRenderingScopeGuard(
@@ -1000,6 +1007,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void ValidateFocusRectInListView()
         {
@@ -1130,6 +1138,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "UAP")] // fails with a crash in WPF islands
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void ValidateFocusRectInThirdPartyScrollingSurface()
         {
@@ -1201,6 +1210,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "Validate rendering of focus rect on basic UIElements")]
         [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to rendering scopeguard not working in WPF yet
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         async public void UIElementTests()
         {
             using (TestServices.Utilities.CreateRenderingScopeGuard(
@@ -1272,6 +1282,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "Validates that round focus rectangles work")]
         [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to rendering scopeguard not working in WPF yet
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ValidateRoundedFocusRect()
         {
             using (TestServices.Utilities.CreateRenderingScopeGuard(

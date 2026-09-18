@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <RuntimeEnabledFeatureOverride.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Controls { namespace ListViewBaseItem {
@@ -16,6 +17,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"465cba5c-d9c4-40ac-933a-f238efc26016;a69ddfa4-5142-4bed-887d-6d0ca14a3473")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -185,20 +187,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(ValidateListViewItemFocusPropertyThemeChange)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates the ListViewItem's FocusVisual* properties respond to theme changes.")
-            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Fails locally in WPF-hosting because Height is slightly off compared with dcomp baseline.
-            TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(ValidateGridViewItemFocusPropertyThemeChange)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates the GridViewItem's FocusVisual* properties respond to theme changes.")
-            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Fails locally in WPF-hosting because Height is slightly off compared with dcomp baseline.
-            TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(VerifyKeyboardReordering)
             TEST_METHOD_PROPERTY(L"Description", L"Validates ListView item reordering with keyboard in LTR/RTL flows, and horizontal/vertical layouts.")
         END_TEST_METHOD()
@@ -206,13 +194,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         //
         // Private Methods
         //
-        void TestSelectorItemFocusThemeChanges(
-            Platform::String^ xaml,
-            Platform::String^ elementName,
-            ::Windows::UI::Color lightPrimary,
-            ::Windows::UI::Color lightSecondary,
-            ::Windows::UI::Color darkPrimary,
-            ::Windows::UI::Color darkSecondary);
 
         bool AreBuffersEqual(::Windows::Storage::Streams::IBuffer^ buffer1, ::Windows::Storage::Streams::IBuffer^ buffer2);
         Platform::Array<byte>^ GetRenderDataBuffer(::Windows::Storage::Streams::IBuffer^ buffer);
@@ -232,5 +213,45 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             bool rightToLeft);
     };
 
-} } } } } }
+    class IntegrationTestsUap : public WEX::TestClass<IntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(IntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"IntegrationTests")
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"465cba5c-d9c4-40ac-933a-f238efc26016;a69ddfa4-5142-4bed-887d-6d0ca14a3473")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
 
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        void TestSelectorItemFocusThemeChanges(
+            Platform::String^ xaml,
+            Platform::String^ elementName,
+            ::Windows::UI::Color lightPrimary,
+            ::Windows::UI::Color lightSecondary,
+            ::Windows::UI::Color darkPrimary,
+            ::Windows::UI::Color darkSecondary);
+
+    public:
+        BEGIN_TEST_METHOD(ValidateListViewItemFocusPropertyThemeChange)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the ListViewItem's FocusVisual* properties respond to theme changes.")
+            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+            // Fails locally in WPF-hosting because Height is slightly off compared with dcomp baseline.
+            TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateGridViewItemFocusPropertyThemeChange)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the GridViewItem's FocusVisual* properties respond to theme changes.")
+            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+            // Fails locally in WPF-hosting because Height is slightly off compared with dcomp baseline.
+            TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
+    };
+
+} } } } } }

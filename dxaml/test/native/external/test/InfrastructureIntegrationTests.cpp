@@ -25,9 +25,31 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             // input from being routed to the app. It will also wait for the
             // debugger to attach when the waitForDebugger runtime parameter is
             // specified.
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool InfrastructureIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool InfrastructureIntegrationTestsUap::TestCleanup()
+        {
+            // It's very important to have your test clean up the window contents
+            // when it completes. When creating new tests be sure to copy this
+            // method over or implement it in a similar way. By cleaning
+            // up the window content and waiting for the page to go idle you ensure
+            // that if your test fails while the UI element tree is being torn down
+            // that the failure is associated with your test and doesn't occur
+            // nondeterministically in the future. By waiting for the page to go
+            // idle you ensure that all transitions have completed and that jupiter
+            // is in a 'tabula rasa' state for the next test.
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
 
         bool InfrastructureIntegrationTests::TestCleanup()
         {
@@ -44,7 +66,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             return true;
         }
 
-        void InfrastructureIntegrationTests::ValidateWindowContentAccessor()
+        void InfrastructureIntegrationTestsUap::ValidateWindowContentAccessor()
         {
             TestCleanupWrapper cleanup;
             RunOnUIThread([&] () {

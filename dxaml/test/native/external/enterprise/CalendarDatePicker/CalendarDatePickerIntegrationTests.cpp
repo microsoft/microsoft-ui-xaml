@@ -28,9 +28,22 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool CalendarDatePickerIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool CalendarDatePickerIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool CalendarDatePickerIntegrationTestsUap::TestCleanup()
+    {
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
 
     bool CalendarDatePickerIntegrationTests::TestCleanup()
@@ -605,7 +618,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::Utilities->VerifyUIElementTree();
     }
 
-    void CalendarDatePickerIntegrationTests::ValidateVisualStates()
+    void CalendarDatePickerIntegrationTestsUap::ValidateVisualStates()
     {
         WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
 
@@ -689,7 +702,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
     }
 
-    void CalendarDatePickerIntegrationTests::DonotResizeCalendarView()
+    void CalendarDatePickerIntegrationTestsUap::DonotResizeCalendarView()
     {
         TestCleanupWrapper cleanup;
 
@@ -873,7 +886,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     }
 
-    void CalendarDatePickerIntegrationTests::TestDateChangedEventWhenAssignDateToSameValue()
+    void CalendarDatePickerIntegrationTestsUap::TestDateChangedEventWhenAssignDateToSameValue()
     {
         TestCleanupWrapper cleanup;
         xaml_controls::Grid^ rootPanel = nullptr;
@@ -913,7 +926,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         VERIFY_IS_FALSE(dateChangedEvent->HasFired());
     }
 
-    void CalendarDatePickerIntegrationTests::ValidateOverlayBrush()
+    void CalendarDatePickerIntegrationTestsUap::ValidateOverlayBrush()
     {
         TestCleanupWrapper cleanup;
 

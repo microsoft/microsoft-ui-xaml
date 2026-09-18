@@ -36,6 +36,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
         [TestProperty("UAP:Praid", "XamlManagedTAEFTests")]
         [TestProperty("Classification", "Integration")]
         [TestProperty("Hosting:Mode", "UAP")]  // crash reason :  test crashes at the end
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public static void Setup(TestContext context)
         {
             AssemblySetup.CommonTestClassSetup();

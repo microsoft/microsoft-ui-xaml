@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <AutomationClient\AutomationClientManager.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Controls { namespace TextBox {
@@ -16,6 +17,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"IsolationLevel", L"Test") //DCPP: Crash in Microsoft.UI.Input.dll!UIAutomationIslandForwarder::EnsureAutomationHostProvider(HWND__ * hwnd)
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -28,7 +30,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(VerifyDefaultAutomationName)
             TEST_METHOD_PROPERTY(L"Description", L"Validates supported UIA patterns for TextBox.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyTextPattern2English)
@@ -41,22 +42,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(VerifyPlaceholderTextIsMovedToDescribedBy)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that placeholder text is moved to DescribedBy.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyDescribedByIsNotClobberedByPlaceholderText)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that placeholder text is not moved to DescribedBy if the list is non-empty.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyPlaceHolderTextNotMovedToDescribedByWhenTemplatePartIsMissing)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the placeholder text is not moved to DescribedBy when the relevant Template Part is missing.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
             
         BEGIN_TEST_METHOD(VerifyTextRangerProviderCompare)
             TEST_METHOD_PROPERTY(L"Description", L"Comparing two different text range providers should fail with E_INVALIDARG.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
     private:

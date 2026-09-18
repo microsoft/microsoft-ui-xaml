@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <HostingModeTestClass.h>
+
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Foundation { namespace Hosting {
 
@@ -24,8 +26,8 @@ public:
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
         TEST_CLASS_PROPERTY(L"Description", L"Various Xaml island configurations.")
         TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
-        // When running this test, make sure to run with -hostingMode set to "Win32Explicit"
-        TEST_CLASS_PROPERTY(L"Hosting:Mode", L"Win32Explicit")
+        // Always Win32Explicit; the mode is baked on the class, so no -HostingMode is needed.
+        TEST_CLASS_HOSTING_MODE(Win32Explicit)
     END_TEST_CLASS()
 
     TEST_METHOD_SETUP(TestSetup)

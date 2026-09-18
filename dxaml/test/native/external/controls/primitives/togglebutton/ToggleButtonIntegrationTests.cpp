@@ -21,9 +21,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool ToggleButtonIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool ToggleButtonIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ToggleButtonIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool ToggleButtonIntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
     bool ToggleButtonIntegrationTests::TestSetup()
     {
@@ -56,7 +76,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         Generic::ToggleButtonTests<xaml_primitives::ToggleButton>::CanToggle();
     }
 
-    void ToggleButtonIntegrationTests::UIETree()
+    void ToggleButtonIntegrationTestsUap::UIETree()
     {
         ControlHelper::ValidateUIElementTree(
             wf::Size(400, 600),

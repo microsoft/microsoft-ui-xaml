@@ -23,9 +23,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Foundation { namespace Text {
         bool TextControlsRenderingTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool TextControlsRenderingTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool TextControlsRenderingTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool TextControlsRenderingTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
 
         bool TextControlsRenderingTests::ClassCleanup()
         {
@@ -273,7 +293,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::Utilities->VerifyMockDCompOutput(SurfaceComparison::ReferencedOnly);
         }
 
-        void TextControlsRenderingTests::ValidateTextControlForegroundUpdate()
+        void TextControlsRenderingTestsUap::ValidateTextControlForegroundUpdate()
         {
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
             ::Windows::Foundation::Size size(400, 400);
@@ -383,7 +403,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        void TextControlsRenderingTests::ValidateEmojiRendering()
+        void TextControlsRenderingTestsUap::ValidateEmojiRendering()
         {
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
             ::Windows::Foundation::Size size(400, 400);

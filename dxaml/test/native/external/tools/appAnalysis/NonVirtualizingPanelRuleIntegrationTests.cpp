@@ -37,9 +37,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool NonVirtualizingPanelRuleIntegrationTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool NonVirtualizingPanelRuleIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool NonVirtualizingPanelRuleIntegrationTestsUap::TestCleanup()
+        {
+            return true;
+        }
+
+Platform::String^ NonVirtualizingPanelRuleIntegrationTestsUap::GetResourcesPath() const
+        {
+            return "ms-appx:///resources/native/tools/";
+        }
+
 
         bool NonVirtualizingPanelRuleIntegrationTests::ClassCleanup()
         {
@@ -90,7 +107,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         // Verifies that even if the LV is inside a ScrollViewer, that as long as the scroll direction
         // is disabled in the same direction the ItemsPanel is laying out it's items that we don't
         // incorrectly raise a flag because we are able to virtualize in this scenario.
-        void NonVirtualizingPanelRuleIntegrationTests::DoesntFireFalsePositives()
+        void NonVirtualizingPanelRuleIntegrationTestsUap::DoesntFireFalsePositives()
         {
             TestCleanupWrapper cleanup;
 

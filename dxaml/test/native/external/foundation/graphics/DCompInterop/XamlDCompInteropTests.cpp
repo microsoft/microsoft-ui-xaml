@@ -39,7 +39,7 @@ Platform::String^ XamlDCompInteropTests::GetResourcesPath() const
 
 bool XamlDCompInteropTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
 

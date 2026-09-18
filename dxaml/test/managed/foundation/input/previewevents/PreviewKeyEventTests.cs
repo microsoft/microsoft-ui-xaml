@@ -29,8 +29,6 @@ namespace Microsoft.UI.Xaml.Tests.Input
     [TestClass]
     public partial class PreviewKeyEventTests : XamlTestsBase
     {
-        public static bool isWpfHostingMode = false;
-
         [ClassInitialize]
         [TestProperty("BinaryUnderTest", "Microsoft.UI.Xaml.dll")]
         [TestProperty("RunAs", "UAP")]
@@ -40,7 +38,6 @@ namespace Microsoft.UI.Xaml.Tests.Input
         public static void Setup(TestContext context)
         {
             AssemblySetup.CommonTestClassSetup();
-            isWpfHostingMode = string.Compare(context.Properties["HostingMode"] as string, "WPF", ignoreCase: true) == 0;
         }
 
         [ClassCleanup]
@@ -106,6 +103,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
         [TestMethod]
         [TestProperty("Description", "Verifies the order of keydown events and overrides")]
         [TestProperty("Hosting:Mode", "UAP")]  // fails in WPF mode in catgates
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyPreviewKeyOverridesEventOrder()
         {
             const string rootPanelXaml =
@@ -275,6 +273,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
         [TestMethod]
         [TestProperty("Description", "Verifies the order of keydown events from a popup")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyKeyEventOrderFromPopup()
         {
             const string rootPanelXaml =
@@ -346,6 +345,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
         [TestMethod]
         [TestProperty("Description", "Verifies the order of keydown events from a popup")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyKeyEventOrderFromUnparentedPopup()
         {
             const string rootPanelXaml =
@@ -663,6 +663,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
         [TestMethod]
         [TestProperty("Description", "Verifies the order of keydown events on reparenting")]
         [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to final release queue is not empty cleanup issue
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyKeyDownEventOrderWhenReparenting()
         {
             const string rootPanelXaml =
@@ -735,6 +736,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
         [TestMethod]
         [TestProperty("Description", "Verifies the order of keydown events on deleting subtree")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyKeyDownEventOrderWhenDeletingSubtree()
         {
             const string rootPanelXaml =
@@ -794,6 +796,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
         [TestMethod]
         [TestProperty("Description", "Verifies the order of keydown events on adding to subtree")]
         [TestProperty("Hosting:Mode", "UAP")] // fails due release queue not empty
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyKeyDownEventOrderWhenAddingToSubtree()
         {
             const string rootPanelXaml =
@@ -869,6 +872,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
         [TestMethod]
         [TestProperty("Description", "Verifies the order of keydown events when changing focus.")]
         [TestProperty("Hosting:Mode", "UAP")] // fails due release queue not empty
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyKeyEventOrderWhenChangingFocus()
         {
             const string rootPanelXaml =
@@ -1173,6 +1177,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
         [TestMethod]
         [TestProperty("Description", "Verify the orderign of AccessKeys and KeyEvents")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyAccessKeysPrecedePreviewKeyEvents()
         {
             const string rootPanelXaml =
@@ -1295,6 +1300,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
         [TestProperty("Description", "Verifies the event order of CharacterReceived and key events when using alt numeric key codes.")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // CharacterReceived event is not getting fired on all Onecore SKUs for Alt+Numpad key codes
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyCharacterReceivedEventOrderWithAltNumericKeyCodes()
         {
             const string rootPanelXaml =
@@ -1381,6 +1387,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
         [TestMethod]
         [TestProperty("Description", "Verifies CharacterReceived is not fired if Access Keys are fired in hotkey mode.")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyCharacterReceivedNotFiredIfAccessKeyFired()
         {
             const string rootPanelXaml =
@@ -1463,6 +1470,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
         [TestProperty("Description", "Verifies the event order of CharacterReceived and key events when character received is handled.")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // CharacterReceived event is not getting fired on all Onecore SKUs for Alt+Numpad key codes
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyCharacterReceivedEventCanBeInterceptedWhenHandled()
         {
             const string rootPanelXaml =
@@ -1552,6 +1560,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
         [TestMethod]
         [TestProperty("Description", "Verifies the event order of CharacterReceived and key events for TextBox.")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyCharacterReceivedEventOrderWithTextBox()
         {
             const string rootPanelXaml =
@@ -1620,6 +1629,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
         [TestMethod]
         [TestProperty("Description", "Verifies the event order of CharacterReceived and key events for PasswordBox.")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyCharacterReceivedEventOrderWithPasswordBox()
         {
             const string rootPanelXaml =
@@ -1680,6 +1690,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
         [TestMethod]
         [TestProperty("Description", "Verifies the event order of CharacterReceived and key events for RichEditBox.")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyCharacterReceivedEventOrderWithRichEditBox()
         {
             const string rootPanelXaml =

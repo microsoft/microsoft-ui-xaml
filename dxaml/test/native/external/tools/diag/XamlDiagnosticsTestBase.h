@@ -714,16 +714,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 LOG_OUTPUT(L"*** EnsureTapLoaded ***");
                 WEX::Common::String testName;
 
-                bool isWPFRun = false;
-                WEX::Common::String value;
-                if (SUCCEEDED(WEX::TestExecution::RuntimeParameters::TryGetValue(L"HostingMode", value)))
-                {
-                    if (value == L"WPF")
-                    {
-                        isWPFRun = false;
-                    }
-                }
-                if (m_connectionHelper == nullptr || isWPFRun)
+                if (m_connectionHelper == nullptr)
                 {
                     m_connectionHelper.reset(new XamlDiagnosticsHelper());
                     m_tap = m_connectionHelper->Connect();

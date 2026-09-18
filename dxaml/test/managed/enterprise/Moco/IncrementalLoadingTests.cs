@@ -32,6 +32,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [TestProperty("BinaryUnderTest", "Microsoft.UI.Xaml.dll")]
         [TestProperty("RunAs", "UAP")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Classification", "Integration")]
         [TestProperty("UAP:Praid", "XamlManagedTAEFTests")]
         [TestProperty("HelixWorkItemCreation", "CreateWorkItemPerTestClass")]
@@ -175,6 +176,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [TestMethod]
         [Priority(1)]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void RepeatedLoadMoreItemsTest()
         {
             SetupTest(xamlText);

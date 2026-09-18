@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Enterprise { namespace CalendarDatePicker {
 
@@ -16,6 +17,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             TEST_METHOD_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"5a73b065-eae3-4d93-865c-ad87e20ec0d0;375cd7bd-e448-4315-b2a1-bc02d75b0c4f")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -69,17 +71,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(ValidateVisualStates)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates all Visual States.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(DonotResizeCalendarView)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates where there is limited space, the calendarview is not resized.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(CanPresetDate)
             TEST_METHOD_PROPERTY(L"Description", L"CalendarDatePicker does not show pre-loaded value for Date property")
         END_TEST_METHOD()
@@ -88,15 +79,40 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"[CalendarDatePicker] DateChanged event gets fired even when the selected date hasn't changed.")
         END_TEST_METHOD()
 
+    };
+
+    class CalendarDatePickerIntegrationTestsUap : public WEX::TestClass<CalendarDatePickerIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(CalendarDatePickerIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+
+            TEST_METHOD_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"5a73b065-eae3-4d93-865c-ad87e20ec0d0;375cd7bd-e448-4315-b2a1-bc02d75b0c4f")
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"CalendarDatePickerIntegrationTests")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+        BEGIN_TEST_METHOD(ValidateVisualStates)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates all Visual States.")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DonotResizeCalendarView)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates where there is limited space, the calendarview is not resized.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(TestDateChangedEventWhenAssignDateToSameValue)
-            TEST_METHOD_PROPERTY(L"Description", L"[CalendarDatePicker] DateChanged event gets fired even when the selected date hasn't changed.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Description", L"[CalendarDatePicker] DateChanged event gets fired even when the selected date hasn't changed.")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateOverlayBrush)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that the brush used for the Overlay matches the 'CalendarDatePickerLightDismissOverlayBackground' resource.")
-            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the brush used for the Overlay matches the 'CalendarDatePickerLightDismissOverlayBackground' resource.")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
         END_TEST_METHOD()
     };
 

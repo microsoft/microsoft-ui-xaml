@@ -35,9 +35,87 @@ Platform::String^ LTETests::GetResourcesPath() const
 
 bool LTETests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool LTETestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool LTETestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool LTETestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+Platform::String^ LTETestsUap::GetResourcesPath() const
+{
+    return GetPackageFolder() + L"resources\\native\\foundation\\graphics\\rendering\\";
+}
+
+void LTETestsUap::Insert3Rectangles(GridView^ gridView)
+{
+    const auto& wh = TestServices::WindowHelper;
+
+    // Force some frames between inserts into the GridView. If we insert items too fast, the AddRemoveThemeTransition gets skipped.
+    // See GetSpeedOfChanges and ModernCollectionBasePanel::TransitionContextManager::IsCollectionMutatingFast.
+    wh->SynchronouslyTickUIThread(2);
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"[Add a new rectangle to trigger portaling. Don't crash.]");
+
+        auto newChild = ref new xaml_shapes::Rectangle();
+        newChild->Width = 50;
+        newChild->Height = 50;
+        newChild->Fill = ref new xaml_media::SolidColorBrush(mu::Colors::Blue);
+
+        gridView->Items->InsertAt(0, newChild);
+    });
+
+    wh->WaitForIdle();
+    wh->SynchronouslyTickUIThread(2);   // Wait before adding more so the transition plays
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"[Add a new rectangle to trigger portaling of the element being tested. Don't crash.]");
+
+        auto newChild = ref new xaml_shapes::Rectangle();
+        newChild->Width = 50;
+        newChild->Height = 50;
+        newChild->Fill = ref new xaml_media::SolidColorBrush(mu::Colors::Green);
+
+        gridView->Items->InsertAt(0, newChild);
+    });
+
+    wh->WaitForIdle();
+    wh->SynchronouslyTickUIThread(2);   // Wait before adding more so the transition plays
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"[Add a new rectangle to trigger portaling. Don't crash.]");
+
+        auto newChild = ref new xaml_shapes::Rectangle();
+        newChild->Width = 50;
+        newChild->Height = 50;
+        newChild->Fill = ref new xaml_media::SolidColorBrush(mu::Colors::Yellow);
+
+        gridView->Items->InsertAt(0, newChild);
+    });
+
+    wh->WaitForIdle();
+}
+
 
 bool LTETests::TestSetup()
 {
@@ -238,7 +316,7 @@ void LTETests::PortalingSwapChainPanel()
     wh->WaitForIdle();
 }
 
-void LTETests::PortalingRectangleWUCFull()
+void LTETestsUap::PortalingRectangleWUCFull()
 {
     WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
     const auto& wh = TestServices::WindowHelper;
@@ -332,7 +410,7 @@ void LTETests::PortalingCompNodeSubtree()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
 }
 
-void LTETests::GridViewEntranceInFlyoutEntranceWUC()
+void LTETestsUap::GridViewEntranceInFlyoutEntranceWUC()
 {
     const auto& wh = TestServices::WindowHelper;
 
@@ -394,7 +472,7 @@ void LTETests::GridViewEntranceInFlyoutEntranceWUC()
     RunOnUIThread([&]() { flyout->Hide(); });
 }
 
-void LTETests::OpacityAnimationInEntranceTransitionWUC()
+void LTETestsUap::OpacityAnimationInEntranceTransitionWUC()
 {
     const auto& wh = TestServices::WindowHelper;
 
@@ -490,7 +568,7 @@ void LTETests::ExplicitLTE()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
 }
 
-void LTETests::PopupLTE()
+void LTETestsUap::PopupLTE()
 {
     WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree, true, true);
 
@@ -672,7 +750,7 @@ void LTETests::DeviceLost_Culled_LostLTE()
 // Regression test: <Reliability: Crash in NULL_CLASS_PTR_READ_c0000005_Microsoft.UI.Xaml.dll!CDependencyObject::NWPropagateDirtyFlag.>
 // This bucket of crashes has a crash in dirty flag propagation, due to an element having a layout transition
 // renderer that points to a deleted LTE.
-void LTETests::ResetTreeWithOpenLTE()
+void LTETestsUap::ResetTreeWithOpenLTE()
 {
     WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree, true, true);
 

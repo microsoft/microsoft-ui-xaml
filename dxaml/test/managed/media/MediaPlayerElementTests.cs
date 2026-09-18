@@ -77,6 +77,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.Media
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
+        // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Hosting:Mode", "UAP")] // inconsistent failure in WPF islands
         [TestProperty("Ignore", "True")] // TODO 40532721: Re-enable or remove disabled tests in WinUI3
         public async Task CanPlayWithNoMTC()
@@ -90,6 +91,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.Media
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
+        // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Hosting:Mode", "UAP")] // FullWindow mode is not yet supported in WPF hosting mode
         [TestProperty("Ignore", "True")] // TODO 40532721: Re-enable or remove disabled tests in WinUI3
         public async Task CanPlayFullWindowNoMTC()
@@ -103,6 +105,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.Media
         }
 
         [TestMethod]
+        // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Hosting:Mode", "UAP")] // FullWindow mode is not yet supported in WPF hosting mode
         [TestProperty("Ignore", "True")] // TODO 40532721: Re-enable or remove disabled tests in WinUI3
         public async Task CanPlayFullWindowWithMTC()
@@ -117,6 +120,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.Media
         }
 
         [TestMethod]
+        // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Hosting:Mode", "UAP")] // inconsistent failure in WPF island mode
         [TestProperty("Ignore", "True")] // TODO 40532721: Re-enable or remove disabled tests in WinUI3
         public async Task CanAutoPlayWithMTC()
@@ -143,6 +147,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.Media
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
+        // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Hosting:Mode", "UAP")] // FullWindow mode is not yet supported in WPF hosting mode
         [TestProperty("Ignore", "True")] // TODO 40532721: Re-enable or remove disabled tests in WinUI3
         public async Task CanAutoPlayFullWindowNoMTC()
@@ -157,6 +162,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.Media
         }
 
         [TestMethod]
+        // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Hosting:Mode", "UAP")] // FullWindow mode is not yet supported in WPF hosting mode
         [TestProperty("Ignore", "True")] // TODO 40532721: Re-enable or remove disabled tests in WinUI3
         public async Task CanAutoPlayFullWindowWithMTC()
@@ -255,6 +261,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.Media
         }
 
         [TestMethod]
+        // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Hosting:Mode", "UAP")] // FullWindow mode is not yet supported in WPF hosting mode
         [TestProperty("Ignore", "TRUE")]
         public async Task MTCGetsMarginInFullScreenOnXbox()
@@ -298,6 +305,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.Media
         }
 
         [TestMethod]
+        // Managed UAP hosting is unsupported by the .NET test runtime.
         [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode
         [TestProperty("Ignore", "True")] // TODO 40532721: Re-enable or remove disabled tests in WinUI3
         public async Task CanPlaylist()

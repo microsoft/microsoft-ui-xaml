@@ -24,8 +24,82 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool RadioButtonIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
+    }
+
+    bool RadioButtonIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool RadioButtonIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool RadioButtonIntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    xaml_controls::StackPanel^ RadioButtonIntegrationTestsUap::AddRadioButtonsToPanel(
+        bool isNamedGroup,
+        std::vector<xaml_controls::RadioButton^>& radioButtons,
+        xaml_controls::StackPanel^ panel)
+    {
+        if (!panel)
+        {
+            panel = ref new xaml_controls::StackPanel();
+            // Set VerticalAlignment to "Center" so that the RadioButtons are never rendered in the Status Bar region at the Top.
+            panel->VerticalAlignment = xaml::VerticalAlignment::Center;
+        }
+
+        for (unsigned int i = 0; i < radioButtons.size(); i++)
+        {
+            radioButtons[i] = ref new xaml_controls::RadioButton();
+            radioButtons[i]->Content = "Radio Button " + i;
+        }
+
+        auto rng = std::default_random_engine{};
+        std::shuffle(radioButtons.begin(), radioButtons.end(), rng);
+
+        for (unsigned int i = 0; i < radioButtons.size(); i++)
+        {
+            radioButtons[i]->Tag = "RB" + i;
+            radioButtons[i]->IsChecked = false;
+            if (isNamedGroup)
+            {
+                radioButtons[i]->GroupName = "radioGroup";
+            }
+
+            panel->Children->Append(radioButtons[i]);
+        }
+
+        return panel;
+    }
+
+    xaml_controls::StackPanel^ RadioButtonIntegrationTestsUap::AddRadioButtonsToPanelWithFocusedHandler(
+        bool isNamedGroup,
+        std::vector<xaml_controls::RadioButton^> & radioButtons,
+        std::vector<SafeEventRegistrationType(xaml_controls::RadioButton, GotFocus)>& focusedRegistrations,
+        xaml::RoutedEventHandler^ gotFocusHandler,
+        xaml_controls::StackPanel^ panel)
+    {
+        panel = AddRadioButtonsToPanel(isNamedGroup, radioButtons, panel);
+
+        for (unsigned int i = 0; i < radioButtons.size(); i++)
+        {
+            auto focusedRegistration = CreateSafeEventRegistration(xaml_controls::RadioButton, GotFocus);
+            focusedRegistration.Attach(radioButtons[i], gotFocusHandler);
+            focusedRegistrations.push_back(std::move(focusedRegistration));
+        }
+
+        return panel;
     }
 
     bool RadioButtonIntegrationTests::TestSetup()
@@ -817,7 +891,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         PerformValidateTraverseRadioButtonGroup(/* isNamedGroup */ true, InputDevice::Gamepad, /* moveForwardFirst */ false, /* useLeftRightkeys */ false);
     }
 
-    void RadioButtonIntegrationTests::ValidateTraverseRadioButtonGroupByKeyboard()
+    void RadioButtonIntegrationTestsUap::ValidateTraverseRadioButtonGroupByKeyboard()
     {
         PerformValidateTraverseRadioButtonGroup(/* isNamedGroup */ true, InputDevice::Keyboard, /* moveForwardFirst */ true, /* useLeftRightkeys */ false);
         PerformValidateTraverseRadioButtonGroup(/* isNamedGroup */ true, InputDevice::Keyboard, /* moveForwardFirst */ false, /* useLeftRightkeys */ false);
@@ -828,6 +902,132 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     }
 
     void RadioButtonIntegrationTests::PerformValidateTraverseRadioButtonGroup(bool isNamedGroup, InputDevice inputDevice, bool moveForwardFirst, bool useLeftRightkeys)
+    {
+        TestCleanupWrapper cleanup;
+
+        const int radioButtonCount = 7;
+
+        std::vector<SafeEventRegistrationType(xaml_controls::RadioButton, GotFocus)> focusedRegistrations;
+        std::vector<xaml_controls::RadioButton^> radioButtons(radioButtonCount);
+        xaml::RoutedEventHandler^ gotFocusHandler = nullptr;
+
+        // There is no looping when we traverse the RadioButton "Group". For a group of size n, we keep going in one direction for n+1 times
+        // and then we go in the opposite direction for n+1 times, but the expectedFocusSequence includes tags from fewer then n controls.
+        Platform::String^ expectedFocusSequence = "";
+        switch (inputDevice)
+        {
+            // For Gamepad, we don't care about RadioButton "groups" so we go through the number of focusable (not disabled) Controls which is 6.
+            case InputDevice::Gamepad:
+                expectedFocusSequence = moveForwardFirst ? L"[RB0][RB2][RB3][RB4][RB5][RB6][RB5][RB4][RB3][RB2][RB0]" : L"[RB6][RB5][RB4][RB3][RB2][RB0][RB2][RB3][RB4][RB5][RB6]";
+                break;
+            // For Keyboard, we go through the number of focusable (not disabled) RadioButtons in the RadioButton "Group".
+            // If the end of the "Group" is reached, we loop around.
+            case InputDevice::Keyboard:
+                expectedFocusSequence = moveForwardFirst ?
+                    L"[RB0][RB2][RB3][RB6][RB0][RB2][RB3][RB6][RB0][RB6][RB3][RB2][RB0][RB6][RB3][RB2][RB0]" :
+                    L"[RB6][RB3][RB2][RB0][RB6][RB3][RB2][RB0][RB6][RB0][RB2][RB3][RB6][RB0][RB2][RB3][RB6]";
+                break;
+        }
+        Platform::String^ focusSequence = "";
+
+        RunOnUIThread([&]()
+        {
+            gotFocusHandler = ref new xaml::RoutedEventHandler([&](Platform::Object^ sender, xaml::RoutedEventArgs^ args)
+            {
+                Platform::String^ focusStr = "[" + safe_cast<xaml::FrameworkElement^>(sender)->Tag + "]";
+                LOG_OUTPUT(L"GotFocus: %s", focusStr->Data());
+                focusSequence += focusStr;
+            });
+
+            auto panel = AddRadioButtonsToPanelWithFocusedHandler(isNamedGroup, radioButtons, focusedRegistrations, gotFocusHandler);
+
+            // Disable a RadioButton and check a RadioButton to get a good mix of cases.
+            radioButtons[1]->IsEnabled = false;
+            radioButtons[2]->IsChecked = true;
+
+            // Change the GroupName for two of the RadioButtons from the middle of the "Group" so that these are excluded from the traversal.
+            radioButtons[4]->GroupName = "radioButtonGroup2";
+            radioButtons[5]->GroupName = "radioButtonGroup2";
+
+            TestServices::WindowHelper->WindowContent = panel;
+
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Programmatically attempt to move focus to the RadioButton 'Group', if it is not already focused.");
+            if (!radioButtons[0]->Equals(xaml_input::FocusManager::GetFocusedElement(TestServices::WindowHelper->WindowContent->XamlRoot)))
+            {
+                auto options = ref new xaml_input::FindNextElementOptions();
+                options->SearchRoot = TestServices::WindowHelper->WindowContent;
+                bool resultTryMoveFocus = xaml_input::FocusManager::TryMoveFocus(moveForwardFirst ? xaml_input::FocusNavigationDirection::Next : xaml_input::FocusNavigationDirection::Previous, options);
+                VERIFY_ARE_EQUAL(resultTryMoveFocus, true);
+            }
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Go in one direction, for the length of the group + 1.
+        for (unsigned int i = 0; i < radioButtonCount + 1; i++)
+        {
+            if (moveForwardFirst)
+            {
+                if (useLeftRightkeys)
+                {
+                    CommonInputHelper::Right(inputDevice);
+                }
+                else
+                {
+                    CommonInputHelper::Down(inputDevice);
+                }
+            }
+            else
+            {
+                if (useLeftRightkeys)
+                {
+                    CommonInputHelper::Left(inputDevice);
+                }
+                else
+                {
+                    CommonInputHelper::Up(inputDevice);
+                }
+            }
+            TestServices::WindowHelper->WaitForIdle();
+        }
+
+        // Go in the opposite direction, for the length of the group + 1.
+        for (unsigned int i = 0; i < radioButtonCount + 1; i++)
+        {
+            if (moveForwardFirst)
+            {
+                if (useLeftRightkeys)
+                {
+                    CommonInputHelper::Left(inputDevice);
+                }
+                else
+                {
+                    CommonInputHelper::Up(inputDevice);
+                }
+            }
+            else
+            {
+                if (useLeftRightkeys)
+                {
+                    CommonInputHelper::Right(inputDevice);
+                }
+                else
+                {
+                    CommonInputHelper::Down(inputDevice);
+                }
+            }
+            TestServices::WindowHelper->WaitForIdle();
+        }
+        LOG_OUTPUT(L"Expected focus sequence: %s", expectedFocusSequence->Data());
+        LOG_OUTPUT(L"Actual focus sequence: %s", focusSequence->Data());
+        VERIFY_ARE_EQUAL(focusSequence, expectedFocusSequence);
+    }
+
+    void RadioButtonIntegrationTestsUap::PerformValidateTraverseRadioButtonGroup(bool isNamedGroup, InputDevice inputDevice, bool moveForwardFirst, bool useLeftRightkeys)
     {
         TestCleanupWrapper cleanup;
 

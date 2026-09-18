@@ -41,9 +41,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool CaretBrowsingAutomationIntegrationTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
             return true;
         }
+
+    bool CaretBrowsingAutomationIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool CaretBrowsingAutomationIntegrationTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool CaretBrowsingAutomationIntegrationTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
+            return true;
+        }
+
 
         bool CaretBrowsingAutomationIntegrationTests::TestSetup()
         {
@@ -75,7 +95,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void CaretBrowsingAutomationIntegrationTests::ReceivesFocus()
+        void CaretBrowsingAutomationIntegrationTestsUap::ReceivesFocus()
         {
             TestCleanupWrapper cleanup;
 

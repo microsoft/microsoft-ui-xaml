@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <RuntimeEnabledFeatureOverride.h>
 #include <CustomMetadataRegistrar.h>
 
@@ -19,6 +20,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e9192bce-1f8a-48ea-8327-14058db070f2;e6e3a886-04a7-4146-a8a7-26a3e81d503b;cc5953d4-6553-42e5-8c02-80720aa9d842")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -142,7 +144,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateFirstElementIsNotFocusedWhenClosingCommandBar)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that closing a CommandBar does not result in focus being transferred to the first focusable element in the page.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanMaintainFocusAfterCollectionOrSizeChange)
@@ -358,13 +359,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // TODO: 31563479 - Mouse input helper doesn't work on phone/onecore
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(VerifyCanMakeSubMenuBySettingFlyoutProperty)
-            TEST_METHOD_PROPERTY(L"Description", L"Verify that setting the Flyout property on an AppBarButton in the overflow functions normally as a sub-menu.")
-            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // TODO: 31563479 - Mouse input helper doesn't work on phone/onecore
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Not working in WPF-hosting, this validation fails intermitently: 
-                                                          //    "Moving mouse over MenuFlyoutAppBarButton2, which should close the first menu flyout and open the second."
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(VerifySubMenuDoesNotEatPointerInput)
             TEST_METHOD_PROPERTY(L"Description", L"Verify that setting the Flyout property on an AppBarButton and then showing that flyout does not display a light-dismiss layer that prevents interaction with the rest of the CommandBar.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
@@ -499,6 +493,34 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         }
 
         void CanOpenAndCloseUsingMoreButton();
+    };
+
+    class CommandBarIntegrationTestsUap : public WEX::TestClass<CommandBarIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(CommandBarIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"CommandBarIntegrationTests")
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e9192bce-1f8a-48ea-8327-14058db070f2;e6e3a886-04a7-4146-a8a7-26a3e81d503b;cc5953d4-6553-42e5-8c02-80720aa9d842")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+
+        BEGIN_TEST_METHOD(VerifyCanMakeSubMenuBySettingFlyoutProperty)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that setting the Flyout property on an AppBarButton in the overflow functions normally as a sub-menu.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // TODO: 31563479 - Mouse input helper doesn't work on phone/onecore
+            // Not working in WPF-hosting, this validation fails intermitently:
+            //    "Moving mouse over MenuFlyoutAppBarButton2, which should close the first menu flyout and open the second."
+        END_TEST_METHOD()
+
+    private:
+        Microsoft::UI::Xaml::Tests::Common::RuntimeEnabledFeatureOverride featureDisableTransitionsForTest;
     };
 
 } } } } } }

@@ -41,9 +41,908 @@ Platform::String^ ImplicitAnimationTests::GetResourcesPath() const
 
 bool ImplicitAnimationTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool ImplicitAnimationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ImplicitAnimationTestsUap::TestSetup()
+{
+    TestServices::WindowHelper->InitializeXaml(ref new MetadataProvider());
+    return true;
+}
+
+    bool ImplicitAnimationTestsUap::TestCleanup()
+{
+    TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+Platform::String^ ImplicitAnimationTestsUap::GetResourcesPath() const
+{
+    return GetPackageFolder() + L"Resources\\Native\\Foundation\\Graphics\\DCompInterop\\";
+}
+
+Microsoft::UI::Composition::Compositor^ ImplicitAnimationTestsUap::GetCompositor()
+{
+    return Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
+}
+
+void ImplicitAnimationTestsUap::Popup4Common(bool putAnimationOnPopup)
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    auto wh = TestServices::WindowHelper;
+    auto u = TestServices::Utilities;
+
+    wh->SetWindowSizeOverride(wf::Size(400, 400));
+
+    Canvas^ root = safe_cast<Canvas^>(LoadXamlFileOnUIThread(GetResourcesPath() + L"BasicPopup.xaml"));
+    xaml_primitives::Popup^ myPopup;
+    xaml_shapes::Rectangle^ r1;
+    UIElement^ animatedElement;
+    Compositor^ compositor;
+    ScalarKeyFrameAnimation^ hideAnimation;
+    Visual^ handOffVisual;
+
+    RunOnUIThread([&]()
+    {
+        wh->WindowContent = root;
+        myPopup = safe_cast<xaml_primitives::Popup^>(root->FindName(L"myPopup"));
+        r1 = safe_cast<xaml_shapes::Rectangle^>(root->FindName(L"r1"));
+        animatedElement = putAnimationOnPopup ? safe_cast<UIElement^>(myPopup) : safe_cast<UIElement^>(r1);
+        myPopup->IsOpen = true;
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Creating Implicit Animations");
+        compositor = GetCompositor();
+
+        hideAnimation = compositor->CreateScalarKeyFrameAnimation();
+        hideAnimation->InsertKeyFrame(1.0f, 0.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        ::Windows::Foundation::TimeSpan span = {10000000000L};    // 1000 seconds
+        hideAnimation->Duration = span;
+        hideAnimation->Target = "Opacity";
+
+        ElementCompositionPreview::SetImplicitHideAnimation(animatedElement, hideAnimation);
+
+        LOG_OUTPUT(L"Closing Popup, should play Hide animation");
+        myPopup->IsOpen = false;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Forcefully terminating Hide animation");
+        handOffVisual = ElementCompositionPreview::GetElementVisual(animatedElement);
+        handOffVisual->StopAnimationGroup(hideAnimation);
+    });
+    wh->WaitForImplicitShowHideComplete();
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
+}
+
+void ImplicitAnimationTestsUap::Popup6Common(bool putAnimationOnPopup)
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    auto wh = TestServices::WindowHelper;
+    auto u = TestServices::Utilities;
+
+    wh->SetWindowSizeOverride(wf::Size(400, 400));
+
+    Canvas^ root = safe_cast<Canvas^>(LoadXamlFileOnUIThread(GetResourcesPath() + L"BasicPopup.xaml"));
+    xaml_primitives::Popup^ myPopup;
+    xaml_shapes::Rectangle^ r1;
+    UIElement^ animatedElement;
+    Compositor^ compositor;
+    ScalarKeyFrameAnimation^ hideAnimation;
+    Visual^ handOffVisual;
+
+    RunOnUIThread([&]()
+    {
+        wh->WindowContent = root;
+        myPopup = safe_cast<xaml_primitives::Popup^>(root->FindName(L"myPopup"));
+        r1 = safe_cast<xaml_shapes::Rectangle^>(root->FindName(L"r1"));
+        animatedElement = putAnimationOnPopup ? safe_cast<UIElement^>(myPopup) : safe_cast<UIElement^>(r1);
+        myPopup->IsOpen = true;
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Creating Implicit Animations");
+        compositor = GetCompositor();
+
+        hideAnimation = compositor->CreateScalarKeyFrameAnimation();
+        hideAnimation->InsertKeyFrame(1.0f, 0.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        ::Windows::Foundation::TimeSpan span = {10000000000L};    // 1000 seconds
+        hideAnimation->Duration = span;
+        hideAnimation->Target = "Opacity";
+
+        ElementCompositionPreview::SetImplicitHideAnimation(animatedElement, hideAnimation);
+
+        LOG_OUTPUT(L"Removing Popup from tree, should play Hide animation");
+        unsigned indexToRemove = 0;
+        VERIFY_IS_TRUE(root->Children->IndexOf(myPopup, &indexToRemove));
+        root->Children->RemoveAt(indexToRemove);
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Forcefully terminating Hide animation");
+        handOffVisual = ElementCompositionPreview::GetElementVisual(animatedElement);
+        handOffVisual->StopAnimationGroup(hideAnimation);
+    });
+    wh->WaitForImplicitShowHideComplete();
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
+}
+
+void ImplicitAnimationTestsUap::Popup7Common(bool putAnimationOnPopup)
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    auto wh = TestServices::WindowHelper;
+    auto u = TestServices::Utilities;
+
+    wh->SetWindowSizeOverride(wf::Size(400, 400));
+
+    Canvas^ root = safe_cast<Canvas^>(LoadXamlFileOnUIThread(GetResourcesPath() + L"BasicPopup.xaml"));
+    xaml_primitives::Popup^ myPopup;
+    xaml_shapes::Rectangle^ r1;
+    UIElement^ animatedElement;
+    Compositor^ compositor;
+    ScalarKeyFrameAnimation^ showAnimation;
+    ScalarKeyFrameAnimation^ hideAnimation;
+    Visual^ handOffVisual;
+
+    RunOnUIThread([&]()
+    {
+        wh->WindowContent = root;
+        myPopup = safe_cast<xaml_primitives::Popup^>(root->FindName(L"myPopup"));
+        r1 = safe_cast<xaml_shapes::Rectangle^>(root->FindName(L"r1"));
+        animatedElement = putAnimationOnPopup ? safe_cast<UIElement^>(myPopup) : safe_cast<UIElement^>(r1);
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Creating Implicit Animations");
+        compositor = GetCompositor();
+
+        showAnimation = compositor->CreateScalarKeyFrameAnimation();
+        showAnimation->InsertKeyFrame(0.0f, 1.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        showAnimation->InsertKeyFrame(1.0f, 1.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        ::Windows::Foundation::TimeSpan span = {10000000000L};    // 1000 seconds
+        showAnimation->Duration = span;
+        showAnimation->Target = "Opacity";
+
+        hideAnimation = compositor->CreateScalarKeyFrameAnimation();
+        hideAnimation->InsertKeyFrame(1.0f, 0.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        hideAnimation->Duration = span;
+        hideAnimation->Target = "Opacity";
+
+        ElementCompositionPreview::SetImplicitShowAnimation(animatedElement, showAnimation);
+        ElementCompositionPreview::SetImplicitHideAnimation(animatedElement, hideAnimation);
+
+        LOG_OUTPUT(L"Opening Popup, should play Show animation");
+        myPopup->IsOpen = true;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Closing Popup, should interrupt Show and play Hide animation");
+        myPopup->IsOpen = false;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Forcefully terminating Hide animation");
+        handOffVisual = ElementCompositionPreview::GetElementVisual(animatedElement);
+        handOffVisual->StopAnimationGroup(hideAnimation);
+    });
+    wh->WaitForImplicitShowHideComplete();
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"3");
+}
+
+void ImplicitAnimationTestsUap::Popup8Common(bool putAnimationOnPopup)
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    auto wh = TestServices::WindowHelper;
+    auto u = TestServices::Utilities;
+
+    wh->SetWindowSizeOverride(wf::Size(400, 400));
+
+    Canvas^ root = safe_cast<Canvas^>(LoadXamlFileOnUIThread(GetResourcesPath() + L"BasicPopup.xaml"));
+    xaml_primitives::Popup^ myPopup;
+    xaml_shapes::Rectangle^ r1;
+    UIElement^ animatedElement;
+    Compositor^ compositor;
+    ScalarKeyFrameAnimation^ showAnimation;
+    ScalarKeyFrameAnimation^ hideAnimation;
+    Visual^ handOffVisual;
+
+    RunOnUIThread([&]()
+    {
+        wh->WindowContent = root;
+        myPopup = safe_cast<xaml_primitives::Popup^>(root->FindName(L"myPopup"));
+        r1 = safe_cast<xaml_shapes::Rectangle^>(root->FindName(L"r1"));
+        animatedElement = putAnimationOnPopup ? safe_cast<UIElement^>(myPopup) : safe_cast<UIElement^>(r1);
+        myPopup->IsOpen = true;
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Creating Implicit Animations");
+        compositor = GetCompositor();
+
+        showAnimation = compositor->CreateScalarKeyFrameAnimation();
+        showAnimation->InsertKeyFrame(0.0f, 1.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        showAnimation->InsertKeyFrame(1.0f, 1.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        ::Windows::Foundation::TimeSpan span = {10000000000L};    // 1000 seconds
+        showAnimation->Duration = span;
+        showAnimation->Target = "Opacity";
+
+        hideAnimation = compositor->CreateScalarKeyFrameAnimation();
+        hideAnimation->InsertKeyFrame(1.0f, 0.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        hideAnimation->Duration = span;
+        hideAnimation->Target = "Opacity";
+
+        ElementCompositionPreview::SetImplicitShowAnimation(animatedElement, showAnimation);
+        ElementCompositionPreview::SetImplicitHideAnimation(animatedElement, hideAnimation);
+
+        LOG_OUTPUT(L"Closing Popup, should play Hide animation");
+        myPopup->IsOpen = false;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Opening Popup, should interrupt Hide and play Show animation");
+        myPopup->IsOpen = true;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Forcefully terminating Show animation");
+        handOffVisual = ElementCompositionPreview::GetElementVisual(animatedElement);
+        handOffVisual->StopAnimationGroup(showAnimation);
+    });
+    wh->WaitForImplicitShowHideComplete();
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"3");
+}
+
+void ImplicitAnimationTestsUap::Popup11Common(bool putAnimationOnPopup)
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    auto wh = TestServices::WindowHelper;
+    auto u = TestServices::Utilities;
+
+    wh->SetWindowSizeOverride(wf::Size(400, 400));
+
+    Canvas^ root = safe_cast<Canvas^>(LoadXamlFileOnUIThread(GetResourcesPath() + L"BasicPopup.xaml"));
+    xaml_primitives::Popup^ myPopup;
+    xaml_shapes::Rectangle^ r1;
+    UIElement^ animatedElement;
+    Compositor^ compositor;
+    ScalarKeyFrameAnimation^ showAnimation;
+    ScalarKeyFrameAnimation^ hideAnimation;
+    Visual^ handOffVisual;
+
+    RunOnUIThread([&]()
+    {
+        wh->WindowContent = root;
+        myPopup = safe_cast<xaml_primitives::Popup^>(root->FindName(L"myPopup"));
+        r1 = safe_cast<xaml_shapes::Rectangle^>(root->FindName(L"r1"));
+        animatedElement = putAnimationOnPopup ? safe_cast<UIElement^>(myPopup) : safe_cast<UIElement^>(r1);
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Creating Implicit Animations");
+        compositor = GetCompositor();
+
+        showAnimation = compositor->CreateScalarKeyFrameAnimation();
+        showAnimation->InsertKeyFrame(0.0f, 1.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        showAnimation->InsertKeyFrame(1.0f, 1.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        ::Windows::Foundation::TimeSpan span = {10000000000L};    // 1000 seconds
+        showAnimation->Duration = span;
+        showAnimation->Target = "Opacity";
+
+        hideAnimation = compositor->CreateScalarKeyFrameAnimation();
+        hideAnimation->InsertKeyFrame(1.0f, 0.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        hideAnimation->Duration = span;
+        hideAnimation->Target = "Opacity";
+
+        ElementCompositionPreview::SetImplicitShowAnimation(animatedElement, showAnimation);
+        ElementCompositionPreview::SetImplicitHideAnimation(animatedElement, hideAnimation);
+
+        LOG_OUTPUT(L"Opening Popup, should play Show animation");
+        myPopup->IsOpen = true;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Removing Popup from tree, should interrupt Show and play Hide animation");
+        unsigned indexToRemove = 0;
+        VERIFY_IS_TRUE(root->Children->IndexOf(myPopup, &indexToRemove));
+        root->Children->RemoveAt(indexToRemove);
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Forcefully terminating Hide animation");
+        handOffVisual = ElementCompositionPreview::GetElementVisual(animatedElement);
+        handOffVisual->StopAnimationGroup(hideAnimation);
+    });
+    wh->WaitForImplicitShowHideComplete();
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"3");
+}
+
+void ImplicitAnimationTestsUap::Popup12Common(bool putAnimationOnPopup)
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    auto wh = TestServices::WindowHelper;
+    auto u = TestServices::Utilities;
+
+    wh->SetWindowSizeOverride(wf::Size(400, 400));
+
+    Canvas^ root = safe_cast<Canvas^>(LoadXamlFileOnUIThread(GetResourcesPath() + L"BasicPopup.xaml"));
+    xaml_primitives::Popup^ myPopup;
+    xaml_shapes::Rectangle^ r1;
+    UIElement^ animatedElement;
+    Compositor^ compositor;
+    ScalarKeyFrameAnimation^ showAnimation;
+    ScalarKeyFrameAnimation^ hideAnimation;
+    Visual^ handOffVisual;
+
+    RunOnUIThread([&]()
+    {
+        wh->WindowContent = root;
+        myPopup = safe_cast<xaml_primitives::Popup^>(root->FindName(L"myPopup"));
+        r1 = safe_cast<xaml_shapes::Rectangle^>(root->FindName(L"r1"));
+        animatedElement = putAnimationOnPopup ? safe_cast<UIElement^>(myPopup) : safe_cast<UIElement^>(r1);
+        myPopup->IsOpen = true;
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Creating Implicit Animations");
+        compositor = GetCompositor();
+
+        showAnimation = compositor->CreateScalarKeyFrameAnimation();
+        showAnimation->InsertKeyFrame(0.0f, 1.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        showAnimation->InsertKeyFrame(1.0f, 1.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        ::Windows::Foundation::TimeSpan span = {10000000000L};    // 1000 seconds
+        showAnimation->Duration = span;
+        showAnimation->Target = "Opacity";
+
+        hideAnimation = compositor->CreateScalarKeyFrameAnimation();
+        hideAnimation->InsertKeyFrame(1.0f, 0.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        hideAnimation->Duration = span;
+        hideAnimation->Target = "Opacity";
+
+        ElementCompositionPreview::SetImplicitShowAnimation(animatedElement, showAnimation);
+        ElementCompositionPreview::SetImplicitHideAnimation(animatedElement, hideAnimation);
+
+        LOG_OUTPUT(L"Removing Popup from tree, should play Hide animation");
+        unsigned indexToRemove = 0;
+        VERIFY_IS_TRUE(root->Children->IndexOf(myPopup, &indexToRemove));
+        root->Children->RemoveAt(indexToRemove);
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Adding Popup back into the tree, should interrupt Hide and play Show animation");
+        root->Children->Append(myPopup);
+        myPopup->IsOpen = true;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Forcefully terminating Show animation");
+        handOffVisual = ElementCompositionPreview::GetElementVisual(animatedElement);
+        handOffVisual->StopAnimationGroup(showAnimation);
+    });
+    wh->WaitForImplicitShowHideComplete();
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"3");
+}
+
+void ImplicitAnimationTestsUap::Popup14Common(bool putAnimationOnPopup)
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    auto wh = TestServices::WindowHelper;
+    auto u = TestServices::Utilities;
+
+    wh->SetWindowSizeOverride(wf::Size(400, 400));
+
+    Canvas^ root = safe_cast<Canvas^>(LoadXamlFileOnUIThread(GetResourcesPath() + L"NestedPopup.xaml"));
+    xaml_primitives::Popup^ myPopup;
+    xaml_primitives::Popup^ nestedPopup;
+    xaml_shapes::Rectangle^ r1;
+    UIElement^ animatedElement;
+    Border^ myBorder;
+    Compositor^ compositor;
+    ScalarKeyFrameAnimation^ hideAnimation;
+    Visual^ handOffVisual;
+
+    RunOnUIThread([&]()
+    {
+        wh->WindowContent = root;
+        myPopup = safe_cast<xaml_primitives::Popup^>(root->FindName(L"myPopup"));
+        nestedPopup = safe_cast<xaml_primitives::Popup^>(root->FindName(L"nestedPopup"));
+        r1 = safe_cast<xaml_shapes::Rectangle^>(root->FindName(L"r1"));
+        animatedElement = putAnimationOnPopup ? safe_cast<UIElement^>(nestedPopup) : safe_cast<UIElement^>(r1);
+        myBorder = safe_cast<Border^>(root->FindName(L"myBorder"));
+        myPopup->IsOpen = true;
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        nestedPopup->IsOpen = true;
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Creating Implicit Animations");
+        compositor = GetCompositor();
+
+        hideAnimation = compositor->CreateScalarKeyFrameAnimation();
+        hideAnimation->InsertKeyFrame(1.0f, 0.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        ::Windows::Foundation::TimeSpan span = {10000000000L};    // 1000 seconds
+        hideAnimation->Duration = span;
+        hideAnimation->Target = "Opacity";
+
+        ElementCompositionPreview::SetImplicitHideAnimation(myBorder, hideAnimation);
+        ElementCompositionPreview::SetImplicitHideAnimation(animatedElement, hideAnimation);
+
+        LOG_OUTPUT(L"Closing inner Popup, should play Hide animation");
+        nestedPopup->IsOpen = false;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Forcefully terminating inner Hide animation");
+        handOffVisual = ElementCompositionPreview::GetElementVisual(animatedElement);
+        handOffVisual->StopAnimationGroup(hideAnimation);
+    });
+    wh->WaitForImplicitShowHideComplete();
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Closing outer Popup, should play Hide animation");
+        myPopup->IsOpen = false;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"3");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Forcefully terminating outer Hide animation");
+        handOffVisual = ElementCompositionPreview::GetElementVisual(myBorder);
+        handOffVisual->StopAnimationGroup(hideAnimation);
+    });
+    wh->WaitForImplicitShowHideComplete();
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"4");
+}
+
+void ImplicitAnimationTestsUap::Popup20Common(bool putAnimationOnPopup)
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    auto wh = TestServices::WindowHelper;
+    auto u = TestServices::Utilities;
+
+    wh->SetWindowSizeOverride(wf::Size(400, 400));
+
+    Canvas^ root = safe_cast<Canvas^>(LoadXamlFileOnUIThread(GetResourcesPath() + L"BasicPopup.xaml"));
+    xaml_primitives::Popup^ myPopup;
+    xaml_shapes::Rectangle^ r1;
+    UIElement^ animatedElement;
+    Compositor^ compositor;
+    ScalarKeyFrameAnimation^ showAnimation;
+    ScalarKeyFrameAnimation^ hideAnimation;
+    Visual^ handOffVisual;
+
+    RunOnUIThread([&]()
+    {
+        wh->WindowContent = root;
+        myPopup = safe_cast<xaml_primitives::Popup^>(root->FindName(L"myPopup"));
+        r1 = safe_cast<xaml_shapes::Rectangle^>(root->FindName(L"r1"));
+        animatedElement = putAnimationOnPopup ? safe_cast<UIElement^>(myPopup) : safe_cast<UIElement^>(r1);
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Creating Implicit Animations");
+        compositor = GetCompositor();
+
+        showAnimation = compositor->CreateScalarKeyFrameAnimation();
+        showAnimation->InsertKeyFrame(0.0f, 1.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        showAnimation->InsertKeyFrame(1.0f, 1.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        ::Windows::Foundation::TimeSpan span = {10000000000L};    // 1000 seconds
+        showAnimation->Duration = span;
+        showAnimation->Target = "Opacity";
+
+        hideAnimation = compositor->CreateScalarKeyFrameAnimation();
+        hideAnimation->InsertKeyFrame(1.0f, 0.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        hideAnimation->Duration = span;
+        hideAnimation->Target = "Opacity";
+
+        ElementCompositionPreview::SetImplicitShowAnimation(animatedElement, showAnimation);
+        ElementCompositionPreview::SetImplicitHideAnimation(animatedElement, hideAnimation);
+
+        LOG_OUTPUT(L"Opening Popup, should play Show animation");
+        myPopup->IsOpen = true;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Forcefully terminating Show animation");
+        handOffVisual = ElementCompositionPreview::GetElementVisual(animatedElement);
+        handOffVisual->StopAnimationGroup(showAnimation);
+    });
+    wh->WaitForImplicitShowHideComplete();
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Closing Popup");
+        myPopup->IsOpen = false;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"3");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Forcefully terminating Hide animation");
+        handOffVisual = ElementCompositionPreview::GetElementVisual(animatedElement);
+        handOffVisual->StopAnimationGroup(hideAnimation);
+    });
+    wh->WaitForImplicitShowHideComplete();
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"4");
+}
+
+void ImplicitAnimationTestsUap::CollapsePopupCommon(bool parentlessPopup, bool putAnimationOnPopup)
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    auto wh = TestServices::WindowHelper;
+    auto u = TestServices::Utilities;
+
+    wh->SetWindowSizeOverride(wf::Size(400, 400));
+
+    xaml_primitives::Popup^ popup;
+    UIElement^ animatedElement;
+    Compositor^ compositor;
+    ScalarKeyFrameAnimation^ showAnimation;
+    ScalarKeyFrameAnimation^ hideAnimation;
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Creating visual tree");
+
+        xaml_shapes::Rectangle^ content = ref new xaml_shapes::Rectangle();
+        content->Width = 50;
+        content->Height = 50;
+        content->Fill = ref new SolidColorBrush(mu::Colors::Purple);
+
+        popup = ref new xaml_primitives::Popup();
+        popup->Child = content;
+
+        Canvas^ root = ref new Canvas();
+        if (!parentlessPopup)
+        {
+            root->Children->Append(popup);
+        }
+        wh->WindowContent = root;
+
+        if (parentlessPopup)
+        {
+            auto xamlRoot = root->XamlRoot;
+            if (xamlRoot)
+            {
+                // UAP will return a null content root and does not need this to be set
+                popup->XamlRoot = xamlRoot;
+            }
+        }
+        popup->IsOpen = true;
+
+        animatedElement = putAnimationOnPopup ? safe_cast<UIElement^>(popup) : safe_cast<UIElement^>(content);
+
+        LOG_OUTPUT(L"> Creating implicit animations");
+        compositor = GetCompositor();
+
+        ::Windows::Foundation::TimeSpan span = {10000000000L};    // 1000 seconds
+
+        showAnimation = compositor->CreateScalarKeyFrameAnimation();
+        showAnimation->InsertKeyFrame(0.0f, 1.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        showAnimation->InsertKeyFrame(1.0f, 1.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        showAnimation->Duration = span;
+        showAnimation->Target = "Opacity";
+        ElementCompositionPreview::SetImplicitShowAnimation(animatedElement, showAnimation);
+
+        hideAnimation = compositor->CreateScalarKeyFrameAnimation();
+        hideAnimation->InsertKeyFrame(0.0f, 0.5f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        hideAnimation->InsertKeyFrame(1.0f, 0.5f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        hideAnimation->Duration = span;
+        hideAnimation->Target = "Opacity";
+        ElementCompositionPreview::SetImplicitHideAnimation(animatedElement, hideAnimation);
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Collapsing popup");
+        popup->Visibility = Visibility::Collapsed;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"Hide");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Uncollapsing popup");
+        popup->Visibility = Visibility::Visible;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"Show");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Collapsing popup again");
+        popup->Visibility = Visibility::Collapsed;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"Hide");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Forcefully terminating Hide animation");
+        popup->IsOpen = false;
+        Visual^ handOffVisual = ElementCompositionPreview::GetElementVisual(animatedElement);
+        handOffVisual->StopAnimationGroup(hideAnimation);
+    });
+    wh->WaitForImplicitShowHideComplete();
+    wh->WaitForIdle();
+}
+
+void ImplicitAnimationTestsUap::CollapsePopupAncestorCommon(bool putAnimationOnPopup)
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    auto wh = TestServices::WindowHelper;
+    auto u = TestServices::Utilities;
+
+    wh->SetWindowSizeOverride(wf::Size(400, 400));
+
+    Grid^ ancestor;
+    xaml_primitives::Popup^ popup;
+    UIElement^ animatedElement;
+    Compositor^ compositor;
+    ScalarKeyFrameAnimation^ showAnimation;
+    ScalarKeyFrameAnimation^ hideAnimation;
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Creating visual tree");
+
+        xaml_shapes::Rectangle^ content = ref new xaml_shapes::Rectangle();
+        content->Width = 50;
+        content->Height = 50;
+        content->Fill = ref new SolidColorBrush(mu::Colors::Purple);
+
+        popup = ref new xaml_primitives::Popup();
+        popup->Child = content;
+
+        ancestor = ref new Grid();
+        ancestor->Children->Append(popup);
+
+        Canvas^ root = ref new Canvas();
+        root->Children->Append(ancestor);
+        wh->WindowContent = root;
+
+        popup->IsOpen = true;
+
+        animatedElement = putAnimationOnPopup ? safe_cast<UIElement^>(popup) : safe_cast<UIElement^>(content);
+
+        LOG_OUTPUT(L"> Creating implicit animations");
+        compositor = GetCompositor();
+
+        ::Windows::Foundation::TimeSpan span = {10000000000L};    // 1000 seconds
+
+        showAnimation = compositor->CreateScalarKeyFrameAnimation();
+        showAnimation->InsertKeyFrame(0.0f, 1.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        showAnimation->InsertKeyFrame(1.0f, 1.0f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        showAnimation->Duration = span;
+        showAnimation->Target = "Opacity";
+        ElementCompositionPreview::SetImplicitShowAnimation(animatedElement, showAnimation);
+
+        hideAnimation = compositor->CreateScalarKeyFrameAnimation();
+        hideAnimation->InsertKeyFrame(0.0f, 0.5f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        hideAnimation->InsertKeyFrame(1.0f, 0.5f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        hideAnimation->Duration = span;
+        hideAnimation->Target = "Opacity";
+        ElementCompositionPreview::SetImplicitHideAnimation(animatedElement, hideAnimation);
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Collapsing ancestor");
+        ancestor->Visibility = Visibility::Collapsed;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"Collapsing");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Uncollapsing ancestor");
+        ancestor->Visibility = Visibility::Visible;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"Uncollapsing");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Collapsing ancestor again");
+        ancestor->Visibility = Visibility::Collapsed;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"Collapsing");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Forcefully terminating Hide animation");
+        Visual^ handOffVisual = ElementCompositionPreview::GetElementVisual(animatedElement);
+        handOffVisual->StopAnimationGroup(hideAnimation);
+    });
+    wh->WaitForImplicitShowHideComplete();
+    wh->WaitForIdle();
+}
+
+void ImplicitAnimationTestsUap::CollapseWhilePopupDescendantHasHideAnimationCommon(bool collapsePopup)
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    auto wh = TestServices::WindowHelper;
+    auto u = TestServices::Utilities;
+
+    wh->SetWindowSizeOverride(wf::Size(400, 400));
+
+    xaml_shapes::Rectangle^ animatedElement;
+    Grid^ content;
+    xaml_primitives::Popup^ popup;
+    UIElement^ collapsedElement;
+    Compositor^ compositor;
+    ScalarKeyFrameAnimation^ hideAnimation;
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Creating visual tree");
+
+        animatedElement = ref new xaml_shapes::Rectangle();
+        animatedElement->Width = 50;
+        animatedElement->Height = 50;
+        animatedElement->Fill = ref new SolidColorBrush(mu::Colors::Purple);
+
+        Grid^ parent = ref new Grid();
+        parent->Children->Append(animatedElement);
+
+        Grid^ grandparent = ref new Grid();
+        grandparent->Children->Append(parent);
+
+        content = ref new Grid();
+        content->Children->Append(grandparent);
+
+        popup = ref new xaml_primitives::Popup();
+        popup->Child = content;
+
+        Canvas^ root = ref new Canvas();
+        root->Children->Append(popup);
+        wh->WindowContent = root;
+
+        popup->IsOpen = true;
+
+        collapsedElement = collapsePopup ? safe_cast<UIElement^>(popup) : safe_cast<UIElement^>(content);
+
+        LOG_OUTPUT(L"> Creating implicit animations");
+        compositor = GetCompositor();
+
+        ::Windows::Foundation::TimeSpan span = {10000000000L};    // 1000 seconds
+
+        hideAnimation = compositor->CreateScalarKeyFrameAnimation();
+        hideAnimation->InsertKeyFrame(0.0f, 0.5f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        hideAnimation->InsertKeyFrame(1.0f, 0.5f, CompositionEasingFunction::CreateLinearEasingFunction(compositor));
+        hideAnimation->Duration = span;
+        hideAnimation->Target = "Opacity";
+        ElementCompositionPreview::SetImplicitHideAnimation(animatedElement, hideAnimation);
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Collapsing animated descendant");
+        animatedElement->Visibility = Visibility::Collapsed;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Collapsing ancestor. It should stay visible for the hide animation on the descendant.");
+        collapsedElement->Visibility = Visibility::Collapsed;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Uncollapsing ancestor.");
+        collapsedElement->Visibility = Visibility::Visible;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Forcefully terminating Hide animation");
+        Visual^ handOffVisual = ElementCompositionPreview::GetElementVisual(animatedElement);
+        handOffVisual->StopAnimationGroup(hideAnimation);
+    });
+    wh->WaitForImplicitShowHideComplete();
+    wh->WaitForIdle();
+}
+
 
 bool ImplicitAnimationTests::ClassCleanup()
 {
@@ -962,7 +1861,7 @@ void ImplicitAnimationTests::HideAnimation5BWUCFull()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
 }
 
-void ImplicitAnimationTests::HideAnimation6WUCFull()
+void ImplicitAnimationTestsUap::HideAnimation6WUCFull()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -4400,7 +5299,7 @@ void ImplicitAnimationTests::Popup3Common(bool putAnimationOnPopup)
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
 }
 
-void ImplicitAnimationTests::Popup4() { Popup4Common(false); }
+void ImplicitAnimationTestsUap::Popup4() { Popup4Common(false); }
 void ImplicitAnimationTests::Popup4b() { Popup4Common(true); }
 void ImplicitAnimationTests::Popup4Common(bool putAnimationOnPopup)
 {
@@ -4459,7 +5358,7 @@ void ImplicitAnimationTests::Popup4Common(bool putAnimationOnPopup)
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
 }
 
-void ImplicitAnimationTests::Popup6() { Popup6Common(false); }
+void ImplicitAnimationTestsUap::Popup6() { Popup6Common(false); }
 void ImplicitAnimationTests::Popup6b() { Popup6Common(true); }
 void ImplicitAnimationTests::Popup6Common(bool putAnimationOnPopup)
 {
@@ -4520,7 +5419,7 @@ void ImplicitAnimationTests::Popup6Common(bool putAnimationOnPopup)
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
 }
 
-void ImplicitAnimationTests::Popup7() { Popup7Common(false); }
+void ImplicitAnimationTestsUap::Popup7() { Popup7Common(false); }
 void ImplicitAnimationTests::Popup7b() { Popup7Common(true); }
 void ImplicitAnimationTests::Popup7Common(bool putAnimationOnPopup)
 {
@@ -4594,7 +5493,7 @@ void ImplicitAnimationTests::Popup7Common(bool putAnimationOnPopup)
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"3");
 }
 
-void ImplicitAnimationTests::Popup8() { Popup8Common(false); }
+void ImplicitAnimationTestsUap::Popup8() { Popup8Common(false); }
 void ImplicitAnimationTests::Popup8b() { Popup8Common(true); }
 void ImplicitAnimationTests::Popup8Common(bool putAnimationOnPopup)
 {
@@ -4669,7 +5568,7 @@ void ImplicitAnimationTests::Popup8Common(bool putAnimationOnPopup)
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"3");
 }
 
-void ImplicitAnimationTests::Popup11() { Popup11Common(false); }
+void ImplicitAnimationTestsUap::Popup11() { Popup11Common(false); }
 void ImplicitAnimationTests::Popup11b() { Popup11Common(true); }
 void ImplicitAnimationTests::Popup11Common(bool putAnimationOnPopup)
 {
@@ -4745,7 +5644,7 @@ void ImplicitAnimationTests::Popup11Common(bool putAnimationOnPopup)
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"3");
 }
 
-void ImplicitAnimationTests::Popup12() { Popup12Common(false); }
+void ImplicitAnimationTestsUap::Popup12() { Popup12Common(false); }
 void ImplicitAnimationTests::Popup12b() { Popup12Common(true); }
 void ImplicitAnimationTests::Popup12Common(bool putAnimationOnPopup)
 {
@@ -4905,8 +5804,8 @@ void ImplicitAnimationTests::Popup13Common(bool putAnimationOnPopup)
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"4");
 }
 
-void ImplicitAnimationTests::Popup14() { Popup14Common(false); }
-void ImplicitAnimationTests::Popup14b() { Popup14Common(true); }
+void ImplicitAnimationTestsUap::Popup14() { Popup14Common(false); }
+void ImplicitAnimationTestsUap::Popup14b() { Popup14Common(true); }
 void ImplicitAnimationTests::Popup14Common(bool putAnimationOnPopup)
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
@@ -5196,7 +6095,7 @@ void ImplicitAnimationTests::Popup19()
     wh->WaitForIdle();
 }
 
-void ImplicitAnimationTests::Popup20() { Popup20Common(false); }
+void ImplicitAnimationTestsUap::Popup20() { Popup20Common(false); }
 void ImplicitAnimationTests::Popup20b() { Popup20Common(true); }
 void ImplicitAnimationTests::Popup20Common(bool putAnimationOnPopup)
 {
@@ -5280,7 +6179,7 @@ void ImplicitAnimationTests::Popup20Common(bool putAnimationOnPopup)
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"4");
 }
 
-void ImplicitAnimationTests::HideAnimation_CollapseOrRemovePopupChild()
+void ImplicitAnimationTestsUap::HideAnimation_CollapseOrRemovePopupChild()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -5638,7 +6537,7 @@ void ImplicitAnimationTests::AnimatePopupAndContent()
     wh->WaitForIdle();
 }
 
-void ImplicitAnimationTests::CollapsePopup() { CollapsePopupCommon(false /* parentlessPopup */, false); }
+void ImplicitAnimationTestsUap::CollapsePopup() { CollapsePopupCommon(false /* parentlessPopup */, false); }
 void ImplicitAnimationTests::CollapsePopup2() { CollapsePopupCommon(false /* parentlessPopup */, true); }
 void ImplicitAnimationTests::CollapseParentlessPopup() { CollapsePopupCommon(true /* parentlessPopup */, false); }
 void ImplicitAnimationTests::CollapseParentlessPopup2() { CollapsePopupCommon(true /* parentlessPopup */, true); }
@@ -5745,7 +6644,7 @@ void ImplicitAnimationTests::CollapsePopupCommon(bool parentlessPopup, bool putA
     wh->WaitForIdle();
 }
 
-void ImplicitAnimationTests::CollapsePopupAncestor() { CollapsePopupAncestorCommon(false); }
+void ImplicitAnimationTestsUap::CollapsePopupAncestor() { CollapsePopupAncestorCommon(false); }
 void ImplicitAnimationTests::CollapsePopupAncestor2() { CollapsePopupAncestorCommon(true); }
 void ImplicitAnimationTests::CollapsePopupAncestorCommon(bool putAnimationOnPopup)
 {
@@ -5841,8 +6740,8 @@ void ImplicitAnimationTests::CollapsePopupAncestorCommon(bool putAnimationOnPopu
     wh->WaitForIdle();
 }
 
-void ImplicitAnimationTests::CollapseWhilePopupDescendantHasHideAnimation() { CollapseWhilePopupDescendantHasHideAnimationCommon(false); }
-void ImplicitAnimationTests::CollapseWhilePopupDescendantHasHideAnimation2() { CollapseWhilePopupDescendantHasHideAnimationCommon(true); }
+void ImplicitAnimationTestsUap::CollapseWhilePopupDescendantHasHideAnimation() { CollapseWhilePopupDescendantHasHideAnimationCommon(false); }
+void ImplicitAnimationTestsUap::CollapseWhilePopupDescendantHasHideAnimation2() { CollapseWhilePopupDescendantHasHideAnimationCommon(true); }
 void ImplicitAnimationTests::CollapseWhilePopupDescendantHasHideAnimationCommon(bool collapsePopup)
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
@@ -7282,7 +8181,7 @@ void ImplicitAnimationTests::GroupedListView1WUCFull()
 
 }
 
-void ImplicitAnimationTests::GridView1WUCFull()
+void ImplicitAnimationTestsUap::GridView1WUCFull()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -7359,7 +8258,7 @@ void ImplicitAnimationTests::GridView1WUCFull()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
 }
 
-void ImplicitAnimationTests::GridView2WUCFull()
+void ImplicitAnimationTestsUap::GridView2WUCFull()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -7448,7 +8347,7 @@ void ImplicitAnimationTests::GridView2WUCFull()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"3");
 }
 
-void ImplicitAnimationTests::GridView3WUCFull()
+void ImplicitAnimationTestsUap::GridView3WUCFull()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 

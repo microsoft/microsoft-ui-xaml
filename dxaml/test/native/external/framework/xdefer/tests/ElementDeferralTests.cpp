@@ -250,7 +250,7 @@ namespace Microsoft::UI::Xaml::Tests::Framework {
 
     bool ElementDeferralTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         featureEnforceXbfV2Stream.Initialize(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnforceXbfV2Stream, true);
         return true;
     }

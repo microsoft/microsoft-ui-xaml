@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <Microsoft.UI.Xaml.media.dxinterop.h>
 #include <DXGI1_2.h>
 #include <Dxgi1_3.h>
@@ -27,6 +28,7 @@ public:
         TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"1d91ef47-c885-45e2-a578-7aaf1a1b1296;df11dd90-2e1d-45ff-93cb-cd6c0b87e24d;d04573b8-e899-4822-bb72-9f4743c89d36")
         TEST_CLASS_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
         TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+        TEST_CLASS_HOSTING_MODE_DEFAULT()
     END_TEST_CLASS()
 
     TEST_CLASS_SETUP(ClassSetup)
@@ -52,17 +54,41 @@ public:
         TEST_METHOD_PROPERTY(L"Description", L"Validate various expected failure conditions")
     END_TEST_METHOD()
 
-    BEGIN_TEST_METHOD(RegenerateVisual)
-        TEST_METHOD_PROPERTY(L"Description", L"Tests that a VSIS doesn't regenerate its SpriteVisual unless the surface changes.")
-        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // MockDComp isn't injected on OneCore, so we can't count the number of sprite visuals cleaned up
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Visual count mismatch
-    END_TEST_METHOD()
-
 private:
     inline Platform::String^ GetResourcesPath() const;
 
     unsigned int VerifySpriteVisualsCleanedUp(MockDComp::IMockDCompDevice2^ mockDevice2, unsigned int expected);
 };
+
+    class VSISTestsUap : public WEX::TestClass<VSISTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(VSISTestsUap)
+        TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+        TEST_CLASS_PROPERTY(L"ArtifactUnderTest", L"sdk\\inc\\Microsoft.UI.Xaml.media.dxinterop.idl")
+        TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+        TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+        TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"1d91ef47-c885-45e2-a578-7aaf1a1b1296;df11dd90-2e1d-45ff-93cb-cd6c0b87e24d;d04573b8-e899-4822-bb72-9f4743c89d36")
+        TEST_CLASS_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+        TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"VSISTests")
+        TEST_CLASS_HOSTING_MODE(UAP)
+    END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        unsigned int VerifySpriteVisualsCleanedUp(MockDComp::IMockDCompDevice2^ mockDevice2, unsigned int expected);
+
+    public:
+        BEGIN_TEST_METHOD(RegenerateVisual)
+        TEST_METHOD_PROPERTY(L"Description", L"Tests that a VSIS doesn't regenerate its SpriteVisual unless the surface changes.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // MockDComp isn't injected on OneCore, so we can't count the number of sprite visuals cleaned up
+        // Visual count mismatch
+        END_TEST_METHOD()
+    };
 
 } } } } } }
 

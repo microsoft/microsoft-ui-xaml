@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 #include <collection.h>
 
@@ -18,16 +19,11 @@ public:
 
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
         TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"aa6364d2-41fe-4bec-a849-584f1f309baf")
+        TEST_CLASS_HOSTING_MODE_DEFAULT()
     END_TEST_CLASS()
 
     TEST_CLASS_SETUP(ClassSetup)
     TEST_METHOD_CLEANUP(TestCleanup)
-
-    BEGIN_TEST_METHOD(NoTx3D)
-        TEST_METHOD_PROPERTY(L"Description", L"Test StickyHeaders with no transform3D applied")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Crash in WUX.dll
-        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
-    END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(Tx3DDefaultPerspective)
         TEST_METHOD_PROPERTY(L"Description", L"Test StickyHeaders with only a perspective applied")
@@ -52,5 +48,35 @@ private:
     xaml_controls::Button^ GetHeaderButton(UIElement^ parentControl);
     Platform::Collections::Vector<Platform::Object^>^ CreateGroupedData(int numGroups, int numItemsPerGroup);
 };
+
+    class HitTestStickyHeadersUap : public WEX::TestClass<HitTestStickyHeadersUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(HitTestStickyHeadersUap)
+        TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+        TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+
+        TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+        TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"aa6364d2-41fe-4bec-a849-584f1f309baf")
+        TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"HitTestStickyHeaders")
+        TEST_CLASS_HOSTING_MODE(UAP)
+    END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        inline Platform::String^ GetResourcesPath() const;
+        void SetupStickyHeaders(xaml_controls::Grid^ rootGrid, int numGroups);
+        std::vector<UIElement^> GetHeaderElements(xaml_controls::Grid^ rootGrid, int numGroups);
+        Platform::Collections::Vector<Platform::Object^>^ CreateGroupedData(int numGroups, int numItemsPerGroup);
+
+    public:
+        BEGIN_TEST_METHOD(NoTx3D)
+        TEST_METHOD_PROPERTY(L"Description", L"Test StickyHeaders with no transform3D applied")
+        // Crash in WUX.dll
+        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
+    };
 
 } } } } } } }

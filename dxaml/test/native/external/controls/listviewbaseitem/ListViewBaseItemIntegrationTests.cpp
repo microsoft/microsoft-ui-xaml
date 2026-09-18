@@ -266,9 +266,86 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     //
     bool IntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool IntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool IntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool IntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    void IntegrationTestsUap::TestSelectorItemFocusThemeChanges(
+            Platform::String^ xaml,
+            Platform::String^ elementName,
+            ::Windows::UI::Color lightPrimary,
+            ::Windows::UI::Color lightSecondary,
+            ::Windows::UI::Color darkPrimary,
+            ::Windows::UI::Color darkSecondary)
+    {
+        WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
+
+        xaml_controls::Primitives::SelectorItem^ item = nullptr;
+        xaml_controls::Panel^ rootPanel = nullptr;
+        RunOnUIThread([&]()
+        {
+            rootPanel = dynamic_cast<xaml_controls::Panel^> (xaml_markup::XamlReader::Load(xaml));
+            VERIFY_IS_NOT_NULL(rootPanel);
+
+            TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+        TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, elementName+ "_None");
+        RunOnUIThread([&]()
+        {
+            item = dynamic_cast<xaml_controls::Primitives::SelectorItem^>(rootPanel->FindName(elementName));
+            VERIFY_IS_NOT_NULL(item);
+
+            VERIFY_ARE_EQUAL(darkPrimary, safe_cast<xaml_media::SolidColorBrush^>(item->FocusVisualPrimaryBrush)->Color);
+            VERIFY_ARE_EQUAL(darkSecondary, safe_cast<xaml_media::SolidColorBrush^>(item->FocusVisualSecondaryBrush)->Color);
+            item->Focus(FocusState::Keyboard);
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+        TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, elementName+ "_Dark");
+
+        RunOnUIThread([&]()
+        {
+            rootPanel->RequestedTheme = ElementTheme::Light;
+            // FocusVisual properties don't update while element is focused. We need to remove
+            // keyboard focus first
+            item->Focus(FocusState::Pointer);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            item->Focus(FocusState::Keyboard); // Refocus to get updates
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, elementName+ "_Light");
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(lightPrimary, safe_cast<xaml_media::SolidColorBrush^>(item->FocusVisualPrimaryBrush)->Color);
+            VERIFY_ARE_EQUAL(lightSecondary, safe_cast<xaml_media::SolidColorBrush^>(item->FocusVisualSecondaryBrush)->Color);
+        });
+    }
+
 
     bool IntegrationTests::ClassCleanup()
     {
@@ -2066,7 +2143,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
     }
 
-    void IntegrationTests::ValidateListViewItemFocusPropertyThemeChange()
+    void IntegrationTestsUap::ValidateListViewItemFocusPropertyThemeChange()
     {
         Platform::String^ xaml =
             L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='root' RequestedTheme='Dark'>"
@@ -2120,7 +2197,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             Microsoft::UI::ColorHelper::FromArgb(0xB3, 0x00, 0x00, 0x00));
     }
 
-    void IntegrationTests::ValidateGridViewItemFocusPropertyThemeChange()
+    void IntegrationTestsUap::ValidateGridViewItemFocusPropertyThemeChange()
     {
         Platform::String^ xaml =
             L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='root' RequestedTheme='Dark'>"
@@ -2282,63 +2359,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     //
     // Private Methods
     //
-
-    void IntegrationTests::TestSelectorItemFocusThemeChanges(
-            Platform::String^ xaml,
-            Platform::String^ elementName,
-            ::Windows::UI::Color lightPrimary,
-            ::Windows::UI::Color lightSecondary,
-            ::Windows::UI::Color darkPrimary,
-            ::Windows::UI::Color darkSecondary)
-    {
-        WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
-
-        xaml_controls::Primitives::SelectorItem^ item = nullptr;
-        xaml_controls::Panel^ rootPanel = nullptr;
-        RunOnUIThread([&]()
-        {
-            rootPanel = dynamic_cast<xaml_controls::Panel^> (xaml_markup::XamlReader::Load(xaml));
-            VERIFY_IS_NOT_NULL(rootPanel);
-
-            TestServices::WindowHelper->WindowContent = rootPanel;
-        });
-
-        TestServices::WindowHelper->WaitForIdle();
-        TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, elementName+ "_None");
-        RunOnUIThread([&]()
-        {
-            item = dynamic_cast<xaml_controls::Primitives::SelectorItem^>(rootPanel->FindName(elementName));
-            VERIFY_IS_NOT_NULL(item);
-
-            VERIFY_ARE_EQUAL(darkPrimary, safe_cast<xaml_media::SolidColorBrush^>(item->FocusVisualPrimaryBrush)->Color);
-            VERIFY_ARE_EQUAL(darkSecondary, safe_cast<xaml_media::SolidColorBrush^>(item->FocusVisualSecondaryBrush)->Color);
-            item->Focus(FocusState::Keyboard);
-        });
-
-        TestServices::WindowHelper->WaitForIdle();
-        TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, elementName+ "_Dark");
-
-        RunOnUIThread([&]()
-        {
-            rootPanel->RequestedTheme = ElementTheme::Light;
-            // FocusVisual properties don't update while element is focused. We need to remove
-            // keyboard focus first
-            item->Focus(FocusState::Pointer);
-        });
-        TestServices::WindowHelper->WaitForIdle();
-        RunOnUIThread([&]()
-        {
-            item->Focus(FocusState::Keyboard); // Refocus to get updates
-        });
-        TestServices::WindowHelper->WaitForIdle();
-        TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, elementName+ "_Light");
-
-        RunOnUIThread([&]()
-        {
-            VERIFY_ARE_EQUAL(lightPrimary, safe_cast<xaml_media::SolidColorBrush^>(item->FocusVisualPrimaryBrush)->Color);
-            VERIFY_ARE_EQUAL(lightSecondary, safe_cast<xaml_media::SolidColorBrush^>(item->FocusVisualSecondaryBrush)->Color);
-        });
-    }
 
     bool IntegrationTests::AreBuffersEqual(::Windows::Storage::Streams::IBuffer^ buffer1, ::Windows::Storage::Streams::IBuffer^ buffer2)
     {

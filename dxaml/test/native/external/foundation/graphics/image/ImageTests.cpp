@@ -48,9 +48,148 @@ Platform::String^ ImageTests::GetResourcesPath() const
 
 bool ImageTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool ImageTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ImageTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool ImageTestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+Platform::String^ ImageTestsUap::GetResourcesPath() const
+{
+    return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\image\\";
+}
+
+void ImageTestsUap::DecodePixelWidthAndHeightInternal(DCompRendering rendering)
+{
+    auto pEngine = ref new ImageTestEngine();
+    VERIFY_IS_NOT_NULL(pEngine);
+
+    auto pTestImage = ref new TestImage();
+    VERIFY_IS_NOT_NULL(pTestImage);
+
+    // Image should appear blurry
+    pTestImage->DecodePixelWidth = 25;
+    pTestImage->DecodePixelHeight = 25;
+    pTestImage->ImagePath = GetResourcesPath() + L"rainier_2048x1536.png";
+    pEngine->AddTestImage(pTestImage);
+    pEngine->DCompRenderingMode = rendering;
+
+    // Specifying DecodePixelWidth/DecodePixelHeight currently disables BackgroundThreadImageLoading
+    // optimization.  This ETW check makes sure we release the intermediate software surface that
+    // is handed back from the cache to the UI thread.
+    ETWWaiterProxy imageEtwWaiter;
+
+    imageEtwWaiter.Start(
+        WINDOWS_UI_XAML_ETW_PROVIDER,
+        OfferableSoftwareBitmapFreeInfo_value);
+
+    pEngine->Execute();
+
+    imageEtwWaiter.WaitForDefault();
+}
+
+void ImageTestsUap::DownloadProgressTestHelper(TestImageEnums::LoadApi loadApi)
+{
+    TestCleanupWrapper cleanup;
+
+    int lastProgress = -1;
+    int downloadProgressCount = 0;
+    auto downloadProgressReg = CreateSafeEventRegistration(BitmapImage, DownloadProgress);
+
+    xaml_imaging::BitmapImage ^bitmapImage;
+    RunOnUIThread([&]()
+    {
+        bitmapImage = ref new xaml_imaging::BitmapImage();
+    });
+
+    ImageEventWaitingContext waiter;
+    waiter.Attach(bitmapImage);
+    downloadProgressReg.Attach(
+        bitmapImage,
+        ref new xaml_imaging::DownloadProgressEventHandler(
+            [&](Platform::Object^, xaml_imaging::DownloadProgressEventArgs ^args)
+    {
+        LOG_OUTPUT(L"DownloadProgress: %d", args->Progress);
+        VERIFY_IS_FALSE(waiter.IsOpened());
+        VERIFY_IS_TRUE(args->Progress > lastProgress);
+        lastProgress = args->Progress;
+        downloadProgressCount++;
+    }));
+
+    LoadHelper(bitmapImage, loadApi);
+
+    RunOnUIThread([&]()
+    {
+        auto image = ref new xaml_controls::Image();
+        image->Source = bitmapImage;
+        TestServices::WindowHelper->WindowContent = image;
+    });
+
+    waiter.WaitOpened();
+    VERIFY_IS_TRUE(downloadProgressCount > 0);
+
+    LOG_OUTPUT(L"Unset the source");
+    lastProgress = -1;
+    downloadProgressCount = 0;
+    waiter.ResetState();
+    RunOnUIThread([&]()
+    {
+        // We can only do this via UriSource because SetSource[Async] do not support null arguments
+        bitmapImage->UriSource = nullptr;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+    VERIFY_ARE_EQUAL(0, downloadProgressCount, L"Setting the source to null should not produce download events");
+
+    LoadHelper(bitmapImage, loadApi);
+    waiter.WaitOpened();
+    VERIFY_IS_TRUE(downloadProgressCount > 0, L"DownloadProgress should fire again on reload");
+
+    TestServices::WindowHelper->WaitForIdle();
+}
+
+void ImageTestsUap::LoadHelper(xaml_imaging::BitmapImage ^bitmapImage, TestImageEnums::LoadApi loadApi)
+{
+    wsts::IRandomAccessStream^ stream;
+    if (loadApi == TestImageEnums::LoadApi::SetSourceAsync ||
+        loadApi == TestImageEnums::LoadApi::SetSource)
+    {
+        stream = LoadBinaryFile(GetResourcesPath() + L"rainier_2048x1536.png");
+    }
+
+    RunOnUIThread([&]()
+    {
+        switch (loadApi)
+        {
+        case TestImageEnums::LoadApi::SetSourceAsync:
+            bitmapImage->SetSourceAsync(stream);
+            break;
+        case TestImageEnums::LoadApi::SetSource:
+            bitmapImage->SetSource(stream);
+            break;
+        case TestImageEnums::LoadApi::Uri:
+            bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
+            break;
+        }
+    });
+}
+
 
 bool ImageTests::TestSetup()
 {
@@ -199,7 +338,7 @@ void ImageTests::ExplicitXaml()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);
 }
 
-void ImageTests::PlateauScaleChange()
+void ImageTestsUap::PlateauScaleChange()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
     ::Windows::Foundation::Size size(400, 300);
@@ -642,7 +781,7 @@ void ImageTests::LoadStreamAsync2()
     pEngine->Execute();
 }
 
-void ImageTests::StreamCleanupAndRestore()
+void ImageTestsUap::StreamCleanupAndRestore()
 {
     auto pEngine = ref new ImageTestEngine();
     VERIFY_IS_NOT_NULL(pEngine);
@@ -770,7 +909,7 @@ void ImageTests::DecodePixelWidthAndHeightInternal(DCompRendering rendering)
     imageEtwWaiter.WaitForDefault();
 }
 
-void ImageTests::DecodePixelWidthAndHeightWUCFull()
+void ImageTestsUap::DecodePixelWidthAndHeightWUCFull()
 {
     DecodePixelWidthAndHeightInternal(DCompRendering::WUCCompleteSynchronousCompTree);
 }
@@ -1444,12 +1583,12 @@ void ImageTests::DownloadProgressUriSource()
     DownloadProgressTestHelper(TestImageEnums::LoadApi::Uri);
 }
 
-void ImageTests::DownloadProgressStreamSource()
+void ImageTestsUap::DownloadProgressStreamSource()
 {
     DownloadProgressTestHelper(TestImageEnums::LoadApi::SetSource);
 }
 
-void ImageTests::DownloadProgressStreamSourceAsync()
+void ImageTestsUap::DownloadProgressStreamSourceAsync()
 {
     DownloadProgressTestHelper(TestImageEnums::LoadApi::SetSourceAsync);
 }
@@ -1784,7 +1923,7 @@ void ImageTests::DecodeToRenderSizeUnderCollapsedSubtree()
     VERIFY_IS_TRUE(visuals2->Size == 1);
 }
 
-void ImageTests::DontReloadImageFromStream()
+void ImageTestsUap::DontReloadImageFromStream()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
     const auto& wh = TestServices::WindowHelper;

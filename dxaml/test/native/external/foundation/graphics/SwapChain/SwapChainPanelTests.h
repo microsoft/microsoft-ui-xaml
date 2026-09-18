@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Foundation { namespace Graphics {
 
@@ -15,6 +16,7 @@ public:
         TEST_CLASS_PROPERTY(L"ArtifactUnderTest", L"sdk\\inc\\Microsoft.UI.Xaml.media.dxinterop.idl")
         TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
         TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+        TEST_CLASS_HOSTING_MODE_DEFAULT()
     END_TEST_CLASS()
 
     TEST_CLASS_SETUP(ClassSetup)
@@ -117,13 +119,6 @@ public:
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
-    BEGIN_TEST_METHOD(HitTestPopup)
-        TEST_METHOD_PROPERTY(L"Description", L"Validates DComp hit-test visibility with a Popup")
-        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-    END_TEST_METHOD()
-
     BEGIN_TEST_METHOD(HitTestTransparentBrushWUCFull)
         TEST_METHOD_PROPERTY(L"Description", L"Validates DComp hit-test visibility with a transparent brush")
         TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
@@ -165,6 +160,34 @@ private:
     xaml_controls::SwapChainPanel^ m_swapChainPanel;
     xaml_controls::Button^ m_button;
 };
+
+    class SwapChainPanelTestsUap : public WEX::TestClass<SwapChainPanelTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(SwapChainPanelTestsUap)
+        TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+        TEST_CLASS_PROPERTY(L"ArtifactUnderTest", L"sdk\\inc\\Microsoft.UI.Xaml.media.dxinterop.idl")
+        TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+        TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+        TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"SwapChainPanelTests")
+        TEST_CLASS_HOSTING_MODE(UAP)
+    END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        xaml_controls::SwapChainPanel^ m_swapChainPanel;
+        inline Platform::String^ GetPathToFiles() const;
+
+    public:
+        BEGIN_TEST_METHOD(HitTestPopup)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates DComp hit-test visibility with a Popup")
+        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+    };
 
 } } } } } }
 

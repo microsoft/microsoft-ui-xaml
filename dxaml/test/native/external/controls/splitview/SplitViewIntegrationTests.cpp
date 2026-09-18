@@ -24,205 +24,88 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool SplitViewIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
 
         // Disable control state transitions to reduce test execution time.
         featureDisableTransitionsForTest.Initialize(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableTransitionsForTest, true);
         return true;
     }
 
-    bool SplitViewIntegrationTests::ClassCleanup()
+    bool SplitViewIntegrationTestsUap::ClassSetup()
     {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        featureDisableTransitionsForTest.Initialize(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableTransitionsForTest, true);
         return true;
     }
 
-    bool SplitViewIntegrationTests::TestSetup()
+    bool SplitViewIntegrationTestsUap::TestSetup()
     {
         test_infra::TestServices::WindowHelper->InitializeXaml();
         return true;
     }
 
-    bool SplitViewIntegrationTests::TestCleanup()
+    bool SplitViewIntegrationTestsUap::TestCleanup()
     {
         test_infra::TestServices::WindowHelper->ShutdownXaml();
         TestServices::WindowHelper->VerifyTestCleanup();
         return true;
     }
 
-    //
-    // Test Cases
-    //
-    void SplitViewIntegrationTests::CanInstantiate()
+    xaml_controls::Panel^ SplitViewIntegrationTestsUap::BuildAllStatesTree()
     {
-        Generic::DependencyObjectTests<xaml_controls::SplitView>::CanInstantiate();
-    }
+        xaml_controls::VariableSizedWrapGrid^ root = nullptr;
 
-    void SplitViewIntegrationTests::CanEnterAndLeaveLiveTree()
-    {
-        Generic::FrameworkElementTests<xaml_controls::SplitView>::CanEnterAndLeaveLiveTree();
-    }
-
-    void SplitViewIntegrationTests::CanDragFromPane()
-    {
-        auto verificationFunction = [](Platform::String^ targetListViewName)
+        RunOnUIThread([&]()
         {
-            TestCleanupWrapper cleanup;
+            root = ref new xaml_controls::VariableSizedWrapGrid();
+            root->Width = 400.0;
+            root->Orientation = xaml_controls::Orientation::Horizontal;
 
-            xaml_controls::SplitView^ splitView = nullptr;
-            xaml_controls::ListViewItem^ itemToDrag = nullptr;
-            xaml_controls::ListView^ targetListView = nullptr;
-
-            auto itemDroppedEvent = std::make_shared<Event>();
-
-            auto listViewItemDragStartingRegistration = CreateSafeEventRegistration(xaml_controls::ListViewItem, DragStarting);
-            auto listViewDragOverRegistration = CreateSafeEventRegistration(xaml_controls::ListView, DragOver);
-            auto listViewDropRegistration = CreateSafeEventRegistration(xaml_controls::ListView, Drop);
-
-            RunOnUIThread([&]()
+            for (size_t useAutoOpenPaneLength = 0; useAutoOpenPaneLength < 2; ++useAutoOpenPaneLength)
             {
-                auto rootPanel = safe_cast<xaml_controls::StackPanel^>(xaml_markup::XamlReader::Load(
-                    L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
-                    L"            xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'"
-                    L"            Width='400'>"
-                    L"    <SplitView x:Name='SplitView' IsPaneOpen='True'>"
-                    L"        <SplitView.Pane>"
-                    L"            <ListView>"
-                    L"                <ListViewItem>Item 1</ListViewItem>"
-                    L"                <ListViewItem x:Name='ItemToDrag' CanDrag='True'>Item 2</ListViewItem>"
-                    L"            </ListView>"
-                    L"        </SplitView.Pane>"
-                    L"        <ListView x:Name='ContentListView' HorizontalAlignment='Right' AllowDrop='True'>"
-                    L"            <ListViewItem>Item 1</ListViewItem>"
-                    L"        </ListView>"
-                    L"    </SplitView>"
-                    L"    <ListView x:Name='ExternalListView' AllowDrop='True'>"
-                    L"        <ListViewItem>Item 1</ListViewItem>"
-                    L"    </ListView>"
-                    L"</StackPanel>"));
-
-                splitView = safe_cast<xaml_controls::SplitView^>(rootPanel->FindName(L"SplitView"));
-                itemToDrag = safe_cast<xaml_controls::ListViewItem^>(rootPanel->FindName(L"ItemToDrag"));
-                targetListView = safe_cast<xaml_controls::ListView^>(rootPanel->FindName(targetListViewName));
-
-                listViewItemDragStartingRegistration.Attach(itemToDrag, ref new wf::TypedEventHandler<xaml::UIElement^, xaml::DragStartingEventArgs^>(
-                    [](xaml::UIElement^ sender, xaml::DragStartingEventArgs^ args)
+                for (auto placement = xaml_controls::SplitViewPanePlacement::Left; placement <= xaml_controls::SplitViewPanePlacement::Right; ++placement)
                 {
-                    xaml_controls::ListViewItem^ listViewItem = safe_cast<xaml_controls::ListViewItem^>(sender);
-                    args->Data->SetText(safe_cast<Platform::String^>(listViewItem->Content));
-                    args->Data->RequestedOperation = DataPackageOperation::Copy;
-                }));
-
-                listViewDragOverRegistration.Attach(targetListView, ref new xaml::DragEventHandler(
-                    [](Platform::Object^ sender, xaml::DragEventArgs^ args)
-                {
-                    args->AcceptedOperation = DataPackageOperation::Copy;
-                }));
-
-                listViewDropRegistration.Attach(targetListView, ref new xaml::DragEventHandler(
-                    [itemDroppedEvent](Platform::Object^ sender, xaml::DragEventArgs^ args)
-                {
-                    xaml_controls::ListView^ listView = safe_cast<xaml_controls::ListView^>(sender);
-                    xaml_controls::ListViewItem^ newListViewItem = ref new xaml_controls::ListViewItem();
-                    Platform::String^ itemText = L"";
-
-                    concurrency::create_task(args->DataView->GetTextAsync()).then(
-                        [newListViewItem, listView, itemDroppedEvent](Platform::String^ text)
+                    for (size_t isPaneOpen = 0; isPaneOpen < 2; ++isPaneOpen)
                     {
-                        RunOnUIThread([newListViewItem, listView, itemDroppedEvent, text]()
+                        for (auto displayMode = xaml_controls::SplitViewDisplayMode::Overlay; displayMode <= xaml_controls::SplitViewDisplayMode::CompactInline; ++displayMode)
                         {
-                            newListViewItem->Content = text;
-                            listView->Items->Append(newListViewItem);
-                            itemDroppedEvent->Set();
-                        });
-                    });
-                }));
+                            auto splitView = safe_cast<xaml_controls::SplitView^>(xaml_markup::XamlReader::Load(
+                                L"<SplitView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'"
+                                L"    Width='100' Height='75' OpenPaneLength='Auto' CompactPaneLength='5' LightDismissOverlayMode='Off'>"
+                                L"    <SplitView.Pane>"
+                                L"        <Rectangle x:Name='PaneElement'/>"
+                                L"    </SplitView.Pane>"
+                                L"</SplitView>"
+                                ));
 
-                TestServices::WindowHelper->WindowContent = rootPanel;
-            });
+                            if (useAutoOpenPaneLength == 0)
+                            {
+                                splitView->OpenPaneLength = 20;
+                            }
+                            else
+                            {
+                                auto paneElement = safe_cast<xaml::FrameworkElement^>(splitView->FindName("PaneElement"));
+                                paneElement->Width = 30;
+                            }
 
-            TestServices::WindowHelper->WaitForIdle();
+                            splitView->PanePlacement = placement;
+                            splitView->IsPaneOpen = (isPaneOpen > 0);
+                            splitView->DisplayMode = displayMode;
 
-            TestServices::InputHelper->DragBetweenElements(itemToDrag, targetListView, 0.5 /*velocityFactor*/);
+                            root->Children->Append(splitView);
+                        }
+                    }
+                }
+            }
 
-            itemDroppedEvent->WaitForDefault();
-            TestServices::WindowHelper->WaitForIdle();
+            TestServices::WindowHelper->WindowContent = root;
+        });
+        TestServices::WindowHelper->WaitForIdle();
 
-            RunOnUIThread([&]()
-            {
-                VERIFY_ARE_EQUAL(2u, targetListView->Items->Size);
-                VERIFY_ARE_EQUAL(ref new Platform::String(L"Item 2"), safe_cast<Platform::String^>(safe_cast<xaml_controls::ListViewItem^>(targetListView->Items->GetAt(1))->Content));
-            });
-        };
-
-        verificationFunction(L"ContentListView");
-        verificationFunction(L"ExternalListView");
+        return root;
     }
 
-    void SplitViewIntegrationTests::ValidateUIElementTree()
-    {
-        ControlHelper::ValidateUIElementTree(
-            wf::Size(400, 600),
-            1.f,
-            []()
-            {
-                return BuildAllStatesTree();
-            });
-    }
-
-    void SplitViewIntegrationTests::ValidateLightDismissBehavior()
-    {
-        TestCleanupWrapper cleanup;
-
-        LOG_OUTPUT(L"Testing: DisplayMode=Overlay, PanePlacement=Left, FlowDirection=LeftToRight");
-        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::Overlay, xaml_controls::SplitViewPanePlacement::Left, xaml::FlowDirection::LeftToRight, true);
-
-        LOG_OUTPUT(L"Testing: DisplayMode=Overlay, PanePlacement=Right, FlowDirection=LeftToRight");
-        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::Overlay, xaml_controls::SplitViewPanePlacement::Right, xaml::FlowDirection::LeftToRight, true);
-
-        LOG_OUTPUT(L"Testing: DisplayMode=CompactOverlay, PanePlacement=Left, FlowDirection=LeftToRight");
-        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactOverlay, xaml_controls::SplitViewPanePlacement::Left, xaml::FlowDirection::LeftToRight, true);
-
-        LOG_OUTPUT(L"Testing: DisplayMode=CompactOverlay, PanePlacement=Right, FlowDirection=LeftToRight");
-        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactOverlay, xaml_controls::SplitViewPanePlacement::Right, xaml::FlowDirection::LeftToRight, true);
-
-        LOG_OUTPUT(L"Testing: DisplayMode=Inline, PanePlacement=Left, FlowDirection=LeftToRight");
-        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::Inline, xaml_controls::SplitViewPanePlacement::Left, xaml::FlowDirection::LeftToRight, false);
-
-        LOG_OUTPUT(L"Testing: DisplayMode=Inline, PanePlacement=Right, FlowDirection=LeftToRight");
-        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::Inline, xaml_controls::SplitViewPanePlacement::Right, xaml::FlowDirection::LeftToRight, false);
-
-        LOG_OUTPUT(L"Testing: DisplayMode=CompactInline, PanePlacement=Left, FlowDirection=LeftToRight");
-        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactInline, xaml_controls::SplitViewPanePlacement::Left, xaml::FlowDirection::LeftToRight, false);
-
-        LOG_OUTPUT(L"Testing: DisplayMode=CompactInline, PanePlacement=Right, FlowDirection=LeftToRight");
-        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactInline, xaml_controls::SplitViewPanePlacement::Right, xaml::FlowDirection::LeftToRight, false);
-
-        LOG_OUTPUT(L"Testing: DisplayMode=Overlay, PanePlacement=Left, FlowDirection=RightToLeft");
-        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::Overlay, xaml_controls::SplitViewPanePlacement::Left, xaml::FlowDirection::RightToLeft, true);
-
-        LOG_OUTPUT(L"Testing: DisplayMode=Overlay, PanePlacement=Right, FlowDirection=RightToLeft");
-        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::Overlay, xaml_controls::SplitViewPanePlacement::Right, xaml::FlowDirection::RightToLeft, true);
-
-        LOG_OUTPUT(L"Testing: DisplayMode=CompactOverlay, PanePlacement=Left, FlowDirection=RightToLeft");
-        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactOverlay, xaml_controls::SplitViewPanePlacement::Left, xaml::FlowDirection::RightToLeft, true);
-
-        LOG_OUTPUT(L"Testing: DisplayMode=CompactOverlay, PanePlacement=Right, FlowDirection=RightToLeft");
-        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactOverlay, xaml_controls::SplitViewPanePlacement::Right, xaml::FlowDirection::RightToLeft, true);
-
-        LOG_OUTPUT(L"Testing: DisplayMode=Inline, PanePlacement=Left, FlowDirection=RightToLeft");
-        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::Inline, xaml_controls::SplitViewPanePlacement::Left, xaml::FlowDirection::RightToLeft, false);
-
-        LOG_OUTPUT(L"Testing: DisplayMode=Inline, PanePlacement=Right, FlowDirection=RightToLeft");
-        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::Inline, xaml_controls::SplitViewPanePlacement::Right, xaml::FlowDirection::RightToLeft, false);
-
-        LOG_OUTPUT(L"Testing: DisplayMode=CompactInline, PanePlacement=Left, FlowDirection=RightToLeft");
-        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactInline, xaml_controls::SplitViewPanePlacement::Left, xaml::FlowDirection::RightToLeft, false);
-
-        LOG_OUTPUT(L"Testing: DisplayMode=CompactInline, PanePlacement=Right, FlowDirection=RightToLeft");
-        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactInline, xaml_controls::SplitViewPanePlacement::Right, xaml::FlowDirection::RightToLeft, false);
-    }
-
-    void SplitViewIntegrationTests::ValidateLightDismissBehaviorWorker(
+    void SplitViewIntegrationTestsUap::ValidateLightDismissBehaviorWorker(
         xaml_controls::SplitViewDisplayMode displayMode,
         xaml_controls::SplitViewPanePlacement placement,
         xaml::FlowDirection flowDirection,
@@ -377,163 +260,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         // TODO: Rotate device
     }
 
-    void SplitViewIntegrationTests::CanSetCompactPaneLengthProperty()
-    {
-        TestCleanupWrapper cleanup;
-
-        xaml_controls::SplitView^ splitView = nullptr;
-
-        const double splitViewWidth = 400.0;
-        const double compactPaneLength = 85.0;
-        const double expectedContentAreaWidth = splitViewWidth - compactPaneLength;
-
-        RunOnUIThread([&]()
-        {
-            splitView = ref new xaml_controls::SplitView();
-
-            splitView->DisplayMode = xaml_controls::SplitViewDisplayMode::CompactOverlay;
-            splitView->Width = splitViewWidth;
-            splitView->CompactPaneLength = compactPaneLength;
-
-            splitView->Content = ref new xaml_shapes::Rectangle();
-
-            TestServices::WindowHelper->WindowContent = splitView;
-        });
-        TestServices::WindowHelper->WaitForIdle();
-
-        RunOnUIThread([&]()
-        {
-            VERIFY_ARE_EQUAL(safe_cast<xaml::FrameworkElement^>(splitView->Content)->ActualWidth, expectedContentAreaWidth);
-        });
-    }
-
-    void SplitViewIntegrationTests::VerifyKeyboardFocusBehavior()
-    {
-        TestCleanupWrapper cleanup;
-
-        LOG_OUTPUT(L"Testing: DisplayMode=Overlay, PanePlacement=Left");
-        VerifyKeyboardFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::Overlay, xaml_controls::SplitViewPanePlacement::Left);
-
-        LOG_OUTPUT(L"Testing: DisplayMode=Overlay, PanePlacement=Right");
-        VerifyKeyboardFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::Overlay, xaml_controls::SplitViewPanePlacement::Right);
-
-        LOG_OUTPUT(L"Testing: DisplayMode=CompactOverlay, PanePlacement=Left");
-        VerifyKeyboardFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactOverlay, xaml_controls::SplitViewPanePlacement::Left);
-
-        LOG_OUTPUT(L"Testing: DisplayMode=CompactOverlay, PanePlacement=Right");
-        VerifyKeyboardFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactOverlay, xaml_controls::SplitViewPanePlacement::Right);
-    }
-
-    void SplitViewIntegrationTests::VerifyKeyboardFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode displayMode, xaml_controls::SplitViewPanePlacement placement)
-    {
-        xaml_controls::SplitView^ splitView = nullptr;
-        xaml_controls::Button^ contentButton = nullptr;
-
-        auto gotFocusRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, GotFocus);
-
-        const double tabCount = 5;
-        Platform::String^ expectedFocusSequence = L"[C][P1][P2][P3][P1][P2][P3][P2][P1][P3][P2][P1][C]";
-        Platform::String^ focusSequence = "";
-
-        RunOnUIThread([&]()
-        {
-            splitView = safe_cast<xaml_controls::SplitView^>(xaml_markup::XamlReader::Load(
-                L"<SplitView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
-                L"    <SplitView.Pane>"
-                L"        <StackPanel>"
-                L"            <Button x:Name='paneButton1' Content='button' Tag='P1'/>"
-                L"            <Button x:Name='paneButton2' Content='button' Tag='P2'/>"
-                L"            <Button x:Name='paneButton3' Content='button' Tag='P3'/>"
-                L"        </StackPanel>"
-                L"    </SplitView.Pane>"
-                L"    <Grid>"
-                L"        <Button x:Name='contentButton' Content='button' Tag='C' HorizontalAlignment='Center' VerticalAlignment='Center'/>"
-                L"    </Grid>"
-                L"</SplitView>"
-                ));
-
-            splitView->DisplayMode = displayMode;
-            splitView->PanePlacement = placement;
-
-            gotFocusRegistration.Attach(splitView, ref new xaml::RoutedEventHandler([&](Platform::Object^ sender, xaml::RoutedEventArgs^ args)
-            {
-                focusSequence += "[" + safe_cast<xaml::FrameworkElement^>(args->OriginalSource)->Tag + "]";
-            }));
-
-            contentButton = safe_cast<xaml_controls::Button^>(splitView->FindName(L"contentButton"));
-
-            TestServices::WindowHelper->WindowContent = splitView;
-        });
-        TestServices::WindowHelper->WaitForIdle();
-
-        // Make sure our focus sequence is clear before we start the actual test.
-        focusSequence = "";
-
-        // Start the focus on button in the content area.
-        RunOnUIThread([&]()
-        {
-            contentButton->Focus(xaml::FocusState::Keyboard);
-        });
-        TestServices::WindowHelper->WaitForIdle();
-
-        // Open the pane, which should grab focus.
-        RunOnUIThread([&]()
-        {
-            splitView->IsPaneOpen = true;
-        });
-        TestServices::WindowHelper->WaitForIdle();
-
-        // Tab to move focus through the control.
-        for (size_t i = 0; i < tabCount; ++i)
-        {
-            TestServices::KeyboardHelper->Tab();
-            TestServices::WindowHelper->WaitForIdle();
-        }
-
-        // Shift-Tab to move focus through the control in reverse.
-        for (size_t i = 0; i < tabCount; ++i)
-        {
-            TestServices::KeyboardHelper->ShiftTab();
-            TestServices::WindowHelper->WaitForIdle();
-        }
-
-        // Now close the pane.
-        RunOnUIThread([&](){ splitView->IsPaneOpen = false; });
-        TestServices::WindowHelper->WaitForIdle();
-
-        VERIFY_ARE_EQUAL(focusSequence, expectedFocusSequence);
-    }
-
-    void SplitViewIntegrationTests::VerifyGamepadFocusBehavior()
-    {
-        TestCleanupWrapper cleanup;
-
-        LOG_OUTPUT(L"Testing: (Gamepad) DisplayMode=Overlay, PanePlacement=Left");
-        VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::Overlay, xaml_controls::SplitViewPanePlacement::Left, InputDevice::Gamepad);
-
-        LOG_OUTPUT(L"Testing: (Gamepad) DisplayMode=Overlay, PanePlacement=Right");
-        VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::Overlay, xaml_controls::SplitViewPanePlacement::Right, InputDevice::Gamepad);
-
-        LOG_OUTPUT(L"Testing: (Gamepad) DisplayMode=CompactOverlay, PanePlacement=Left");
-        VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactOverlay, xaml_controls::SplitViewPanePlacement::Left, InputDevice::Gamepad);
-
-        LOG_OUTPUT(L"Testing: (Gamepad) DisplayMode=CompactOverlay, PanePlacement=Right");
-        VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactOverlay, xaml_controls::SplitViewPanePlacement::Right, InputDevice::Gamepad);
-
-        LOG_OUTPUT(L"Testing: (Gamepad) DisplayMode=Inline, PanePlacement=Left");
-        VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::Inline, xaml_controls::SplitViewPanePlacement::Left, InputDevice::Gamepad);
-
-        LOG_OUTPUT(L"Testing: (Gamepad) DisplayMode=Inline, PanePlacement=Right");
-        VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::Inline, xaml_controls::SplitViewPanePlacement::Right, InputDevice::Gamepad);
-
-        LOG_OUTPUT(L"Testing: (Gamepad) DisplayMode=CompactInline, PanePlacement=Left");
-        VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactInline, xaml_controls::SplitViewPanePlacement::Left, InputDevice::Gamepad);
-
-        LOG_OUTPUT(L"Testing: (Gamepad) DisplayMode=CompactInline, PanePlacement=Right");
-        VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactInline, xaml_controls::SplitViewPanePlacement::Right, InputDevice::Gamepad);
-    }
-
-    void SplitViewIntegrationTests::VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode displayMode, xaml_controls::SplitViewPanePlacement placement, InputDevice device)
+    void SplitViewIntegrationTestsUap::VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode displayMode, xaml_controls::SplitViewPanePlacement placement, InputDevice device)
     {
         xaml_controls::SplitView^ splitView = nullptr;
         xaml_controls::Button^ contentButton = nullptr;
@@ -710,6 +437,354 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         LOG_OUTPUT(L"FocusSequence %s", focusSequence->Data());
         VERIFY_ARE_EQUAL(focusSequence, expectedFocusSequence);
+    }
+
+    void SplitViewIntegrationTestsUap::VerifyKeyboardFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode displayMode, xaml_controls::SplitViewPanePlacement placement)
+    {
+        xaml_controls::SplitView^ splitView = nullptr;
+        xaml_controls::Button^ contentButton = nullptr;
+
+        auto gotFocusRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, GotFocus);
+
+        const double tabCount = 5;
+        Platform::String^ expectedFocusSequence = L"[C][P1][P2][P3][P1][P2][P3][P2][P1][P3][P2][P1][C]";
+        Platform::String^ focusSequence = "";
+
+        RunOnUIThread([&]()
+        {
+            splitView = safe_cast<xaml_controls::SplitView^>(xaml_markup::XamlReader::Load(
+                L"<SplitView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"    <SplitView.Pane>"
+                L"        <StackPanel>"
+                L"            <Button x:Name='paneButton1' Content='button' Tag='P1'/>"
+                L"            <Button x:Name='paneButton2' Content='button' Tag='P2'/>"
+                L"            <Button x:Name='paneButton3' Content='button' Tag='P3'/>"
+                L"        </StackPanel>"
+                L"    </SplitView.Pane>"
+                L"    <Grid>"
+                L"        <Button x:Name='contentButton' Content='button' Tag='C' HorizontalAlignment='Center' VerticalAlignment='Center'/>"
+                L"    </Grid>"
+                L"</SplitView>"
+                ));
+
+            splitView->DisplayMode = displayMode;
+            splitView->PanePlacement = placement;
+
+            gotFocusRegistration.Attach(splitView, ref new xaml::RoutedEventHandler([&](Platform::Object^ sender, xaml::RoutedEventArgs^ args)
+            {
+                focusSequence += "[" + safe_cast<xaml::FrameworkElement^>(args->OriginalSource)->Tag + "]";
+            }));
+
+            contentButton = safe_cast<xaml_controls::Button^>(splitView->FindName(L"contentButton"));
+
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Make sure our focus sequence is clear before we start the actual test.
+        focusSequence = "";
+
+        // Start the focus on button in the content area.
+        RunOnUIThread([&]()
+        {
+            contentButton->Focus(xaml::FocusState::Keyboard);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Open the pane, which should grab focus.
+        RunOnUIThread([&]()
+        {
+            splitView->IsPaneOpen = true;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Tab to move focus through the control.
+        for (size_t i = 0; i < tabCount; ++i)
+        {
+            TestServices::KeyboardHelper->Tab();
+            TestServices::WindowHelper->WaitForIdle();
+        }
+
+        // Shift-Tab to move focus through the control in reverse.
+        for (size_t i = 0; i < tabCount; ++i)
+        {
+            TestServices::KeyboardHelper->ShiftTab();
+            TestServices::WindowHelper->WaitForIdle();
+        }
+
+        // Now close the pane.
+        RunOnUIThread([&](){ splitView->IsPaneOpen = false; });
+        TestServices::WindowHelper->WaitForIdle();
+
+        VERIFY_ARE_EQUAL(focusSequence, expectedFocusSequence);
+    }
+
+
+    bool SplitViewIntegrationTests::ClassCleanup()
+    {
+        return true;
+    }
+
+    bool SplitViewIntegrationTests::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml();
+        return true;
+    }
+
+    bool SplitViewIntegrationTests::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
+    //
+    // Test Cases
+    //
+    void SplitViewIntegrationTests::CanInstantiate()
+    {
+        Generic::DependencyObjectTests<xaml_controls::SplitView>::CanInstantiate();
+    }
+
+    void SplitViewIntegrationTests::CanEnterAndLeaveLiveTree()
+    {
+        Generic::FrameworkElementTests<xaml_controls::SplitView>::CanEnterAndLeaveLiveTree();
+    }
+
+    void SplitViewIntegrationTestsUap::CanDragFromPane()
+    {
+        auto verificationFunction = [](Platform::String^ targetListViewName)
+        {
+            TestCleanupWrapper cleanup;
+
+            xaml_controls::SplitView^ splitView = nullptr;
+            xaml_controls::ListViewItem^ itemToDrag = nullptr;
+            xaml_controls::ListView^ targetListView = nullptr;
+
+            auto itemDroppedEvent = std::make_shared<Event>();
+
+            auto listViewItemDragStartingRegistration = CreateSafeEventRegistration(xaml_controls::ListViewItem, DragStarting);
+            auto listViewDragOverRegistration = CreateSafeEventRegistration(xaml_controls::ListView, DragOver);
+            auto listViewDropRegistration = CreateSafeEventRegistration(xaml_controls::ListView, Drop);
+
+            RunOnUIThread([&]()
+            {
+                auto rootPanel = safe_cast<xaml_controls::StackPanel^>(xaml_markup::XamlReader::Load(
+                    L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
+                    L"            xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'"
+                    L"            Width='400'>"
+                    L"    <SplitView x:Name='SplitView' IsPaneOpen='True'>"
+                    L"        <SplitView.Pane>"
+                    L"            <ListView>"
+                    L"                <ListViewItem>Item 1</ListViewItem>"
+                    L"                <ListViewItem x:Name='ItemToDrag' CanDrag='True'>Item 2</ListViewItem>"
+                    L"            </ListView>"
+                    L"        </SplitView.Pane>"
+                    L"        <ListView x:Name='ContentListView' HorizontalAlignment='Right' AllowDrop='True'>"
+                    L"            <ListViewItem>Item 1</ListViewItem>"
+                    L"        </ListView>"
+                    L"    </SplitView>"
+                    L"    <ListView x:Name='ExternalListView' AllowDrop='True'>"
+                    L"        <ListViewItem>Item 1</ListViewItem>"
+                    L"    </ListView>"
+                    L"</StackPanel>"));
+
+                splitView = safe_cast<xaml_controls::SplitView^>(rootPanel->FindName(L"SplitView"));
+                itemToDrag = safe_cast<xaml_controls::ListViewItem^>(rootPanel->FindName(L"ItemToDrag"));
+                targetListView = safe_cast<xaml_controls::ListView^>(rootPanel->FindName(targetListViewName));
+
+                listViewItemDragStartingRegistration.Attach(itemToDrag, ref new wf::TypedEventHandler<xaml::UIElement^, xaml::DragStartingEventArgs^>(
+                    [](xaml::UIElement^ sender, xaml::DragStartingEventArgs^ args)
+                {
+                    xaml_controls::ListViewItem^ listViewItem = safe_cast<xaml_controls::ListViewItem^>(sender);
+                    args->Data->SetText(safe_cast<Platform::String^>(listViewItem->Content));
+                    args->Data->RequestedOperation = DataPackageOperation::Copy;
+                }));
+
+                listViewDragOverRegistration.Attach(targetListView, ref new xaml::DragEventHandler(
+                    [](Platform::Object^ sender, xaml::DragEventArgs^ args)
+                {
+                    args->AcceptedOperation = DataPackageOperation::Copy;
+                }));
+
+                listViewDropRegistration.Attach(targetListView, ref new xaml::DragEventHandler(
+                    [itemDroppedEvent](Platform::Object^ sender, xaml::DragEventArgs^ args)
+                {
+                    xaml_controls::ListView^ listView = safe_cast<xaml_controls::ListView^>(sender);
+                    xaml_controls::ListViewItem^ newListViewItem = ref new xaml_controls::ListViewItem();
+                    Platform::String^ itemText = L"";
+
+                    concurrency::create_task(args->DataView->GetTextAsync()).then(
+                        [newListViewItem, listView, itemDroppedEvent](Platform::String^ text)
+                    {
+                        RunOnUIThread([newListViewItem, listView, itemDroppedEvent, text]()
+                        {
+                            newListViewItem->Content = text;
+                            listView->Items->Append(newListViewItem);
+                            itemDroppedEvent->Set();
+                        });
+                    });
+                }));
+
+                TestServices::WindowHelper->WindowContent = rootPanel;
+            });
+
+            TestServices::WindowHelper->WaitForIdle();
+
+            TestServices::InputHelper->DragBetweenElements(itemToDrag, targetListView, 0.5 /*velocityFactor*/);
+
+            itemDroppedEvent->WaitForDefault();
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                VERIFY_ARE_EQUAL(2u, targetListView->Items->Size);
+                VERIFY_ARE_EQUAL(ref new Platform::String(L"Item 2"), safe_cast<Platform::String^>(safe_cast<xaml_controls::ListViewItem^>(targetListView->Items->GetAt(1))->Content));
+            });
+        };
+
+        verificationFunction(L"ContentListView");
+        verificationFunction(L"ExternalListView");
+    }
+
+    void SplitViewIntegrationTestsUap::ValidateUIElementTree()
+    {
+        ControlHelper::ValidateUIElementTree(
+            wf::Size(400, 600),
+            1.f,
+            []()
+            {
+                return BuildAllStatesTree();
+            });
+    }
+
+    void SplitViewIntegrationTestsUap::ValidateLightDismissBehavior()
+    {
+        TestCleanupWrapper cleanup;
+
+        LOG_OUTPUT(L"Testing: DisplayMode=Overlay, PanePlacement=Left, FlowDirection=LeftToRight");
+        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::Overlay, xaml_controls::SplitViewPanePlacement::Left, xaml::FlowDirection::LeftToRight, true);
+
+        LOG_OUTPUT(L"Testing: DisplayMode=Overlay, PanePlacement=Right, FlowDirection=LeftToRight");
+        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::Overlay, xaml_controls::SplitViewPanePlacement::Right, xaml::FlowDirection::LeftToRight, true);
+
+        LOG_OUTPUT(L"Testing: DisplayMode=CompactOverlay, PanePlacement=Left, FlowDirection=LeftToRight");
+        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactOverlay, xaml_controls::SplitViewPanePlacement::Left, xaml::FlowDirection::LeftToRight, true);
+
+        LOG_OUTPUT(L"Testing: DisplayMode=CompactOverlay, PanePlacement=Right, FlowDirection=LeftToRight");
+        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactOverlay, xaml_controls::SplitViewPanePlacement::Right, xaml::FlowDirection::LeftToRight, true);
+
+        LOG_OUTPUT(L"Testing: DisplayMode=Inline, PanePlacement=Left, FlowDirection=LeftToRight");
+        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::Inline, xaml_controls::SplitViewPanePlacement::Left, xaml::FlowDirection::LeftToRight, false);
+
+        LOG_OUTPUT(L"Testing: DisplayMode=Inline, PanePlacement=Right, FlowDirection=LeftToRight");
+        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::Inline, xaml_controls::SplitViewPanePlacement::Right, xaml::FlowDirection::LeftToRight, false);
+
+        LOG_OUTPUT(L"Testing: DisplayMode=CompactInline, PanePlacement=Left, FlowDirection=LeftToRight");
+        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactInline, xaml_controls::SplitViewPanePlacement::Left, xaml::FlowDirection::LeftToRight, false);
+
+        LOG_OUTPUT(L"Testing: DisplayMode=CompactInline, PanePlacement=Right, FlowDirection=LeftToRight");
+        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactInline, xaml_controls::SplitViewPanePlacement::Right, xaml::FlowDirection::LeftToRight, false);
+
+        LOG_OUTPUT(L"Testing: DisplayMode=Overlay, PanePlacement=Left, FlowDirection=RightToLeft");
+        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::Overlay, xaml_controls::SplitViewPanePlacement::Left, xaml::FlowDirection::RightToLeft, true);
+
+        LOG_OUTPUT(L"Testing: DisplayMode=Overlay, PanePlacement=Right, FlowDirection=RightToLeft");
+        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::Overlay, xaml_controls::SplitViewPanePlacement::Right, xaml::FlowDirection::RightToLeft, true);
+
+        LOG_OUTPUT(L"Testing: DisplayMode=CompactOverlay, PanePlacement=Left, FlowDirection=RightToLeft");
+        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactOverlay, xaml_controls::SplitViewPanePlacement::Left, xaml::FlowDirection::RightToLeft, true);
+
+        LOG_OUTPUT(L"Testing: DisplayMode=CompactOverlay, PanePlacement=Right, FlowDirection=RightToLeft");
+        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactOverlay, xaml_controls::SplitViewPanePlacement::Right, xaml::FlowDirection::RightToLeft, true);
+
+        LOG_OUTPUT(L"Testing: DisplayMode=Inline, PanePlacement=Left, FlowDirection=RightToLeft");
+        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::Inline, xaml_controls::SplitViewPanePlacement::Left, xaml::FlowDirection::RightToLeft, false);
+
+        LOG_OUTPUT(L"Testing: DisplayMode=Inline, PanePlacement=Right, FlowDirection=RightToLeft");
+        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::Inline, xaml_controls::SplitViewPanePlacement::Right, xaml::FlowDirection::RightToLeft, false);
+
+        LOG_OUTPUT(L"Testing: DisplayMode=CompactInline, PanePlacement=Left, FlowDirection=RightToLeft");
+        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactInline, xaml_controls::SplitViewPanePlacement::Left, xaml::FlowDirection::RightToLeft, false);
+
+        LOG_OUTPUT(L"Testing: DisplayMode=CompactInline, PanePlacement=Right, FlowDirection=RightToLeft");
+        ValidateLightDismissBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactInline, xaml_controls::SplitViewPanePlacement::Right, xaml::FlowDirection::RightToLeft, false);
+    }
+
+    void SplitViewIntegrationTests::CanSetCompactPaneLengthProperty()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::SplitView^ splitView = nullptr;
+
+        const double splitViewWidth = 400.0;
+        const double compactPaneLength = 85.0;
+        const double expectedContentAreaWidth = splitViewWidth - compactPaneLength;
+
+        RunOnUIThread([&]()
+        {
+            splitView = ref new xaml_controls::SplitView();
+
+            splitView->DisplayMode = xaml_controls::SplitViewDisplayMode::CompactOverlay;
+            splitView->Width = splitViewWidth;
+            splitView->CompactPaneLength = compactPaneLength;
+
+            splitView->Content = ref new xaml_shapes::Rectangle();
+
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(safe_cast<xaml::FrameworkElement^>(splitView->Content)->ActualWidth, expectedContentAreaWidth);
+        });
+    }
+
+    void SplitViewIntegrationTestsUap::VerifyKeyboardFocusBehavior()
+    {
+        TestCleanupWrapper cleanup;
+
+        LOG_OUTPUT(L"Testing: DisplayMode=Overlay, PanePlacement=Left");
+        VerifyKeyboardFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::Overlay, xaml_controls::SplitViewPanePlacement::Left);
+
+        LOG_OUTPUT(L"Testing: DisplayMode=Overlay, PanePlacement=Right");
+        VerifyKeyboardFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::Overlay, xaml_controls::SplitViewPanePlacement::Right);
+
+        LOG_OUTPUT(L"Testing: DisplayMode=CompactOverlay, PanePlacement=Left");
+        VerifyKeyboardFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactOverlay, xaml_controls::SplitViewPanePlacement::Left);
+
+        LOG_OUTPUT(L"Testing: DisplayMode=CompactOverlay, PanePlacement=Right");
+        VerifyKeyboardFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactOverlay, xaml_controls::SplitViewPanePlacement::Right);
+    }
+
+    void SplitViewIntegrationTestsUap::VerifyGamepadFocusBehavior()
+    {
+        TestCleanupWrapper cleanup;
+
+        LOG_OUTPUT(L"Testing: (Gamepad) DisplayMode=Overlay, PanePlacement=Left");
+        VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::Overlay, xaml_controls::SplitViewPanePlacement::Left, InputDevice::Gamepad);
+
+        LOG_OUTPUT(L"Testing: (Gamepad) DisplayMode=Overlay, PanePlacement=Right");
+        VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::Overlay, xaml_controls::SplitViewPanePlacement::Right, InputDevice::Gamepad);
+
+        LOG_OUTPUT(L"Testing: (Gamepad) DisplayMode=CompactOverlay, PanePlacement=Left");
+        VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactOverlay, xaml_controls::SplitViewPanePlacement::Left, InputDevice::Gamepad);
+
+        LOG_OUTPUT(L"Testing: (Gamepad) DisplayMode=CompactOverlay, PanePlacement=Right");
+        VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactOverlay, xaml_controls::SplitViewPanePlacement::Right, InputDevice::Gamepad);
+
+        LOG_OUTPUT(L"Testing: (Gamepad) DisplayMode=Inline, PanePlacement=Left");
+        VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::Inline, xaml_controls::SplitViewPanePlacement::Left, InputDevice::Gamepad);
+
+        LOG_OUTPUT(L"Testing: (Gamepad) DisplayMode=Inline, PanePlacement=Right");
+        VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::Inline, xaml_controls::SplitViewPanePlacement::Right, InputDevice::Gamepad);
+
+        LOG_OUTPUT(L"Testing: (Gamepad) DisplayMode=CompactInline, PanePlacement=Left");
+        VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactInline, xaml_controls::SplitViewPanePlacement::Left, InputDevice::Gamepad);
+
+        LOG_OUTPUT(L"Testing: (Gamepad) DisplayMode=CompactInline, PanePlacement=Right");
+        VerifyGamepadOrRemoteFocusBehaviorWorker(xaml_controls::SplitViewDisplayMode::CompactInline, xaml_controls::SplitViewPanePlacement::Right, InputDevice::Gamepad);
     }
 
     void SplitViewIntegrationTests::ValidateElementResizeCountForTransitions()
@@ -1312,60 +1387,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    xaml_controls::Panel^ SplitViewIntegrationTests::BuildAllStatesTree()
-    {
-        xaml_controls::VariableSizedWrapGrid^ root = nullptr;
-
-        RunOnUIThread([&]()
-        {
-            root = ref new xaml_controls::VariableSizedWrapGrid();
-            root->Width = 400.0;
-            root->Orientation = xaml_controls::Orientation::Horizontal;
-
-            for (size_t useAutoOpenPaneLength = 0; useAutoOpenPaneLength < 2; ++useAutoOpenPaneLength)
-            {
-                for (auto placement = xaml_controls::SplitViewPanePlacement::Left; placement <= xaml_controls::SplitViewPanePlacement::Right; ++placement)
-                {
-                    for (size_t isPaneOpen = 0; isPaneOpen < 2; ++isPaneOpen)
-                    {
-                        for (auto displayMode = xaml_controls::SplitViewDisplayMode::Overlay; displayMode <= xaml_controls::SplitViewDisplayMode::CompactInline; ++displayMode)
-                        {
-                            auto splitView = safe_cast<xaml_controls::SplitView^>(xaml_markup::XamlReader::Load(
-                                L"<SplitView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'"
-                                L"    Width='100' Height='75' OpenPaneLength='Auto' CompactPaneLength='5' LightDismissOverlayMode='Off'>"
-                                L"    <SplitView.Pane>"
-                                L"        <Rectangle x:Name='PaneElement'/>"
-                                L"    </SplitView.Pane>"
-                                L"</SplitView>"
-                                ));
-
-                            if (useAutoOpenPaneLength == 0)
-                            {
-                                splitView->OpenPaneLength = 20;
-                            }
-                            else
-                            {
-                                auto paneElement = safe_cast<xaml::FrameworkElement^>(splitView->FindName("PaneElement"));
-                                paneElement->Width = 30;
-                            }
-
-                            splitView->PanePlacement = placement;
-                            splitView->IsPaneOpen = (isPaneOpen > 0);
-                            splitView->DisplayMode = displayMode;
-
-                            root->Children->Append(splitView);
-                        }
-                    }
-                }
-            }
-
-            TestServices::WindowHelper->WindowContent = root;
-        });
-        TestServices::WindowHelper->WaitForIdle();
-
-        return root;
-    }
-
     void SplitViewIntegrationTests::CanInteractWithPaneContentIfOpenedByDefault()
     {
         TestCleanupWrapper cleanup;
@@ -1482,7 +1503,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void SplitViewIntegrationTests::ValidateFootprint()
+    void SplitViewIntegrationTestsUap::ValidateFootprint()
     {
         TestCleanupWrapper cleanup;
 
@@ -1780,7 +1801,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void SplitViewIntegrationTests::ValidateOverlayUIETree()
+    void SplitViewIntegrationTestsUap::ValidateOverlayUIETree()
     {
         TestCleanupWrapper cleanup;
 
@@ -1810,7 +1831,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         );
     }
 
-    void SplitViewIntegrationTests::OpenSplitViewWithNoElementsFocused()
+    void SplitViewIntegrationTestsUap::OpenSplitViewWithNoElementsFocused()
     {
         TestCleanupWrapper cleanup;
 

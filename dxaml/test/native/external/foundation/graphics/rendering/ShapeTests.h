@@ -4,6 +4,7 @@
 #pragma once
 
 #include <WUCRenderingScopeGuard.h>
+#include <HostingModeTestClass.h>
 #include <Versioning.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Foundation { namespace Graphics {
@@ -18,6 +19,7 @@ public:
         TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e6d4a8e5-be97-431f-871b-4937e816c8b3;df11dd90-2e1d-45ff-93cb-cd6c0b87e24d;d04573b8-e899-4822-bb72-9f4743c89d36")
         TEST_CLASS_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
         TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+        TEST_CLASS_HOSTING_MODE_DEFAULT()
     END_TEST_CLASS()
 
     TEST_CLASS_SETUP(ClassSetup)
@@ -77,11 +79,6 @@ public:
 
     BEGIN_TEST_METHOD(LineTestDashWUC)
         TEST_METHOD_PROPERTY(L"Description", L"Renders a line using new WUC APIs. Sets dash attributes, changes them.")
-        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-    END_TEST_METHOD()
-
-    BEGIN_TEST_METHOD(RenderPath)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Mask is different
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
@@ -219,6 +216,35 @@ private:
     void RenderPolylineIntersectionWUC();
 
 };
+
+    class ShapeTestsUap : public WEX::TestClass<ShapeTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(ShapeTestsUap)
+        TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+        TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+        TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+        TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e6d4a8e5-be97-431f-871b-4937e816c8b3;df11dd90-2e1d-45ff-93cb-cd6c0b87e24d;d04573b8-e899-4822-bb72-9f4743c89d36")
+        TEST_CLASS_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+        TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+        TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"ShapeTests")
+        TEST_CLASS_HOSTING_MODE(UAP)
+    END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        void RenderPathInternal(Microsoft::UI::Xaml::Tests::Common::DCompRendering dcompRendering);
+        inline Platform::String^ GetResourcesPath() const;
+
+    public:
+        BEGIN_TEST_METHOD(RenderPath)
+        // Mask is different
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+    };
 
 } } } } } }
 

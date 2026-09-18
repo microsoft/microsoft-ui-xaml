@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Foundation { namespace Text {
@@ -16,19 +17,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89;3192b2bd-30c5-4c19-a6c1-9856b940df63")
                 TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
             TEST_CLASS_CLEANUP(ClassCleanup)
             TEST_METHOD_SETUP(TestSetup)
             TEST_METHOD_CLEANUP(TestCleanup)
-
-            BEGIN_TEST_METHOD(ValidateInitialTextBoxSizes)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates the original size of various TextBox controls.")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidateInitialTextBoxMeasureOverride)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates the first MeasureOverride return value.")
@@ -41,6 +36,34 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         private:
             Platform::String^ GetPathToFiles() const;
         };
+
+    class TextControlsSizingTestsUap : public WEX::TestClass<TextControlsSizingTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(TextControlsSizingTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89;3192b2bd-30c5-4c19-a6c1-9856b940df63")
+                TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"TextControlsSizingTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        Platform::String^ GetPathToFiles() const;
+
+    public:
+        BEGIN_TEST_METHOD(ValidateInitialTextBoxSizes)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates the original size of various TextBox controls.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+    };
 
     } }
 } } } }

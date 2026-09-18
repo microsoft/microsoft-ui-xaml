@@ -38,9 +38,34 @@ Platform::String^ BrushTests::GetResourcesPath() const
 
 bool BrushTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool BrushTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool BrushTestsUap::TestSetup()
+{
+    TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool BrushTestsUap::TestCleanup()
+{
+    TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+Platform::String^ BrushTestsUap::GetResourcesPath() const
+{
+    return GetPackageFolder() + L"resources\\native\\foundation\\graphics\\rendering\\";
+}
+
 
 bool BrushTests::TestSetup()
 {
@@ -432,7 +457,7 @@ private:
 };
 
 // Gets and sets the Window's SystemBackdrop brush before and after DCompTreeHost's full setup, then resets it.
-void BrushTests::UseWindowCompositionSystemBackdrop()
+void BrushTestsUap::UseWindowCompositionSystemBackdrop()
 {
     const auto& wh = TestServices::WindowHelper;
     const auto& u = TestServices::Utilities;
@@ -501,7 +526,7 @@ void BrushTests::UseWindowCompositionSystemBackdrop()
 }
 
 // Gets and resets the Window's already null SystemBackdrop brush.
-void BrushTests::UseNullWindowCompositionSystemBackdrop()
+void BrushTestsUap::UseNullWindowCompositionSystemBackdrop()
 {
     const auto& wh = TestServices::WindowHelper;
     const auto& u = TestServices::Utilities;
@@ -861,7 +886,7 @@ void BrushTests::XamlCompositionBrushShapesAndControls()
 }
 
 
-void BrushTests::XamlCompositionBrushListViewItem_PlateauScale()
+void BrushTestsUap::XamlCompositionBrushListViewItem_PlateauScale()
 {
     const auto& wh = TestServices::WindowHelper;
     const auto& u = TestServices::Utilities;

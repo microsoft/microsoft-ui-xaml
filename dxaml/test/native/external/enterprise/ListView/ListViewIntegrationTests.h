@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 #include <collection.h>
 
@@ -23,6 +24,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"0d66400d-d95f-4953-be63-adc1e02548a0;4c9bea11-fb07-433e-bbe1-5b18dafb1b27")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -33,11 +35,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         //
         // Platform:Any
         //
-        BEGIN_TEST_METHOD(AnimateItemIntoViewWithGamepad)
-            TEST_METHOD_PROPERTY(L"Description", L"Navigates through items with the gamepad down and up buttons.")
-            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(JumpItemIntoViewWithKeyboard)
             TEST_METHOD_PROPERTY(L"Description", L"Navigates through items with the page down, page up, home and end keyboard keys.")
@@ -47,25 +44,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Navigates through items with the page down, page up, home and end keyboard keys while the root element is a Canvas.")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(AnimateZoomableItemIntoView)
-            TEST_METHOD_PROPERTY(L"Description", L"Navigates through items with the gamepad down and up buttons, and home and end keyboard keys.")
-            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(AnimateItemIntoViewProgrammatically)
-            TEST_METHOD_PROPERTY(L"Description", L"Animates through items programmatically using the gamepad to navigate.")
-            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(BringItemIntoShrunkViewWithGamepad)
-            TEST_METHOD_PROPERTY(L"Description", L"Navigates through items with the gamepad down and up buttons using a shrunk ApplicationView.VisibleBounds rectangle.")
-            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(StopInertialManipulationWithGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Uses the gamepad up button to interrupt and reverse ScrollViewer's inertia.")
         END_TEST_METHOD()
@@ -73,7 +51,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(CanOpenEmptyMenuFlyoutWhilePanningListView)
             TEST_METHOD_PROPERTY(L"Description", L"Holds an item to bring up an empty context menu and then tries to pan the list with DManip.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyContainerFromItemAfterScrollIntoView)
@@ -176,6 +153,49 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         void JumpItemIntoViewWithKeyboard(bool useRootCanvas) const;
         void VerifyTabOrder(xaml_input::KeyboardNavigationMode tabNavigation, VerifyTabOrderFlags flags, Platform::String^ expectedFocusSequence);
         void VerifyFocusChangeAfterListViewReset(bool useItemsSource);
+    };
+
+    class ListViewIntegrationTestsUap : public WEX::TestClass<ListViewIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(ListViewIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"0d66400d-d95f-4953-be63-adc1e02548a0;4c9bea11-fb07-433e-bbe1-5b18dafb1b27")
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"ListViewIntegrationTests")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        String^ GetResourcesPath() const;
+        Platform::Collections::Vector<Platform::Object^>^ GetGroupedData(bool getLargeDataSet = true) const;
+
+    public:
+        BEGIN_TEST_METHOD(AnimateItemIntoViewWithGamepad)
+        TEST_METHOD_PROPERTY(L"Description", L"Navigates through items with the gamepad down and up buttons.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(AnimateZoomableItemIntoView)
+        TEST_METHOD_PROPERTY(L"Description", L"Navigates through items with the gamepad down and up buttons, and home and end keyboard keys.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(AnimateItemIntoViewProgrammatically)
+        TEST_METHOD_PROPERTY(L"Description", L"Animates through items programmatically using the gamepad to navigate.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(BringItemIntoShrunkViewWithGamepad)
+        TEST_METHOD_PROPERTY(L"Description", L"Navigates through items with the gamepad down and up buttons using a shrunk ApplicationView.VisibleBounds rectangle.")
+        TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
     };
 
 } } } } } }

@@ -26,10 +26,262 @@ using namespace Microsoft::UI::Xaml::Tests::Foundation::Graphics;
 
 bool UIElementFacadeTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
 
     return true;
 }
+
+    bool UIElementFacadeTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool UIElementFacadeTestsUap::TestSetup()
+{
+   TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool UIElementFacadeTestsUap::TestCleanup()
+{
+    TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+void UIElementFacadeTestsUap::ExpectEAccessDenied(std::function<void()> functionCall)
+{
+    ExpectExceptionWithHRESULT(E_ACCESSDENIED, functionCall);
+}
+
+void UIElementFacadeTestsUap::TranslationAPIInternal(bool useClip)
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    auto wh = TestServices::WindowHelper;
+    auto u = TestServices::Utilities;
+
+    Canvas^ root;
+    Canvas^ canvas;
+
+    RunOnUIThread([&]()
+    {
+        root = ref new Canvas();
+        root->Width = 100;
+        root->Height = 100;
+        root->Background = ref new xaml_media::SolidColorBrush(mu::Colors::Green);
+
+        // This puts a 2X scale into prepend visual for canvas
+        auto scale = ref new ScaleTransform();
+        scale->ScaleX = 2;
+        scale->ScaleY = 2;
+        root->RenderTransform = scale;
+
+        if (useClip)
+        {
+            // This puts a clip into prepend visual for canvas
+            auto clip = ref new RectangleGeometry();
+            clip->Rect = {0,0,75,75};
+            root->Clip = clip;
+        }
+
+        canvas = ref new Canvas();
+        canvas->Width = 100;
+        canvas->Height = 100;
+        canvas->Background = ref new xaml_media::SolidColorBrush(mu::Colors::Red);
+        wfn_::float3 translation = canvas->Translation;
+        VERIFY_IS_TRUE(translation == wfn_::float3(0, 0, 0));
+        canvas->Translation = {10, 20, 30};
+        translation = canvas->Translation;
+        VERIFY_IS_TRUE(translation == wfn_::float3(10, 20, 30));
+
+        root->Children->Append(canvas);
+        wh->WindowContent = root;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Setting to 2D Translate");
+        canvas->Translation = {10, 20, 0};
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Turning on ECP Translation");
+        ElementCompositionPreview::SetIsTranslationEnabled(canvas, true);
+        auto handOffVisual = ElementCompositionPreview::GetElementVisual(canvas);
+        handOffVisual->Properties->InsertVector3(L"Translation", ::Windows::Foundation::Numerics::float3(15.0f, 25.0f, 35.0f));
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"3");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Changing Translation");
+        canvas->Translation = {20, 30, 0};
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"4");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Turning off ECP Translation");
+        ElementCompositionPreview::SetIsTranslationEnabled(canvas, false);
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"5");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Removing prepend clip");
+        root->Clip = nullptr;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"6");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Setting back to default");
+        canvas->Translation = {0, 0, 0};
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"7");
+}
+
+void UIElementFacadeTestsUap::TranslationAnimationPlusECPInternal(bool useClip)
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    auto wh = TestServices::WindowHelper;
+    auto u = TestServices::Utilities;
+
+    Canvas^ root;
+    Canvas^ canvas;
+    ExpressionAnimation^ animation;
+
+    RunOnUIThread([&]()
+    {
+        root = ref new Canvas();
+        root->Width = 100;
+        root->Height = 100;
+        root->Background = ref new xaml_media::SolidColorBrush(mu::Colors::Green);
+
+        // This puts a 2X scale into prepend visual for canvas
+        auto scale = ref new ScaleTransform();
+        scale->ScaleX = 2;
+        scale->ScaleY = 2;
+        root->RenderTransform = scale;
+
+        if (useClip)
+        {
+            // This puts a clip into prepend visual for canvas
+            auto clip = ref new RectangleGeometry();
+            clip->Rect = {0,0,75,75};
+            root->Clip = clip;
+        }
+
+        canvas = ref new Canvas();
+        canvas->Width = 100;
+        canvas->Height = 100;
+        canvas->Background = ref new xaml_media::SolidColorBrush(mu::Colors::Red);
+        wfn_::float3 translation = canvas->Translation;
+        VERIFY_IS_TRUE(translation == wfn_::float3(0, 0, 0));
+        canvas->Translation = {11, 21, 31};
+        translation = canvas->Translation;
+        VERIFY_IS_TRUE(translation == wfn_::float3(11, 21, 31));
+
+        root->Children->Append(canvas);
+        wh->WindowContent = root;
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Starting Animation");
+        auto compositor = CompositionTarget::GetCompositorForCurrentThread();
+        animation = compositor->CreateExpressionAnimation(L"vector3(10, 20, 30)");
+        animation->Target = "Translation";
+
+        canvas->StartAnimation(animation);
+    });
+    wh->SynchronouslyTickUIThread(1);
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Turning on ECP Translation");
+        ElementCompositionPreview::SetIsTranslationEnabled(canvas, true);
+        auto handOffVisual = ElementCompositionPreview::GetElementVisual(canvas);
+        handOffVisual->Properties->InsertVector3(L"Translation", ::Windows::Foundation::Numerics::float3(15.0f, 25.0f, 35.0f));
+    });
+    wh->SynchronouslyTickUIThread(1);
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"3");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Turning off ECP Translation");
+        ElementCompositionPreview::SetIsTranslationEnabled(canvas, false);
+    });
+    wh->SynchronouslyTickUIThread(1);
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"4");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Removing prepend clip");
+        root->Clip = nullptr;
+    });
+    wh->SynchronouslyTickUIThread(1);
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"5");
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Stopping Animation");
+        canvas->StopAnimation(animation);
+    });
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"6");
+}
+
+void UIElementFacadeTestsUap::VerifyCannotQIToDO(IInspectable* inspectable)
+{
+    {
+        LOG_OUTPUT(L"  > QI to DependencyObject. This should fail.");
+        void* dependencyObject = nullptr;
+        HRESULT castHR = inspectable->QueryInterface(__uuidof(DependencyObject^), &dependencyObject);
+        VERIFY_ARE_EQUAL(E_NOINTERFACE, castHR);
+        VERIFY_IS_NULL(dependencyObject);
+    }
+
+    {
+        LOG_OUTPUT(L"  > QI to IDependencyObject. This should fail.");
+        void* dependencyObject = nullptr;
+        HRESULT castHR = inspectable->QueryInterface(__uuidof(IDependencyObject^), &dependencyObject);
+        VERIFY_ARE_EQUAL(E_NOINTERFACE, castHR);
+        VERIFY_IS_NULL(dependencyObject);
+    }
+}
+
+void UIElementFacadeTestsUap::ExpectExceptionWithHRESULT(HRESULT expected, std::function<void()> functionCall)
+{
+    bool testPass = false;
+    try
+    {
+        functionCall();
+    }
+    catch (Platform::Exception^ e)
+    {
+        VERIFY_IS_TRUE(e->HResult == expected);
+        testPass = true;
+    }
+    VERIFY_IS_TRUE(testPass);
+}
+
 
 bool UIElementFacadeTests::TestSetup()
 {
@@ -53,7 +305,7 @@ void LogTransformMatrix(wfn_::float4x4 transformMatrix)
     transformMatrix.m41,transformMatrix.m42,transformMatrix.m43,transformMatrix.m44);
 }
 
-void UIElementFacadeTests::ActualOffsetAPI()
+void UIElementFacadeTestsUap::ActualOffsetAPI()
 {
     TestCleanupWrapper cleanup;
 
@@ -556,12 +808,12 @@ void UIElementFacadeTests::ActualSizeReferenceCanvas()
     wh->WaitForIdle();
 }
 
-void UIElementFacadeTests::TranslationAPI()
+void UIElementFacadeTestsUap::TranslationAPI()
 {
     TranslationAPIInternal(false);
 }
 
-void UIElementFacadeTests::TranslationAPIWithClip()
+void UIElementFacadeTestsUap::TranslationAPIWithClip()
 {
     TranslationAPIInternal(true);
 }
@@ -664,7 +916,7 @@ void UIElementFacadeTests::TranslationAPIInternal(bool useClip)
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"7");
 }
 
-void UIElementFacadeTests::RotationAPI()
+void UIElementFacadeTestsUap::RotationAPI()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -698,7 +950,7 @@ void UIElementFacadeTests::RotationAPI()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
 }
 
-void UIElementFacadeTests::ScaleAPI()
+void UIElementFacadeTestsUap::ScaleAPI()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -733,7 +985,7 @@ void UIElementFacadeTests::ScaleAPI()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
 }
 
-void UIElementFacadeTests::TransformMatrixAPI()
+void UIElementFacadeTestsUap::TransformMatrixAPI()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -768,7 +1020,7 @@ void UIElementFacadeTests::TransformMatrixAPI()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
 }
 
-void UIElementFacadeTests::CenterPointAPI()
+void UIElementFacadeTestsUap::CenterPointAPI()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -803,7 +1055,7 @@ void UIElementFacadeTests::CenterPointAPI()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
 }
 
-void UIElementFacadeTests::RotationAxisAPI()
+void UIElementFacadeTestsUap::RotationAxisAPI()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -838,7 +1090,7 @@ void UIElementFacadeTests::RotationAxisAPI()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
 }
 
-void UIElementFacadeTests::CombinedAPI()
+void UIElementFacadeTestsUap::CombinedAPI()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -1803,12 +2055,12 @@ void UIElementFacadeTests::TranslationAnimation()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"5");
 }
 
-void UIElementFacadeTests::TranslationAnimationPlusECP()
+void UIElementFacadeTestsUap::TranslationAnimationPlusECP()
 {
     TranslationAnimationPlusECPInternal(false);
 }
 
-void UIElementFacadeTests::TranslationAnimationPlusECPAndClip()
+void UIElementFacadeTestsUap::TranslationAnimationPlusECPAndClip()
 {
     TranslationAnimationPlusECPInternal(true);
 }
@@ -2012,7 +2264,7 @@ void UIElementFacadeTests::TranslationAnimationSubChannel()
     wh->WaitForIdle();
 }
 
-void UIElementFacadeTests::TranslationPlusLTETarget()
+void UIElementFacadeTestsUap::TranslationPlusLTETarget()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -2054,7 +2306,7 @@ void UIElementFacadeTests::TranslationPlusLTETarget()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
 }
 
-void UIElementFacadeTests::TranslationPlusLTETarget2()
+void UIElementFacadeTestsUap::TranslationPlusLTETarget2()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -4043,7 +4295,7 @@ static void VerifyPointWithEpsilon(wf::Point pt1, wf::Point pt2, float epsilon)
     VERIFY_IS_TRUE(CompareFloatsWithEpsilon(pt1.Y, pt2.Y, epsilon));
 }
 
-void UIElementFacadeTests::HitTestingAnimated()
+void UIElementFacadeTestsUap::HitTestingAnimated()
 {
     TestCleanupWrapper cleanup;
 
@@ -4277,7 +4529,7 @@ void UIElementFacadeTests::HitTestingAnimated()
     wh->WaitForIdle();
 }
 
-void UIElementFacadeTests::HitTestingAnimatedAndReferenced()
+void UIElementFacadeTestsUap::HitTestingAnimatedAndReferenced()
 {
     TestCleanupWrapper cleanup;
 
@@ -4627,7 +4879,7 @@ void UIElementFacadeTests::HitTestingLargeMove()
     wh->WaitForIdle();
 }
 
-void UIElementFacadeTests::HitTesting3D()
+void UIElementFacadeTestsUap::HitTesting3D()
 {
     TestCleanupWrapper cleanup;
 
@@ -4876,7 +5128,7 @@ void UIElementFacadeTests::HitTesting3D()
     }
 }
 
-void UIElementFacadeTests::HitTesting2DRotations()
+void UIElementFacadeTestsUap::HitTesting2DRotations()
 {
     TestCleanupWrapper cleanup;
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
@@ -5334,7 +5586,7 @@ void UIElementFacadeTests::StrictChecks()
     wh->WaitForIdle();
 }
 
-void UIElementFacadeTests::TranslationTransition()
+void UIElementFacadeTestsUap::TranslationTransition()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -5477,7 +5729,7 @@ void UIElementFacadeTests::TranslationTransition()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"static2");
 }
 
-void UIElementFacadeTests::ScaleTransition()
+void UIElementFacadeTestsUap::ScaleTransition()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -5623,7 +5875,7 @@ void UIElementFacadeTests::ScaleTransition()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"static2");
 }
 
-void UIElementFacadeTests::RotationTransition()
+void UIElementFacadeTestsUap::RotationTransition()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -5747,7 +5999,7 @@ void UIElementFacadeTests::RotationTransition()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"static");
 }
 
-void UIElementFacadeTests::OpacityTransition()
+void UIElementFacadeTestsUap::OpacityTransition()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -5871,7 +6123,7 @@ void UIElementFacadeTests::OpacityTransition()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"static");
 }
 
-void UIElementFacadeTests::OpacityTransitionTo0()
+void UIElementFacadeTestsUap::OpacityTransitionTo0()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -5954,7 +6206,7 @@ void UIElementFacadeTests::OpacityTransitionTo0()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"Culled");
 }
 
-void UIElementFacadeTests::TransitionsFromMarkup()
+void UIElementFacadeTestsUap::TransitionsFromMarkup()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -6022,7 +6274,7 @@ void UIElementFacadeTests::VerifyCannotQIToDO(IInspectable* inspectable)
     }
 }
 
-void UIElementFacadeTests::ThisDotTarget()
+void UIElementFacadeTestsUap::ThisDotTarget()
 {
     TestCleanupWrapper cleanup;
 
@@ -6074,7 +6326,7 @@ void UIElementFacadeTests::ThisDotTarget()
     wh->WaitForIdle();
 }
 
-void UIElementFacadeTests::PropertiesFromMarkup()
+void UIElementFacadeTestsUap::PropertiesFromMarkup()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 

@@ -25,7 +25,7 @@ namespace local = Microsoft::UI::Xaml::Tests::Foundation::Graphics;
 
 bool local::XamlWinRTCompInteropManipTransformTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
 

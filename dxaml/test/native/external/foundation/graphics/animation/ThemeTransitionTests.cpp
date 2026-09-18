@@ -29,9 +29,47 @@ Platform::String^ ThemeTransitionTests::GetResourcesPath() const
 
 bool ThemeTransitionTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool ThemeTransitionTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool ThemeTransitionTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml(ref new MetadataProvider());
+    return true;
+}
+
+    bool ThemeTransitionTestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+void ThemeTransitionTestsUap::TestThemeTransitionXaml(Platform::String^ path)
+{
+    auto rootPanel = safe_cast<xaml_controls::Panel^>(LoadXamlFileOnUIThread(path));
+
+    RunOnUIThread([&]()
+    {
+        TestServices::WindowHelper->WindowContent = rootPanel;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+}
+
+Platform::String^ ThemeTransitionTestsUap::GetResourcesPath() const
+{
+    return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\animation\\";
+}
+
 
 bool ThemeTransitionTests::TestSetup()
 {
@@ -401,7 +439,7 @@ void ThemeTransitionTests::ValidateNavigationThemeTransitionWorksWhenNotPresent(
     VERIFY_ARE_EQUAL(2, storyboardStartedCounter);
 }
 
-void ThemeTransitionTests::EdgeUIThemeTransition()
+void ThemeTransitionTestsUap::EdgeUIThemeTransition()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -420,7 +458,7 @@ void ThemeTransitionTests::EdgeUIThemeTransition()
     VERIFY_ARE_EQUAL(storyboardStartedCount, 4);
 }
 
-void ThemeTransitionTests::PaneThemeTransition()
+void ThemeTransitionTestsUap::PaneThemeTransition()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -439,7 +477,7 @@ void ThemeTransitionTests::PaneThemeTransition()
     VERIFY_ARE_EQUAL(storyboardStartedCount, 4);
 }
 
-void ThemeTransitionTests::ContentThemeTransition()
+void ThemeTransitionTestsUap::ContentThemeTransition()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
@@ -547,7 +585,7 @@ void ThemeTransitionTests::ValidateEntranceNavigationThemeTransition()
     VERIFY_ARE_EQUAL(0, storyboardStartedCounter);
 }
 
-void ThemeTransitionTests::ValidateSlideNavigationThemeTransition()
+void ThemeTransitionTestsUap::ValidateSlideNavigationThemeTransition()
 {
     TestCleanupWrapper cleanup;
 
@@ -988,7 +1026,7 @@ void ThemeTransitionTests::ValidateSuppressNavigationThemeTransition()
     VERIFY_ARE_EQUAL(0, storyboardStartedCounter);
 }
 
-void ThemeTransitionTests::ValidateContentOverride()
+void ThemeTransitionTestsUap::ValidateContentOverride()
 {
     TestCleanupWrapper cleanup;
 

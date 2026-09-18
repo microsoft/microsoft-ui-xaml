@@ -57,6 +57,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestProperty("Description", "Validates actual tooltip and keyboard accelerator tooltips behavior for Pivot control")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")] // fails due to the final release queue not empty error
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ValidateKeyboardAcceleratorToolTipsOnPivot()
         {
             {
@@ -1279,6 +1280,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestProperty("Description", "Validates that KeyboardAccelerators event gets invoked.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ValidateKeyboardAcceleratorsCanInvokeControlAutomationAction()
         {
             StackPanel rootPanel = null;
@@ -1722,6 +1724,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestProperty("Description", "Validates that accelerators on MenuBar works when menu item is opened up.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyAcceleratorDefinedOnMenuBarMenuItemsWhenItsOpened()
         {
             const string rootPanelXaml =
@@ -1788,6 +1791,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestProperty("Description", "Validates that accelerators on MenuBar works after menu item is opened up and closed again.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyAcceleratorDefinedOnMenuBarMenuItemsWhenItsOpenedAndClosed()
         {
             const string rootPanelXaml =
@@ -1954,6 +1958,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestProperty("Description", "Validates that StandarUICommands on MenuBar works when menu item is opened up.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyStandarUICommandsDefinedOnMenuBarMenuItemsWhenItsOpened()
         {
             const string rootPanelXaml =
@@ -2008,6 +2013,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestProperty("Description", "Validates that StandarUICommands on MenuBar works after menu item opened up and closed again.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyStandarUICommandsDefinedOnMenuBarMenuItemsWhenItsOpenedAndClosed()
         {
             const string rootPanelXaml =
@@ -2065,6 +2071,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestProperty("Description", "Validates that Button control fires the accelerators on its attached Flyout.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyButtonFlyoutCanInvokeAcceleratorsDefinedOnFlyoutContent()
         {
             const string rootPanelXaml =
@@ -2150,6 +2157,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestProperty("Description", "Validates that Button control fires the accelerators on its attached Flyout.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyButtonContextFlyoutWithFlyoutCanInvokeAcceleratorDefinedOnFlyoutContent()
         {
             const string rootPanelXaml =
@@ -2235,6 +2243,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestProperty("Description", "Validates that Flyout processing on Button control does not crash due to stackoverflow.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyButtonFlyoutDoesNotIntroduceStackOverflow()
         {
             const string rootPanelXaml =
@@ -3370,6 +3379,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestProperty("Description", "Validates KeyboardAccelerators and Text Input behavior. Key input in currently focused TextBox should only be used to generate text input.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ValidateTextInputAndKeyboardAccelerator()
         {
             const string rootPanelXaml =

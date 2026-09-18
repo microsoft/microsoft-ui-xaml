@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 #include <CommonInputHelper.h>
 
@@ -19,7 +20,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"2b4b21d5-e5c0-4fad-bed4-62030fe191a1;eadeac67-1552-4876-a67e-dc1fcb8a6e25;bdc5c68b-03c1-4217-832c-4c09f99946f4")
-            TEST_CLASS_PROPERTY(L"Hosting:Mode", L"UAP") // Pivot dtor calling on wrong thread during GC causes crash on shutdown in WPF host mode
+            // Pivot dtor calling on wrong thread during GC causes crash on shutdown in WPF host mode
+            TEST_CLASS_HOSTING_MODE(UAP)
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -96,13 +98,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateStaticHeaderPanelIsNotRequired)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the Pivot still loads and functions fine without the static header panel in the template.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateUIElementTree)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the UI element tree on pivot in its various visual states.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
@@ -150,7 +150,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(NavigatingToPivotItemWithFocusableNonControlDoesNotCrash)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that when focus is within a pivot item and the user navigates to a new pivot item whose first focusable element is not a control we don't crash.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateContentTemplateRootExistsInPivotItemLoading)
@@ -168,7 +167,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(CanNavigatePivotWithGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the contents of a Pivot can be navigated between using a gamepad.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 
@@ -191,12 +189,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateChangingItemsDoesNotChangeFocusState)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that changing items in a Pivot does not change the focus state of the header panel.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateEmptyPivotItemDoesNotCauseCrash)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that switching to an empty PivotItem does not cause a crash.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanChangeHeaderTemplateAtRuntime)
@@ -209,7 +205,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateInfiniteSpaceAvailableSnapsPivotToWindowWidth)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that placing a Pivot into a context where it has infinite available size causes its width to be snapped to the window width.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // This test uses WindowHelper.WindowBounds, which currently returns an incorrect value when running in WPF mode
+            // This test uses WindowHelper.WindowBounds, which currently returns an incorrect value when running in WPF mode
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanApplySlideInAnimationGroupToElements)
@@ -223,7 +219,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateHeaderFocusVisualPlacement)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that HeaderFocusVisualPlacement works correctly in the Pivot header.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidatePivotCanWrapWithTouchWhenCarouselIsEnabled)
@@ -251,7 +246,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateTabOnlyStopsAtPivotAndContent)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that tabbing through a pivot only stops at the pivot itself and at its current content.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
          END_TEST_METHOD()
 
@@ -275,7 +269,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(CanActivePivotHeaderItemChangeFromPressedToPointerOver)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the active PivotHeaderItem returns to PointerOver after being Pressed.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanPivotShowPaddleButtonsAfterAddingItem)

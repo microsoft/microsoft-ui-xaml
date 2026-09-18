@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 #include <CommonInputHelper.h>
 
 using namespace Microsoft::UI::Xaml::Tests::Common;
@@ -18,6 +19,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
             TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"1bb20c90-a558-491b-b76d-55bdb9a46911;57e0de30-efb3-4001-9ccc-b38032fd1974;bdc5c68b-03c1-4217-832c-4c09f99946f4")
+            TEST_CLASS_HOSTING_MODE_DEFAULT()
         END_TEST_CLASS()
 
         TEST_CLASS_SETUP(ClassSetup)
@@ -46,21 +48,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(ValidateUIETreeVertical)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates the UI element tree of a Vertical Slider in various visual states ")
-            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(ValidateFootprint)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the ActualWidth and ActualHeight of Slider.")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(ValidateThumbTooltip)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that the slider's tooltip goes away when the property value is changed.")
-            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateCanMoveSliderUsingKeyboardVertical)
@@ -78,18 +67,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateFocusRectangleMovesToThumbWhenEngaged)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that engaging a slider with the gamepad causes the focus rectangle to move to the thumb.")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(ValidateDCompTreeWhenEngaged)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates the DComp tree when sliders are engaged.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Move windowed popups to lifted input
-            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(VerifyToolTipShowAndHideForKeyboardAndGamePad)
-            TEST_METHOD_PROPERTY(L"Description", L"ToolTip should show on focus with keyboard, but should only show on engagement with GamePad or Remote.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifySmallRange)
@@ -127,7 +104,55 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         void VerifyNoOpenToolTips(xaml_controls::Slider^ slider);
         void VerifyToolTipOpen(xaml_controls::Slider^ slider);
 
+    };
+
+    class SliderIntegrationTestsUap : public WEX::TestClass<SliderIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(SliderIntegrationTestsUap)
+            TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"SliderIntegrationTests")
+            TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+            TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+            TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"1bb20c90-a558-491b-b76d-55bdb9a46911;57e0de30-efb3-4001-9ccc-b38032fd1974;bdc5c68b-03c1-4217-832c-4c09f99946f4")
+            TEST_CLASS_HOSTING_MODE(UAP)
+        END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+    private:
+        static xaml_controls::Panel^ ValidateUIETreeTestSetup(xaml_controls::Orientation orientation);
+        void SetupEngagementTest(xaml_controls::Slider^* horizontalSlider, xaml_controls::Slider^* verticalSlider);
+        void MoveDownAndEngageSlider(xaml_controls::Slider^ slider);
+        void DisengageSlider(xaml_controls::Slider^ slider, InputDevice inputDevice);
         void DoVerifyToolTipShowAndHide(InputDevice inputDevice, bool isFocusEngagementEnabledOnSlider, bool toolTipShouldOnlyShowWhenEngaged);
+        void VerifyNoOpenToolTips(xaml_controls::Slider^ slider);
+        void EngageSlider(xaml_controls::Slider^ slider, InputDevice inputDevice);
+        void VerifyToolTipOpen(xaml_controls::Slider^ slider);
+
+    public:
+        BEGIN_TEST_METHOD(ValidateUIETreeVertical)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the UI element tree of a Vertical Slider in various visual states ")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateThumbTooltip)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that the slider's tooltip goes away when the property value is changed.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateDCompTreeWhenEngaged)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the DComp tree when sliders are engaged.")
+            TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Move windowed popups to lifted input
+            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyToolTipShowAndHideForKeyboardAndGamePad)
+            TEST_METHOD_PROPERTY(L"Description", L"ToolTip should show on focus with keyboard, but should only show on engagement with GamePad or Remote.")
+        END_TEST_METHOD()
     };
 
 } } } } } }

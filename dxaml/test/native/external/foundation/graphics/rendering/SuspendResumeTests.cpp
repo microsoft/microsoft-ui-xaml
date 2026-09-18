@@ -32,9 +32,84 @@ Platform::String^ SuspendResumeTests::GetResourcesPath() const
 
 bool SuspendResumeTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool SuspendResumeTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool SuspendResumeTestsUap::TestSetup()
+{
+    test_infra::TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool SuspendResumeTestsUap::TestCleanup()
+{
+    test_infra::TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
+void SuspendResumeTestsUap::TestSuspendResume(bool forceDisconnectRoot, bool isTriggeredByResourceTimer, bool allowOfferResources)
+{
+    auto wh = TestServices::WindowHelper;
+    auto u = TestServices::Utilities;
+
+    TestCleanupWrapper cleanup([wh]()
+    {
+        wh->ForceDisconnectRootOnSuspend(false);
+    });
+
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    xaml_shapes::Rectangle^ rectangle;
+
+    RunOnUIThread([&]()
+    {
+        Canvas^ canvas = ref new Canvas();
+        TestServices::WindowHelper->WindowContent = canvas;
+
+        rectangle = ref new xaml_shapes::Rectangle();
+        rectangle->Width = 50;
+        rectangle->Height = 50;
+        rectangle->Fill = ref new SolidColorBrush(Microsoft::UI::Colors::Blue);
+        canvas->Children->Append(rectangle);
+    });
+
+    LOG_OUTPUT(L"Live tree");
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"Active");
+
+    LOG_OUTPUT(L"Suspend");
+    wh->ForceDisconnectRootOnSuspend(forceDisconnectRoot);
+    wh->TriggerSuspend(isTriggeredByResourceTimer, allowOfferResources);
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"Suspended");
+    u->VerifyAreSurfaceResourcesOffered(allowOfferResources);
+
+    LOG_OUTPUT(L"Update the tree - no rendering change because we're suspended");
+    RunOnUIThread([&]()
+    {
+        rectangle->Fill = ref new SolidColorBrush(Microsoft::UI::Colors::Red);
+    });
+    wh->SynchronouslyTickUIThread(1);
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"Suspended");
+
+    LOG_OUTPUT(L"Resume - tree changes are rendered");
+    wh->TriggerResume();
+    wh->WaitForIdle();
+    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"Resumed");
+}
+
+Platform::String^ SuspendResumeTestsUap::GetResourcesPath() const
+{
+    return GetPackageFolder() + L"resources\\native\\external\\foundation\\graphics\\image\\";
+}
+
 
 bool SuspendResumeTests::TestSetup()
 {
@@ -61,7 +136,7 @@ void SuspendResumeTests::SuspendResume_NoOffer()
     TestSuspendResume(false, true, false);
 }
 
-void SuspendResumeTests::SuspendResume_DisconnectRoot()
+void SuspendResumeTestsUap::SuspendResume_DisconnectRoot()
 {
     // Disconnect root, not triggered by timer, offer resources
     TestSuspendResume(true, false, true);
@@ -226,7 +301,7 @@ void SuspendResumeTests::SuspendResume_PrivateAPIWUCFull()
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"Resumed");
 }
 
-void SuspendResumeTests::MakeLISOnSuspend()
+void SuspendResumeTestsUap::MakeLISOnSuspend()
 {
     auto wh = TestServices::WindowHelper;
     auto u = TestServices::Utilities;

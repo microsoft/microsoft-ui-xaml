@@ -32,10 +32,31 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool CommandBarIntegrationTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         featureDisableTransitionsForTest.Initialize(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableTransitionsForTest, true);
         return true;
     }
+
+    bool CommandBarIntegrationTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        featureDisableTransitionsForTest.Initialize(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableTransitionsForTest, true);
+        return true;
+    }
+
+    bool CommandBarIntegrationTestsUap::TestSetup()
+    {
+        test_infra::TestServices::WindowHelper->InitializeXaml(ref new MetadataProvider());
+        return true;
+    }
+
+    bool CommandBarIntegrationTestsUap::TestCleanup()
+    {
+        test_infra::TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
     bool CommandBarIntegrationTests::TestSetup()
     {
@@ -4738,7 +4759,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void CommandBarIntegrationTests::VerifyCanMakeSubMenuBySettingFlyoutProperty()
+    void CommandBarIntegrationTestsUap::VerifyCanMakeSubMenuBySettingFlyoutProperty()
     {
         TestCleanupWrapper cleanup;
 

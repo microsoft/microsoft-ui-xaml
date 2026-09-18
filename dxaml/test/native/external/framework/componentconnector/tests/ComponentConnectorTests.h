@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 #include <RuntimeEnabledFeatureOverride.h>
 
@@ -15,6 +16,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_CLASS(ComponentConnectorTests)
                 TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
                 TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+            TEST_CLASS_HOSTING_MODE(UAP)
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -28,7 +30,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"BCQ", L"TRUE")
                 TEST_METHOD_PROPERTY(L"Description", L"Validates basic ICC scenario")
                 TEST_METHOD_PROPERTY(L"EnabledOnOneCore", L"TRUE")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidateConnectOnIComponentConnectorGetsCalledForDeferredElements)
@@ -37,7 +38,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"BCQ", L"TRUE")
                 TEST_METHOD_PROPERTY(L"Description", L"Validates ICC is called for deferred elements")
                 TEST_METHOD_PROPERTY(L"EnabledOnOneCore", L"TRUE")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
             END_TEST_METHOD()
 
         private:

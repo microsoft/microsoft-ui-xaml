@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Convergence {
@@ -15,21 +16,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
                 TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
             TEST_METHOD_SETUP(TestSetup)
             TEST_METHOD_CLEANUP(TestCleanup)
 
-            BEGIN_TEST_METHOD(TestThemeResourcesFor_Current)
-                TEST_METHOD_PROPERTY(L"Description", L"Verifies XAML loads the correct resources for apps targeting the current OS version")
-                TEST_METHOD_PROPERTY(L"UAP:AppXManifest", APPXMANIFEST_WINDOWS_VERSION_CURRENT)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(TestThemeResourcesFor_PackagedXamlBridge)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies XAML loads the correct resources for a centennial XamlBridge app")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestPivotItemInstantiation)
@@ -49,12 +44,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             // a simulated High Contrast mode that is not known to shell methods.
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies XAML changes accent color when on High Contrast Mode.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Phone")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(RootVisualBackgroundHighContrast)
-                TEST_METHOD_PROPERTY(L"Description", L"Verifies XAML applies correct RootVisual background when switching between themes in High Contrast.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(SetThemeResourceBindingMarkupParity)
@@ -99,6 +88,40 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             Platform::String^ CurrentOSMaxVersionTested;
         };
 
+        class ThemeResourcesTestsUap : public WEX::TestClass<ThemeResourcesTestsUap>
+        {
+        public:
+            BEGIN_TEST_CLASS(ThemeResourcesTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"ThemeResourcesTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+            TEST_CLASS_SETUP(ClassSetup)
+            TEST_METHOD_SETUP(TestSetup)
+            TEST_METHOD_CLEANUP(TestCleanup)
+
+            BEGIN_TEST_METHOD(TestThemeResourcesFor_Current)
+                TEST_METHOD_PROPERTY(L"Description", L"Verifies XAML loads the correct resources for apps targeting the current OS version")
+                TEST_METHOD_PROPERTY(L"UAP:AppXManifest", APPXMANIFEST_WINDOWS_VERSION_CURRENT)
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(RootVisualBackgroundHighContrast)
+                TEST_METHOD_PROPERTY(L"Description", L"Verifies XAML applies correct RootVisual background when switching between themes in High Contrast.")
+                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+            END_TEST_METHOD()
+
+        private:
+            void VerifyDoubleThemeResource(Platform::String^ resourceName, bool shouldSucceed);
+            void VerifyColorThemeResource(Platform::String^ resourceName, bool shouldSucceed);
+            void VerifyThicknessThemeResource(Platform::String^ resourceName, bool shouldSucceed);
+            void VerifyRootVisualHighContrastHelper(test_infra::HighContrastTheme theme, Platform::String^ highContrastResource);
+            void TryLoadXaml(Platform::String^ resourceName, Platform::String^ xaml, bool shouldSucceed);
+
+            Platform::String^ CurrentOSMaxVersionTested;
+        };
+
     }
 } } } }
-

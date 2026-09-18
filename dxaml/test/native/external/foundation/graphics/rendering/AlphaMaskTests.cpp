@@ -165,9 +165,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     bool AlphaMaskTests::ClassSetup()
     {
-        CommonTestSetupHelper::CommonTestClassSetup();
+        XAML_HOSTING_MODE_CLASS_SETUP();
         return true;
     }
+
+    bool AlphaMaskTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool AlphaMaskTestsUap::TestSetup()
+        {
+            TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+    bool AlphaMaskTestsUap::TestCleanup()
+    {
+        TestServices::WindowHelper->ShutdownXaml();
+        TestServices::WindowHelper->VerifyTestCleanup();
+        return true;
+    }
+
 
         bool AlphaMaskTests::TestSetup()
         {
@@ -279,7 +299,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::AllSurfaces, L"2");
     }
 
-    void AlphaMaskTests::RenderTransforms()
+    void AlphaMaskTestsUap::RenderTransforms()
     {
         VerificationSettings verificationSettings;
         VerifyAlphaMasksInFile(
@@ -462,7 +482,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             verificationSettings);
     }
 
-    void AlphaMaskTests::MultiElementPlateauScaleChange()
+    void AlphaMaskTestsUap::MultiElementPlateauScaleChange()
     {
         VerificationSettings verificationSettings;
         verificationSettings.image = true;

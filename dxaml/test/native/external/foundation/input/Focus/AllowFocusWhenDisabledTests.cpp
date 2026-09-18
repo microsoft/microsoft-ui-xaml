@@ -28,7 +28,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         bool AllowFocusWhenDisabledIntegrationTests::ClassSetup()
         {
-            CommonTestSetupHelper::CommonTestClassSetup();
+            XAML_HOSTING_MODE_CLASS_SETUP();
+            return true;
+        }
+
+        bool AllowFocusWhenDisabledIntegrationTestsUap::ClassSetup()
+        {
+            XAML_HOSTING_MODE_CLASS_SETUP();
+            return true;
+        }
+
+        bool AllowFocusWhenDisabledIntegrationTestsUap::TestSetup()
+        {
+            test_infra::TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
+        bool AllowFocusWhenDisabledIntegrationTestsUap::TestCleanup()
+        {
+            test_infra::TestServices::WindowHelper->ShutdownXaml();
+            TestServices::WindowHelper->VerifyTestCleanup();
             return true;
         }
 
@@ -45,7 +64,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             return true;
         }
 
-        void AllowFocusWhenDisabledIntegrationTests::ControlReceivesAllowFocusWhenDisabledThroughInheritance()
+        void AllowFocusWhenDisabledIntegrationTestsUap::ControlReceivesAllowFocusWhenDisabledThroughInheritance()
         {
             TestCleanupWrapper cleanup;
 
@@ -399,7 +418,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestAllowFocusWhenDisabledVisualStates<xaml_primitives::ToggleButton>();
         }
 
-        void AllowFocusWhenDisabledIntegrationTests::SupportAllowFocusWhenDisabledOnSlider()
+        void AllowFocusWhenDisabledIntegrationTestsUap::SupportAllowFocusWhenDisabledOnSlider()
         {
             TestAllowFocusWhenDisabledVisualStates<xaml_controls::Slider>();
         }
@@ -414,7 +433,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestAllowFocusWhenDisabledVisualStates<xaml_controls::HyperlinkButton>();
         }
 
-        void AllowFocusWhenDisabledIntegrationTests::SupportAllowFocusWhenDisabledOnAutoSuggestBox()
+        void AllowFocusWhenDisabledIntegrationTestsUap::SupportAllowFocusWhenDisabledOnAutoSuggestBox()
         {
             TestCleanupWrapper cleanup;
 

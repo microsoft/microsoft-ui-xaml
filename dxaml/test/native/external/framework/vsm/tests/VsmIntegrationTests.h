@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 #include <CustomMetadataRegistrar.h>
 
@@ -19,6 +20,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"f62323d4-fd46-4c98-aa85-334db95ba8f6;0a9cdf5f-1e1b-4b1d-9659-b354bf5f4ca6")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -106,26 +108,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                     L"applied.")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(VerifyGeneratedTransitionBetweenEmptyAndSetter)
-                TEST_METHOD_PROPERTY(L"Description", L"Verifies that VisualTransition animations are generated for properties interpolating "
-                    L"back and forth between an empty VisualState and a VisualState that uses Setters to set those properties.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(VerifyGeneratedTransitionBetweenSetterAndSetter)
-                TEST_METHOD_PROPERTY(L"Description", L"Verifies that VisualTransition animations are generated for properties interpolating "
-                    L"back and forth between VisualStates that use Setters to set those properties.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
                   
-            BEGIN_TEST_METHOD(VerifyGeneratedTransitionBetweenSetterAndStoryboard)
-                TEST_METHOD_PROPERTY(L"Description", L"Verifies that VisualTransition animations are generated for properties interpolating "
-                    L"back and forth between a VisualState that uses Storyboards to set those properties and a VisualState that uses Setters instead.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(MultiStorybardDynamicTimelinesDeduplicate)
                 TEST_METHOD_PROPERTY(L"Description", L"When using dynamic transitions in the final state and having a VisualTransition of "
@@ -156,6 +139,42 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             void PrepareCustomAttachedPropertiesRoot(Microsoft::UI::Xaml::Controls::Button^& root, Microsoft::UI::Xaml::Controls::Button^& targetControl, bool optimized);
             void ValidateCustomAttachedProperties(Microsoft::UI::Xaml::Controls::Button^ targetControl, Platform::String^ stringValue, int intValue, ::Windows::UI::Color brushColor, ::Windows::UI::Color indexedColor1, ::Windows::UI::Color indexedColor2);
         };
+
+    class VsmIntegrationTestsUap : public WEX::TestClass<VsmIntegrationTestsUap>
+    {
+    public:
+        BEGIN_TEST_CLASS(VsmIntegrationTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"f62323d4-fd46-4c98-aa85-334db95ba8f6;0a9cdf5f-1e1b-4b1d-9659-b354bf5f4ca6")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"VsmIntegrationTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_METHOD_SETUP(TestSetup)
+        TEST_METHOD_CLEANUP(TestCleanup)
+
+        BEGIN_TEST_METHOD(VerifyGeneratedTransitionBetweenEmptyAndSetter)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies that VisualTransition animations are generated for properties interpolating "
+        L"back and forth between an empty VisualState and a VisualState that uses Setters to set those properties.")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyGeneratedTransitionBetweenSetterAndSetter)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies that VisualTransition animations are generated for properties interpolating "
+        L"back and forth between VisualStates that use Setters to set those properties.")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyGeneratedTransitionBetweenSetterAndStoryboard)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies that VisualTransition animations are generated for properties interpolating "
+        L"back and forth between a VisualState that uses Storyboards to set those properties and a VisualState that uses Setters instead.")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+    };
     }
 } } } }
 

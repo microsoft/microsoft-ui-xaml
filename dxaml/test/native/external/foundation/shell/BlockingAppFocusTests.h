@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Foundation { namespace Shell {
@@ -17,7 +18,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
                 TEST_METHOD_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89")
-                TEST_CLASS_PROPERTY(L"Hosting:Mode", L"UAP")   // Focus engagement bugs in lifted islands
+                // Focus engagement bugs in lifted islands
+            TEST_CLASS_HOSTING_MODE(UAP)
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)

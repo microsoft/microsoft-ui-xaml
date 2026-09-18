@@ -27,8 +27,9 @@ if (!$TestQuery)
 
     Optional Arguments : 
       -WaitForDebugger: for attaching debugger
-      -HostingMode:<mode> : select hosting mode for tests, can be: WPF, UAP, Win32Explicit, Auto, None.  Default is 'Auto'.
-                            Tests with no hosting mode (e.g., unit tests and app tests) are always selected.
+      -HostingMode:<mode> : filter tests by their declared mode: WPF, UAP, Win32Explicit, or None.
+                            Default 'Auto' runs all matching tests, each in its declared hosting mode.
+                            'None' selects tests without hosting metadata, such as unit tests and app tests.
       -TestsWithMasterFilesOnly: run tests with Master files only. 
       -RunIgnoredTests: run tests even if they have been marked as Ignore='True'
       -RunTestsInALoop: run tests 9 times in a loop.
@@ -47,7 +48,11 @@ if (!$TestQuery)
 
     Examples : 
 
-        Run test `"testname`" with hosting mode WPF:
+        Run matching tests in their declared hosting modes:
+
+            runtests `"testname`"
+
+        Run only matching tests that declare WPF hosting:
 
             runtests `"testname`" -HostingMode:WPF
 
@@ -62,8 +67,12 @@ if (!$TestQuery)
     return
 }
 
+if ($forceHostingMode -or ($ExtraArgs | Where-Object { $_ -match '^[-/]p:HostingMode(?:=|$)' }))
+{
+    throw "Tests declare their own hosting mode. Remove -forceHostingMode or /p:HostingMode; use -HostingMode only to filter tests."
+}
+
 $testDllList = "Test\Microsoft.UI.Xaml.Tests.*.dll Test\MUXControls.Test.dll Test\UnpackagedApps\MUXControlsTestApp\MUXControlsTestApp.dll Test\IXMPTestApp.appx" 
-$hostingModes = @("WPF", "Win32Explicit", "UAP")
 
 function get-tests {
     param (
@@ -108,12 +117,19 @@ if (!$SkipPackageUninstall)
 
 if ($fromFile)
 {
+    $testNames = @(Get-Content -LiteralPath $fromFile -ErrorAction Stop |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+        ForEach-Object { ($_.Trim() -split '\s+')[0] })
+    if ($testNames.Count -eq 0)
+    {
+        throw "The test list '$fromFile' contains no test names."
+    }
     $queryArgs = "(@Name=''"
-    (get-content $fromfile).Split("`n") |% {
+    $testNames |% {
         # We take just the first word from each line to make it easy for folks to copy straight from the TAEF
         # output, so that lines could look like this:
         #   Microsoft::UI::Xaml::Tests::MyTest [Failed]
-        $test = $_.Trim().Split(" ")[0]
+        $test = $_
         $queryArgs += " OR @Name='*$test'"
     }
     $queryArgs += ")"
@@ -199,60 +215,14 @@ if ($Stat.IsPresent) {
     exit 0
 }
 
-# Validate hosting mode.
-if ($HostingMode -eq 'Auto') {
-    Write-Host "Automatically detecting HostingMode.  Querying tests..." -ForegroundColor Cyan
-
-    $testKindMatches = @()
-
-    $hostingModes |% {
-        $list = (get-tests  ($queryArgs + " and @Hosting:Mode='$_'") $argsEx)
-        Write-Host "  Tests requiring HostingMode $_ : $($list.Length)"
-        if ($list.Length -gt 0) {
-            $testKindMatches += $_
-        }
-    }
-
-    if ($testKindMatches.Length -eq 0) {
-        Write-Host "Query didn't find any tests that require a hosting mode.  Using -HostingMode:None." -ForegroundColor Green
-        $HostingMode = 'None'
-    } elseif ($testKindMatches.Length -eq 1) {
-        Write-Host "Auto-selecting HostingMode `"$($testKindMatches[0])`". You can use -HostingMode:$($testKindMatches[0]) next time if you'd like." -ForegroundColor Green
-        $HostingMode = $($testKindMatches[0])
-    } else {
-        Write-Host "Query matched tests requiring conflicting HostingModes.  This script can only run one HostingMode at a time, please use the -HostingMode switch to pick one."  -ForegroundColor Red
-        $matches = [system.String]::Join(",", $testKindMatches)
-        Write-Host "Query found tests requiring these hosting modes: $matches." -ForegroundColor Yellow
-        Write-Host "Try adding `"/list -HostingMode:<mode>`" to your command line to see what tests will run in that mode." -ForegroundColor Yellow
-        exit 1
-    }
-}
-
-Write-Host "Hosting mode is '$HostingMode'."
-
-if ($HostingMode -eq "WPF")
+# A mode selects tests; it never overrides their class-declared host.
+switch ($HostingMode)
 {
-    if (!$forceHostingMode.IsPresent) { $queryArgs += " and (@Hosting:Mode='WPF' or not(@Hosting:Mode='*'))"}
-    $argsEx += "/p:HostingMode=WPF"
-}
-elseif ($HostingMode -eq "Win32Explicit")
-{
-    if (!$forceHostingMode.IsPresent) { $queryArgs += " and (@Hosting:Mode='Win32Explicit')" }
-    $argsEx += "/p:HostingMode=Win32Explicit"
-}
-elseif ($HostingMode -eq "UAP")
-{
-    if (!$forceHostingMode.IsPresent) { $queryArgs += " and (@Hosting:Mode='UAP')" }
-    $argsEx += "/p:HostingMode=UAP"
-}
-elseif ($HostingMode -eq '' -or $HostingMode -eq 'None')
-{
-    # Unit tests, sample app tests, and MUXControls tests do not have a Hosting:Mode set.
-    if (!$forceHostingMode.IsPresent) { $queryArgs += " and not (@Hosting:Mode='*')" }
-}
-else
-{
-    throw "HostingMode $HostingMode is unrecognized."
+    'WPF'           { $queryArgs += " and (@Hosting:Mode='WPF')" }
+    'UAP'           { $queryArgs += " and (@Hosting:Mode='UAP')" }
+    'Win32Explicit' { $queryArgs += " and (@Hosting:Mode='Win32Explicit')" }
+    'None'          { $queryArgs += " and not (@Hosting:Mode='*')" }
+    ''              { $queryArgs += " and not (@Hosting:Mode='*')" }
 }
 
 if($RunTestsInALoop)
@@ -268,7 +238,9 @@ if($TerminateOnFirstFailure)
 Write-Host $argsEx
 Write-Host $ExtraArgs
 
-Write-Host ".\te.exe "Test\Microsoft.UI.Xaml.Tests.*.dll" "Test\MUXControls.Test.dll" "Test\UnpackagedApps\MUXControlsTestApp\MUXControlsTestApp.dll" "Test\IXMPTestApp.appx" "/p:SkipConsoleWindowMinimize" "/select:`"$queryArgs`"" $argsEx $ExtraArgs"
-.\te.exe "Test\Microsoft.UI.Xaml.Tests.*.dll" "Test\MUXControls.Test.dll" "Test\UnpackagedApps\MUXControlsTestApp\MUXControlsTestApp.dll" "Test\IXMPTestApp.appx" "/p:SkipConsoleWindowMinimize" "/select:`"$queryArgs`"" $argsEx $ExtraArgs
+Write-Host ".\te.exe $testDllList /p:SkipConsoleWindowMinimize /select:`"$queryArgs`" $argsEx $ExtraArgs"
+.\te.exe $testDllList.Split(" ") "/p:SkipConsoleWindowMinimize" "/select:`"$queryArgs`"" $argsEx $ExtraArgs
+$testExitCode = $LASTEXITCODE
 
 Pop-Location
+exit $testExitCode

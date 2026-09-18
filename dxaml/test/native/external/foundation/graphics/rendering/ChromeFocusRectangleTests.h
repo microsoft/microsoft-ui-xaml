@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Versioning.h>
+#include <HostingModeTestClass.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Foundation { namespace Graphics {
@@ -11,8 +12,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         class ChromeFocusRectangleTests : public WEX::TestClass<ChromeFocusRectangleTests>
         {
         private:
-            Platform::String^ GetResourcesPath() const;
-            void FocusRectangleSuppressionTest(bool shouldSIPShow, bool shouldHandleBringIntoView = false);
+            friend class ChromeFocusRectangleTestsUap;
+
+            static Platform::String^ GetResourcesPath();
+            static void FocusRectangleSuppressionTest(bool shouldSIPShow, bool shouldHandleBringIntoView = false);
         public:
             BEGIN_TEST_CLASS(ChromeFocusRectangleTests)
                 TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
@@ -20,6 +23,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"02f4717a-a120-494b-a28e-9a2cbd41ca58;bd1463b3-e5f2-4d54-9394-63a431c53a6e;b7d949c9-6779-44c5-b16b-1f51e18f3866")
                 TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_HOSTING_MODE_DEFAULT()
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -57,13 +61,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(NudgeInsideVisibleBounds)
-                TEST_METHOD_PROPERTY(L"Description", L"Focused element should be nudged inside the visible bounds of a window if it's on the edge")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Visual size mismatch
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(RaiseExceptionWhenSettingBrushToNonSolidColorBrush)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that when we set the brush to something other than SolidColorBrush, we fail in a way an app developer can see")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
@@ -79,14 +76,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Focus Rect LTE should update with the effective Opacity of the target")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(FocusOnCommandBar)
-                TEST_METHOD_PROPERTY(L"Description", L"Make sure focus rect works well with command bar")
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp node
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-                TEST_METHOD_PROPERTY(L"Ignore", L"True") // Disabled due to #36781575
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AnimatingFocusedElement)
@@ -110,38 +99,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(ShowFocusRectOnNewPage)
-                TEST_METHOD_PROPERTY(L"Description", L"If the last input device was from keyboard, focus rect should be visible on new pages")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp node
-                TEST_METHOD_PROPERTY(L"Ignore", L"True")
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(SuppressFocusRectangleOnPhone)
                 TEST_METHOD_PROPERTY(L"Description", L"If the last entered key was non navigational while SIP was shown, a focus rectangle should not be drawn")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Phone")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(DoNotSuppressFocusRectangleOnDesktop)
-                TEST_METHOD_PROPERTY(L"Description", L"Verify that the same conditions that cause focus rectangles to suppress their rendering on phone do not supress them on desktop")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Leftover composition target, offset mismatch
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-                TEST_METHOD_PROPERTY(L"Ignore", L"True")  // Investigate test instability in ChromeFocusRectangleTests
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(SuppressFocusRectangleOnPhoneBringIntoViewHandled)
                 TEST_METHOD_PROPERTY(L"Description", L"If the last entered key was non navigational while SIP was shown, a focus rectangle should not be drawn when an app handles BringIntoView responsibilities")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Phone")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(DoNotSuppressFocusRectangleOnDesktopBringIntoViewHandled)
-                TEST_METHOD_PROPERTY(L"Description", L"Verify that the same conditions that cause focus rectangles to suppress their rendering on phone do not supress them on desktop when an app handles BringIntoView responsibilities")
-                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // MockDComp crash
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-                TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO 36060166: Re-enable after fixing unreliability.
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(FocusRectangleRendersBehindPopup)
@@ -151,22 +116,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             END_TEST_METHOD()
 
             // Tests with isolation
-            BEGIN_TEST_METHOD(StickyHeaders)
-                TEST_METHOD_PROPERTY(L"Description", L"Verifies Focus Rect renders correctly on sticky headers / ListViewItem headers")
-                TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // TODO: remove after the associated issue is fixed
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // BuildTreeService drains endlessly in a loop
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(CheckFocusChromeVisuals)
-                TEST_METHOD_PROPERTY(L"Description", L"Renders some controls then moves between them with keyboard focus.")
-                TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // TODO: remove after the associated issue is fixed
-                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // ChromeFocusRectangleTests::CheckFocusChromeVisuals fails on WPF
-                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(SimpleHyperlink)
                 TEST_METHOD_PROPERTY(L"Description", L"A one-line hyperlink")
                 TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // TODO: remove after the associated issue is fixed
@@ -277,9 +226,81 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             };
 
             void NudgeInsideScrollViewerHelper(const wchar_t* const scrollViewerTemplate, const NudgeInsideScrollViewerArgs& args = NudgeInsideScrollViewerArgs());
-            void NudgeInsideVisibleBoundsHelper(const NudgeInsideArgs& args = NudgeInsideArgs());
+            static void NudgeInsideVisibleBoundsHelper(const NudgeInsideArgs& args = NudgeInsideArgs());
+        };
+
+        class ChromeFocusRectangleTestsUap : public WEX::TestClass<ChromeFocusRectangleTestsUap>
+        {
+        public:
+            BEGIN_TEST_CLASS(ChromeFocusRectangleTestsUap)
+                TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
+                TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
+                TEST_CLASS_PROPERTY(L"Classification", L"Integration")
+                TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"02f4717a-a120-494b-a28e-9a2cbd41ca58;bd1463b3-e5f2-4d54-9394-63a431c53a6e;b7d949c9-6779-44c5-b16b-1f51e18f3866")
+                TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
+                TEST_CLASS_PROPERTY(L"MasterFile:ClassName", L"ChromeFocusRectangleTests")
+                TEST_CLASS_HOSTING_MODE(UAP)
+            END_TEST_CLASS()
+
+            TEST_CLASS_SETUP(ClassSetup)
+            TEST_METHOD_SETUP(TestSetup)
+            TEST_METHOD_CLEANUP(TestCleanup)
+
+            BEGIN_TEST_METHOD(NudgeInsideVisibleBounds)
+                TEST_METHOD_PROPERTY(L"Description", L"Focused element should be nudged inside the visible bounds of a window if it's on the edge")
+                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+                // Visual size mismatch
+                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(FocusOnCommandBar)
+                TEST_METHOD_PROPERTY(L"Description", L"Make sure focus rect works well with command bar")
+                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+                // Missing comp node
+                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+                TEST_METHOD_PROPERTY(L"Ignore", L"True") // Disabled due to #36781575
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ShowFocusRectOnNewPage)
+                TEST_METHOD_PROPERTY(L"Description", L"If the last input device was from keyboard, focus rect should be visible on new pages")
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+                // Missing comp node
+                TEST_METHOD_PROPERTY(L"Ignore", L"True")
+                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(DoNotSuppressFocusRectangleOnDesktop)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify that the same conditions that cause focus rectangles to suppress their rendering on phone do not supress them on desktop")
+                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+                // Leftover composition target, offset mismatch
+                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+                TEST_METHOD_PROPERTY(L"Ignore", L"True")  // Investigate test instability in ChromeFocusRectangleTests
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(DoNotSuppressFocusRectangleOnDesktopBringIntoViewHandled)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify that the same conditions that cause focus rectangles to suppress their rendering on phone do not supress them on desktop when an app handles BringIntoView responsibilities")
+                TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+                // MockDComp crash
+                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+                TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO 36060166: Re-enable after fixing unreliability.
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(StickyHeaders)
+                TEST_METHOD_PROPERTY(L"Description", L"Verifies Focus Rect renders correctly on sticky headers / ListViewItem headers")
+                TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // TODO: remove after the associated issue is fixed
+                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+                // BuildTreeService drains endlessly in a loop
+                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CheckFocusChromeVisuals)
+                TEST_METHOD_PROPERTY(L"Description", L"Renders some controls then moves between them with keyboard focus.")
+                TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // TODO: remove after the associated issue is fixed
+                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+                // ChromeFocusRectangleTests::CheckFocusChromeVisuals fails on WPF
+                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+            END_TEST_METHOD()
         };
 
     } }
 } } } }
-

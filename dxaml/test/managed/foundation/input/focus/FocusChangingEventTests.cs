@@ -870,6 +870,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestProperty("Description", "Verifies that we can us AddHandler to add changing focus event handlers")]
         [TestProperty("IsolationLevel", "Method")]  //Isolation level set to method here as it is the only way to test FocusInputDeviceKinds.None
         [TestProperty("Hosting:Mode", "UAP")] // Blocking for WPF because default input device type is keyboard by convention there which cannot work with this test
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void ChangingFocusEventsBubbleWhenHandledWhenUsingAddHandler()
         {
             const string rootPanelXaml =
@@ -2074,6 +2075,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "Verifies Tabbing cannot raise NoFocusCandidateFound if focusable elements are on the page")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyTabbingCanNotCauseNoFocusCandidateRaiseIfFocusableElementsAreOnThePage()
         {
             const string rootPanelXaml =
@@ -2117,6 +2119,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "Verifies tab wrapping does not raise NoFocusCandidateFound")]
         [TestProperty("Hosting:Mode", "UAP")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyTabWrappingDoesNotCauseNoFocusCandidateRaise()
         {
             const string rootPanelXaml =
@@ -2179,6 +2182,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "Verifies shift + tab wrapping does not start separate focus movement operation")]
         [TestProperty("Hosting:Mode", "UAP")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyShiftTabWrappingIsOneFocusMovementOperation()
         {
             const string rootPanelXaml =
@@ -2400,6 +2404,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "Verifies Keyboard XYFocus can raise NoFocusCandidateFound")]
         [TestProperty("Hosting:Mode", "UAP")]  // This breaks for WPF mode. New test VerifyKeyboardOrGamePadXYFocusCanCauseNoFocusCandidateRaise has been created for gamecontroller input in WPF mode
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyKeyboardXYFocusCanCauseNoFocusCandidateRaise()
         {
             const string rootPanelXaml =
@@ -2561,6 +2566,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "Verifies Keyboard XYFocus can only raise NoFocusCandidateFound once.")]
         [TestProperty("Hosting:Mode", "UAP")] // This breaks for WPF mode. New test VerifyKeyboardOrGamePadXYFocusCanCauseNoFocusCandidateRaise has been created for gamecontroller input in WPF mode
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyKeyboardXYFocusOnlyRaisesNoFocusCandidateFoundOnce()
         {
             const string rootPanelXaml =
@@ -2694,6 +2700,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "Verifies that NoFocusCandidateFound can fires on an engaged element.")]
         [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyNoFocusCandidateFoundFiredOnEngagement()
         {
             const string rootPanelXaml =
@@ -2785,6 +2792,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "Verifies that Window activation and deactivation raise Changing Focus events.")]
         [TestProperty("Hosting:Mode", "UAP")]  // To be enabled after per root xamlRoot and focus manager have been implemented
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyWindowDeactivationAndActivationRaiseChangingFocusEvents()
         {
             const string rootPanelXaml =
@@ -2873,6 +2881,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "Verifies that Changing Focus events during Window activation and deactivation cannot be cancelled or redirected.")]
         [TestProperty("Hosting:Mode", "UAP")] // To be enabled after per root xamlRoot and focus manager have been implemented
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyChangingFocusEventsDuringWindowDeactivationAndActivationCannotBeCancelled()
         {
             const string rootPanelXaml =
@@ -2983,6 +2992,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "Verifies that focus can change during window activation when focus moved internally")]
         [TestProperty("Hosting:Mode", "UAP")] // To be enabled after per root xamlRoot and focus manager have been implemented
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyFocusChangeAfterInternalFocusMoveDuringWindowActivation()
         {
             const string rootPanelXaml =
@@ -3065,6 +3075,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "Verifies that Changing Focus events during Window activation and deactivation cannot be cancelled or redirected after an internal focus move")]
         [TestProperty("Hosting:Mode", "UAP")] // To be enabled after per root xamlRoot and focus manager have been implemented
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyFocusCannotBeCanceledAfterInternalFocusMoveDuringWindowActivation()
         {
             const string rootPanelXaml =
@@ -3670,6 +3681,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "Verifies the TryCancel behavior on changing focus events.")]
         [TestProperty("Hosting:Mode", "UAP")] // To be enabled after per root xamlRoot and focus manager have been implemented
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyChangingFocusTryCancelBehavior()
         {
             const string rootPanelXaml =
@@ -3810,6 +3822,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         [TestMethod]
         [TestProperty("Description", "Verifies the TrySetNewFocusedElement behavior when focus is not redirectable.")]
         [TestProperty("Hosting:Mode", "UAP")] // To be enabled after per root xamlRoot and focus manager have been implemented
+        [TestProperty("Ignore", "True")] // Managed UAP hosting is unsupported by the .NET test runtime.
         public void VerifyChangingFocusTrySetNewFocusedElementBehaviorOnWindowActivation()
         {
             const string rootPanelXaml =

@@ -38,9 +38,29 @@ Platform::String^ XamlWinRTCompInteropUnrestrictedTests::GetResourcesPath() cons
 
 bool XamlWinRTCompInteropUnrestrictedTests::ClassSetup()
 {
-    CommonTestSetupHelper::CommonTestClassSetup();
+    XAML_HOSTING_MODE_CLASS_SETUP();
     return true;
 }
+
+    bool XamlWinRTCompInteropUnrestrictedTestsUap::ClassSetup()
+    {
+        XAML_HOSTING_MODE_CLASS_SETUP();
+        return true;
+    }
+
+    bool XamlWinRTCompInteropUnrestrictedTestsUap::TestSetup()
+{
+    TestServices::WindowHelper->InitializeXaml();
+    return true;
+}
+
+    bool XamlWinRTCompInteropUnrestrictedTestsUap::TestCleanup()
+{
+    TestServices::WindowHelper->ShutdownXaml();
+    TestServices::WindowHelper->VerifyTestCleanup();
+    return true;
+}
+
 
 bool XamlWinRTCompInteropUnrestrictedTests::ClassCleanup()
 {
@@ -4308,7 +4328,7 @@ void XamlWinRTCompInteropUnrestrictedTests::ElementCulling_Transform()
     u->VerifyMockDCompOutput(SurfaceComparison::NoComparison, L"Culled-RenderTransform");
 }
 
-void XamlWinRTCompInteropUnrestrictedTests::CompositorTest()
+void XamlWinRTCompInteropUnrestrictedTestsUap::CompositorTest()
 {
     Window^ window = nullptr;
 
