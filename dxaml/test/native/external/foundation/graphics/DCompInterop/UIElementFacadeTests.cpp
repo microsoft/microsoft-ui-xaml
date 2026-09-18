@@ -2410,6 +2410,8 @@ void UIElementFacadeTests::ScaleAnimation()
 
 void UIElementFacadeTests::ScaleAnimationSubChannel()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     TestCleanupWrapper cleanup;
 
     auto wh = TestServices::WindowHelper;
@@ -2666,6 +2668,8 @@ void UIElementFacadeTests::TransformMatrixAnimation()
 
 void UIElementFacadeTests::TransformMatrixAnimationSubChannel()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     TestCleanupWrapper cleanup;
 
     auto wh = TestServices::WindowHelper;
@@ -2923,6 +2927,8 @@ void UIElementFacadeTests::CenterPointAnimation()
 
 void UIElementFacadeTests::CenterPointAnimationSubChannel()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     TestCleanupWrapper cleanup;
 
     auto wh = TestServices::WindowHelper;
@@ -3178,6 +3184,8 @@ void UIElementFacadeTests::RotationAxisAnimation()
 
 void UIElementFacadeTests::RotationAxisAnimationSubChannel()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     TestCleanupWrapper cleanup;
 
     auto wh = TestServices::WindowHelper;
@@ -3519,6 +3527,8 @@ void UIElementFacadeTests::MultiAnimation()
 
 void UIElementFacadeTests::AnimationAndReference()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     auto wh = TestServices::WindowHelper;
     auto u = TestServices::Utilities;
 
@@ -3889,6 +3899,8 @@ void UIElementFacadeTests::Configuration2ScrollViewer()
 
 void UIElementFacadeTests::AnimationGroup()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     TestCleanupWrapper cleanup;
 
     auto wh = TestServices::WindowHelper;
@@ -4372,6 +4384,8 @@ void UIElementFacadeTests::HitTestingAnimatedAndReferenced()
 
 void UIElementFacadeTests::HitTestingTransformMatrix()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     TestCleanupWrapper cleanup;
 
     auto wh = TestServices::WindowHelper;

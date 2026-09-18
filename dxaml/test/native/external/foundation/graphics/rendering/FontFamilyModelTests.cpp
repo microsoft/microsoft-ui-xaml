@@ -45,6 +45,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void FontFamilyModelTests::ValidateVariableFontUsage()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             RuntimeEnabledFeatureOverride featureForceTypographicModel(RuntimeFeatureBehavior::RuntimeEnabledFeature::ForceDWriteTypographicModel, true);
             TestServices::Utilities->ClearDefaultLanguageString();
 

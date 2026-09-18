@@ -162,24 +162,26 @@ Most private API usage has been removed from Private.Infrastructure. It depends 
 
 #### WPF leak detection
 
-Opt a core test into WPF native leak detection by calling this at the start of
-the test, after its `InitializeXaml()` setup:
+WPF-hosted core tests check native leaks by default during `ShutdownXaml()`.
+Tests with known leaks can opt out for the current initialized XAML lifetime:
 
 ```cpp
-TestServices::EnableLeakDetection();
+TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 ```
 
-To check every test in a class, put this call in the shared test setup,
-immediately after `InitializeXaml()`. `CheckBoxIntegrationTests` uses this pattern.
+For native tests, put the opt-out at the start of the affected test, after its
+`InitializeXaml()` setup, not in class setup. Every `InitializeXaml()` overload
+resets the opt-out, and a replacement host starts with leak detection enabled.
 
-The opt-in applies only to the current initialized XAML lifetime. Repeated calls
-are harmless and do not reset allocation tracking. `ShutdownXaml()` consumes the
-request, including on failure. Every `InitializeXaml()` overload resets the opt-in,
-and a replacement host starts opted out. Call `EnableLeakDetection()` again after
-mid-test reinitialization to check the next shutdown.
+Managed tests normally call `ShutdownXaml()` during class cleanup, not after each
+test. Put their opt-out in the affected class's cleanup, immediately before
+`base.CommonClassCleanup()`, with a comment explaining the class-level scan.
+For classes containing both WPF and UAP tests, apply this opt-out only when
+running in WPF mode so UAP behavior remains unchanged. A managed per-method
+opt-out does not isolate leak detection to that method.
 
 Keep the usual `InitializeXaml()` setup and `ShutdownXaml()` followed by
-`VerifyTestCleanup()` cleanup. For opted-in WPF tests, shutdown tears down XAML
+`VerifyTestCleanup()` cleanup. For WPF tests, shutdown tears down XAML
 and scans native allocations **before** replacing the host. Host replacement
 fully shuts down the retiring XAML core and its STA thread, then initializes a
 new core and resets allocation tracking. A later scan would inspect the
@@ -194,17 +196,17 @@ WPF shutdown still replaces the host, STA UI thread, dispatcher, and helpers
 and dispatcher references after shutdown or explicit `InitializeHost()`.
 The next `InitializeXaml()` uses that replacement; cached helpers do not follow it.
 For mid-test reinitialization, release test-owned XAML references and event
-registrations before shutdown: each opted-in shutdown is a leak-check interval.
+registrations before shutdown: each shutdown is a leak-check interval unless
+the test opts out.
 
 Detection is native-only, not CLR or whole-host leak detection. Without the
 runtime override below, existing leak opt-outs, OneCore/shutdown restrictions,
-UAP checks, and non-opted-in behavior are unchanged.
+and UAP checks are unchanged.
 
 ##### Forcing leak detection from TAEF
 
-Pass `/p:ForceLeakDetection` to enable detection without adding
-`EnableLeakDetection()` calls to the selected tests. From the test payload
-directory:
+Pass `/p:ForceLeakDetection` to check tests even if they call
+`IgnoreLeaksForTest()`. From the test payload directory:
 
 ```powershell
 .\runtests.cmd "*ButtonIntegrationTests*" -HostingMode WPF /p:ForceLeakDetection
@@ -218,8 +220,8 @@ This is a TAEF runtime parameter, not a `te.exe` switch named
 ```
 
 The parameter accepts no value or `true` to enable the override. Omit it or pass
-`/p:ForceLeakDetection=false` to keep normal behavior; `false` does not disable
-explicit code opt-ins. Other values log an error.
+`/p:ForceLeakDetection=false` to keep default detection and honor test opt-outs;
+`false` does not disable leak detection. Other values log an error.
 
 The override requests a native scan at every WPF `ShutdownXaml()`, including
 after reinitialization or host replacement. It also overrides
@@ -245,9 +247,9 @@ must detect a leak:
 TestServices::EnableLeakDetection(true /* expectLeaks */);
 ```
 
-The parameterless overload and `false` expect no leaks. Each call selects the
-expectation for the current XAML lifetime. Shutdown consumes it, including on
-failure, and initialization resets it along with the opt-in.
+Passing `false` restores the default expectation of no leaks. Each call selects
+the expectation for the current XAML lifetime. Shutdown consumes it, including
+on failure, and initialization resets it. Normal tests need no call.
 
 Expected-leak mode records native leak diagnostics from the scanning thread as
 comments and fails the test if none are reported. Other errors, cleanup failures,
@@ -260,13 +262,25 @@ through `IgnoreLeaksForTest()`, cannot satisfy the expectation and fails the tes
 releases the callback on the retiring UI thread. It follows this with a clean
 shutdown that expects no leaks. The test is registered only in checked builds.
 
+`InfrastructureIntegrationTests::ValidateWpfShutdownLeakDetection` exercises
+clean shutdown and host replacement without an opt-in.
+`InfrastructureLeakDetectionTests::ValidateWpfIgnoredLeakDetection` retains a
+native brush but suppresses the scan, then checks a clean replacement core
+without opting in.
+
 `InfrastructureLeakDetectionTests::ValidateWpfForcedLeakDetection` is an ignored,
 intentionally failing diagnostic probe. Run it explicitly with
 `-RunIgnoredTests`. Its four variations combine retaining a native brush with
 calling `IgnoreLeaksForTest()`, without any code opt-in. Without the runtime
-override, all four pass without a scan. With `/p:ForceLeakDetection`, the two
-clean variations pass and the two retained-brush variations report errors and
-fail, including the variation that explicitly ignores leaks.
+override, the unignored retained-brush variation fails; the other three pass.
+With `/p:ForceLeakDetection`, the two clean variations pass and the two
+retained-brush variations report errors and fail, including the variation that
+explicitly ignores leaks.
+
+`InfrastructureLeakDetectionTests::ValidateWpfUnsatisfiedLeakExpectation` is
+another ignored diagnostic probe. Its two variations expect a leak in a clean
+core. Both must fail: one scans and finds no leak, and the other suppresses the
+required scan with `IgnoreLeaksForTest()`.
 
 ### Server Component
 

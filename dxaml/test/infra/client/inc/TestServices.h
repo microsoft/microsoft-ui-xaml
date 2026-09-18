@@ -63,9 +63,7 @@ namespace Private { namespace Infrastructure {
 
         IFACEMETHOD(DeInitializeHost)() override;
 
-        IFACEMETHOD(EnableLeakDetection)() override;
-
-        IFACEMETHOD(EnableLeakDetectionWithExpectation)(boolean expectLeaks) override;
+        IFACEMETHOD(EnableLeakDetection)(boolean expectLeaks) override;
 
         static bool IsInitialized();
 

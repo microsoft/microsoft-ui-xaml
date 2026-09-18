@@ -1110,10 +1110,7 @@ namespace Private.Infrastructure
         HRESULT InitializeHostAndDpiAwarenessContextAndCore([in] boolean initializeDpiAwarenessContext, [in] boolean initializeCore);
         HRESULT DeInitializeHost();
 
-        [overload("EnableLeakDetection"), default_overload]
-        HRESULT EnableLeakDetection();
-        [overload("EnableLeakDetection")]
-        HRESULT EnableLeakDetectionWithExpectation([in] boolean expectLeaks);
+        HRESULT EnableLeakDetection([in] boolean expectLeaks);
     }
 
     [version(NTDDI_WIN10_RS3)]

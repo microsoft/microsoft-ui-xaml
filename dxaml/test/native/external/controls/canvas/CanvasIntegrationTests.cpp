@@ -25,7 +25,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     bool CanvasIntegrationTests::TestSetup()
     {
         test_infra::TestServices::WindowHelper->InitializeXaml();
-        TestServices::EnableLeakDetection();
         return true;
     }
 

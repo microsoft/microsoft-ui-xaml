@@ -97,6 +97,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::ResolveThemeResource()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/MainPage.xaml");
             auto cleanup = m_connectionHelper->Advise(componentLocation, callback);
@@ -126,6 +128,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::ResolveStaticResource()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::SetupAppAndMergedDictionaries, callback);
             auto button = callback->GetElementByName(L"buttonNoResource");
@@ -139,6 +143,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::ResolveStaticResourceInThemeDictionary()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             // We want to make sure that the resolved color matches the current application theme
             std::pair<Microsoft::UI::Xaml::ApplicationTheme, ::Windows::UI::Color> themes[] =
             { std::make_pair(Microsoft::UI::Xaml::ApplicationTheme::Light, Microsoft::UI::Colors::Black),
@@ -168,6 +174,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::ResolveStaticResourceInMergedDictionary()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::SetupAppAndMergedDictionaries, callback);
             auto button = callback->GetElementByName(L"buttonNoResource");
@@ -182,6 +190,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::ResolveThemeResourceInMergedDictionary()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::SetupAppAndMergedDictionaries, callback);
             auto button = callback->GetElementByName(L"buttonNoResource");
@@ -205,6 +215,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::ValidateResourceResolutionLogic()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             // This test validates the resource resolution logic for the framework. It's purpose is to ensure that if we change this behavior,
             // to make sure that xaml diagnostics isn't broken.
             // 1. UserControl has only a light ThemeDictionary
@@ -278,11 +290,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::ResolveThemeResourceInStyle()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             ResolveResourceInStyle(ResourceTypeTheme);
         }
 
         void ResolveResourceTests::ResolveStaticResourceInStyle()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             ResolveResourceInStyle(ResourceTypeStatic);
         }
 
@@ -340,6 +356,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::ResolveThemeResourceOnSetter()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             for (int i = 0; i < 2; ++i)
             {
                 LOG_OUTPUT(L"Enable XBF: %d", i);
@@ -350,6 +368,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::ResolveStaticResourceOnSetter()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             for (int i = 0; i < 2; ++i)
             {
                 LOG_OUTPUT(L"Enable XBF: %d", i);
@@ -438,6 +458,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::CorrectlyResolvesStaticResourceInTemplate()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/MainPage.xaml");
             auto cleanup = m_connectionHelper->Advise(componentLocation, callback);
@@ -476,6 +498,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::TestNonDPResolveResource()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/PageWithCustomUserControl.xaml");
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(componentLocation, callback);
@@ -540,6 +564,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::VerifyResolveResourceOnDictioaryItemCorrectlyUpdatesReferences()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::SetupAppAndMergedDictionaries, callback);
 
@@ -565,6 +591,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::VerifyResolveStaticResourceInVisualState()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             Microsoft::UI::Xaml::Tests::Common::RuntimeEnabledFeatureOverride featureEnforceXbfV2Stream(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnforceXbfV2Stream, true);
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/StaticResourcePage.xaml");
@@ -602,6 +630,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::ResolveStaticResourceStyleInParentDictionary()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/StaticResourcePage.xaml");
             auto cleanup = m_connectionHelper->Advise(componentLocation, callback);
@@ -630,6 +660,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::CanResolveAppAndSystemResources()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::SetupAppAndMergedDictionaries, callback);
             auto button = callback->GetElementByName(L"buttonOverwritten");
@@ -658,6 +690,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::ResolveResourceFromElementStyleProperty()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
             L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
             L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>\r\n"
@@ -694,6 +728,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::ResolveResourceFromElementStylePropertyInStyle()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
                 L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'\r\n"
@@ -760,6 +796,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::CanResolveEnumTypes()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
                 L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'\r\n"
@@ -791,6 +829,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::DontCrashResolvingNonDO()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
                 L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'\r\n"
@@ -814,6 +854,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::VerifyResolveFallbackValueUpdatesTarget()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
                 L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'\r\n"
@@ -847,6 +889,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::VerifyResolveTargetNullValueUpdatesTarget()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
                 L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'\r\n"
@@ -886,6 +930,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::VerifyResolveConverterUpdatesTarget()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
                 L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'\r\n"
@@ -923,6 +969,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::VerifyResolveNestedStyle()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
                 L"<Page xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'\r\n"
@@ -993,6 +1041,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::VerifyResolveCustomPropertyWithCustomType()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             // This test is a little peculiar in that we don't use the regular advise method. This is because when the connection
             // helper loads the visual tree, it calls VisualTreeServiceCallback::ValidateTreeState, which fails since the ResourceDictionary
             // calls enter on it's children. In this very uncommon case, the child is a UIElement, so while we don't signal that element (since TryGetVisualTreeParent returns false),
@@ -1045,6 +1095,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::VerifyResolveDataTemplateSelector()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             ::Windows::Foundation::Uri^ componentLocation = ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/DataTemplateSelectorPage.xaml");
             auto cleanup = m_connectionHelper->Advise(componentLocation, callback);
@@ -1089,6 +1141,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::VerifyDontThrowUnhandledExceptionOnInvalidResource()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto xaml = ref new Platform::String(
                 L" <StackPanel \r\n"
                 L"  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
@@ -1126,6 +1180,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::CanResolveNullExtension()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto xaml = ref new Platform::String(
                 L" <StackPanel \r\n"
                 L"  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
@@ -1151,6 +1207,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::CanResolveColorToBrush()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto xaml = ref new Platform::String(
                 L" <StackPanel \r\n"
                 L"  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
@@ -1177,6 +1235,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::CanResolveStringToBrush()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto xaml = ref new Platform::String(
                 L" <StackPanel \r\n"
                 L"  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
@@ -1203,6 +1263,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::CorrectlyResolvesStaticResourceInRuntimeBuiltTemplate()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             // Commented out code is what this test is adding and validating works
             auto xaml = ref new Platform::String(
                 L" <StackPanel \r\n"
@@ -1294,6 +1356,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ResolveResourceTests::ResolveResourceOutsideDataTemplate()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
              // Commented out code is what this test is adding and validating works
             auto xaml = ref new Platform::String(
                 L" <StackPanel \r\n"

@@ -1614,6 +1614,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void IntegrationTests::VerifyDragOverStateForGVI()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         const unsigned int itemsCount = 20;

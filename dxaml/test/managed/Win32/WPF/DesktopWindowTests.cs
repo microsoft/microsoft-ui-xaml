@@ -54,6 +54,9 @@ namespace Microsoft.UI.Xaml.Tests.Hosting.Win32.WPF
         [ClassCleanup]
         public void ClassCleanup()
         {
+            // Managed tests check for leaks during class cleanup, not after each test.
+            TestServices.ErrorHandlingHelper.IgnoreLeaksForTest();
+
             base.CommonClassCleanup();
         }
                 

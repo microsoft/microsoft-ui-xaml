@@ -41,7 +41,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     bool ScrollViewerIntegrationTests::TestSetup()
     {
         test_infra::TestServices::WindowHelper->InitializeXaml();
-        TestServices::EnableLeakDetection();
         return true;
     }
 

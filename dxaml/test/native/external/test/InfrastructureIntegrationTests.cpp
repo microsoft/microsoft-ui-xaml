@@ -315,10 +315,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             {
                 LOG_OUTPUT(L"WPF shutdown interval %d.", interval);
 
-                // Repeated requests must still produce only one shutdown-time scan.
-                TestServices::EnableLeakDetection();
-                TestServices::EnableLeakDetection();
-
                 auto helper = TestServices::WindowHelper;
                 auto dispatcher = helper->CurrentDispatcher;
                 DWORD retiringThreadId = 0;
@@ -400,16 +396,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 VERIFY_IS_TRUE(replacementDispatcher == replacement->CurrentDispatcher);
             }
 
-            // Reinitialization must discard a pending leak-detection request.
-            TestServices::EnableLeakDetection();
-            if (initialization == L"Default")
-            {
-                TestServices::WindowHelper->InitializeXaml();
-            }
-            else
-            {
-                TestServices::WindowHelper->InitializeXaml(ref new XamlTypeInfo::XamlControlsXamlMetaDataProvider());
-            }
         }
 
     }

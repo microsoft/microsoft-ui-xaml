@@ -191,6 +191,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::SetTitleInMarkup()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         WindowAutoCloser window1;
@@ -234,6 +236,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::SetSystemBackdropInMarkup()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         WindowAutoCloser window1;
@@ -276,6 +280,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 #ifdef MUX_PRERELEASE
     void WindowIntegrationTests::CanGetSetWindowWidthHeight()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         WindowAutoCloser window1;
@@ -341,6 +347,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::SetWindowWidthHeightInMarkup()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         WindowAutoCloser window1;
@@ -382,6 +390,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::WindowWidthHeightRejectsInvalidValues()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         WindowAutoCloser window1;
@@ -504,6 +514,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::SetWindowWidthHeightWhileMinimizedUpdatesRestoreSize()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         WindowAutoCloser window1;
@@ -583,6 +595,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::CanGetSetWindowWidthHeightBothChromeModes()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         WindowAutoCloser window1;
@@ -725,6 +739,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::SetWindowWidthWhileMaximizedUpdatesRestoreSize()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         WindowAutoCloser window1;
@@ -816,6 +832,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::SetWindowWidthHeightWhileMaximizedWithECITBPreservesOuterClientOffset()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         WindowAutoCloser window1;
@@ -912,6 +930,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::GetWindowWidthHeightWhileMaximizedReportsRestoreSize()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         // While maximized the getter returns the *restore* size (what the window un-maximizes to),
@@ -1031,6 +1051,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::GetWindowWidthHeightAfterSettingWhileMaximizedThenFullScreenReportsSetSize()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         // Regression: set Width/Height while maximized, then switch straight into FullScreen (a
@@ -1103,6 +1125,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::SetWindowWidthHeightInNonDefaultPresenterIsDeferred()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         // Setting Width/Height while a non-sizing presenter (FullScreen/CompactOverlay) is active
@@ -1199,6 +1223,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::GetWindowWidthHeightInNonDefaultPresenterWithoutSetReturnsRestoreSize()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         // Per spec: in a non-default presenter (FullScreen/CompactOverlay) the getter returns the
@@ -1296,6 +1322,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::ToggleECITBPreservesSetClientSize()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         // Once a Width/Height has been set, toggling ExtendsContentIntoTitleBar (ECITB) preserves the
@@ -1427,6 +1455,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::ToggleECITBWithoutSetLeavesWindowSizeUnchanged()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         // If the app never set Width/Height, toggling ExtendsContentIntoTitleBar
@@ -1507,6 +1537,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::GetWindowWidthHeightInPresenterHonorsValueSetBeforeSwitching()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         // Per spec: in FullScreen/CompactOverlay the getter returns the live size ONLY if the app
@@ -1596,6 +1628,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::GetWindowWidthHeightInPresenterReflectsResizeBeforeSwitching()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         // A user resize supersedes an app-set size on presenter exit: once the app has opted
@@ -1699,6 +1733,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::RestoreFromMaximizedWithECITBIsExact()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         // Regression test for the cached-chrome restore path. With ExtendsContentIntoTitleBar on, set
@@ -1786,6 +1822,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::GetWindowWidthHeightHonorsValueSetSameTurnAsPresenterSwitch()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         // Regression for the same-turn edge: an app sets Width/Height and then switches to a
@@ -1842,6 +1880,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::SimulatedUserDragResizeIsTrackedForPresenter()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         // A user border-drag fires a burst of WM_SIZE between WM_ENTERSIZEMOVE and WM_EXITSIZEMOVE.
@@ -1925,6 +1965,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::MinMaxSizeGetSet()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         WindowAutoCloser window1;
@@ -1975,6 +2017,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::MinMaxSizeInvalidValuesThrow()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         WindowAutoCloser window1;
@@ -2017,6 +2061,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::SetMinMaxSizeInMarkup()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         WindowAutoCloser window1;
@@ -2045,6 +2091,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::MinMaxSizeSurvivesPresenterSwap()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         using namespace Microsoft::UI::Windowing;
 
         TestCleanupWrapper cleanup;
@@ -2204,6 +2252,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::MinMaxSizeClampsWindowSize()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         using namespace Microsoft::UI::Windowing;
 
         TestCleanupWrapper cleanup;
@@ -2292,6 +2342,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::MinMaxSizeLeavesUnsetConstraintsAlone()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         using namespace Microsoft::UI::Windowing;
 
         TestCleanupWrapper cleanup;
@@ -2342,6 +2394,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void WindowIntegrationTests::MinMaxSizeTracksTitleBarToggle()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         using namespace Microsoft::UI::Windowing;
 
         TestCleanupWrapper cleanup;
@@ -2395,6 +2449,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
 void WindowIntegrationTests::ContentSetInMarkupIsReleasedWhenCleared()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         // Regression test for "Window.Content set in .xaml is held alive for the lifetime of the Window".
         //
         // The element tree lives in two places at once: the DXaml (C++/COM) peers and the core

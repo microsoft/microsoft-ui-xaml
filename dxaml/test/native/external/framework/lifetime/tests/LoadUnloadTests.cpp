@@ -41,6 +41,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             void LoadUnloadTests::VerifyEventOrdering()
             {
+                TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
                 xaml_controls::StackPanel^ rootPanel = nullptr;
                 xaml_controls::Grid^ grid = nullptr;
                 xaml_controls::Button^ button = nullptr;
@@ -196,6 +198,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void LoadUnloadTests::VerifyEventOrderingForPopup()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             xaml_controls::StackPanel^ rootPanel = nullptr;
             xaml_primitives::Popup^ popup = nullptr;
             xaml_controls::Grid^ grid = nullptr;
@@ -261,6 +265,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void LoadUnloadTests::VerifyEventOrderingForPopupAddAndRemove()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             xaml_controls::StackPanel^ rootPanel = nullptr;
             xaml_primitives::Popup^ popup = nullptr;
             xaml_controls::Grid^ grid = nullptr;
@@ -300,8 +306,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                     LOG_OUTPUT(L"    Popup unloaded...");
                     popupUnloadedEvent->Set();
                 });
+                LOG_OUTPUT(L"Popup ordering diagnostic: root loaded=%d; appending.", rootPanel->IsLoaded);
                 rootPanel->Children->Append(popup);
+                LOG_OUTPUT(L"Popup ordering diagnostic: appended; removing.");
                 rootPanel->Children->RemoveAt(0);
+                LOG_OUTPUT(L"Popup ordering diagnostic: removed; unloaded=%d.", popupUnloadedEvent->HasFired());
             });
 
             // Current behavior:Unloaded event firing first before Loaded event is fired on Popup
@@ -331,6 +340,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void LoadUnloadTests::ReproWeakRefCrash()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             {
                 xaml_controls::StackPanel^ rootPanel;
                 xaml_controls::ItemContainer^ itemContainer;

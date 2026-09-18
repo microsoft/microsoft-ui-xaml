@@ -41,6 +41,8 @@ bool GlobalBoundsTests::TestCleanup()
 
 void GlobalBoundsTests::GetGlobalBounds()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     auto wh = TestServices::WindowHelper;
     wh->SetWindowSizeOverride(wf::Size(400, 300));
 
@@ -89,6 +91,8 @@ void GlobalBoundsTests::GetGlobalBounds()
 
 void GlobalBoundsTests::GetGlobalBounds_RenderTransform()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     auto wh = TestServices::WindowHelper;
     wh->SetWindowSizeOverride(wf::Size(400, 300));
 
@@ -146,6 +150,8 @@ void GlobalBoundsTests::GetGlobalBounds_RenderTransform()
 
 void GlobalBoundsTests::GetGlobalBounds_IncludesChildBounds()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     auto wh = TestServices::WindowHelper;
     wh->SetWindowSizeOverride(wf::Size(400, 300));
 
@@ -199,6 +205,8 @@ void GlobalBoundsTests::GetGlobalBounds_IncludesChildBounds()
 
 void GlobalBoundsTests::GetGlobalBounds_Clip()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     auto wh = TestServices::WindowHelper;
     wh->SetWindowSizeOverride(wf::Size(400, 300));
 
@@ -276,6 +284,8 @@ void GlobalBoundsTests::GetGlobalBounds_Clip()
 
 void GlobalBoundsTests::GetGlobalBounds_LayoutClip()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     auto wh = TestServices::WindowHelper;
     wh->SetWindowSizeOverride(wf::Size(400, 300));
 
@@ -310,6 +320,8 @@ void GlobalBoundsTests::GetGlobalBounds_LayoutClip()
 
 void GlobalBoundsTests::GetGlobalBounds_LayoutClipAsParentClip()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     auto wh = TestServices::WindowHelper;
     wh->SetWindowSizeOverride(wf::Size(400, 300));
 
@@ -365,6 +377,8 @@ void GlobalBoundsTests::GetGlobalBounds_LayoutClipAsParentClip()
 
 void GlobalBoundsTests::GetGlobalBounds_WindowClip()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     auto wh = TestServices::WindowHelper;
     wh->SetWindowSizeOverride(wf::Size(400, 300));
 
@@ -418,6 +432,8 @@ void GlobalBoundsTests::CompareElementIterators(std::vector<UIElement^>& expecte
 
 void GlobalBoundsTests::GetGlobalBounds_LTEEscapesClips()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     auto wh = TestServices::WindowHelper;
     wh->SetWindowSizeOverride(wf::Size(400, 300));
 
@@ -703,16 +719,22 @@ void GlobalBoundsTests::FindElementsInHostCoordinatesCommon(bool include3D)
 
 void GlobalBoundsTests::FindElementsInHostCoordinates()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     FindElementsInHostCoordinatesCommon(false /* include3D */);
 }
 
 void GlobalBoundsTests::FindElementsInHostCoordinates3D()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     FindElementsInHostCoordinatesCommon(true /* include3D */);
 }
 
 void GlobalBoundsTests::FindElementsInHostCoordinatesWPF()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     auto wh = TestServices::WindowHelper;
     wh->SetWindowSizeOverride(wf::Size(400, 300));
 
@@ -989,6 +1011,8 @@ void GlobalBoundsTests::FindElementsInHostCoordinates_BaseItemChrome()
 
 void GlobalBoundsTests::GetGlobalBounds_ChildHas3D()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     auto wh = TestServices::WindowHelper;
     wh->SetWindowSizeOverride(wf::Size(400, 300));
 
@@ -1028,6 +1052,8 @@ void GlobalBoundsTests::GetGlobalBounds_ChildHas3D()
 
 void GlobalBoundsTests::ProjectionMakesConcavePolygon()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     const auto& wh = TestServices::WindowHelper;
 
     Canvas^ canvas;

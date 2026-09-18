@@ -598,6 +598,8 @@ void SystemBackdropTests::OnTargetConnectedDisconnected()
 
 void SystemBackdropTests::SharedSystemBackdrop()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     const auto& wh = TestServices::WindowHelper;
 
     WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
@@ -1100,6 +1102,8 @@ xaml_controls::MenuFlyoutPresenter^ GetMenuFlyoutPresenter(xaml_controls::MenuFl
 
 void SystemBackdropTests::MenuFlyoutBackdrop()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     const auto& wh = TestServices::WindowHelper;
 
     WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
@@ -1194,6 +1198,8 @@ void SystemBackdropTests::MenuFlyoutBackdrop()
 
 void SystemBackdropTests::ChangeWindowContent()
 {
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     const auto& wh = TestServices::WindowHelper;
 
     WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);

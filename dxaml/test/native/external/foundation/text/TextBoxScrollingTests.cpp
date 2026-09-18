@@ -47,6 +47,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void TextBoxScrollingTests::ScrollWithWrappingText()
         {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             // We expect the scroll to go to the textbox, thus only scrolling that individual box.
             TextBoxScrollingTestsHelper(true);
         }

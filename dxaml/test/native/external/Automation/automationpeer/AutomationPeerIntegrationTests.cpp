@@ -345,7 +345,6 @@ void AutomationPeerIntegrationTests::VerifyScrollItemPattern()
 
 void AutomationPeerIntegrationTests::VerifyContainerWithAutomationNameHasAP()
 {
-    TestServices::EnableLeakDetection();
     TestCleanupWrapper cleanup;
 
     VerifyContainerWithAutomationNameHasAPMarkup();
@@ -355,7 +354,6 @@ void AutomationPeerIntegrationTests::VerifyContainerWithAutomationNameHasAP()
 
 void AutomationPeerIntegrationTests::VerifyContainerWithLabeledByHasAP()
 {
-    TestServices::EnableLeakDetection();
     TestCleanupWrapper cleanup;
 
     VerifyContainerWithLabeledByHasAPMarkup();

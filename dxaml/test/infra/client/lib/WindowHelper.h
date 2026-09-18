@@ -308,13 +308,6 @@ namespace Private { namespace Infrastructure {
         static wrl::ComPtr<msy::IDispatcherQueue> GetDispatcherForMainView();
 
     private:
-        enum class LeakDetectionMode
-        {
-            Disabled,
-            NoLeaksExpected,
-            LeaksExpected
-        };
-
         void InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* customProvider);
 
         static HRESULT OnAppSuspended();
@@ -361,7 +354,7 @@ namespace Private { namespace Infrastructure {
         static bool s_isShutdownEnabled;
 
         bool m_ensureSatelliteDLLCustomDPCleanup = false;
-        LeakDetectionMode m_leakDetectionMode = LeakDetectionMode::Disabled;
+        bool m_expectLeaks = false;
 
         // Delegate function the test can set to call it back after every UI thread tick
         wrl::ComPtr<test_infra::IPostTickCallback> m_spPostTickCallback;

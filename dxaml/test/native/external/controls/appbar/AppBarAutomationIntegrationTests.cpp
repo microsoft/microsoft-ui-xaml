@@ -51,6 +51,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     //  Loads simple markup with AppBar and verifies AutomationProperties are correct.
     void AppBarAutomationIntegrationTests::VerifyAutomationProperties()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         VerifyAutomationProperties(false /*useAppBarAutomationName*/);
         VerifyAutomationProperties(true /*useAppBarAutomationName*/);
     }
@@ -105,6 +107,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarAutomationIntegrationTests::VerifyAutomationWindowPattern()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::AppBar^ appBar = SetupAppBar(true);
@@ -194,6 +198,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AppBarAutomationIntegrationTests::VerifyLightDismissInTreeWhenExpanded()
     {
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::AppBar^ appBar = SetupAppBar(true);

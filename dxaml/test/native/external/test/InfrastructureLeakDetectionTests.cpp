@@ -29,12 +29,23 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Detects a deliberately retained native brush, then verifies a clean shutdown.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateWpfIgnoredLeakDetection)
+            TEST_METHOD_PROPERTY(L"Description", L"Suppresses a retained-brush leak, then checks a clean replacement core by default.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(ValidateWpfForcedLeakDetection)
-            TEST_METHOD_PROPERTY(L"Description", L"Probes runtime-forced leak detection without a code opt-in. Retained-brush variations must fail only when forced.")
+            TEST_METHOD_PROPERTY(L"Description", L"Probes default and forced leak detection. Retained-brush variations fail unless ignored without the runtime override.")
             TEST_METHOD_PROPERTY(L"Classification", L"IntentionallyFailing")
             TEST_METHOD_PROPERTY(L"Ignore", L"True")
             TEST_METHOD_PROPERTY(L"Data:IgnoreLeaksForTest", L"{false,true}")
             TEST_METHOD_PROPERTY(L"Data:RetainNativeObject", L"{false,true}")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateWpfUnsatisfiedLeakExpectation)
+            TEST_METHOD_PROPERTY(L"Description", L"Fails when an expected-leak scan reports no leaks or is suppressed.")
+            TEST_METHOD_PROPERTY(L"Classification", L"IntentionallyFailing")
+            TEST_METHOD_PROPERTY(L"Ignore", L"True")
+            TEST_METHOD_PROPERTY(L"Data:IgnoreLeaksForTest", L"{false,true}")
         END_TEST_METHOD()
     };
 
@@ -68,8 +79,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     helper->ShutdownXaml();
                 });
 
-                TestServices::EnableLeakDetection(expectLeaks);
-                TestServices::EnableLeakDetection(expectLeaks);
+                if (expectLeaks)
+                {
+                    TestServices::EnableLeakDetection(true);
+                }
 
                 LOG_OUTPUT(L"WPF leak-detection interval %d: expectLeaks=%s.",
                     interval, expectLeaks ? L"true" : L"false");
@@ -103,6 +116,31 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         }
     }
 
+    void InfrastructureLeakDetectionTests::ValidateWpfIgnoredLeakDetection()
+    {
+        for (int interval = 0; interval < 2; ++interval)
+        {
+            auto helper = TestServices::WindowHelper;
+            helper->InitializeXaml();
+            auto shutdown = wil::scope_exit([&]() {
+                helper->WaitForIdle();
+                helper->ResetWindowContentAndWaitForIdle();
+                helper->ShutdownXaml();
+            });
+
+            if (interval == 0)
+            {
+                TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+                RunOnUIThread([&]() {
+                    auto brush = ref new SolidColorBrush();
+                    helper->SetPostTickCallback(ref new PostTickCallback([brush]() {
+                        (void)brush->Opacity;
+                    }));
+                });
+            }
+        }
+    }
+
     void InfrastructureLeakDetectionTests::ValidateWpfForcedLeakDetection()
     {
         bool ignoreLeaks = false;
@@ -131,6 +169,25 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     (void)brush->Opacity;
                 }));
             });
+        }
+    }
+
+    void InfrastructureLeakDetectionTests::ValidateWpfUnsatisfiedLeakExpectation()
+    {
+        bool ignoreLeaks = false;
+        VERIFY_SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"IgnoreLeaksForTest", ignoreLeaks));
+
+        auto helper = TestServices::WindowHelper;
+        helper->InitializeXaml();
+        auto shutdown = wil::scope_exit([&]() {
+            helper->ResetWindowContentAndWaitForIdle();
+            helper->ShutdownXaml();
+        });
+
+        TestServices::EnableLeakDetection(true);
+        if (ignoreLeaks)
+        {
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
         }
     }
 
