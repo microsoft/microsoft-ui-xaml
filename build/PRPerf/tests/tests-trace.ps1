@@ -119,6 +119,33 @@ function Test-TraceIgnoresAStopThatPrecedesTheStart {
     Assert-Equal 25.0 $regions.XamlInitializeMs 'A stop before the start must be ignored.'
 }
 
+function Test-TraceMeasuresOnlyTheRequestedProcess {
+    # wpr captures the whole machine. Any other XAML app running on the lab agent would
+    # otherwise win the race for the earliest start and be measured in place of ours.
+    $xml = New-TraceDocument -Events @(
+        (New-TraceEvent -EventId 31 -Time '2026-09-14T08:50:10.0000000+00:00' -ProcessId 555 -ThreadId 1)
+        (New-TraceEvent -EventId 17 -Time '2026-09-14T08:50:10.9000000+00:00' -ProcessId 555 -ThreadId 1)
+        (New-TraceEvent -EventId 31 -Time '2026-09-14T08:50:11.0000000+00:00' -ProcessId 100 -ThreadId 200)
+        (New-TraceEvent -EventId 17 -Time '2026-09-14T08:50:11.0250000+00:00' -ProcessId 100 -ThreadId 200)
+    )
+
+    $regions = Get-PRPerfXamlRegionDurations -Xml $xml -ProcessId 100
+
+    Assert-Equal 25.0 $regions.XamlInitializeMs 'Another process must not be measured in place of the requested one.'
+}
+
+function Test-TraceReturnsNothingWhenTheRequestedProcessIsAbsent {
+    # If the app we launched raised no XAML events, saying so is the only honest answer.
+    $xml = New-TraceDocument -Events @(
+        (New-TraceEvent -EventId 31 -Time '2026-09-14T08:50:11.0000000+00:00' -ProcessId 555)
+        (New-TraceEvent -EventId 17 -Time '2026-09-14T08:50:11.0250000+00:00' -ProcessId 555)
+    )
+
+    $regions = Get-PRPerfXamlRegionDurations -Xml $xml -ProcessId 100
+
+    Assert-Equal 0 $regions.Count 'A trace without the requested process must yield no regions.'
+}
+
 function Test-TraceReturnsNothingWhenTheProviderNeverAppeared {
     # An empty trace means the app was never actually measured. Reporting no regions lets
     # the caller say so, rather than inventing a result.

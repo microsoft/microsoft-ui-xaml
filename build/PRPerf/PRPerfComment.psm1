@@ -11,12 +11,39 @@ function ConvertTo-PRPerfMarkdownCell($Value) {
     return $cell.Replace('\', '\\').Replace('|', '\|')
 }
 
+function Get-PRPerfXamlRegionSection {
+    param($XamlRegions)
+
+    if ($null -eq $XamlRegions) { return @() }
+    $names = @($XamlRegions.Keys)
+    # Nothing measured means the trace was switched off or did not produce usable events.
+    # The comparison that did work must then read exactly as it would have anyway.
+    if ($names.Count -eq 0) { return @() }
+
+    $lines = @(
+        '',
+        '### XAML startup regions (informational, no baseline)',
+        '',
+        '| Region | PR build |',
+        '|---|---:|'
+    )
+    foreach ($name in $names) {
+        $lines += "| $(ConvertTo-PRPerfMarkdownCell $name) | $(Format-PRPerfNumber $XamlRegions[$name] ' ms') |"
+    }
+    return $lines
+}
+
 function New-PRPerfMarkdown {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)] $Comparison,
         [Parameter(Mandatory)][AllowEmptyString()][string] $ArtifactUrl,
-        [Parameter(Mandatory)][AllowEmptyString()][string] $PipelineUrl
+        [Parameter(Mandatory)][AllowEmptyString()][string] $PipelineUrl,
+
+        # Measured on the pull request build alone. There is deliberately no baseline: the
+        # two sides need different framework packages installed, which cannot both be
+        # present at once, so these are reported as an observation and never as a verdict.
+        $XamlRegions = $null
     )
 
     $title = switch ($Comparison.overallState) {
@@ -63,7 +90,10 @@ function New-PRPerfMarkdown {
     $lines += @(
         '',
         "Target: ``$($Comparison.target.commit)`` (build $($Comparison.target.buildId)$baselineKind)",
-        "PR: ``$($Comparison.trial.commit)`` (build $($Comparison.trial.buildId))",
+        "PR: ``$($Comparison.trial.commit)`` (build $($Comparison.trial.buildId))"
+    )
+    $lines += Get-PRPerfXamlRegionSection -XamlRegions $XamlRegions
+    $lines += @(
         '',
         "[Artifacts]($ArtifactUrl) | [Pipeline run]($PipelineUrl)"
     )

@@ -85,12 +85,22 @@ function Get-PRPerfXamlRegionDurations {
     and be presented as an enormous improvement.
     #>
     [CmdletBinding()]
-    param([Parameter(Mandatory)][AllowEmptyString()][string] $Xml)
+    param(
+        [Parameter(Mandatory)][AllowEmptyString()][string] $Xml,
+
+        # wpr records the whole machine, so the caller names the process it launched.
+        # Without it, any other XAML app on the agent could be measured in its place.
+        [string] $ProcessId
+    )
 
     $regions = [ordered]@{}
     if ([string]::IsNullOrWhiteSpace($Xml)) { return $regions }
 
     $events = @(Get-PRPerfTraceEvents -Xml $Xml)
+    if (-not [string]::IsNullOrWhiteSpace($ProcessId)) {
+        $events = @($events | Where-Object { $_.ProcessId -eq $ProcessId })
+    }
+
     $start = @($events | Where-Object { $_.EventId -eq $script:RegionStartEventId } |
         Sort-Object Time | Select-Object -First 1)
     if ($start.Count -eq 0) { return $regions }

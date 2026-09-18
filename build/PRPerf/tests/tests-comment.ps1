@@ -446,3 +446,40 @@ function Test-MarkdownIgnoresABaselineKindItDoesNotRecognise {
     $markdown = New-PRPerfMarkdown -Comparison $comparison -ArtifactUrl 'https://artifacts' -PipelineUrl 'https://pipeline'
     if ($markdown -like '*perfBaselineKind*') { throw "An unexpanded pipeline variable reached the comment.`n$markdown" }
 }
+
+function Test-MarkdownOmitsXamlRegionsWhenNoneWereMeasured {
+    # The app launch trace is the experimental half of this feature. When it is switched
+    # off, or fails on the agent, the comparison that does work must read exactly as it
+    # did before, with nothing hinting that anything was missing.
+    $comparison = New-TestComparison
+    $without = New-PRPerfMarkdown -Comparison $comparison -ArtifactUrl 'https://artifacts' -PipelineUrl 'https://pipeline'
+    $withEmpty = New-PRPerfMarkdown -Comparison $comparison -ArtifactUrl 'https://artifacts' -PipelineUrl 'https://pipeline' -XamlRegions @{}
+
+    Assert-Equal $without $withEmpty 'An empty region set must not change the comment at all.'
+    if ($withEmpty -like '*XAML*') { throw 'No XAML section may appear when nothing was measured.' }
+}
+
+function Test-MarkdownReportsMeasuredXamlRegions {
+    # These numbers come from one app launch on the pull request build only, with nothing
+    # to compare against, so they are reported as an observation and never as a verdict.
+    $comparison = New-TestComparison
+    $markdown = New-PRPerfMarkdown -Comparison $comparison -ArtifactUrl 'https://artifacts' -PipelineUrl 'https://pipeline' `
+        -XamlRegions ([ordered]@{ XamlInitializeMs = 25.5; XamlFrameMs = 250.25 })
+
+    if ($markdown -notlike '*XamlInitializeMs*') { throw 'A measured region must be listed.' }
+    if ($markdown -notlike '*25.50*') { throw 'A measured region value must be shown.' }
+    if ($markdown -notlike '*250.25*') { throw 'A measured region value must be shown.' }
+    if ($markdown -notlike '*no baseline*') { throw 'The section must say these numbers have nothing to compare against.' }
+}
+
+function Test-MarkdownXamlRegionsNeverChangeTheVerdict {
+    # A informational section must not be able to turn a passing run into a failing one.
+    $comparison = New-TestComparison
+    $markdown = New-PRPerfMarkdown -Comparison $comparison -ArtifactUrl 'https://artifacts' -PipelineUrl 'https://pipeline' `
+        -XamlRegions ([ordered]@{ XamlInitializeMs = 9999.0 })
+
+    if ($markdown -notlike "*$($comparison.overallState)*" -and $comparison.overallState -eq 'RegressionWarning') {
+        throw 'The heading must still reflect the comparison.'
+    }
+    if ($markdown -like '*Performance result inconclusive*') { throw 'Region numbers must not make the run inconclusive.' }
+}
