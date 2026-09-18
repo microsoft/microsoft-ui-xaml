@@ -9,6 +9,7 @@ param(
     [string] $AccessToken = '',
     [string] $MainBranch = 'refs/heads/main',
     [string] $PullRequestNumber = '',
+    [string] $FallbackPullRequestNumber = '',
     [string] $GitHubRepository = 'microsoft/microsoft-ui-xaml',
     [string] $GitHubToken = ''
 )
@@ -63,23 +64,30 @@ try {
     # genuine "before this change" side, so a difference is this author's to explain. An
     # earlier build of the pull request itself only ever compares it with its own past.
     $baseCommit = ''
-    if ($PullRequestNumber -match '^\d+$') {
+    $pullRequestNumber = Select-GitHubPRPerfPullRequestNumber -Candidates @($PullRequestNumber, $FallbackPullRequestNumber)
+    if ($pullRequestNumber -ne '') {
         try {
             $baseCommit = [string](Get-GitHubPRPerfPullRequest `
-                -Uri "https://api.github.com/repos/$GitHubRepository/pulls/$PullRequestNumber" `
+                -Uri "https://api.github.com/repos/$GitHubRepository/pulls/$pullRequestNumber" `
                 -Token $GitHubToken).base.sha
         } catch {
-            Write-Host "##vso[task.logissue type=warning]Could not read pull request $PullRequestNumber to find the commit it branched from: $($_.Exception.Message)"
+            Write-Host "##vso[task.logissue type=warning]Could not read pull request $pullRequestNumber to find the commit it branched from: $($_.Exception.Message)"
         }
     }
 
     if ($baseCommit -match '^[0-9a-fA-F]{40}$') {
-        $gitHubHeaders = New-GitHubPRPerfHeaders -Token $GitHubToken
-        $mainBuild = Select-PRPerfMainBaselineBuild -Builds (Get-CompletedBuilds -Branch $MainBranch) `
+        Write-Host "This pull request branched from main at $baseCommit."
+        # @() keeps a main branch with no completed builds from binding $null to a mandatory
+        # parameter, which would throw away the same-branch fallback below.
+        $mainBuild = Select-PRPerfMainBaselineBuild -Builds @(Get-CompletedBuilds -Branch $MainBranch) `
             -IsAncestor {
                 param($sha)
-                Test-GitHubPRPerfCommitIsAncestor -Candidate $sha -Descendant $baseCommit `
-                    -Headers $gitHubHeaders -Repository $GitHubRepository
+                $isAncestor = Test-GitHubPRPerfCommitIsAncestor -Candidate $sha -Descendant $baseCommit `
+                    -Token $GitHubToken -Repository $GitHubRepository
+                # Logged per candidate so the next reader of this log can see why a
+                # particular main build was chosen or passed over.
+                Write-Host "  main candidate $sha contained by this pull request: $isAncestor"
+                return $isAncestor
             } `
             -HasArtifact { param($id) Test-ArtifactStillExists -BuildId $id }
 
@@ -93,8 +101,7 @@ try {
         Write-Host "##vso[task.logissue type=warning]The commit this pull request branched from could not be determined, so a main baseline cannot be shown to be honest. Falling back to an earlier build of this pull request."
     }
 
-    foreach ($build in @(Get-CompletedBuilds -Branch $SourceBranch)) {
-        if ([string]$build.id -eq [string]$CurrentBuildId) { continue }
+    foreach ($build in @(Get-CompletedBuilds -Branch $SourceBranch)) {        if ([string]$build.id -eq [string]$CurrentBuildId) { continue }
         if ([string]::IsNullOrWhiteSpace([string]$build.sourceVersion)) { continue }
         if (-not (Test-ArtifactStillExists -BuildId ([string]$build.id))) { continue }
 

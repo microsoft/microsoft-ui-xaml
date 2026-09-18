@@ -51,11 +51,14 @@ function New-PRPerfMarkdown {
     }
     $baselineKind = ''
     $kindProperty = $Comparison.target.PSObject.Properties['baselineKind']
-    if ($null -ne $kindProperty -and -not [string]::IsNullOrWhiteSpace([string]$kindProperty.Value)) {
+    # Only kinds this code actually produces are rendered. The compare step runs on paths
+    # where the pipeline variable was never set, and printing an unexpanded literal to a
+    # pull request as though it were a fact would be worse than saying nothing.
+    if ($null -ne $kindProperty -and @('main', 'same-branch') -contains [string]$kindProperty.Value) {
         # A main baseline attributes the delta to this pull request. A same-branch baseline
         # only compares the pull request with its own earlier self. Saying which one was
         # used keeps the reader from over-reading the number.
-        $baselineKind = ", $(ConvertTo-PRPerfMarkdownCell ([string]$kindProperty.Value)) baseline"
+        $baselineKind = ", $([string]$kindProperty.Value) baseline"
     }
     $lines += @(
         '',

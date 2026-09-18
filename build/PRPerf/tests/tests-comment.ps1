@@ -437,3 +437,12 @@ function Test-MarkdownLeavesTheTargetLineAloneWhenTheKindIsUnknown {
     $markdown = New-PRPerfMarkdown -Comparison $comparison -ArtifactUrl 'https://artifacts' -PipelineUrl 'https://pipeline'
     if ($markdown -notlike "*(build $($comparison.target.buildId))*") { throw "The plain target line was damaged.`n$markdown" }
 }
+
+function Test-MarkdownIgnoresABaselineKindItDoesNotRecognise {
+    # The compare step runs on every path, including ones where the pipeline variable was
+    # never set, so an unexpanded literal must not be printed to the pull request as fact.
+    $comparison = New-TestComparison
+    $comparison.target | Add-Member -NotePropertyName baselineKind -NotePropertyValue '$(perfBaselineKind)' -Force
+    $markdown = New-PRPerfMarkdown -Comparison $comparison -ArtifactUrl 'https://artifacts' -PipelineUrl 'https://pipeline'
+    if ($markdown -like '*perfBaselineKind*') { throw "An unexpanded pipeline variable reached the comment.`n$markdown" }
+}

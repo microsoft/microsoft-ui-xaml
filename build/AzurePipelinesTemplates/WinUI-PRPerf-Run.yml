@@ -321,6 +321,7 @@ stages:
             -ArtifactName "drop_amd64chk"
             -AccessToken "$(System.AccessToken)"
             -PullRequestNumber "$(System.PullRequest.PullRequestNumber)"
+            -FallbackPullRequestNumber "${{ parameters.pullRequestId }}"
             -GitHubToken "$(GitHubPRPerfToken)"
 
       - task: DownloadPipelineArtifact@2

@@ -622,14 +622,14 @@ function Test-AncestryTrueWhenTheMainBuildIsBehindThePullRequestBase {
     # prBase contains the candidate, so the candidate is real "before this change" code.
     Import-GitHubModule
     $result = Test-GitHubPRPerfCommitIsAncestor -Candidate ('a' * 40) -Descendant ('b' * 40) `
-        -Headers @{} -Repository 'o/r' -Invoke { [pscustomobject]@{ status = 'ahead' } }
+        -Token '' -Repository 'o/r' -Invoke { [pscustomobject]@{ status = 'ahead' } }
     Assert-Equal $true $result 'An "ahead" comparison must be treated as ancestry.'
 }
 
 function Test-AncestryTrueWhenTheCommitsAreIdentical {
     Import-GitHubModule
     $result = Test-GitHubPRPerfCommitIsAncestor -Candidate ('a' * 40) -Descendant ('a' * 40) `
-        -Headers @{} -Repository 'o/r' -Invoke { [pscustomobject]@{ status = 'identical' } }
+        -Token '' -Repository 'o/r' -Invoke { [pscustomobject]@{ status = 'identical' } }
     Assert-Equal $true $result 'The same commit must count as ancestry.'
 }
 
@@ -638,7 +638,7 @@ function Test-AncestryFalseWhenHistoriesDiverged {
     # this author would be wrong, so it must not be used as a baseline.
     Import-GitHubModule
     $result = Test-GitHubPRPerfCommitIsAncestor -Candidate ('a' * 40) -Descendant ('b' * 40) `
-        -Headers @{} -Repository 'o/r' -Invoke { [pscustomobject]@{ status = 'diverged' } }
+        -Token '' -Repository 'o/r' -Invoke { [pscustomobject]@{ status = 'diverged' } }
     Assert-Equal $false $result 'Diverged history must not be treated as ancestry.'
 }
 
@@ -646,6 +646,37 @@ function Test-AncestryFalseWhenGitHubCannotAnswer {
     # Unknown must never be optimistically read as yes.
     Import-GitHubModule
     $result = Test-GitHubPRPerfCommitIsAncestor -Candidate ('a' * 40) -Descendant ('b' * 40) `
-        -Headers @{} -Repository 'o/r' -Invoke { throw 'network down' }
+        -Token '' -Repository 'o/r' -Invoke { throw 'network down' }
     Assert-Equal $false $result 'An unanswerable comparison must not claim ancestry.'
+}
+
+
+function Test-AncestryRetriesWithoutTheTokenWhenTheTokenIsRejected {
+    # The configured token is known to 403 on this repository, which is why reading the pull
+    # request already retries anonymously. Without the same retry here every candidate would
+    # answer "not an ancestor" and the main baseline would silently never be chosen.
+    Import-GitHubModule
+    $script:ancestryAttempts = 0
+    $result = Test-GitHubPRPerfCommitIsAncestor -Candidate ('a' * 40) -Descendant ('b' * 40) `
+        -Token 'rejected-token' -Repository 'o/r' -Invoke {
+            $script:ancestryAttempts++
+            if ($script:ancestryAttempts -eq 1) { throw 'Response status code does not indicate success: 403 (Forbidden).' }
+            [pscustomobject]@{ status = 'ahead' }
+        }
+    Assert-Equal $true $result 'A rejected token must fall back to an anonymous comparison.'
+    Assert-Equal 2 $script:ancestryAttempts 'The anonymous retry must actually happen.'
+}
+
+function Test-PullRequestNumberPrefersTheFirstRealNumber {
+    # Azure DevOps hands this step an unexpanded literal on some paths, so the step must be
+    # able to try more than one source rather than giving up on the first non-number.
+    Import-GitHubModule
+    $chosen = Select-GitHubPRPerfPullRequestNumber -Candidates @('$(System.PullRequest.PullRequestNumber)', '', '11918')
+    Assert-Equal '11918' $chosen 'The first genuine pull request number must be chosen.'
+}
+
+function Test-PullRequestNumberIsEmptyWhenNoneAreReal {
+    Import-GitHubModule
+    $chosen = Select-GitHubPRPerfPullRequestNumber -Candidates @('$(nope)', '')
+    Assert-Equal '' $chosen 'A literal placeholder must never be treated as a pull request number.'
 }

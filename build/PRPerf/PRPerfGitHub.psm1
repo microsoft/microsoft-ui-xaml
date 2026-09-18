@@ -281,7 +281,7 @@ function Test-GitHubPRPerfCommitIsAncestor {
     param(
         [Parameter(Mandatory)][string] $Candidate,
         [Parameter(Mandatory)][string] $Descendant,
-        [Parameter(Mandatory)] $Headers,
+        [Parameter(Mandatory)][AllowEmptyString()][string] $Token,
         [Parameter(Mandatory)][string] $Repository,
         [scriptblock] $Invoke
     )
@@ -290,18 +290,54 @@ function Test-GitHubPRPerfCommitIsAncestor {
         $Invoke = { param($Uri, $RequestHeaders) Invoke-RestMethod -Uri $Uri -Headers $RequestHeaders -Method Get }
     }
 
+    $anonymousHeaders = @{
+        Accept = 'application/vnd.github+json'
+        'X-GitHub-Api-Version' = '2022-11-28'
+        'User-Agent' = 'WinUI-PRPerf'
+    }
+
     $uri = "https://api.github.com/repos/$Repository/compare/$Candidate...$Descendant"
-    try {
-        $comparison = & $Invoke $uri $Headers
-    } catch {
-        Write-Host "##vso[task.logissue type=warning]Could not compare $Candidate with $Descendant ($(Get-GitHubPRPerfErrorDetailFromRecord -ErrorRecord $_)). Treating it as not an ancestor."
-        return $false
+    $comparison = $null
+    if (-not [string]::IsNullOrWhiteSpace($Token)) {
+        try {
+            $comparison = & $Invoke $uri (New-GitHubPRPerfHeaders -Token $Token)
+        } catch {
+            # The configured token is rejected on this repository often enough that reading
+            # the pull request already retries without it. Giving up here instead would make
+            # every candidate look like a non-ancestor and quietly lose the main baseline.
+            Write-Host "##vso[task.logissue type=warning]The configured GitHub token was rejected comparing commits ($(Get-GitHubPRPerfErrorDetailFromRecord -ErrorRecord $_)). Retrying without it."
+        }
+    }
+
+    if ($null -eq $comparison) {
+        try {
+            $comparison = & $Invoke $uri $anonymousHeaders
+        } catch {
+            Write-Host "##vso[task.logissue type=warning]Could not compare $Candidate with $Descendant ($(Get-GitHubPRPerfErrorDetailFromRecord -ErrorRecord $_)). Treating it as not an ancestor."
+            return $false
+        }
     }
 
     $status = [string]$comparison.status
     return $status -eq 'ahead' -or $status -eq 'identical'
 }
 
-Export-ModuleMember -Function New-GitHubPRPerfHeaders, Get-PRPerfContextFromPipeline, Get-GitHubPRPerfCommits, Test-GitHubPRPerfRequestCurrent, Test-GitHubPRPerfRequested, ConvertTo-GitHubPRPerfStatusState, Format-GitHubPRPerfErrorDetail, Get-GitHubPRPerfErrorDetailFromRecord, Get-GitHubPRPerfPullRequest, Test-GitHubPRPerfCommitIsAncestor
+function Select-GitHubPRPerfPullRequestNumber {
+    <#
+        Picks the first candidate that is actually a number.
+
+        Azure DevOps leaves System.PullRequest.PullRequestNumber unexpanded on some paths,
+        so a step that trusts a single source gets a literal string and silently behaves as
+        though there were no pull request at all.
+    #>
+    param([Parameter(Mandatory)][AllowEmptyCollection()][AllowEmptyString()][string[]] $Candidates)
+
+    foreach ($candidate in $Candidates) {
+        if ($candidate -match '^\d+$') { return $candidate }
+    }
+    return ''
+}
+
+Export-ModuleMember -Function New-GitHubPRPerfHeaders, Get-PRPerfContextFromPipeline, Get-GitHubPRPerfCommits, Test-GitHubPRPerfRequestCurrent, Test-GitHubPRPerfRequested, ConvertTo-GitHubPRPerfStatusState, Format-GitHubPRPerfErrorDetail, Get-GitHubPRPerfErrorDetailFromRecord, Get-GitHubPRPerfPullRequest, Test-GitHubPRPerfCommitIsAncestor, Select-GitHubPRPerfPullRequestNumber
 
 
