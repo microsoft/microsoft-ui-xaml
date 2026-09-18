@@ -34,4 +34,5 @@ public:
     winrt::AutoSuggestBox::Loaded_revoker m_autoSuggestBoxLoadedRevoker;
     winrt::Popup::Opened_revoker m_popupOpenedRevoker;
     winrt::Popup::Closed_revoker m_popupClosedRevoker;
+    winrt::FrameworkElement::LayoutUpdated_revoker m_popupBorderLayoutUpdatedRevoker;
 };
