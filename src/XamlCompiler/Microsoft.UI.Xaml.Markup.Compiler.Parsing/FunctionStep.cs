@@ -54,9 +54,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                     return null;
                 }
 
+                // Compared by identity rather than by code name: a path starting at a named element
+                // is rooted at the element root, which shares the empty code name of the data root
+                // and would otherwise look like the same step.
                 bool isScheduledOutsideInstancePath = Parameters
                     .OfType<FunctionPathParam>()
-                    .Any(param => !param.Path.Parents.Any(step => step.CodeName == Parent.CodeName));
+                    .Any(param => !param.Path.Parents.Contains(Parent));
 
                 return isScheduledOutsideInstancePath ? Parent : null;
             }
