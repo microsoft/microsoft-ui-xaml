@@ -395,6 +395,8 @@ stages:
             arguments: >-
               -AppUserModelId "${{ parameters.xamlTraceApp }}"
               -PayloadRoot "$(Agent.TempDirectory)\prperf-payload"
+              -SampleCount 2
+              -WarmupCount 1
               -OutputPath "$(comparisonDirectory)\xaml-regions.json"
 
     - ${{ if and(ne(parameters.useFixtures, true), ne(parameters.targetBuildId, '')) }}:
