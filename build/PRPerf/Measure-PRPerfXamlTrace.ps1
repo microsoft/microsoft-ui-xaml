@@ -253,10 +253,14 @@ try {
             continue
         }
 
+        $summary = (@($regions.Keys) | ForEach-Object {
+            '{0}={1}' -f $_, ([double]$regions[$_]).ToString('F2', [cultureinfo]::InvariantCulture)
+        }) -join ', '
+
         # The first launch pages the app and its framework in from disk, which measures the
         # file system rather than XAML, so it is discarded rather than averaged in.
         if ($run -lt $WarmupCount) {
-            Write-Note "Discarded warmup launch $run ($(@($regions.Keys) -join ', '))."
+            Write-Note "Discarded warmup launch $run ($summary)."
             continue
         }
 
@@ -264,7 +268,7 @@ try {
             if (-not $measurements.ContainsKey($name)) { $measurements[$name] = @() }
             $measurements[$name] += [double]$regions[$name]
         }
-        Write-Note "Launch $run measured $(@($regions.Keys) -join ', ')."
+        Write-Note "Launch $run measured $summary."
     }
 } catch {
     Write-Note "No XAML regions were measured: $($_.Exception.Message)"
