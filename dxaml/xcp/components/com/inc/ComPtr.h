@@ -780,7 +780,7 @@ namespace ctl
             IFC_RETURN(refSource->GetWeakReference(weakref.GetAddressOf()));
         }
 
-        *pWeak = WeakRefPtr(weakref);
+        pWeak->Swap(weakref);
         return S_OK;
     }
 

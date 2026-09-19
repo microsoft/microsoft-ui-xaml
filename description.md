@@ -1930,3 +1930,84 @@ allocation or COM call. Code layout and register choices change. Application
 performance, runtime reentrancy, failure injection, debug behavior, and other
 architectures were not exercised. Compilation does not establish runtime
 correctness.
+
+## Follow-up: transfer acquired weak-reference ownership (2026-09-19)
+
+The `ctl::AsWeak` helper in
+`dxaml\xcp\components\com\inc\ComPtr.h` previously constructed a temporary
+`WeakRefPtr` by copying its local `ComPtr<IWeakReference>`, then moved that
+temporary into the output. The copy added a transient AddRef/Release pair.
+The helper now calls `pWeak->Swap(weakref)` using the existing `ComPtr::Swap`.
+This transfers the acquired reference directly and lets the local release the
+old destination. Only this publication statement changes; `AsWeakOrNull` and
+the general smart-pointer operations remain unchanged.
+
+The QueryInterface/GetWeakReference order and both `IFC_RETURN` sites remain
+unchanged. Failure preserves the previous output and cleans up populated
+local references. Null input still clears the output and returns `S_OK`.
+Equal old/new interface pointers still release exactly one old ownership
+reference. The new pointer is published before the old destination is
+released, and the reference-source interface remains alive through that
+release. There are no new calls, allocations, interfaces, or object fields.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `b7416b74e`, fresh baseline | 14,271,488 | 14,270,464 | 14,281,188 |
+| Direct weak-reference transfer | 14,270,464 | 14,269,440 | 14,280,148 |
+| Incremental reduction | 1,024 | 1,024 | 1,040 |
+| Cumulative reduction from original baseline | 264,704 | 264,704 | 264,628 |
+
+The actual DLL file is **1,024 bytes (1 KiB) smaller**. Cumulative file
+savings are **264,704 bytes (258.5 KiB)** from the original 14,535,168-byte
+baseline. Raw `.text` shrinks by 1,024 bytes and virtual `.text` shrinks by
+1,040 bytes. All other section sizes are unchanged.
+
+As supporting attribution, the free `ctl::AsWeak` family shrinks from 899
+to 740 attributed bytes across three unique representatives. The
+`ctl::ComPtr::AsWeak` family shrinks from 716 to 610 across two representatives.
+Each of the five resolved primary code blocks shrinks by 53 bytes. The
+inspected AppBarButton block removes the transient guarded AddRef/Release
+pair and retains the 64-byte local stack reservation, stack-cookie check,
+guarded remaining COM calls, and failure fences. Folded aliases are not
+distinct code bodies. Family totals are not summed with section savings or
+substituted for the actual file measurement.
+
+Restoring the original source byte-for-byte and recompiling reproduced all
+three baseline metrics. Reapplying the exact candidate and recompiling
+reproduced all three candidate metrics. Each non-baseline build recompiled
+native source and performed an LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260919-070447-95be4eb1`.
+The `000-baseline`, `001-weak-reference-swap`,
+`002-baseline-recompiled`, and `003-weak-reference-swap-repeat` directories
+contain read-only DLL/PDB copies, hashes, source revisions and patches,
+build logs/binlogs, SizeBench snapshots, receipts, stderr, and frozen tool
+identity sidecars. The first two also contain scoped symbol coverage and
+resolved primary-block disassembly. `ownership.json`, `semantic-review.json`,
+`verification.json`, and `progress.json` record ownership, review, and handoff.
+
+All four measurements use the frozen SizeBench deployment and managed
+identity documented above. Its full 268-file manifest was verified before and
+after each core measurement and again during final verification. Initialization
+and build ran in the same `cmd.exe` process with explicit `/nopgo`. Logs
+confirm `PGOBuildMode=Off`, `Configuration=Release`, `Platform=x64`, and
+`VCToolsVersion=14.44.35207`. All 934 command-tlog hashes match between the
+recompiled control and repeated candidate. Eight export ordinal/name
+identities, PE security flags, and five built WinMD hashes are unchanged.
+
+**Tests not run, as requested.** Earlier regression results belong to earlier
+work, not this experiment. Source review found no change to net ownership,
+pointer identity, query order, output behavior, or HRESULTs. Removing the
+transient reference changes AddRef/Release traffic; custom reentrant release
+code that clears the destination could observe different destruction timing.
+The helper does not use the destination or acquired reference after the old
+destination is released. Runtime reentrancy, custom COM side effects, failure
+injection, application performance, debug behavior, and other architectures
+were not exercised. Compilation does not establish runtime correctness.
