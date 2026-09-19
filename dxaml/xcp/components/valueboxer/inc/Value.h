@@ -374,7 +374,7 @@ namespace DirectUI
             ctl::ComPtr<EnumReference<T>> spRef;
 
             IFCPTR_RETURN(ppValue);
-            IFC_RETURN(ctl::ComObject<EnumReference<T>>::CreateInstance(&spRef));
+            IFC_RETURN(ctl::ComObject<EnumReference<T>>::CreateInstance(spRef.ReleaseAndGetAddressOf()));
             IFC_RETURN(spRef->SetValue(value));
 
             *ppValue = ctl::as_iinspectable(spRef.Detach());

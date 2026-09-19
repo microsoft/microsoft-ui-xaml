@@ -2011,3 +2011,96 @@ The helper does not use the destination or acquired reference after the old
 destination is released. Runtime reentrancy, custom COM side effects, failure
 injection, application performance, debug behavior, and other architectures
 were not exercised. Compilation does not establish runtime correctness.
+
+## Follow-up: select the typed enum-reference factory (2026-09-19)
+
+File: `dxaml\xcp\components\valueboxer\inc\Value.h`.
+
+In `PropertyValue::CreateEnumReference<T>`, pass
+`spRef.ReleaseAndGetAddressOf()` instead of `&spRef` to
+`ComObject<EnumReference<T>>::CreateInstance`. The explicit
+`EnumReference<T>**` selects the existing typed factory overload. The
+`ComPtrRef` expression selected the untyped `IInspectable**` overload instead,
+because template argument deduction does not use its conversion operators.
+
+The smart pointer is initially empty, so obtaining its output address releases
+no reference. Both factories allocate the same `ComObject<EnumReference<T>>`
+with a null controlling outer, run the same initializer, and transfer the
+initial reference on success. The typed factory uses its existing failure-only
+release helper. Its optional leak-check disabling argument remains false.
+The caller retains its output-pointer check, all `IFC_RETURN` sites,
+`SetValue`, RAII cleanup, and final owning `IInspectable` publication.
+Pointer identity, successful HRESULT normalization, failure HRESULTs, and
+output preservation on failure remain unchanged.
+
+No factory implementation, public signature, class layout, generated output,
+metadata, compiler/linker option, or security setting changes. This is not a
+retry of the earlier rejected enum cleanup refactoring: it changes only
+overload selection, without introducing goto cleanup or mixing IFC styles.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `d885233fc`, fresh baseline | 14,270,464 | 14,269,440 | 14,280,148 |
+| Explicit typed enum-reference factory | 14,265,344 | 14,264,320 | 14,274,536 |
+| Incremental reduction | 5,120 | 5,120 | 5,612 |
+| Cumulative reduction from original baseline | 269,824 | 269,824 | 270,240 |
+
+The actual DLL file is **5,120 bytes (5 KiB) smaller**. Cumulative file savings
+are **269,824 bytes (263.5 KiB)** from the original 14,535,168-byte baseline.
+Raw `.text` shrinks by 5,120 bytes; other raw section sizes are unchanged.
+Virtual `.text` and `.pdata` shrink by 5,536 and 84 bytes respectively, while
+virtual `.reloc` grows by 8 bytes.
+
+As supporting attribution, the `CreateEnumReference` family falls from
+48,784 attributed bytes across 183 representatives to 41,888 across 176.
+The resolved primary blocks for `HoldingState`, `FocusState`, `Visibility`,
+`ScrollBarVisibility`, and `CommandBarOverflowButtonVisibility` each shrink
+from 267 to 238 bytes. The inspected `HoldingState` body calls the initializer
+helper directly rather than through the untyped completion helper. It keeps
+the created pointer in a register and removes the now-unneeded temporary
+output slot and guarded local cleanup. Local stack reservation falls from
+48 to 32 bytes. Failure cleanup still calls the existing
+`ReleaseFailedInstance` helper. No new helper or `noinline` annotation is
+introduced. Family totals are not summed with section savings, and attributed
+function sizes are not assumed to be contiguous disassembly ranges.
+
+Restoring the original header byte-for-byte and recompiling reproduced all
+three baseline metrics. Reapplying the exact candidate and recompiling
+reproduced all three candidate metrics. Every non-baseline build compiled
+affected native consumers, including `Aggregate.g.cpp`, and performed an
+LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260919-074453-ad9013ae`.
+The `000-baseline`, `001-typed-enum-factory`, `002-baseline-recompiled`, and
+`003-typed-enum-factory-repeat` directories contain read-only DLL/PDB copies,
+hashes, source revisions and patches, build logs/binlogs, SizeBench snapshots,
+receipts, stderr, and frozen tool identity sidecars. The first two also contain
+`.text` symbol coverage and resolved primary-block disassembly.
+`ownership.json`, `semantic-review.json`, `verification.json`, and
+`progress.json` record ownership, review, and handoff.
+
+All four measurements use the frozen SizeBench deployment and managed
+identity documented above. Its full 268-file manifest was verified before and
+after each core measurement and during final verification. Initialization and
+build ran in the same `cmd.exe` process with explicit `/nopgo`. Logs confirm
+`PGOBuildMode=Off`, `Configuration=Release`, `Platform=x64`, and
+`VCToolsVersion=14.44.35207`. All 934 command-tlog hashes match between the
+recompiled control and repeated candidate. Eight export ordinal/name
+identities, PE security flags, and five built WinMD hashes are unchanged.
+
+**Tests not run, as requested.** Earlier test results belong to earlier work,
+not this experiment. Source review found no change to allocation count,
+initialization order, net ownership, interface identity, output behavior, or
+HRESULTs. The inspected success path removes a nested completion-helper call;
+initialization failure instead reaches the existing release helper through
+the typed factory. Diagnostic source locations, failure stacks, register
+choices, and code layout change. Application performance, runtime failure
+injection, debug behavior, and other architectures were not exercised.
+Compilation does not establish runtime correctness.
