@@ -1508,3 +1508,84 @@ code introduces no allocation or function call. Comparison widths, loads,
 and mismatch branch layout differ; application performance remains unmeasured.
 Runtime reentrancy, failure injection, debug behavior, and other architectures
 were not exercised. Compilation does not establish runtime correctness.
+
+## Follow-up: transfer same-type template-part references directly
+
+File: `dxaml\xcp\dxaml\lib\Control_Partial.h`.
+
+In `Control::GetTemplatePart<TInterface, TRuntime>`, use the existing
+`ComPtr::MoveTo` when the two types are identical. The temporary already owns
+the queried interface reference. Transferring it to the caller removes the
+`CopyTo` reference-count increment and the temporary's balancing release.
+The caller receives the same pointer and one owning reference.
+
+An `if constexpr` keeps the existing `CopyTo` path for different types,
+including the `IUIElement` to `IScrollViewer` query. Name and output-pointer
+validation, HSTRING creation, template-child lookup, optional-interface query,
+output publication, cleanup of the child and string, and HRESULT handling
+remain unchanged. Missing parts and unsupported optional interfaces still
+produce a null result through the existing `AsOrNull` path. Errors before
+publication leave the caller's output untouched, as before.
+
+The change adds no helper call, allocation, runtime type test, public API,
+class-layout change, generated output, or metadata change. It preserves
+compiler/linker options and security settings.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `a70a1d17b`, fresh baseline | 14,277,120 | 14,276,096 | 14,287,108 |
+| Direct same-type template-part transfer | 14,276,096 | 14,275,072 | 14,285,860 |
+| Incremental reduction | 1,024 | 1,024 | 1,248 |
+| Cumulative reduction from original baseline | 259,072 | 259,072 | 258,916 |
+
+The actual DLL file is **1,024 bytes (1 KiB) smaller**. Cumulative file savings
+are **259,072 bytes (253 KiB)** from the original 14,535,168-byte baseline.
+Raw `.text` shrinks by 1,024 bytes; other raw section sizes are unchanged.
+Virtual `.text` and `.rdata` shrink by 1,120 and 128 bytes respectively.
+
+As supporting attribution, the same-type `GetTemplatePart` family falls from
+8,562 to 7,468 attributed bytes across the same 22 representatives. Resolved
+primary blocks shrink from 395 to 346 bytes for `IGrid` and from 379 to 328
+bytes for `ICalendarView`. The different-type `IUIElement` to `IScrollViewer`
+block remains 404 bytes. The inspected grid path removes the guarded AddRef
+and Release calls and retains its 64-byte local stack reservation. Symbol
+totals are not added to section savings or assumed to be contiguous
+disassembly ranges without resolving the code blocks.
+
+Restoring the original header byte-for-byte and recompiling reproduced all
+three baseline metrics. Reapplying the exact candidate and recompiling
+reproduced all three candidate metrics. Each non-baseline build recompiled
+affected consumers and performed an LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260919-032628-dbaee7c4`.
+The `000-baseline`, `001-template-part-transfer`, `002-baseline-recompiled`,
+and `003-template-part-transfer-repeat` directories contain read-only DLL/PDB
+copies, hashes, source revisions/patches, build logs/binlogs, SizeBench
+snapshots, receipts, stderr, and frozen tool identity sidecars. The first two
+also contain `.text` symbol coverage and resolved primary-block disassembly.
+`ownership.json`, `semantic-review.json`, `verification.json`, and
+`progress.json` record ownership, review, and handoff.
+
+All four measurements use the frozen SizeBench deployment and managed
+identity documented above. Its complete 268-file manifest was verified before
+and after each core measurement. Initialization and build ran in the same
+`cmd.exe` process with explicit `/nopgo`. Logs confirm `PGOBuildMode=Off`,
+`Configuration=Release`, `Platform=x64`, and `VCToolsVersion=14.44.35207`.
+All 934 command-tlog hashes match between the recompiled control and repeated
+candidate. Eight export ordinal/name identities, PE security flags, and five
+built WinMD hashes are unchanged.
+
+**Tests not run, as requested.** Earlier regression results belong to the
+starting commit, not this experiment. Source review found no change to net
+ownership, pointer identity, lookup/query order, output behavior, or HRESULTs.
+The transient reference-count pair is removed; no runtime work is added.
+Code layout and register choices change. Application performance, runtime
+reentrancy, failure injection, debug behavior, and other architectures were
+not exercised. Compilation does not establish runtime correctness.

@@ -265,7 +265,14 @@ namespace DirectUI
                 IFC(strName.Set(pName, cName));
                 IFC(GetTemplateChild(strName.Get(), &spElement));
                 spElementAsInterface = spElement.AsOrNull<TInterface>();
-                IFC(spElementAsInterface.CopyTo(ppReference));
+                if constexpr (std::is_same_v<TInterface, TRuntime>)
+                {
+                    IFC(spElementAsInterface.MoveTo(ppReference));
+                }
+                else
+                {
+                    IFC(spElementAsInterface.CopyTo(ppReference));
+                }
 
             Cleanup:
                 RRETURN(hr);
