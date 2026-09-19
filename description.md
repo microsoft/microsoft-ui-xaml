@@ -1430,3 +1430,81 @@ or new call is introduced. Code layout and register choices change, and
 application performance remains unmeasured. Runtime aggregation/reentrancy,
 failure injection, debug behavior, and other architectures were not exercised.
 Compilation does not establish runtime correctness.
+
+## Follow-up: compact untyped collection interface-ID comparisons
+
+File: `dxaml\xcp\dxaml\lib\JoltCollections.h`.
+
+In `PresentationFrameworkCollection<T>::QueryInterfaceImpl`, replace the
+remaining `InlineIsEqualGUID` check for `IUntypedVector` with fixed-size equality:
+
+```cpp
+std::memcmp(&iid, &__uuidof(IUntypedVector), sizeof(IID)) == 0
+```
+
+Both forms compare all 16 GUID bytes. The exact `static_cast<IUntypedVector*>`,
+output write, `AddRefOuter`, inherited fallback, and HRESULTs remain unchanged.
+Concrete classes still check their own interfaces before this inherited check.
+The existing `<cstring>` include is reused. The change does not alter
+interface maps, class layouts, collection operations, reference tracking,
+generated outputs, metadata, compiler/linker options, or security settings.
+The separate value-type specializations and observable collections are unchanged.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `621b7108f`, fresh baseline | 14,277,632 | 14,276,608 | 14,287,764 |
+| Fixed-size untyped collection GUID comparison | 14,277,120 | 14,276,096 | 14,287,108 |
+| Incremental reduction | 512 | 512 | 656 |
+| Cumulative reduction from original baseline | 258,048 | 258,048 | 257,668 |
+
+The actual DLL file is **512 bytes (0.5 KiB) smaller**. Cumulative file savings
+are **258,048 bytes (252 KiB)** from the original 14,535,168-byte baseline.
+Only `.text` changes: raw size falls by 512 bytes and virtual size by 656 bytes.
+Other section sizes remain unchanged.
+
+This base implementation is inlined into concrete collection query methods,
+rather than reported as a standalone template family. Resolved primary code
+blocks shrink from 168 to 152 bytes for both `ColumnDefinitionCollection`
+and `BrushCollection`, and from 206 to 190 bytes for `UIElementCollection`.
+Their disassembly replaces four 32-bit comparisons with two 64-bit comparisons,
+without an out-of-line `memcmp` call. The guarded reference-count call, exact
+output-pointer adjustment, inherited fallback, and stack reservation remain.
+Symbol evidence supports attribution; it is not added to section savings.
+
+Restoring the original header byte-for-byte and recompiling reproduced all
+three baseline metrics. Reapplying the exact candidate and recompiling
+reproduced all three candidate metrics. Every non-baseline build compiled
+affected consumers, including `Aggregate.g.cpp`, and performed an LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260919-025836-e13430a7`.
+The `000-baseline`, `001-untyped-vector-guid-memcmp`,
+`002-baseline-recompiled`, and `003-untyped-vector-guid-memcmp-repeat`
+directories contain read-only DLL/PDB copies, hashes, source revisions/patches,
+build logs/binlogs, SizeBench snapshots, receipts, stderr, and frozen tool
+identity sidecars. The first two include `.text` symbol coverage and resolved
+primary-block disassembly. `ownership.json`, `semantic-review.json`,
+`verification.json`, and `progress.json` record ownership, review, and handoff.
+
+All four measurements use the frozen SizeBench deployment and managed identity
+documented above. Its full 268-file manifest was verified before and after
+each core measurement. Initialization and build ran in the same `cmd.exe`
+process with explicit `/nopgo`. Logs confirm `PGOBuildMode=Off`,
+`Configuration=Release`, `Platform=x64`, and `VCToolsVersion=14.44.35207`.
+All 934 command-tlog hashes match between the recompiled control and repeated
+candidate. Eight export ordinal/name identities, PE security flags, and five
+built WinMD hashes are unchanged.
+
+**Tests not run, as requested.** Earlier regression results belong to the
+starting commit, not this experiment. Source review found no change to
+interface identity, ownership, error handling, or threading. The inspected
+code introduces no allocation or function call. Comparison widths, loads,
+and mismatch branch layout differ; application performance remains unmeasured.
+Runtime reentrancy, failure injection, debug behavior, and other architectures
+were not exercised. Compilation does not establish runtime correctness.

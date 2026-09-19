@@ -861,7 +861,7 @@ namespace DirectUI
     protected:
         _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override
         {
-            if (InlineIsEqualGUID(iid, __uuidof(IUntypedVector)))
+            if (std::memcmp(&iid, &__uuidof(IUntypedVector), sizeof(IID)) == 0)
             {
                 *ppObject = static_cast<IUntypedVector*>(this);
             }
