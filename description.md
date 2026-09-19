@@ -558,3 +558,82 @@ no allocation or function call. Comparison width, loads, and branch layout
 differ; application performance has not been measured. Compilation does
 not establish runtime correctness. Failure injection and other architectures
 were not validated.
+
+## Follow-up: compact tracker-collection interface-ID comparisons
+
+File: `dxaml\xcp\dxaml\lib\TrackerCollections.h`
+
+In `TrackerCollection<T>::QueryInterfaceImpl`, replace the three
+`InlineIsEqualGUID` checks with fixed-size `std::memcmp` equality checks:
+
+```cpp
+std::memcmp(&iid, &__uuidof(wfc::IIterable<T>), sizeof(IID)) == 0
+std::memcmp(&iid, &__uuidof(wfc::IVector<T>), sizeof(IID)) == 0
+std::memcmp(&iid, &__uuidof(IUntypedVector), sizeof(IID)) == 0
+```
+
+Both forms compare all 16 GUID bytes. The interface order, exact `static_cast`
+results, output writes, `AddRefOuter`, inherited fallback, and HRESULTs are
+unchanged. The existing interface map is unchanged, including its omission
+of `IUntypedVector`. The change adds an explicit `<cstring>` include.
+It does not change `TrackerView`, `TrackerIterator`, observable collection
+comparisons, collection operations, reference tracking, class layout, public
+interfaces, generated outputs, or metadata.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `3dc5d4986`, fresh baseline | 14,404,608 | 14,403,584 | 14,414,124 |
+| Fixed-size tracker-collection GUID comparisons | 14,403,584 | 14,402,560 | 14,412,988 |
+| Incremental reduction | 1,024 | 1,024 | 1,136 |
+| Cumulative reduction from original baseline | 131,584 | 131,584 | 131,788 |
+
+The actual DLL file is **1,024 bytes (1 KiB) smaller**. Cumulative file
+savings are **131,584 bytes (128.5 KiB)** from the original 14,535,168-byte
+baseline. Only `.text` changes: its raw size falls by 1,024 bytes and its
+virtual size by 1,136 bytes. Other section sizes remain unchanged.
+
+The `TrackerCollection<T>::QueryInterfaceImpl` family falls from 3,780 to
+2,700 attributed bytes, with 18 representatives in both builds. The resolved
+`AutomationPeer` primary code block shrinks from 210 to 150 bytes. Its
+disassembly uses two 64-bit comparisons per GUID instead of four 32-bit
+comparisons, with no out-of-line `memcmp` call. The guarded reference-count
+call and base fallback remain. Family totals support attribution; they are
+not added to section savings or treated as contiguous disassembly ranges.
+
+Restoring the original source byte-for-byte and rebuilding reproduced all
+three baseline metrics. Reapplying the candidate and rebuilding reproduced
+all three candidate metrics. Each non-baseline build compiled affected code
+and performed an LTCG link. The repeated candidate also preserves the
+original header's line endings and trailing blank line.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260918-185742-b7b7cb5e`.
+The `000-baseline`, `001-tracker-guid-memcmp`, `002-baseline-rebuilt`, and
+`003-tracker-guid-memcmp-repeat` directories contain read-only DLL/PDB pairs,
+hashes, source patches, build logs/binlogs, SizeBench snapshots, query receipts,
+stderr, and frozen tool identity sidecars. The first baseline and candidate
+include targeted family reports and resolved disassembly. `verification.json`,
+`semantic-review.json`, and `progress.json` record the result and handoff.
+
+All four measurements use the frozen deployment and managed identity
+documented above. The complete deployment manifest and hashes were verified
+before and after each measurement. Initialization and build used the same
+`cmd.exe` process and explicit `/nopgo` recipe documented above. Logs confirm
+`PGOBuildMode=Off`, `Configuration=Release`, `Platform=x64`, and
+`VCToolsVersion=14.44.35207`. All 934 captured command-tlog hashes match between
+the rebuilt control and repeated candidate. Eight export ordinal/name
+identities, PE security flags, and five built WinMD hashes are unchanged.
+
+**Tests not run, as requested.** Earlier test results belong to the starting
+commit, not this experiment. Source review found no change to interface
+identity, ownership, errors, or threading. The inspected code adds no allocation
+or function call. Comparison widths, loads, and mismatch branch layout differ;
+application performance has not been measured. Compilation does not establish
+runtime correctness. Failure injection and other architectures were not
+validated.
