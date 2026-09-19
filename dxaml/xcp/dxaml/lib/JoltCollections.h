@@ -11,6 +11,7 @@
 #include "VectorChangedEventArgs_Partial.h"
 #include "BoxerBuffer.h"
 #include "CoreImports.h"
+#include <cstring>
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -582,15 +583,15 @@ namespace DirectUI
 
         _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override
         {
-            if (InlineIsEqualGUID(iid, __uuidof(wfc::IVectorView<T>)))
+            if (std::memcmp(&iid, &__uuidof(wfc::IVectorView<T>), sizeof(IID)) == 0)
             {
                 *ppObject = static_cast<wfc::IVectorView<T> *>(this);
             }
-            else if (InlineIsEqualGUID(iid, __uuidof(wfc::IVector<T>)))
+            else if (std::memcmp(&iid, &__uuidof(wfc::IVector<T>), sizeof(IID)) == 0)
             {
                 *ppObject = static_cast<wfc::IVector<T> *>(this);
             }
-            else if (InlineIsEqualGUID(iid, __uuidof(wfc::IIterable<T>)))
+            else if (std::memcmp(&iid, &__uuidof(wfc::IIterable<T>), sizeof(IID)) == 0)
             {
                 *ppObject = static_cast<wfc::IIterable<T> *>(this);
             }

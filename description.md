@@ -396,3 +396,82 @@ no allocation or additional function call. Comparison width, loads, and
 branch layout differ; application performance has not been measured.
 Compilation does not establish runtime correctness. Failure injection and
 other architectures were not validated.
+
+## Follow-up: compact collection interface-ID comparisons
+
+File: `dxaml\xcp\dxaml\lib\JoltCollections.h`
+
+In `PresentationFrameworkCollectionTemplateBase<T>::QueryInterfaceImpl`,
+replace its three `InlineIsEqualGUID` checks with fixed-size `std::memcmp`
+equality checks, following the reference-template changes above:
+
+```cpp
+std::memcmp(&iid, &__uuidof(wfc::IVectorView<T>), sizeof(IID)) == 0
+```
+
+The comparisons still check all 16 GUID bytes. Matching remains ordered as
+`IVectorView<T>`, `IVector<T>`, then `IIterable<T>`. The same `static_cast`
+expressions return the same interface pointers. Successful matches still call
+`AddRefOuter`; unmatched requests still delegate to the inherited
+`QueryInterfaceImpl`. Output writes and HRESULTs remain unchanged.
+
+This change affects only this handwritten template and adds its explicit
+`<cstring>` include. Other collection query implementations, interface maps,
+reference tracking, class layouts, generated outputs, and metadata are unchanged.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `3eae16d9a`, fresh baseline | 14,410,240 | 14,409,216 | 14,419,648 |
+| Fixed-size collection GUID comparisons | 14,407,168 | 14,406,144 | 14,416,784 |
+| Incremental reduction | 3,072 | 3,072 | 2,864 |
+| Cumulative reduction from original baseline | 128,000 | 128,000 | 127,992 |
+
+The actual DLL file is **3,072 bytes (3 KiB) smaller**. Cumulative file savings
+are **128,000 bytes (125 KiB)** from the original 14,535,168-byte baseline.
+Only `.text` changes: its raw size falls by 3,072 bytes and its virtual size
+by 2,864 bytes. Other section sizes remain unchanged.
+
+The template's `QueryInterfaceImpl` family falls from 9,870 to 7,050
+attributed bytes, with 47 representatives in both builds. The resolved
+`ColumnDefinition` primary code block shrinks from 210 to 150 bytes.
+Disassembly shows two 64-bit comparisons per GUID instead of four 32-bit
+comparisons, without an out-of-line `memcmp` call. These family totals support
+attribution; they are not added to section savings.
+
+Restoring the original source byte-for-byte and rebuilding reproduced all
+three baseline metrics. Reapplying the exact candidate and rebuilding
+reproduced all three candidate metrics. Each non-baseline build compiled
+affected code and performed an LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260918-174445-a5fb6435`.
+The `000-baseline`, `001-collection-guid-memcmp`, `002-baseline-rebuilt`, and
+`003-collection-guid-memcmp-repeat` directories contain preserved read-only
+DLL/PDB pairs, hashes, source revisions and patches, build logs/binlogs,
+SizeBench snapshots, receipts, stderr, and frozen tool identity sidecars.
+The first baseline and candidate also contain targeted family reports and
+resolved disassembly. `verification.json`, `semantic-review.json`, and
+`progress.json` record the result and handoff.
+
+All four measurements use the same frozen SizeBench deployment and managed
+identity documented above. The complete deployment manifest and hashes were
+verified before and after each measurement. Initialization and build used the
+same `cmd.exe` process and explicit `/nopgo` recipe documented above. Logs
+confirm `PGOBuildMode=Off`, `Configuration=Release`, `Platform=x64`, and
+`VCToolsVersion=14.44.35207`. All 934 captured command-tlog hashes match between
+the rebuilt control and repeated candidate. Eight export ordinal/name
+identities, PE security flags, and five built WinMD hashes are unchanged.
+
+**Tests not run, as requested.** Earlier test results belong to the starting
+commit, not this experiment. Source review found no change to ownership,
+interface identity, error handling, or threading. The inspected code adds no
+allocation or function call. Comparison width, loads, and branch layout
+differ, including on mismatching GUID prefixes; application performance has
+not been measured. Compilation does not establish runtime correctness.
+Failure injection and other architectures were not validated.
