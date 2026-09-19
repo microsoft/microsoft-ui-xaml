@@ -147,26 +147,96 @@ if ($lastexitcode -ne 0)
 
 if ($InstallPackage)
 {
-    $PackageCache = Join-Path "$scriptDirectory\..\.." "packages"
+    $PackageCache = [System.IO.Path]::GetFullPath((Join-Path "$scriptDirectory\..\.." "packages"))
     $NugetConfigPath = Join-Path "$scriptDirectory\..\.." "NuGet.config"
-    $ExistingPackagePath = Join-Path $PackageCache "Microsoft.WindowsAppSDK.WinUI.$VersionOverride"
-    $PackageRefCachePath = Join-Path $PackageCache "microsoft.windowsappsdk.winui\$VersionOverride"
+    $PackageId = "Microsoft.WindowsAppSDK.WinUI"
 
-    if (Test-Path $ExistingPackagePath)
+    function Remove-CachedPackage([string]$CacheRoot)
     {
-        Write-Host "Removing stale package: $ExistingPackagePath" -ForegroundColor Yellow
-        Remove-Item $ExistingPackagePath -Recurse -Force
-    }
-    # Also remove the PackageReference-style cache folder (lowercase, nested version directory)
-    # so that NuGet re-extracts the updated package for C# projects using PackageReference.
-    if (Test-Path $PackageRefCachePath)
-    {
-        Write-Host "Removing stale PackageReference cache: $PackageRefCachePath" -ForegroundColor Yellow
-        Remove-Item $PackageRefCachePath -Recurse -Force
+        $PackagePaths = @(
+            (Join-Path $CacheRoot "$PackageId\$version"),
+            (Join-Path $CacheRoot "$PackageId.$version")
+        )
+
+        foreach ($PackagePath in $PackagePaths)
+        {
+            if (Test-Path $PackagePath)
+            {
+                $MetadataPath = Join-Path $PackagePath ".nupkg.metadata"
+                if (Test-Path $MetadataPath)
+                {
+                    Remove-Item $MetadataPath -Force -ErrorAction Stop
+                }
+
+                Write-Host "Removing stale package: $PackagePath" -ForegroundColor Yellow
+                Remove-Item $PackagePath -Recurse -Force -ErrorAction Stop
+            }
+        }
     }
 
-    Write-Host "nuget install Microsoft.WindowsAppSDK.WinUI -Version $VersionOverride -OutputDirectory $PackageCache -ConfigFile $NugetConfigPath"
-    nuget install Microsoft.WindowsAppSDK.WinUI -Version $VersionOverride -OutputDirectory $PackageCache -ConfigFile $NugetConfigPath
+    $EffectivePackageCache = $PackageCache
+    if ($env:NUGET_PACKAGES)
+    {
+        if (![System.IO.Path]::IsPathRooted($env:NUGET_PACKAGES))
+        {
+            Write-Warning "Skipping cleanup for relative NUGET_PACKAGES path: $env:NUGET_PACKAGES"
+        }
+        else
+        {
+            $EffectivePackageCache = [System.IO.Path]::GetFullPath($env:NUGET_PACKAGES)
+        }
+    }
+
+    $PackageCaches = @($PackageCache, $EffectivePackageCache) | Sort-Object -Unique
+
+    if ($env:NUGET_FALLBACK_PACKAGES)
+    {
+        $StaleFallbackPaths = @()
+        foreach ($FallbackRoot in $env:NUGET_FALLBACK_PACKAGES.Split(';', [System.StringSplitOptions]::RemoveEmptyEntries))
+        {
+            if (![System.IO.Path]::IsPathRooted($FallbackRoot))
+            {
+                Write-Warning "Skipping cleanup check for relative NUGET_FALLBACK_PACKAGES path: $FallbackRoot"
+                continue
+            }
+
+            $FallbackRoot = [System.IO.Path]::GetFullPath($FallbackRoot)
+            $FallbackPackagePaths = @(
+                (Join-Path $FallbackRoot "$PackageId\$version"),
+                (Join-Path $FallbackRoot "$PackageId.$version")
+            )
+
+            $StaleFallbackPaths += $FallbackPackagePaths | Where-Object { Test-Path $_ }
+        }
+
+        if ($StaleFallbackPaths.Count -gt 0)
+        {
+            $StaleFallbackPaths = $StaleFallbackPaths | Sort-Object -Unique
+            $Paths = $StaleFallbackPaths -join [Environment]::NewLine
+            $RemovalCommands = ($StaleFallbackPaths | ForEach-Object {
+                "Remove-Item `"$_`" -Recurse -Force"
+            }) -join [Environment]::NewLine
+            Write-Error @"
+The fixed-version development package exists in an active NuGet fallback folder:
+$Paths
+
+Close Visual Studio and any active builds, run:
+$RemovalCommands
+
+Then rerun pack.component.cmd. If a fallback is shared or read-only, disable it for this
+build or ask its owner to remove the stale package.
+"@
+            Exit 1
+        }
+    }
+
+    foreach ($CacheRoot in $PackageCaches)
+    {
+        Remove-CachedPackage $CacheRoot
+    }
+
+    Write-Host "nuget install $PackageId -Version $version -OutputDirectory $PackageCache -ConfigFile $NugetConfigPath"
+    nuget install $PackageId -Version $version -OutputDirectory $PackageCache -ConfigFile $NugetConfigPath
 
     if ($lastexitcode -ne 0)
     {
