@@ -475,3 +475,86 @@ allocation or function call. Comparison width, loads, and branch layout
 differ, including on mismatching GUID prefixes; application performance has
 not been measured. Compilation does not establish runtime correctness.
 Failure injection and other architectures were not validated.
+
+## Follow-up: compact `ctl::implements` interface-ID comparisons
+
+File: `dxaml\xcp\components\com\inc\ComTemplates.h`
+
+In `ctl::implements<TINTERFACE>::QueryInterface`, replace the two
+`InlineIsEqualGUID` checks with fixed-size `std::memcmp` equality checks:
+
+```cpp
+std::memcmp(&riid, &IID_IUnknown, sizeof(IID)) == 0
+std::memcmp(&riid, &__uuidof(TINTERFACE), sizeof(IID)) == 0
+```
+
+Both forms compare all 16 GUID bytes for equality. `IUnknown` remains first,
+followed by `TINTERFACE`, including when `TINTERFACE` is `IUnknown`. The
+existing casts, virtual `AddRef` call, output writes, and `E_NOINTERFACE`
+path remain unchanged. This also preserves the existing failure behavior
+that leaves the output pointer untouched for an unsupported interface.
+
+The change adds an explicit `<cstring>` include. It does not change
+`implements_inspectable`'s own comparison, inheritance, class layout, interface
+maps, vtable shape, reference-count operations, generated source, or metadata.
+Derived event handlers continue to use the same implementation.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `e8ceb37d9`, fresh baseline | 14,407,168 | 14,406,144 | 14,416,784 |
+| Fixed-size `ctl::implements` GUID comparisons | 14,404,608 | 14,403,584 | 14,414,124 |
+| Incremental reduction | 2,560 | 2,560 | 2,660 |
+| Cumulative reduction from original baseline | 130,560 | 130,560 | 130,652 |
+
+The actual DLL file is **2,560 bytes (2.5 KiB) smaller**. Cumulative file
+savings are **130,560 bytes (127.5 KiB)** from the original 14,535,168-byte
+baseline. Raw `.text` shrinks by 2,560 bytes; other raw section sizes remain
+unchanged. Virtual `.text` shrinks by 2,624 bytes and virtual `.pdata` by
+36 bytes.
+
+As supporting attribution, the `ctl::implements<T>::QueryInterface` family
+falls from 10,140 to 6,834 attributed bytes. The engine reports 73 non-folded
+representatives before and 67 after. The resolved
+`IInputPreTranslateKeyboardSourceHandler` primary code block shrinks from
+139 to 102 bytes. Its disassembly shows two 64-bit comparisons per GUID
+instead of four 32-bit comparisons, no out-of-line `memcmp` call, and the
+same guarded virtual `AddRef` call. Family totals are not added to section
+savings or treated as contiguous disassembly ranges.
+
+Restoring the original source byte-for-byte and rebuilding reproduced all
+three baseline metrics. Reapplying the exact candidate and rebuilding
+reproduced all three candidate metrics. Each non-baseline build compiled
+affected code and performed an LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260918-182720-852ea098`.
+The `000-baseline`, `001-implements-guid-memcmp`, `002-baseline-rebuilt`, and
+`003-implements-guid-memcmp-repeat` directories contain read-only DLL/PDB
+pairs, hashes, source patches, build logs/binlogs, SizeBench snapshots,
+query receipts, stderr, and frozen tool identity sidecars. The first
+baseline and candidate include targeted family reports and resolved
+disassembly. `verification.json`, `semantic-review.json`, and `progress.json`
+record the comparison, source review, and handoff.
+
+All four measurements use the frozen deployment and managed identity
+documented above. The complete deployment manifest and hashes were verified
+before and after each measurement. Initialization and build used the same
+`cmd.exe` process and explicit `/nopgo` recipe documented above. Logs confirm
+`PGOBuildMode=Off`, `Configuration=Release`, `Platform=x64`, and
+`VCToolsVersion=14.44.35207`. All 934 captured command-tlog hashes match between
+the rebuilt control and repeated candidate. Eight export ordinal/name
+identities, PE security flags, and five built WinMD hashes are unchanged.
+
+**Tests not run, as requested.** Earlier test results belong to the starting
+commit, not this experiment. Source review found no change to interface
+identity, ownership, error handling, or threading. The inspected code adds
+no allocation or function call. Comparison width, loads, and branch layout
+differ; application performance has not been measured. Compilation does
+not establish runtime correctness. Failure injection and other architectures
+were not validated.

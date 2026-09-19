@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <cstring>
+
 namespace ctl
 {
     // Common class to implemente IUnknown
@@ -29,11 +31,11 @@ namespace ctl
         {
             IUnknown *pResult = NULL;
 
-            if (InlineIsEqualGUID(riid, IID_IUnknown))
+            if (std::memcmp(&riid, &IID_IUnknown, sizeof(IID)) == 0)
             {
                 pResult = static_cast<IUnknown*>(this);
             }
-            else if (InlineIsEqualGUID(riid, __uuidof(TINTERFACE)))
+            else if (std::memcmp(&riid, &__uuidof(TINTERFACE), sizeof(IID)) == 0)
             {
                 pResult = static_cast<TINTERFACE*>(this);
             }
