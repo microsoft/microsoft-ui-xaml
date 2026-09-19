@@ -82,6 +82,7 @@ private:
     
     void UpdateSelectedBackgroundPathTranslateTransform();
 
+    bool IsDraggingAllowed();
     void BeginCheckingForDrag(const uint32_t& pointerId);
     void StopCheckingForDrag(const uint32_t& pointerId);
 

@@ -25,6 +25,8 @@
                     <CheckBox x:Name="HandleTabItemCloseRequestedCheckBox" AutomationProperties.Name="HandleTabItemCloseRequestedCheckBox" Content="Handle TabViewItem close"/>
                     <CheckBox x:Name="IsAddButtonVisibleCheckBox" AutomationProperties.Name="IsAddButtonVisibleCheckBox" Content="Add button visible" IsChecked="{x:Bind Tabs.IsAddTabButtonVisible, Mode=TwoWay}"/>
                     <CheckBox x:Name="IsDisabledTabVisibleCheckBox" AutomationProperties.Name="IsDisabledTabVisibleCheckBox" Checked="IsDisabledTabVisibleCheckBox_CheckChanged" Unchecked="IsDisabledTabVisibleCheckBox_CheckChanged" Content="Disabled tab visible" IsChecked="True"/>
+                    <CheckBox x:Name="CanDragTabsCheckBox" AutomationProperties.Name="CanDragTabsCheckBox" Content="CanDragTabs" IsChecked="{x:Bind Tabs.CanDragTabs, Mode=TwoWay}"/>
+                    <CheckBox x:Name="CanReorderTabsCheckBox" AutomationProperties.Name="CanReorderTabsCheckBox" Content="CanReorderTabs" IsChecked="{x:Bind Tabs.CanReorderTabs, Mode=TwoWay}"/>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                         <TextBlock VerticalAlignment="Center">Tab Width:</TextBlock>
                         <ComboBox x:Name="TabWidthComboBox" AutomationProperties.Name="TabWidthComboBox" Margin="4,0,0,0" SelectedIndex="0" SelectionChanged="TabWidthComboBox_SelectionChanged">
@@ -123,6 +125,15 @@
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                         <TextBlock x:Name="TabsItemChangedEventArgsTextBlock" AutomationProperties.Name="TabsItemChangedEventArgsTextBlock" Margin="4,0,0,0" Text="" />
                         <TextBlock x:Name="TabsItemChangedEventArgsIndexTextBlock" AutomationProperties.Name="TabsItemChangedEventArgsIndexTextBlock" Margin="4,0,0,0" Text="" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button x:Name="ResetFirstTabDragDropVisualStateLogButton" AutomationProperties.Name="ResetFirstTabDragDropVisualStateLogButton" Content="Reset FirstTab drag state" Click="ResetFirstTabDragDropVisualStateLogButton_Click"/>
+                        <Button x:Name="GetFirstTabDragDropVisualStateButton" AutomationProperties.Name="GetFirstTabDragDropVisualStateButton" Content="Get FirstTab drag state" Margin="4,0,0,0" Click="GetFirstTabDragDropVisualStateButton_Click"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock x:Name="FirstTabDragDropVisualStateTextBlock" AutomationProperties.Name="FirstTabDragDropVisualStateTextBlock" Margin="4,0,0,0" Text=""/>
+                        <TextBlock x:Name="FirstTabDragDropVisualStateLogTextBlock" AutomationProperties.Name="FirstTabDragDropVisualStateLogTextBlock" Margin="4,0,0,0" Text=""/>
                     </StackPanel>
 
                     <TextBlock x:Name="TabDraggedResultsTextBlock" AutomationProperties.Name="TabDraggedResultsTextBlock" />
