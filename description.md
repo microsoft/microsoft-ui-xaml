@@ -1338,3 +1338,95 @@ The change adds no allocation or COM call. Register choices, stack writes,
 and code layout differ; application performance remains unmeasured.
 Runtime reentrancy, failure injection, debug behavior, and other architectures
 were not exercised. Compilation does not establish runtime correctness.
+
+## Follow-up: transfer newly created aggregated inner references directly
+
+File: `dxaml\xcp\dxaml\lib\comTemplateLibrary.h`.
+
+In the three templated aggregation factory paths, replace the fixed
+`NonDelegatingQueryInterface(IID_IInspectable)` call and balancing
+`NonDelegatingRelease` with direct transfer of the initial inner reference:
+
+```cpp
+*instance = reinterpret_cast<IInspectable*>(static_cast<INonDelegatingInspectable*>(pObjAsAggregable));
+```
+
+The final `ComObject<T>::NonDelegatingQueryInterface` implementation delegates
+to `ComObjectBase::NonDelegatingQueryInterfaceBase`. For `IID_IInspectable`,
+that implementation returns this exact base-interface pointer, increments
+its nondelegating reference count, and always returns `S_OK`. Transferring the
+existing reference removes the balanced increment/decrement pair. The caller
+still receives the same interface pointer and one owning reference.
+
+The change covers `AggregableActivationFactory<T>::ActivateInstanceStatic`,
+its `CreateInstance` helper, and
+`AggregableAbstractActivationFactory<T>::ActivateInstanceStatic`. The
+non-template `BetterAggregable` factories already use direct inner-reference
+transfer. Construction, initialization, activation guards, outer validation,
+output publication, and failure cleanup remain unchanged. Successful
+initialization still normalizes to `S_OK`. Public interfaces, class layouts,
+generated outputs, metadata, and compiler/linker options are unchanged.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `ebf7e2dd3`, fresh baseline | 14,281,216 | 14,280,192 | 14,290,708 |
+| Direct aggregated inner-reference transfer | 14,277,632 | 14,276,608 | 14,287,764 |
+| Incremental reduction | 3,584 | 3,584 | 2,944 |
+| Cumulative reduction from original baseline | 257,536 | 257,536 | 257,012 |
+
+The actual DLL file is **3,584 bytes (3.5 KiB) smaller**. Cumulative file
+savings are **257,536 bytes (251.5 KiB)** from the original 14,535,168-byte
+baseline. Raw `.text` shrinks by 3,072 bytes and `.pdata` by 512 bytes.
+Other raw section sizes are unchanged. Virtual `.text` and `.pdata` shrink
+by 3,008 and 120 bytes, while `.rdata` and `.reloc` grow by 176 and 8 bytes.
+
+As supporting attribution, the concrete `ActivateInstanceStatic` template
+family falls from 4,502 bytes across 12 representatives to 2,714 across nine.
+The validation-wrapper family falls from 5,065 bytes across nine
+representatives to 3,582 across seven. These totals reflect inlining and
+folding changes, not separate whole-file savings. Resolved primary blocks
+shrink from 408 to 325 bytes for `BasicConnectedAnimationConfiguration`,
+375 to 292 for `DataTemplateKey`, and 600 to 520 for the
+`DesktopWindowXamlSource` validation wrapper. The inspected concrete
+activation path removes `NonDelegatingQueryInterfaceBase` and `ReleaseImpl`
+calls and adds no helper call or stack frame. Symbol totals are not added to
+section savings or assumed to be contiguous disassembly ranges.
+
+Restoring the original header byte-for-byte and recompiling reproduced all
+three baseline metrics. Reapplying the exact candidate and recompiling
+reproduced all three candidate metrics. Each non-baseline build compiled
+affected consumers, including `Aggregate.g.cpp`, and performed an LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260919-021253-60e8c06a`.
+The `000-baseline`, `001-direct-inner-transfer`, `002-baseline-recompiled`,
+and `003-direct-inner-transfer-repeat` directories contain read-only DLL/PDB
+copies, hashes, source revisions/patches, build logs/binlogs, SizeBench
+snapshots, receipts, stderr, and frozen tool identity sidecars. The first
+two also include `.text` symbol coverage and resolved primary-block
+disassembly. `ownership.json`, `semantic-review.json`, `verification.json`,
+and `progress.json` record source ownership, review, and handoff.
+
+All four measurements use the frozen deployment and managed identity
+documented above. Its full 268-file manifest was verified before and after
+each measurement. Initialization and build ran in the same `cmd.exe` process
+with explicit `/nopgo`. Logs confirm `PGOBuildMode=Off`,
+`Configuration=Release`, `Platform=x64`, and `VCToolsVersion=14.44.35207`.
+All 934 command-tlog hashes match between the recompiled control and
+repeated candidate. Eight export ordinal/name identities, PE security flags,
+and five built WinMD hashes are unchanged.
+
+**Tests not run, as requested.** Earlier regression results belong to the
+starting commit, not this experiment. Source review found no change to
+interface identity, net ownership, initialization order, failure handling,
+or HRESULTs. The transient reference-count pair is removed; no allocation
+or new call is introduced. Code layout and register choices change, and
+application performance remains unmeasured. Runtime aggregation/reentrancy,
+failure injection, debug behavior, and other architectures were not exercised.
+Compilation does not establish runtime correctness.

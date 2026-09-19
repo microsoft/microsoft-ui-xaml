@@ -220,8 +220,8 @@ namespace ctl
             {
                 IFC(ComObject<T>::CreateInstance(pOuter, &pObj));
                 pObjAsAggregable = static_cast<ComObject<T>*>(pObj);
-                IFC(pObjAsAggregable->NonDelegatingQueryInterface(IID_IInspectable, (void **)instance));
-                pObjAsAggregable->NonDelegatingRelease();
+                // Transfer the initial inner reference without an AddRef/Release pair.
+                *instance = reinterpret_cast<IInspectable*>(static_cast<INonDelegatingInspectable*>(pObjAsAggregable));
                 pObj = NULL;
             }
             else
@@ -251,8 +251,8 @@ namespace ctl
             {
                 IFC(ComObject<T>::CreateInstance(pOuter, &pObj));
                 pObjAsAggregable = static_cast<ComObject<T>*>(pObj);
-                IFC(pObjAsAggregable->NonDelegatingQueryInterface(IID_IInspectable, (void **)instance));
-                pObjAsAggregable->NonDelegatingRelease();
+                // Transfer the initial inner reference without an AddRef/Release pair.
+                *instance = reinterpret_cast<IInspectable*>(static_cast<INonDelegatingInspectable*>(pObjAsAggregable));
                 pObj = NULL;
             }
             else
@@ -288,8 +288,8 @@ namespace ctl
             IFC(ComObject<T>::CreateInstance(pOuter, &pObj));
 
             pObjAsAggregable = static_cast<ComObject<T>*>(pObj);
-            IFC(pObjAsAggregable->NonDelegatingQueryInterface(IID_IInspectable, (void **)instance));
-            pObjAsAggregable->NonDelegatingRelease();
+            // Transfer the initial inner reference without an AddRef/Release pair.
+            *instance = reinterpret_cast<IInspectable*>(static_cast<INonDelegatingInspectable*>(pObjAsAggregable));
             pObj = NULL;
 
         Cleanup:
