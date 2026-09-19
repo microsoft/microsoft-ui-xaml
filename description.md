@@ -2202,3 +2202,100 @@ mitigation-fence placement, register saves, and code layout differ.
 Application performance, runtime failure injection, debug behavior, and
 other architectures were not exercised. Compilation does not establish
 runtime correctness.
+
+## Follow-up: simplify non-DependencyObject factory result transfer (2026-09-19)
+
+File: `dxaml\xcp\dxaml\lib\comInstantiation.h`.
+
+In the zero-argument, non-DependencyObject COM `ctl::make` overload, replace
+the local `ComPtr<tobject>` with a raw owning temporary. Both forms call the
+same typed `ComObject<tobject>::CreateInstance` overload. That factory writes
+its output only on success and releases its allocation on initialization
+failure. The original local smart pointer therefore has nothing to release
+on an HRESULT failure.
+
+After success, the remaining operations cannot fail: the destination's
+`ReleaseAndGetAddressOf` forwards to the existing `noexcept` smart-pointer
+operation, then the new pointer is stored. The old destination stays intact
+until construction succeeds. It is cleared and released before publication,
+as before. The caller receives the same initial owning reference, without
+adding an interface query, reference-count operation, allocation or helper.
+The caller's `IFC_RETURN`, failure HRESULTs and successful `S_OK` normalization
+remain unchanged.
+
+Dependency-object activation, non-COM construction, `make_ignoreleak`, and
+argument-bearing overloads are unchanged. No public signature, class layout,
+generated output, metadata, compiler/linker option or security setting changes.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `0ee5f25a0`, fresh baseline | 14,264,832 | 14,263,808 | 14,274,276 |
+| Raw non-DependencyObject factory result | 14,263,296 | 14,262,272 | 14,272,972 |
+| Incremental reduction | 1,536 | 1,536 | 1,304 |
+| Cumulative reduction from original baseline | 271,872 | 271,872 | 271,804 |
+
+The actual DLL file is **1,536 bytes (1.5 KiB) smaller**. Cumulative file
+savings are **271,872 bytes (265.5 KiB)** from the original 14,535,168-byte
+baseline. Raw `.text` shrinks by 1,536 bytes; other raw sections are unchanged.
+Virtual `.text`, `.pdata` and `.data` shrink by 1,424, 12 and 16 bytes,
+respectively. Virtual `.rdata` and `.reloc` grow by 128 and 20 bytes.
+
+As supporting attribution, the main `ctl::make<T1>` family falls from
+41,241 to 40,384 attributed bytes across the same 176 representatives.
+A separately reported nested-template family grows from 11,444 to 11,505
+bytes across the same 37 representatives. These mixed families include
+other overloads and are not summed or substituted for whole-file savings.
+
+Resolved primary blocks for `AddPagesEventArgs` and `BindingFailedEventArgs`
+each shrink from 265 to 260 bytes. `BudgetManager` shrinks from 248 to 231
+bytes, while `AnchorRequestedEventArgs` grows from 302 to 313 bytes.
+All four inspected blocks preserve the allocation, constructor, initializer,
+old-output release and failure-release calls. The redundant RAII cleanup was
+already optimized away in these bodies; the source simplification changes
+register allocation and instruction selection. `BudgetManager` saves three
+nonvolatile registers instead of five. `AnchorRequestedEventArgs` saves four
+instead of five but uses longer immediate-zero stores. Both retain 32-byte
+local stack reservations. Disassembly ranges came from resolved positive
+primary code blocks, not summed function sizes or zero-sized aliases.
+
+Restoring the original header byte-for-byte and recompiling reproduced all
+three baseline metrics. Reapplying the exact candidate and recompiling
+reproduced all three candidate metrics. Each non-baseline build recompiled
+affected native consumers and performed an LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260919-085615-500b45b3`.
+The `000-baseline`, `001-raw-make-result`, `002-baseline-recompiled`, and
+`003-raw-make-result-repeat` directories contain read-only DLL/PDB copies,
+hashes, source revisions and patches, build logs/binlogs, SizeBench snapshots,
+receipts, stderr and tool identity sidecars. The first two also contain
+`.text` symbol coverage and representative primary-block disassembly.
+`ownership.json`, `hypothesis.json`, `semantic-review.json`, `verification.json`,
+and `progress.json` record ownership, review and handoff.
+
+All measurements use the frozen SizeBench deployment and managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+Its full 268-file manifest was verified before and after each core measurement
+and during final verification. Initialization and build ran in the same
+`cmd.exe` process with explicit `/nopgo`. Logs confirm `PGOBuildMode=Off`,
+`Configuration=Release`, `Platform=x64`, and `VCToolsVersion=14.44.35207`.
+All 934 command-tlog hashes match between the recompiled control and repeated
+candidate. Eight export ordinal/name identities, PE security flags and five
+built WinMD hashes are unchanged.
+
+**Tests not run, as requested.** Earlier test results belong to earlier work,
+not this experiment. Source and emitted-code review found no added allocation,
+COM call, reference-count operation, lock or helper. No runtime performance
+improvement is claimed. The removed stack-local `ComPtr` no longer runs its
+`XCP_STRONG` constructor annotation in monitor builds; destination and
+created-object tracking implementations are unchanged. Debug diagnostic
+equivalence was not exercised or established. Source locations, failure
+stacks, register saves and code layout change. Application performance,
+runtime failure injection and other architectures were not exercised.
+Compilation does not establish runtime correctness.

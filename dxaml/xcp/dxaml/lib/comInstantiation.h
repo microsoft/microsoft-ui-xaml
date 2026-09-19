@@ -41,10 +41,11 @@ namespace ctl
     template <typename tobject>
     _Check_return_ typename std::enable_if<!IsDependencyObject<tobject>::value && IsComObject<tobject>::value, HRESULT>::type make(ctl::Internal::ComPtrRef<ComPtr<tobject>> ppNewInstance)
     {
-        ctl::ComPtr<tobject> inst;
-        IFC_RETURN(ComObject<tobject>::CreateInstance(inst.ReleaseAndGetAddressOf()));
+        // The factory cleans up failures; publishing the successful result cannot fail.
+        tobject* instance = nullptr;
+        IFC_RETURN(ComObject<tobject>::CreateInstance(&instance));
         auto ptr = ppNewInstance.ReleaseAndGetAddressOf();
-        *ptr = inst.Detach();
+        *ptr = instance;
         return S_OK;
     }
 
