@@ -24,6 +24,8 @@ namespace ctl
     public:
         virtual HRESULT QueryInterfaceImplBase(_In_ REFIID iid, _Outptr_ void** ppObject) = 0;
         __declspec(noinline) static HRESULT CreateInstanceBase(_In_ ComBase* pObject, bool fNoInit = false);
+        // Consumes the initial reference, transferring it on success or releasing it on failure.
+        __declspec(noinline) static HRESULT CreateInstanceBase(_In_ ComBase* pObject, _Outptr_ IInspectable** ppNewInstance);
 
     protected:
         IInspectable* m_pControllingUnknown;

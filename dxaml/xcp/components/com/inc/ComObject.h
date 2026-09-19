@@ -143,15 +143,8 @@ namespace ctl
 
         static _Check_return_ HRESULT CreateInstance(_In_ IInspectable* pOuter, _Outptr_ IInspectable **ppNewInstance)
         {
-            HRESULT hr = S_OK;
             ComObject* pNewInstance = new ComObject<TBASE>(pOuter);
-            IFC(ctl::ComObjectBase::CreateInstanceBase(pNewInstance));
-            *ppNewInstance = static_cast<IInspectable *>(static_cast<ComBase *>(pNewInstance));
-            pNewInstance = NULL;
-
-        Cleanup:
-            ReleaseInterface(pNewInstance);
-            RRETURN(hr);
+            return ctl::ComObjectBase::CreateInstanceBase(pNewInstance, ppNewInstance);
         }
 
         template <class T>

@@ -991,3 +991,89 @@ code adds no allocation or comparison function call. Comparison widths,
 loads, and mismatch branch layout differ; application performance has not
 been measured. Compilation does not establish runtime correctness. Failure
 injection and other architectures were not validated.
+
+## Follow-up: share untyped COM factory completion
+
+Files: `dxaml\xcp\components\com\inc\ComObject.h`,
+`dxaml\xcp\components\com\inc\ComObjectBase.h`, and
+`dxaml\xcp\components\com\ComObjectBase.cpp`.
+
+Move the untyped `ComObject<T>::CreateInstance` overload's result publication
+and failure cleanup into an out-of-line `ComObjectBase::CreateInstanceBase`
+overload. Allocation and type-specific construction remain in the template.
+The shared overload consumes the initial reference, transfers the same
+`ComBase`-based `IInspectable` pointer on success, and releases it on failure.
+
+The existing initializer still runs exactly once. Its normalization of
+successful initialization to `S_OK`, both levels of failure propagation,
+and the unchanged caller output on failure remain intact. Failure cleanup
+still dispatches the object's delegating `Release`, including controlling-outer
+behavior for aggregated objects. Typed factory overloads and their debug
+leak-check option are unchanged. This adds no virtual slot, object field,
+interface, export, metadata definition, or compiler/linker option.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `bcf0a613a`, fresh baseline | 14,367,232 | 14,366,208 | 14,376,652 |
+| Shared untyped factory completion | 14,340,096 | 14,339,072 | 14,349,724 |
+| Incremental reduction | 27,136 | 27,136 | 26,928 |
+| Cumulative reduction from original baseline | 195,072 | 195,072 | 195,052 |
+
+The actual DLL file is **27,136 bytes (26.5 KiB) smaller**. Cumulative file
+savings are **195,072 bytes (190.5 KiB)** from the original 14,535,168-byte
+baseline. Raw `.text` shrinks by 24,576 bytes and `.pdata` by 2,560 bytes.
+Other raw section sizes are unchanged.
+
+The untyped factory template family falls from 66,882 attributed bytes across
+268 representatives to 4,885 across 27 representatives. This is not a separate
+61,997-byte saving: much of the remaining construction code moves into callers.
+For example, the resolved `AccessKeyInvokedEventArgs` factory block was 235
+bytes and is no longer a standalone block; its activation caller grows from
+85 to 208 bytes. The surviving `BasicConnectedAnimationConfiguration` factory
+block shrinks from 281 to 196 bytes and tail-jumps to the shared completion.
+The new shared overload has one 86-byte primary block in the collected
+`.text` symbols; the existing initializer remains 47 bytes. These observations
+support attribution and are not summed with whole-file savings.
+
+Restoring all three source files byte-for-byte and recompiling reproduced
+every baseline size metric. Reapplying the exact candidate and recompiling
+reproduced every candidate metric. Every non-baseline build compiled affected
+code and performed an LTCG link. The sharing claim comes from this measured
+output, not an assumption that `noinline` prevents LTCG specialization.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260918-225046-cd2758ee`.
+The `000-baseline`, `001-shared-factory-completion`,
+`002-baseline-recompiled`, and `003-shared-factory-completion-repeat`
+directories contain read-only DLL/PDB copies, hashes, source patches, build
+logs/binlogs, SizeBench snapshots, receipts, stderr, and frozen tool identity
+sidecars. The first two also contain `.text` symbol coverage and resolved
+primary-block disassembly. `ownership.json`, `semantic-review.json`,
+`verification.json`, and `progress.json` record source ownership and handoff.
+
+All measurements use the frozen SizeBench deployment and managed identity
+documented above. Its full 268-file manifest was verified before and after
+each measurement. Initialization and build used the same `cmd.exe` process
+and explicit `/nopgo` recipe. Logs confirm `PGOBuildMode=Off`,
+`Configuration=Release`, `Platform=x64`, and `VCToolsVersion=14.44.35207`.
+All 934 command-tlog hashes match between the recompiled control and repeated
+candidate. Eight export ordinal/name identities, PE security flags, and five
+built WinMD hashes are unchanged.
+
+**Tests not run, as requested.** Earlier regression results belong to the
+starting commit, not this experiment. Review found no change to ownership,
+aggregation, initialization order, output-pointer behavior, or HRESULTs.
+Error propagation remains, but diagnostic source locations and stacks change
+with the refactoring. The inspected activation path retains the same number
+of calls on success; a surviving factory uses a tail jump to the shared helper.
+Failure cleanup now uses a guarded virtual `Release` rather than the
+template's devirtualized implementation. No additional allocation is introduced.
+Call layout and instruction-cache behavior change; application performance
+has not been measured. Compilation does not establish runtime correctness.
+Failure injection and other architectures were not validated.

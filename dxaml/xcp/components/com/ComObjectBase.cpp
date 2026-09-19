@@ -48,3 +48,15 @@ HRESULT ctl::ComObjectBase::CreateInstanceBase(_In_ ComBase* pNewInstance, bool 
 
     return S_OK;
 }
+
+HRESULT ctl::ComObjectBase::CreateInstanceBase(_In_ ComBase* pNewInstance, _Outptr_ IInspectable** ppNewInstance)
+{
+    HRESULT hr = S_OK;
+    IFC(CreateInstanceBase(pNewInstance));
+    *ppNewInstance = static_cast<IInspectable*>(pNewInstance);
+    pNewInstance = nullptr;
+
+Cleanup:
+    ReleaseInterface(pNewInstance);
+    RRETURN(hr);
+}
