@@ -2394,3 +2394,99 @@ exercised or established. Diagnostic source locations and code layout change.
 Application performance, runtime failure injection, reentrancy, and other
 architectures were not exercised. Compilation does not establish runtime
 correctness.
+
+## Follow-up: remove redundant aggregation-factory cleanup (2026-09-19)
+
+File: `dxaml\xcp\dxaml\lib\comTemplateLibrary.h`.
+
+Remove the final `pObj = NULL` assignments and `ctl::release_interface(pObj)`
+cleanup calls from `AggregableActivationFactory<T>::ActivateInstanceStatic`,
+its `CreateInstance` helper, and
+`AggregableAbstractActivationFactory<T>::ActivateInstanceStatic`.
+
+The typed `ComObject<T>::CreateInstance(pOuter, &pObj)` factory retains
+ownership through initialization. It releases the allocation on failure and
+writes `pObj` only on success. Successful construction is followed only by
+pointer casts and publication of the same initial owning inner reference.
+The wrappers therefore have no reference to release on failure and no
+fallible operation after construction. Their no-outer paths never assign
+`pObj`; the untyped factory retains its own failure cleanup.
+
+The existing activation checks, abstract null-outer check, `IFC`/`IFCPTR`
+macros, `hr`, cleanup labels, and `return hr` remain unchanged. Interface
+identity, controlling outer, output-on-failure behavior, initialization order,
+and HRESULT propagation are preserved. Later interface-query failures in
+the validation wrappers still use their existing smart-pointer cleanup.
+No public signature, layout, metadata, generated output, compiler/linker
+option, or security setting changes.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `6b7135b5e`, fresh baseline | 14,257,664 | 14,256,640 | 14,267,112 |
+| Remove redundant aggregation cleanup | 14,257,152 | 14,256,128 | 14,266,632 |
+| Incremental reduction | 512 | 512 | 480 |
+| Cumulative reduction from original baseline | 278,016 | 278,016 | 278,144 |
+
+The actual DLL file is **512 bytes (0.5 KiB) smaller**. Cumulative file
+savings are **278,016 bytes (271.5 KiB)** from the original 14,535,168-byte
+baseline. Raw `.text` shrinks by 512 bytes; other raw sections are unchanged.
+Virtual `.text`, `.pdata`, and `.reloc` shrink by 448, 24, and 8 bytes,
+respectively.
+
+The resolved `DesktopWindowXamlSource` validation-wrapper primary block
+shrinks from 520 to 498 bytes. It removes the redundant guarded release,
+saves six nonvolatile registers instead of seven, and retains its 80-byte
+local stack reservation. Its activation guard, factory calls, interface
+query, necessary owner cleanup, security-cookie checks, and guarded indirect
+calls remain. No helper call is added in the inspected wrapper.
+
+The concrete `ActivateInstanceStatic` family remains at 2,714 attributed
+bytes across nine representatives. The validation-wrapper family falls from
+3,582 bytes across seven representatives to 2,550 across five. These totals
+reflect compiler inlining/folding decisions and are not summed or substituted
+for whole-file savings. The inspected `BasicConnectedAnimationConfiguration`,
+`DataTemplateSelector`, and `XamlRenderingBackgroundTask` primary blocks
+remain 325, 301, and 296 bytes, respectively. Disassembly ranges came from
+resolved positive primary blocks, not function totals or zero-sized aliases.
+
+Restoring the original header byte-for-byte and recompiling reproduced all
+three baseline metrics and every baseline `.text` byte. Reapplying the exact
+candidate and recompiling reproduced all three candidate metrics and every
+candidate `.text` byte. Each non-baseline build compiled affected consumers,
+including `Aggregate.g.cpp`, and performed an LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260919-122944-3b241f2c`.
+The `000-baseline`, `001-aggregation-cleanup`, `002-baseline-recompiled`,
+and `003-aggregation-cleanup-repeat` directories contain read-only DLL/PDB
+copies, hashes, source revisions and patches, build logs/binlogs, SizeBench
+snapshots, receipts, stderr, and tool identity sidecars. The first two also
+contain complete `.text` symbol coverage and resolved primary-block
+disassembly. `ownership.json`, `hypothesis.json`, `semantic-review.json`,
+`verification.json`, and `progress.json` record ownership, review, and handoff.
+
+All measurements use the frozen SizeBench deployment and managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+Its full 268-file manifest was verified before and after each core measurement
+and during final verification. Initialization and build used the same
+`cmd.exe` process with explicit `/nopgo`. Logs confirm `PGOBuildMode=Off`,
+`Configuration=Release`, `Platform=x64`, and `VCToolsVersion=14.44.35207`.
+All 934 command-tlog hashes match between the recompiled control and both
+candidates. Eight export ordinal/name identities, PE security flags, and
+five built WinMD hashes are unchanged.
+
+**Tests not run, as requested.** Earlier test results belong to earlier work,
+not this experiment. No allocation, helper, lock, or reference-count operation
+is added. Compiler inlining, register allocation, and code layout change;
+no runtime performance improvement is claimed. Runtime aggregation,
+reentrancy, failure injection, debug behavior, and other architectures were
+not exercised. Compilation does not establish runtime correctness.
+The simplification relies on the existing output-only-on-success factory
+contract. Future fallible work between successful construction and ownership
+transfer would need cleanup.

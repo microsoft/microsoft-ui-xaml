@@ -222,7 +222,6 @@ namespace ctl
                 pObjAsAggregable = static_cast<ComObject<T>*>(pObj);
                 // Transfer the initial inner reference without an AddRef/Release pair.
                 *instance = reinterpret_cast<IInspectable*>(static_cast<INonDelegatingInspectable*>(pObjAsAggregable));
-                pObj = NULL;
             }
             else
             {
@@ -230,7 +229,6 @@ namespace ctl
             }
 
         Cleanup:
-            ctl::release_interface(pObj);
             return hr;
         }
 
@@ -253,7 +251,6 @@ namespace ctl
                 pObjAsAggregable = static_cast<ComObject<T>*>(pObj);
                 // Transfer the initial inner reference without an AddRef/Release pair.
                 *instance = reinterpret_cast<IInspectable*>(static_cast<INonDelegatingInspectable*>(pObjAsAggregable));
-                pObj = NULL;
             }
             else
             {
@@ -261,8 +258,6 @@ namespace ctl
             }
 
         Cleanup:
-
-            ctl::release_interface(pObj);
             return hr;
         }
     };
@@ -290,10 +285,8 @@ namespace ctl
             pObjAsAggregable = static_cast<ComObject<T>*>(pObj);
             // Transfer the initial inner reference without an AddRef/Release pair.
             *instance = reinterpret_cast<IInspectable*>(static_cast<INonDelegatingInspectable*>(pObjAsAggregable));
-            pObj = NULL;
 
         Cleanup:
-            ctl::release_interface(pObj);
             return hr;
         }
 
