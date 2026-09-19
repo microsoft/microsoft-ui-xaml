@@ -128,6 +128,7 @@
       <SolidColorBrush x:Key="InkToolbarFlyoutItemHoverBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
       <SolidColorBrush x:Key="InkToolbarFlyoutItemHoverForegroundThemeBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
       <SolidColorBrush x:Key="InkToolbarButtonSelectedForegroundThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+      <SolidColorBrush x:Key="InkToolbarButtonSelectedBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
       <SolidColorBrush x:Key="InkToolbarButtonPressedBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
       <SolidColorBrush x:Key="InkToolbarButtonPressedForegroundThemeBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
       <SolidColorBrush x:Key="InkToolbarFlyoutItemPressedBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
@@ -141,7 +142,7 @@
       <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderSelectedThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
       <SolidColorBrush x:Key="InkToolbarFlyoutItemBorderPressedThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
       <StaticResource x:Key="InkToolbarFlyoutItemHoverSelectedBackgroundThemeBrush" ResourceKey="InkToolbarFlyoutItemHoverBackgroundThemeBrush" />
-      <StaticResource x:Key="InkToolbarFlyoutItemSelectedBackgroundThemeBrush" ResourceKey="InkToolbarButtonSelectedBackgroundThemeBrush" />
+      <SolidColorBrush x:Key="InkToolbarFlyoutItemSelectedBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
       <StaticResource x:Key="InkToolbarFlyoutItemSelectedForegroundThemeBrush" ResourceKey="InkToolbarButtonHoverForegroundThemeBrush" />
       <StaticResource x:Key="InkToolbarButtonBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
       <StaticResource x:Key="InkToolbarButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
@@ -214,7 +215,6 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="MinWidth" Value="0" />
     <Setter Property="MinHeight" Value="0" />
-    <Setter Property="Margin" Value="2,4,2,4" />
     <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
   </Style>
   <Style x:Key="InkToolbarCommonButtonStyle" TargetType="ToggleButton">
@@ -1658,7 +1658,7 @@
             <Grid x:Name="StrokePreviewGrid" Grid.Row="6" UseLayoutRounding="false" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MinHeight="24">
               <Canvas x:Name="StrokePreviewCanvas" Margin="12, 0, 12, 4" />
             </Grid>
-            <Slider x:Name="PenStrokeWidthSlider" Grid.Row="7" Grid.Column="0" Width="296" Height="44" Margin="12,0,12,0" HorizontalAlignment="Stretch" Minimum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PenButton.MinStrokeWidth}" Maximum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PenButton.MaxStrokeWidth}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PenButton.SelectedStrokeWidth, Mode=TwoWay}" />
+            <Slider x:Name="PenStrokeWidthSlider" Grid.Row="7" Grid.Column="0" Width="296" Height="44" Margin="12,0,12,0" HorizontalAlignment="Stretch" Minimum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PenButton.MinStrokeWidth}" Maximum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PenButton.MaxStrokeWidth}" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=PenButton.SelectedStrokeWidth, Mode=TwoWay}" Style="{StaticResource FlyoutStrokeWidthSelectorStyle}" />
           </Grid>
         </ControlTemplate>
       </Setter.Value>

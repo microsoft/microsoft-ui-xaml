@@ -18,6 +18,7 @@
 #include "InkToolbar.h"
 #include "InkToolbarPenButton.h"
 #include "InkToolbarTrace.h"
+#include "ResourceAccessor.h"
 
 #include <winrt/Microsoft.UI.Xaml.Shapes.h>
 #include <winrt/Windows.UI.ViewManagement.h>
@@ -50,28 +51,46 @@ static constexpr double c_previewStrokeMargin = 10.0;
 
 InkToolbarPenConfigurationControl::~InkToolbarPenConfigurationControl()
 {
+    DetachTemplateHandlers();
+}
+
+// Every subscription below is bound to a raw 'this'. OnApplyTemplate can run more than once, so each one
+// has to be revoked before it is replaced - otherwise the superseded registrations outlive the control and
+// fire into freed memory the next time high contrast or the theme changes.
+void InkToolbarPenConfigurationControl::DetachTemplateHandlers()
+{
     try
     {
         if (auto colorPicker = m_colorPicker.get())
         {
-            if (m_colorPickerPointerPressedEventHandler) { colorPicker.RemoveHandler(winrt::UIElement::PointerPressedEvent(), m_colorPickerPointerPressedEventHandler); }
-            if (m_colorPickerPointerReleasedEventHandler) { colorPicker.RemoveHandler(winrt::UIElement::PointerReleasedEvent(), m_colorPickerPointerReleasedEventHandler); }
-            if (m_colorPickerKeyDownEventHandler) { colorPicker.RemoveHandler(winrt::UIElement::KeyDownEvent(), m_colorPickerKeyDownEventHandler); }
+            if (m_colorPickerPointerPressedEventHandler) { colorPicker.RemoveHandler(winrt::UIElement::PointerPressedEvent(), m_colorPickerPointerPressedEventHandler); m_colorPickerPointerPressedEventHandler = nullptr; }
+            if (m_colorPickerPointerReleasedEventHandler) { colorPicker.RemoveHandler(winrt::UIElement::PointerReleasedEvent(), m_colorPickerPointerReleasedEventHandler); m_colorPickerPointerReleasedEventHandler = nullptr; }
+            if (m_colorPickerKeyDownEventHandler) { colorPicker.RemoveHandler(winrt::UIElement::KeyDownEvent(), m_colorPickerKeyDownEventHandler); m_colorPickerKeyDownEventHandler = nullptr; }
+            if (m_colorPickerGotFocusToken) { colorPicker.GotFocus(m_colorPickerGotFocusToken); m_colorPickerGotFocusToken = {}; }
+            if (m_containerContentChangingToken) { colorPicker.ContainerContentChanging(m_containerContentChangingToken); m_containerContentChangingToken = {}; }
+            if (m_selectionChangedToken)
+            {
+                colorPicker.as<winrt::Microsoft::UI::Xaml::Controls::Primitives::Selector>().SelectionChanged(m_selectionChangedToken);
+                m_selectionChangedToken = {};
+            }
         }
         if (auto slider = m_strokeWidthSlider.get())
         {
             auto sliderUI = slider.as<winrt::UIElement>();
-            if (m_widthSliderPointerPressedEventHandler) { sliderUI.RemoveHandler(winrt::UIElement::PointerPressedEvent(), m_widthSliderPointerPressedEventHandler); }
-            if (m_widthSliderPointerReleasedEventHandler) { sliderUI.RemoveHandler(winrt::UIElement::PointerReleasedEvent(), m_widthSliderPointerReleasedEventHandler); }
-            if (m_widthSliderKeyDownEventHandler) { sliderUI.RemoveHandler(winrt::UIElement::KeyDownEvent(), m_widthSliderKeyDownEventHandler); }
+            if (m_widthSliderPointerPressedEventHandler) { sliderUI.RemoveHandler(winrt::UIElement::PointerPressedEvent(), m_widthSliderPointerPressedEventHandler); m_widthSliderPointerPressedEventHandler = nullptr; }
+            if (m_widthSliderPointerReleasedEventHandler) { sliderUI.RemoveHandler(winrt::UIElement::PointerReleasedEvent(), m_widthSliderPointerReleasedEventHandler); m_widthSliderPointerReleasedEventHandler = nullptr; }
+            if (m_widthSliderKeyDownEventHandler) { sliderUI.RemoveHandler(winrt::UIElement::KeyDownEvent(), m_widthSliderKeyDownEventHandler); m_widthSliderKeyDownEventHandler = nullptr; }
+            if (m_widthSliderValueChangedToken) { slider.ValueChanged(m_widthSliderValueChangedToken); m_widthSliderValueChangedToken = {}; }
+            if (m_widthSliderGotFocusToken) { slider.as<winrt::FrameworkElement>().GotFocus(m_widthSliderGotFocusToken); m_widthSliderGotFocusToken = {}; }
+        }
+        if (auto grid = m_strokePreviewGrid.get())
+        {
+            if (m_previewGridSizeChangedToken) { grid.SizeChanged(m_previewGridSizeChangedToken); m_previewGridSizeChangedToken = {}; }
         }
         if (m_accessibilitySettings && m_highContrastChangedToken)
         {
             m_accessibilitySettings.HighContrastChanged(m_highContrastChangedToken);
-        }
-        if (auto grid = m_strokePreviewGrid.get())
-        {
-            if (m_previewGridSizeChangedToken) { grid.SizeChanged(m_previewGridSizeChangedToken); }
+            m_highContrastChangedToken = {};
         }
     }
     catch (...)
@@ -95,6 +114,8 @@ void InkToolbarPenConfigurationControl::SetBindingData(winrt::InkToolbar const& 
 void InkToolbarPenConfigurationControl::OnApplyTemplate()
 {
     auto penButton = PenButton();
+
+    DetachTemplateHandlers();
 
     ConfigureStrokeWidthSlider(nullptr);
     ConfigureStrokeWidthPreview();
@@ -195,8 +216,33 @@ void InkToolbarPenConfigurationControl::ConfigureStrokeWidthSlider(winrt::Contro
 void InkToolbarPenConfigurationControl::ConfigureLocalizableElements(winrt::Control const& me)
 {
     UNREFERENCED_PARAMETER(me);
-    // Titles/automation names come from string resources (a lift resource gap) - left to the template's
-    // default text. Structure preserved; nothing to set without a resource provider.
+
+    // ResourceAccessor throws ERROR_NOT_FOUND when a name is absent, which an app carrying an older
+    // merged PRI than the framework will hit; a missing string must not take the app down.
+    auto tryGetString = [](std::wstring_view name) -> winrt::hstring
+    {
+        try { return ResourceAccessor::GetLocalizedStringResource(name); }
+        catch (...) { return {}; }
+    };
+
+    // Narrator announces the slider value with no name unless this is set, so "3" is read with no hint
+    // that it is the pen size. UWP ConfigureLocalizableElements -> IDS_INKTOOLBAR_PENL3STROKEWIDTHSLIDERNAME.
+    // The two flyout titles are localized separately (see the InkToolbar localization change).
+    auto sliderName = PenButton() ? L"PenStrokeWidthSlider" : L"EraserStrokeWidthSlider";
+    if (auto slider = GetTemplateChild(sliderName))
+    {
+        auto sliderText = tryGetString(SR_InkToolbarPenConfigurationSizeSliderName);
+        if (!sliderText.empty())
+        {
+            winrt::AutomationProperties::SetName(slider, sliderText);
+        }
+    }
+
+    auto nonSolidText = tryGetString(SR_InkToolbarNonSolidColorName);
+    if (!nonSolidText.empty())
+    {
+        m_nonSolidColorString = nonSolidText;
+    }
 }
 
 void InkToolbarPenConfigurationControl::RemoveColorPicker(winrt::Control const& me)
@@ -399,7 +445,7 @@ void InkToolbarPenConfigurationControl::OnColorPickerPointerReleased(winrt::IIns
 void InkToolbarPenConfigurationControl::OnColorPickerKeyDown(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
 {
     UNREFERENCED_PARAMETER(sender);
-    UNREFERENCED_PARAMETER(args);
+    OnL3KeyDown(args);
 }
 
 void InkToolbarPenConfigurationControl::OnStrokeWidthSliderPointerPressed(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args)
@@ -419,7 +465,30 @@ void InkToolbarPenConfigurationControl::OnStrokeWidthSliderPointerReleased(winrt
 void InkToolbarPenConfigurationControl::OnStrokeWidthKeyDown(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
 {
     UNREFERENCED_PARAMETER(sender);
-    UNREFERENCED_PARAMETER(args);
+    OnL3KeyDown(args);
+}
+
+// UWP OnL3KeyDown: Tab means the user is moving between the color and size sections of the flyout, so the
+// toolbar is allowed to change mode; Enter commits the choice and dismisses the flyout. Without these the
+// flyout can be reached by keyboard but never committed or closed from it.
+void InkToolbarPenConfigurationControl::OnL3KeyDown(winrt::KeyRoutedEventArgs const& args)
+{
+    switch (args.Key())
+    {
+    case winrt::Windows::System::VirtualKey::Tab:
+        m_setMode = true;
+        break;
+
+    case winrt::Windows::System::VirtualKey::Enter:
+        if (auto toolbar = m_inkToolbar.get())
+        {
+            winrt::get_self<InkToolbar>(toolbar)->DismissL3(*this);
+        }
+        break;
+
+    default:
+        break;
+    }
 }
 
 void InkToolbarPenConfigurationControl::SetFocusToSelectedColor(winrt::FocusState focusState)
@@ -519,6 +588,8 @@ void InkToolbarPenConfigurationControl::ConfigureStrokeWidthPreview()
     {
         return;
     }
+    // OnApplyTemplate can run again on the same canvas; drop the previous sample stroke first.
+    canvas.Children().Clear();
     m_strokePreviewGrid = winrt::make_weak(grid);
 
     auto figure = mux::Media::PathFigure();
@@ -572,21 +643,58 @@ void InkToolbarPenConfigurationControl::UpdatePreview()
         return;
     }
 
-    auto toolbar = m_inkToolbar.get();
-    if (!toolbar)
+    auto button = PenButton();
+    winrt::Windows::UI::Color color{};
+    double width = 0.0;
+    bool haveValues = false;
+
+    // In high contrast the palette is swapped for the contrast-filtered one, so the selected swatch - not
+    // the toolbar's drawing attributes - is what the flyout is actually showing. Using the attributes here
+    // paints the preview in a color that is not in the palette, which on a high-contrast background can be
+    // the same color as the background and so invisible.
+    if (button && IsHighContrast())
+    {
+        if (auto brush = button.SelectedBrush().try_as<winrt::SolidColorBrush>())
+        {
+            color = brush.Color();
+            width = button.SelectedStrokeWidth();
+            haveValues = true;
+        }
+    }
+
+    if (!haveValues)
+    {
+        if (auto toolbar = m_inkToolbar.get())
+        {
+            if (auto attributes = toolbar.InkDrawingAttributes())
+            {
+                color = attributes.Color();
+                width = attributes.Size().Width;
+                haveValues = true;
+            }
+        }
+    }
+
+    // OnApplyTemplate runs before SetBindingData hands over the toolbar, so without this fallback the
+    // sample stroke stays unpainted until the color or width is changed.
+    if (!haveValues && button)
+    {
+        if (auto brush = button.SelectedBrush().try_as<winrt::SolidColorBrush>())
+        {
+            color = brush.Color();
+        }
+        width = button.SelectedStrokeWidth();
+        haveValues = true;
+    }
+
+    if (!haveValues)
     {
         return;
     }
 
-    auto attributes = toolbar.InkDrawingAttributes();
-    if (!attributes)
-    {
-        return;
-    }
-
-    path.Stroke(winrt::SolidColorBrush(attributes.Color()));
-    path.StrokeThickness(attributes.Size().Width);
-    path.Opacity(PenButton().try_as<winrt::Microsoft::UI::Xaml::Controls::InkToolbarHighlighterButton>() ? 0.5 : 1.0);
+    path.Stroke(winrt::SolidColorBrush(color));
+    path.StrokeThickness(width);
+    path.Opacity((button && button.try_as<winrt::Microsoft::UI::Xaml::Controls::InkToolbarHighlighterButton>()) ? 0.5 : 1.0);
 
     PositionPreviewStroke();
 }
@@ -666,6 +774,55 @@ void InkToolbarPenConfigurationControl::ConfigureHighContrast()
 
     // Reflect the current HC state immediately.
     RegenerateItemSource();
+    UpdateHighContrast();
+}
+
+// UWP UpdateHighContrast: in high contrast the swatches switch to a template that outlines each ellipse,
+// so a swatch whose fill matches the flyout background (black on a black high-contrast background) is
+// still distinguishable. The template is declared in the pen flyout's GridView resources.
+void InkToolbarPenConfigurationControl::UpdateHighContrast()
+{
+    auto colorPicker = m_colorPicker.get();
+    if (!colorPicker)
+    {
+        return;
+    }
+
+    try
+    {
+        if (!m_originalColorPickerItemTemplate)
+        {
+            m_originalColorPickerItemTemplate = colorPicker.ItemTemplate();
+        }
+
+        if (!m_highContrastColorPickerItemTemplate)
+        {
+            if (auto resources = colorPicker.Resources())
+            {
+                auto key = winrt::box_value(L"HighContrastItemTemplate");
+                if (resources.HasKey(key))
+                {
+                    m_highContrastColorPickerItemTemplate = resources.Lookup(key).try_as<winrt::DataTemplate>();
+                }
+            }
+        }
+
+        if (IsHighContrast())
+        {
+            if (m_highContrastColorPickerItemTemplate)
+            {
+                colorPicker.ItemTemplate(m_highContrastColorPickerItemTemplate);
+            }
+        }
+        else if (m_originalColorPickerItemTemplate)
+        {
+            colorPicker.ItemTemplate(m_originalColorPickerItemTemplate);
+        }
+    }
+    catch (winrt::hresult_error const& e)
+    {
+        InkToolbarLogHResult(e.code(), L"high-contrast palette template swap");
+    }
 }
 
 void InkToolbarPenConfigurationControl::OnHighContrastChanged(
@@ -678,6 +835,7 @@ void InkToolbarPenConfigurationControl::OnHighContrastChanged(
         dispatcher.TryEnqueue([strongThis]()
         {
             strongThis->RegenerateItemSource();
+            strongThis->UpdateHighContrast();
             strongThis->UpdatePreview();
         });
     }
