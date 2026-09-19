@@ -2490,3 +2490,92 @@ not exercised. Compilation does not establish runtime correctness.
 The simplification relies on the existing output-only-on-success factory
 contract. Future fallible work between successful construction and ownership
 transfer would need cleanup.
+
+## Follow-up: compact interface-map IID array indexing (2026-09-19)
+
+File: `dxaml\xcp\components\com\inc\ComMacros.h`.
+
+In `END_INTERFACE_MAP`, write each local IID through
+`(pResult + first)[current]` instead of `pResult[first + current]`.
+This expresses the initial destination offset separately from the loop index.
+It changes compiler code generation without adding a helper or changing the
+interface map, virtual signature, array allocation, or base-class call.
+
+`ComBase::GetIidsImpl` allocates the complete array and starts copying at index
+zero. Each derived map writes its local entries in order, then passes
+`first + current` and the unchanged original array pointer to its base.
+For these valid, in-bounds indices, the two expressions address the same IID.
+Count calculation, output publication, allocation failure, ownership, and
+reference counting remain unchanged. The no-base macro and handwritten
+`ComBase` copy implementation are unchanged.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `449091e7c`, fresh baseline | 14,257,152 | 14,256,128 | 14,266,632 |
+| Separate initial pointer offset | 14,254,080 | 14,253,056 | 14,263,336 |
+| Incremental reduction | 3,072 | 3,072 | 3,296 |
+
+The actual DLL file is **3,072 bytes (3 KiB) smaller**. Cumulative file
+savings are **281,088 bytes (274.5 KiB)** from the original 14,535,168-byte
+baseline. Only `.text` changes size: raw bytes fall by 3,072 and virtual
+bytes by 3,296.
+
+The `EnumReference<T>::CopyIIDsToArray` family falls from 18,117 to 16,836
+attributed bytes, with 183 representatives in both builds. The resolved
+`HoldingState` primary block shrinks from 99 to 92 bytes. Its local-copy
+loop remains the same; the inlined base-copy loop uses indexed addressing
+instead of a separate destination pointer. Both versions copy the same
+16-byte entries and introduce no calls or stack allocation. These findings
+describe compiler choices, not a guarantee that every affected loop becomes
+faster. Family attribution is not added to whole-file savings.
+
+Restoring the exact original header and recompiling reproduced all baseline
+size metrics and every `.text` byte. Reapplying the candidate and recompiling
+reproduced the candidate metrics and every `.text` byte. Binlog events confirm
+affected consumers, including `Boxes.g.cpp`, compiled and LTCG linking ran in
+each changed-source build. Eight export ordinal/name identities and PE
+security characteristics remain unchanged.
+
+### This turn's validation and provenance
+
+The final `prodtest` build succeeded with `PGOBuildMode=Off`,
+`Configuration=Release`, and `Platform=x64`; its preserved DLL retains all
+candidate measurements and identical `.text` bytes. Native builds used
+`VCToolsVersion=14.44.35207`. Initialization and each build ran in the same
+`cmd.exe` process with explicit `/nopgo`.
+
+On `ge_current-260820-Desktop`, the full CalendarView integration suite ran
+in WPF mode against a freshly generated and deployed amd64fre payload:
+**121 total, 120 passed, 1 failed, 0 blocked, 0 not run, 0 skipped**.
+The only failure was `TestCICEvents` at `IsTrue(didOutputMatchMaster)`,
+within the explicitly allowed baseline. `VerifySelfAdaptivePanel` passed.
+This is a new run, not reused evidence from the earlier 119/121 baseline.
+The cause of the known failure remains unestablished.
+
+The built DLL, frozen final copy, local payload root/Test copies, and VM
+root/Test copies all have SHA256:
+`8F2C0D7E6C957010B7C43F3AB8A9B665937A6DDCC23C03AF950DB70644EF0D62`.
+
+Evidence is under
+`D:\x1\artifacts\ralph\20260919-153645-537e3e86`.
+The five numbered measurement directories preserve hashes, source patches,
+SizeBench snapshots, receipts, and tool identities; build logs/binlogs
+accompany the first four. Final build evidence is in `final-test-build.log`
+and `final-test-build.binlog`. VM evidence is in `tests.log`,
+`vm-testrun-output.log`, `WexLogFileOutput`, `test-result.json`, and
+`tested-dll-hashes.json`. `verification.json` and `build-events.json` record
+repeatability and compilation evidence. Older binary snapshots may be
+removed by the supervisor; their reports remain.
+
+All measurements use the frozen SizeBench managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`,
+with the full deployment manifest verified for each core collection.
+The prior turn's ILLink crash did not recur in this turn's unchanged-source
+preflight or final product/test build. No flags or dependencies were changed
+to address it. Source review found no behavioral or ABI change. This suite
+does not exhaustively cover interface maps; other architectures, allocation
+failure injection, and runtime performance were not measured.

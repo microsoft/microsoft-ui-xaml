@@ -45,7 +45,7 @@
          \
          for (current = 0; current < count; current++)\
          {\
-            pResult[first + current] = *(pLocalIIDs[current]);\
+            (pResult + first)[current] = *(pLocalIIDs[current]);\
          }\
          \
          BASE::CopyIIDsToArray(first + current, pResult);\
