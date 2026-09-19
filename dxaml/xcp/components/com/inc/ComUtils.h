@@ -99,16 +99,14 @@ namespace ctl
     HRESULT do_query_interface(_Out_ ctl::ComPtr<T>& spOut, _In_opt_ U *pIn)
     {
         HRESULT hr = S_OK;
-        T* pRawInterface = NULL;
         ComPtr<T> spInterface;
 
         if (pIn)
         {
-            hr = iunknown_cast(pIn)->QueryInterface(__uuidof(T), (void **)&pRawInterface);
+            hr = iunknown_cast(pIn)->QueryInterface(__uuidof(T), (void **)spInterface.GetAddressOf());
         }
 
-        spInterface.Attach(pRawInterface);
-        spOut = std::move(spInterface);
+        spOut.Swap(spInterface);
 
         return hr;
     }

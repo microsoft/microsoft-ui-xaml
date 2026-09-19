@@ -1259,3 +1259,82 @@ introduced. Code layout and instruction-cache behavior change. Application
 performance, runtime failure injection, debug behavior, and other
 architectures were not exercised. Compilation does not establish runtime
 correctness.
+
+## Follow-up: simplify smart-pointer interface query transfer
+
+File: `dxaml\xcp\components\com\inc\ComUtils.h`.
+
+In the `ctl::do_query_interface(ctl::ComPtr<T>&, U*)` overload, query directly
+into one initially empty temporary `ComPtr`, then swap it with the destination.
+This replaces a raw output pointer, an `Attach`, and move assignment through
+an additional temporary.
+
+The same interface query runs before the old destination is released,
+including when the source aliases the destination. The new pointer is
+published before the old reference is released, preserving reentrant
+observation of the destination. The old reference is released exactly once,
+even when the queried interface pointer equals it. Null input still clears
+the destination and returns `S_OK`. Failed queries and successful HRESULTs
+retain their original output and return behavior. The raw-pointer overload,
+interface casts, public signatures, class layouts, metadata, and build
+options are unchanged.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `e889f1a35`, fresh baseline | 14,281,728 | 14,280,704 | 14,291,380 |
+| Direct query into temporary, then swap | 14,281,216 | 14,280,192 | 14,290,708 |
+| Incremental reduction | 512 | 512 | 672 |
+| Cumulative reduction from original baseline | 253,952 | 253,952 | 254,068 |
+
+The actual DLL file is **512 bytes (0.5 KiB) smaller**. Cumulative file savings
+are **253,952 bytes (248 KiB)** from the original 14,535,168-byte baseline.
+Raw `.text` shrinks by 512 bytes; other raw section sizes are unchanged.
+Virtual `.text`, `.rdata`, and `.reloc` shrink by 464, 192, and 16 bytes
+respectively.
+
+As supporting attribution, one smart-pointer query family falls from 2,938
+to 2,886 bytes across the same 21 representatives. The resolved
+`IVector<SetterBase*>` query helper shrinks from 178 to 126 bytes, removes
+cleanup calls on empty temporaries, and reduces local stack reservation
+from 64 to 48 bytes. The inspected `Binding` and `FrameworkElement` helper
+blocks remain 142 bytes. Other query-family totals are unchanged. Inlining
+and layout effects also contribute; these totals are not added to section
+savings or treated as contiguous disassembly ranges without resolving blocks.
+
+Restoring the original header byte-for-byte and recompiling reproduced all
+three baseline metrics. Reapplying the exact candidate and recompiling
+reproduced all three candidate metrics. Every non-baseline build compiled
+affected consumers, including `Aggregate.g.cpp`, and performed an LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260919-004249-a9390911`.
+The `000-baseline`, `001-query-interface-swap`, `002-baseline-recompiled`,
+and `003-query-interface-swap-repeat` directories contain read-only DLL/PDB
+copies, hashes, source patches, build logs/binlogs, SizeBench snapshots,
+receipts, stderr, and frozen tool identity sidecars. The first two include
+`.text` symbol coverage and resolved primary-block disassembly.
+`ownership.json`, `semantic-review.json`, `verification.json`, and
+`progress.json` record ownership, review, and handoff.
+
+All four measurements use the frozen SizeBench deployment and managed
+identity documented above. Its complete 268-file manifest was verified before
+and after each measurement. Initialization and build used the same `cmd.exe`
+process and explicit `/nopgo` recipe. Logs confirm `PGOBuildMode=Off`,
+`Configuration=Release`, `Platform=x64`, and `VCToolsVersion=14.44.35207`.
+All 934 command-tlog hashes match between the recompiled control and repeated
+candidate. Eight export ordinal/name identities, PE security flags, and five
+built WinMD hashes are unchanged.
+
+**Tests not run, as requested.** Earlier regression results belong to the
+starting commit, not this experiment. Source review found no change to
+ownership, query/release order, destination publication, or HRESULTs.
+The change adds no allocation or COM call. Register choices, stack writes,
+and code layout differ; application performance remains unmeasured.
+Runtime reentrancy, failure injection, debug behavior, and other architectures
+were not exercised. Compilation does not establish runtime correctness.
