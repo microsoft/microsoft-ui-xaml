@@ -97,6 +97,11 @@ namespace DirectUI
             _In_ KnownTypeIndex nTypeIndex,
             _Outptr_ DependencyObject** ppObject)
         {
+            if (!IsDXamlCoreInitialized())
+            {
+                return RPC_E_WRONG_THREAD;
+            }
+
             return DXamlCore::GetCurrent()->ActivatePeer(nTypeIndex, ppObject);
         }
 

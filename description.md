@@ -1170,3 +1170,92 @@ call counts remain unchanged in the inspected factories, but code layout and
 instruction-cache behavior change. Application performance, runtime failure
 injection, debug behavior, and other architectures were not exercised.
 Compilation does not establish runtime correctness.
+
+## Follow-up: share the dependency-object activation guard
+
+Files: `dxaml\xcp\dxaml\lib\comInstantiation.h` and
+`dxaml\xcp\dxaml\lib\DXamlServices.cpp`.
+
+Move the core-initialization check from the dependency-object `ctl::make<T>`
+overload into `DXamlServices::ActivatePeer`, its shared activation wrapper.
+The template is the wrapper's only production caller in this checkout.
+The wrapper returns `RPC_E_WRONG_THREAD` without activating or writing the
+output when the same `IsDXamlCoreInitialized` check fails. The caller's
+existing `IFC_RETURN` still reports and propagates that failure once.
+
+Successful activation, temporary `ComPtr` cleanup, the exact typed cast,
+release of an existing destination, ownership transfer, and `S_OK`
+normalization remain unchanged. The initialization predicate retains its
+existing feature-dependent idle-state handling. All 561 inspected static
+type-index getters return constants, so evaluating the type index before
+entering the shared check introduces no side effect. The isolated ValueBoxer
+stub always reports an initialized core and retains its existing behavior.
+Non-dependency-object factories, class layouts, public interfaces, metadata,
+compiler/linker options, and security settings are unchanged.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `982a4edba`, fresh baseline | 14,295,040 | 14,294,016 | 14,304,812 |
+| Shared dependency-object activation guard | 14,281,728 | 14,280,704 | 14,291,380 |
+| Incremental reduction | 13,312 | 13,312 | 13,432 |
+| Cumulative reduction from original baseline | 253,440 | 253,440 | 253,396 |
+
+The actual DLL file is **13,312 bytes (13 KiB) smaller**. Cumulative file
+savings are **253,440 bytes (247.5 KiB)** from the original 14,535,168-byte
+baseline. Raw `.text` shrinks by 12,800 bytes and `.pdata` by 512 bytes.
+Other raw section sizes are unchanged. Virtual `.text`, `.pdata`, and `.data`
+shrink by 12,800, 756, and 16 bytes respectively; virtual `.rdata` and `.reloc`
+grow by 128 and 12 bytes.
+
+As supporting attribution, the main `ctl::make<T>(ComPtrRef<ComPtr<T>>)` family
+falls from 54,408 bytes across 239 representatives to 41,241 across 176.
+The resolved `Border` primary block shrinks from 182 to 148 bytes, while
+the shared activation wrapper grows from 141 to 157 bytes. The inspected
+non-dependency-object `AddPagesEventArgs`, `BindingFailedEventArgs`, and
+`BudgetManager` blocks retain their respective 265, 265, and 248-byte sizes.
+Template totals include inlining and layout effects; they are not added to
+section savings or treated as contiguous disassembly ranges. The emitted
+wrapper contains one initialization check, with no new helper or `noinline`
+annotation.
+
+Restoring both original source files byte-for-byte and recompiling reproduced
+every baseline metric. Reapplying the exact candidate and recompiling
+reproduced every candidate metric. Each non-baseline build compiled
+`DXamlServices.cpp` and affected consumers including `Aggregate.g.cpp`, then
+performed an LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260919-001004-6854be49`.
+The `000-baseline`, `001-shared-activation-guard`, `002-baseline-recompiled`,
+and `003-shared-activation-guard-repeat` directories contain read-only
+DLL/PDB copies, hashes, source patches, build logs/binlogs, SizeBench
+snapshots, receipts, stderr, and frozen tool identity sidecars. The first
+two also contain `.text` symbol coverage and resolved primary-block
+disassembly. `ownership.json`, `semantic-review.json`, `verification.json`,
+and `progress.json` record ownership, review, and handoff.
+
+All four measurements use the frozen deployment and managed identity
+documented above. Its complete 268-file manifest was verified before and
+after each measurement. Initialization and build used the same `cmd.exe`
+process and explicit `/nopgo` recipe. Logs confirm `PGOBuildMode=Off`,
+`Configuration=Release`, `Platform=x64`, and `VCToolsVersion=14.44.35207`.
+All 934 command-tlog hashes match between the recompiled control and repeated
+candidate. Eight export ordinal/name identities, PE security flags, and five
+built WinMD hashes are unchanged.
+
+**Tests not run, as requested.** Earlier regression results belong to the
+starting commit, not this experiment. Source review found no change to
+ownership, activation order, output-pointer behavior, or HRESULTs. Diagnostic
+source locations and debug expression text change. Successful-path call
+counts remain unchanged in the inspected code; an uninitialized-core failure
+now enters the shared wrapper before returning. No additional allocation is
+introduced. Code layout and instruction-cache behavior change. Application
+performance, runtime failure injection, debug behavior, and other
+architectures were not exercised. Compilation does not establish runtime
+correctness.

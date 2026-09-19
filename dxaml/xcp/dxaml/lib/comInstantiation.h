@@ -32,7 +32,6 @@ namespace ctl
     _Check_return_ typename std::enable_if<IsDependencyObject<tobject>::value, HRESULT>::type make(ctl::Internal::ComPtrRef<ComPtr<tobject>> ppNewInstance)
     {
         ctl::ComPtr<::DirectUI::DependencyObject> spInstance;
-        IFC_RETURN(::DirectUI::DXamlServices::IsDXamlCoreInitialized() ? S_OK : RPC_E_WRONG_THREAD);
         IFC_RETURN(::DirectUI::DXamlServices::ActivatePeer(tobject::GetTypeIndexStatic(), &spInstance));
         auto ptr = ppNewInstance.ReleaseAndGetAddressOf();
         *ptr = static_cast<tobject*>(spInstance.Detach());
