@@ -361,7 +361,7 @@ namespace DirectUI
             IFCPTR_RETURN(ppValue);
 
             ctl::ComPtr<Reference<T>> ref;
-            IFC_RETURN(ctl::ComObject<Reference<T>>::CreateInstance(&ref));
+            IFC_RETURN(ctl::ComObject<Reference<T>>::CreateInstance(ref.ReleaseAndGetAddressOf()));
             IFC_RETURN(ref->SetValue(value));
 
             *ppValue = ctl::interface_cast<wf::IReference<T>>(ref.Detach());
