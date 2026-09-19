@@ -54,7 +54,7 @@ namespace
         IFC_RETURN(ctl::do_query_interface(spCollection, pValue));
         IFC_RETURN(spCollection->GetAt(index, &spItem));
         IFC_RETURN(spItem.As(&spItemAsDO));
-        spItemAsDO.CopyTo(ppDO);
+        spItemAsDO.MoveTo(ppDO);
 
         return S_OK;
     }

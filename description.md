@@ -1768,3 +1768,82 @@ is removed; no runtime work is added. Code layout and register choices change.
 Application performance, runtime reentrancy, failure injection, debug behavior,
 and other architectures were not exercised. Compilation does not establish
 runtime correctness.
+
+## Follow-up: transfer diagnostic collection-item references directly
+
+File: `dxaml\xcp\dxaml\lib\InternalDebugInterop.cpp`.
+
+In `GetCollectionItemInternal<Item, IItem>`, replace the final same-type
+`spItemAsDO.CopyTo(ppDO)` with `spItemAsDO.MoveTo(ppDO)`. The temporary already
+owns the queried `IDependencyObject` reference. Transferring that reference
+removes the additional AddRef and the temporary's balancing Release. The
+caller receives the same interface pointer and one owning reference.
+
+The collection query, indexed lookup, `IDependencyObject` query, initial null
+output, failure propagation, and final `S_OK` normalization remain unchanged.
+All failure paths retain their existing cleanup. The item and collection
+references are still released after publishing the output, in the same order.
+The existing null-result behavior also remains unchanged. This is a private
+template implementation change; no public interface, class layout, generated
+output, metadata, compiler/linker option, or security setting changes.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `288f1ad9d`, fresh baseline | 14,273,536 | 14,272,512 | 14,283,220 |
+| Direct diagnostic collection-item transfer | 14,273,024 | 14,272,000 | 14,282,612 |
+| Incremental reduction | 512 | 512 | 608 |
+| Cumulative reduction from original baseline | 262,144 | 262,144 | 262,164 |
+
+The actual DLL file is **512 bytes (0.5 KiB) smaller**. Cumulative file savings
+are **262,144 bytes (256 KiB)** from the original 14,535,168-byte baseline.
+Raw `.text` shrinks by 512 bytes and virtual `.text` by 608 bytes. All other
+raw and virtual section sizes remain unchanged.
+
+As supporting attribution, the `GetCollectionItemInternal` family falls from
+7,561 to 7,200 attributed bytes across the same 19 representatives. Resolved
+primary blocks shrink from 403 to 384 bytes for `ColumnDefinition`,
+`DependencyObject`, and `UIElement`. The inspected column-definition path
+removes the guarded AddRef call and skips the now-empty temporary's Release
+on success. Failure cleanup remains. Local stack reservation stays 64 bytes,
+and CFG dispatch, stack-cookie checks, and mitigation barriers remain.
+Symbol totals are not added to section savings or assumed to be contiguous
+disassembly ranges without resolving the code blocks.
+
+Restoring the original source byte-for-byte and recompiling reproduced all
+three baseline metrics. Reapplying the exact candidate and recompiling
+reproduced all three candidate metrics. Each non-baseline build compiled
+`InternalDebugInterop.cpp` and performed an LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260919-050846-136779a4`.
+The `000-baseline`, `001-collection-item-transfer`, `002-baseline-recompiled`,
+and `003-collection-item-transfer-repeat` directories contain read-only
+DLL/PDB copies, hashes, source revisions/patches, build logs/binlogs, SizeBench
+snapshots, receipts, stderr, and frozen tool identity sidecars. The first two
+also contain scoped `InternalDebugInterop.obj` symbol coverage and resolved
+primary-block disassembly. `ownership.json`, `semantic-review.json`,
+`verification.json`, and `progress.json` record ownership, review, and handoff.
+
+All four measurements use the frozen SizeBench deployment and managed identity
+documented above. Its full 268-file manifest was verified before and after
+each core measurement. Initialization and build ran in the same `cmd.exe`
+process with explicit `/nopgo`. Logs confirm `PGOBuildMode=Off`,
+`Configuration=Release`, `Platform=x64`, and `VCToolsVersion=14.44.35207`.
+All 934 command-tlog hashes match between the recompiled control and repeated
+candidate. Eight export ordinal/name identities, PE security flags, and five
+built WinMD hashes are unchanged.
+
+**Tests not run, as requested.** Earlier regression results belong to the
+starting commit, not this experiment. Source review found no change to net
+ownership, pointer identity, lookup/query order, output behavior, or HRESULTs.
+The transient reference-count pair is removed; no helper, allocation, or
+runtime work is added. Code layout and register choices change. Application
+performance, runtime reentrancy, failure injection, debug behavior, and other
+architectures were not exercised. Compilation does not establish runtime
+correctness.
