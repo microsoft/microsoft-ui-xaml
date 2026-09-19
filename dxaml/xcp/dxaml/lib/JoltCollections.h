@@ -832,11 +832,10 @@ namespace DirectUI
 
         IFACEMETHODIMP UntypedInsertAt(_In_ unsigned int index, _In_ IInspectable* pItem) override
         {
-            wrl::ComPtr<IInspectable> spItem (pItem);
             wrl::ComPtr<typename std::remove_pointer<T_abi>::type> spTypedItem;
 
             IFC_RETURN(this->CheckThread());
-            IFC_RETURN(spItem.As(&spTypedItem));
+            IFC_RETURN(pItem->QueryInterface(IID_PPV_ARGS(spTypedItem.ReleaseAndGetAddressOf())));
             IFC_RETURN(this->InsertAt(index, spTypedItem.Get()));
 
             return S_OK;

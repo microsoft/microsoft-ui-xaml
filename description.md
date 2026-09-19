@@ -1589,3 +1589,90 @@ The transient reference-count pair is removed; no runtime work is added.
 Code layout and register choices change. Application performance, runtime
 reentrancy, failure injection, debug behavior, and other architectures were
 not exercised. Compilation does not establish runtime correctness.
+
+## Follow-up: avoid a redundant input reference during untyped insertion
+
+File: `dxaml\xcp\dxaml\lib\JoltCollections.h`.
+
+In `PresentationFrameworkCollection<T>::UntypedInsertAt`, query the borrowed
+`IInspectable` input directly into the existing typed owning `ComPtr`:
+
+```cpp
+IFC_RETURN(pItem->QueryInterface(IID_PPV_ARGS(spTypedItem.ReleaseAndGetAddressOf())));
+```
+
+This removes the temporary input `ComPtr` and its AddRef/Release pair.
+The COM input must remain valid for the call. The discovered
+`DiagnosticsInterop::InsertAt` caller also holds its own input reference.
+The queried typed reference still owns the object across `InsertAt`, including
+callbacks, and is released on every return path. The borrowed input is not
+used after the query.
+
+The thread check still precedes the same interface query and insertion.
+The exact IID, typed result, virtual insertion call, failure propagation,
+typed cleanup, and final `S_OK` normalization remain unchanged. Null remains
+outside the existing non-null input contract; this does not introduce a
+null-tolerant fallback. The tracker-collection implementation is unchanged.
+No helper, allocation, public interface, class-layout change, generated output,
+metadata change, or compiler/linker option change is introduced.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `1754a5da4`, fresh baseline | 14,276,096 | 14,275,072 | 14,285,860 |
+| Direct query of borrowed insertion input | 14,274,560 | 14,273,536 | 14,284,096 |
+| Incremental reduction | 1,536 | 1,536 | 1,764 |
+| Cumulative reduction from original baseline | 260,608 | 260,608 | 260,680 |
+
+The actual DLL file is **1,536 bytes (1.5 KiB) smaller**. Cumulative file
+savings are **260,608 bytes (254.5 KiB)** from the original 14,535,168-byte
+baseline. Raw `.text` shrinks by 1,536 bytes; other raw section sizes are
+unchanged. Virtual `.text` and `.reloc` shrink by 1,776 and 4 bytes
+respectively, while virtual `.data` grows by 16 bytes.
+
+As supporting attribution, the `UntypedInsertAt` family falls from 10,989 to
+9,435 attributed bytes across the same 37 representatives. Resolved primary
+blocks shrink from 297 to 255 bytes for `ColumnDefinition`, `Brush`, and
+`UIElement`. The inspected column-definition path removes the guarded input
+AddRef and Release calls and retains its 48-byte local stack reservation.
+The typed-reference cleanup, CFG dispatch, stack-cookie checks, and mitigation
+barriers remain. Symbol totals are not added to section savings or assumed to
+be contiguous disassembly ranges without resolving the code blocks.
+
+Restoring the original header byte-for-byte and recompiling reproduced all
+three baseline metrics. Reapplying the exact candidate and recompiling
+reproduced all three candidate metrics. Each non-baseline build compiled
+affected consumers, including `Aggregate.g.cpp`, and performed an LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260919-041533-3d2549a5`.
+The `000-baseline`, `001-borrowed-insert-input`, `002-baseline-recompiled`,
+and `003-borrowed-insert-input-repeat` directories contain read-only DLL/PDB
+copies, hashes, source revisions/patches, build logs/binlogs, SizeBench
+snapshots, receipts, stderr, and frozen tool identity sidecars. The first two
+also contain `.text` symbol coverage and resolved primary-block disassembly.
+`ownership.json`, `semantic-review.json`, `verification.json`, and
+`progress.json` record source ownership, review, and handoff.
+
+All four measurements use the frozen SizeBench deployment and managed identity
+documented above. Its full 268-file manifest was verified before and after
+each core measurement. Initialization and build ran in the same `cmd.exe`
+process with explicit `/nopgo`. Logs confirm `PGOBuildMode=Off`,
+`Configuration=Release`, `Platform=x64`, and `VCToolsVersion=14.44.35207`.
+All 934 command-tlog hashes match between the recompiled control and repeated
+candidate. Eight export ordinal/name identities, PE security flags, and five
+built WinMD hashes are unchanged.
+
+**Tests not run, as requested.** Earlier regression results belong to the
+starting commit, not this experiment. Source review found no change to net
+ownership under the COM input-lifetime contract, interface identity,
+query/insertion order, or HRESULTs. The transient input reference-count pair
+is removed; no runtime work is added. Code layout and register choices change.
+Application performance, runtime reentrancy, failure injection, debug behavior,
+and other architectures were not exercised. Compilation does not establish
+runtime correctness.
