@@ -262,4 +262,32 @@
     <value>Pink</value>
     <comment>Accessible name and tooltip for the InkToolbar highlighter palette color #EC008C.</comment>
   </data>
+  <data name="InkToolbarBallpointPenFlyoutName" xml:space="preserve">
+    <value>Ballpoint pen flyout</value>
+    <comment>Accessible name for the flyout opened by the InkToolbar ballpoint-pen button; without it the flyout is announced as "popup". UWP IDS_INKTOOLBAR_BALLPOINTPENFLYOUT = 6440.</comment>
+  </data>
+  <data name="InkToolbarPencilFlyoutName" xml:space="preserve">
+    <value>Pencil flyout</value>
+    <comment>Accessible name for the flyout opened by the InkToolbar pencil button. UWP IDS_INKTOOLBAR_PENCILFLYOUT = 6441.</comment>
+  </data>
+  <data name="InkToolbarHighlighterFlyoutName" xml:space="preserve">
+    <value>Highlighter flyout</value>
+    <comment>Accessible name for the flyout opened by the InkToolbar highlighter button. UWP IDS_INKTOOLBAR_HIGHLIGHTERFLYOUT = 6442.</comment>
+  </data>
+  <data name="InkToolbarEraserFlyoutName" xml:space="preserve">
+    <value>Eraser flyout</value>
+    <comment>Accessible name for the flyout opened by the InkToolbar eraser button. UWP IDS_INKTOOLBAR_ERASERFLYOUT = 6443.</comment>
+  </data>
+  <data name="InkToolbarStencilFlyoutName" xml:space="preserve">
+    <value>Stencil flyout</value>
+    <comment>Accessible name for the flyout opened by the InkToolbar stencil button. UWP IDS_INKTOOLBAR_STENCILFLYOUT = 6444.</comment>
+  </data>
+  <data name="InkToolbarMenuButtonControlTypeName" xml:space="preserve">
+    <value>menu button</value>
+    <comment>Localized UIA control-type name for InkToolbar menu buttons; Narrator reads this instead of "custom". UWP IDS_INKTOOLBAR_MENU_BUTTON_CONTROLTYPE_NAME = 6102.</comment>
+  </data>
+  <data name="InkToolbarFlyoutItemControlTypeName" xml:space="preserve">
+    <value>flyout item</value>
+    <comment>Localized UIA control-type name for InkToolbar flyout items; Narrator reads this instead of "custom". UWP IDS_INKTOOLBAR_FLYOUTITEM_CONTROLTYPE_NAME = 6103.</comment>
+  </data>
 </root>

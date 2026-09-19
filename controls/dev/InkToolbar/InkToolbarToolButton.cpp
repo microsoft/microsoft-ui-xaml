@@ -60,6 +60,25 @@ void InkToolbarToolButton::OnApplyTemplate()
         winrt::AutomationProperties::SetName(*this, localizedToolName);
     }
 
+    // UWP InkToolbarToolButton also names the attached flyout; without it Narrator announces the
+    // flyout as "popup". Guarded like the tool name above.
+    winrt::hstring flyoutName;
+    try
+    {
+        flyoutName = GetFlyoutName();
+    }
+    catch (winrt::hresult_error const& e)
+    {
+        InkToolbarLogHResult(e.code(), L"tool button flyout name lookup");
+    }
+    if (!flyoutName.empty())
+    {
+        if (auto flyout = winrt::FlyoutBase::GetAttachedFlyout(*this))
+        {
+            winrt::AutomationProperties::SetName(flyout, flyoutName);
+        }
+    }
+
     // Run derived-class template work (pen palette, eraser flyout, etc.). See OnApplyTemplateCore.
     OnApplyTemplateCore();
 }

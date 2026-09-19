@@ -1,4 +1,4 @@
-﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <ResourceDictionary xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
@@ -1543,6 +1543,9 @@
     </Setter>
   </Style>
   <Style TargetType="InkToolbar">
+    <!-- Toolbar pattern: one tab stop for the whole bar; arrow keys move between buttons (InkToolbar::OnKeyDown). -->
+    <Setter Property="TabNavigation" Value="Once" />
+    <Setter Property="IsTabStop" Value="false" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="InkToolbar">

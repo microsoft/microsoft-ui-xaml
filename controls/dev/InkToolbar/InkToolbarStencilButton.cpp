@@ -303,8 +303,7 @@ winrt::hstring InkToolbarStencilButton::GetLocalizedToolName()
 
 winrt::hstring InkToolbarStencilButton::GetFlyoutName()
 {
-    // Localized flyout name is a lift resource gap (documented).
-    return {};
+    return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilFlyoutName);
 }
 
 unsigned InkToolbarStencilButton::NumberOfStencils()

@@ -8,6 +8,7 @@
 #include "common.h"
 
 #include "InkToolbarMenuButton.h"
+#include "ResourceAccessor.h"
 #include "InkToolbarMenuButtonAutomationPeer.g.h"
 
 class InkToolbarMenuButtonAutomationPeer :
@@ -32,6 +33,19 @@ public:
     winrt::AutomationControlType GetAutomationControlTypeCore()
     {
         return winrt::AutomationControlType::Custom;
+    }
+
+    hstring GetLocalizedControlTypeCore()
+    {
+        // Custom would make Narrator read "custom"; UWP supplies "menu button" instead.
+        try
+        {
+            return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarMenuButtonControlTypeName);
+        }
+        catch (winrt::hresult_error const&)
+        {
+            return __super::GetLocalizedControlTypeCore();
+        }
     }
 
     // IExpandCollapseProvider

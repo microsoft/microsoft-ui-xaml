@@ -424,7 +424,14 @@ void InkToolbarPenConfigurationControl::OnL3PointerReleased(bool isColor)
             if (isColor) { self->OnPenL3ColorPickerGotFocus(); }
             else { self->OnPenL3StrokeWidthGotFocus(); }
         }
-        self->DismissL3(*this);
+
+        // UWP dismisses for both controls, but a click on the size slider is an adjustment, not a
+        // final choice: dismissing there makes the slider unreachable via Voice Access "show numbers"
+        // and forces a reopen per increment. Picking a color stays a commit, so it still dismisses.
+        if (isColor)
+        {
+            self->DismissL3(*this);
+        }
     }
 }
 

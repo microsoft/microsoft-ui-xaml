@@ -8,6 +8,7 @@
 #include "common.h"
 
 #include "InkToolbarFlyoutItem.h"
+#include "ResourceAccessor.h"
 #include "InkToolbarFlyoutItemAutomationPeer.g.h"
 
 class InkToolbarFlyoutItemAutomationPeer :
@@ -32,6 +33,19 @@ public:
     winrt::AutomationControlType GetAutomationControlTypeCore()
     {
         return winrt::AutomationControlType::Custom;
+    }
+
+    hstring GetLocalizedControlTypeCore()
+    {
+        // Custom would make Narrator read "custom"; UWP supplies "flyout item" instead.
+        try
+        {
+            return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarFlyoutItemControlTypeName);
+        }
+        catch (winrt::hresult_error const&)
+        {
+            return __super::GetLocalizedControlTypeCore();
+        }
     }
 
     hstring GetClassNameCore()

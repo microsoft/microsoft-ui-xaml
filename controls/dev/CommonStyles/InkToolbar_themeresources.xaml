@@ -1624,6 +1624,9 @@
     </Setter>
   </Style>
   <Style TargetType="InkToolbar">
+    <!-- Toolbar pattern: one tab stop for the whole bar; arrow keys move between buttons (InkToolbar::OnKeyDown). -->
+    <Setter Property="TabNavigation" Value="Once" />
+    <Setter Property="IsTabStop" Value="false" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="InkToolbar">
