@@ -1,0 +1,30 @@
+{
+  "value": [
+    {
+      "pullRequestId": 12,
+      "sourceRefName": "refs/heads/users/example/perf-change",
+      "repository": {
+        "id": "repo"
+      },
+      "lastMergeSourceCommit": {
+        "commitId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "lastMergeTargetCommit": {
+        "commitId": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    },
+    {
+      "pullRequestId": 13,
+      "sourceRefName": "refs/heads/users/example/unlabeled-change",
+      "repository": {
+        "id": "repo"
+      },
+      "lastMergeSourceCommit": {
+        "commitId": "dddddddddddddddddddddddddddddddddddddddd"
+      },
+      "lastMergeTargetCommit": {
+        "commitId": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    }
+  ]
+}

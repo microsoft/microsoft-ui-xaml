@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "benchmarkConfigVersion": "pr-smoke-v1",
+  "commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "buildId": "1002",
+  "machine": {
+    "agentName": "PERF-01",
+    "osBuild": "26100",
+    "architecture": "amd64",
+    "flavor": "fre"
+  },
+  "scenarios": [{
+    "name": "Lifecycle-MinApp.Cpp.MUX",
+    "metrics": [{
+      "name": "CpuTimeMs",
+      "unit": "ms",
+      "samples": [285.0, 286.0, 284.0, 287.0, 285.5, 286.5, 284.5]
+    }]
+  }]
+}
+
