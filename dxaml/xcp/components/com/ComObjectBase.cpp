@@ -60,3 +60,8 @@ Cleanup:
     ReleaseInterface(pNewInstance);
     RRETURN(hr);
 }
+
+void ctl::ComObjectBase::ReleaseFailedInstance(_In_ ComBase* pObject)
+{
+    ReleaseInterface(pObject);
+}

@@ -1077,3 +1077,96 @@ template's devirtualized implementation. No additional allocation is introduced.
 Call layout and instruction-cache behavior change; application performance
 has not been measured. Compilation does not establish runtime correctness.
 Failure injection and other architectures were not validated.
+
+## Follow-up: share typed COM factory failure cleanup
+
+Files: `dxaml\xcp\components\com\inc\ComObject.h`,
+`dxaml\xcp\components\com\inc\ComObjectBase.h`, and
+`dxaml\xcp\components\com\ComObjectBase.cpp`.
+
+Move the typed `ComObject<T>::CreateInstance` overload's failure-only
+`ReleaseInterface` into the out-of-line
+`ComObjectBase::ReleaseFailedInstance(ComBase*)` helper. Return `S_OK`
+immediately after publishing the typed pointer, rather than clearing the local
+pointer and falling through the cleanup label. The existing initializer
+already normalizes successful initialization to `S_OK`.
+
+Allocation, initialization, the exact typed cast, output publication, and the
+debug-only leak-check actions retain their order. Failed initialization still
+propagates the same HRESULT, leaves the caller's output unchanged, and releases
+the initial reference exactly once through the object's delegating `Release`.
+Controlling-outer behavior is unchanged. The existing `IFC` and `RRETURN`
+failure propagation remain in the template. The success path does not call
+the new helper. Untyped factories, class layouts, vtable slots, public
+interfaces, metadata, and compiler/linker options are unchanged.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `795ebb6e4`, fresh baseline | 14,340,096 | 14,339,072 | 14,349,724 |
+| Shared typed factory failure cleanup | 14,295,040 | 14,294,016 | 14,304,812 |
+| Incremental reduction | 45,056 | 45,056 | 44,912 |
+| Cumulative reduction from original baseline | 240,128 | 240,128 | 239,964 |
+
+The actual DLL file is **45,056 bytes (44 KiB) smaller**. Cumulative file
+savings are **240,128 bytes (234.5 KiB)** from the original 14,535,168-byte
+baseline. Raw `.text` shrinks by 44,544 bytes and `.pdata` by 512 bytes.
+Other raw section sizes are unchanged. Virtual `.text` shrinks by 44,560
+bytes and `.pdata` by 516 bytes, while `.rdata`, `.reloc`, and `.data` grow
+by 96, 4, and 64 bytes respectively.
+
+As supporting attribution, the typed factory family with matching template
+types falls from 57,318 attributed bytes across 215 representatives to 45,178
+across 181. The family with distinct template types falls from 17,117 bytes
+across 61 representatives to 15,257 across 60. These are not whole-file
+savings: factories can inline into callers, and symbol families do not describe
+all affected code. Their totals are not summed with section savings.
+
+Resolved primary blocks shrink from 244 to 220 bytes for `BindingOperations`
+and from 402 to 378 bytes for `BindableObservableVectorWrapper`. The new helper
+has one 27-byte primary block in the collected `.text` coverage. It performs a
+null check and a guarded virtual `Release` call. Both inspected factories call
+it only after failed initialization; their successful paths add no call.
+The sharing claim is based on emitted code, not an assumption that `noinline`
+prevents LTCG specialization.
+
+Restoring all three original source files and recompiling reproduced every
+baseline metric. Reapplying the exact candidate and recompiling reproduced
+every candidate metric. Each non-baseline build compiled `ComObjectBase.cpp`
+in the prerequisites stage, compiled affected consumers including
+`Aggregate.g.cpp`, and performed an LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260918-232351-1eb125cc`.
+The `000-baseline`, `001-typed-factory-failure-release`,
+`002-baseline-recompiled`, and `003-typed-factory-failure-release-repeat`
+directories contain read-only DLL/PDB copies, hashes, source patches, build
+logs/binlogs, SizeBench snapshots, receipts, stderr, and frozen tool identity
+sidecars. The first two include `.text` symbol coverage and resolved
+primary-block disassembly. `ownership.json`, `semantic-review.json`,
+`verification.json`, and `progress.json` record source ownership and handoff.
+
+All four measurements use the frozen deployment and managed identity
+documented above. Its complete deployment manifest was verified before and
+after each measurement. Initialization and build used the same `cmd.exe`
+process and explicit `/nopgo` recipe. Logs confirm `PGOBuildMode=Off`,
+`Configuration=Release`, `Platform=x64`, and `VCToolsVersion=14.44.35207`.
+All 934 command-tlog hashes match between the recompiled control and repeated
+candidate. Eight export ordinal/name identities, PE security flags, and five
+built WinMD hashes are unchanged.
+
+**Tests not run, as requested.** Earlier regression results belong to the
+starting commit, not this experiment. Source review found no change to
+ownership, aggregation, initialization order, output-pointer behavior, or
+HRESULTs. Failure cleanup now has an additional helper call and uses guarded
+virtual dispatch instead of the template's devirtualized release path.
+Diagnostic source locations and failure stacks change. Successful-path
+call counts remain unchanged in the inspected factories, but code layout and
+instruction-cache behavior change. Application performance, runtime failure
+injection, debug behavior, and other architectures were not exercised.
+Compilation does not establish runtime correctness.

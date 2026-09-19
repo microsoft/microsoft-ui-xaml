@@ -26,6 +26,7 @@ namespace ctl
         __declspec(noinline) static HRESULT CreateInstanceBase(_In_ ComBase* pObject, bool fNoInit = false);
         // Consumes the initial reference, transferring it on success or releasing it on failure.
         __declspec(noinline) static HRESULT CreateInstanceBase(_In_ ComBase* pObject, _Outptr_ IInspectable** ppNewInstance);
+        __declspec(noinline) static void ReleaseFailedInstance(_In_ ComBase* pObject);
 
     protected:
         IInspectable* m_pControllingUnknown;

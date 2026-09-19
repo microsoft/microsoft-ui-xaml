@@ -171,10 +171,10 @@ namespace ctl
 #endif
 
             *ppNewInstance = static_cast<T *>(pNewInstance);
-            pNewInstance = NULL;
+            return S_OK;
 
         Cleanup:
-            ReleaseInterface(pNewInstance);
+            ctl::ComObjectBase::ReleaseFailedInstance(pNewInstance);
             RRETURN(hr);
         }
     };
