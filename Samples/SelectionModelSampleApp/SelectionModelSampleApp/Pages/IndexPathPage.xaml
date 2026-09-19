@@ -1,0 +1,38 @@
+<Page
+    x:Class="SelectionModelSampleApp.Pages.IndexPathPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Padding="16" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Spacing="4">
+            <TextBlock Text="IndexPath" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="IndexPath addresses an item at any depth. R is the root, so R.1.2 means item 2 of group 1. Paths are immutable and are created through the static factories." />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Bottom">
+            <StackPanel>
+                <TextBlock Text="Path A (dot separated)" />
+                <TextBox x:Name="PathABox" Text="1.2" Width="160" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="Path B (dot separated)" />
+                <TextBox x:Name="PathBBox" Text="1.3" Width="160" />
+            </StackPanel>
+            <Button Content="Evaluate" Click="OnEvaluate" VerticalAlignment="Bottom" />
+        </StackPanel>
+
+        <Border Grid.Row="2" VerticalAlignment="Top"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1" CornerRadius="4" Padding="12">
+            <TextBlock x:Name="OutputText" FontFamily="Consolas" FontSize="13" TextWrapping="Wrap" />
+        </Border>
+    </Grid>
+</Page>
