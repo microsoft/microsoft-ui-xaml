@@ -5,6 +5,7 @@
 
 #include <ComObject.h>
 #include <InterfaceForwarder.h>
+#include <cstring>
 
 #ifndef EXP_CLANG
     // MSVC happily accepts static template specializations.
@@ -302,15 +303,15 @@ namespace DirectUI
 
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override
         {
-            if (InlineIsEqualGUID(iid, __uuidof(wf::IReference<INT>)))
+            if (std::memcmp(&iid, &__uuidof(wf::IReference<INT>), sizeof(IID)) == 0)
             {
                 *ppObject = ctl::interface_cast<wf::IReference<INT>>(this);
             }
-            else if (InlineIsEqualGUID(iid, __uuidof(wf::IPropertyValue)))
+            else if (std::memcmp(&iid, &__uuidof(wf::IPropertyValue), sizeof(IID)) == 0)
             {
                 *ppObject = ctl::interface_cast<wf::IPropertyValue>(this);
             }
-            else if (InlineIsEqualGUID(iid, __uuidof(wf::IReference<T>)))
+            else if (std::memcmp(&iid, &__uuidof(wf::IReference<T>), sizeof(IID)) == 0)
             {
                 *ppObject = ctl::interface_cast<wf::IReference<T>>(this);
             }

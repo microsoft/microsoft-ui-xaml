@@ -234,3 +234,88 @@ dispatch and a reference-count increment/decrement pair without introducing
 new runtime work. Compilation does not prove runtime correctness, and this
 turn did not measure application performance, exercise failure injection, or
 validate other architectures.
+
+## Follow-up: compact enum interface-ID comparisons
+
+File: `dxaml\xcp\components\valueboxer\inc\Value.h`
+
+In `EnumReference<T>::QueryInterfaceImpl`, replace the three
+`InlineIsEqualGUID` checks with fixed-size `std::memcmp` equality checks:
+
+```cpp
+std::memcmp(&iid, &__uuidof(wf::IReference<T>), sizeof(IID)) == 0
+```
+
+Both forms compare all 16 bytes of the GUID for equality. The Windows SDK's
+ordinary `IsEqualGUID` implementation also uses `memcmp`; the explicit call
+here avoids its possible `__INLINE_ISEQUAL_GUID` macro override. The three
+requested interfaces retain their original order: `IReference<INT>`,
+`IPropertyValue`, then `IReference<T>`. The returned forwarders, `AddRefOuter`,
+base-class fallback, and HRESULTs are unchanged. The existing omission of
+`IReference<INT>` from `GetIids` is also unchanged.
+
+The change affects only the handwritten enum template. It does not change
+interface maps, class layout, generated source, public interfaces, or metadata.
+No helper extraction or compiler/linker option change is involved.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| Previous accepted commit, fresh baseline | 14,419,456 | 14,418,432 | 14,428,832 |
+| Fixed-size enum GUID comparisons | 14,410,752 | 14,409,728 | 14,420,048 |
+| Incremental reduction | 8,704 | 8,704 | 8,784 |
+| Cumulative reduction from original baseline | 124,416 | 124,416 | 124,728 |
+
+The actual DLL file is **8,704 bytes (8.5 KiB) smaller**. Cumulative file
+savings are **124,416 bytes (121.5 KiB)** from the original 14,535,168-byte
+baseline. Only `.text` changes: its raw size falls by 8,704 bytes and its
+virtual size by 8,784 bytes. Other section sizes remain unchanged.
+
+As supporting attribution, the enum `QueryInterfaceImpl` family falls from
+39,162 to 32,025 attributed bytes, with 183 representatives on both sides.
+The resolved `HoldingState` primary code block shrinks from 214 to 175 bytes.
+Its disassembly replaces four 32-bit comparisons per GUID with two 64-bit
+comparisons. There is no out-of-line `memcmp` call in that representative.
+Family totals are not summed with section savings. Code layout and alignment
+make the whole-file reduction different from the attributed family reduction.
+
+Restoring the original source byte-for-byte and rebuilding reproduced all
+three baseline metrics. Reapplying the exact candidate and rebuilding
+reproduced all three candidate metrics. Each of these non-baseline builds
+compiled affected code and performed an LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260918-165053-b738dcfa`.
+The `000-baseline`, `001-enum-guid-memcmp`, `002-baseline-rebuilt`, and
+`003-enum-guid-memcmp-repeat` directories contain preserved read-only DLL/PDB
+pairs, hashes, source patches, build logs/binlogs, SizeBench snapshots,
+query receipts, stderr, and tool identity sidecars. The first baseline and
+candidate also have targeted enum-family reports and resolved disassembly.
+`verification.json`, `repeat-command-comparison.json`,
+`export-security-comparison.json`, `metadata-comparison.json`, and
+`progress.json` record validation and the handoff.
+
+All four measurements use the same frozen SizeBench deployment and managed
+identity documented above. The complete deployment manifest and file hashes
+were verified before and after each measurement. Initialization and build
+used the same `cmd.exe` process with explicit `/nopgo` and the same command
+documented in the typed-reference follow-up.
+
+Logs confirm `PGOBuildMode=Off`, `Configuration=Release`, `Platform=x64`,
+and `VCToolsVersion=14.44.35207`. All 934 captured command-tlog hashes match
+between the rebuilt control and repeated candidate. Eight export ordinal/name
+identities, PE security flags, and five built WinMD file hashes are unchanged.
+
+**Tests not run, as requested.** Earlier regression results belong to the
+starting commit, not this follow-up. Source review found no ownership,
+interface-identity, error-handling, or threading change. The fixed-size
+comparison introduces no allocation or additional function call in the
+inspected code. It still short-circuits mismatches, but comparison width,
+loads, and branch layout differ; application-level performance has not been
+measured. Compilation does not establish runtime correctness. Runtime failure
+injection and other architectures were not validated.
