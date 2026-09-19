@@ -319,3 +319,80 @@ inspected code. It still short-circuits mismatches, but comparison width,
 loads, and branch layout differ; application-level performance has not been
 measured. Compilation does not establish runtime correctness. Runtime failure
 injection and other architectures were not validated.
+
+## Follow-up: compact general reference interface-ID comparisons
+
+File: `dxaml\xcp\components\valueboxer\inc\Value.h`
+
+Apply the fixed-size GUID comparison used by `EnumReference<T>` to the two
+checks in `Reference<T>::QueryInterfaceImpl`:
+
+```cpp
+std::memcmp(&iid, &__uuidof(wf::IPropertyValue), sizeof(IID)) == 0
+std::memcmp(&iid, &__uuidof(wf::IReference<T>), sizeof(IID)) == 0
+```
+
+Both comparisons still check all 16 GUID bytes. `IPropertyValue` remains
+first, followed by `IReference<T>`. The same interface forwarders,
+`AddRefOuter`, inherited fallback, output writes, and HRESULTs remain intact.
+No interface map, class layout, metadata, generated output, or build option
+changes. This experiment changes only `Reference<T>`, not the previously
+optimized `EnumReference<T>` implementation.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `49ac77e6b`, fresh baseline | 14,410,752 | 14,409,728 | 14,420,048 |
+| Fixed-size general reference GUID comparisons | 14,410,240 | 14,409,216 | 14,419,648 |
+| Incremental reduction | 512 | 512 | 400 |
+| Cumulative reduction from original baseline | 124,928 | 124,928 | 125,128 |
+
+The actual DLL file is **512 bytes (0.5 KiB) smaller**. Cumulative file
+savings are **124,928 bytes (122 KiB)** from the original 14,535,168-byte
+baseline. Only `.text` changes: raw size falls by 512 bytes and virtual size
+by 400 bytes. Other section sizes remain unchanged.
+
+The `Reference<T>::QueryInterfaceImpl` family falls from 3,881 to 3,606
+attributed bytes, with 25 representatives in both builds. The resolved
+`CornerRadius` primary code block shrinks from 155 to 144 bytes. Its
+disassembly replaces four 32-bit comparisons per GUID with two 64-bit
+comparisons, without adding an out-of-line `memcmp` call. Different branch
+and pointer-conversion layout limits the saving. Family totals are supporting
+attribution, not added to section savings.
+
+Restoring the original source byte-for-byte and rebuilding reproduced all
+three baseline metrics. Reapplying the exact candidate and rebuilding
+reproduced all three candidate metrics. Each non-baseline build compiled
+affected code and performed an LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260918-171827-641a0e07`.
+The `000-baseline`, `001-reference-guid-memcmp`, `002-baseline-rebuilt`, and
+`003-reference-guid-memcmp-repeat` directories contain read-only DLL/PDB
+pairs, hashes, source revisions and patches, build logs/binlogs, SizeBench
+snapshots, receipts, stderr, and frozen tool identity sidecars. The first
+baseline and candidate also include targeted family reports and resolved
+disassembly. `verification.json` and `progress.json` record the comparison
+and handoff.
+
+All measurements use the same frozen deployment and managed identity
+documented above. The full deployment manifest and file hashes were verified
+before and after each measurement. Initialization and build used the same
+`cmd.exe` process and explicit `/nopgo` recipe documented above. Logs confirm
+`PGOBuildMode=Off`, `Configuration=Release`, `Platform=x64`, and
+`VCToolsVersion=14.44.35207`. All 934 captured command-tlog hashes match
+between the rebuilt control and repeated candidate. Eight export ordinal/name
+identities, PE security flags, and five built WinMD hashes are unchanged.
+
+**Tests not run, as requested.** Earlier test results belong to the starting
+commit, not this experiment. Source review found no ownership, interface
+identity, error handling, or threading change. The inspected code introduces
+no allocation or additional function call. Comparison width, loads, and
+branch layout differ; application performance has not been measured.
+Compilation does not establish runtime correctness. Failure injection and
+other architectures were not validated.
