@@ -139,11 +139,11 @@ namespace DirectUI
 
         _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override
         {
-            if (InlineIsEqualGUID(iid, __uuidof(wfc::IIterable<T>)))
+            if (std::memcmp(&iid, &__uuidof(wfc::IIterable<T>), sizeof(IID)) == 0)
             {
                 *ppObject = static_cast<wfc::IIterable<T> *>(this);
             }
-            else if (InlineIsEqualGUID(iid, __uuidof(wfc::IVectorView<T>)))
+            else if (std::memcmp(&iid, &__uuidof(wfc::IVectorView<T>), sizeof(IID)) == 0)
             {
                 *ppObject = static_cast<wfc::IVectorView<T> *>(this);
             }
