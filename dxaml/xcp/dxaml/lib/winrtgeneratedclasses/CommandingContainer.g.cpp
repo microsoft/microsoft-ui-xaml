@@ -11,6 +11,7 @@
 
 #include "CommandingContainer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CommandingContainerGenerated::CommandingContainerGenerated()
@@ -23,12 +24,12 @@ DirectUI::CommandingContainerGenerated::~CommandingContainerGenerated()
 
 HRESULT DirectUI::CommandingContainerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CommandingContainer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CommandingContainer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CommandingContainer*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_CommandingImprovements)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ICommandingContainer)) && Feature_CommandingImprovements::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ICommandingContainer), sizeof(IID)) == 0 && Feature_CommandingImprovements::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ICommandingContainer*>(this);
     }

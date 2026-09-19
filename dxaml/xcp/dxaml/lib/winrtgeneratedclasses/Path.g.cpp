@@ -12,6 +12,7 @@
 #include "Path.g.h"
 #include "Geometry.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Path::Path()
@@ -24,11 +25,11 @@ DirectUI::Path::~Path()
 
 HRESULT DirectUI::Path::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Path)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Path), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Path*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Shapes::IPath)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Shapes::IPath), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Shapes::IPath*>(this);
     }

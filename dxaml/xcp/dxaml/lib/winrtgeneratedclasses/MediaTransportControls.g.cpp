@@ -11,6 +11,7 @@
 
 #include "MediaTransportControls.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MediaTransportControlsGenerated::MediaTransportControlsGenerated()
@@ -23,15 +24,15 @@ DirectUI::MediaTransportControlsGenerated::~MediaTransportControlsGenerated()
 
 HRESULT DirectUI::MediaTransportControlsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MediaTransportControls)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MediaTransportControls), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MediaTransportControls*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMediaTransportControls)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IMediaTransportControls), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Controls::IMediaTransportControls>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener*>(this);
     }

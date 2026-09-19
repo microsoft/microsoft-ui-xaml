@@ -13,6 +13,7 @@
 #include "FrameworkElement.g.h"
 #include "TextPointerWrapper.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TextPointerGenerated::TextPointerGenerated()
@@ -25,11 +26,11 @@ DirectUI::TextPointerGenerated::~TextPointerGenerated()
 
 HRESULT DirectUI::TextPointerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TextPointer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TextPointer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TextPointer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Documents::ITextPointer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Documents::ITextPointer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Documents::ITextPointer*>(this);
     }

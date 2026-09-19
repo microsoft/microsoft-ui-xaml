@@ -11,6 +11,7 @@
 
 #include "ListViewHeaderItemAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ListViewHeaderItemAutomationPeerGenerated::ListViewHeaderItemAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::ListViewHeaderItemAutomationPeerGenerated::~ListViewHeaderItemAutomati
 
 HRESULT DirectUI::ListViewHeaderItemAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ListViewHeaderItemAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ListViewHeaderItemAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ListViewHeaderItemAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IListViewHeaderItemAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IListViewHeaderItemAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IListViewHeaderItemAutomationPeer*>(this);
     }

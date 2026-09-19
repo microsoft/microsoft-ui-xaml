@@ -18,6 +18,7 @@
 #include "SolidColorBrush.g.h"
 #include "TextPointer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RichTextBlockGenerated::RichTextBlockGenerated()
@@ -30,11 +31,11 @@ DirectUI::RichTextBlockGenerated::~RichTextBlockGenerated()
 
 HRESULT DirectUI::RichTextBlockGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RichTextBlock)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RichTextBlock), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RichTextBlock*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IRichTextBlock)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IRichTextBlock), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IRichTextBlock*>(this);
     }

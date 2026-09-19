@@ -11,6 +11,7 @@
 
 #include "AutoSuggestBoxTextChangedEventArgs.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::AutoSuggestBoxTextChangedEventArgsGenerated::AutoSuggestBoxTextChangedEventArgsGenerated()
@@ -23,11 +24,11 @@ DirectUI::AutoSuggestBoxTextChangedEventArgsGenerated::~AutoSuggestBoxTextChange
 
 HRESULT DirectUI::AutoSuggestBoxTextChangedEventArgsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AutoSuggestBoxTextChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AutoSuggestBoxTextChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AutoSuggestBoxTextChangedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxTextChangedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxTextChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxTextChangedEventArgs*>(this);
     }

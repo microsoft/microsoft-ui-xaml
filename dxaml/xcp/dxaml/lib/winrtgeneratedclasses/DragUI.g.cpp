@@ -12,6 +12,7 @@
 #include "DragUI.g.h"
 #include "BitmapImage.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DragUIGenerated::DragUIGenerated()
@@ -24,11 +25,11 @@ DirectUI::DragUIGenerated::~DragUIGenerated()
 
 HRESULT DirectUI::DragUIGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DragUI)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DragUI), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DragUI*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IDragUI)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IDragUI), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IDragUI*>(this);
     }

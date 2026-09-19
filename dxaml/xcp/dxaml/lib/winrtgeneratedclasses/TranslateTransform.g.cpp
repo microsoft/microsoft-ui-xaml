@@ -11,6 +11,7 @@
 
 #include "TranslateTransform.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TranslateTransform::TranslateTransform()
@@ -23,11 +24,11 @@ DirectUI::TranslateTransform::~TranslateTransform()
 
 HRESULT DirectUI::TranslateTransform::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TranslateTransform)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TranslateTransform), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TranslateTransform*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::ITranslateTransform)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::ITranslateTransform), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::ITranslateTransform*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "FaceplateContentPresenterAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FaceplateContentPresenterAutomationPeerGenerated::FaceplateContentPresenterAutomationPeerGenerated()
@@ -23,7 +24,7 @@ DirectUI::FaceplateContentPresenterAutomationPeerGenerated::~FaceplateContentPre
 
 HRESULT DirectUI::FaceplateContentPresenterAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FaceplateContentPresenterAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FaceplateContentPresenterAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FaceplateContentPresenterAutomationPeer*>(this);
     }

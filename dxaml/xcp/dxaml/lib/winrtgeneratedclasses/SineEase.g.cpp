@@ -11,6 +11,7 @@
 
 #include "SineEase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SineEase::SineEase()
@@ -23,11 +24,11 @@ DirectUI::SineEase::~SineEase()
 
 HRESULT DirectUI::SineEase::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SineEase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SineEase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SineEase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISineEase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISineEase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::ISineEase*>(this);
     }

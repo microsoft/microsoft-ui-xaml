@@ -715,3 +715,95 @@ code adds no allocation or function call. Load widths and mismatch branch
 layout differ; application performance has not been measured. Compilation
 does not establish runtime correctness. Failure injection and other
 architectures were not validated.
+
+## Follow-up: compact generated framework interface-ID comparisons
+
+Source of truth:
+`dxaml\xcp\tools\XCPTypesAutoGen\XamlGen\Templates\Code\Framework\Bodies\Class.tt`.
+The accompanying preprocessed `Class.cs` and 643 generated framework `.g.cpp`
+files were regenerated with the existing T4 and XamlGen tools, not hand-edited.
+
+In the instance `QueryInterfaceImpl` generator, replace the five emitted
+`InlineIsEqualGUID` expression forms with fixed-size `std::memcmp` equality:
+
+```cpp
+std::memcmp(&iid, &__uuidof(InterfaceType), sizeof(IID)) == 0
+```
+
+Both forms compare all 16 GUID bytes. Implementation, public, protected,
+virtual, and implemented interfaces retain their original order and casts.
+Feature-presence directives and short-circuited runtime feature checks are
+unchanged. Output writes, `AddRefOuter`, inherited fallback, and HRESULTs are
+unchanged. The generator adds an explicit `<cstring>` include. Factory and
+event-argument generators, class layouts, interface maps, public interfaces,
+metadata, and compiler/linker options are unchanged.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `9ec426828`, fresh baseline | 14,403,072 | 14,402,048 | 14,412,412 |
+| Fixed-size generated framework GUID comparisons | 14,377,472 | 14,376,448 | 14,386,684 |
+| Incremental reduction | 25,600 | 25,600 | 25,728 |
+| Cumulative reduction from original baseline | 157,696 | 157,696 | 158,092 |
+
+The actual DLL file is **25,600 bytes (25 KiB) smaller**. Cumulative file
+savings are **157,696 bytes (154 KiB)** from the original 14,535,168-byte
+baseline. Only `.text` changes: raw size falls by 25,600 bytes and virtual
+size by 25,728 bytes. Other section sizes remain unchanged.
+
+As supporting attribution, the 390 `DirectUI::*Generated::QueryInterfaceImpl`
+representatives in `Aggregate.g.obj` fall from 71,347 to 53,657 attributed
+bytes. This is a named subset, not every affected generated class. Resolved
+primary code blocks shrink from 561 to 358 bytes for `UIElementGenerated`,
+150 to 118 for `Grid`, and 285 to 194 for `ControlGenerated`. Their disassembly
+uses two 64-bit comparisons per GUID instead of four 32-bit comparisons,
+without an out-of-line `memcmp` call. Guarded reference-count calls and
+base fallbacks remain. Symbol totals are not added to section savings.
+
+Restoring original source contents and forcing timestamp invalidation of
+only the owned changed files reproduced all three baseline metrics after
+recompilation and an LTCG link. Reapplying the exact candidate and recompiling
+reproduced all three candidate metrics. An earlier restoration copied old
+timestamps, so its incremental build did not recompile or relink and retained
+the candidate DLL. That attempt is explicitly marked invalid as a baseline
+control and excluded from the measurements above.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260918-204039-7bbf3db6`.
+The valid comparisons are `000-baseline`, `001-generated-guid-memcmp`,
+`003-baseline-recompiled`, and `004-generated-guid-memcmp-repeat`.
+They contain read-only DLL/PDB pairs, hashes, source patches, build logs and
+binlogs, SizeBench snapshots, receipts, stderr, and frozen tool identity
+sidecars. The first baseline and candidate also contain scoped generated-QI
+symbol reports and resolved disassembly. `002-baseline-rebuilt` preserves
+the excluded no-op control attempt and its explanation.
+
+All measurements use the frozen deployment and managed identity documented
+above. The full deployment manifest and hashes were verified before and after
+each measurement. Initialization and build used the same `cmd.exe` process
+and explicit `/nopgo` recipe. Logs confirm `PGOBuildMode=Off`,
+`Configuration=Release`, `Platform=x64`, and `VCToolsVersion=14.44.35207`.
+All 934 command-tlog hashes match between the recompiled control and repeated
+candidate. Eight export ordinal/name identities, PE security flags, and five
+built WinMD hashes are unchanged.
+
+T4 preprocessing with the installed `TextTransformCore.exe --preprocess`
+reproduced the original checked-in `Class.cs` byte-for-byte before editing.
+The existing `RunCodeGen` project's `BuildGenerated` target generated the C++
+updates with partial XBF generation. Each generated file was compared against
+its backup before copying: only the new include and instance GUID equality
+expressions changed. The `runcodegen.cmd` wrapper was not used because it
+restores CSV files and requests a clean code-generator rebuild.
+
+**Tests not run, as requested.** Earlier regression results belong to the
+starting commit, not this experiment. Source review found no change to
+interface identity, ownership, error handling, or threading. The inspected
+code adds no allocation or comparison function call. Loads and branch layout
+differ, including fallback paths for partially matching GUIDs; application
+performance has not been measured. Compilation does not establish runtime
+correctness. Failure injection and other architectures were not validated.

@@ -12,6 +12,7 @@
 #include "PointerAnimationUsingKeyFrames.g.h"
 #include "PointerKeyFrameCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PointerAnimationUsingKeyFrames::PointerAnimationUsingKeyFrames()
@@ -24,7 +25,7 @@ DirectUI::PointerAnimationUsingKeyFrames::~PointerAnimationUsingKeyFrames()
 
 HRESULT DirectUI::PointerAnimationUsingKeyFrames::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PointerAnimationUsingKeyFrames)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PointerAnimationUsingKeyFrames), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PointerAnimationUsingKeyFrames*>(this);
     }

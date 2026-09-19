@@ -11,6 +11,7 @@
 
 #include "AppBarButtonTemplateSettings.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::AppBarButtonTemplateSettings::AppBarButtonTemplateSettings()
@@ -23,11 +24,11 @@ DirectUI::AppBarButtonTemplateSettings::~AppBarButtonTemplateSettings()
 
 HRESULT DirectUI::AppBarButtonTemplateSettings::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AppBarButtonTemplateSettings)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AppBarButtonTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AppBarButtonTemplateSettings*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IAppBarButtonTemplateSettings)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IAppBarButtonTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IAppBarButtonTemplateSettings*>(this);
     }

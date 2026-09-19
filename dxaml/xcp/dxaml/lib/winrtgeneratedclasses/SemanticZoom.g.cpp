@@ -11,6 +11,7 @@
 
 #include "SemanticZoom.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SemanticZoomGenerated::SemanticZoomGenerated()
@@ -23,15 +24,15 @@ DirectUI::SemanticZoomGenerated::~SemanticZoomGenerated()
 
 HRESULT DirectUI::SemanticZoomGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SemanticZoom)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SemanticZoom), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SemanticZoom*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISemanticZoom)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ISemanticZoom), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISemanticZoom*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener*>(this);
     }

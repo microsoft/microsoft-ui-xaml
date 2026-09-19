@@ -11,6 +11,7 @@
 
 #include "BackEase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::BackEase::BackEase()
@@ -23,11 +24,11 @@ DirectUI::BackEase::~BackEase()
 
 HRESULT DirectUI::BackEase::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::BackEase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::BackEase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::BackEase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IBackEase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IBackEase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IBackEase*>(this);
     }

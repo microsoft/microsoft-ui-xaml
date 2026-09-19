@@ -11,6 +11,7 @@
 
 #include "SkewTransform.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SkewTransform::SkewTransform()
@@ -23,11 +24,11 @@ DirectUI::SkewTransform::~SkewTransform()
 
 HRESULT DirectUI::SkewTransform::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SkewTransform)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SkewTransform), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SkewTransform*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::ISkewTransform)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::ISkewTransform), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::ISkewTransform*>(this);
     }

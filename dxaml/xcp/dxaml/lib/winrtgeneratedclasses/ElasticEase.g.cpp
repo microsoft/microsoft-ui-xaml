@@ -11,6 +11,7 @@
 
 #include "ElasticEase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ElasticEase::ElasticEase()
@@ -23,11 +24,11 @@ DirectUI::ElasticEase::~ElasticEase()
 
 HRESULT DirectUI::ElasticEase::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ElasticEase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ElasticEase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ElasticEase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IElasticEase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IElasticEase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IElasticEase*>(this);
     }

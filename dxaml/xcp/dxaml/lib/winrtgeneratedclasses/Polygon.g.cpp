@@ -12,6 +12,7 @@
 #include "Polygon.g.h"
 #include "PointCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Polygon::Polygon()
@@ -24,11 +25,11 @@ DirectUI::Polygon::~Polygon()
 
 HRESULT DirectUI::Polygon::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Polygon)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Polygon), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Polygon*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Shapes::IPolygon)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Shapes::IPolygon), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Shapes::IPolygon*>(this);
     }

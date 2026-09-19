@@ -14,6 +14,7 @@
 #include "Storyboard.g.h"
 #include "TemplateContent.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::VisualState::VisualState()
@@ -26,11 +27,11 @@ DirectUI::VisualState::~VisualState()
 
 HRESULT DirectUI::VisualState::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::VisualState)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::VisualState), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::VisualState*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IVisualState)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IVisualState), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IVisualState*>(this);
     }

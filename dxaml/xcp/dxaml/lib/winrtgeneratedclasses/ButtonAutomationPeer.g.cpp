@@ -11,6 +11,7 @@
 
 #include "ButtonAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ButtonAutomationPeerGenerated::ButtonAutomationPeerGenerated()
@@ -23,15 +24,15 @@ DirectUI::ButtonAutomationPeerGenerated::~ButtonAutomationPeerGenerated()
 
 HRESULT DirectUI::ButtonAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ButtonAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ButtonAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ButtonAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IButtonAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IButtonAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IButtonAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider*>(this);
     }

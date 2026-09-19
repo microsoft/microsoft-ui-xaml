@@ -11,6 +11,7 @@
 
 #include "IsApiContractPresent.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::IsApiContractPresentGenerated::IsApiContractPresentGenerated()
@@ -23,11 +24,11 @@ DirectUI::IsApiContractPresentGenerated::~IsApiContractPresentGenerated()
 
 HRESULT DirectUI::IsApiContractPresentGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IsApiContractPresent)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::IsApiContractPresent), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IsApiContractPresent*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IXamlPredicate)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IXamlPredicate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IXamlPredicate*>(this);
     }

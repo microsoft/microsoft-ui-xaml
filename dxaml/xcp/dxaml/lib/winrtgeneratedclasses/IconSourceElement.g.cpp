@@ -12,6 +12,7 @@
 #include "IconSourceElement.g.h"
 #include "IconSource.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::IconSourceElement::IconSourceElement()
@@ -24,11 +25,11 @@ DirectUI::IconSourceElement::~IconSourceElement()
 
 HRESULT DirectUI::IconSourceElement::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IconSourceElement)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::IconSourceElement), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IconSourceElement*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IIconSourceElement)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IIconSourceElement), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IIconSourceElement*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "Italic.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Italic::Italic()
@@ -23,11 +24,11 @@ DirectUI::Italic::~Italic()
 
 HRESULT DirectUI::Italic::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Italic)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Italic), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Italic*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Documents::IItalic)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Documents::IItalic), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Documents::IItalic*>(this);
     }

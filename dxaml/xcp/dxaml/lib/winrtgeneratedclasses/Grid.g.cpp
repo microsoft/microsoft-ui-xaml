@@ -14,6 +14,7 @@
 #include "ColumnDefinitionCollection.g.h"
 #include "RowDefinitionCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Grid::Grid()
@@ -26,11 +27,11 @@ DirectUI::Grid::~Grid()
 
 HRESULT DirectUI::Grid::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Grid)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Grid), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Grid*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IGrid)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IGrid), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IGrid*>(this);
     }

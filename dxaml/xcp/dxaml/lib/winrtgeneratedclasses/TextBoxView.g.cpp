@@ -12,6 +12,7 @@
 #include "TextBoxView.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TextBoxViewGenerated::TextBoxViewGenerated()
@@ -24,11 +25,11 @@ DirectUI::TextBoxViewGenerated::~TextBoxViewGenerated()
 
 HRESULT DirectUI::TextBoxViewGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TextBoxView)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TextBoxView), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TextBoxView*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IScrollInfo)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IScrollInfo), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IScrollInfo*>(this);
     }

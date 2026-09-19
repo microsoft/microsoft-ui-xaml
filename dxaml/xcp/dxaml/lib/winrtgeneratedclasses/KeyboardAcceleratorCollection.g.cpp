@@ -11,6 +11,7 @@
 
 #include "KeyboardAcceleratorCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::KeyboardAcceleratorCollection::KeyboardAcceleratorCollection()
@@ -23,11 +24,11 @@ DirectUI::KeyboardAcceleratorCollection::~KeyboardAcceleratorCollection()
 
 HRESULT DirectUI::KeyboardAcceleratorCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::KeyboardAcceleratorCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::KeyboardAcceleratorCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::KeyboardAcceleratorCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Input::KeyboardAccelerator*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Input::KeyboardAccelerator*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Input::KeyboardAccelerator*>*>(this);
     }

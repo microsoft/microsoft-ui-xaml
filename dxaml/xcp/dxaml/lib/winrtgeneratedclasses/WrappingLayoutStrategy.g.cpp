@@ -11,6 +11,7 @@
 
 #include "WrappingLayoutStrategy.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::WrappingLayoutStrategyGenerated::WrappingLayoutStrategyGenerated()
@@ -23,11 +24,11 @@ DirectUI::WrappingLayoutStrategyGenerated::~WrappingLayoutStrategyGenerated()
 
 HRESULT DirectUI::WrappingLayoutStrategyGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::WrappingLayoutStrategy)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::WrappingLayoutStrategy), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::WrappingLayoutStrategy*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ILayoutStrategy)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ILayoutStrategy), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ILayoutStrategy*>(this);
     }

@@ -12,6 +12,7 @@
 #include "FrameworkElementAutomationPeer.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FrameworkElementAutomationPeerGenerated::FrameworkElementAutomationPeerGenerated()
@@ -24,15 +25,15 @@ DirectUI::FrameworkElementAutomationPeerGenerated::~FrameworkElementAutomationPe
 
 HRESULT DirectUI::FrameworkElementAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FrameworkElementAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FrameworkElementAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FrameworkElementAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IFrameworkElementAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IFrameworkElementAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IFrameworkElementAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::FrameworkElementAutomationPeerPrivate)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::FrameworkElementAutomationPeerPrivate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::FrameworkElementAutomationPeerPrivate*>(this);
     }

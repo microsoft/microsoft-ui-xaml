@@ -11,6 +11,7 @@
 
 #include "SemanticZoomAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SemanticZoomAutomationPeerGenerated::SemanticZoomAutomationPeerGenerated()
@@ -23,15 +24,15 @@ DirectUI::SemanticZoomAutomationPeerGenerated::~SemanticZoomAutomationPeerGenera
 
 HRESULT DirectUI::SemanticZoomAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SemanticZoomAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SemanticZoomAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SemanticZoomAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ISemanticZoomAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ISemanticZoomAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::ISemanticZoomAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IToggleProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IToggleProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IToggleProvider*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "ExternalObjectReference.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ExternalObjectReferenceGenerated::ExternalObjectReferenceGenerated()
@@ -23,7 +24,7 @@ DirectUI::ExternalObjectReferenceGenerated::~ExternalObjectReferenceGenerated()
 
 HRESULT DirectUI::ExternalObjectReferenceGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ExternalObjectReference)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ExternalObjectReference), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ExternalObjectReference*>(this);
     }

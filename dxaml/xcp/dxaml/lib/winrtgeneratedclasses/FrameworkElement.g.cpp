@@ -17,6 +17,7 @@
 #include "Style.g.h"
 #include "TriggerCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FrameworkElementGenerated::FrameworkElementGenerated()
@@ -29,24 +30,24 @@ DirectUI::FrameworkElementGenerated::~FrameworkElementGenerated()
 
 HRESULT DirectUI::FrameworkElementGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FrameworkElement)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FrameworkElement), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FrameworkElement*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IFrameworkElement)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IFrameworkElement), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IFrameworkElement*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IFrameworkElementProtected)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IFrameworkElementProtected), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IFrameworkElementProtected*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IFrameworkElementOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IFrameworkElementOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IFrameworkElementOverrides*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IFrameworkElementFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IFrameworkElementFeature_ExperimentalApi), sizeof(IID)) == 0 && Feature_ExperimentalApi::IsEnabled())
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IFrameworkElementFeature_ExperimentalApi>(this);
     }

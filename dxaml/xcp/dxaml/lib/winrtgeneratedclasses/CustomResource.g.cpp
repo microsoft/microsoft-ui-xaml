@@ -11,6 +11,7 @@
 
 #include "CustomResource.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CustomResource::CustomResource()
@@ -23,7 +24,7 @@ DirectUI::CustomResource::~CustomResource()
 
 HRESULT DirectUI::CustomResource::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CustomResource)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CustomResource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CustomResource*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "ScrollContentControl.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ScrollContentControl::ScrollContentControl()
@@ -23,7 +24,7 @@ DirectUI::ScrollContentControl::~ScrollContentControl()
 
 HRESULT DirectUI::ScrollContentControl::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ScrollContentControl)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ScrollContentControl), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ScrollContentControl*>(this);
     }

@@ -13,6 +13,7 @@
 #include "PropertyPath.g.h"
 #include "RelativeSource.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::BindingGenerated::BindingGenerated()
@@ -25,15 +26,15 @@ DirectUI::BindingGenerated::~BindingGenerated()
 
 HRESULT DirectUI::BindingGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Binding)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Binding), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Binding*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::IBinding)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Data::IBinding), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::IBinding*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ISupportInitialize)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::ISupportInitialize), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ISupportInitialize*>(this);
     }

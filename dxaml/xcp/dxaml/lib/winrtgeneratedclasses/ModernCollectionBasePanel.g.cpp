@@ -12,6 +12,7 @@
 #include "ModernCollectionBasePanel.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ModernCollectionBasePanelGenerated::ModernCollectionBasePanelGenerated(): m_firstCacheIndexBase(), m_firstVisibleIndexBase(), m_lastVisibleIndexBase(), m_lastCacheIndexBase(), m_firstCacheGroupIndexBase(), m_firstVisibleGroupIndexBase(), m_lastVisibleGroupIndexBase(), m_lastCacheGroupIndexBase(), m_isRegisteredForCallbacks()
@@ -24,55 +25,55 @@ DirectUI::ModernCollectionBasePanelGenerated::~ModernCollectionBasePanelGenerate
 
 HRESULT DirectUI::ModernCollectionBasePanelGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ModernCollectionBasePanel)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ModernCollectionBasePanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ModernCollectionBasePanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IInsertionPanel)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IInsertionPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IInsertionPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemContainerMapping)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemContainerMapping), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IItemContainerMapping*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollSnapPointsInfo)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollSnapPointsInfo), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollSnapPointsInfo*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IChildTransitionContextProvider)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IChildTransitionContextProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IChildTransitionContextProvider*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ICustomGeneratorItemsHost)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::ICustomGeneratorItemsHost), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ICustomGeneratorItemsHost*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IGroupHeaderMapping)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IGroupHeaderMapping), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IGroupHeaderMapping*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IItemContainerGenerator2)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IItemContainerGenerator2), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IItemContainerGenerator2*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IItemLookupPanel)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IItemLookupPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IItemLookupPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IKeyboardHeaderNavigationPanel)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IKeyboardHeaderNavigationPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IKeyboardHeaderNavigationPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IKeyboardNavigationPanel)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IKeyboardNavigationPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IKeyboardNavigationPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IPaginatedPanel)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IPaginatedPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IPaginatedPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ITreeBuilder)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::ITreeBuilder), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ITreeBuilder*>(this);
     }

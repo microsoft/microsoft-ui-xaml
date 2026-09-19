@@ -11,6 +11,7 @@
 
 #include "HWCompMediaNode.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::HWCompMediaNode::HWCompMediaNode()
@@ -23,7 +24,7 @@ DirectUI::HWCompMediaNode::~HWCompMediaNode()
 
 HRESULT DirectUI::HWCompMediaNode::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::HWCompMediaNode)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::HWCompMediaNode), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::HWCompMediaNode*>(this);
     }

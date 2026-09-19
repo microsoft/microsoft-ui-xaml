@@ -11,6 +11,7 @@
 
 #include "ManipulationDelta.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ManipulationDelta::ManipulationDelta()
@@ -23,7 +24,7 @@ DirectUI::ManipulationDelta::~ManipulationDelta()
 
 HRESULT DirectUI::ManipulationDelta::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ManipulationDelta)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ManipulationDelta), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ManipulationDelta*>(this);
     }

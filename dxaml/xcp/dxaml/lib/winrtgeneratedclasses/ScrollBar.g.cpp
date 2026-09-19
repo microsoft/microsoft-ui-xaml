@@ -11,6 +11,7 @@
 
 #include "ScrollBar.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ScrollBarGenerated::ScrollBarGenerated()
@@ -23,11 +24,11 @@ DirectUI::ScrollBarGenerated::~ScrollBarGenerated()
 
 HRESULT DirectUI::ScrollBarGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ScrollBar)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ScrollBar), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ScrollBar*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollBar)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollBar), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollBar*>(this);
     }

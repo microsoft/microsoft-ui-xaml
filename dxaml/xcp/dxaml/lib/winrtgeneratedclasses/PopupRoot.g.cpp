@@ -11,6 +11,7 @@
 
 #include "PopupRoot.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PopupRootGenerated::PopupRootGenerated()
@@ -23,7 +24,7 @@ DirectUI::PopupRootGenerated::~PopupRootGenerated()
 
 HRESULT DirectUI::PopupRootGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PopupRoot)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PopupRoot), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PopupRoot*>(this);
     }

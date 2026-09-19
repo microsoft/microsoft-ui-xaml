@@ -13,6 +13,7 @@
 #include "RichTextBlock.g.h"
 #include "TextPointer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RichTextBlockOverflowGenerated::RichTextBlockOverflowGenerated()
@@ -25,11 +26,11 @@ DirectUI::RichTextBlockOverflowGenerated::~RichTextBlockOverflowGenerated()
 
 HRESULT DirectUI::RichTextBlockOverflowGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RichTextBlockOverflow)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RichTextBlockOverflow), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RichTextBlockOverflow*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IRichTextBlockOverflow)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IRichTextBlockOverflow), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IRichTextBlockOverflow*>(this);
     }

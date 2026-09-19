@@ -11,6 +11,7 @@
 
 #include "RadioButton.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RadioButtonGenerated::RadioButtonGenerated()
@@ -23,11 +24,11 @@ DirectUI::RadioButtonGenerated::~RadioButtonGenerated()
 
 HRESULT DirectUI::RadioButtonGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RadioButton)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RadioButton), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RadioButton*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IRadioButton)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IRadioButton), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IRadioButton*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "Hyperlink.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::HyperlinkGenerated::HyperlinkGenerated()
@@ -23,11 +24,11 @@ DirectUI::HyperlinkGenerated::~HyperlinkGenerated()
 
 HRESULT DirectUI::HyperlinkGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Hyperlink)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Hyperlink), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Hyperlink*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Documents::IHyperlink)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Documents::IHyperlink), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Documents::IHyperlink*>(this);
     }

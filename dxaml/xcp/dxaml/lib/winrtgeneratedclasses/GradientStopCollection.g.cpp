@@ -11,6 +11,7 @@
 
 #include "GradientStopCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::GradientStopCollection::GradientStopCollection()
@@ -23,11 +24,11 @@ DirectUI::GradientStopCollection::~GradientStopCollection()
 
 HRESULT DirectUI::GradientStopCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::GradientStopCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::GradientStopCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::GradientStopCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::GradientStop*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::GradientStop*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::GradientStop*>*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "InputValidationContext.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::InputValidationContext::InputValidationContext(): m_isInputRequired()
@@ -23,12 +24,12 @@ DirectUI::InputValidationContext::~InputValidationContext()
 
 HRESULT DirectUI::InputValidationContext::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::InputValidationContext)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::InputValidationContext), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::InputValidationContext*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IInputValidationContext)) && Feature_InputValidation::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IInputValidationContext), sizeof(IID)) == 0 && Feature_InputValidation::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IInputValidationContext*>(this);
     }

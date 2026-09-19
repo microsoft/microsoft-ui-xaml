@@ -11,6 +11,7 @@
 
 #include "FlipView.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FlipViewGenerated::FlipViewGenerated()
@@ -23,11 +24,11 @@ DirectUI::FlipViewGenerated::~FlipViewGenerated()
 
 HRESULT DirectUI::FlipViewGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FlipView)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FlipView), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FlipView*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IFlipView)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IFlipView), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IFlipView*>(this);
     }

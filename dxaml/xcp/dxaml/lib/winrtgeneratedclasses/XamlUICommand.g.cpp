@@ -12,6 +12,7 @@
 #include "XamlUICommand.g.h"
 #include "IconSource.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::XamlUICommandGenerated::XamlUICommandGenerated()
@@ -24,15 +25,15 @@ DirectUI::XamlUICommandGenerated::~XamlUICommandGenerated()
 
 HRESULT DirectUI::XamlUICommandGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::XamlUICommand)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::XamlUICommand), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::XamlUICommand*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IXamlUICommand)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IXamlUICommand), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IXamlUICommand*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::ICommand)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::ICommand), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::ICommand*>(this);
     }

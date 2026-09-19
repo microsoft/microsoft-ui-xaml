@@ -12,6 +12,7 @@
 #include "SystemBackdrop.g.h"
 #include "XamlRoot.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SystemBackdropGenerated::SystemBackdropGenerated()
@@ -24,15 +25,15 @@ DirectUI::SystemBackdropGenerated::~SystemBackdropGenerated()
 
 HRESULT DirectUI::SystemBackdropGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SystemBackdrop)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SystemBackdrop), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SystemBackdrop*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::ISystemBackdropOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::ISystemBackdropOverrides), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Media::ISystemBackdropOverrides>(this);
     }

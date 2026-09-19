@@ -12,6 +12,7 @@
 #include "ListViewPersistenceHelper.g.h"
 #include "ListViewBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 
 HRESULT DirectUI::ListViewPersistenceHelperFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)

@@ -11,6 +11,7 @@
 
 #include "CalendarViewDayItem.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CalendarViewDayItemGenerated::CalendarViewDayItemGenerated()
@@ -23,11 +24,11 @@ DirectUI::CalendarViewDayItemGenerated::~CalendarViewDayItemGenerated()
 
 HRESULT DirectUI::CalendarViewDayItemGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CalendarViewDayItem)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CalendarViewDayItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CalendarViewDayItem*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ICalendarViewDayItem)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ICalendarViewDayItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ICalendarViewDayItem*>(this);
     }

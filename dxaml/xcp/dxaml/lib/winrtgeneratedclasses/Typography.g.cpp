@@ -11,6 +11,7 @@
 
 #include "Typography.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 
 HRESULT DirectUI::TypographyFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)

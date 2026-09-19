@@ -17,6 +17,7 @@
 #include "InputValidationContext.g.h"
 #include "SolidColorBrush.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PasswordBoxGenerated::PasswordBoxGenerated()
@@ -29,26 +30,26 @@ DirectUI::PasswordBoxGenerated::~PasswordBoxGenerated()
 
 HRESULT DirectUI::PasswordBoxGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PasswordBox)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PasswordBox), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PasswordBox*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IPasswordBox)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IPasswordBox), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IPasswordBox*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxFeature_HeaderPlacement)) && Feature_HeaderPlacement::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxFeature_HeaderPlacement), sizeof(IID)) == 0 && Feature_HeaderPlacement::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxFeature_HeaderPlacement*>(this);
     }
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IInputValidationControl)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IInputValidationControl), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IInputValidationControl*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IInputValidationControl2)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IInputValidationControl2), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IInputValidationControl2*>(this);
     }

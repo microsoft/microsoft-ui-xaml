@@ -11,6 +11,7 @@
 
 #include "DependencyObjectCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DependencyObjectCollectionGenerated::DependencyObjectCollectionGenerated()
@@ -23,11 +24,11 @@ DirectUI::DependencyObjectCollectionGenerated::~DependencyObjectCollectionGenera
 
 HRESULT DirectUI::DependencyObjectCollectionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DependencyObjectCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DependencyObjectCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DependencyObjectCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::DependencyObject*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::DependencyObject*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::DependencyObject*>*>(this);
     }

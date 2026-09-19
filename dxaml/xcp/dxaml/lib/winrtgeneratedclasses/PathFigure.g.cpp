@@ -12,6 +12,7 @@
 #include "PathFigure.g.h"
 #include "PathSegmentCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PathFigure::PathFigure()
@@ -24,11 +25,11 @@ DirectUI::PathFigure::~PathFigure()
 
 HRESULT DirectUI::PathFigure::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PathFigure)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PathFigure), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PathFigure*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IPathFigure)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IPathFigure), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IPathFigure*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "XamlReader.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 
 HRESULT DirectUI::XamlReaderFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)

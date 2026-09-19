@@ -11,6 +11,7 @@
 
 #include "CommandBarElementCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CommandBarElementCollectionGenerated::CommandBarElementCollectionGenerated()
@@ -23,11 +24,11 @@ DirectUI::CommandBarElementCollectionGenerated::~CommandBarElementCollectionGene
 
 HRESULT DirectUI::CommandBarElementCollectionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CommandBarElementCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CommandBarElementCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CommandBarElementCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Controls::ICommandBarElement*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Controls::ICommandBarElement*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Controls::ICommandBarElement*>*>(this);
     }

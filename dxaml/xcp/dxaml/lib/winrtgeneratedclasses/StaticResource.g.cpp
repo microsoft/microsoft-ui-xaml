@@ -11,6 +11,7 @@
 
 #include "StaticResource.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::StaticResource::StaticResource()
@@ -23,7 +24,7 @@ DirectUI::StaticResource::~StaticResource()
 
 HRESULT DirectUI::StaticResource::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::StaticResource)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::StaticResource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::StaticResource*>(this);
     }

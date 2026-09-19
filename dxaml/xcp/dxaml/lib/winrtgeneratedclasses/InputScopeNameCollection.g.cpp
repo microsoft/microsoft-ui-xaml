@@ -11,6 +11,7 @@
 
 #include "InputScopeNameCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::InputScopeNameCollection::InputScopeNameCollection()
@@ -23,11 +24,11 @@ DirectUI::InputScopeNameCollection::~InputScopeNameCollection()
 
 HRESULT DirectUI::InputScopeNameCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::InputScopeNameCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::InputScopeNameCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::InputScopeNameCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Input::InputScopeName*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Input::InputScopeName*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Input::InputScopeName*>*>(this);
     }

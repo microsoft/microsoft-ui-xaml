@@ -12,6 +12,7 @@
 #include "ImageBrush.g.h"
 #include "ImageSource.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ImageBrush::ImageBrush()
@@ -24,11 +25,11 @@ DirectUI::ImageBrush::~ImageBrush()
 
 HRESULT DirectUI::ImageBrush::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ImageBrush)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ImageBrush), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ImageBrush*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IImageBrush)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IImageBrush), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IImageBrush*>(this);
     }

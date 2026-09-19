@@ -12,6 +12,7 @@
 #include "AccessKeyManager.g.h"
 #include "XamlRoot.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 
 HRESULT DirectUI::AccessKeyManagerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)

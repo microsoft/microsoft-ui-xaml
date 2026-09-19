@@ -11,6 +11,7 @@
 
 #include "InertiaTranslationBehavior.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::InertiaTranslationBehavior::InertiaTranslationBehavior()
@@ -23,11 +24,11 @@ DirectUI::InertiaTranslationBehavior::~InertiaTranslationBehavior()
 
 HRESULT DirectUI::InertiaTranslationBehavior::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::InertiaTranslationBehavior)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::InertiaTranslationBehavior), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::InertiaTranslationBehavior*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IInertiaTranslationBehavior)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IInertiaTranslationBehavior), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IInertiaTranslationBehavior*>(this);
     }

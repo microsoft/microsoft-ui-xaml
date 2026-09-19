@@ -11,6 +11,7 @@
 
 #include "RowDefinitionCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RowDefinitionCollection::RowDefinitionCollection()
@@ -23,11 +24,11 @@ DirectUI::RowDefinitionCollection::~RowDefinitionCollection()
 
 HRESULT DirectUI::RowDefinitionCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RowDefinitionCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RowDefinitionCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RowDefinitionCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Controls::RowDefinition*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Controls::RowDefinition*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Controls::RowDefinition*>*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "Inline.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Inline::Inline()
@@ -23,11 +24,11 @@ DirectUI::Inline::~Inline()
 
 HRESULT DirectUI::Inline::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Inline)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Inline), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Inline*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Documents::IInline)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Documents::IInline), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Documents::IInline*>(this);
     }

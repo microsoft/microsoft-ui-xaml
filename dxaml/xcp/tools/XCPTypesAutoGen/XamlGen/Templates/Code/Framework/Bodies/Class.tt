@@ -11,6 +11,7 @@
 #include "<#= dependency.CppFrameworkGeneratedHeaderFileName #>"
 <# } #>
 #include "XamlTelemetry.h"
+#include <cstring>
 
 <# if (!Model.IsStatic) { #>
 // Constructors/destructors.
@@ -24,7 +25,7 @@
 
 HRESULT <#= AsCppType(Model.GeneratedClassFullName) #>::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(Model.AbiImplementationFullName) #>)))
+    if (std::memcmp(&iid, &__uuidof(<#= AsCppType(Model.AbiImplementationFullName) #>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<<#= AsCppType(Model.AbiImplementationFullName) #>*>(this);
     }
@@ -36,7 +37,7 @@ HRESULT <#= AsCppType(Model.GeneratedClassFullName) #>::QueryInterfaceImpl(_In_ 
 #if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(version.Version) #>)
 <#         }
            if (version.IdlClassInfo.HasPrimaryInterface) { #>
-    else if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(version.IdlClassInfo.FullInterfaceName) #>))<#= VelocityFeatures.GetQueryInterfaceClause(version.VelocityVersion != 0 ? version.VelocityVersion : version.Version) #>)
+    else if (std::memcmp(&iid, &__uuidof(<#= AsCppType(version.IdlClassInfo.FullInterfaceName) #>), sizeof(IID)) == 0<#= VelocityFeatures.GetQueryInterfaceClause(version.VelocityVersion != 0 ? version.VelocityVersion : version.Version) #>)
     {
 <#             if (version.IsVersionInterfaceForwarded()) { #>
         *ppObject = ctl::interface_cast<<#= AsCppType(version.IdlClassInfo.FullInterfaceName) #>>(this);
@@ -47,7 +48,7 @@ HRESULT <#= AsCppType(Model.GeneratedClassFullName) #>::QueryInterfaceImpl(_In_ 
 <#             }
            }
            if (version.IdlClassInfo.HasProtectedMembers) { #>
-    else if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(version.IdlClassInfo.FullProtectedMembersInterfaceName) #>))<#= VelocityFeatures.GetQueryInterfaceClause(version.VelocityVersion != 0 ? version.VelocityVersion : version.Version) #>)
+    else if (std::memcmp(&iid, &__uuidof(<#= AsCppType(version.IdlClassInfo.FullProtectedMembersInterfaceName) #>), sizeof(IID)) == 0<#= VelocityFeatures.GetQueryInterfaceClause(version.VelocityVersion != 0 ? version.VelocityVersion : version.Version) #>)
     {
 <#              if (version.IsVersionInterfaceForwarded()) { #>
         *ppObject = ctl::interface_cast<<#= AsCppType(version.IdlClassInfo.FullProtectedMembersInterfaceName) #>>(this);
@@ -58,7 +59,7 @@ HRESULT <#= AsCppType(Model.GeneratedClassFullName) #>::QueryInterfaceImpl(_In_ 
 <#              }
            }
            if (version.IdlClassInfo.HasVirtualMembers) { #>
-    else if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(version.IdlClassInfo.FullVirtualMembersInterfaceName) #>))<#= VelocityFeatures.GetQueryInterfaceClause(version.VelocityVersion != 0 ? version.VelocityVersion : version.Version) #>)
+    else if (std::memcmp(&iid, &__uuidof(<#= AsCppType(version.IdlClassInfo.FullVirtualMembersInterfaceName) #>), sizeof(IID)) == 0<#= VelocityFeatures.GetQueryInterfaceClause(version.VelocityVersion != 0 ? version.VelocityVersion : version.Version) #>)
     {
 <#              if (version.IsVersionInterfaceForwarded()) { #>
         *ppObject = ctl::interface_cast<<#= AsCppType(version.IdlClassInfo.FullVirtualMembersInterfaceName) #>>(this);
@@ -69,7 +70,7 @@ HRESULT <#= AsCppType(Model.GeneratedClassFullName) #>::QueryInterfaceImpl(_In_ 
 <#              }
            }
            foreach (var implementedInterface in version.ImplementedInterfaces.OrderBy(implementedInterface => implementedInterface.AbiFullName)) { #>
-    else if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(implementedInterface.AbiFullName) #>)))
+    else if (std::memcmp(&iid, &__uuidof(<#= AsCppType(implementedInterface.AbiFullName) #>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<<#= AsCppType(implementedInterface.AbiFullName) #>*>(this);
     }

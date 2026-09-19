@@ -11,6 +11,7 @@
 
 #include "GeneralTransform.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::GeneralTransform::GeneralTransform()
@@ -23,15 +24,15 @@ DirectUI::GeneralTransform::~GeneralTransform()
 
 HRESULT DirectUI::GeneralTransform::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::GeneralTransform)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::GeneralTransform), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::GeneralTransform*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IGeneralTransform)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IGeneralTransform), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IGeneralTransform*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IGeneralTransformOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IGeneralTransformOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IGeneralTransformOverrides*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "GeometryCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::GeometryCollection::GeometryCollection()
@@ -23,11 +24,11 @@ DirectUI::GeometryCollection::~GeometryCollection()
 
 HRESULT DirectUI::GeometryCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::GeometryCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::GeometryCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::GeometryCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Geometry*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Geometry*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Geometry*>*>(this);
     }

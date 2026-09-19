@@ -11,6 +11,7 @@
 
 #include "FlipViewAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FlipViewAutomationPeerGenerated::FlipViewAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::FlipViewAutomationPeerGenerated::~FlipViewAutomationPeerGenerated()
 
 HRESULT DirectUI::FlipViewAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FlipViewAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FlipViewAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FlipViewAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IFlipViewAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IFlipViewAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IFlipViewAutomationPeer*>(this);
     }

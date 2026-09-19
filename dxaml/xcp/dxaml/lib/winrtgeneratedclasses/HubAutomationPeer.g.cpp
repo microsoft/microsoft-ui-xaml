@@ -11,6 +11,7 @@
 
 #include "HubAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::HubAutomationPeerGenerated::HubAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::HubAutomationPeerGenerated::~HubAutomationPeerGenerated()
 
 HRESULT DirectUI::HubAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::HubAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::HubAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::HubAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IHubAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IHubAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IHubAutomationPeer*>(this);
     }

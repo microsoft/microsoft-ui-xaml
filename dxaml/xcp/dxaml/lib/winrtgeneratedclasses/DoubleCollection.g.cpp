@@ -11,6 +11,7 @@
 
 #include "DoubleCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DoubleCollection::DoubleCollection()
@@ -23,11 +24,11 @@ DirectUI::DoubleCollection::~DoubleCollection()
 
 HRESULT DirectUI::DoubleCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DoubleCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DoubleCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DoubleCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<DOUBLE>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<DOUBLE>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<DOUBLE>*>(this);
     }

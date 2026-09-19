@@ -11,6 +11,7 @@
 
 #include "Matrix3DProjection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Matrix3DProjection::Matrix3DProjection()
@@ -23,11 +24,11 @@ DirectUI::Matrix3DProjection::~Matrix3DProjection()
 
 HRESULT DirectUI::Matrix3DProjection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Matrix3DProjection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Matrix3DProjection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Matrix3DProjection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IMatrix3DProjection)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IMatrix3DProjection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IMatrix3DProjection*>(this);
     }

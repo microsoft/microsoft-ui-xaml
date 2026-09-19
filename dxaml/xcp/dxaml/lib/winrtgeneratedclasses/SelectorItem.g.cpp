@@ -11,6 +11,7 @@
 
 #include "SelectorItem.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SelectorItemGenerated::SelectorItemGenerated(): m_isPointerOver()
@@ -23,11 +24,11 @@ DirectUI::SelectorItemGenerated::~SelectorItemGenerated()
 
 HRESULT DirectUI::SelectorItemGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SelectorItem)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SelectorItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SelectorItem*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::ISelectorItem)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::ISelectorItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::ISelectorItem*>(this);
     }

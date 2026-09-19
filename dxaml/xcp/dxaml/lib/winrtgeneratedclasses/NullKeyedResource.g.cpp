@@ -11,6 +11,7 @@
 
 #include "NullKeyedResource.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::NullKeyedResource::NullKeyedResource()
@@ -23,7 +24,7 @@ DirectUI::NullKeyedResource::~NullKeyedResource()
 
 HRESULT DirectUI::NullKeyedResource::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::NullKeyedResource)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::NullKeyedResource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::NullKeyedResource*>(this);
     }

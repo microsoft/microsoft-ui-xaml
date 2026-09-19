@@ -13,6 +13,7 @@
 #include "MenuFlyoutPresenterTemplateSettings.g.h"
 #include "SystemBackdrop.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MenuFlyoutPresenterGenerated::MenuFlyoutPresenterGenerated()
@@ -25,19 +26,19 @@ DirectUI::MenuFlyoutPresenterGenerated::~MenuFlyoutPresenterGenerated()
 
 HRESULT DirectUI::MenuFlyoutPresenterGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MenuFlyoutPresenter)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MenuFlyoutPresenter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MenuFlyoutPresenter*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenter)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenter*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuPresenter)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuPresenter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IMenuPresenter*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenter2)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenter2), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenter2>(this);
     }

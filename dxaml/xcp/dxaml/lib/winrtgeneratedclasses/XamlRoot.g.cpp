@@ -12,6 +12,7 @@
 #include "XamlRoot.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::XamlRootGenerated::XamlRootGenerated()
@@ -24,23 +25,23 @@ DirectUI::XamlRootGenerated::~XamlRootGenerated()
 
 HRESULT DirectUI::XamlRootGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::XamlRoot)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::XamlRoot), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::XamlRoot*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlRoot)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IXamlRoot), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IXamlRoot*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlRoot2)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IXamlRoot2), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IXamlRoot2>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlRoot3)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IXamlRoot3), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IXamlRoot3>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlRoot4)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IXamlRoot4), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IXamlRoot4>(this);
     }

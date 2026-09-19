@@ -11,6 +11,7 @@
 
 #include "AutomationProperty.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::AutomationPropertyGenerated::AutomationPropertyGenerated()
@@ -23,11 +24,11 @@ DirectUI::AutomationPropertyGenerated::~AutomationPropertyGenerated()
 
 HRESULT DirectUI::AutomationPropertyGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AutomationProperty)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AutomationProperty), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AutomationProperty*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::IAutomationProperty)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::IAutomationProperty), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::IAutomationProperty*>(this);
     }

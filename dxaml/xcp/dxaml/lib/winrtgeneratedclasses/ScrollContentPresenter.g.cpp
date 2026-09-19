@@ -12,6 +12,7 @@
 #include "ScrollContentPresenter.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ScrollContentPresenterGenerated::ScrollContentPresenterGenerated()
@@ -24,15 +25,15 @@ DirectUI::ScrollContentPresenterGenerated::~ScrollContentPresenterGenerated()
 
 HRESULT DirectUI::ScrollContentPresenterGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ScrollContentPresenter)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ScrollContentPresenter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ScrollContentPresenter*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IScrollContentPresenter)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IScrollContentPresenter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IScrollContentPresenter*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IScrollInfo)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IScrollInfo), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IScrollInfo*>(this);
     }

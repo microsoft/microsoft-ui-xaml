@@ -11,6 +11,7 @@
 
 #include "InputPaneThemeTransition.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::InputPaneThemeTransitionGenerated::InputPaneThemeTransitionGenerated()
@@ -23,7 +24,7 @@ DirectUI::InputPaneThemeTransitionGenerated::~InputPaneThemeTransitionGenerated(
 
 HRESULT DirectUI::InputPaneThemeTransitionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::InputPaneThemeTransition)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::InputPaneThemeTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::InputPaneThemeTransition*>(this);
     }

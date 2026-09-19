@@ -11,6 +11,7 @@
 
 #include "ContentDialogButtonClickDeferral.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ContentDialogButtonClickDeferralGenerated::ContentDialogButtonClickDeferralGenerated()
@@ -23,11 +24,11 @@ DirectUI::ContentDialogButtonClickDeferralGenerated::~ContentDialogButtonClickDe
 
 HRESULT DirectUI::ContentDialogButtonClickDeferralGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ContentDialogButtonClickDeferral)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ContentDialogButtonClickDeferral), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ContentDialogButtonClickDeferral*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IContentDialogButtonClickDeferral)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IContentDialogButtonClickDeferral), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IContentDialogButtonClickDeferral*>(this);
     }

@@ -15,6 +15,7 @@
 #include "TransitionCollection.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PopupGenerated::PopupGenerated()
@@ -27,27 +28,27 @@ DirectUI::PopupGenerated::~PopupGenerated()
 
 HRESULT DirectUI::PopupGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Popup)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Popup), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Popup*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopup)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopup), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopup*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopup2)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopup2), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopup2>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopup3)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopup3), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopup3>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop*>(this);
     }

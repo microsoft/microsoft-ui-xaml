@@ -11,6 +11,7 @@
 
 #include "TextBoxBaseAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TextBoxBaseAutomationPeer::TextBoxBaseAutomationPeer()
@@ -23,7 +24,7 @@ DirectUI::TextBoxBaseAutomationPeer::~TextBoxBaseAutomationPeer()
 
 HRESULT DirectUI::TextBoxBaseAutomationPeer::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TextBoxBaseAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TextBoxBaseAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TextBoxBaseAutomationPeer*>(this);
     }

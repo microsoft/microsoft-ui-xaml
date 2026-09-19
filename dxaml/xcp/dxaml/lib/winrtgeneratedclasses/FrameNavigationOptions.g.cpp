@@ -12,6 +12,7 @@
 #include "FrameNavigationOptions.g.h"
 #include "NavigationTransitionInfo.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FrameNavigationOptions::FrameNavigationOptions(): m_isNavigationStackEnabled()
@@ -24,11 +25,11 @@ DirectUI::FrameNavigationOptions::~FrameNavigationOptions()
 
 HRESULT DirectUI::FrameNavigationOptions::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FrameNavigationOptions)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FrameNavigationOptions), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FrameNavigationOptions*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Navigation::IFrameNavigationOptions)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Navigation::IFrameNavigationOptions), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Navigation::IFrameNavigationOptions*>(this);
     }

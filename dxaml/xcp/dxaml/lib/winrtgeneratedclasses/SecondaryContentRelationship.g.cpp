@@ -13,6 +13,7 @@
 #include "ParametricCurveCollection.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SecondaryContentRelationship::SecondaryContentRelationship()
@@ -25,11 +26,11 @@ DirectUI::SecondaryContentRelationship::~SecondaryContentRelationship()
 
 HRESULT DirectUI::SecondaryContentRelationship::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SecondaryContentRelationship)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SecondaryContentRelationship), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SecondaryContentRelationship*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship*>(this);
     }

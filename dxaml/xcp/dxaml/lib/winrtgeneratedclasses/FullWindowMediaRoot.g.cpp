@@ -11,6 +11,7 @@
 
 #include "FullWindowMediaRoot.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FullWindowMediaRootGenerated::FullWindowMediaRootGenerated()
@@ -23,7 +24,7 @@ DirectUI::FullWindowMediaRootGenerated::~FullWindowMediaRootGenerated()
 
 HRESULT DirectUI::FullWindowMediaRootGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FullWindowMediaRoot)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FullWindowMediaRoot), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FullWindowMediaRoot*>(this);
     }

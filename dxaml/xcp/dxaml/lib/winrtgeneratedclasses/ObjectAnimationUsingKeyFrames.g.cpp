@@ -12,6 +12,7 @@
 #include "ObjectAnimationUsingKeyFrames.g.h"
 #include "ObjectKeyFrameCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ObjectAnimationUsingKeyFrames::ObjectAnimationUsingKeyFrames()
@@ -24,11 +25,11 @@ DirectUI::ObjectAnimationUsingKeyFrames::~ObjectAnimationUsingKeyFrames()
 
 HRESULT DirectUI::ObjectAnimationUsingKeyFrames::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ObjectAnimationUsingKeyFrames)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ObjectAnimationUsingKeyFrames), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ObjectAnimationUsingKeyFrames*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IObjectAnimationUsingKeyFrames)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IObjectAnimationUsingKeyFrames), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IObjectAnimationUsingKeyFrames*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "ToolTipService.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 
 HRESULT DirectUI::ToolTipServiceFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)

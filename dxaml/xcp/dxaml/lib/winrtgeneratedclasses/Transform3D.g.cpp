@@ -11,6 +11,7 @@
 
 #include "Transform3D.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Transform3D::Transform3D()
@@ -23,11 +24,11 @@ DirectUI::Transform3D::~Transform3D()
 
 HRESULT DirectUI::Transform3D::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Transform3D)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Transform3D), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Transform3D*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Media3D::ITransform3D)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Media3D::ITransform3D), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Media3D::ITransform3D*>(this);
     }

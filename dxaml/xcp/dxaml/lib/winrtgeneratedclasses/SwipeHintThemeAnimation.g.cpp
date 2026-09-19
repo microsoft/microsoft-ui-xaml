@@ -11,6 +11,7 @@
 
 #include "SwipeHintThemeAnimation.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SwipeHintThemeAnimationGenerated::SwipeHintThemeAnimationGenerated()
@@ -23,11 +24,11 @@ DirectUI::SwipeHintThemeAnimationGenerated::~SwipeHintThemeAnimationGenerated()
 
 HRESULT DirectUI::SwipeHintThemeAnimationGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SwipeHintThemeAnimation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SwipeHintThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SwipeHintThemeAnimation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISwipeHintThemeAnimation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISwipeHintThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::ISwipeHintThemeAnimation*>(this);
     }

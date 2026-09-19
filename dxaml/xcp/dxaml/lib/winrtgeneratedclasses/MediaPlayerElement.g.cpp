@@ -13,6 +13,7 @@
 #include "ImageSource.g.h"
 #include "MediaTransportControls.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MediaPlayerElementGenerated::MediaPlayerElementGenerated()
@@ -25,15 +26,15 @@ DirectUI::MediaPlayerElementGenerated::~MediaPlayerElementGenerated()
 
 HRESULT DirectUI::MediaPlayerElementGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MediaPlayerElement)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MediaPlayerElement), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MediaPlayerElement*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMediaPlayerElement)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IMediaPlayerElement), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Controls::IMediaPlayerElement>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ISupportInitialize)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::ISupportInitialize), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ISupportInitialize*>(this);
     }

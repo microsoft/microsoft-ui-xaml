@@ -12,6 +12,7 @@
 #include "PrintDocument.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PrintDocumentGenerated::PrintDocumentGenerated()
@@ -24,11 +25,11 @@ DirectUI::PrintDocumentGenerated::~PrintDocumentGenerated()
 
 HRESULT DirectUI::PrintDocumentGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PrintDocument)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PrintDocument), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PrintDocument*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Printing::IPrintDocument)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Printing::IPrintDocument), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Printing::IPrintDocument*>(this);
     }

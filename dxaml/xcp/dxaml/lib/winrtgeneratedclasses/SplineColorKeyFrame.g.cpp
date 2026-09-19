@@ -12,6 +12,7 @@
 #include "SplineColorKeyFrame.g.h"
 #include "KeySpline.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SplineColorKeyFrame::SplineColorKeyFrame()
@@ -24,11 +25,11 @@ DirectUI::SplineColorKeyFrame::~SplineColorKeyFrame()
 
 HRESULT DirectUI::SplineColorKeyFrame::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SplineColorKeyFrame)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SplineColorKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SplineColorKeyFrame*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISplineColorKeyFrame)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISplineColorKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::ISplineColorKeyFrame*>(this);
     }

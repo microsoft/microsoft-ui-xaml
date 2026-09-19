@@ -11,6 +11,7 @@
 
 #include "PaneThemeTransition.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PaneThemeTransitionGenerated::PaneThemeTransitionGenerated()
@@ -23,11 +24,11 @@ DirectUI::PaneThemeTransitionGenerated::~PaneThemeTransitionGenerated()
 
 HRESULT DirectUI::PaneThemeTransitionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PaneThemeTransition)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PaneThemeTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PaneThemeTransition*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPaneThemeTransition)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPaneThemeTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IPaneThemeTransition*>(this);
     }

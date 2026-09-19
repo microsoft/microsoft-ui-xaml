@@ -13,6 +13,7 @@
 #include "ConnectedAnimation.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ConnectedAnimationServiceGenerated::ConnectedAnimationServiceGenerated()
@@ -25,11 +26,11 @@ DirectUI::ConnectedAnimationServiceGenerated::~ConnectedAnimationServiceGenerate
 
 HRESULT DirectUI::ConnectedAnimationServiceGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ConnectedAnimationService)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ConnectedAnimationService), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ConnectedAnimationService*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IConnectedAnimationService)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IConnectedAnimationService), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IConnectedAnimationService*>(this);
     }

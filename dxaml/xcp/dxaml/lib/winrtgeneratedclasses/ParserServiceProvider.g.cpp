@@ -11,6 +11,7 @@
 
 #include "ParserServiceProvider.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ParserServiceProviderGenerated::ParserServiceProviderGenerated()
@@ -23,27 +24,27 @@ DirectUI::ParserServiceProviderGenerated::~ParserServiceProviderGenerated()
 
 HRESULT DirectUI::ParserServiceProviderGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ParserServiceProvider)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ParserServiceProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ParserServiceProvider*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlServiceProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IXamlServiceProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IXamlServiceProvider*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Markup::IProvideValueTarget)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Markup::IProvideValueTarget), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Markup::IProvideValueTarget*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Markup::IRootObjectProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Markup::IRootObjectProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Markup::IRootObjectProvider*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Markup::IUriContext)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Markup::IUriContext), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Markup::IUriContext*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Markup::IXamlTypeResolver)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Markup::IXamlTypeResolver), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Markup::IXamlTypeResolver*>(this);
     }

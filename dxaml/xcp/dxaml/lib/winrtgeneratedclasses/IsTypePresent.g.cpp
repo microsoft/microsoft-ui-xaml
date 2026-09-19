@@ -11,6 +11,7 @@
 
 #include "IsTypePresent.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::IsTypePresentGenerated::IsTypePresentGenerated()
@@ -23,11 +24,11 @@ DirectUI::IsTypePresentGenerated::~IsTypePresentGenerated()
 
 HRESULT DirectUI::IsTypePresentGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IsTypePresent)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::IsTypePresent), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IsTypePresent*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IXamlPredicate)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IXamlPredicate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IXamlPredicate*>(this);
     }

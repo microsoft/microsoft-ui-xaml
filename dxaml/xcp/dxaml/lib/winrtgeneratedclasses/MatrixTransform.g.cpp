@@ -11,6 +11,7 @@
 
 #include "MatrixTransform.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MatrixTransform::MatrixTransform()
@@ -23,11 +24,11 @@ DirectUI::MatrixTransform::~MatrixTransform()
 
 HRESULT DirectUI::MatrixTransform::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MatrixTransform)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MatrixTransform), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MatrixTransform*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IMatrixTransform)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IMatrixTransform), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IMatrixTransform*>(this);
     }

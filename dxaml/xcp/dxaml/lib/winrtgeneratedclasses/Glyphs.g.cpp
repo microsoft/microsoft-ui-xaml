@@ -12,6 +12,7 @@
 #include "Glyphs.g.h"
 #include "Brush.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Glyphs::Glyphs()
@@ -24,11 +25,11 @@ DirectUI::Glyphs::~Glyphs()
 
 HRESULT DirectUI::Glyphs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Glyphs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Glyphs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Glyphs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Documents::IGlyphs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Documents::IGlyphs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Documents::IGlyphs*>(this);
     }

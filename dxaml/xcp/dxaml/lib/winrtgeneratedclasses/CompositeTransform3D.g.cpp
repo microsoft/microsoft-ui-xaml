@@ -11,6 +11,7 @@
 
 #include "CompositeTransform3D.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CompositeTransform3D::CompositeTransform3D()
@@ -23,11 +24,11 @@ DirectUI::CompositeTransform3D::~CompositeTransform3D()
 
 HRESULT DirectUI::CompositeTransform3D::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CompositeTransform3D)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CompositeTransform3D), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CompositeTransform3D*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Media3D::ICompositeTransform3D)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Media3D::ICompositeTransform3D), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Media3D::ICompositeTransform3D*>(this);
     }

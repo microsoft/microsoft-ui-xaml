@@ -14,6 +14,7 @@
 #include "UIElement.g.h"
 #include "XamlSourceFocusNavigationRequest.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DesktopWindowXamlSourceGenerated::DesktopWindowXamlSourceGenerated()
@@ -26,23 +27,23 @@ DirectUI::DesktopWindowXamlSourceGenerated::~DesktopWindowXamlSourceGenerated()
 
 HRESULT DirectUI::DesktopWindowXamlSourceGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DesktopWindowXamlSource)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DesktopWindowXamlSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DesktopWindowXamlSource*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::IClosable)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::IClosable), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::IClosable*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource2)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource2), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource2>(this);
     }

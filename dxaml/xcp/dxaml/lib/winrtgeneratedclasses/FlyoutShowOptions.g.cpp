@@ -11,6 +11,7 @@
 
 #include "FlyoutShowOptions.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FlyoutShowOptionsGenerated::FlyoutShowOptionsGenerated(): m_showMode(), m_placement()
@@ -23,11 +24,11 @@ DirectUI::FlyoutShowOptionsGenerated::~FlyoutShowOptionsGenerated()
 
 HRESULT DirectUI::FlyoutShowOptionsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FlyoutShowOptions)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FlyoutShowOptions), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FlyoutShowOptions*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IFlyoutShowOptions)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IFlyoutShowOptions), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IFlyoutShowOptions*>(this);
     }

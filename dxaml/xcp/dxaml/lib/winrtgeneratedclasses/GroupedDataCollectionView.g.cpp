@@ -11,6 +11,7 @@
 
 #include "GroupedDataCollectionView.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::GroupedDataCollectionViewGenerated::GroupedDataCollectionViewGenerated()
@@ -23,7 +24,7 @@ DirectUI::GroupedDataCollectionViewGenerated::~GroupedDataCollectionViewGenerate
 
 HRESULT DirectUI::GroupedDataCollectionViewGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::GroupedDataCollectionView)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::GroupedDataCollectionView), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::GroupedDataCollectionView*>(this);
     }

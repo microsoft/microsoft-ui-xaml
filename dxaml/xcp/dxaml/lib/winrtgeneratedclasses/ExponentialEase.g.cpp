@@ -11,6 +11,7 @@
 
 #include "ExponentialEase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ExponentialEase::ExponentialEase()
@@ -23,11 +24,11 @@ DirectUI::ExponentialEase::~ExponentialEase()
 
 HRESULT DirectUI::ExponentialEase::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ExponentialEase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ExponentialEase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ExponentialEase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IExponentialEase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IExponentialEase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IExponentialEase*>(this);
     }

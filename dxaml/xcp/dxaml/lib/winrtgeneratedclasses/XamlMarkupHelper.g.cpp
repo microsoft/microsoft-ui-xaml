@@ -11,6 +11,7 @@
 
 #include "XamlMarkupHelper.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 
 HRESULT DirectUI::XamlMarkupHelperFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)

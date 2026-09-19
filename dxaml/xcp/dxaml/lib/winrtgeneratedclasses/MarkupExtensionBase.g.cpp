@@ -11,6 +11,7 @@
 
 #include "MarkupExtensionBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MarkupExtensionBaseGenerated::MarkupExtensionBaseGenerated()
@@ -23,7 +24,7 @@ DirectUI::MarkupExtensionBaseGenerated::~MarkupExtensionBaseGenerated()
 
 HRESULT DirectUI::MarkupExtensionBaseGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MarkupExtensionBase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MarkupExtensionBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MarkupExtensionBase*>(this);
     }

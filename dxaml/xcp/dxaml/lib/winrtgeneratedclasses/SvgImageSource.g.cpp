@@ -11,6 +11,7 @@
 
 #include "SvgImageSource.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SvgImageSourceGenerated::SvgImageSourceGenerated()
@@ -23,11 +24,11 @@ DirectUI::SvgImageSourceGenerated::~SvgImageSourceGenerated()
 
 HRESULT DirectUI::SvgImageSourceGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SvgImageSource)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SvgImageSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SvgImageSource*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::ISvgImageSource)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::ISvgImageSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Imaging::ISvgImageSource*>(this);
     }

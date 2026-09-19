@@ -11,6 +11,7 @@
 
 #include "PopOutThemeAnimation.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PopOutThemeAnimationGenerated::PopOutThemeAnimationGenerated()
@@ -23,11 +24,11 @@ DirectUI::PopOutThemeAnimationGenerated::~PopOutThemeAnimationGenerated()
 
 HRESULT DirectUI::PopOutThemeAnimationGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PopOutThemeAnimation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PopOutThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PopOutThemeAnimation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPopOutThemeAnimation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPopOutThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IPopOutThemeAnimation*>(this);
     }

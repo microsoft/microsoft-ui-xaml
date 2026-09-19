@@ -12,6 +12,7 @@
 #include "ChoosingItemContainerEventArgs.g.h"
 #include "SelectorItem.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ChoosingItemContainerEventArgs::ChoosingItemContainerEventArgs(): m_itemIndex(), m_isContainerPrepared()
@@ -24,11 +25,11 @@ DirectUI::ChoosingItemContainerEventArgs::~ChoosingItemContainerEventArgs()
 
 HRESULT DirectUI::ChoosingItemContainerEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ChoosingItemContainerEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ChoosingItemContainerEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ChoosingItemContainerEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IChoosingItemContainerEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IChoosingItemContainerEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IChoosingItemContainerEventArgs*>(this);
     }

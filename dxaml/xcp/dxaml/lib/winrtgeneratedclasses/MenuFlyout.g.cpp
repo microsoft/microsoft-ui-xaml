@@ -13,6 +13,7 @@
 #include "Style.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MenuFlyoutGenerated::MenuFlyoutGenerated()
@@ -25,15 +26,15 @@ DirectUI::MenuFlyoutGenerated::~MenuFlyoutGenerated()
 
 HRESULT DirectUI::MenuFlyoutGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MenuFlyout)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MenuFlyout), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MenuFlyout*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyout)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyout), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IMenuFlyout*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenu)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenu), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IMenu*>(this);
     }

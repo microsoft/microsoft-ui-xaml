@@ -12,6 +12,7 @@
 #include "HubSection.g.h"
 #include "DataTemplate.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::HubSectionGenerated::HubSectionGenerated()
@@ -24,11 +25,11 @@ DirectUI::HubSectionGenerated::~HubSectionGenerated()
 
 HRESULT DirectUI::HubSectionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::HubSection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::HubSection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::HubSection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IHubSection)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IHubSection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IHubSection*>(this);
     }

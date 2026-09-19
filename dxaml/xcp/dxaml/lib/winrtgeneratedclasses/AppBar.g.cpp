@@ -12,6 +12,7 @@
 #include "AppBar.g.h"
 #include "AppBarTemplateSettings.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::AppBarGenerated::AppBarGenerated()
@@ -24,19 +25,19 @@ DirectUI::AppBarGenerated::~AppBarGenerated()
 
 HRESULT DirectUI::AppBarGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AppBar)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AppBar), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AppBar*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IAppBar)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IAppBar), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IAppBar*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IAppBarOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IAppBarOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IAppBarOverrides*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener*>(this);
     }

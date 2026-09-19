@@ -11,6 +11,7 @@
 
 #include "PropertyPath.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PropertyPathGenerated::PropertyPathGenerated()
@@ -23,11 +24,11 @@ DirectUI::PropertyPathGenerated::~PropertyPathGenerated()
 
 HRESULT DirectUI::PropertyPathGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PropertyPath)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PropertyPath), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PropertyPath*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IPropertyPath)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IPropertyPath), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IPropertyPath*>(this);
     }

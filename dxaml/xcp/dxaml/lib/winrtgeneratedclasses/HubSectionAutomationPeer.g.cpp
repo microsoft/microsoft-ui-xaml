@@ -11,6 +11,7 @@
 
 #include "HubSectionAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::HubSectionAutomationPeerGenerated::HubSectionAutomationPeerGenerated()
@@ -23,15 +24,15 @@ DirectUI::HubSectionAutomationPeerGenerated::~HubSectionAutomationPeerGenerated(
 
 HRESULT DirectUI::HubSectionAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::HubSectionAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::HubSectionAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::HubSectionAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IHubSectionAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IHubSectionAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IHubSectionAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IScrollItemProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IScrollItemProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IScrollItemProvider*>(this);
     }

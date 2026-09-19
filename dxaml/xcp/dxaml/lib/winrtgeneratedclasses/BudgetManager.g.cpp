@@ -11,6 +11,7 @@
 
 #include "BudgetManager.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::BudgetManagerGenerated::BudgetManagerGenerated()
@@ -23,7 +24,7 @@ DirectUI::BudgetManagerGenerated::~BudgetManagerGenerated()
 
 HRESULT DirectUI::BudgetManagerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::BudgetManager)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::BudgetManager), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::BudgetManager*>(this);
     }

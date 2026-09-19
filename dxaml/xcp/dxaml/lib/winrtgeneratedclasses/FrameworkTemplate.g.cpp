@@ -12,6 +12,7 @@
 #include "FrameworkTemplate.g.h"
 #include "TemplateContent.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FrameworkTemplate::FrameworkTemplate()
@@ -24,11 +25,11 @@ DirectUI::FrameworkTemplate::~FrameworkTemplate()
 
 HRESULT DirectUI::FrameworkTemplate::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FrameworkTemplate)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FrameworkTemplate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FrameworkTemplate*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IFrameworkTemplate)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IFrameworkTemplate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IFrameworkTemplate*>(this);
     }

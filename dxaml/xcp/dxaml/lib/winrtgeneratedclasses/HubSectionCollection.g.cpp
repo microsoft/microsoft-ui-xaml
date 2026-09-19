@@ -11,6 +11,7 @@
 
 #include "HubSectionCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::HubSectionCollectionGenerated::HubSectionCollectionGenerated()
@@ -23,11 +24,11 @@ DirectUI::HubSectionCollectionGenerated::~HubSectionCollectionGenerated()
 
 HRESULT DirectUI::HubSectionCollectionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::HubSectionCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::HubSectionCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::HubSectionCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Controls::HubSection*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Controls::HubSection*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Controls::HubSection*>*>(this);
     }

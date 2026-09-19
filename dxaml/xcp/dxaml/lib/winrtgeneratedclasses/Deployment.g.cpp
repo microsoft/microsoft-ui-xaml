@@ -11,6 +11,7 @@
 
 #include "Deployment.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Deployment::Deployment()
@@ -23,7 +24,7 @@ DirectUI::Deployment::~Deployment()
 
 HRESULT DirectUI::Deployment::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Deployment)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Deployment), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Deployment*>(this);
     }

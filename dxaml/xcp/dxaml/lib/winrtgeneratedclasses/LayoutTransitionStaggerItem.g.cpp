@@ -12,6 +12,7 @@
 #include "LayoutTransitionStaggerItem.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::LayoutTransitionStaggerItemGenerated::LayoutTransitionStaggerItemGenerated()
@@ -24,7 +25,7 @@ DirectUI::LayoutTransitionStaggerItemGenerated::~LayoutTransitionStaggerItemGene
 
 HRESULT DirectUI::LayoutTransitionStaggerItemGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::LayoutTransitionStaggerItem)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::LayoutTransitionStaggerItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::LayoutTransitionStaggerItem*>(this);
     }

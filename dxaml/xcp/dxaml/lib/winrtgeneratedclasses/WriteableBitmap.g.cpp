@@ -11,6 +11,7 @@
 
 #include "WriteableBitmap.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::WriteableBitmapGenerated::WriteableBitmapGenerated()
@@ -23,11 +24,11 @@ DirectUI::WriteableBitmapGenerated::~WriteableBitmapGenerated()
 
 HRESULT DirectUI::WriteableBitmapGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::WriteableBitmap)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::WriteableBitmap), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::WriteableBitmap*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::IWriteableBitmap)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::IWriteableBitmap), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Imaging::IWriteableBitmap*>(this);
     }

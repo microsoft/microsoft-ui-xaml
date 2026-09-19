@@ -11,6 +11,7 @@
 
 #include "BrushCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::BrushCollection::BrushCollection()
@@ -23,11 +24,11 @@ DirectUI::BrushCollection::~BrushCollection()
 
 HRESULT DirectUI::BrushCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::BrushCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::BrushCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::BrushCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Brush*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Brush*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Brush*>*>(this);
     }

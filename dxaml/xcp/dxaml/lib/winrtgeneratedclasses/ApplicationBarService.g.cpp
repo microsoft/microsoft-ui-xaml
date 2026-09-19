@@ -11,6 +11,7 @@
 
 #include "ApplicationBarService.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ApplicationBarServiceGenerated::ApplicationBarServiceGenerated()
@@ -23,7 +24,7 @@ DirectUI::ApplicationBarServiceGenerated::~ApplicationBarServiceGenerated()
 
 HRESULT DirectUI::ApplicationBarServiceGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ApplicationBarService)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ApplicationBarService), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ApplicationBarService*>(this);
     }

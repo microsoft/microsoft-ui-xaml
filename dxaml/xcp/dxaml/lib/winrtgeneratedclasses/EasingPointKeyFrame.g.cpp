@@ -12,6 +12,7 @@
 #include "EasingPointKeyFrame.g.h"
 #include "EasingFunctionBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::EasingPointKeyFrame::EasingPointKeyFrame()
@@ -24,11 +25,11 @@ DirectUI::EasingPointKeyFrame::~EasingPointKeyFrame()
 
 HRESULT DirectUI::EasingPointKeyFrame::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::EasingPointKeyFrame)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::EasingPointKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::EasingPointKeyFrame*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IEasingPointKeyFrame)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IEasingPointKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IEasingPointKeyFrame*>(this);
     }

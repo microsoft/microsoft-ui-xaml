@@ -11,6 +11,7 @@
 
 #include "WindowVisibilityChangedEventArgs.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::WindowVisibilityChangedEventArgs::WindowVisibilityChangedEventArgs(): m_handled(), m_visible()
@@ -23,11 +24,11 @@ DirectUI::WindowVisibilityChangedEventArgs::~WindowVisibilityChangedEventArgs()
 
 HRESULT DirectUI::WindowVisibilityChangedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::WindowVisibilityChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::WindowVisibilityChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::WindowVisibilityChangedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IWindowVisibilityChangedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IWindowVisibilityChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IWindowVisibilityChangedEventArgs*>(this);
     }

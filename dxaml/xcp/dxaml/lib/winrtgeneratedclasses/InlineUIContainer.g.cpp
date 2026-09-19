@@ -12,6 +12,7 @@
 #include "InlineUIContainer.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::InlineUIContainerGenerated::InlineUIContainerGenerated()
@@ -24,11 +25,11 @@ DirectUI::InlineUIContainerGenerated::~InlineUIContainerGenerated()
 
 HRESULT DirectUI::InlineUIContainerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::InlineUIContainer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::InlineUIContainer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::InlineUIContainer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Documents::IInlineUIContainer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Documents::IInlineUIContainer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Documents::IInlineUIContainer*>(this);
     }

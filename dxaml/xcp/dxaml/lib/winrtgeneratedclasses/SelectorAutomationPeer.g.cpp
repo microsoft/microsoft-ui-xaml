@@ -12,6 +12,7 @@
 #include "SelectorAutomationPeer.g.h"
 #include "IRawElementProviderSimple.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SelectorAutomationPeerGenerated::SelectorAutomationPeerGenerated()
@@ -24,15 +25,15 @@ DirectUI::SelectorAutomationPeerGenerated::~SelectorAutomationPeerGenerated()
 
 HRESULT DirectUI::SelectorAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SelectorAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SelectorAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SelectorAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ISelectorAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ISelectorAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::ISelectorAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::ISelectionProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::ISelectionProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::ISelectionProvider*>(this);
     }

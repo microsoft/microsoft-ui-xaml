@@ -12,6 +12,7 @@
 #include "ListViewItem.g.h"
 #include "ListViewItemTemplateSettings.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ListViewItemGenerated::ListViewItemGenerated()
@@ -24,11 +25,11 @@ DirectUI::ListViewItemGenerated::~ListViewItemGenerated()
 
 HRESULT DirectUI::ListViewItemGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ListViewItem)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ListViewItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ListViewItem*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IListViewItem)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IListViewItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IListViewItem*>(this);
     }

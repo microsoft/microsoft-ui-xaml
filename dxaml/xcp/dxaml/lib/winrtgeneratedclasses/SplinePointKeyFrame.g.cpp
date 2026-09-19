@@ -12,6 +12,7 @@
 #include "SplinePointKeyFrame.g.h"
 #include "KeySpline.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SplinePointKeyFrame::SplinePointKeyFrame()
@@ -24,11 +25,11 @@ DirectUI::SplinePointKeyFrame::~SplinePointKeyFrame()
 
 HRESULT DirectUI::SplinePointKeyFrame::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SplinePointKeyFrame)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SplinePointKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SplinePointKeyFrame*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISplinePointKeyFrame)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISplinePointKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::ISplinePointKeyFrame*>(this);
     }

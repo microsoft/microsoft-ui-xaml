@@ -12,6 +12,7 @@
 #include "OrientedVirtualizingPanel.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::OrientedVirtualizingPanelGenerated::OrientedVirtualizingPanelGenerated()
@@ -24,35 +25,35 @@ DirectUI::OrientedVirtualizingPanelGenerated::~OrientedVirtualizingPanelGenerate
 
 HRESULT DirectUI::OrientedVirtualizingPanelGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::OrientedVirtualizingPanel)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::OrientedVirtualizingPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::OrientedVirtualizingPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IOrientedVirtualizingPanel)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IOrientedVirtualizingPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IOrientedVirtualizingPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IInsertionPanel)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IInsertionPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IInsertionPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollSnapPointsInfo)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollSnapPointsInfo), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollSnapPointsInfo*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IItemLookupPanel)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IItemLookupPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IItemLookupPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IOrientedPanel)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IOrientedPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IOrientedPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IPaginatedPanel)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IPaginatedPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IPaginatedPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IScrollInfo)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IScrollInfo), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IScrollInfo*>(this);
     }

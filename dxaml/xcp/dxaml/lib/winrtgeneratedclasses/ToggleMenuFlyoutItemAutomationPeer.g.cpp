@@ -11,6 +11,7 @@
 
 #include "ToggleMenuFlyoutItemAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ToggleMenuFlyoutItemAutomationPeerGenerated::ToggleMenuFlyoutItemAutomationPeerGenerated()
@@ -23,15 +24,15 @@ DirectUI::ToggleMenuFlyoutItemAutomationPeerGenerated::~ToggleMenuFlyoutItemAuto
 
 HRESULT DirectUI::ToggleMenuFlyoutItemAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ToggleMenuFlyoutItemAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ToggleMenuFlyoutItemAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ToggleMenuFlyoutItemAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IToggleMenuFlyoutItemAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IToggleMenuFlyoutItemAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IToggleMenuFlyoutItemAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IToggleProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IToggleProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IToggleProvider*>(this);
     }

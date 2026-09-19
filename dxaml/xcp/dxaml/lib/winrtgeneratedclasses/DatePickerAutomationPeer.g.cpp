@@ -11,6 +11,7 @@
 
 #include "DatePickerAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DatePickerAutomationPeerGenerated::DatePickerAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::DatePickerAutomationPeerGenerated::~DatePickerAutomationPeerGenerated(
 
 HRESULT DirectUI::DatePickerAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DatePickerAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DatePickerAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DatePickerAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IDatePickerAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IDatePickerAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IDatePickerAutomationPeer*>(this);
     }

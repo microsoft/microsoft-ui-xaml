@@ -11,6 +11,7 @@
 
 #include "StateTriggerCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::StateTriggerCollection::StateTriggerCollection()
@@ -23,11 +24,11 @@ DirectUI::StateTriggerCollection::~StateTriggerCollection()
 
 HRESULT DirectUI::StateTriggerCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::StateTriggerCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::StateTriggerCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::StateTriggerCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::StateTriggerBase*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::StateTriggerBase*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::StateTriggerBase*>*>(this);
     }

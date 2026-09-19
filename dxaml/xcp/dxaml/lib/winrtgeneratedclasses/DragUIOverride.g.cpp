@@ -12,6 +12,7 @@
 #include "DragUIOverride.g.h"
 #include "BitmapImage.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DragUIOverrideGenerated::DragUIOverrideGenerated()
@@ -24,11 +25,11 @@ DirectUI::DragUIOverrideGenerated::~DragUIOverrideGenerated()
 
 HRESULT DirectUI::DragUIOverrideGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DragUIOverride)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DragUIOverride), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DragUIOverride*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IDragUIOverride)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IDragUIOverride), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IDragUIOverride*>(this);
     }

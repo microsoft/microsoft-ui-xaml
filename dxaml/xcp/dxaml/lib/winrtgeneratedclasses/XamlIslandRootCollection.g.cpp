@@ -11,6 +11,7 @@
 
 #include "XamlIslandRootCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::XamlIslandRootCollection::XamlIslandRootCollection()
@@ -23,7 +24,7 @@ DirectUI::XamlIslandRootCollection::~XamlIslandRootCollection()
 
 HRESULT DirectUI::XamlIslandRootCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::XamlIslandRootCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::XamlIslandRootCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::XamlIslandRootCollection*>(this);
     }

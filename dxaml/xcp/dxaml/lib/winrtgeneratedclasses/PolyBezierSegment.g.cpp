@@ -12,6 +12,7 @@
 #include "PolyBezierSegment.g.h"
 #include "PointCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PolyBezierSegment::PolyBezierSegment()
@@ -24,11 +25,11 @@ DirectUI::PolyBezierSegment::~PolyBezierSegment()
 
 HRESULT DirectUI::PolyBezierSegment::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PolyBezierSegment)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PolyBezierSegment), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PolyBezierSegment*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IPolyBezierSegment)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IPolyBezierSegment), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IPolyBezierSegment*>(this);
     }

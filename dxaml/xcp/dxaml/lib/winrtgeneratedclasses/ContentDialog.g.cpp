@@ -13,6 +13,7 @@
 #include "DataTemplate.g.h"
 #include "Style.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ContentDialogGenerated::ContentDialogGenerated()
@@ -25,15 +26,15 @@ DirectUI::ContentDialogGenerated::~ContentDialogGenerated()
 
 HRESULT DirectUI::ContentDialogGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ContentDialog)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ContentDialog), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ContentDialog*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IContentDialog)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IContentDialog), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IContentDialog*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener*>(this);
     }

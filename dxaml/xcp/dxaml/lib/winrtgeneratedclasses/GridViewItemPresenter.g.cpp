@@ -12,6 +12,7 @@
 #include "GridViewItemPresenter.g.h"
 #include "Brush.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::GridViewItemPresenterGenerated::GridViewItemPresenterGenerated()
@@ -24,11 +25,11 @@ DirectUI::GridViewItemPresenterGenerated::~GridViewItemPresenterGenerated()
 
 HRESULT DirectUI::GridViewItemPresenterGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::GridViewItemPresenter)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::GridViewItemPresenter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::GridViewItemPresenter*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IGridViewItemPresenter)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IGridViewItemPresenter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IGridViewItemPresenter*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "CustomXamlResourceLoader.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CustomXamlResourceLoader::CustomXamlResourceLoader()
@@ -23,15 +24,15 @@ DirectUI::CustomXamlResourceLoader::~CustomXamlResourceLoader()
 
 HRESULT DirectUI::CustomXamlResourceLoader::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CustomXamlResourceLoader)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CustomXamlResourceLoader), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CustomXamlResourceLoader*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Resources::ICustomXamlResourceLoader)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Resources::ICustomXamlResourceLoader), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Resources::ICustomXamlResourceLoader*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Resources::ICustomXamlResourceLoaderOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Resources::ICustomXamlResourceLoaderOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Resources::ICustomXamlResourceLoaderOverrides*>(this);
     }

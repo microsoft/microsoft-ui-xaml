@@ -11,6 +11,7 @@
 
 #include "FocusMovementResult.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FocusMovementResult::FocusMovementResult(): m_succeeded()
@@ -23,11 +24,11 @@ DirectUI::FocusMovementResult::~FocusMovementResult()
 
 HRESULT DirectUI::FocusMovementResult::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FocusMovementResult)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FocusMovementResult), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FocusMovementResult*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IFocusMovementResult)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IFocusMovementResult), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IFocusMovementResult*>(this);
     }

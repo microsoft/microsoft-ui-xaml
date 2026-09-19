@@ -11,6 +11,7 @@
 
 #include "DependencyObjectWrapper.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DependencyObjectWrapper::DependencyObjectWrapper()
@@ -23,7 +24,7 @@ DirectUI::DependencyObjectWrapper::~DependencyObjectWrapper()
 
 HRESULT DirectUI::DependencyObjectWrapper::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DependencyObjectWrapper)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DependencyObjectWrapper), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DependencyObjectWrapper*>(this);
     }

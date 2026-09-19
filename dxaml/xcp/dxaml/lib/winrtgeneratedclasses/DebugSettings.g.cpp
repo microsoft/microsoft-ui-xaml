@@ -11,6 +11,7 @@
 
 #include "DebugSettings.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DebugSettingsGenerated::DebugSettingsGenerated()
@@ -23,19 +24,19 @@ DirectUI::DebugSettingsGenerated::~DebugSettingsGenerated()
 
 HRESULT DirectUI::DebugSettingsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DebugSettings)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DebugSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DebugSettings*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IDebugSettings)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IDebugSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IDebugSettings*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IDebugSettings2)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IDebugSettings2), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IDebugSettings2>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IDebugSettings3)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IDebugSettings3), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IDebugSettings3>(this);
     }

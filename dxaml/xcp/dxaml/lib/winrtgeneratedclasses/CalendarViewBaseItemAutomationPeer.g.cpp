@@ -12,6 +12,7 @@
 #include "CalendarViewBaseItemAutomationPeer.g.h"
 #include "IRawElementProviderSimple.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CalendarViewBaseItemAutomationPeerGenerated::CalendarViewBaseItemAutomationPeerGenerated()
@@ -24,15 +25,15 @@ DirectUI::CalendarViewBaseItemAutomationPeerGenerated::~CalendarViewBaseItemAuto
 
 HRESULT DirectUI::CalendarViewBaseItemAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CalendarViewBaseItemAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CalendarViewBaseItemAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CalendarViewBaseItemAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IGridItemProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IGridItemProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IGridItemProvider*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IScrollItemProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IScrollItemProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IScrollItemProvider*>(this);
     }

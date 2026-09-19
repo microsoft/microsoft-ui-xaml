@@ -14,6 +14,7 @@
 #include "Style.g.h"
 #include "XamlRoot.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CommandBarGenerated::CommandBarGenerated()
@@ -26,15 +27,15 @@ DirectUI::CommandBarGenerated::~CommandBarGenerated()
 
 HRESULT DirectUI::CommandBarGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CommandBar)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CommandBar), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CommandBar*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ICommandBar)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ICommandBar), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ICommandBar*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenu)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenu), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IMenu*>(this);
     }

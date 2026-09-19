@@ -11,6 +11,7 @@
 
 #include "RichTextBlockOverflowAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RichTextBlockOverflowAutomationPeerGenerated::RichTextBlockOverflowAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::RichTextBlockOverflowAutomationPeerGenerated::~RichTextBlockOverflowAu
 
 HRESULT DirectUI::RichTextBlockOverflowAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RichTextBlockOverflowAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RichTextBlockOverflowAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RichTextBlockOverflowAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IRichTextBlockOverflowAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IRichTextBlockOverflowAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IRichTextBlockOverflowAutomationPeer*>(this);
     }

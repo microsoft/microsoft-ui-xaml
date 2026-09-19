@@ -11,6 +11,7 @@
 
 #include "TextOptions.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 
 

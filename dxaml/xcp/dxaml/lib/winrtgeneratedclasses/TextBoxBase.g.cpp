@@ -11,6 +11,7 @@
 
 #include "TextBoxBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TextBoxBase::TextBoxBase()
@@ -23,7 +24,7 @@ DirectUI::TextBoxBase::~TextBoxBase()
 
 HRESULT DirectUI::TextBoxBase::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TextBoxBase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TextBoxBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TextBoxBase*>(this);
     }

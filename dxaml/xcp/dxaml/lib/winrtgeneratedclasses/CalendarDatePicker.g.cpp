@@ -13,6 +13,7 @@
 #include "DataTemplate.g.h"
 #include "Style.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CalendarDatePickerGenerated::CalendarDatePickerGenerated()
@@ -25,16 +26,16 @@ DirectUI::CalendarDatePickerGenerated::~CalendarDatePickerGenerated()
 
 HRESULT DirectUI::CalendarDatePickerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CalendarDatePicker)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CalendarDatePicker), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CalendarDatePicker*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ICalendarDatePicker)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ICalendarDatePicker), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ICalendarDatePicker*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ICalendarDatePickerFeature_HeaderPlacement)) && Feature_HeaderPlacement::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ICalendarDatePickerFeature_HeaderPlacement), sizeof(IID)) == 0 && Feature_HeaderPlacement::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ICalendarDatePickerFeature_HeaderPlacement*>(this);
     }

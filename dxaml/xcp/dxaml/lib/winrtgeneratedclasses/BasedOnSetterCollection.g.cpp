@@ -11,6 +11,7 @@
 
 #include "BasedOnSetterCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::BasedOnSetterCollection::BasedOnSetterCollection()
@@ -23,7 +24,7 @@ DirectUI::BasedOnSetterCollection::~BasedOnSetterCollection()
 
 HRESULT DirectUI::BasedOnSetterCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::BasedOnSetterCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::BasedOnSetterCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::BasedOnSetterCollection*>(this);
     }

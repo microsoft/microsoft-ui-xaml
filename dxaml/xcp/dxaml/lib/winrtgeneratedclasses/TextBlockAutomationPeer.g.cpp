@@ -11,6 +11,7 @@
 
 #include "TextBlockAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TextBlockAutomationPeerGenerated::TextBlockAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::TextBlockAutomationPeerGenerated::~TextBlockAutomationPeerGenerated()
 
 HRESULT DirectUI::TextBlockAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TextBlockAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TextBlockAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TextBlockAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ITextBlockAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ITextBlockAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::ITextBlockAutomationPeer*>(this);
     }

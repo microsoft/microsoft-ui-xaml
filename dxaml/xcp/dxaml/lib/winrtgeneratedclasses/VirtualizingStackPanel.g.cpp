@@ -12,6 +12,7 @@
 #include "VirtualizingStackPanel.g.h"
 #include "CleanUpVirtualizedItemEventArgs.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::VirtualizingStackPanelGenerated::VirtualizingStackPanelGenerated()
@@ -24,15 +25,15 @@ DirectUI::VirtualizingStackPanelGenerated::~VirtualizingStackPanelGenerated()
 
 HRESULT DirectUI::VirtualizingStackPanelGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::VirtualizingStackPanel)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::VirtualizingStackPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::VirtualizingStackPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IVirtualizingStackPanel)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IVirtualizingStackPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IVirtualizingStackPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IVirtualizingStackPanelOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IVirtualizingStackPanelOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IVirtualizingStackPanelOverrides*>(this);
     }

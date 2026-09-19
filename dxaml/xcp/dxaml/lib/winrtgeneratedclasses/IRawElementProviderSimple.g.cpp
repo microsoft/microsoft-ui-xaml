@@ -11,6 +11,7 @@
 
 #include "IRawElementProviderSimple.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::IRawElementProviderSimpleGenerated::IRawElementProviderSimpleGenerated()
@@ -23,11 +24,11 @@ DirectUI::IRawElementProviderSimpleGenerated::~IRawElementProviderSimpleGenerate
 
 HRESULT DirectUI::IRawElementProviderSimpleGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IRawElementProviderSimple)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::IRawElementProviderSimple), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IRawElementProviderSimple*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple*>(this);
     }

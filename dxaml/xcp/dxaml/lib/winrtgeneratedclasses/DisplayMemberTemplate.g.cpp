@@ -11,6 +11,7 @@
 
 #include "DisplayMemberTemplate.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DisplayMemberTemplate::DisplayMemberTemplate()
@@ -23,7 +24,7 @@ DirectUI::DisplayMemberTemplate::~DisplayMemberTemplate()
 
 HRESULT DirectUI::DisplayMemberTemplate::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DisplayMemberTemplate)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DisplayMemberTemplate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DisplayMemberTemplate*>(this);
     }

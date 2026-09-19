@@ -11,6 +11,7 @@
 
 #include "ContentDialogClosingDeferral.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ContentDialogClosingDeferralGenerated::ContentDialogClosingDeferralGenerated()
@@ -23,11 +24,11 @@ DirectUI::ContentDialogClosingDeferralGenerated::~ContentDialogClosingDeferralGe
 
 HRESULT DirectUI::ContentDialogClosingDeferralGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ContentDialogClosingDeferral)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ContentDialogClosingDeferral), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ContentDialogClosingDeferral*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IContentDialogClosingDeferral)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IContentDialogClosingDeferral), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IContentDialogClosingDeferral*>(this);
     }

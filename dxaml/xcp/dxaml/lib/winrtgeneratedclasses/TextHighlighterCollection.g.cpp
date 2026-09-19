@@ -11,6 +11,7 @@
 
 #include "TextHighlighterCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TextHighlighterCollectionGenerated::TextHighlighterCollectionGenerated()
@@ -23,11 +24,11 @@ DirectUI::TextHighlighterCollectionGenerated::~TextHighlighterCollectionGenerate
 
 HRESULT DirectUI::TextHighlighterCollectionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TextHighlighterCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TextHighlighterCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TextHighlighterCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Documents::TextHighlighter*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Documents::TextHighlighter*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Documents::TextHighlighter*>*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "ColorDisplayNameHelper.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 
 HRESULT DirectUI::ColorDisplayNameHelperFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)

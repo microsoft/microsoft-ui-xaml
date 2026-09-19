@@ -11,6 +11,7 @@
 
 #include "QuinticEase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::QuinticEase::QuinticEase()
@@ -23,11 +24,11 @@ DirectUI::QuinticEase::~QuinticEase()
 
 HRESULT DirectUI::QuinticEase::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::QuinticEase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::QuinticEase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::QuinticEase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IQuinticEase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IQuinticEase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IQuinticEase*>(this);
     }

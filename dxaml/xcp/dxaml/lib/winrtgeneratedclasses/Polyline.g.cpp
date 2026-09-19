@@ -12,6 +12,7 @@
 #include "Polyline.g.h"
 #include "PointCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Polyline::Polyline()
@@ -24,11 +25,11 @@ DirectUI::Polyline::~Polyline()
 
 HRESULT DirectUI::Polyline::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Polyline)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Polyline), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Polyline*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Shapes::IPolyline)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Shapes::IPolyline), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Shapes::IPolyline*>(this);
     }

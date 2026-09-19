@@ -11,6 +11,7 @@
 
 #include "CalendarDatePickerAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CalendarDatePickerAutomationPeerGenerated::CalendarDatePickerAutomationPeerGenerated()
@@ -23,19 +24,19 @@ DirectUI::CalendarDatePickerAutomationPeerGenerated::~CalendarDatePickerAutomati
 
 HRESULT DirectUI::CalendarDatePickerAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CalendarDatePickerAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CalendarDatePickerAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CalendarDatePickerAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ICalendarDatePickerAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ICalendarDatePickerAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::ICalendarDatePickerAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IValueProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IValueProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IValueProvider*>(this);
     }

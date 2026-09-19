@@ -14,6 +14,7 @@
 #include "ItemsChangedEventArgs.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::VirtualizingPanelGenerated::VirtualizingPanelGenerated()
@@ -26,19 +27,19 @@ DirectUI::VirtualizingPanelGenerated::~VirtualizingPanelGenerated()
 
 HRESULT DirectUI::VirtualizingPanelGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::VirtualizingPanel)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::VirtualizingPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::VirtualizingPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IVirtualizingPanel)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IVirtualizingPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IVirtualizingPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IVirtualizingPanelProtected)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IVirtualizingPanelProtected), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IVirtualizingPanelProtected*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IVirtualizingPanelOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IVirtualizingPanelOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IVirtualizingPanelOverrides*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "ProcessKeyboardAcceleratorEventArgs.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ProcessKeyboardAcceleratorEventArgs::ProcessKeyboardAcceleratorEventArgs(): m_key(), m_modifiers(), m_handled(), m_handledShouldNotImpedeTextInput()
@@ -23,11 +24,11 @@ DirectUI::ProcessKeyboardAcceleratorEventArgs::~ProcessKeyboardAcceleratorEventA
 
 HRESULT DirectUI::ProcessKeyboardAcceleratorEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ProcessKeyboardAcceleratorEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ProcessKeyboardAcceleratorEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ProcessKeyboardAcceleratorEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs*>(this);
     }

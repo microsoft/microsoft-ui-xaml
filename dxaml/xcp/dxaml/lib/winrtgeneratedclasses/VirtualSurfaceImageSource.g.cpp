@@ -11,6 +11,7 @@
 
 #include "VirtualSurfaceImageSource.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::VirtualSurfaceImageSourceGenerated::VirtualSurfaceImageSourceGenerated()
@@ -23,11 +24,11 @@ DirectUI::VirtualSurfaceImageSourceGenerated::~VirtualSurfaceImageSourceGenerate
 
 HRESULT DirectUI::VirtualSurfaceImageSourceGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::VirtualSurfaceImageSource)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::VirtualSurfaceImageSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::VirtualSurfaceImageSource*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::IVirtualSurfaceImageSource)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::IVirtualSurfaceImageSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Imaging::IVirtualSurfaceImageSource*>(this);
     }

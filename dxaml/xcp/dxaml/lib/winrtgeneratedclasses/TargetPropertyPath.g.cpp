@@ -12,6 +12,7 @@
 #include "TargetPropertyPath.g.h"
 #include "PropertyPath.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TargetPropertyPath::TargetPropertyPath()
@@ -24,11 +25,11 @@ DirectUI::TargetPropertyPath::~TargetPropertyPath()
 
 HRESULT DirectUI::TargetPropertyPath::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TargetPropertyPath)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TargetPropertyPath), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TargetPropertyPath*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::ITargetPropertyPath)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::ITargetPropertyPath), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::ITargetPropertyPath*>(this);
     }

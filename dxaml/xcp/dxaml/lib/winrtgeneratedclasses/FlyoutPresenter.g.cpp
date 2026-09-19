@@ -11,6 +11,7 @@
 
 #include "FlyoutPresenter.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FlyoutPresenterGenerated::FlyoutPresenterGenerated()
@@ -23,11 +24,11 @@ DirectUI::FlyoutPresenterGenerated::~FlyoutPresenterGenerated()
 
 HRESULT DirectUI::FlyoutPresenterGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FlyoutPresenter)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FlyoutPresenter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FlyoutPresenter*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IFlyoutPresenter)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IFlyoutPresenter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IFlyoutPresenter*>(this);
     }

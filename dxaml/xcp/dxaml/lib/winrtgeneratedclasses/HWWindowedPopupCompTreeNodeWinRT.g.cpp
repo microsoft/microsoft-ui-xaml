@@ -11,6 +11,7 @@
 
 #include "HWWindowedPopupCompTreeNodeWinRT.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::HWWindowedPopupCompTreeNodeWinRT::HWWindowedPopupCompTreeNodeWinRT()
@@ -23,7 +24,7 @@ DirectUI::HWWindowedPopupCompTreeNodeWinRT::~HWWindowedPopupCompTreeNodeWinRT()
 
 HRESULT DirectUI::HWWindowedPopupCompTreeNodeWinRT::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::HWWindowedPopupCompTreeNodeWinRT)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::HWWindowedPopupCompTreeNodeWinRT), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::HWWindowedPopupCompTreeNodeWinRT*>(this);
     }

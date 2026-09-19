@@ -12,6 +12,7 @@
 #include "StackPanel.g.h"
 #include "Brush.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::StackPanelGenerated::StackPanelGenerated()
@@ -24,27 +25,27 @@ DirectUI::StackPanelGenerated::~StackPanelGenerated()
 
 HRESULT DirectUI::StackPanelGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::StackPanel)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::StackPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::StackPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IStackPanel)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IStackPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IStackPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IInsertionPanel)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IInsertionPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IInsertionPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollSnapPointsInfo)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollSnapPointsInfo), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollSnapPointsInfo*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IItemLookupPanel)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IItemLookupPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IItemLookupPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IPaginatedPanel)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IPaginatedPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IPaginatedPanel*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "GridViewHeaderItemAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::GridViewHeaderItemAutomationPeerGenerated::GridViewHeaderItemAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::GridViewHeaderItemAutomationPeerGenerated::~GridViewHeaderItemAutomati
 
 HRESULT DirectUI::GridViewHeaderItemAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::GridViewHeaderItemAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::GridViewHeaderItemAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::GridViewHeaderItemAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IGridViewHeaderItemAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IGridViewHeaderItemAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IGridViewHeaderItemAutomationPeer*>(this);
     }

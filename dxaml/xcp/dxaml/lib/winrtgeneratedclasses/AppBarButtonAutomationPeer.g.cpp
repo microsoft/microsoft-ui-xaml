@@ -11,6 +11,7 @@
 
 #include "AppBarButtonAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::AppBarButtonAutomationPeerGenerated::AppBarButtonAutomationPeerGenerated()
@@ -23,15 +24,15 @@ DirectUI::AppBarButtonAutomationPeerGenerated::~AppBarButtonAutomationPeerGenera
 
 HRESULT DirectUI::AppBarButtonAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AppBarButtonAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AppBarButtonAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AppBarButtonAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IAppBarButtonAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IAppBarButtonAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IAppBarButtonAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IExpandCollapseProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IExpandCollapseProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IExpandCollapseProvider*>(this);
     }

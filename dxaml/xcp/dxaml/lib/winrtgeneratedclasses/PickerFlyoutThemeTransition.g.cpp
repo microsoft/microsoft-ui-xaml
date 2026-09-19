@@ -11,6 +11,7 @@
 
 #include "PickerFlyoutThemeTransition.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PickerFlyoutThemeTransitionGenerated::PickerFlyoutThemeTransitionGenerated()
@@ -23,7 +24,7 @@ DirectUI::PickerFlyoutThemeTransitionGenerated::~PickerFlyoutThemeTransitionGene
 
 HRESULT DirectUI::PickerFlyoutThemeTransitionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PickerFlyoutThemeTransition)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PickerFlyoutThemeTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PickerFlyoutThemeTransition*>(this);
     }

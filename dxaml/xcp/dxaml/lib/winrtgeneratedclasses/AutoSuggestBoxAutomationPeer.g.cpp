@@ -11,6 +11,7 @@
 
 #include "AutoSuggestBoxAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::AutoSuggestBoxAutomationPeerGenerated::AutoSuggestBoxAutomationPeerGenerated()
@@ -23,15 +24,15 @@ DirectUI::AutoSuggestBoxAutomationPeerGenerated::~AutoSuggestBoxAutomationPeerGe
 
 HRESULT DirectUI::AutoSuggestBoxAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AutoSuggestBoxAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AutoSuggestBoxAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AutoSuggestBoxAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IAutoSuggestBoxAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IAutoSuggestBoxAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IAutoSuggestBoxAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider*>(this);
     }

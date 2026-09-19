@@ -14,6 +14,7 @@
 #include "IRawElementProviderSimple.g.h"
 #include "ItemAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ItemsControlAutomationPeerGenerated::ItemsControlAutomationPeerGenerated()
@@ -26,19 +27,19 @@ DirectUI::ItemsControlAutomationPeerGenerated::~ItemsControlAutomationPeerGenera
 
 HRESULT DirectUI::ItemsControlAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ItemsControlAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ItemsControlAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ItemsControlAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IItemsControlAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IItemsControlAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IItemsControlAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IItemsControlAutomationPeerOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IItemsControlAutomationPeerOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IItemsControlAutomationPeerOverrides*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IItemContainerProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IItemContainerProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IItemContainerProvider*>(this);
     }

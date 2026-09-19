@@ -11,6 +11,7 @@
 
 #include "CalendarLayoutStrategy.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CalendarLayoutStrategyGenerated::CalendarLayoutStrategyGenerated()
@@ -23,11 +24,11 @@ DirectUI::CalendarLayoutStrategyGenerated::~CalendarLayoutStrategyGenerated()
 
 HRESULT DirectUI::CalendarLayoutStrategyGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CalendarLayoutStrategy)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CalendarLayoutStrategy), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CalendarLayoutStrategy*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ILayoutStrategy)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ILayoutStrategy), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ILayoutStrategy*>(this);
     }

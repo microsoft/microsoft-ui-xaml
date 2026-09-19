@@ -15,6 +15,7 @@
 #include "FontFamily.g.h"
 #include "Style.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CalendarViewGenerated::CalendarViewGenerated()
@@ -27,11 +28,11 @@ DirectUI::CalendarViewGenerated::~CalendarViewGenerated()
 
 HRESULT DirectUI::CalendarViewGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CalendarView)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CalendarView), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CalendarView*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ICalendarView)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ICalendarView), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ICalendarView*>(this);
     }

@@ -12,6 +12,7 @@
 #include "Setter.g.h"
 #include "TargetPropertyPath.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Setter::Setter()
@@ -24,11 +25,11 @@ DirectUI::Setter::~Setter()
 
 HRESULT DirectUI::Setter::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Setter)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Setter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Setter*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::ISetter)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::ISetter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::ISetter*>(this);
     }

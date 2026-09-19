@@ -11,6 +11,7 @@
 
 #include "TextRangeProvider.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TextRangeProvider::TextRangeProvider()
@@ -23,7 +24,7 @@ DirectUI::TextRangeProvider::~TextRangeProvider()
 
 HRESULT DirectUI::TextRangeProvider::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TextRangeProvider)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TextRangeProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TextRangeProvider*>(this);
     }

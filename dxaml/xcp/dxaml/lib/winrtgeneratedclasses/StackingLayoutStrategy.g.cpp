@@ -11,6 +11,7 @@
 
 #include "StackingLayoutStrategy.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::StackingLayoutStrategyGenerated::StackingLayoutStrategyGenerated()
@@ -23,11 +24,11 @@ DirectUI::StackingLayoutStrategyGenerated::~StackingLayoutStrategyGenerated()
 
 HRESULT DirectUI::StackingLayoutStrategyGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::StackingLayoutStrategy)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::StackingLayoutStrategy), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::StackingLayoutStrategy*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ILayoutStrategy)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ILayoutStrategy), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ILayoutStrategy*>(this);
     }

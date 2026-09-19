@@ -11,6 +11,7 @@
 
 #include "ManipulationPivot.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ManipulationPivotGenerated::ManipulationPivotGenerated()
@@ -23,11 +24,11 @@ DirectUI::ManipulationPivotGenerated::~ManipulationPivotGenerated()
 
 HRESULT DirectUI::ManipulationPivotGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ManipulationPivot)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ManipulationPivot), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ManipulationPivot*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IManipulationPivot)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IManipulationPivot), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IManipulationPivot*>(this);
     }

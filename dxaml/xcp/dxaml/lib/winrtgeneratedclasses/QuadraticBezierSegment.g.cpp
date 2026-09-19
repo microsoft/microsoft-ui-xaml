@@ -11,6 +11,7 @@
 
 #include "QuadraticBezierSegment.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::QuadraticBezierSegment::QuadraticBezierSegment()
@@ -23,11 +24,11 @@ DirectUI::QuadraticBezierSegment::~QuadraticBezierSegment()
 
 HRESULT DirectUI::QuadraticBezierSegment::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::QuadraticBezierSegment)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::QuadraticBezierSegment), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::QuadraticBezierSegment*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IQuadraticBezierSegment)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IQuadraticBezierSegment), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IQuadraticBezierSegment*>(this);
     }

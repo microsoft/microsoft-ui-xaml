@@ -11,6 +11,7 @@
 
 #include "TextHighlighterBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TextHighlighterBase::TextHighlighterBase()
@@ -23,11 +24,11 @@ DirectUI::TextHighlighterBase::~TextHighlighterBase()
 
 HRESULT DirectUI::TextHighlighterBase::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TextHighlighterBase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TextHighlighterBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TextHighlighterBase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Documents::ITextHighlighterBase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Documents::ITextHighlighterBase), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Documents::ITextHighlighterBase>(this);
     }

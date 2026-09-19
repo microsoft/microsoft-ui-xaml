@@ -11,6 +11,7 @@
 
 #include "LinearColorKeyFrame.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::LinearColorKeyFrame::LinearColorKeyFrame()
@@ -23,11 +24,11 @@ DirectUI::LinearColorKeyFrame::~LinearColorKeyFrame()
 
 HRESULT DirectUI::LinearColorKeyFrame::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::LinearColorKeyFrame)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::LinearColorKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::LinearColorKeyFrame*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ILinearColorKeyFrame)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ILinearColorKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::ILinearColorKeyFrame*>(this);
     }

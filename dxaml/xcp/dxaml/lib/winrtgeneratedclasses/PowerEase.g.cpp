@@ -11,6 +11,7 @@
 
 #include "PowerEase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PowerEase::PowerEase()
@@ -23,11 +24,11 @@ DirectUI::PowerEase::~PowerEase()
 
 HRESULT DirectUI::PowerEase::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PowerEase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PowerEase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PowerEase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPowerEase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPowerEase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IPowerEase*>(this);
     }

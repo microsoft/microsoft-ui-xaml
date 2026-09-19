@@ -11,6 +11,7 @@
 
 #include "XamlCompositionBrushBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::XamlCompositionBrushBaseGenerated::XamlCompositionBrushBaseGenerated()
@@ -23,23 +24,23 @@ DirectUI::XamlCompositionBrushBaseGenerated::~XamlCompositionBrushBaseGenerated(
 
 HRESULT DirectUI::XamlCompositionBrushBaseGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::XamlCompositionBrushBase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::XamlCompositionBrushBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::XamlCompositionBrushBase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IXamlCompositionBrushBase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IXamlCompositionBrushBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IXamlCompositionBrushBase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IXamlCompositionBrushBaseProtected)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IXamlCompositionBrushBaseProtected), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IXamlCompositionBrushBaseProtected*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IXamlCompositionBrushBaseOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IXamlCompositionBrushBaseOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IXamlCompositionBrushBaseOverrides*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IXamlCompositionBrushBasePrivates)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IXamlCompositionBrushBasePrivates), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IXamlCompositionBrushBasePrivates*>(this);
     }

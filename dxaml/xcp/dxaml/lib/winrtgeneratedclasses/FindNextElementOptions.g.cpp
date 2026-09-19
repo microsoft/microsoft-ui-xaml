@@ -11,6 +11,7 @@
 
 #include "FindNextElementOptions.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FindNextElementOptions::FindNextElementOptions(): m_exclusionRect(), m_hintRect(), m_XYFocusNavigationStrategyOverride(), m_ignoreOcclusivity()
@@ -23,15 +24,15 @@ DirectUI::FindNextElementOptions::~FindNextElementOptions()
 
 HRESULT DirectUI::FindNextElementOptions::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FindNextElementOptions)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FindNextElementOptions), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FindNextElementOptions*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptionsPrivate)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptionsPrivate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptionsPrivate*>(this);
     }

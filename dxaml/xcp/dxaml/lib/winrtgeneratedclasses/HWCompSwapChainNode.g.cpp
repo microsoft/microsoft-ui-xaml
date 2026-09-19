@@ -11,6 +11,7 @@
 
 #include "HWCompSwapChainNode.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::HWCompSwapChainNode::HWCompSwapChainNode()
@@ -23,7 +24,7 @@ DirectUI::HWCompSwapChainNode::~HWCompSwapChainNode()
 
 HRESULT DirectUI::HWCompSwapChainNode::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::HWCompSwapChainNode)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::HWCompSwapChainNode), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::HWCompSwapChainNode*>(this);
     }

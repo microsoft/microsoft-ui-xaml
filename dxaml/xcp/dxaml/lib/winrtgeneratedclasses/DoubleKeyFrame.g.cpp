@@ -11,6 +11,7 @@
 
 #include "DoubleKeyFrame.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DoubleKeyFrame::DoubleKeyFrame()
@@ -23,11 +24,11 @@ DirectUI::DoubleKeyFrame::~DoubleKeyFrame()
 
 HRESULT DirectUI::DoubleKeyFrame::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DoubleKeyFrame)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DoubleKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DoubleKeyFrame*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDoubleKeyFrame)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDoubleKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IDoubleKeyFrame*>(this);
     }

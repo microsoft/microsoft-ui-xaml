@@ -13,6 +13,7 @@
 #include "Brush.g.h"
 #include "IconElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::IconSourceGenerated::IconSourceGenerated()
@@ -25,15 +26,15 @@ DirectUI::IconSourceGenerated::~IconSourceGenerated()
 
 HRESULT DirectUI::IconSourceGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IconSource)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::IconSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IconSource*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IIconSource)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IIconSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IIconSource*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IIconSourceOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IIconSourceOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IIconSourceOverrides*>(this);
     }

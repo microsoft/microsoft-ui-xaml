@@ -11,6 +11,7 @@
 
 #include "SolidColorBrush.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SolidColorBrush::SolidColorBrush()
@@ -23,11 +24,11 @@ DirectUI::SolidColorBrush::~SolidColorBrush()
 
 HRESULT DirectUI::SolidColorBrush::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SolidColorBrush)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SolidColorBrush), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SolidColorBrush*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::ISolidColorBrush)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::ISolidColorBrush), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::ISolidColorBrush*>(this);
     }

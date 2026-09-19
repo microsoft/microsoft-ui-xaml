@@ -11,6 +11,7 @@
 
 #include "VisualStateGroupCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::VisualStateGroupCollectionGenerated::VisualStateGroupCollectionGenerated()
@@ -23,11 +24,11 @@ DirectUI::VisualStateGroupCollectionGenerated::~VisualStateGroupCollectionGenera
 
 HRESULT DirectUI::VisualStateGroupCollectionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::VisualStateGroupCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::VisualStateGroupCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::VisualStateGroupCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::VisualStateGroup*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::VisualStateGroup*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::VisualStateGroup*>*>(this);
     }

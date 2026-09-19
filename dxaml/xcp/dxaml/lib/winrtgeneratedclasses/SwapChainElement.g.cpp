@@ -11,6 +11,7 @@
 
 #include "SwapChainElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SwapChainElement::SwapChainElement()
@@ -23,7 +24,7 @@ DirectUI::SwapChainElement::~SwapChainElement()
 
 HRESULT DirectUI::SwapChainElement::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SwapChainElement)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SwapChainElement), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SwapChainElement*>(this);
     }

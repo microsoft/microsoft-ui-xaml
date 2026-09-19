@@ -11,6 +11,7 @@
 
 #include "RepeatButton.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RepeatButtonGenerated::RepeatButtonGenerated()
@@ -23,11 +24,11 @@ DirectUI::RepeatButtonGenerated::~RepeatButtonGenerated()
 
 HRESULT DirectUI::RepeatButtonGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RepeatButton)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RepeatButton), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RepeatButton*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IRepeatButton)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IRepeatButton), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IRepeatButton*>(this);
     }

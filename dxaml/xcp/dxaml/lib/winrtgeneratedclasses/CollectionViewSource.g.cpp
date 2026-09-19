@@ -12,6 +12,7 @@
 #include "CollectionViewSource.g.h"
 #include "PropertyPath.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CollectionViewSourceGenerated::CollectionViewSourceGenerated()
@@ -24,11 +25,11 @@ DirectUI::CollectionViewSourceGenerated::~CollectionViewSourceGenerated()
 
 HRESULT DirectUI::CollectionViewSourceGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CollectionViewSource)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CollectionViewSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CollectionViewSource*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::ICollectionViewSource)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Data::ICollectionViewSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::ICollectionViewSource*>(this);
     }

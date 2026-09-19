@@ -11,6 +11,7 @@
 
 #include "MenuFlyoutPresenterTemplateSettings.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MenuFlyoutPresenterTemplateSettings::MenuFlyoutPresenterTemplateSettings()
@@ -23,11 +24,11 @@ DirectUI::MenuFlyoutPresenterTemplateSettings::~MenuFlyoutPresenterTemplateSetti
 
 HRESULT DirectUI::MenuFlyoutPresenterTemplateSettings::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MenuFlyoutPresenterTemplateSettings)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MenuFlyoutPresenterTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MenuFlyoutPresenterTemplateSettings*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IMenuFlyoutPresenterTemplateSettings)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IMenuFlyoutPresenterTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IMenuFlyoutPresenterTemplateSettings*>(this);
     }

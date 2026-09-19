@@ -11,6 +11,7 @@
 
 #include "SoftwareBitmapSource.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SoftwareBitmapSourceGenerated::SoftwareBitmapSourceGenerated()
@@ -23,15 +24,15 @@ DirectUI::SoftwareBitmapSourceGenerated::~SoftwareBitmapSourceGenerated()
 
 HRESULT DirectUI::SoftwareBitmapSourceGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SoftwareBitmapSource)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SoftwareBitmapSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SoftwareBitmapSource*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::ISoftwareBitmapSource)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::ISoftwareBitmapSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Imaging::ISoftwareBitmapSource*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::IClosable)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::IClosable), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::IClosable*>(this);
     }

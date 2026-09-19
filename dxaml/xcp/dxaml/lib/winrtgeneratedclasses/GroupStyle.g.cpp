@@ -16,6 +16,7 @@
 #include "Style.g.h"
 #include "StyleSelector.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::GroupStyleGenerated::GroupStyleGenerated()
@@ -28,15 +29,15 @@ DirectUI::GroupStyleGenerated::~GroupStyleGenerated()
 
 HRESULT DirectUI::GroupStyleGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::GroupStyle)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::GroupStyle), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::GroupStyle*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IGroupStyle)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IGroupStyle), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IGroupStyle*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::INotifyPropertyChanged)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Data::INotifyPropertyChanged), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::INotifyPropertyChanged*>(this);
     }

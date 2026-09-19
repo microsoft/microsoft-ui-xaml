@@ -11,6 +11,7 @@
 
 #include "MediaTransportControlsAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MediaTransportControlsAutomationPeerGenerated::MediaTransportControlsAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::MediaTransportControlsAutomationPeerGenerated::~MediaTransportControls
 
 HRESULT DirectUI::MediaTransportControlsAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MediaTransportControlsAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MediaTransportControlsAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MediaTransportControlsAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IMediaTransportControlsAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IMediaTransportControlsAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IMediaTransportControlsAutomationPeer>(this);
     }

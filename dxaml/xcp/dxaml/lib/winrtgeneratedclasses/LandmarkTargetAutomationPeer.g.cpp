@@ -11,6 +11,7 @@
 
 #include "LandmarkTargetAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::LandmarkTargetAutomationPeerGenerated::LandmarkTargetAutomationPeerGenerated()
@@ -23,7 +24,7 @@ DirectUI::LandmarkTargetAutomationPeerGenerated::~LandmarkTargetAutomationPeerGe
 
 HRESULT DirectUI::LandmarkTargetAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::LandmarkTargetAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::LandmarkTargetAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::LandmarkTargetAutomationPeer*>(this);
     }

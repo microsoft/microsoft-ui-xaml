@@ -11,6 +11,7 @@
 
 #include "MarkupExtension.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MarkupExtension::MarkupExtension()
@@ -23,15 +24,15 @@ DirectUI::MarkupExtension::~MarkupExtension()
 
 HRESULT DirectUI::MarkupExtension::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MarkupExtension)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MarkupExtension), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MarkupExtension*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Markup::IMarkupExtension)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Markup::IMarkupExtension), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Markup::IMarkupExtension*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Markup::IMarkupExtensionOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Markup::IMarkupExtensionOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Markup::IMarkupExtensionOverrides*>(this);
     }

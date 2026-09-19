@@ -11,6 +11,7 @@
 
 #include "XamlOptionalChanges.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::XamlOptionalChangesGenerated::XamlOptionalChangesGenerated()
@@ -23,11 +24,11 @@ DirectUI::XamlOptionalChangesGenerated::~XamlOptionalChangesGenerated()
 
 HRESULT DirectUI::XamlOptionalChangesGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::XamlOptionalChanges)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::XamlOptionalChanges), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::XamlOptionalChanges*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Settings::IXamlOptionalChanges)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Settings::IXamlOptionalChanges), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Settings::IXamlOptionalChanges>(this);
     }

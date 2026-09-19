@@ -11,6 +11,7 @@
 
 #include "CommandBarOverflowPresenter.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CommandBarOverflowPresenterGenerated::CommandBarOverflowPresenterGenerated()
@@ -23,11 +24,11 @@ DirectUI::CommandBarOverflowPresenterGenerated::~CommandBarOverflowPresenterGene
 
 HRESULT DirectUI::CommandBarOverflowPresenterGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CommandBarOverflowPresenter)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CommandBarOverflowPresenter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CommandBarOverflowPresenter*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ICommandBarOverflowPresenter)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ICommandBarOverflowPresenter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ICommandBarOverflowPresenter*>(this);
     }

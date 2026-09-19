@@ -11,6 +11,7 @@
 
 #include "ButtonBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ButtonBaseGenerated::ButtonBaseGenerated()
@@ -23,11 +24,11 @@ DirectUI::ButtonBaseGenerated::~ButtonBaseGenerated()
 
 HRESULT DirectUI::ButtonBaseGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ButtonBase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ButtonBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ButtonBase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IButtonBase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IButtonBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IButtonBase*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "PVLStaggerFunction.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PVLStaggerFunctionGenerated::PVLStaggerFunctionGenerated()
@@ -23,7 +24,7 @@ DirectUI::PVLStaggerFunctionGenerated::~PVLStaggerFunctionGenerated()
 
 HRESULT DirectUI::PVLStaggerFunctionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PVLStaggerFunction)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PVLStaggerFunction), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PVLStaggerFunction*>(this);
     }

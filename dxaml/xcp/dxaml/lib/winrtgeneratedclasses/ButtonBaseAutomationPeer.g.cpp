@@ -11,6 +11,7 @@
 
 #include "ButtonBaseAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ButtonBaseAutomationPeerGenerated::ButtonBaseAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::ButtonBaseAutomationPeerGenerated::~ButtonBaseAutomationPeerGenerated(
 
 HRESULT DirectUI::ButtonBaseAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ButtonBaseAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ButtonBaseAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ButtonBaseAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IButtonBaseAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IButtonBaseAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IButtonBaseAutomationPeer*>(this);
     }

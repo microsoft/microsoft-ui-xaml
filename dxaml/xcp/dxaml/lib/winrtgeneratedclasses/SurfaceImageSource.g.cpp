@@ -11,6 +11,7 @@
 
 #include "SurfaceImageSource.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SurfaceImageSourceGenerated::SurfaceImageSourceGenerated()
@@ -23,11 +24,11 @@ DirectUI::SurfaceImageSourceGenerated::~SurfaceImageSourceGenerated()
 
 HRESULT DirectUI::SurfaceImageSourceGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SurfaceImageSource)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SurfaceImageSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SurfaceImageSource*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::ISurfaceImageSource)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::ISurfaceImageSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Imaging::ISurfaceImageSource*>(this);
     }

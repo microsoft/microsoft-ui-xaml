@@ -11,6 +11,7 @@
 
 #include "ResourceDictionary.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ResourceDictionaryGenerated::ResourceDictionaryGenerated()
@@ -23,15 +24,15 @@ DirectUI::ResourceDictionaryGenerated::~ResourceDictionaryGenerated()
 
 HRESULT DirectUI::ResourceDictionaryGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ResourceDictionary)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ResourceDictionary), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ResourceDictionary*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IResourceDictionary)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IResourceDictionary), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IResourceDictionary*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IMap<IInspectable*, IInspectable*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IMap<IInspectable*, IInspectable*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IMap<IInspectable*, IInspectable*>*>(this);
     }

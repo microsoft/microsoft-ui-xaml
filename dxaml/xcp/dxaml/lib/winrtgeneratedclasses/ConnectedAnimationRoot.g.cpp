@@ -11,6 +11,7 @@
 
 #include "ConnectedAnimationRoot.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ConnectedAnimationRoot::ConnectedAnimationRoot()
@@ -23,7 +24,7 @@ DirectUI::ConnectedAnimationRoot::~ConnectedAnimationRoot()
 
 HRESULT DirectUI::ConnectedAnimationRoot::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ConnectedAnimationRoot)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ConnectedAnimationRoot), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ConnectedAnimationRoot*>(this);
     }

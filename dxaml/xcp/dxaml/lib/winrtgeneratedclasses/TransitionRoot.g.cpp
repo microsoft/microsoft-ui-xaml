@@ -11,6 +11,7 @@
 
 #include "TransitionRoot.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TransitionRoot::TransitionRoot()
@@ -23,7 +24,7 @@ DirectUI::TransitionRoot::~TransitionRoot()
 
 HRESULT DirectUI::TransitionRoot::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TransitionRoot)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TransitionRoot), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TransitionRoot*>(this);
     }

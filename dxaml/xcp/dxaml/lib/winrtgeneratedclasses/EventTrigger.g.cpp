@@ -13,6 +13,7 @@
 #include "RoutedEvent.g.h"
 #include "TriggerActionCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::EventTriggerGenerated::EventTriggerGenerated()
@@ -25,11 +26,11 @@ DirectUI::EventTriggerGenerated::~EventTriggerGenerated()
 
 HRESULT DirectUI::EventTriggerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::EventTrigger)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::EventTrigger), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::EventTrigger*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IEventTrigger)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IEventTrigger), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IEventTrigger*>(this);
     }

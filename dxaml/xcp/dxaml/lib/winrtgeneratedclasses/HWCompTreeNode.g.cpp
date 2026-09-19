@@ -11,6 +11,7 @@
 
 #include "HWCompTreeNode.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::HWCompTreeNode::HWCompTreeNode()
@@ -23,7 +24,7 @@ DirectUI::HWCompTreeNode::~HWCompTreeNode()
 
 HRESULT DirectUI::HWCompTreeNode::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::HWCompTreeNode)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::HWCompTreeNode), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::HWCompTreeNode*>(this);
     }

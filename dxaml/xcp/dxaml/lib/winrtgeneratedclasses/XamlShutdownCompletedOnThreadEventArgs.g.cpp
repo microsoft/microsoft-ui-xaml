@@ -11,6 +11,7 @@
 
 #include "XamlShutdownCompletedOnThreadEventArgs.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::XamlShutdownCompletedOnThreadEventArgsGenerated::XamlShutdownCompletedOnThreadEventArgsGenerated()
@@ -23,11 +24,11 @@ DirectUI::XamlShutdownCompletedOnThreadEventArgsGenerated::~XamlShutdownComplete
 
 HRESULT DirectUI::XamlShutdownCompletedOnThreadEventArgsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::XamlShutdownCompletedOnThreadEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::XamlShutdownCompletedOnThreadEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::XamlShutdownCompletedOnThreadEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Hosting::IXamlShutdownCompletedOnThreadEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Hosting::IXamlShutdownCompletedOnThreadEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Hosting::IXamlShutdownCompletedOnThreadEventArgs>(this);
     }

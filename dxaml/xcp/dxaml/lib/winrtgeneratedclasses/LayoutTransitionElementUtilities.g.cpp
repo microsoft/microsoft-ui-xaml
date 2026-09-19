@@ -12,6 +12,7 @@
 #include "LayoutTransitionElementUtilities.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::LayoutTransitionElementUtilities::LayoutTransitionElementUtilities()
@@ -24,7 +25,7 @@ DirectUI::LayoutTransitionElementUtilities::~LayoutTransitionElementUtilities()
 
 HRESULT DirectUI::LayoutTransitionElementUtilities::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::LayoutTransitionElementUtilities)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::LayoutTransitionElementUtilities), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::LayoutTransitionElementUtilities*>(this);
     }

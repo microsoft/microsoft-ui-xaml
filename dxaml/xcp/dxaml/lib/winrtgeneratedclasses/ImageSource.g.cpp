@@ -11,6 +11,7 @@
 
 #include "ImageSource.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ImageSource::ImageSource()
@@ -23,11 +24,11 @@ DirectUI::ImageSource::~ImageSource()
 
 HRESULT DirectUI::ImageSource::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ImageSource)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ImageSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ImageSource*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IImageSource)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IImageSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IImageSource*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "CollectionViewGroup.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CollectionViewGroupGenerated::CollectionViewGroupGenerated()
@@ -23,15 +24,15 @@ DirectUI::CollectionViewGroupGenerated::~CollectionViewGroupGenerated()
 
 HRESULT DirectUI::CollectionViewGroupGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CollectionViewGroup)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CollectionViewGroup), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CollectionViewGroup*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::ICollectionViewGroup)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Data::ICollectionViewGroup), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::ICollectionViewGroup*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::ICustomPropertyProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Data::ICustomPropertyProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::ICustomPropertyProvider*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "XamlLightCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::XamlLightCollection::XamlLightCollection()
@@ -23,11 +24,11 @@ DirectUI::XamlLightCollection::~XamlLightCollection()
 
 HRESULT DirectUI::XamlLightCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::XamlLightCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::XamlLightCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::XamlLightCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::XamlLight*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::XamlLight*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::XamlLight*>*>(this);
     }

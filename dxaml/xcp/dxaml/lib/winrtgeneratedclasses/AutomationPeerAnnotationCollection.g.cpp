@@ -11,6 +11,7 @@
 
 #include "AutomationPeerAnnotationCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::AutomationPeerAnnotationCollection::AutomationPeerAnnotationCollection()
@@ -23,11 +24,11 @@ DirectUI::AutomationPeerAnnotationCollection::~AutomationPeerAnnotationCollectio
 
 HRESULT DirectUI::AutomationPeerAnnotationCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AutomationPeerAnnotationCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AutomationPeerAnnotationCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AutomationPeerAnnotationCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerAnnotation*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerAnnotation*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerAnnotation*>*>(this);
     }

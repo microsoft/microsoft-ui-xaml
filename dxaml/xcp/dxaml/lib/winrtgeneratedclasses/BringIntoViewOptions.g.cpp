@@ -11,6 +11,7 @@
 
 #include "BringIntoViewOptions.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::BringIntoViewOptionsGenerated::BringIntoViewOptionsGenerated(): m_animationDesired()
@@ -23,11 +24,11 @@ DirectUI::BringIntoViewOptionsGenerated::~BringIntoViewOptionsGenerated()
 
 HRESULT DirectUI::BringIntoViewOptionsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::BringIntoViewOptions)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::BringIntoViewOptions), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::BringIntoViewOptions*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IBringIntoViewOptions)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IBringIntoViewOptions), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IBringIntoViewOptions*>(this);
     }

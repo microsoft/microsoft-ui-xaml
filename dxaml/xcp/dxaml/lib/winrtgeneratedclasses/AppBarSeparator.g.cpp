@@ -11,6 +11,7 @@
 
 #include "AppBarSeparator.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::AppBarSeparatorGenerated::AppBarSeparatorGenerated()
@@ -23,19 +24,19 @@ DirectUI::AppBarSeparatorGenerated::~AppBarSeparatorGenerated()
 
 HRESULT DirectUI::AppBarSeparatorGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AppBarSeparator)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AppBarSeparator), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AppBarSeparator*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IAppBarSeparator)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IAppBarSeparator), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IAppBarSeparator*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ICommandBarElement)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ICommandBarElement), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ICommandBarElement*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ICommandBarOverflowElement)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ICommandBarOverflowElement), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ICommandBarOverflowElement*>(this);
     }

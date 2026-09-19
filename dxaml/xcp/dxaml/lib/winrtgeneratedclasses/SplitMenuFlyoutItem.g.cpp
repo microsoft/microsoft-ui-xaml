@@ -12,6 +12,7 @@
 #include "SplitMenuFlyoutItem.g.h"
 #include "Style.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SplitMenuFlyoutItemGenerated::SplitMenuFlyoutItemGenerated()
@@ -24,15 +25,15 @@ DirectUI::SplitMenuFlyoutItemGenerated::~SplitMenuFlyoutItemGenerated()
 
 HRESULT DirectUI::SplitMenuFlyoutItemGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SplitMenuFlyoutItem)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SplitMenuFlyoutItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SplitMenuFlyoutItem*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItem)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItem), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItem>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISubMenuOwner)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ISubMenuOwner), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISubMenuOwner*>(this);
     }

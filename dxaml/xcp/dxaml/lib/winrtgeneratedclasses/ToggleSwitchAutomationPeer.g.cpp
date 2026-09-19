@@ -11,6 +11,7 @@
 
 #include "ToggleSwitchAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ToggleSwitchAutomationPeerGenerated::ToggleSwitchAutomationPeerGenerated()
@@ -23,15 +24,15 @@ DirectUI::ToggleSwitchAutomationPeerGenerated::~ToggleSwitchAutomationPeerGenera
 
 HRESULT DirectUI::ToggleSwitchAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ToggleSwitchAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ToggleSwitchAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ToggleSwitchAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IToggleSwitchAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IToggleSwitchAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IToggleSwitchAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IToggleProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IToggleProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IToggleProvider*>(this);
     }

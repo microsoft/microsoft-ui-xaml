@@ -11,6 +11,7 @@
 
 #include "WindowEventArgs.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::WindowEventArgs::WindowEventArgs(): m_handled()
@@ -23,11 +24,11 @@ DirectUI::WindowEventArgs::~WindowEventArgs()
 
 HRESULT DirectUI::WindowEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::WindowEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::WindowEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::WindowEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IWindowEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IWindowEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IWindowEventArgs*>(this);
     }

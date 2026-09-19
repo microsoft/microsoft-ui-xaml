@@ -15,6 +15,7 @@
 #include "NavigatingCancelEventArgs.g.h"
 #include "NavigationEventArgs.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PageGenerated::PageGenerated()
@@ -27,15 +28,15 @@ DirectUI::PageGenerated::~PageGenerated()
 
 HRESULT DirectUI::PageGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Page)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Page), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Page*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IPage)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IPage), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IPage*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IPageOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IPageOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IPageOverrides*>(this);
     }

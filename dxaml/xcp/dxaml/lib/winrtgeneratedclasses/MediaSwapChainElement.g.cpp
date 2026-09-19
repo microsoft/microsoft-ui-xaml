@@ -11,6 +11,7 @@
 
 #include "MediaSwapChainElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MediaSwapChainElement::MediaSwapChainElement()
@@ -23,7 +24,7 @@ DirectUI::MediaSwapChainElement::~MediaSwapChainElement()
 
 HRESULT DirectUI::MediaSwapChainElement::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MediaSwapChainElement)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MediaSwapChainElement), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MediaSwapChainElement*>(this);
     }

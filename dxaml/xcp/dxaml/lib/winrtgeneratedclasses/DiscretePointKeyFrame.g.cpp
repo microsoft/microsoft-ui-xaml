@@ -11,6 +11,7 @@
 
 #include "DiscretePointKeyFrame.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DiscretePointKeyFrame::DiscretePointKeyFrame()
@@ -23,11 +24,11 @@ DirectUI::DiscretePointKeyFrame::~DiscretePointKeyFrame()
 
 HRESULT DirectUI::DiscretePointKeyFrame::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DiscretePointKeyFrame)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DiscretePointKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DiscretePointKeyFrame*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDiscretePointKeyFrame)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDiscretePointKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IDiscretePointKeyFrame*>(this);
     }

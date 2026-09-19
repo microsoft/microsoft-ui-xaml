@@ -11,6 +11,7 @@
 
 #include "CheckBox.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CheckBoxGenerated::CheckBoxGenerated()
@@ -23,11 +24,11 @@ DirectUI::CheckBoxGenerated::~CheckBoxGenerated()
 
 HRESULT DirectUI::CheckBoxGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CheckBox)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CheckBox), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CheckBox*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ICheckBox)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ICheckBox), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ICheckBox*>(this);
     }

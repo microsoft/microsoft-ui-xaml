@@ -12,6 +12,7 @@
 #include "ElementFactoryRecycleArgs.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ElementFactoryRecycleArgs::ElementFactoryRecycleArgs()
@@ -24,11 +25,11 @@ DirectUI::ElementFactoryRecycleArgs::~ElementFactoryRecycleArgs()
 
 HRESULT DirectUI::ElementFactoryRecycleArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ElementFactoryRecycleArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ElementFactoryRecycleArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ElementFactoryRecycleArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IElementFactoryRecycleArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IElementFactoryRecycleArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IElementFactoryRecycleArgs*>(this);
     }

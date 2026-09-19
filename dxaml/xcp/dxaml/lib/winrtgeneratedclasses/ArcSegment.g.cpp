@@ -11,6 +11,7 @@
 
 #include "ArcSegment.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ArcSegment::ArcSegment()
@@ -23,11 +24,11 @@ DirectUI::ArcSegment::~ArcSegment()
 
 HRESULT DirectUI::ArcSegment::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ArcSegment)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ArcSegment), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ArcSegment*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IArcSegment)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IArcSegment), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IArcSegment*>(this);
     }

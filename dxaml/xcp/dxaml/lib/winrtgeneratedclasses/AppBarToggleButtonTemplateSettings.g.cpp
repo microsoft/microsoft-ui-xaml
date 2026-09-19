@@ -11,6 +11,7 @@
 
 #include "AppBarToggleButtonTemplateSettings.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::AppBarToggleButtonTemplateSettings::AppBarToggleButtonTemplateSettings()
@@ -23,11 +24,11 @@ DirectUI::AppBarToggleButtonTemplateSettings::~AppBarToggleButtonTemplateSetting
 
 HRESULT DirectUI::AppBarToggleButtonTemplateSettings::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AppBarToggleButtonTemplateSettings)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AppBarToggleButtonTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AppBarToggleButtonTemplateSettings*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IAppBarToggleButtonTemplateSettings)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IAppBarToggleButtonTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IAppBarToggleButtonTemplateSettings*>(this);
     }

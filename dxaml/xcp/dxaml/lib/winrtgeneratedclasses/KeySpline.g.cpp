@@ -11,6 +11,7 @@
 
 #include "KeySpline.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::KeySpline::KeySpline()
@@ -23,11 +24,11 @@ DirectUI::KeySpline::~KeySpline()
 
 HRESULT DirectUI::KeySpline::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::KeySpline)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::KeySpline), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::KeySpline*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IKeySpline)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IKeySpline), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IKeySpline*>(this);
     }

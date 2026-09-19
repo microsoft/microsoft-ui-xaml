@@ -11,6 +11,7 @@
 
 #include "BuildTreeService.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::BuildTreeServiceGenerated::BuildTreeServiceGenerated()
@@ -23,7 +24,7 @@ DirectUI::BuildTreeServiceGenerated::~BuildTreeServiceGenerated()
 
 HRESULT DirectUI::BuildTreeServiceGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::BuildTreeService)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::BuildTreeService), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::BuildTreeService*>(this);
     }

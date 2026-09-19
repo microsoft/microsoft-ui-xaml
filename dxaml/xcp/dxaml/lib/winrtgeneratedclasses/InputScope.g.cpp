@@ -11,6 +11,7 @@
 
 #include "InputScope.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::InputScope::InputScope()
@@ -23,11 +24,11 @@ DirectUI::InputScope::~InputScope()
 
 HRESULT DirectUI::InputScope::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::InputScope)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::InputScope), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::InputScope*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IInputScope)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IInputScope), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IInputScope*>(this);
     }

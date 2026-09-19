@@ -11,6 +11,7 @@
 
 #include "CalendarViewBaseItem.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CalendarViewBaseItemGenerated::CalendarViewBaseItemGenerated()
@@ -23,7 +24,7 @@ DirectUI::CalendarViewBaseItemGenerated::~CalendarViewBaseItemGenerated()
 
 HRESULT DirectUI::CalendarViewBaseItemGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CalendarViewBaseItem)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CalendarViewBaseItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CalendarViewBaseItem*>(this);
     }

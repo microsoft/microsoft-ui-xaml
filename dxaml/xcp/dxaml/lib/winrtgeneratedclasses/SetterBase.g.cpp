@@ -11,6 +11,7 @@
 
 #include "SetterBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SetterBase::SetterBase()
@@ -23,11 +24,11 @@ DirectUI::SetterBase::~SetterBase()
 
 HRESULT DirectUI::SetterBase::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SetterBase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SetterBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SetterBase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::ISetterBase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::ISetterBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::ISetterBase*>(this);
     }

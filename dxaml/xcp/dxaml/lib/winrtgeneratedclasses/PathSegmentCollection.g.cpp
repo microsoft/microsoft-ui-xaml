@@ -11,6 +11,7 @@
 
 #include "PathSegmentCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PathSegmentCollection::PathSegmentCollection()
@@ -23,11 +24,11 @@ DirectUI::PathSegmentCollection::~PathSegmentCollection()
 
 HRESULT DirectUI::PathSegmentCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PathSegmentCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PathSegmentCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PathSegmentCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::PathSegment*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::PathSegment*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::PathSegment*>*>(this);
     }

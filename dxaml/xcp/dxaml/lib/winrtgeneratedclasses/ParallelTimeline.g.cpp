@@ -11,6 +11,7 @@
 
 #include "ParallelTimeline.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ParallelTimeline::ParallelTimeline()
@@ -23,7 +24,7 @@ DirectUI::ParallelTimeline::~ParallelTimeline()
 
 HRESULT DirectUI::ParallelTimeline::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ParallelTimeline)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ParallelTimeline), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ParallelTimeline*>(this);
     }

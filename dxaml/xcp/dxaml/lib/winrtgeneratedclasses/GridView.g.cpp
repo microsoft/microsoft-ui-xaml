@@ -11,6 +11,7 @@
 
 #include "GridView.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::GridViewGenerated::GridViewGenerated()
@@ -23,11 +24,11 @@ DirectUI::GridViewGenerated::~GridViewGenerated()
 
 HRESULT DirectUI::GridViewGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::GridView)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::GridView), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::GridView*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IGridView)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IGridView), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IGridView*>(this);
     }

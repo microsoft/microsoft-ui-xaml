@@ -11,6 +11,7 @@
 
 #include "WindowsXamlManager.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::WindowsXamlManagerGenerated::WindowsXamlManagerGenerated()
@@ -23,19 +24,19 @@ DirectUI::WindowsXamlManagerGenerated::~WindowsXamlManagerGenerated()
 
 HRESULT DirectUI::WindowsXamlManagerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::WindowsXamlManager)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::WindowsXamlManager), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::WindowsXamlManager*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::IClosable)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::IClosable), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::IClosable*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager2)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager2), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager2>(this);
     }

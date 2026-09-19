@@ -12,6 +12,7 @@
 #include "SplineDoubleKeyFrame.g.h"
 #include "KeySpline.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SplineDoubleKeyFrame::SplineDoubleKeyFrame()
@@ -24,11 +25,11 @@ DirectUI::SplineDoubleKeyFrame::~SplineDoubleKeyFrame()
 
 HRESULT DirectUI::SplineDoubleKeyFrame::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SplineDoubleKeyFrame)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SplineDoubleKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SplineDoubleKeyFrame*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISplineDoubleKeyFrame)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISplineDoubleKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::ISplineDoubleKeyFrame*>(this);
     }

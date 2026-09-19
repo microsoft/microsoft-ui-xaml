@@ -32,6 +32,7 @@
 #include "Vector3Transition.g.h"
 #include "XamlRoot.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::UIElementGenerated::UIElementGenerated()
@@ -44,46 +45,46 @@ DirectUI::UIElementGenerated::~UIElementGenerated()
 
 HRESULT DirectUI::UIElementGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::UIElement)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::UIElement), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::UIElement*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IUIElement)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IUIElement), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IUIElement*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IUIElementProtected)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IUIElementProtected), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IUIElementProtected*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IUIElementOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IUIElementOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IUIElementOverrides*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Composition::IAnimationObject)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Composition::IAnimationObject), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Composition::IAnimationObject*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Composition::IVisualElement)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Composition::IVisualElement), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Composition::IVisualElement*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Composition::IVisualElement2)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Composition::IVisualElement2), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Composition::IVisualElement2*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IUIElementPrivate)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IUIElementPrivate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IUIElementPrivate*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_Xaml2018)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IUIElementFeature_Xaml2018)) && Feature_Xaml2018::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IUIElementFeature_Xaml2018), sizeof(IID)) == 0 && Feature_Xaml2018::IsEnabled())
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IUIElementFeature_Xaml2018>(this);
     }
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IUIElementFeature_XamlMotionSystemHoldbacks)) && Feature_XamlMotionSystemHoldbacks::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IUIElementFeature_XamlMotionSystemHoldbacks), sizeof(IID)) == 0 && Feature_XamlMotionSystemHoldbacks::IsEnabled())
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IUIElementFeature_XamlMotionSystemHoldbacks>(this);
     }

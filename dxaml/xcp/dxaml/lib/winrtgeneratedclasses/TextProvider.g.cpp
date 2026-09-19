@@ -11,6 +11,7 @@
 
 #include "TextProvider.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TextProvider::TextProvider()
@@ -23,7 +24,7 @@ DirectUI::TextProvider::~TextProvider()
 
 HRESULT DirectUI::TextProvider::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TextProvider)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TextProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TextProvider*>(this);
     }

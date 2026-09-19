@@ -11,6 +11,7 @@
 
 #include "ScrollItemAdapter.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ScrollItemAdapterGenerated::ScrollItemAdapterGenerated()
@@ -23,11 +24,11 @@ DirectUI::ScrollItemAdapterGenerated::~ScrollItemAdapterGenerated()
 
 HRESULT DirectUI::ScrollItemAdapterGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ScrollItemAdapter)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ScrollItemAdapter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ScrollItemAdapter*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IScrollItemProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IScrollItemProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IScrollItemProvider*>(this);
     }

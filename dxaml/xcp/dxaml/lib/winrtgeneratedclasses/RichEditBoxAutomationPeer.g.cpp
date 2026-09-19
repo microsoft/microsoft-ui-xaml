@@ -11,6 +11,7 @@
 
 #include "RichEditBoxAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RichEditBoxAutomationPeerGenerated::RichEditBoxAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::RichEditBoxAutomationPeerGenerated::~RichEditBoxAutomationPeerGenerate
 
 HRESULT DirectUI::RichEditBoxAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RichEditBoxAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RichEditBoxAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RichEditBoxAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IRichEditBoxAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IRichEditBoxAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IRichEditBoxAutomationPeer*>(this);
     }

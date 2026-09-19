@@ -11,6 +11,7 @@
 
 #include "DeferredElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DeferredElement::DeferredElement()
@@ -23,7 +24,7 @@ DirectUI::DeferredElement::~DeferredElement()
 
 HRESULT DirectUI::DeferredElement::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DeferredElement)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DeferredElement), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DeferredElement*>(this);
     }

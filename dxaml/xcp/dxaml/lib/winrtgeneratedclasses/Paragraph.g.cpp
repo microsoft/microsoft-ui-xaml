@@ -12,6 +12,7 @@
 #include "Paragraph.g.h"
 #include "InlineCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ParagraphGenerated::ParagraphGenerated()
@@ -24,11 +25,11 @@ DirectUI::ParagraphGenerated::~ParagraphGenerated()
 
 HRESULT DirectUI::ParagraphGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Paragraph)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Paragraph), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Paragraph*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Documents::IParagraph)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Documents::IParagraph), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Documents::IParagraph*>(this);
     }

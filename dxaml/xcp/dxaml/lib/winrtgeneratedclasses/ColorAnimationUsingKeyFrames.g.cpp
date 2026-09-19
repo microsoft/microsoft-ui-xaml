@@ -12,6 +12,7 @@
 #include "ColorAnimationUsingKeyFrames.g.h"
 #include "ColorKeyFrameCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ColorAnimationUsingKeyFrames::ColorAnimationUsingKeyFrames()
@@ -24,11 +25,11 @@ DirectUI::ColorAnimationUsingKeyFrames::~ColorAnimationUsingKeyFrames()
 
 HRESULT DirectUI::ColorAnimationUsingKeyFrames::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ColorAnimationUsingKeyFrames)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ColorAnimationUsingKeyFrames), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ColorAnimationUsingKeyFrames*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IColorAnimationUsingKeyFrames)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IColorAnimationUsingKeyFrames), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IColorAnimationUsingKeyFrames*>(this);
     }

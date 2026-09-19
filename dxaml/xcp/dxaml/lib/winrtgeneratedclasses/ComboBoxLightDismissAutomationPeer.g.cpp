@@ -11,6 +11,7 @@
 
 #include "ComboBoxLightDismissAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ComboBoxLightDismissAutomationPeerGenerated::ComboBoxLightDismissAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::ComboBoxLightDismissAutomationPeerGenerated::~ComboBoxLightDismissAuto
 
 HRESULT DirectUI::ComboBoxLightDismissAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ComboBoxLightDismissAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ComboBoxLightDismissAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ComboBoxLightDismissAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider*>(this);
     }

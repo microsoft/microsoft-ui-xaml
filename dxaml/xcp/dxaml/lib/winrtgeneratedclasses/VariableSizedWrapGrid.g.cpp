@@ -11,6 +11,7 @@
 
 #include "VariableSizedWrapGrid.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::VariableSizedWrapGridGenerated::VariableSizedWrapGridGenerated()
@@ -23,19 +24,19 @@ DirectUI::VariableSizedWrapGridGenerated::~VariableSizedWrapGridGenerated()
 
 HRESULT DirectUI::VariableSizedWrapGridGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::VariableSizedWrapGrid)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::VariableSizedWrapGrid), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::VariableSizedWrapGrid*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IVariableSizedWrapGrid)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IVariableSizedWrapGrid), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IVariableSizedWrapGrid*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IKeyboardNavigationPanel)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IKeyboardNavigationPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IKeyboardNavigationPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IOrientedPanel)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IOrientedPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IOrientedPanel*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "InternalTransform.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::InternalTransformGenerated::InternalTransformGenerated()
@@ -23,7 +24,7 @@ DirectUI::InternalTransformGenerated::~InternalTransformGenerated()
 
 HRESULT DirectUI::InternalTransformGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::InternalTransform)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::InternalTransform), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::InternalTransform*>(this);
     }

@@ -12,6 +12,7 @@
 #include "CarouselPanel.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CarouselPanelGenerated::CarouselPanelGenerated()
@@ -24,19 +25,19 @@ DirectUI::CarouselPanelGenerated::~CarouselPanelGenerated()
 
 HRESULT DirectUI::CarouselPanelGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CarouselPanel)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CarouselPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CarouselPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::ICarouselPanel)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::ICarouselPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::ICarouselPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollSnapPointsInfo)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollSnapPointsInfo), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollSnapPointsInfo*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IScrollInfo)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IScrollInfo), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IScrollInfo*>(this);
     }

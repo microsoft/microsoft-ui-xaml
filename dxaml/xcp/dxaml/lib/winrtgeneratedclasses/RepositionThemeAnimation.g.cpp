@@ -11,6 +11,7 @@
 
 #include "RepositionThemeAnimation.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RepositionThemeAnimationGenerated::RepositionThemeAnimationGenerated()
@@ -23,11 +24,11 @@ DirectUI::RepositionThemeAnimationGenerated::~RepositionThemeAnimationGenerated(
 
 HRESULT DirectUI::RepositionThemeAnimationGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RepositionThemeAnimation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RepositionThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RepositionThemeAnimation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IRepositionThemeAnimation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IRepositionThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IRepositionThemeAnimation*>(this);
     }

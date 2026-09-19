@@ -12,6 +12,7 @@
 #include "StyleSelector.g.h"
 #include "Style.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::StyleSelectorGenerated::StyleSelectorGenerated()
@@ -24,15 +25,15 @@ DirectUI::StyleSelectorGenerated::~StyleSelectorGenerated()
 
 HRESULT DirectUI::StyleSelectorGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::StyleSelector)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::StyleSelector), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::StyleSelector*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IStyleSelector)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IStyleSelector), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IStyleSelector*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IStyleSelectorOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IStyleSelectorOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IStyleSelectorOverrides*>(this);
     }

@@ -12,6 +12,7 @@
 #include "DatePicker.g.h"
 #include "DataTemplate.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DatePickerGenerated::DatePickerGenerated()
@@ -24,16 +25,16 @@ DirectUI::DatePickerGenerated::~DatePickerGenerated()
 
 HRESULT DirectUI::DatePickerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DatePicker)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DatePicker), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DatePicker*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IDatePicker)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IDatePicker), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IDatePicker*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IDatePickerFeature_HeaderPlacement)) && Feature_HeaderPlacement::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IDatePickerFeature_HeaderPlacement), sizeof(IID)) == 0 && Feature_HeaderPlacement::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IDatePickerFeature_HeaderPlacement*>(this);
     }

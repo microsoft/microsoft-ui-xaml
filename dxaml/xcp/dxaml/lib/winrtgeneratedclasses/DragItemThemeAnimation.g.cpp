@@ -11,6 +11,7 @@
 
 #include "DragItemThemeAnimation.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DragItemThemeAnimationGenerated::DragItemThemeAnimationGenerated()
@@ -23,11 +24,11 @@ DirectUI::DragItemThemeAnimationGenerated::~DragItemThemeAnimationGenerated()
 
 HRESULT DirectUI::DragItemThemeAnimationGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DragItemThemeAnimation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DragItemThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DragItemThemeAnimation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDragItemThemeAnimation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDragItemThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IDragItemThemeAnimation*>(this);
     }

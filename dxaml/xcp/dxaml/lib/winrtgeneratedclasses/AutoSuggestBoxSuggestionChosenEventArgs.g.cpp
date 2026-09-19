@@ -11,6 +11,7 @@
 
 #include "AutoSuggestBoxSuggestionChosenEventArgs.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::AutoSuggestBoxSuggestionChosenEventArgs::AutoSuggestBoxSuggestionChosenEventArgs()
@@ -23,11 +24,11 @@ DirectUI::AutoSuggestBoxSuggestionChosenEventArgs::~AutoSuggestBoxSuggestionChos
 
 HRESULT DirectUI::AutoSuggestBoxSuggestionChosenEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AutoSuggestBoxSuggestionChosenEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AutoSuggestBoxSuggestionChosenEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AutoSuggestBoxSuggestionChosenEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxSuggestionChosenEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxSuggestionChosenEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxSuggestionChosenEventArgs*>(this);
     }

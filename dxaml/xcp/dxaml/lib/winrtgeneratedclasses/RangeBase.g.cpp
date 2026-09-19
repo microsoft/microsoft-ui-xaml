@@ -11,6 +11,7 @@
 
 #include "RangeBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RangeBaseGenerated::RangeBaseGenerated()
@@ -23,15 +24,15 @@ DirectUI::RangeBaseGenerated::~RangeBaseGenerated()
 
 HRESULT DirectUI::RangeBaseGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RangeBase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RangeBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RangeBase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IRangeBase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IRangeBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IRangeBase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IRangeBaseOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IRangeBaseOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IRangeBaseOverrides*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "PlaneProjection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PlaneProjection::PlaneProjection()
@@ -23,11 +24,11 @@ DirectUI::PlaneProjection::~PlaneProjection()
 
 HRESULT DirectUI::PlaneProjection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PlaneProjection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PlaneProjection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PlaneProjection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IPlaneProjection)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IPlaneProjection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IPlaneProjection*>(this);
     }

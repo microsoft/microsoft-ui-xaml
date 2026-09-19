@@ -11,6 +11,7 @@
 
 #include "GroupItem.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::GroupItemGenerated::GroupItemGenerated()
@@ -23,15 +24,15 @@ DirectUI::GroupItemGenerated::~GroupItemGenerated()
 
 HRESULT DirectUI::GroupItemGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::GroupItem)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::GroupItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::GroupItem*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IGroupItem)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IGroupItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IGroupItem*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ITransitionContextProvider)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::ITransitionContextProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ITransitionContextProvider*>(this);
     }

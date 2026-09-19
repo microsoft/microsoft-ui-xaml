@@ -11,6 +11,7 @@
 
 #include "PerspectiveTransform3D.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PerspectiveTransform3D::PerspectiveTransform3D()
@@ -23,11 +24,11 @@ DirectUI::PerspectiveTransform3D::~PerspectiveTransform3D()
 
 HRESULT DirectUI::PerspectiveTransform3D::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PerspectiveTransform3D)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PerspectiveTransform3D), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PerspectiveTransform3D*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Media3D::IPerspectiveTransform3D)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Media3D::IPerspectiveTransform3D), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Media3D::IPerspectiveTransform3D*>(this);
     }

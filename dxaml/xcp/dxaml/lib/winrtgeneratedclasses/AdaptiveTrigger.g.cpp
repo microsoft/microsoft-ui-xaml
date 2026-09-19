@@ -11,6 +11,7 @@
 
 #include "AdaptiveTrigger.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::AdaptiveTrigger::AdaptiveTrigger()
@@ -23,11 +24,11 @@ DirectUI::AdaptiveTrigger::~AdaptiveTrigger()
 
 HRESULT DirectUI::AdaptiveTrigger::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AdaptiveTrigger)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AdaptiveTrigger), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AdaptiveTrigger*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IAdaptiveTrigger)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IAdaptiveTrigger), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IAdaptiveTrigger*>(this);
     }

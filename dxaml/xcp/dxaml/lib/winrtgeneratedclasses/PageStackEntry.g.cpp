@@ -12,6 +12,7 @@
 #include "PageStackEntry.g.h"
 #include "NavigationTransitionInfo.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PageStackEntryGenerated::PageStackEntryGenerated()
@@ -24,11 +25,11 @@ DirectUI::PageStackEntryGenerated::~PageStackEntryGenerated()
 
 HRESULT DirectUI::PageStackEntryGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PageStackEntry)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PageStackEntry), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PageStackEntry*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Navigation::IPageStackEntry)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Navigation::IPageStackEntry), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Navigation::IPageStackEntry*>(this);
     }

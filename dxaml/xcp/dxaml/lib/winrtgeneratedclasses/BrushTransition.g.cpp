@@ -11,6 +11,7 @@
 
 #include "BrushTransition.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::BrushTransitionGenerated::BrushTransitionGenerated()
@@ -23,11 +24,11 @@ DirectUI::BrushTransitionGenerated::~BrushTransitionGenerated()
 
 HRESULT DirectUI::BrushTransitionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::BrushTransition)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::BrushTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::BrushTransition*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IBrushTransition)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IBrushTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IBrushTransition*>(this);
     }

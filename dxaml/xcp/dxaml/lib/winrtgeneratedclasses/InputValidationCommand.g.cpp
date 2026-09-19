@@ -11,6 +11,7 @@
 
 #include "InputValidationCommand.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::InputValidationCommand::InputValidationCommand()
@@ -23,16 +24,16 @@ DirectUI::InputValidationCommand::~InputValidationCommand()
 
 HRESULT DirectUI::InputValidationCommand::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::InputValidationCommand)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::InputValidationCommand), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::InputValidationCommand*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IInputValidationCommand)) && Feature_InputValidation::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IInputValidationCommand), sizeof(IID)) == 0 && Feature_InputValidation::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IInputValidationCommand*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IInputValidationCommandOverrides)) && Feature_InputValidation::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IInputValidationCommandOverrides), sizeof(IID)) == 0 && Feature_InputValidation::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IInputValidationCommandOverrides*>(this);
     }

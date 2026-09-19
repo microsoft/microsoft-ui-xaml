@@ -11,6 +11,7 @@
 
 #include "StaggerFunctionBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::StaggerFunctionBaseGenerated::StaggerFunctionBaseGenerated()
@@ -23,7 +24,7 @@ DirectUI::StaggerFunctionBaseGenerated::~StaggerFunctionBaseGenerated()
 
 HRESULT DirectUI::StaggerFunctionBaseGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::StaggerFunctionBase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::StaggerFunctionBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::StaggerFunctionBase*>(this);
     }

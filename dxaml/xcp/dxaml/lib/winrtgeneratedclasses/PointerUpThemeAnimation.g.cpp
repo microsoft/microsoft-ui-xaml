@@ -11,6 +11,7 @@
 
 #include "PointerUpThemeAnimation.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PointerUpThemeAnimationGenerated::PointerUpThemeAnimationGenerated()
@@ -23,11 +24,11 @@ DirectUI::PointerUpThemeAnimationGenerated::~PointerUpThemeAnimationGenerated()
 
 HRESULT DirectUI::PointerUpThemeAnimationGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PointerUpThemeAnimation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PointerUpThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PointerUpThemeAnimation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPointerUpThemeAnimation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPointerUpThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IPointerUpThemeAnimation*>(this);
     }

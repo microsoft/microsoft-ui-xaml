@@ -11,6 +11,7 @@
 
 #include "ElementSoundPlayerService.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ElementSoundPlayerServiceGenerated::ElementSoundPlayerServiceGenerated()
@@ -23,7 +24,7 @@ DirectUI::ElementSoundPlayerServiceGenerated::~ElementSoundPlayerServiceGenerate
 
 HRESULT DirectUI::ElementSoundPlayerServiceGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ElementSoundPlayerService)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ElementSoundPlayerService), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ElementSoundPlayerService*>(this);
     }

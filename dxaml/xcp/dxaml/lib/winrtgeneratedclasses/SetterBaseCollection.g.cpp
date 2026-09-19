@@ -11,6 +11,7 @@
 
 #include "SetterBaseCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SetterBaseCollection::SetterBaseCollection()
@@ -23,15 +24,15 @@ DirectUI::SetterBaseCollection::~SetterBaseCollection()
 
 HRESULT DirectUI::SetterBaseCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SetterBaseCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SetterBaseCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SetterBaseCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::ISetterBaseCollection)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::ISetterBaseCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::ISetterBaseCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::SetterBase*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::SetterBase*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::SetterBase*>*>(this);
     }

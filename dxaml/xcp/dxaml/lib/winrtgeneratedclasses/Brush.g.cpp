@@ -12,6 +12,7 @@
 #include "Brush.g.h"
 #include "Transform.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::BrushGenerated::BrushGenerated()
@@ -24,24 +25,24 @@ DirectUI::BrushGenerated::~BrushGenerated()
 
 HRESULT DirectUI::BrushGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Brush)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Brush), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Brush*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IBrush)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IBrush), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IBrush*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IBrushOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IBrushOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IBrushOverrides*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Composition::IAnimationObject)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Composition::IAnimationObject), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Composition::IAnimationObject*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IBrushFeature_XamlMotionSystemHoldbacks)) && Feature_XamlMotionSystemHoldbacks::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IBrushFeature_XamlMotionSystemHoldbacks), sizeof(IID)) == 0 && Feature_XamlMotionSystemHoldbacks::IsEnabled())
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Media::IBrushFeature_XamlMotionSystemHoldbacks>(this);
     }

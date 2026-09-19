@@ -11,6 +11,7 @@
 
 #include "ManipulationVelocities.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ManipulationVelocities::ManipulationVelocities()
@@ -23,7 +24,7 @@ DirectUI::ManipulationVelocities::~ManipulationVelocities()
 
 HRESULT DirectUI::ManipulationVelocities::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ManipulationVelocities)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ManipulationVelocities), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ManipulationVelocities*>(this);
     }

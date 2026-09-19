@@ -11,6 +11,7 @@
 
 #include "DataTemplateKey.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DataTemplateKeyGenerated::DataTemplateKeyGenerated()
@@ -23,11 +24,11 @@ DirectUI::DataTemplateKeyGenerated::~DataTemplateKeyGenerated()
 
 HRESULT DirectUI::DataTemplateKeyGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DataTemplateKey)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DataTemplateKey), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DataTemplateKey*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IDataTemplateKey)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IDataTemplateKey), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IDataTemplateKey*>(this);
     }

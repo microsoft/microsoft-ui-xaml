@@ -11,6 +11,7 @@
 
 #include "ToggleButton.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ToggleButtonGenerated::ToggleButtonGenerated()
@@ -23,15 +24,15 @@ DirectUI::ToggleButtonGenerated::~ToggleButtonGenerated()
 
 HRESULT DirectUI::ToggleButtonGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ToggleButton)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ToggleButton), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ToggleButton*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IToggleButton)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IToggleButton), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IToggleButton*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IToggleButtonOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IToggleButtonOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IToggleButtonOverrides*>(this);
     }

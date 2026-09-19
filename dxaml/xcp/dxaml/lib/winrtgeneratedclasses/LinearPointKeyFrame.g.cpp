@@ -11,6 +11,7 @@
 
 #include "LinearPointKeyFrame.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::LinearPointKeyFrame::LinearPointKeyFrame()
@@ -23,11 +24,11 @@ DirectUI::LinearPointKeyFrame::~LinearPointKeyFrame()
 
 HRESULT DirectUI::LinearPointKeyFrame::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::LinearPointKeyFrame)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::LinearPointKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::LinearPointKeyFrame*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ILinearPointKeyFrame)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ILinearPointKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::ILinearPointKeyFrame*>(this);
     }

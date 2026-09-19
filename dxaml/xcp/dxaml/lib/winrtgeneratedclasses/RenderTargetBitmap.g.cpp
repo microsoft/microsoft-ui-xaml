@@ -12,6 +12,7 @@
 #include "RenderTargetBitmap.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RenderTargetBitmapGenerated::RenderTargetBitmapGenerated()
@@ -24,11 +25,11 @@ DirectUI::RenderTargetBitmapGenerated::~RenderTargetBitmapGenerated()
 
 HRESULT DirectUI::RenderTargetBitmapGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RenderTargetBitmap)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RenderTargetBitmap), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RenderTargetBitmap*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::IRenderTargetBitmap)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::IRenderTargetBitmap), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Imaging::IRenderTargetBitmap*>(this);
     }

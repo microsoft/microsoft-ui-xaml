@@ -16,6 +16,7 @@
 #include "TextPointer.g.h"
 #include "XamlRoot.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TextElementGenerated::TextElementGenerated()
@@ -28,15 +29,15 @@ DirectUI::TextElementGenerated::~TextElementGenerated()
 
 HRESULT DirectUI::TextElementGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TextElement)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TextElement), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TextElement*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Documents::ITextElement)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Documents::ITextElement), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Documents::ITextElement*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Documents::ITextElementOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Documents::ITextElementOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Documents::ITextElementOverrides*>(this);
     }

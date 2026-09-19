@@ -11,6 +11,7 @@
 
 #include "HyperlinkButtonAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::HyperlinkButtonAutomationPeerGenerated::HyperlinkButtonAutomationPeerGenerated()
@@ -23,15 +24,15 @@ DirectUI::HyperlinkButtonAutomationPeerGenerated::~HyperlinkButtonAutomationPeer
 
 HRESULT DirectUI::HyperlinkButtonAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::HyperlinkButtonAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::HyperlinkButtonAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::HyperlinkButtonAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IHyperlinkButtonAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IHyperlinkButtonAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IHyperlinkButtonAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider*>(this);
     }

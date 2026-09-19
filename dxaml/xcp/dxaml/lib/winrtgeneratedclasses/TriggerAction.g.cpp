@@ -11,6 +11,7 @@
 
 #include "TriggerAction.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TriggerAction::TriggerAction()
@@ -23,11 +24,11 @@ DirectUI::TriggerAction::~TriggerAction()
 
 HRESULT DirectUI::TriggerAction::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TriggerAction)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TriggerAction), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TriggerAction*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::ITriggerAction)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::ITriggerAction), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::ITriggerAction*>(this);
     }

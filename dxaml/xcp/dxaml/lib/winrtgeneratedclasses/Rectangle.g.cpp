@@ -11,6 +11,7 @@
 
 #include "Rectangle.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Rectangle::Rectangle()
@@ -23,11 +24,11 @@ DirectUI::Rectangle::~Rectangle()
 
 HRESULT DirectUI::Rectangle::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Rectangle)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Rectangle), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Rectangle*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Shapes::IRectangle)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Shapes::IRectangle), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Shapes::IRectangle*>(this);
     }

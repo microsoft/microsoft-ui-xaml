@@ -13,6 +13,7 @@
 #include "ScrollViewer.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 
 HRESULT DirectUI::ElementCompositionPreviewFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)

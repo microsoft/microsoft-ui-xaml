@@ -11,6 +11,7 @@
 
 #include "ComboBoxItem.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ComboBoxItemGenerated::ComboBoxItemGenerated()
@@ -23,11 +24,11 @@ DirectUI::ComboBoxItemGenerated::~ComboBoxItemGenerated()
 
 HRESULT DirectUI::ComboBoxItemGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ComboBoxItem)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ComboBoxItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ComboBoxItem*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IComboBoxItem)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IComboBoxItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IComboBoxItem*>(this);
     }

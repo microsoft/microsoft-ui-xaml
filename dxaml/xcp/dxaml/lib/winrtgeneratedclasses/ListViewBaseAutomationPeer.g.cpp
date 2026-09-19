@@ -11,6 +11,7 @@
 
 #include "ListViewBaseAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ListViewBaseAutomationPeerGenerated::ListViewBaseAutomationPeerGenerated()
@@ -23,15 +24,15 @@ DirectUI::ListViewBaseAutomationPeerGenerated::~ListViewBaseAutomationPeerGenera
 
 HRESULT DirectUI::ListViewBaseAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ListViewBaseAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ListViewBaseAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ListViewBaseAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IListViewBaseAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IListViewBaseAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IListViewBaseAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IDropTargetProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IDropTargetProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IDropTargetProvider*>(this);
     }

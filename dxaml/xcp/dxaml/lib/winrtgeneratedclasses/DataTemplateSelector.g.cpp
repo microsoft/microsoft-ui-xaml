@@ -15,6 +15,7 @@
 #include "ElementFactoryRecycleArgs.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DataTemplateSelectorGenerated::DataTemplateSelectorGenerated()
@@ -27,19 +28,19 @@ DirectUI::DataTemplateSelectorGenerated::~DataTemplateSelectorGenerated()
 
 HRESULT DirectUI::DataTemplateSelectorGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DataTemplateSelector)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DataTemplateSelector), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DataTemplateSelector*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IDataTemplateSelector)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IDataTemplateSelector), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IDataTemplateSelector*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IDataTemplateSelectorOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IDataTemplateSelectorOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IDataTemplateSelectorOverrides*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IElementFactory)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IElementFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IElementFactory*>(this);
     }

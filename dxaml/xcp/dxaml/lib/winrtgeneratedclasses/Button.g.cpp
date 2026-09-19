@@ -12,6 +12,7 @@
 #include "Button.g.h"
 #include "FlyoutBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ButtonGenerated::ButtonGenerated()
@@ -24,11 +25,11 @@ DirectUI::ButtonGenerated::~ButtonGenerated()
 
 HRESULT DirectUI::ButtonGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Button)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Button), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Button*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IButton)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IButton), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IButton*>(this);
     }

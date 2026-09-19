@@ -11,6 +11,7 @@
 
 #include "ObjectKeyFrameCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ObjectKeyFrameCollection::ObjectKeyFrameCollection()
@@ -23,11 +24,11 @@ DirectUI::ObjectKeyFrameCollection::~ObjectKeyFrameCollection()
 
 HRESULT DirectUI::ObjectKeyFrameCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ObjectKeyFrameCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ObjectKeyFrameCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ObjectKeyFrameCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::ObjectKeyFrame*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::ObjectKeyFrame*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::ObjectKeyFrame*>*>(this);
     }

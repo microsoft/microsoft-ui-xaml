@@ -11,6 +11,7 @@
 
 #include "CubicEase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CubicEase::CubicEase()
@@ -23,11 +24,11 @@ DirectUI::CubicEase::~CubicEase()
 
 HRESULT DirectUI::CubicEase::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CubicEase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CubicEase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CubicEase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ICubicEase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ICubicEase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::ICubicEase*>(this);
     }

@@ -12,6 +12,7 @@
 #include "TransformGroup.g.h"
 #include "TransformCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TransformGroup::TransformGroup()
@@ -24,11 +25,11 @@ DirectUI::TransformGroup::~TransformGroup()
 
 HRESULT DirectUI::TransformGroup::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TransformGroup)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TransformGroup), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TransformGroup*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::ITransformGroup)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::ITransformGroup), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::ITransformGroup*>(this);
     }

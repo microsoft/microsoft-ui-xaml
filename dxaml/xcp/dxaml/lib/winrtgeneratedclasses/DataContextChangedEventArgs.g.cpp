@@ -11,6 +11,7 @@
 
 #include "DataContextChangedEventArgs.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DataContextChangedEventArgs::DataContextChangedEventArgs(): m_handled()
@@ -23,11 +24,11 @@ DirectUI::DataContextChangedEventArgs::~DataContextChangedEventArgs()
 
 HRESULT DirectUI::DataContextChangedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DataContextChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DataContextChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DataContextChangedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IDataContextChangedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IDataContextChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IDataContextChangedEventArgs*>(this);
     }

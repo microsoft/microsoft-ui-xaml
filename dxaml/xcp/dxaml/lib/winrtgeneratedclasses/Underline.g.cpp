@@ -11,6 +11,7 @@
 
 #include "Underline.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Underline::Underline()
@@ -23,11 +24,11 @@ DirectUI::Underline::~Underline()
 
 HRESULT DirectUI::Underline::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Underline)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Underline), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Underline*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Documents::IUnderline)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Documents::IUnderline), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Documents::IUnderline*>(this);
     }

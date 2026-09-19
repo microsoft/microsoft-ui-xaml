@@ -11,6 +11,7 @@
 
 #include "BounceEase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::BounceEase::BounceEase()
@@ -23,11 +24,11 @@ DirectUI::BounceEase::~BounceEase()
 
 HRESULT DirectUI::BounceEase::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::BounceEase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::BounceEase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::BounceEase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IBounceEase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IBounceEase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IBounceEase*>(this);
     }

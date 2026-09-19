@@ -15,6 +15,7 @@
 #include "TransitionCollection.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ItemsPresenterGenerated::ItemsPresenterGenerated()
@@ -27,19 +28,19 @@ DirectUI::ItemsPresenterGenerated::~ItemsPresenterGenerated()
 
 HRESULT DirectUI::ItemsPresenterGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ItemsPresenter)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ItemsPresenter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ItemsPresenter*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemsPresenter)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemsPresenter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IItemsPresenter*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollSnapPointsInfo)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollSnapPointsInfo), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollSnapPointsInfo*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IScrollInfo)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IScrollInfo), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IScrollInfo*>(this);
     }

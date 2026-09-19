@@ -11,6 +11,7 @@
 
 #include "Block.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Block::Block()
@@ -23,11 +24,11 @@ DirectUI::Block::~Block()
 
 HRESULT DirectUI::Block::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Block)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Block), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Block*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Documents::IBlock)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Documents::IBlock), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Documents::IBlock*>(this);
     }

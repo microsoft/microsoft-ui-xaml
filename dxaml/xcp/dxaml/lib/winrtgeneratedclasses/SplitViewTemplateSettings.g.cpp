@@ -11,6 +11,7 @@
 
 #include "SplitViewTemplateSettings.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SplitViewTemplateSettings::SplitViewTemplateSettings()
@@ -23,11 +24,11 @@ DirectUI::SplitViewTemplateSettings::~SplitViewTemplateSettings()
 
 HRESULT DirectUI::SplitViewTemplateSettings::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SplitViewTemplateSettings)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SplitViewTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SplitViewTemplateSettings*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::ISplitViewTemplateSettings)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::ISplitViewTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::ISplitViewTemplateSettings*>(this);
     }

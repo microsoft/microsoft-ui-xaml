@@ -11,6 +11,7 @@
 
 #include "ToggleSwitchTemplateSettings.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ToggleSwitchTemplateSettings::ToggleSwitchTemplateSettings()
@@ -23,11 +24,11 @@ DirectUI::ToggleSwitchTemplateSettings::~ToggleSwitchTemplateSettings()
 
 HRESULT DirectUI::ToggleSwitchTemplateSettings::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ToggleSwitchTemplateSettings)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ToggleSwitchTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ToggleSwitchTemplateSettings*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IToggleSwitchTemplateSettings)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IToggleSwitchTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IToggleSwitchTemplateSettings*>(this);
     }

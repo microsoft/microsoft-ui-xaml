@@ -12,6 +12,7 @@
 #include "ColorAnimation.g.h"
 #include "EasingFunctionBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ColorAnimation::ColorAnimation()
@@ -24,11 +25,11 @@ DirectUI::ColorAnimation::~ColorAnimation()
 
 HRESULT DirectUI::ColorAnimation::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ColorAnimation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ColorAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ColorAnimation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IColorAnimation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IColorAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IColorAnimation*>(this);
     }

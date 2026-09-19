@@ -11,6 +11,7 @@
 
 #include "ImageAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ImageAutomationPeerGenerated::ImageAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::ImageAutomationPeerGenerated::~ImageAutomationPeerGenerated()
 
 HRESULT DirectUI::ImageAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ImageAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ImageAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ImageAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IImageAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IImageAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IImageAutomationPeer*>(this);
     }

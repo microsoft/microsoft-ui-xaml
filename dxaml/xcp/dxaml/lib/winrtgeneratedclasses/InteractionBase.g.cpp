@@ -19,6 +19,7 @@
 #include "TappedRoutedEventArgs.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::InteractionBaseGenerated::InteractionBaseGenerated()
@@ -31,16 +32,16 @@ DirectUI::InteractionBaseGenerated::~InteractionBaseGenerated()
 
 HRESULT DirectUI::InteractionBaseGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::InteractionBase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::InteractionBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::InteractionBase*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_Xaml2018)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IInteractionBase)) && Feature_Xaml2018::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IInteractionBase), sizeof(IID)) == 0 && Feature_Xaml2018::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IInteractionBase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IInteractionBaseOverrides)) && Feature_Xaml2018::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IInteractionBaseOverrides), sizeof(IID)) == 0 && Feature_Xaml2018::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IInteractionBaseOverrides*>(this);
     }

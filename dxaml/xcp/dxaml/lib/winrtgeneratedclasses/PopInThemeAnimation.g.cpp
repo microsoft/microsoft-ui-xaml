@@ -11,6 +11,7 @@
 
 #include "PopInThemeAnimation.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PopInThemeAnimationGenerated::PopInThemeAnimationGenerated()
@@ -23,11 +24,11 @@ DirectUI::PopInThemeAnimationGenerated::~PopInThemeAnimationGenerated()
 
 HRESULT DirectUI::PopInThemeAnimationGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PopInThemeAnimation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PopInThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PopInThemeAnimation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPopInThemeAnimation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPopInThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IPopInThemeAnimation*>(this);
     }

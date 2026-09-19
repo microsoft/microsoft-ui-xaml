@@ -12,6 +12,7 @@
 #include "EasingColorKeyFrame.g.h"
 #include "EasingFunctionBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::EasingColorKeyFrame::EasingColorKeyFrame()
@@ -24,11 +25,11 @@ DirectUI::EasingColorKeyFrame::~EasingColorKeyFrame()
 
 HRESULT DirectUI::EasingColorKeyFrame::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::EasingColorKeyFrame)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::EasingColorKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::EasingColorKeyFrame*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IEasingColorKeyFrame)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IEasingColorKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IEasingColorKeyFrame*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "ListViewBaseItemTemplateSettings.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ListViewBaseItemTemplateSettings::ListViewBaseItemTemplateSettings()
@@ -23,7 +24,7 @@ DirectUI::ListViewBaseItemTemplateSettings::~ListViewBaseItemTemplateSettings()
 
 HRESULT DirectUI::ListViewBaseItemTemplateSettings::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ListViewBaseItemTemplateSettings)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ListViewBaseItemTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ListViewBaseItemTemplateSettings*>(this);
     }

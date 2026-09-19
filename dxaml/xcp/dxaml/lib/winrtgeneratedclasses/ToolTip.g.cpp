@@ -13,6 +13,7 @@
 #include "ToolTipTemplateSettings.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ToolTipGenerated::ToolTipGenerated()
@@ -25,11 +26,11 @@ DirectUI::ToolTipGenerated::~ToolTipGenerated()
 
 HRESULT DirectUI::ToolTipGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ToolTip)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ToolTip), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ToolTip*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IToolTip)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IToolTip), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IToolTip*>(this);
     }

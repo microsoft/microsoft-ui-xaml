@@ -11,6 +11,7 @@
 
 #include "RotateTransform.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RotateTransform::RotateTransform()
@@ -23,11 +24,11 @@ DirectUI::RotateTransform::~RotateTransform()
 
 HRESULT DirectUI::RotateTransform::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RotateTransform)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RotateTransform), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RotateTransform*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IRotateTransform)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IRotateTransform), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IRotateTransform*>(this);
     }

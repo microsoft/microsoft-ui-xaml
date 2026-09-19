@@ -12,6 +12,7 @@
 #include "RelativePanel.g.h"
 #include "Brush.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RelativePanel::RelativePanel()
@@ -24,11 +25,11 @@ DirectUI::RelativePanel::~RelativePanel()
 
 HRESULT DirectUI::RelativePanel::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RelativePanel)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RelativePanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RelativePanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IRelativePanel)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IRelativePanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IRelativePanel*>(this);
     }

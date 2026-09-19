@@ -11,6 +11,7 @@
 
 #include "DrillOutThemeAnimation.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DrillOutThemeAnimationGenerated::DrillOutThemeAnimationGenerated()
@@ -23,11 +24,11 @@ DirectUI::DrillOutThemeAnimationGenerated::~DrillOutThemeAnimationGenerated()
 
 HRESULT DirectUI::DrillOutThemeAnimationGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DrillOutThemeAnimation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DrillOutThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DrillOutThemeAnimation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDrillOutThemeAnimation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDrillOutThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IDrillOutThemeAnimation*>(this);
     }

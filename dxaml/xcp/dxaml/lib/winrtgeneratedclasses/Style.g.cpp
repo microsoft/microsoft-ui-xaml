@@ -12,6 +12,7 @@
 #include "Style.g.h"
 #include "SetterBaseCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Style::Style()
@@ -24,11 +25,11 @@ DirectUI::Style::~Style()
 
 HRESULT DirectUI::Style::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Style)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Style), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Style*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IStyle)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IStyle), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IStyle*>(this);
     }

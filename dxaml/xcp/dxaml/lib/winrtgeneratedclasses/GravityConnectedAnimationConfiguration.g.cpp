@@ -11,6 +11,7 @@
 
 #include "GravityConnectedAnimationConfiguration.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::GravityConnectedAnimationConfigurationGenerated::GravityConnectedAnimationConfigurationGenerated()
@@ -23,11 +24,11 @@ DirectUI::GravityConnectedAnimationConfigurationGenerated::~GravityConnectedAnim
 
 HRESULT DirectUI::GravityConnectedAnimationConfigurationGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::GravityConnectedAnimationConfiguration)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::GravityConnectedAnimationConfiguration), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::GravityConnectedAnimationConfiguration*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IGravityConnectedAnimationConfiguration)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IGravityConnectedAnimationConfiguration), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IGravityConnectedAnimationConfiguration*>(this);
     }

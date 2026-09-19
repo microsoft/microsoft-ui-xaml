@@ -11,6 +11,7 @@
 
 #include "SeekSliderAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SeekSliderAutomationPeerGenerated::SeekSliderAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::SeekSliderAutomationPeerGenerated::~SeekSliderAutomationPeerGenerated(
 
 HRESULT DirectUI::SeekSliderAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SeekSliderAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SeekSliderAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SeekSliderAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IValueProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IValueProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IValueProvider*>(this);
     }

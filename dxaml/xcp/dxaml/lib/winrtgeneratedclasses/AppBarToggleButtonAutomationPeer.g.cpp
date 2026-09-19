@@ -11,6 +11,7 @@
 
 #include "AppBarToggleButtonAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::AppBarToggleButtonAutomationPeerGenerated::AppBarToggleButtonAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::AppBarToggleButtonAutomationPeerGenerated::~AppBarToggleButtonAutomati
 
 HRESULT DirectUI::AppBarToggleButtonAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AppBarToggleButtonAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AppBarToggleButtonAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AppBarToggleButtonAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IAppBarToggleButtonAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IAppBarToggleButtonAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IAppBarToggleButtonAutomationPeer*>(this);
     }

@@ -15,6 +15,7 @@
 #include "TransitionCollection.g.h"
 #include "UIElementCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PanelGenerated::PanelGenerated()
@@ -27,16 +28,16 @@ DirectUI::PanelGenerated::~PanelGenerated()
 
 HRESULT DirectUI::PanelGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Panel)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Panel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Panel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IPanel)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IPanel*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_WUXCPreviewTypes)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IPanelProtectedFeature_WUXCPreviewTypes)) && Feature_WUXCPreviewTypes::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IPanelProtectedFeature_WUXCPreviewTypes), sizeof(IID)) == 0 && Feature_WUXCPreviewTypes::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IPanelProtectedFeature_WUXCPreviewTypes*>(this);
     }

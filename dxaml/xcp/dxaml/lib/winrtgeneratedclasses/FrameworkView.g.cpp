@@ -11,6 +11,7 @@
 
 #include "FrameworkView.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FrameworkViewGenerated::FrameworkViewGenerated()
@@ -23,15 +24,15 @@ DirectUI::FrameworkViewGenerated::~FrameworkViewGenerated()
 
 HRESULT DirectUI::FrameworkViewGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FrameworkView)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FrameworkView), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FrameworkView*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IFrameworkView)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IFrameworkView), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IFrameworkView*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::ApplicationModel::Core::IFrameworkView)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::ApplicationModel::Core::IFrameworkView), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::ApplicationModel::Core::IFrameworkView*>(this);
     }

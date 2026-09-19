@@ -12,6 +12,7 @@
 #include "UserControl.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::UserControlGenerated::UserControlGenerated()
@@ -24,11 +25,11 @@ DirectUI::UserControlGenerated::~UserControlGenerated()
 
 HRESULT DirectUI::UserControlGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::UserControl)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::UserControl), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::UserControl*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IUserControl)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IUserControl), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IUserControl*>(this);
     }

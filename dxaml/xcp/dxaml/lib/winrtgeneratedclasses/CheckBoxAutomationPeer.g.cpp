@@ -11,6 +11,7 @@
 
 #include "CheckBoxAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CheckBoxAutomationPeerGenerated::CheckBoxAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::CheckBoxAutomationPeerGenerated::~CheckBoxAutomationPeerGenerated()
 
 HRESULT DirectUI::CheckBoxAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CheckBoxAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CheckBoxAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CheckBoxAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ICheckBoxAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ICheckBoxAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::ICheckBoxAutomationPeer*>(this);
     }

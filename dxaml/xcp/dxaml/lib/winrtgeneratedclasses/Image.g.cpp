@@ -12,6 +12,7 @@
 #include "Image.g.h"
 #include "ImageSource.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ImageGenerated::ImageGenerated()
@@ -24,11 +25,11 @@ DirectUI::ImageGenerated::~ImageGenerated()
 
 HRESULT DirectUI::ImageGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Image)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Image), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Image*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IImage)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IImage), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IImage*>(this);
     }

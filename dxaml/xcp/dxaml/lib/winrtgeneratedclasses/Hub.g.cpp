@@ -15,6 +15,7 @@
 #include "SemanticZoom.g.h"
 #include "SemanticZoomLocation.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::HubGenerated::HubGenerated()
@@ -27,15 +28,15 @@ DirectUI::HubGenerated::~HubGenerated()
 
 HRESULT DirectUI::HubGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Hub)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Hub), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Hub*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IHub)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IHub), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IHub*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomInformation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomInformation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomInformation*>(this);
     }

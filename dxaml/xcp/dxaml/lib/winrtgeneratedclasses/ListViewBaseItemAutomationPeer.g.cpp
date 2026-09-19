@@ -12,6 +12,7 @@
 #include "ListViewBaseItemAutomationPeer.g.h"
 #include "IRawElementProviderSimple.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ListViewBaseItemAutomationPeerGenerated::ListViewBaseItemAutomationPeerGenerated()
@@ -24,11 +25,11 @@ DirectUI::ListViewBaseItemAutomationPeerGenerated::~ListViewBaseItemAutomationPe
 
 HRESULT DirectUI::ListViewBaseItemAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ListViewBaseItemAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ListViewBaseItemAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ListViewBaseItemAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IDragProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IDragProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IDragProvider*>(this);
     }

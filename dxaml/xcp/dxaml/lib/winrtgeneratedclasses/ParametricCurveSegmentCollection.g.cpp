@@ -11,6 +11,7 @@
 
 #include "ParametricCurveSegmentCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ParametricCurveSegmentCollection::ParametricCurveSegmentCollection()
@@ -23,11 +24,11 @@ DirectUI::ParametricCurveSegmentCollection::~ParametricCurveSegmentCollection()
 
 HRESULT DirectUI::ParametricCurveSegmentCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ParametricCurveSegmentCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ParametricCurveSegmentCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ParametricCurveSegmentCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<DirectUI::ParametricCurveSegment*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<DirectUI::ParametricCurveSegment*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<DirectUI::ParametricCurveSegment*>*>(this);
     }

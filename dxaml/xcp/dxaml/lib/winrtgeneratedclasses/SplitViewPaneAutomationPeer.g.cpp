@@ -11,6 +11,7 @@
 
 #include "SplitViewPaneAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SplitViewPaneAutomationPeerGenerated::SplitViewPaneAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::SplitViewPaneAutomationPeerGenerated::~SplitViewPaneAutomationPeerGene
 
 HRESULT DirectUI::SplitViewPaneAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SplitViewPaneAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SplitViewPaneAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SplitViewPaneAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IWindowProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IWindowProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IWindowProvider*>(this);
     }

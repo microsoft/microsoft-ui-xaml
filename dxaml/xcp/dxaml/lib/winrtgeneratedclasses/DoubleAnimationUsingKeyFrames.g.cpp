@@ -12,6 +12,7 @@
 #include "DoubleAnimationUsingKeyFrames.g.h"
 #include "DoubleKeyFrameCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DoubleAnimationUsingKeyFrames::DoubleAnimationUsingKeyFrames()
@@ -24,11 +25,11 @@ DirectUI::DoubleAnimationUsingKeyFrames::~DoubleAnimationUsingKeyFrames()
 
 HRESULT DirectUI::DoubleAnimationUsingKeyFrames::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DoubleAnimationUsingKeyFrames)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DoubleAnimationUsingKeyFrames), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DoubleAnimationUsingKeyFrames*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDoubleAnimationUsingKeyFrames)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDoubleAnimationUsingKeyFrames), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IDoubleAnimationUsingKeyFrames*>(this);
     }

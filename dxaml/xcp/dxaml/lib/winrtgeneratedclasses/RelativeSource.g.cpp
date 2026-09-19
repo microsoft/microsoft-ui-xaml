@@ -11,6 +11,7 @@
 
 #include "RelativeSource.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RelativeSource::RelativeSource()
@@ -23,11 +24,11 @@ DirectUI::RelativeSource::~RelativeSource()
 
 HRESULT DirectUI::RelativeSource::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RelativeSource)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RelativeSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RelativeSource*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::IRelativeSource)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Data::IRelativeSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::IRelativeSource*>(this);
     }

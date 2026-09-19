@@ -11,6 +11,7 @@
 
 #include "WindowSizeChangedEventArgs.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::WindowSizeChangedEventArgs::WindowSizeChangedEventArgs(): m_handled(), m_size()
@@ -23,11 +24,11 @@ DirectUI::WindowSizeChangedEventArgs::~WindowSizeChangedEventArgs()
 
 HRESULT DirectUI::WindowSizeChangedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::WindowSizeChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::WindowSizeChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::WindowSizeChangedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IWindowSizeChangedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IWindowSizeChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IWindowSizeChangedEventArgs*>(this);
     }

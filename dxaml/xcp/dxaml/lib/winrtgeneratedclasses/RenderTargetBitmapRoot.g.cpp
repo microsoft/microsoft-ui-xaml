@@ -11,6 +11,7 @@
 
 #include "RenderTargetBitmapRoot.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RenderTargetBitmapRoot::RenderTargetBitmapRoot()
@@ -23,7 +24,7 @@ DirectUI::RenderTargetBitmapRoot::~RenderTargetBitmapRoot()
 
 HRESULT DirectUI::RenderTargetBitmapRoot::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RenderTargetBitmapRoot)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RenderTargetBitmapRoot), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RenderTargetBitmapRoot*>(this);
     }

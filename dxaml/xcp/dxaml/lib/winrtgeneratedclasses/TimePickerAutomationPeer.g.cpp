@@ -11,6 +11,7 @@
 
 #include "TimePickerAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TimePickerAutomationPeerGenerated::TimePickerAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::TimePickerAutomationPeerGenerated::~TimePickerAutomationPeerGenerated(
 
 HRESULT DirectUI::TimePickerAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TimePickerAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TimePickerAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TimePickerAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ITimePickerAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ITimePickerAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::ITimePickerAutomationPeer*>(this);
     }

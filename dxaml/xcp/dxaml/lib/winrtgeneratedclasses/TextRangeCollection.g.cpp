@@ -11,6 +11,7 @@
 
 #include "TextRangeCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TextRangeCollectionGenerated::TextRangeCollectionGenerated()
@@ -23,11 +24,11 @@ DirectUI::TextRangeCollectionGenerated::~TextRangeCollectionGenerated()
 
 HRESULT DirectUI::TextRangeCollectionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TextRangeCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TextRangeCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TextRangeCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Documents::TextRange>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Documents::TextRange>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Documents::TextRange>*>(this);
     }

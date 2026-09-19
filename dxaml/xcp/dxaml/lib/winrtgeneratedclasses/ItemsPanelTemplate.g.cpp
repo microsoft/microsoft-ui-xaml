@@ -11,6 +11,7 @@
 
 #include "ItemsPanelTemplate.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ItemsPanelTemplate::ItemsPanelTemplate()
@@ -23,11 +24,11 @@ DirectUI::ItemsPanelTemplate::~ItemsPanelTemplate()
 
 HRESULT DirectUI::ItemsPanelTemplate::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ItemsPanelTemplate)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ItemsPanelTemplate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ItemsPanelTemplate*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemsPanelTemplate)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemsPanelTemplate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IItemsPanelTemplate*>(this);
     }

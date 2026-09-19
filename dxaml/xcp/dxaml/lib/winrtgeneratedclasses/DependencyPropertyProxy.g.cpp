@@ -11,6 +11,7 @@
 
 #include "DependencyPropertyProxy.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DependencyPropertyProxyGenerated::DependencyPropertyProxyGenerated()
@@ -23,7 +24,7 @@ DirectUI::DependencyPropertyProxyGenerated::~DependencyPropertyProxyGenerated()
 
 HRESULT DirectUI::DependencyPropertyProxyGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DependencyPropertyProxy)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DependencyPropertyProxy), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DependencyPropertyProxy*>(this);
     }

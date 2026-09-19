@@ -12,6 +12,7 @@
 #include "XamlRenderingBackgroundTask.g.h"
 #include "ResourceDictionary.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::XamlRenderingBackgroundTaskGenerated::XamlRenderingBackgroundTaskGenerated()
@@ -24,15 +25,15 @@ DirectUI::XamlRenderingBackgroundTaskGenerated::~XamlRenderingBackgroundTaskGene
 
 HRESULT DirectUI::XamlRenderingBackgroundTaskGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::XamlRenderingBackgroundTask)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::XamlRenderingBackgroundTask), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::XamlRenderingBackgroundTask*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::IXamlRenderingBackgroundTask)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::IXamlRenderingBackgroundTask), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Imaging::IXamlRenderingBackgroundTask*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::IXamlRenderingBackgroundTaskOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::IXamlRenderingBackgroundTaskOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Imaging::IXamlRenderingBackgroundTaskOverrides*>(this);
     }

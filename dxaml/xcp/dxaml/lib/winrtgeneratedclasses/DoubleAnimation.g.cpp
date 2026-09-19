@@ -12,6 +12,7 @@
 #include "DoubleAnimation.g.h"
 #include "EasingFunctionBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DoubleAnimation::DoubleAnimation()
@@ -24,11 +25,11 @@ DirectUI::DoubleAnimation::~DoubleAnimation()
 
 HRESULT DirectUI::DoubleAnimation::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DoubleAnimation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DoubleAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DoubleAnimation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDoubleAnimation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDoubleAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IDoubleAnimation*>(this);
     }

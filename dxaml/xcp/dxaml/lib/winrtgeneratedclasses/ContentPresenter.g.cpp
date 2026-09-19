@@ -17,6 +17,7 @@
 #include "FontFamily.g.h"
 #include "TransitionCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ContentPresenterGenerated::ContentPresenterGenerated()
@@ -29,15 +30,15 @@ DirectUI::ContentPresenterGenerated::~ContentPresenterGenerated()
 
 HRESULT DirectUI::ContentPresenterGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ContentPresenter)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ContentPresenter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ContentPresenter*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IContentPresenter)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IContentPresenter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IContentPresenter*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IContentPresenterOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IContentPresenterOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IContentPresenterOverrides*>(this);
     }

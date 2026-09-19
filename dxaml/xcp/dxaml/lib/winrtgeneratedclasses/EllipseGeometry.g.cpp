@@ -11,6 +11,7 @@
 
 #include "EllipseGeometry.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::EllipseGeometry::EllipseGeometry()
@@ -23,11 +24,11 @@ DirectUI::EllipseGeometry::~EllipseGeometry()
 
 HRESULT DirectUI::EllipseGeometry::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::EllipseGeometry)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::EllipseGeometry), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::EllipseGeometry*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IEllipseGeometry)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IEllipseGeometry), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IEllipseGeometry*>(this);
     }

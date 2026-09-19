@@ -11,6 +11,7 @@
 
 #include "ColumnDefinition.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ColumnDefinition::ColumnDefinition()
@@ -23,11 +24,11 @@ DirectUI::ColumnDefinition::~ColumnDefinition()
 
 HRESULT DirectUI::ColumnDefinition::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ColumnDefinition)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ColumnDefinition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ColumnDefinition*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IColumnDefinition)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IColumnDefinition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IColumnDefinition*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "Bold.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Bold::Bold()
@@ -23,11 +24,11 @@ DirectUI::Bold::~Bold()
 
 HRESULT DirectUI::Bold::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Bold)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Bold), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Bold*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Documents::IBold)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Documents::IBold), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Documents::IBold*>(this);
     }

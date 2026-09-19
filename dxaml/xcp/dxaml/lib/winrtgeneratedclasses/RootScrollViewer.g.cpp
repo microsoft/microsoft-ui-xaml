@@ -11,6 +11,7 @@
 
 #include "RootScrollViewer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RootScrollViewerGenerated::RootScrollViewerGenerated()
@@ -23,7 +24,7 @@ DirectUI::RootScrollViewerGenerated::~RootScrollViewerGenerated()
 
 HRESULT DirectUI::RootScrollViewerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RootScrollViewer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RootScrollViewer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RootScrollViewer*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "InertiaExpansionBehavior.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::InertiaExpansionBehavior::InertiaExpansionBehavior()
@@ -23,11 +24,11 @@ DirectUI::InertiaExpansionBehavior::~InertiaExpansionBehavior()
 
 HRESULT DirectUI::InertiaExpansionBehavior::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::InertiaExpansionBehavior)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::InertiaExpansionBehavior), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::InertiaExpansionBehavior*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IInertiaExpansionBehavior)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IInertiaExpansionBehavior), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IInertiaExpansionBehavior*>(this);
     }

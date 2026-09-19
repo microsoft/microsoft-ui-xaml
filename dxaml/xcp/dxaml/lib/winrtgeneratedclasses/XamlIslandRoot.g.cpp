@@ -12,6 +12,7 @@
 #include "XamlIslandRoot.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::XamlIslandRootGenerated::XamlIslandRootGenerated()
@@ -24,11 +25,11 @@ DirectUI::XamlIslandRootGenerated::~XamlIslandRootGenerated()
 
 HRESULT DirectUI::XamlIslandRootGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::XamlIslandRoot)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::XamlIslandRoot), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::XamlIslandRoot*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Hosting::IXamlIslandRoot)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Hosting::IXamlIslandRoot), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Hosting::IXamlIslandRoot*>(this);
     }

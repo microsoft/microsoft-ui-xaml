@@ -11,6 +11,7 @@
 
 #include "TemplateContent.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TemplateContent::TemplateContent()
@@ -23,7 +24,7 @@ DirectUI::TemplateContent::~TemplateContent()
 
 HRESULT DirectUI::TemplateContent::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TemplateContent)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TemplateContent), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TemplateContent*>(this);
     }

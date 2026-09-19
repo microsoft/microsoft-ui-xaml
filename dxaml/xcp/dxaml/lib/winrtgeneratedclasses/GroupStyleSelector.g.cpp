@@ -12,6 +12,7 @@
 #include "GroupStyleSelector.g.h"
 #include "GroupStyle.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::GroupStyleSelectorGenerated::GroupStyleSelectorGenerated()
@@ -24,15 +25,15 @@ DirectUI::GroupStyleSelectorGenerated::~GroupStyleSelectorGenerated()
 
 HRESULT DirectUI::GroupStyleSelectorGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::GroupStyleSelector)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::GroupStyleSelector), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::GroupStyleSelector*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IGroupStyleSelector)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IGroupStyleSelector), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IGroupStyleSelector*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IGroupStyleSelectorOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IGroupStyleSelectorOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IGroupStyleSelectorOverrides*>(this);
     }

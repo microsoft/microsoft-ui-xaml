@@ -11,6 +11,7 @@
 
 #include "LineSegment.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::LineSegment::LineSegment()
@@ -23,11 +24,11 @@ DirectUI::LineSegment::~LineSegment()
 
 HRESULT DirectUI::LineSegment::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::LineSegment)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::LineSegment), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::LineSegment*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::ILineSegment)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::ILineSegment), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::ILineSegment*>(this);
     }

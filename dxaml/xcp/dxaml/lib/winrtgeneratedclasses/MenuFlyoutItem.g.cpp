@@ -13,6 +13,7 @@
 #include "IconElement.g.h"
 #include "MenuFlyoutItemTemplateSettings.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MenuFlyoutItemGenerated::MenuFlyoutItemGenerated()
@@ -25,11 +26,11 @@ DirectUI::MenuFlyoutItemGenerated::~MenuFlyoutItemGenerated()
 
 HRESULT DirectUI::MenuFlyoutItemGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MenuFlyoutItem)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MenuFlyoutItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MenuFlyoutItem*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutItem)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutItem*>(this);
     }

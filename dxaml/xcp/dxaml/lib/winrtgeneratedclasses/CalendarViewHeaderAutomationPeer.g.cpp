@@ -11,6 +11,7 @@
 
 #include "CalendarViewHeaderAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CalendarViewHeaderAutomationPeerGenerated::CalendarViewHeaderAutomationPeerGenerated()
@@ -23,7 +24,7 @@ DirectUI::CalendarViewHeaderAutomationPeerGenerated::~CalendarViewHeaderAutomati
 
 HRESULT DirectUI::CalendarViewHeaderAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CalendarViewHeaderAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CalendarViewHeaderAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CalendarViewHeaderAutomationPeer*>(this);
     }

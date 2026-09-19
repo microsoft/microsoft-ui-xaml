@@ -11,6 +11,7 @@
 
 #include "PointerCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PointerCollection::PointerCollection()
@@ -23,11 +24,11 @@ DirectUI::PointerCollection::~PointerCollection()
 
 HRESULT DirectUI::PointerCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PointerCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PointerCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PointerCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Input::Pointer*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Input::Pointer*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Input::Pointer*>*>(this);
     }

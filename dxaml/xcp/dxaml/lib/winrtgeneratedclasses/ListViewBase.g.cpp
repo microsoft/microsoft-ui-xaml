@@ -17,6 +17,7 @@
 #include "SemanticZoomLocation.g.h"
 #include "TransitionCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ListViewBaseGenerated::ListViewBaseGenerated(): m_isRegisteredForCallbacks()
@@ -29,27 +30,27 @@ DirectUI::ListViewBaseGenerated::~ListViewBaseGenerated()
 
 HRESULT DirectUI::ListViewBaseGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ListViewBase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ListViewBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ListViewBase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IListViewBase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IListViewBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IListViewBase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IListViewBasePrivate)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IListViewBasePrivate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IListViewBasePrivate*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomInformation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomInformation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomInformation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ITreeBuilder)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::ITreeBuilder), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ITreeBuilder*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "MediaPlayerElementAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MediaPlayerElementAutomationPeerGenerated::MediaPlayerElementAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::MediaPlayerElementAutomationPeerGenerated::~MediaPlayerElementAutomati
 
 HRESULT DirectUI::MediaPlayerElementAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MediaPlayerElementAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MediaPlayerElementAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MediaPlayerElementAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IMediaPlayerElementAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IMediaPlayerElementAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IMediaPlayerElementAutomationPeer>(this);
     }

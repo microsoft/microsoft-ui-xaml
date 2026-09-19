@@ -11,6 +11,7 @@
 
 #include "SemanticZoomLocation.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SemanticZoomLocationGenerated::SemanticZoomLocationGenerated(): m_zoomPoint(), m_bounds(), m_remainder()
@@ -23,11 +24,11 @@ DirectUI::SemanticZoomLocationGenerated::~SemanticZoomLocationGenerated()
 
 HRESULT DirectUI::SemanticZoomLocationGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SemanticZoomLocation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SemanticZoomLocation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SemanticZoomLocation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomLocation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomLocation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomLocation*>(this);
     }

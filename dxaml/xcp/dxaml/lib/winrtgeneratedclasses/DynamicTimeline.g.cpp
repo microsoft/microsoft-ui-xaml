@@ -12,6 +12,7 @@
 #include "DynamicTimeline.g.h"
 #include "TimelineCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DynamicTimeline::DynamicTimeline()
@@ -24,7 +25,7 @@ DirectUI::DynamicTimeline::~DynamicTimeline()
 
 HRESULT DirectUI::DynamicTimeline::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DynamicTimeline)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DynamicTimeline), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DynamicTimeline*>(this);
     }

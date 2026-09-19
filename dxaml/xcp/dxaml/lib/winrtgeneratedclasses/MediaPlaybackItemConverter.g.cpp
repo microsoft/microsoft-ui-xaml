@@ -11,6 +11,7 @@
 
 #include "MediaPlaybackItemConverter.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MediaPlaybackItemConverter::MediaPlaybackItemConverter()
@@ -23,7 +24,7 @@ DirectUI::MediaPlaybackItemConverter::~MediaPlaybackItemConverter()
 
 HRESULT DirectUI::MediaPlaybackItemConverter::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MediaPlaybackItemConverter)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MediaPlaybackItemConverter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MediaPlaybackItemConverter*>(this);
     }

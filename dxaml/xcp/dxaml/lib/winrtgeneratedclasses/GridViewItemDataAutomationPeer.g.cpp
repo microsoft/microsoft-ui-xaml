@@ -11,6 +11,7 @@
 
 #include "GridViewItemDataAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::GridViewItemDataAutomationPeerGenerated::GridViewItemDataAutomationPeerGenerated()
@@ -23,15 +24,15 @@ DirectUI::GridViewItemDataAutomationPeerGenerated::~GridViewItemDataAutomationPe
 
 HRESULT DirectUI::GridViewItemDataAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::GridViewItemDataAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::GridViewItemDataAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::GridViewItemDataAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IGridViewItemDataAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IGridViewItemDataAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IGridViewItemDataAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IScrollItemProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IScrollItemProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IScrollItemProvider*>(this);
     }

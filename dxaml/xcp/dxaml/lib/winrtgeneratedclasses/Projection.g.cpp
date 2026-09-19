@@ -11,6 +11,7 @@
 
 #include "Projection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Projection::Projection()
@@ -23,11 +24,11 @@ DirectUI::Projection::~Projection()
 
 HRESULT DirectUI::Projection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Projection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Projection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Projection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IProjection)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IProjection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IProjection*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "TextPointerWrapper.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TextPointerWrapper::TextPointerWrapper()
@@ -23,7 +24,7 @@ DirectUI::TextPointerWrapper::~TextPointerWrapper()
 
 HRESULT DirectUI::TextPointerWrapper::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TextPointerWrapper)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TextPointerWrapper), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TextPointerWrapper*>(this);
     }

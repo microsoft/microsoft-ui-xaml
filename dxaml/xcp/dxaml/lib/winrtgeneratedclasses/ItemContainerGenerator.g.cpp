@@ -12,6 +12,7 @@
 #include "ItemContainerGenerator.g.h"
 #include "Panel.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ItemContainerGeneratorGenerated::ItemContainerGeneratorGenerated()
@@ -24,11 +25,11 @@ DirectUI::ItemContainerGeneratorGenerated::~ItemContainerGeneratorGenerated()
 
 HRESULT DirectUI::ItemContainerGeneratorGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ItemContainerGenerator)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ItemContainerGenerator), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ItemContainerGenerator*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemContainerGenerator)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemContainerGenerator), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IItemContainerGenerator*>(this);
     }

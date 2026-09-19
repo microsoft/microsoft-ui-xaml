@@ -11,6 +11,7 @@
 
 #include "ToggleMenuFlyoutItem.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ToggleMenuFlyoutItemGenerated::ToggleMenuFlyoutItemGenerated()
@@ -23,11 +24,11 @@ DirectUI::ToggleMenuFlyoutItemGenerated::~ToggleMenuFlyoutItemGenerated()
 
 HRESULT DirectUI::ToggleMenuFlyoutItemGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ToggleMenuFlyoutItem)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ToggleMenuFlyoutItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ToggleMenuFlyoutItem*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IToggleMenuFlyoutItem)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IToggleMenuFlyoutItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IToggleMenuFlyoutItem*>(this);
     }

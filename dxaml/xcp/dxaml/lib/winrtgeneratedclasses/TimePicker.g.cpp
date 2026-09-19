@@ -12,6 +12,7 @@
 #include "TimePicker.g.h"
 #include "DataTemplate.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TimePickerGenerated::TimePickerGenerated()
@@ -24,16 +25,16 @@ DirectUI::TimePickerGenerated::~TimePickerGenerated()
 
 HRESULT DirectUI::TimePickerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TimePicker)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TimePicker), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TimePicker*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ITimePicker)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ITimePicker), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ITimePicker*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ITimePickerFeature_HeaderPlacement)) && Feature_HeaderPlacement::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ITimePickerFeature_HeaderPlacement), sizeof(IID)) == 0 && Feature_HeaderPlacement::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ITimePickerFeature_HeaderPlacement*>(this);
     }

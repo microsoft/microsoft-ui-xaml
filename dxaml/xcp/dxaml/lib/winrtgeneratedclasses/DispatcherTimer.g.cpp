@@ -11,6 +11,7 @@
 
 #include "DispatcherTimer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DispatcherTimerGenerated::DispatcherTimerGenerated()
@@ -23,11 +24,11 @@ DirectUI::DispatcherTimerGenerated::~DispatcherTimerGenerated()
 
 HRESULT DirectUI::DispatcherTimerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DispatcherTimer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DispatcherTimer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DispatcherTimer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IDispatcherTimer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IDispatcherTimer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IDispatcherTimer*>(this);
     }

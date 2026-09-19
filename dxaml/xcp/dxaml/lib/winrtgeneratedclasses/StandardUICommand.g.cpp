@@ -11,6 +11,7 @@
 
 #include "StandardUICommand.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::StandardUICommandGenerated::StandardUICommandGenerated()
@@ -23,11 +24,11 @@ DirectUI::StandardUICommandGenerated::~StandardUICommandGenerated()
 
 HRESULT DirectUI::StandardUICommandGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::StandardUICommand)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::StandardUICommand), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::StandardUICommand*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IStandardUICommand)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IStandardUICommand), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IStandardUICommand*>(this);
     }

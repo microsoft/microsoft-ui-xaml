@@ -13,6 +13,7 @@
 #include "Style.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FlyoutGenerated::FlyoutGenerated()
@@ -25,11 +26,11 @@ DirectUI::FlyoutGenerated::~FlyoutGenerated()
 
 HRESULT DirectUI::FlyoutGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Flyout)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Flyout), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Flyout*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IFlyout)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IFlyout), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IFlyout*>(this);
     }

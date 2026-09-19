@@ -11,6 +11,7 @@
 
 #include "AppBarLightDismiss.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::AppBarLightDismissGenerated::AppBarLightDismissGenerated()
@@ -23,7 +24,7 @@ DirectUI::AppBarLightDismissGenerated::~AppBarLightDismissGenerated()
 
 HRESULT DirectUI::AppBarLightDismissGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AppBarLightDismiss)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AppBarLightDismiss), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AppBarLightDismiss*>(this);
     }

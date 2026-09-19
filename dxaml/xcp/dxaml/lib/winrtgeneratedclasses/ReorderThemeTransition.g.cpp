@@ -11,6 +11,7 @@
 
 #include "ReorderThemeTransition.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ReorderThemeTransitionGenerated::ReorderThemeTransitionGenerated()
@@ -23,11 +24,11 @@ DirectUI::ReorderThemeTransitionGenerated::~ReorderThemeTransitionGenerated()
 
 HRESULT DirectUI::ReorderThemeTransitionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ReorderThemeTransition)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ReorderThemeTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ReorderThemeTransition*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IReorderThemeTransition)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IReorderThemeTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IReorderThemeTransition*>(this);
     }

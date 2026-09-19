@@ -13,6 +13,7 @@
 #include "SystemBackdrop.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::XamlIslandGenerated::XamlIslandGenerated()
@@ -25,24 +26,24 @@ DirectUI::XamlIslandGenerated::~XamlIslandGenerated()
 
 HRESULT DirectUI::XamlIslandGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::XamlIsland)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::XamlIsland), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::XamlIsland*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlIsland)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IXamlIsland), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IXamlIsland>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::IClosable)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::IClosable), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::IClosable*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlIslandFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IXamlIslandFeature_ExperimentalApi), sizeof(IID)) == 0 && Feature_ExperimentalApi::IsEnabled())
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IXamlIslandFeature_ExperimentalApi>(this);
     }

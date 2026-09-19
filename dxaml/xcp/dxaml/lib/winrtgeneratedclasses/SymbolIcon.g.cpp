@@ -11,6 +11,7 @@
 
 #include "SymbolIcon.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SymbolIconGenerated::SymbolIconGenerated()
@@ -23,11 +24,11 @@ DirectUI::SymbolIconGenerated::~SymbolIconGenerated()
 
 HRESULT DirectUI::SymbolIconGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SymbolIcon)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SymbolIcon), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SymbolIcon*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISymbolIcon)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ISymbolIcon), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISymbolIcon*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "TileBrush.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TileBrush::TileBrush()
@@ -23,11 +24,11 @@ DirectUI::TileBrush::~TileBrush()
 
 HRESULT DirectUI::TileBrush::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TileBrush)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TileBrush), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TileBrush*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::ITileBrush)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::ITileBrush), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::ITileBrush*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "FullWindowMediaRootAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FullWindowMediaRootAutomationPeerGenerated::FullWindowMediaRootAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::FullWindowMediaRootAutomationPeerGenerated::~FullWindowMediaRootAutoma
 
 HRESULT DirectUI::FullWindowMediaRootAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FullWindowMediaRootAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FullWindowMediaRootAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FullWindowMediaRootAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IWindowProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IWindowProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IWindowProvider*>(this);
     }

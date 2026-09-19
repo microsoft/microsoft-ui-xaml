@@ -11,6 +11,7 @@
 
 #include "CacheMode.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CacheMode::CacheMode()
@@ -23,11 +24,11 @@ DirectUI::CacheMode::~CacheMode()
 
 HRESULT DirectUI::CacheMode::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CacheMode)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CacheMode), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CacheMode*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::ICacheMode)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::ICacheMode), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::ICacheMode*>(this);
     }

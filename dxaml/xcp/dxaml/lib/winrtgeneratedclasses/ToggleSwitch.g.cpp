@@ -13,6 +13,7 @@
 #include "DataTemplate.g.h"
 #include "ToggleSwitchTemplateSettings.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ToggleSwitchGenerated::ToggleSwitchGenerated()
@@ -25,20 +26,20 @@ DirectUI::ToggleSwitchGenerated::~ToggleSwitchGenerated()
 
 HRESULT DirectUI::ToggleSwitchGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ToggleSwitch)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ToggleSwitch), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ToggleSwitch*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IToggleSwitch)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IToggleSwitch), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IToggleSwitch*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IToggleSwitchOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IToggleSwitchOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IToggleSwitchOverrides*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IToggleSwitchFeature_HeaderPlacement)) && Feature_HeaderPlacement::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IToggleSwitchFeature_HeaderPlacement), sizeof(IID)) == 0 && Feature_HeaderPlacement::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IToggleSwitchFeature_HeaderPlacement*>(this);
     }

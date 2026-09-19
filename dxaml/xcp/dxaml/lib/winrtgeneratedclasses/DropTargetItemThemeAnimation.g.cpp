@@ -11,6 +11,7 @@
 
 #include "DropTargetItemThemeAnimation.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DropTargetItemThemeAnimationGenerated::DropTargetItemThemeAnimationGenerated()
@@ -23,11 +24,11 @@ DirectUI::DropTargetItemThemeAnimationGenerated::~DropTargetItemThemeAnimationGe
 
 HRESULT DirectUI::DropTargetItemThemeAnimationGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DropTargetItemThemeAnimation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DropTargetItemThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DropTargetItemThemeAnimation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDropTargetItemThemeAnimation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDropTargetItemThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IDropTargetItemThemeAnimation*>(this);
     }

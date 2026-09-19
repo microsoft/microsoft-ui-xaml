@@ -11,6 +11,7 @@
 
 #include "ListViewBaseItemSecondaryChrome.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ListViewBaseItemSecondaryChromeGenerated::ListViewBaseItemSecondaryChromeGenerated()
@@ -23,7 +24,7 @@ DirectUI::ListViewBaseItemSecondaryChromeGenerated::~ListViewBaseItemSecondaryCh
 
 HRESULT DirectUI::ListViewBaseItemSecondaryChromeGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ListViewBaseItemSecondaryChrome)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ListViewBaseItemSecondaryChrome), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ListViewBaseItemSecondaryChrome*>(this);
     }

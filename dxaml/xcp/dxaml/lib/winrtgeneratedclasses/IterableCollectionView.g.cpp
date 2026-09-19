@@ -11,6 +11,7 @@
 
 #include "IterableCollectionView.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::IterableCollectionViewGenerated::IterableCollectionViewGenerated()
@@ -23,7 +24,7 @@ DirectUI::IterableCollectionViewGenerated::~IterableCollectionViewGenerated()
 
 HRESULT DirectUI::IterableCollectionViewGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IterableCollectionView)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::IterableCollectionView), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IterableCollectionView*>(this);
     }

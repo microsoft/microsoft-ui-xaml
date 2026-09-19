@@ -12,6 +12,7 @@
 #include "ElementFactoryGetArgs.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ElementFactoryGetArgs::ElementFactoryGetArgs()
@@ -24,11 +25,11 @@ DirectUI::ElementFactoryGetArgs::~ElementFactoryGetArgs()
 
 HRESULT DirectUI::ElementFactoryGetArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ElementFactoryGetArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ElementFactoryGetArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ElementFactoryGetArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IElementFactoryGetArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IElementFactoryGetArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IElementFactoryGetArgs*>(this);
     }

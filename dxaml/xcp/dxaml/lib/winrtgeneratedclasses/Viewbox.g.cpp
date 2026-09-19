@@ -12,6 +12,7 @@
 #include "Viewbox.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Viewbox::Viewbox()
@@ -24,11 +25,11 @@ DirectUI::Viewbox::~Viewbox()
 
 HRESULT DirectUI::Viewbox::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Viewbox)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Viewbox), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Viewbox*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IViewbox)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IViewbox), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IViewbox*>(this);
     }

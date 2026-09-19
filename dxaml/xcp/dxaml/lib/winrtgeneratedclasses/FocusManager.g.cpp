@@ -14,6 +14,7 @@
 #include "UIElement.g.h"
 #include "XamlRoot.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 
 HRESULT DirectUI::FocusManagerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)

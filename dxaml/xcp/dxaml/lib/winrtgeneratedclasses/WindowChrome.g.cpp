@@ -11,6 +11,7 @@
 
 #include "WindowChrome.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::WindowChromeGenerated::WindowChromeGenerated()
@@ -23,11 +24,11 @@ DirectUI::WindowChromeGenerated::~WindowChromeGenerated()
 
 HRESULT DirectUI::WindowChromeGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::WindowChrome)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::WindowChrome), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::WindowChrome*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IWindowChrome)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IWindowChrome), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IWindowChrome*>(this);
     }

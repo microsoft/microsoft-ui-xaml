@@ -11,6 +11,7 @@
 
 #include "MenuFlyoutItemBaseCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MenuFlyoutItemBaseCollectionGenerated::MenuFlyoutItemBaseCollectionGenerated()
@@ -23,11 +24,11 @@ DirectUI::MenuFlyoutItemBaseCollectionGenerated::~MenuFlyoutItemBaseCollectionGe
 
 HRESULT DirectUI::MenuFlyoutItemBaseCollectionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MenuFlyoutItemBaseCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MenuFlyoutItemBaseCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MenuFlyoutItemBaseCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Controls::MenuFlyoutItemBase*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Controls::MenuFlyoutItemBase*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Controls::MenuFlyoutItemBase*>*>(this);
     }

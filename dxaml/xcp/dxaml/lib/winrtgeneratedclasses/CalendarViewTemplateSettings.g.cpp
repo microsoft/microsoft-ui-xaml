@@ -11,6 +11,7 @@
 
 #include "CalendarViewTemplateSettings.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::CalendarViewTemplateSettings::CalendarViewTemplateSettings()
@@ -23,11 +24,11 @@ DirectUI::CalendarViewTemplateSettings::~CalendarViewTemplateSettings()
 
 HRESULT DirectUI::CalendarViewTemplateSettings::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CalendarViewTemplateSettings)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CalendarViewTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CalendarViewTemplateSettings*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::ICalendarViewTemplateSettings)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::ICalendarViewTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::ICalendarViewTemplateSettings*>(this);
     }

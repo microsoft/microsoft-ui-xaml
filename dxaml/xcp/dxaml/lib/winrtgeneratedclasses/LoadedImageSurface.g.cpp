@@ -11,6 +11,7 @@
 
 #include "LoadedImageSurface.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::LoadedImageSurfaceGenerated::LoadedImageSurfaceGenerated()
@@ -23,19 +24,19 @@ DirectUI::LoadedImageSurfaceGenerated::~LoadedImageSurfaceGenerated()
 
 HRESULT DirectUI::LoadedImageSurfaceGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::LoadedImageSurface)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::LoadedImageSurface), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::LoadedImageSurface*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Composition::ICompositionSurface)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Composition::ICompositionSurface), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Composition::ICompositionSurface*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::IClosable)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::IClosable), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::IClosable*>(this);
     }

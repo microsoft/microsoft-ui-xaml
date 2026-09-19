@@ -11,6 +11,7 @@
 
 #include "BitmapIconSource.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::BitmapIconSourceGenerated::BitmapIconSourceGenerated()
@@ -23,11 +24,11 @@ DirectUI::BitmapIconSourceGenerated::~BitmapIconSourceGenerated()
 
 HRESULT DirectUI::BitmapIconSourceGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::BitmapIconSource)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::BitmapIconSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::BitmapIconSource*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IBitmapIconSource)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IBitmapIconSource), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Controls::IBitmapIconSource>(this);
     }

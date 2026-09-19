@@ -11,6 +11,7 @@
 
 #include "PopupAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PopupAutomationPeerGenerated::PopupAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::PopupAutomationPeerGenerated::~PopupAutomationPeerGenerated()
 
 HRESULT DirectUI::PopupAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PopupAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PopupAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PopupAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IWindowProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IWindowProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IWindowProvider*>(this);
     }

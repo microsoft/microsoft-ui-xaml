@@ -11,6 +11,7 @@
 
 #include "ListBox.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ListBoxGenerated::ListBoxGenerated()
@@ -23,11 +24,11 @@ DirectUI::ListBoxGenerated::~ListBoxGenerated()
 
 HRESULT DirectUI::ListBoxGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ListBox)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ListBox), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ListBox*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IListBox)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IListBox), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IListBox*>(this);
     }

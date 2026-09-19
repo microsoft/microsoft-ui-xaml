@@ -11,6 +11,7 @@
 
 #include "Vector3Transition.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Vector3TransitionGenerated::Vector3TransitionGenerated()
@@ -23,11 +24,11 @@ DirectUI::Vector3TransitionGenerated::~Vector3TransitionGenerated()
 
 HRESULT DirectUI::Vector3TransitionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Vector3Transition)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Vector3Transition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Vector3Transition*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IVector3Transition)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IVector3Transition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IVector3Transition*>(this);
     }

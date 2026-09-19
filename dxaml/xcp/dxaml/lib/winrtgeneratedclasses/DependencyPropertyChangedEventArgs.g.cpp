@@ -11,6 +11,7 @@
 
 #include "DependencyPropertyChangedEventArgs.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DependencyPropertyChangedEventArgsGenerated::DependencyPropertyChangedEventArgsGenerated()
@@ -23,11 +24,11 @@ DirectUI::DependencyPropertyChangedEventArgsGenerated::~DependencyPropertyChange
 
 HRESULT DirectUI::DependencyPropertyChangedEventArgsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DependencyPropertyChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DependencyPropertyChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DependencyPropertyChangedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IDependencyPropertyChangedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IDependencyPropertyChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IDependencyPropertyChangedEventArgs*>(this);
     }

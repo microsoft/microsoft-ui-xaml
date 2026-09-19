@@ -22,6 +22,7 @@
 #include "TransitionCollection.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ItemsControlGenerated::ItemsControlGenerated()
@@ -34,27 +35,27 @@ DirectUI::ItemsControlGenerated::~ItemsControlGenerated()
 
 HRESULT DirectUI::ItemsControlGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ItemsControl)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ItemsControl), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ItemsControl*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemsControl)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemsControl), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IItemsControl*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemsControlOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemsControlOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IItemsControlOverrides*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemContainerMapping)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemContainerMapping), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IItemContainerMapping*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IContainerRecyclingContext)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IContainerRecyclingContext), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IContainerRecyclingContext*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IGroupHeaderMapping)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IGroupHeaderMapping), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IGroupHeaderMapping*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "FadeOutThemeAnimation.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FadeOutThemeAnimationGenerated::FadeOutThemeAnimationGenerated()
@@ -23,11 +24,11 @@ DirectUI::FadeOutThemeAnimationGenerated::~FadeOutThemeAnimationGenerated()
 
 HRESULT DirectUI::FadeOutThemeAnimationGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FadeOutThemeAnimation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FadeOutThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FadeOutThemeAnimation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IFadeOutThemeAnimation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IFadeOutThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IFadeOutThemeAnimation*>(this);
     }

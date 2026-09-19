@@ -11,6 +11,7 @@
 
 #include "RootVisual.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RootVisual::RootVisual()
@@ -23,7 +24,7 @@ DirectUI::RootVisual::~RootVisual()
 
 HRESULT DirectUI::RootVisual::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RootVisual)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RootVisual), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RootVisual*>(this);
     }

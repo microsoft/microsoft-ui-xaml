@@ -12,6 +12,7 @@
 #include "ThemeAnimationBase.g.h"
 #include "TimelineCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ThemeAnimationBaseGenerated::ThemeAnimationBaseGenerated()
@@ -24,15 +25,15 @@ DirectUI::ThemeAnimationBaseGenerated::~ThemeAnimationBaseGenerated()
 
 HRESULT DirectUI::ThemeAnimationBaseGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ThemeAnimationBase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ThemeAnimationBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ThemeAnimationBase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IThemeAnimationBase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IThemeAnimationBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IThemeAnimationBase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IThemeAnimationBaseOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IThemeAnimationBaseOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IThemeAnimationBaseOverrides*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "PointerKeyFrame.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PointerKeyFrame::PointerKeyFrame()
@@ -23,7 +24,7 @@ DirectUI::PointerKeyFrame::~PointerKeyFrame()
 
 HRESULT DirectUI::PointerKeyFrame::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PointerKeyFrame)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PointerKeyFrame), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PointerKeyFrame*>(this);
     }

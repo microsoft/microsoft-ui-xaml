@@ -11,6 +11,7 @@
 
 #include "GridViewItemTemplateSettings.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::GridViewItemTemplateSettings::GridViewItemTemplateSettings()
@@ -23,11 +24,11 @@ DirectUI::GridViewItemTemplateSettings::~GridViewItemTemplateSettings()
 
 HRESULT DirectUI::GridViewItemTemplateSettings::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::GridViewItemTemplateSettings)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::GridViewItemTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::GridViewItemTemplateSettings*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IGridViewItemTemplateSettings)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IGridViewItemTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IGridViewItemTemplateSettings*>(this);
     }

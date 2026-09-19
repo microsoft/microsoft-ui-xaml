@@ -11,6 +11,7 @@
 
 #include "MediaPlayerPresenter.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MediaPlayerPresenterGenerated::MediaPlayerPresenterGenerated()
@@ -23,11 +24,11 @@ DirectUI::MediaPlayerPresenterGenerated::~MediaPlayerPresenterGenerated()
 
 HRESULT DirectUI::MediaPlayerPresenterGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MediaPlayerPresenter)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MediaPlayerPresenter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MediaPlayerPresenter*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMediaPlayerPresenter)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IMediaPlayerPresenter), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Controls::IMediaPlayerPresenter>(this);
     }

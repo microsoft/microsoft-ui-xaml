@@ -11,6 +11,7 @@
 
 #include "ListViewItemTemplateSettings.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ListViewItemTemplateSettings::ListViewItemTemplateSettings()
@@ -23,11 +24,11 @@ DirectUI::ListViewItemTemplateSettings::~ListViewItemTemplateSettings()
 
 HRESULT DirectUI::ListViewItemTemplateSettings::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ListViewItemTemplateSettings)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ListViewItemTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ListViewItemTemplateSettings*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IListViewItemTemplateSettings)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IListViewItemTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IListViewItemTemplateSettings*>(this);
     }

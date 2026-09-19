@@ -11,6 +11,7 @@
 
 #include "LineGeometry.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::LineGeometry::LineGeometry()
@@ -23,11 +24,11 @@ DirectUI::LineGeometry::~LineGeometry()
 
 HRESULT DirectUI::LineGeometry::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::LineGeometry)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::LineGeometry), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::LineGeometry*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::ILineGeometry)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::ILineGeometry), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::ILineGeometry*>(this);
     }

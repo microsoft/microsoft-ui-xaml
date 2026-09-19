@@ -12,6 +12,7 @@
 #include "PanelEx.g.h"
 #include "UIElementCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PanelEx::PanelEx()
@@ -24,12 +25,12 @@ DirectUI::PanelEx::~PanelEx()
 
 HRESULT DirectUI::PanelEx::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PanelEx)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PanelEx), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PanelEx*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_Xaml2018)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IPanelEx)) && Feature_Xaml2018::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IPanelEx), sizeof(IID)) == 0 && Feature_Xaml2018::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IPanelEx*>(this);
     }

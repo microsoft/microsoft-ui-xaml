@@ -16,6 +16,7 @@
 #include "WindowCreatedEventArgs.g.h"
 #include "XamlIslandRoot.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FrameworkApplicationGenerated::FrameworkApplicationGenerated()
@@ -28,36 +29,36 @@ DirectUI::FrameworkApplicationGenerated::~FrameworkApplicationGenerated()
 
 HRESULT DirectUI::FrameworkApplicationGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FrameworkApplication)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FrameworkApplication), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FrameworkApplication*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IApplication)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IApplication), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IApplication*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IApplicationOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IApplicationOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IApplicationOverrides*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IFrameworkApplicationPrivate)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IFrameworkApplicationPrivate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IFrameworkApplicationPrivate*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IApplication2)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IApplication2), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IApplication2>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IApplication3)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IApplication3), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IApplication3>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_UwpSupportApi)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IApplicationFeature_UwpSupportApi)) && Feature_UwpSupportApi::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IApplicationFeature_UwpSupportApi), sizeof(IID)) == 0 && Feature_UwpSupportApi::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IApplicationFeature_UwpSupportApi*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IApplicationOverridesFeature_UwpSupportApi)) && Feature_UwpSupportApi::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IApplicationOverridesFeature_UwpSupportApi), sizeof(IID)) == 0 && Feature_UwpSupportApi::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IApplicationOverridesFeature_UwpSupportApi*>(this);
     }

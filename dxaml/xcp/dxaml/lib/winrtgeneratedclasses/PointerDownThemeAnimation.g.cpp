@@ -11,6 +11,7 @@
 
 #include "PointerDownThemeAnimation.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PointerDownThemeAnimationGenerated::PointerDownThemeAnimationGenerated()
@@ -23,11 +24,11 @@ DirectUI::PointerDownThemeAnimationGenerated::~PointerDownThemeAnimationGenerate
 
 HRESULT DirectUI::PointerDownThemeAnimationGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PointerDownThemeAnimation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PointerDownThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PointerDownThemeAnimation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPointerDownThemeAnimation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPointerDownThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IPointerDownThemeAnimation*>(this);
     }

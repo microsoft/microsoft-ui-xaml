@@ -11,6 +11,7 @@
 
 #include "TextSelectionGripper.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TextSelectionGripper::TextSelectionGripper()
@@ -23,7 +24,7 @@ DirectUI::TextSelectionGripper::~TextSelectionGripper()
 
 HRESULT DirectUI::TextSelectionGripper::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TextSelectionGripper)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TextSelectionGripper), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TextSelectionGripper*>(this);
     }

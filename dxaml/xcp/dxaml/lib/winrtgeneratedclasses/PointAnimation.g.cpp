@@ -12,6 +12,7 @@
 #include "PointAnimation.g.h"
 #include "EasingFunctionBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PointAnimation::PointAnimation()
@@ -24,11 +25,11 @@ DirectUI::PointAnimation::~PointAnimation()
 
 HRESULT DirectUI::PointAnimation::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PointAnimation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PointAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PointAnimation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPointAnimation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPointAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IPointAnimation*>(this);
     }

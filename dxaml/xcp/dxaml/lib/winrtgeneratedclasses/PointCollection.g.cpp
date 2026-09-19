@@ -11,6 +11,7 @@
 
 #include "PointCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PointCollection::PointCollection()
@@ -23,11 +24,11 @@ DirectUI::PointCollection::~PointCollection()
 
 HRESULT DirectUI::PointCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PointCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PointCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PointCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Windows::Foundation::Point>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Windows::Foundation::Point>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Windows::Foundation::Point>*>(this);
     }

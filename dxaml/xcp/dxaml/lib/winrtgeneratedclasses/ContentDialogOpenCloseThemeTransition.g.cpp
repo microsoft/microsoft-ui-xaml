@@ -11,6 +11,7 @@
 
 #include "ContentDialogOpenCloseThemeTransition.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ContentDialogOpenCloseThemeTransitionGenerated::ContentDialogOpenCloseThemeTransitionGenerated()
@@ -23,7 +24,7 @@ DirectUI::ContentDialogOpenCloseThemeTransitionGenerated::~ContentDialogOpenClos
 
 HRESULT DirectUI::ContentDialogOpenCloseThemeTransitionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ContentDialogOpenCloseThemeTransition)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ContentDialogOpenCloseThemeTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ContentDialogOpenCloseThemeTransition*>(this);
     }

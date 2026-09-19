@@ -13,6 +13,7 @@
 #include "IRawElementProviderSimple.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TextAdapterGenerated::TextAdapterGenerated()
@@ -25,11 +26,11 @@ DirectUI::TextAdapterGenerated::~TextAdapterGenerated()
 
 HRESULT DirectUI::TextAdapterGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TextAdapter)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TextAdapter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TextAdapter*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::ITextProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::ITextProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::ITextProvider*>(this);
     }

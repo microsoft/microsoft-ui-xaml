@@ -11,6 +11,7 @@
 
 #include "RangeBaseAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RangeBaseAutomationPeerGenerated::RangeBaseAutomationPeerGenerated()
@@ -23,15 +24,15 @@ DirectUI::RangeBaseAutomationPeerGenerated::~RangeBaseAutomationPeerGenerated()
 
 HRESULT DirectUI::RangeBaseAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RangeBaseAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RangeBaseAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RangeBaseAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IRangeBaseAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IRangeBaseAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IRangeBaseAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IRangeValueProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IRangeValueProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IRangeValueProvider*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "MenuFlyoutSeparator.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MenuFlyoutSeparator::MenuFlyoutSeparator()
@@ -23,11 +24,11 @@ DirectUI::MenuFlyoutSeparator::~MenuFlyoutSeparator()
 
 HRESULT DirectUI::MenuFlyoutSeparator::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MenuFlyoutSeparator)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MenuFlyoutSeparator), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MenuFlyoutSeparator*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSeparator)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSeparator), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSeparator*>(this);
     }

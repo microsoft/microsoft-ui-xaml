@@ -11,6 +11,7 @@
 
 #include "ItemInvokeAdapter.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ItemInvokeAdapterGenerated::ItemInvokeAdapterGenerated()
@@ -23,11 +24,11 @@ DirectUI::ItemInvokeAdapterGenerated::~ItemInvokeAdapterGenerated()
 
 HRESULT DirectUI::ItemInvokeAdapterGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ItemInvokeAdapter)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ItemInvokeAdapter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ItemInvokeAdapter*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "SwapChainPanel.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SwapChainPanelGenerated::SwapChainPanelGenerated()
@@ -23,11 +24,11 @@ DirectUI::SwapChainPanelGenerated::~SwapChainPanelGenerated()
 
 HRESULT DirectUI::SwapChainPanelGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SwapChainPanel)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SwapChainPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SwapChainPanel*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISwapChainPanel)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ISwapChainPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISwapChainPanel*>(this);
     }

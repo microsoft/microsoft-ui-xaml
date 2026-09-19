@@ -11,6 +11,7 @@
 
 #include "InlineCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::InlineCollectionGenerated::InlineCollectionGenerated()
@@ -23,11 +24,11 @@ DirectUI::InlineCollectionGenerated::~InlineCollectionGenerated()
 
 HRESULT DirectUI::InlineCollectionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::InlineCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::InlineCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::InlineCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Documents::Inline*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Documents::Inline*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Documents::Inline*>*>(this);
     }

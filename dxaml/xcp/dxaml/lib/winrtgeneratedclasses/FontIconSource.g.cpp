@@ -12,6 +12,7 @@
 #include "FontIconSource.g.h"
 #include "FontFamily.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FontIconSourceGenerated::FontIconSourceGenerated()
@@ -24,11 +25,11 @@ DirectUI::FontIconSourceGenerated::~FontIconSourceGenerated()
 
 HRESULT DirectUI::FontIconSourceGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FontIconSource)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FontIconSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FontIconSource*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IFontIconSource)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IFontIconSource), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Controls::IFontIconSource>(this);
     }

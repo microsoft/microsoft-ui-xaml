@@ -11,6 +11,7 @@
 
 #include "ScrollViewerView.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ScrollViewerView::ScrollViewerView(): m_horizontalOffset(), m_verticalOffset(), m_zoomFactor()
@@ -23,11 +24,11 @@ DirectUI::ScrollViewerView::~ScrollViewerView()
 
 HRESULT DirectUI::ScrollViewerView::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ScrollViewerView)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ScrollViewerView), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ScrollViewerView*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IScrollViewerView)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IScrollViewerView), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IScrollViewerView*>(this);
     }

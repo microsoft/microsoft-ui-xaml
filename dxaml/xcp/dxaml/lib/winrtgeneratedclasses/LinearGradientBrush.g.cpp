@@ -11,6 +11,7 @@
 
 #include "LinearGradientBrush.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::LinearGradientBrushGenerated::LinearGradientBrushGenerated()
@@ -23,16 +24,16 @@ DirectUI::LinearGradientBrushGenerated::~LinearGradientBrushGenerated()
 
 HRESULT DirectUI::LinearGradientBrushGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::LinearGradientBrush)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::LinearGradientBrush), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::LinearGradientBrush*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::ILinearGradientBrush)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::ILinearGradientBrush), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::ILinearGradientBrush*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::ILinearGradientBrushFeature_XamlMotionSystemHoldbacks)) && Feature_XamlMotionSystemHoldbacks::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::ILinearGradientBrushFeature_XamlMotionSystemHoldbacks), sizeof(IID)) == 0 && Feature_XamlMotionSystemHoldbacks::IsEnabled())
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Media::ILinearGradientBrushFeature_XamlMotionSystemHoldbacks>(this);
     }

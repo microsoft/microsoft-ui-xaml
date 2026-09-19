@@ -11,6 +11,7 @@
 
 #include "BitmapImage.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::BitmapImageGenerated::BitmapImageGenerated()
@@ -23,11 +24,11 @@ DirectUI::BitmapImageGenerated::~BitmapImageGenerated()
 
 HRESULT DirectUI::BitmapImageGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::BitmapImage)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::BitmapImage), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::BitmapImage*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::IBitmapImage)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::IBitmapImage), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Imaging::IBitmapImage*>(this);
     }

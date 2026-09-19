@@ -11,6 +11,7 @@
 
 #include "DxamlCoreTestHooks.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DxamlCoreTestHooksGenerated::DxamlCoreTestHooksGenerated()
@@ -23,11 +24,11 @@ DirectUI::DxamlCoreTestHooksGenerated::~DxamlCoreTestHooksGenerated()
 
 HRESULT DirectUI::DxamlCoreTestHooksGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DxamlCoreTestHooks)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DxamlCoreTestHooks), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DxamlCoreTestHooks*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IDxamlCoreTestHooks)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IDxamlCoreTestHooks), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IDxamlCoreTestHooks>(this);
     }

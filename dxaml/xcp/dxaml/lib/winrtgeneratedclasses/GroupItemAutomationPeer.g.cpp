@@ -11,6 +11,7 @@
 
 #include "GroupItemAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::GroupItemAutomationPeerGenerated::GroupItemAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::GroupItemAutomationPeerGenerated::~GroupItemAutomationPeerGenerated()
 
 HRESULT DirectUI::GroupItemAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::GroupItemAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::GroupItemAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::GroupItemAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IGroupItemAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IGroupItemAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IGroupItemAutomationPeer*>(this);
     }

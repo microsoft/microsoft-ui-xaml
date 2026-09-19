@@ -11,6 +11,7 @@
 
 #include "ComboBoxItemDataAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ComboBoxItemDataAutomationPeerGenerated::ComboBoxItemDataAutomationPeerGenerated()
@@ -23,15 +24,15 @@ DirectUI::ComboBoxItemDataAutomationPeerGenerated::~ComboBoxItemDataAutomationPe
 
 HRESULT DirectUI::ComboBoxItemDataAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ComboBoxItemDataAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ComboBoxItemDataAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ComboBoxItemDataAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IComboBoxItemDataAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IComboBoxItemDataAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IComboBoxItemDataAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IScrollItemProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IScrollItemProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IScrollItemProvider*>(this);
     }

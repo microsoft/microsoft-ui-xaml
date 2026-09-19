@@ -11,6 +11,7 @@
 
 #include "VectorCollectionView.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::VectorCollectionViewGenerated::VectorCollectionViewGenerated()
@@ -23,7 +24,7 @@ DirectUI::VectorCollectionViewGenerated::~VectorCollectionViewGenerated()
 
 HRESULT DirectUI::VectorCollectionViewGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::VectorCollectionView)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::VectorCollectionView), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::VectorCollectionView*>(this);
     }

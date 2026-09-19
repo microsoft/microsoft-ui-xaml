@@ -11,6 +11,7 @@
 
 #include "Shadow.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Shadow::Shadow()
@@ -23,11 +24,11 @@ DirectUI::Shadow::~Shadow()
 
 HRESULT DirectUI::Shadow::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Shadow)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Shadow), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Shadow*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IShadow)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IShadow), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IShadow*>(this);
     }

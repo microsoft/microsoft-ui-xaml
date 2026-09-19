@@ -11,6 +11,7 @@
 
 #include "ListBoxAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ListBoxAutomationPeerGenerated::ListBoxAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::ListBoxAutomationPeerGenerated::~ListBoxAutomationPeerGenerated()
 
 HRESULT DirectUI::ListBoxAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ListBoxAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ListBoxAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ListBoxAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IListBoxAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IListBoxAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IListBoxAutomationPeer*>(this);
     }

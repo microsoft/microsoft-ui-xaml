@@ -11,6 +11,7 @@
 
 #include "EasingFunctionBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::EasingFunctionBaseGenerated::EasingFunctionBaseGenerated()
@@ -23,11 +24,11 @@ DirectUI::EasingFunctionBaseGenerated::~EasingFunctionBaseGenerated()
 
 HRESULT DirectUI::EasingFunctionBaseGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::EasingFunctionBase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::EasingFunctionBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::EasingFunctionBase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IEasingFunctionBase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IEasingFunctionBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IEasingFunctionBase*>(this);
     }

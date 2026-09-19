@@ -11,6 +11,7 @@
 
 #include "PrintRoot.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PrintRoot::PrintRoot()
@@ -23,7 +24,7 @@ DirectUI::PrintRoot::~PrintRoot()
 
 HRESULT DirectUI::PrintRoot::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PrintRoot)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PrintRoot), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PrintRoot*>(this);
     }

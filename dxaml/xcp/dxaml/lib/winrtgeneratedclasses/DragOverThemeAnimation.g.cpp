@@ -11,6 +11,7 @@
 
 #include "DragOverThemeAnimation.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DragOverThemeAnimationGenerated::DragOverThemeAnimationGenerated()
@@ -23,11 +24,11 @@ DirectUI::DragOverThemeAnimationGenerated::~DragOverThemeAnimationGenerated()
 
 HRESULT DirectUI::DragOverThemeAnimationGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DragOverThemeAnimation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DragOverThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DragOverThemeAnimation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDragOverThemeAnimation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDragOverThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IDragOverThemeAnimation*>(this);
     }

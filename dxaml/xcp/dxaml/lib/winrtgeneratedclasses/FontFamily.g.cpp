@@ -11,6 +11,7 @@
 
 #include "FontFamily.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FontFamily::FontFamily()
@@ -23,11 +24,11 @@ DirectUI::FontFamily::~FontFamily()
 
 HRESULT DirectUI::FontFamily::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FontFamily)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FontFamily), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FontFamily*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IFontFamily)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IFontFamily), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IFontFamily*>(this);
     }

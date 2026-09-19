@@ -12,6 +12,7 @@
 #include "NavigationTransitionInfo.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::NavigationTransitionInfoGenerated::NavigationTransitionInfoGenerated()
@@ -24,23 +25,23 @@ DirectUI::NavigationTransitionInfoGenerated::~NavigationTransitionInfoGenerated(
 
 HRESULT DirectUI::NavigationTransitionInfoGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::NavigationTransitionInfo)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::NavigationTransitionInfo), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::NavigationTransitionInfo*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfoOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfoOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfoOverrides*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfoOverridesPrivate)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfoOverridesPrivate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfoOverridesPrivate*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfoPrivate)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfoPrivate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfoPrivate*>(this);
     }

@@ -12,6 +12,7 @@
 #include "PathIconSource.g.h"
 #include "Geometry.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PathIconSourceGenerated::PathIconSourceGenerated()
@@ -24,11 +25,11 @@ DirectUI::PathIconSourceGenerated::~PathIconSourceGenerated()
 
 HRESULT DirectUI::PathIconSourceGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PathIconSource)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PathIconSource), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PathIconSource*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IPathIconSource)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IPathIconSource), sizeof(IID)) == 0)
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Controls::IPathIconSource>(this);
     }

@@ -12,6 +12,7 @@
 #include "AutomationPeerAnnotation.g.h"
 #include "AutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::AutomationPeerAnnotation::AutomationPeerAnnotation()
@@ -24,11 +25,11 @@ DirectUI::AutomationPeerAnnotation::~AutomationPeerAnnotation()
 
 HRESULT DirectUI::AutomationPeerAnnotation::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AutomationPeerAnnotation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AutomationPeerAnnotation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AutomationPeerAnnotation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerAnnotation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerAnnotation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerAnnotation*>(this);
     }

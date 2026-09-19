@@ -12,6 +12,7 @@
 #include "PolyLineSegment.g.h"
 #include "PointCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PolyLineSegment::PolyLineSegment()
@@ -24,11 +25,11 @@ DirectUI::PolyLineSegment::~PolyLineSegment()
 
 HRESULT DirectUI::PolyLineSegment::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PolyLineSegment)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PolyLineSegment), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PolyLineSegment*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IPolyLineSegment)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IPolyLineSegment), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IPolyLineSegment*>(this);
     }

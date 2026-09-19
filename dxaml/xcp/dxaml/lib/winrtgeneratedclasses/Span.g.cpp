@@ -12,6 +12,7 @@
 #include "Span.g.h"
 #include "InlineCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SpanGenerated::SpanGenerated()
@@ -24,11 +25,11 @@ DirectUI::SpanGenerated::~SpanGenerated()
 
 HRESULT DirectUI::SpanGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Span)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Span), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Span*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Documents::ISpan)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Documents::ISpan), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Documents::ISpan*>(this);
     }

@@ -14,6 +14,7 @@
 #include "ElementFactoryRecycleArgs.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::DataTemplateGenerated::DataTemplateGenerated()
@@ -26,20 +27,20 @@ DirectUI::DataTemplateGenerated::~DataTemplateGenerated()
 
 HRESULT DirectUI::DataTemplateGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DataTemplate)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DataTemplate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DataTemplate*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IDataTemplate)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IDataTemplate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IDataTemplate*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IElementFactory)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IElementFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IElementFactory*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IDataTemplateFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IDataTemplateFeature_ExperimentalApi), sizeof(IID)) == 0 && Feature_ExperimentalApi::IsEnabled())
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IDataTemplateFeature_ExperimentalApi>(this);
     }

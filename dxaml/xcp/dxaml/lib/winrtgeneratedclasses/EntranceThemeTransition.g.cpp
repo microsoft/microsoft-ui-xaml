@@ -11,6 +11,7 @@
 
 #include "EntranceThemeTransition.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::EntranceThemeTransitionGenerated::EntranceThemeTransitionGenerated()
@@ -23,11 +24,11 @@ DirectUI::EntranceThemeTransitionGenerated::~EntranceThemeTransitionGenerated()
 
 HRESULT DirectUI::EntranceThemeTransitionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::EntranceThemeTransition)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::EntranceThemeTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::EntranceThemeTransition*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IEntranceThemeTransition)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IEntranceThemeTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IEntranceThemeTransition*>(this);
     }

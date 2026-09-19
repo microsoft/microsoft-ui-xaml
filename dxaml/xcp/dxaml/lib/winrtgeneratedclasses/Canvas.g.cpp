@@ -11,6 +11,7 @@
 
 #include "Canvas.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Canvas::Canvas()
@@ -23,11 +24,11 @@ DirectUI::Canvas::~Canvas()
 
 HRESULT DirectUI::Canvas::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Canvas)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Canvas), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Canvas*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ICanvas)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ICanvas), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ICanvas*>(this);
     }

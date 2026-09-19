@@ -12,6 +12,7 @@
 #include "RadioButtonAutomationPeer.g.h"
 #include "IRawElementProviderSimple.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RadioButtonAutomationPeerGenerated::RadioButtonAutomationPeerGenerated()
@@ -24,15 +25,15 @@ DirectUI::RadioButtonAutomationPeerGenerated::~RadioButtonAutomationPeerGenerate
 
 HRESULT DirectUI::RadioButtonAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RadioButtonAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RadioButtonAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RadioButtonAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IRadioButtonAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IRadioButtonAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IRadioButtonAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::ISelectionItemProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::ISelectionItemProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::ISelectionItemProvider*>(this);
     }

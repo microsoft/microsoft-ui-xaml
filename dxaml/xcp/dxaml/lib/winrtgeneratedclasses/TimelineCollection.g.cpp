@@ -11,6 +11,7 @@
 
 #include "TimelineCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TimelineCollection::TimelineCollection()
@@ -23,11 +24,11 @@ DirectUI::TimelineCollection::~TimelineCollection()
 
 HRESULT DirectUI::TimelineCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TimelineCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TimelineCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TimelineCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Timeline*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Timeline*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Timeline*>*>(this);
     }

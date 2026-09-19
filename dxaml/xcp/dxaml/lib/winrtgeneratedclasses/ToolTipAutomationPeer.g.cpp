@@ -11,6 +11,7 @@
 
 #include "ToolTipAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ToolTipAutomationPeerGenerated::ToolTipAutomationPeerGenerated()
@@ -23,7 +24,7 @@ DirectUI::ToolTipAutomationPeerGenerated::~ToolTipAutomationPeerGenerated()
 
 HRESULT DirectUI::ToolTipAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ToolTipAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ToolTipAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ToolTipAutomationPeer*>(this);
     }

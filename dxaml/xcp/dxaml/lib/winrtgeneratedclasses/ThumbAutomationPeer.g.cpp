@@ -11,6 +11,7 @@
 
 #include "ThumbAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ThumbAutomationPeerGenerated::ThumbAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::ThumbAutomationPeerGenerated::~ThumbAutomationPeerGenerated()
 
 HRESULT DirectUI::ThumbAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ThumbAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ThumbAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ThumbAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IThumbAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IThumbAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IThumbAutomationPeer*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "MenuPopupThemeTransition.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MenuPopupThemeTransitionGenerated::MenuPopupThemeTransitionGenerated()
@@ -23,7 +24,7 @@ DirectUI::MenuPopupThemeTransitionGenerated::~MenuPopupThemeTransitionGenerated(
 
 HRESULT DirectUI::MenuPopupThemeTransitionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MenuPopupThemeTransition)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MenuPopupThemeTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MenuPopupThemeTransition*>(this);
     }

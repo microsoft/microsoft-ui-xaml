@@ -13,6 +13,7 @@
 #include "EasingFunctionBase.g.h"
 #include "Storyboard.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::VisualTransition::VisualTransition()
@@ -25,11 +26,11 @@ DirectUI::VisualTransition::~VisualTransition()
 
 HRESULT DirectUI::VisualTransition::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::VisualTransition)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::VisualTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::VisualTransition*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IVisualTransition)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IVisualTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IVisualTransition*>(this);
     }

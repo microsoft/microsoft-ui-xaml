@@ -11,6 +11,7 @@
 
 #include "PathFigureCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::PathFigureCollection::PathFigureCollection()
@@ -23,11 +24,11 @@ DirectUI::PathFigureCollection::~PathFigureCollection()
 
 HRESULT DirectUI::PathFigureCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PathFigureCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PathFigureCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PathFigureCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::PathFigure*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::PathFigure*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::PathFigure*>*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "SplitOpenThemeAnimation.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SplitOpenThemeAnimationGenerated::SplitOpenThemeAnimationGenerated()
@@ -23,11 +24,11 @@ DirectUI::SplitOpenThemeAnimationGenerated::~SplitOpenThemeAnimationGenerated()
 
 HRESULT DirectUI::SplitOpenThemeAnimationGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SplitOpenThemeAnimation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SplitOpenThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SplitOpenThemeAnimation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISplitOpenThemeAnimation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISplitOpenThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::ISplitOpenThemeAnimation*>(this);
     }

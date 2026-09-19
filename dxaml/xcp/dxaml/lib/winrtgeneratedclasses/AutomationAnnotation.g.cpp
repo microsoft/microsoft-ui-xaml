@@ -12,6 +12,7 @@
 #include "AutomationAnnotation.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::AutomationAnnotation::AutomationAnnotation()
@@ -24,11 +25,11 @@ DirectUI::AutomationAnnotation::~AutomationAnnotation()
 
 HRESULT DirectUI::AutomationAnnotation::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AutomationAnnotation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AutomationAnnotation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AutomationAnnotation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation*>(this);
     }

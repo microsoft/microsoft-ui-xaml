@@ -12,6 +12,7 @@
 #include "ChoosingGroupHeaderContainerEventArgs.g.h"
 #include "ListViewBaseHeaderItem.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ChoosingGroupHeaderContainerEventArgs::ChoosingGroupHeaderContainerEventArgs(): m_groupIndex()
@@ -24,11 +25,11 @@ DirectUI::ChoosingGroupHeaderContainerEventArgs::~ChoosingGroupHeaderContainerEv
 
 HRESULT DirectUI::ChoosingGroupHeaderContainerEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ChoosingGroupHeaderContainerEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ChoosingGroupHeaderContainerEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ChoosingGroupHeaderContainerEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IChoosingGroupHeaderContainerEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IChoosingGroupHeaderContainerEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IChoosingGroupHeaderContainerEventArgs*>(this);
     }

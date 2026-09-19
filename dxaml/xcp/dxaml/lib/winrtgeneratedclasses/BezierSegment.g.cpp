@@ -11,6 +11,7 @@
 
 #include "BezierSegment.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::BezierSegment::BezierSegment()
@@ -23,11 +24,11 @@ DirectUI::BezierSegment::~BezierSegment()
 
 HRESULT DirectUI::BezierSegment::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::BezierSegment)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::BezierSegment), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::BezierSegment*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IBezierSegment)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IBezierSegment), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IBezierSegment*>(this);
     }

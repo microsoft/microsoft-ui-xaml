@@ -11,6 +11,7 @@
 
 #include "NamedContainerAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::NamedContainerAutomationPeerGenerated::NamedContainerAutomationPeerGenerated()
@@ -23,7 +24,7 @@ DirectUI::NamedContainerAutomationPeerGenerated::~NamedContainerAutomationPeerGe
 
 HRESULT DirectUI::NamedContainerAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::NamedContainerAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::NamedContainerAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::NamedContainerAutomationPeer*>(this);
     }

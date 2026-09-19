@@ -11,6 +11,7 @@
 
 #include "WrapGrid.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::WrapGridGenerated::WrapGridGenerated()
@@ -23,15 +24,15 @@ DirectUI::WrapGridGenerated::~WrapGridGenerated()
 
 HRESULT DirectUI::WrapGridGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::WrapGrid)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::WrapGrid), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::WrapGrid*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IWrapGrid)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IWrapGrid), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IWrapGrid*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IKeyboardNavigationPanel)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IKeyboardNavigationPanel), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IKeyboardNavigationPanel*>(this);
     }

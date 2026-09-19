@@ -11,6 +11,7 @@
 
 #include "LengthConverter.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::LengthConverter::LengthConverter()
@@ -23,7 +24,7 @@ DirectUI::LengthConverter::~LengthConverter()
 
 HRESULT DirectUI::LengthConverter::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::LengthConverter)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::LengthConverter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::LengthConverter*>(this);
     }

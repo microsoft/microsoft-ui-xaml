@@ -11,6 +11,7 @@
 
 #include "EdgeUIThemeTransition.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::EdgeUIThemeTransitionGenerated::EdgeUIThemeTransitionGenerated()
@@ -23,11 +24,11 @@ DirectUI::EdgeUIThemeTransitionGenerated::~EdgeUIThemeTransitionGenerated()
 
 HRESULT DirectUI::EdgeUIThemeTransitionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::EdgeUIThemeTransition)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::EdgeUIThemeTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::EdgeUIThemeTransition*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IEdgeUIThemeTransition)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IEdgeUIThemeTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IEdgeUIThemeTransition*>(this);
     }

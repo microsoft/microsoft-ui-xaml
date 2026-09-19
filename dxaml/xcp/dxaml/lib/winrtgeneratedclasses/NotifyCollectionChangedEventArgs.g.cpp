@@ -11,6 +11,7 @@
 
 #include "NotifyCollectionChangedEventArgs.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::NotifyCollectionChangedEventArgs::NotifyCollectionChangedEventArgs(): m_action(), m_newStartingIndex(), m_oldStartingIndex()
@@ -23,11 +24,11 @@ DirectUI::NotifyCollectionChangedEventArgs::~NotifyCollectionChangedEventArgs()
 
 HRESULT DirectUI::NotifyCollectionChangedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::NotifyCollectionChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::NotifyCollectionChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::NotifyCollectionChangedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Interop::INotifyCollectionChangedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Interop::INotifyCollectionChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Interop::INotifyCollectionChangedEventArgs*>(this);
     }

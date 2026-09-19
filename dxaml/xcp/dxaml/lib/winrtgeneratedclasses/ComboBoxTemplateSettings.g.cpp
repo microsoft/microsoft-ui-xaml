@@ -11,6 +11,7 @@
 
 #include "ComboBoxTemplateSettings.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ComboBoxTemplateSettings::ComboBoxTemplateSettings()
@@ -23,11 +24,11 @@ DirectUI::ComboBoxTemplateSettings::~ComboBoxTemplateSettings()
 
 HRESULT DirectUI::ComboBoxTemplateSettings::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ComboBoxTemplateSettings)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ComboBoxTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ComboBoxTemplateSettings*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IComboBoxTemplateSettings)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IComboBoxTemplateSettings), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IComboBoxTemplateSettings*>(this);
     }

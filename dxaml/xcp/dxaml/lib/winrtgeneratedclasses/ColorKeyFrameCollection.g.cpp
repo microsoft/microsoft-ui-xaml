@@ -11,6 +11,7 @@
 
 #include "ColorKeyFrameCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ColorKeyFrameCollection::ColorKeyFrameCollection()
@@ -23,11 +24,11 @@ DirectUI::ColorKeyFrameCollection::~ColorKeyFrameCollection()
 
 HRESULT DirectUI::ColorKeyFrameCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ColorKeyFrameCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ColorKeyFrameCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ColorKeyFrameCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::ColorKeyFrame*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::ColorKeyFrame*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::ColorKeyFrame*>*>(this);
     }

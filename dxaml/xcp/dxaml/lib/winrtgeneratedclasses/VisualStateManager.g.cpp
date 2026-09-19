@@ -15,6 +15,7 @@
 #include "VisualState.g.h"
 #include "VisualStateGroup.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::VisualStateManagerGenerated::VisualStateManagerGenerated()
@@ -27,19 +28,19 @@ DirectUI::VisualStateManagerGenerated::~VisualStateManagerGenerated()
 
 HRESULT DirectUI::VisualStateManagerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::VisualStateManager)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::VisualStateManager), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::VisualStateManager*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IVisualStateManager)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IVisualStateManager), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IVisualStateManager*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IVisualStateManagerProtected)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IVisualStateManagerProtected), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IVisualStateManagerProtected*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IVisualStateManagerOverrides)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IVisualStateManagerOverrides), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IVisualStateManagerOverrides*>(this);
     }

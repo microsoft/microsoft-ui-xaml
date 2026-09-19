@@ -11,6 +11,7 @@
 
 #include "AddDeleteThemeTransition.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::AddDeleteThemeTransitionGenerated::AddDeleteThemeTransitionGenerated()
@@ -23,11 +24,11 @@ DirectUI::AddDeleteThemeTransitionGenerated::~AddDeleteThemeTransitionGenerated(
 
 HRESULT DirectUI::AddDeleteThemeTransitionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AddDeleteThemeTransition)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AddDeleteThemeTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AddDeleteThemeTransition*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IAddDeleteThemeTransition)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IAddDeleteThemeTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IAddDeleteThemeTransition*>(this);
     }

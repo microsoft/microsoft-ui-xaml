@@ -11,6 +11,7 @@
 
 #include "FlipViewItemDataAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FlipViewItemDataAutomationPeerGenerated::FlipViewItemDataAutomationPeerGenerated()
@@ -23,15 +24,15 @@ DirectUI::FlipViewItemDataAutomationPeerGenerated::~FlipViewItemDataAutomationPe
 
 HRESULT DirectUI::FlipViewItemDataAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FlipViewItemDataAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FlipViewItemDataAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FlipViewItemDataAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IFlipViewItemDataAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IFlipViewItemDataAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IFlipViewItemDataAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IScrollItemProvider)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Provider::IScrollItemProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IScrollItemProvider*>(this);
     }

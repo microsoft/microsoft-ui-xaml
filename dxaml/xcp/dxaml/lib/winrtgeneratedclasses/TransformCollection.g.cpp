@@ -11,6 +11,7 @@
 
 #include "TransformCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TransformCollection::TransformCollection()
@@ -23,11 +24,11 @@ DirectUI::TransformCollection::~TransformCollection()
 
 HRESULT DirectUI::TransformCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TransformCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TransformCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TransformCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Transform*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Transform*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Transform*>*>(this);
     }

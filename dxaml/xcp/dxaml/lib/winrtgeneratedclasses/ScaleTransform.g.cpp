@@ -11,6 +11,7 @@
 
 #include "ScaleTransform.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ScaleTransform::ScaleTransform()
@@ -23,11 +24,11 @@ DirectUI::ScaleTransform::~ScaleTransform()
 
 HRESULT DirectUI::ScaleTransform::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ScaleTransform)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ScaleTransform), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ScaleTransform*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IScaleTransform)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IScaleTransform), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IScaleTransform*>(this);
     }

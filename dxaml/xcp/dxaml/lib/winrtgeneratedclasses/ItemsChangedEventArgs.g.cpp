@@ -11,6 +11,7 @@
 
 #include "ItemsChangedEventArgs.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ItemsChangedEventArgs::ItemsChangedEventArgs(): m_action(), m_position(), m_oldPosition(), m_itemCount(), m_itemUICount()
@@ -23,11 +24,11 @@ DirectUI::ItemsChangedEventArgs::~ItemsChangedEventArgs()
 
 HRESULT DirectUI::ItemsChangedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ItemsChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ItemsChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ItemsChangedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IItemsChangedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IItemsChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IItemsChangedEventArgs*>(this);
     }

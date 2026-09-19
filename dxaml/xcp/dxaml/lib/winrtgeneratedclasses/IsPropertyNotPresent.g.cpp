@@ -11,6 +11,7 @@
 
 #include "IsPropertyNotPresent.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::IsPropertyNotPresentGenerated::IsPropertyNotPresentGenerated()
@@ -23,11 +24,11 @@ DirectUI::IsPropertyNotPresentGenerated::~IsPropertyNotPresentGenerated()
 
 HRESULT DirectUI::IsPropertyNotPresentGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IsPropertyNotPresent)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::IsPropertyNotPresent), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IsPropertyNotPresent*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IXamlPredicate)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::IXamlPredicate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IXamlPredicate*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "NullExtension.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::NullExtension::NullExtension()
@@ -23,7 +24,7 @@ DirectUI::NullExtension::~NullExtension()
 
 HRESULT DirectUI::NullExtension::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::NullExtension)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::NullExtension), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::NullExtension*>(this);
     }

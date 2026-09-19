@@ -11,6 +11,7 @@
 
 #include "FadeInThemeAnimation.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::FadeInThemeAnimationGenerated::FadeInThemeAnimationGenerated()
@@ -23,11 +24,11 @@ DirectUI::FadeInThemeAnimationGenerated::~FadeInThemeAnimationGenerated()
 
 HRESULT DirectUI::FadeInThemeAnimationGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FadeInThemeAnimation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FadeInThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FadeInThemeAnimation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IFadeInThemeAnimation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IFadeInThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IFadeInThemeAnimation*>(this);
     }

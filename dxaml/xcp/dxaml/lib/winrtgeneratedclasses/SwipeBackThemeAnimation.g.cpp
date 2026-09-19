@@ -11,6 +11,7 @@
 
 #include "SwipeBackThemeAnimation.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::SwipeBackThemeAnimationGenerated::SwipeBackThemeAnimationGenerated()
@@ -23,11 +24,11 @@ DirectUI::SwipeBackThemeAnimationGenerated::~SwipeBackThemeAnimationGenerated()
 
 HRESULT DirectUI::SwipeBackThemeAnimationGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SwipeBackThemeAnimation)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SwipeBackThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SwipeBackThemeAnimation*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISwipeBackThemeAnimation)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISwipeBackThemeAnimation), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::ISwipeBackThemeAnimation*>(this);
     }

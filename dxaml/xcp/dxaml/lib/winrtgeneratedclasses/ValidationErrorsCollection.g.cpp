@@ -11,6 +11,7 @@
 
 #include "ValidationErrorsCollection.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ValidationErrorsCollectionGenerated::ValidationErrorsCollectionGenerated()
@@ -23,11 +24,11 @@ DirectUI::ValidationErrorsCollectionGenerated::~ValidationErrorsCollectionGenera
 
 HRESULT DirectUI::ValidationErrorsCollectionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ValidationErrorsCollection)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ValidationErrorsCollection), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ValidationErrorsCollection*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Controls::InputValidationError*>)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Controls::InputValidationError*>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Controls::InputValidationError*>*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "Run.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::Run::Run()
@@ -23,11 +24,11 @@ DirectUI::Run::~Run()
 
 HRESULT DirectUI::Run::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::Run)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::Run), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::Run*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Documents::IRun)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Documents::IRun), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Documents::IRun*>(this);
     }

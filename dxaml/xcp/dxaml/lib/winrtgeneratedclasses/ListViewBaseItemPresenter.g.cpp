@@ -11,6 +11,7 @@
 
 #include "ListViewBaseItemPresenter.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ListViewBaseItemPresenterGenerated::ListViewBaseItemPresenterGenerated()
@@ -23,7 +24,7 @@ DirectUI::ListViewBaseItemPresenterGenerated::~ListViewBaseItemPresenterGenerate
 
 HRESULT DirectUI::ListViewBaseItemPresenterGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ListViewBaseItemPresenter)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ListViewBaseItemPresenter), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ListViewBaseItemPresenter*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "RepositionThemeTransition.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::RepositionThemeTransitionGenerated::RepositionThemeTransitionGenerated()
@@ -23,11 +24,11 @@ DirectUI::RepositionThemeTransitionGenerated::~RepositionThemeTransitionGenerate
 
 HRESULT DirectUI::RepositionThemeTransitionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RepositionThemeTransition)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RepositionThemeTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RepositionThemeTransition*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IRepositionThemeTransition)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IRepositionThemeTransition), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IRepositionThemeTransition*>(this);
     }

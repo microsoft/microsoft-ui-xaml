@@ -11,6 +11,7 @@
 
 #include "ItemIndexRange.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ItemIndexRangeGenerated::ItemIndexRangeGenerated(): m_firstIndex(), m_length()
@@ -23,11 +24,11 @@ DirectUI::ItemIndexRangeGenerated::~ItemIndexRangeGenerated()
 
 HRESULT DirectUI::ItemIndexRangeGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ItemIndexRange)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ItemIndexRange), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ItemIndexRange*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::IItemIndexRange)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Data::IItemIndexRange), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::IItemIndexRange*>(this);
     }

@@ -11,6 +11,7 @@
 
 #include "LaunchActivatedEventArgs.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::LaunchActivatedEventArgs::LaunchActivatedEventArgs()
@@ -23,11 +24,11 @@ DirectUI::LaunchActivatedEventArgs::~LaunchActivatedEventArgs()
 
 HRESULT DirectUI::LaunchActivatedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::LaunchActivatedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::LaunchActivatedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::LaunchActivatedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::ILaunchActivatedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::ILaunchActivatedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::ILaunchActivatedEventArgs*>(this);
     }

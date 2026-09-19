@@ -11,6 +11,7 @@
 
 #include "StateTriggerBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::StateTriggerBaseGenerated::StateTriggerBaseGenerated()
@@ -23,15 +24,15 @@ DirectUI::StateTriggerBaseGenerated::~StateTriggerBaseGenerated()
 
 HRESULT DirectUI::StateTriggerBaseGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::StateTriggerBase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::StateTriggerBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::StateTriggerBase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IStateTriggerBase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IStateTriggerBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IStateTriggerBase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IStateTriggerBaseProtected)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IStateTriggerBaseProtected), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IStateTriggerBaseProtected*>(this);
     }

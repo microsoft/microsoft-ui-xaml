@@ -12,6 +12,7 @@
 #include "MenuFlyoutSubItem.g.h"
 #include "IconElement.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MenuFlyoutSubItemGenerated::MenuFlyoutSubItemGenerated()
@@ -24,15 +25,15 @@ DirectUI::MenuFlyoutSubItemGenerated::~MenuFlyoutSubItemGenerated()
 
 HRESULT DirectUI::MenuFlyoutSubItemGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MenuFlyoutSubItem)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MenuFlyoutSubItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MenuFlyoutSubItem*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSubItem)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSubItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSubItem*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISubMenuOwner)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ISubMenuOwner), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISubMenuOwner*>(this);
     }

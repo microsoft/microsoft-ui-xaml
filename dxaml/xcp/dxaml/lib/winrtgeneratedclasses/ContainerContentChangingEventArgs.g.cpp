@@ -12,6 +12,7 @@
 #include "ContainerContentChangingEventArgs.g.h"
 #include "SelectorItem.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ContainerContentChangingEventArgsGenerated::ContainerContentChangingEventArgsGenerated(): m_inRecycleQueue(), m_itemIndex(), m_phase(), m_wantsCallBack(), m_contentShouldBeSet(), m_handled()
@@ -24,11 +25,11 @@ DirectUI::ContainerContentChangingEventArgsGenerated::~ContainerContentChangingE
 
 HRESULT DirectUI::ContainerContentChangingEventArgsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ContainerContentChangingEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ContainerContentChangingEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ContainerContentChangingEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IContainerContentChangingEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IContainerContentChangingEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IContainerContentChangingEventArgs*>(this);
     }

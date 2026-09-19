@@ -11,6 +11,7 @@
 
 #include "TriggerBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::TriggerBase::TriggerBase()
@@ -23,11 +24,11 @@ DirectUI::TriggerBase::~TriggerBase()
 
 HRESULT DirectUI::TriggerBase::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TriggerBase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TriggerBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TriggerBase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::ITriggerBase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::ITriggerBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::ITriggerBase*>(this);
     }

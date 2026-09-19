@@ -11,6 +11,7 @@
 
 #include "MenuFlyoutPresenterAutomationPeer.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::MenuFlyoutPresenterAutomationPeerGenerated::MenuFlyoutPresenterAutomationPeerGenerated()
@@ -23,11 +24,11 @@ DirectUI::MenuFlyoutPresenterAutomationPeerGenerated::~MenuFlyoutPresenterAutoma
 
 HRESULT DirectUI::MenuFlyoutPresenterAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MenuFlyoutPresenterAutomationPeer)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MenuFlyoutPresenterAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MenuFlyoutPresenterAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IMenuFlyoutPresenterAutomationPeer)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IMenuFlyoutPresenterAutomationPeer), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IMenuFlyoutPresenterAutomationPeer*>(this);
     }

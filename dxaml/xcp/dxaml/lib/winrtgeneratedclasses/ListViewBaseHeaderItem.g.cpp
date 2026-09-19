@@ -11,6 +11,7 @@
 
 #include "ListViewBaseHeaderItem.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ListViewBaseHeaderItemGenerated::ListViewBaseHeaderItemGenerated()
@@ -23,15 +24,15 @@ DirectUI::ListViewBaseHeaderItemGenerated::~ListViewBaseHeaderItemGenerated()
 
 HRESULT DirectUI::ListViewBaseHeaderItemGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ListViewBaseHeaderItem)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ListViewBaseHeaderItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ListViewBaseHeaderItem*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IListViewBaseHeaderItem)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IListViewBaseHeaderItem), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IListViewBaseHeaderItem*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ITransitionContextProvider)))
+    else if (std::memcmp(&iid, &__uuidof(DirectUI::ITransitionContextProvider), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ITransitionContextProvider*>(this);
     }

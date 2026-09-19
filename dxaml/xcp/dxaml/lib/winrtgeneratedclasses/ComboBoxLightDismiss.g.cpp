@@ -11,6 +11,7 @@
 
 #include "ComboBoxLightDismiss.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::ComboBoxLightDismissGenerated::ComboBoxLightDismissGenerated()
@@ -23,7 +24,7 @@ DirectUI::ComboBoxLightDismissGenerated::~ComboBoxLightDismissGenerated()
 
 HRESULT DirectUI::ComboBoxLightDismissGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ComboBoxLightDismiss)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ComboBoxLightDismiss), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ComboBoxLightDismiss*>(this);
     }

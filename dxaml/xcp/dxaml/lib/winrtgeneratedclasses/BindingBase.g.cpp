@@ -11,6 +11,7 @@
 
 #include "BindingBase.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::BindingBase::BindingBase()
@@ -23,11 +24,11 @@ DirectUI::BindingBase::~BindingBase()
 
 HRESULT DirectUI::BindingBase::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::BindingBase)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::BindingBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::BindingBase*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::IBindingBase)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Data::IBindingBase), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::IBindingBase*>(this);
     }

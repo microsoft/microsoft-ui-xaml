@@ -11,6 +11,7 @@
 
 #include "BitmapIcon.g.h"
 #include "XamlTelemetry.h"
+#include <cstring>
 
 // Constructors/destructors.
 DirectUI::BitmapIcon::BitmapIcon()
@@ -23,11 +24,11 @@ DirectUI::BitmapIcon::~BitmapIcon()
 
 HRESULT DirectUI::BitmapIcon::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::BitmapIcon)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::BitmapIcon), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::BitmapIcon*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IBitmapIcon)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IBitmapIcon), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IBitmapIcon*>(this);
     }
