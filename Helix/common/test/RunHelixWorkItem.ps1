@@ -212,12 +212,17 @@ function Report-LifetimeNativeCrash
     $newDumps = @(Get-LifetimeDumpFiles | Where-Object { $preRunDumps -notcontains $_.FullName })
 
     # Count "REPORT: scenario 'X' threw" lines - native warnings that didn't crash the host, tracked separately.
+    # Also count "REPORT: object 'X' was still alive after forced collection" lines - managed leak warnings from
+    # VerifyCollected(failOnLeak:false). These previously never reached the aggregation, so only native signals
+    # showed in the pipeline; capture them here so the totals step can surface them too.
     $warningScenarios = New-Object System.Collections.Generic.List[string]
+    $managedWarningObjects = New-Object System.Collections.Generic.List[string]
     if ($teConsoleLogPath -and (Test-Path $teConsoleLogPath))
     {
         foreach ($line in Get-Content $teConsoleLogPath)
         {
             if ($line -match "\[LifetimeStress\] REPORT: scenario '([^']+)' threw") { $warningScenarios.Add($Matches[1]) }
+            elseif ($line -match "\[LifetimeStress\] REPORT: object '([^']+)' was still alive after forced collection") { $managedWarningObjects.Add($Matches[1]) }
         }
     }
 
@@ -258,21 +263,23 @@ function Report-LifetimeNativeCrash
     if ($env:HELIX_WORKITEM_UPLOAD_ROOT)
     {
         $report = [ordered]@{
-            workItem           = (Split-Path $env:HELIX_WORKITEM_UPLOAD_ROOT -Leaf)
-            nativeCrashCount   = [int][bool]$crashDetected
-            nativeWarningCount = $warningScenarios.Count
-            teExitCode         = $teExitCode
-            newDumpCount       = $newDumps.Count
-            inFlightScenarios  = @($inFlight)
-            crashScenario      = $scenarioLabel
-            dumps              = @($dumpNames)
-            warningScenarios   = @($warningScenarios)
+            workItem             = (Split-Path $env:HELIX_WORKITEM_UPLOAD_ROOT -Leaf)
+            nativeCrashCount     = [int][bool]$crashDetected
+            nativeWarningCount   = $warningScenarios.Count
+            managedWarningCount  = $managedWarningObjects.Count
+            teExitCode           = $teExitCode
+            newDumpCount         = $newDumps.Count
+            inFlightScenarios    = @($inFlight)
+            crashScenario        = $scenarioLabel
+            dumps                = @($dumpNames)
+            warningScenarios     = @($warningScenarios)
+            managedWarningObjects = @($managedWarningObjects)
         }
         try
         {
             $reportPath = Join-Path $env:HELIX_WORKITEM_UPLOAD_ROOT "LifetimeNativeCrashReport.json"
             $report | ConvertTo-Json -Depth 4 | Out-File -FilePath $reportPath -Encoding utf8
-            Write-Host "Lifetime stress: wrote native crash/warning report (crashes=$($report.nativeCrashCount), warnings=$($report.nativeWarningCount)) to $reportPath."
+            Write-Host "Lifetime stress: wrote native crash/warning report (crashes=$($report.nativeCrashCount), nativeWarnings=$($report.nativeWarningCount), managedWarnings=$($report.managedWarningCount)) to $reportPath."
         }
         catch
         {
