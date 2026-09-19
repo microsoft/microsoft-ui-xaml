@@ -32,7 +32,7 @@ namespace
         _Out_ UINT* pSize)
     {
         ctl::ComPtr<wfc::IVector<Item*>> spCollection;
-        IFC_RETURN(ctl::do_query_interface(spCollection, pValue));
+        IFC_RETURN(ctl::do_query_interface(*spCollection.ReleaseAndGetAddressOf(), pValue));
         IFC_RETURN(spCollection->get_Size(pSize));
 
         return S_OK;

@@ -1847,3 +1847,86 @@ runtime work is added. Code layout and register choices change. Application
 performance, runtime reentrancy, failure injection, debug behavior, and other
 architectures were not exercised. Compilation does not establish runtime
 correctness.
+
+## Follow-up: query diagnostic collection size into an empty owner
+
+File: `dxaml\xcp\dxaml\lib\InternalDebugInterop.cpp`.
+
+In `GetCollectionSizeInternal<Item>`, select the existing raw-output
+`ctl::do_query_interface` overload with
+`*spCollection.ReleaseAndGetAddressOf()`. The local smart pointer is freshly
+constructed and empty. The query writes its owning result directly into that
+pointer instead of querying into another smart pointer and swapping it into
+the empty destination.
+
+The requested IID, input pointer, query-before-size order, output behavior,
+and failure cleanup remain unchanged. The raw overload retains the existing
+null-input branch; the subsequent size lookup still requires a non-null
+collection, as before. A populated query output is released on every return
+path, including failure. Both `IFC_RETURN` sites and final `S_OK` normalization
+remain unchanged. The general smart-pointer overload remains available for
+callers with existing destination references. No public interface, class
+layout, generated output, metadata, build option, or security setting changes.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `f1dad4027`, fresh baseline | 14,273,024 | 14,272,000 | 14,282,612 |
+| Direct collection-size query output | 14,271,488 | 14,270,464 | 14,281,188 |
+| Incremental reduction | 1,536 | 1,536 | 1,424 |
+| Cumulative reduction from original baseline | 263,680 | 263,680 | 263,588 |
+
+The actual DLL file is **1,536 bytes (1.5 KiB) smaller**. Cumulative file
+savings are **263,680 bytes (257.5 KiB)** from the original 14,535,168-byte
+baseline. Raw `.text` shrinks by 1,536 bytes. Virtual `.text` and `.pdata`
+shrink by 1,184 and 240 bytes respectively. Other section sizes are unchanged.
+
+As supporting attribution, the `GetCollectionSizeInternal` family grows from
+2,782 to 3,742 attributed bytes across the same 20 representatives as query
+logic moves inline. The resolved `ColumnDefinition`, `DependencyObject`, and
+`UIElement` primary blocks each grow from 140 to 187 bytes. The inspected
+column-definition path no longer calls the general smart-pointer query helper.
+Its guarded QI, size lookup, release, and 48-byte local stack reservation
+remain. The stack-cookie check now runs in the wrapper rather than the
+removed helper frame. One separately grouped smart-pointer query family,
+previously 2,886 bytes across 21 representatives, no longer appears in the
+complete template report. These family observations are not summed with
+section savings or substituted for the actual file measurement.
+
+Restoring the original source byte-for-byte and recompiling reproduced all
+three baseline metrics. Reapplying the exact candidate and recompiling
+reproduced all three candidate metrics. Each non-baseline build compiled
+`InternalDebugInterop.cpp` and performed an LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260919-053018-70ca83d0`.
+The `000-baseline`, `001-direct-collection-size-query`,
+`002-baseline-recompiled`, and `003-direct-collection-size-query-repeat`
+directories contain read-only DLL/PDB copies, hashes, source revisions and
+patches, build logs/binlogs, SizeBench snapshots, receipts, stderr, and frozen
+tool identity sidecars. The first two also contain scoped symbol coverage and
+resolved primary-block disassembly. `ownership.json`, `semantic-review.json`,
+`verification.json`, and `progress.json` record ownership, review, and handoff.
+
+All four measurements use the frozen SizeBench deployment and managed
+identity documented above. Its full 268-file manifest was verified before and
+after each core measurement. Initialization and build ran in the same
+`cmd.exe` process with explicit `/nopgo`. Logs confirm `PGOBuildMode=Off`,
+`Configuration=Release`, `Platform=x64`, and `VCToolsVersion=14.44.35207`.
+All 934 command-tlog hashes match between the recompiled control and repeated
+candidate. Eight export ordinal/name identities, PE security flags, and five
+built WinMD hashes are unchanged.
+
+**Tests not run, as requested.** Earlier regression results belong to the
+starting commit, not this experiment. Source review found no change to net
+ownership, pointer identity, query/lookup order, output behavior, or HRESULTs.
+The inspected path removes a helper call and frame without adding an
+allocation or COM call. Code layout and register choices change. Application
+performance, runtime reentrancy, failure injection, debug behavior, and other
+architectures were not exercised. Compilation does not establish runtime
+correctness.
