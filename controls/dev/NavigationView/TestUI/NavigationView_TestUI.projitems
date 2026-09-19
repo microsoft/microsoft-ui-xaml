@@ -30,6 +30,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Hierarchical\HierarchicalNavigationViewFooterMenuItems.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Hierarchical\HierarchicalNavigationViewMarkup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -149,6 +153,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Hierarchical\HierarchicalNavigationViewDataBinding.xaml.cs">
       <DependentUpon>HierarchicalNavigationViewDataBinding.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Hierarchical\HierarchicalNavigationViewFooterMenuItems.xaml.cs">
+      <DependentUpon>HierarchicalNavigationViewFooterMenuItems.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Hierarchical\HierarchicalNavigationViewMarkup.xaml.cs">
       <DependentUpon>HierarchicalNavigationViewMarkup.xaml</DependentUpon>

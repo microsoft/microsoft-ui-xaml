@@ -110,6 +110,7 @@ private:
     bool ShouldEnableToolTip() const;
     bool IsOnLeftNav() const;
     bool IsOnTopPrimary() const;
+    bool IsOnFooter() const;
     bool IsOutOfControlBounds(const winrt::Point& point);
 
     void UpdateRepeaterItemsSource();

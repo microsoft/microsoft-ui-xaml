@@ -360,19 +360,10 @@ void NavigationView::SelectandMoveOverflowItem(winrt::IInspectable const& select
 void NavigationView::CloseFlyoutIfRequired(const winrt::NavigationViewItem& selectedItem)
 {
     auto const selectedIndex = m_selectionModel.SelectedIndex();
-    const bool isInModeWithFlyout = [this]()
-    {
-        if (auto splitView = m_rootSplitView.get())
-        {
-            // Check if the pane is closed and if the splitview is in either compact mode.
-            const auto splitViewDisplayMode = splitView.DisplayMode();
-            return (!splitView.IsPaneOpen() && (splitViewDisplayMode == winrt::SplitViewDisplayMode::CompactOverlay || splitViewDisplayMode == winrt::SplitViewDisplayMode::CompactInline)) ||
-                    PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::Top;
-        }
-        return false;
-    }();
 
-    if (isInModeWithFlyout && selectedIndex && !DoesNavigationViewItemHaveChildren(selectedItem))
+    // Whether we are in a mode with a flyout is answered by the root item itself below, via
+    // ShouldRepeaterShowInFlyout.
+    if (selectedIndex && !DoesNavigationViewItemHaveChildren(selectedItem))
     {
         // Item selected is a leaf node, find top level parent and close flyout
         if (auto const rootItem = GetContainerForIndex(selectedIndex.GetAt(1), selectedIndex.GetAt(0) == c_footerMenuBlockIndex /* inFooter */))
@@ -1170,7 +1161,16 @@ winrt::IndexPath NavigationView::GetIndexPathForContainer(const winrt::Navigatio
         if (auto const nvi = m_lastItemExpandedIntoFlyout.get())
         {
             child = nvi;
-            parent = IsTopNavigationView() ? m_topNavRepeater.get() : m_leftNavRepeater.get();
+            // The expanded item can live in either the main menu or the footer, so ask for its actual repeater
+            // instead of assuming the main one.
+            if (auto const expandedItemParentIR = GetParentItemsRepeaterForContainer(nvi))
+            {
+                parent = expandedItemParentIR;
+            }
+            else
+            {
+                parent = IsTopNavigationView() ? m_topNavRepeater.get() : m_leftNavRepeater.get();
+            }
         }
     }
 
@@ -1256,7 +1256,10 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
             // Propagate depth to children items if they exist
             const auto childDepth = [position, nvibImpl]()
             {
-                if (position == NavigationViewRepeaterPosition::TopPrimary)
+                // These positions show their children in a flyout, which starts back at depth 0.
+                if (position == NavigationViewRepeaterPosition::TopPrimary ||
+                    position == NavigationViewRepeaterPosition::TopFooter ||
+                    position == NavigationViewRepeaterPosition::LeftFooter)
                 {
                     return 0;
                 }
