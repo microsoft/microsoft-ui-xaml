@@ -8,6 +8,7 @@
 #include "KeyboardAcceleratorInvokedEventArgs.g.h"
 #include "CKeyboardAccelerator.h"
 #include "localizedResource.h"
+#include "FrameworkUdk/Containment.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -15,6 +16,16 @@ using namespace DirectUISynonyms;
 // These VK codes were added in a later SDK than the one we are using, so we define them here.
 #define VK_IME_ON         0x16
 #define VK_IME_OFF        0x1A
+
+// Bug 63417306: [2.x Servicing] Fix KeyboardAccelerator crash on OEM/punctuation keys used as accelerator Key.
+// Contained behind a WinAppSDK velocity/containment change (Known Issue Rollback): when the change is
+// enabled the new keyboard-layout-aware fallback runs; when disabled the original code (fail-fast) runs
+// unchanged. See microsoft-ui-xaml #708.
+#define WINAPPSDK_CHANGEID_63417306 63417306
+
+// Sentinel returned by GetResourceStringIdFromVirtualKey for a key with no dedicated localized resource
+// string (only used on the enabled path). 0 is not a valid resource id.
+constexpr XUINT32 c_noKeyResourceStringId = 0;
 
 XUINT32 GetResourceStringIdFromVirtualKey(_In_ wsy::VirtualKey key);
 
@@ -128,7 +139,47 @@ _Check_return_ HRESULT KeyboardAccelerator::ConcatVirtualKey(_In_ wsy::VirtualKe
 {
 
     wrl_wrappers::HString keyName;
-    IFC_RETURN(DXamlCore::GetCurrent()->GetLocalizedResourceString(GetResourceStringIdFromVirtualKey(key), keyName.ReleaseAndGetAddressOf()));
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63417306>())
+    {
+        // NEW (contained) behavior. Named keys (letters, digits, Enter, Tab, arrows, function keys, ...)
+        // have a dedicated localized resource string. Keys without one return c_noKeyResourceStringId
+        // - notably the layout-dependent OEM / punctuation keys (',' ';' '[' ...), which are not in the
+        // WinRT VirtualKey enum. For those, derive the character the key produces in the user's active
+        // keyboard layout instead of fail-fasting (see microsoft-ui-xaml #708).
+        const XUINT32 resourceId = GetResourceStringIdFromVirtualKey(key);
+        if (resourceId != c_noKeyResourceStringId)
+        {
+            IFC_RETURN(DXamlCore::GetCurrent()->GetLocalizedResourceString(resourceId, keyName.ReleaseAndGetAddressOf()));
+        }
+        else
+        {
+            // MAPVK_VK_TO_CHAR maps a virtual key to the (unshifted) character it produces in the
+            // current keyboard layout. The character is in the low-order word; the high bit marks a
+            // dead key. The result is 0 when the key has no character mapping.
+            const UINT mappedChar = MapVirtualKeyW(static_cast<UINT>(key), MAPVK_VK_TO_CHAR);
+            const WCHAR keyChar = static_cast<WCHAR>(mappedChar & 0xFFFF);
+            if (keyChar >= L' ')
+            {
+                const WCHAR keyCharString[] = { keyChar, L'\0' };
+                IFC_RETURN(keyName.Set(keyCharString));
+            }
+        }
+
+        if (WindowsIsStringEmpty(keyName.Get()))
+        {
+            // We couldn't resolve any display string for this key (e.g. a non-printable or
+            // otherwise untranslatable key). Skip it rather than emitting a dangling joiner
+            // ("Ctrl+") or crashing the process.
+            return S_OK;
+        }
+    }
+    else
+    {
+        // OLD (original) behavior, unchanged: fail-fasts inside GetResourceStringIdFromVirtualKey for
+        // keys with no dedicated resource. Preserved exactly so disabling the change is a true rollback.
+        IFC_RETURN(DXamlCore::GetCurrent()->GetLocalizedResourceString(GetResourceStringIdFromVirtualKey(key), keyName.ReleaseAndGetAddressOf()));
+    }
 
     if (WindowsIsStringEmpty(keyboardAcceleratorString.Get()))
     {
@@ -335,7 +386,19 @@ XUINT32 GetResourceStringIdFromVirtualKey(_In_ wsy::VirtualKey key)
         case wsy::VirtualKey_XButton2: return TEXT_VK_XBUTTON2;
         case wsy::VirtualKey_Y: return TEXT_VK_Y;
         case wsy::VirtualKey_Z: return TEXT_VK_Z;
-        default: IFCFAILFAST(E_FAIL); return TEXT_VK_NONE;
+        default:
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63417306>())
+            {
+                // NEW (contained): no dedicated localized resource for this key. Return the sentinel so
+                // the caller falls back to keyboard-layout-aware character translation (see #708).
+                return c_noKeyResourceStringId;
+            }
+            else
+            {
+                // OLD (original): fail-fast on an unmapped key.
+                IFCFAILFAST(E_FAIL);
+                return TEXT_VK_NONE;
+            }
     }
 }
 

@@ -9,6 +9,10 @@
 #include "NavigationViewItemAutomationPeer.h"
 #include "StackLayout.h"
 #include "Utils.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 63007686: [2.0 Servicing] Re-validate NavigationViewItem state before showing a deferred flyout to prevent E_INVALIDARG (0x80070057) crash on stale/recycled rows (RCC: NavigationViewItem_DeferredFlyoutShowStaleState)
+#define WINAPPSDK_CHANGEID_63007686 63007686
 
 static constexpr wstring_view c_navigationViewItemPresenterName = L"NavigationViewItemPresenter"sv;
 static constexpr auto c_repeater = L"NavigationViewItemMenuItemsHost"sv;
@@ -815,9 +819,33 @@ void NavigationViewItem::ShowHideChildren()
                 // There seems to be a race condition happening which sometimes
                 // prevents the opening of the flyout. Queue callback as a workaround.
                 SharedHelpers::QueueCallbackForCompositionRendering(
-                    [strongThis = get_strong()]()
+                    [strongThis = get_strong(), this]()
                 {
-                    winrt::FlyoutBase::ShowAttachedFlyout(strongThis->m_rootGrid.get());
+                    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63007686>())
+                    {
+                        // Item may have collapsed, left flyout mode, or been recycled since this was queued.
+                        if (IsExpanded() && ShouldRepeaterShowInFlyout() && m_rootGrid.get() &&
+                            winrt::FlyoutBase::GetAttachedFlyout(m_rootGrid.get()))
+                        {
+                            winrt::FlyoutBase::ShowAttachedFlyout(m_rootGrid.get());
+                        }
+                        else if (g_IsTelemetryProviderEnabled)
+                        {
+                            [[gsl::suppress(con.4)]] TraceLoggingWrite(
+                                g_hTelemetryProvider,
+                                "NavigationViewItem_SkippedDeferredFlyoutShow",
+                                TraceLoggingDescription("Deferred flyout show skipped because item state changed before the render callback ran"),
+                                TraceLoggingBoolean(IsExpanded(), "IsExpanded"),
+                                TraceLoggingBoolean(ShouldRepeaterShowInFlyout(), "ShouldRepeaterShowInFlyout"),
+                                TraceLoggingBoolean(m_rootGrid.get() && winrt::FlyoutBase::GetAttachedFlyout(m_rootGrid.get()) != nullptr, "HasAttachedFlyout"),
+                                TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
+                                TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
+                        }
+                    }
+                    else
+                    {
+                        winrt::FlyoutBase::ShowAttachedFlyout(m_rootGrid.get());
+                    }
                 });
             }
             else
