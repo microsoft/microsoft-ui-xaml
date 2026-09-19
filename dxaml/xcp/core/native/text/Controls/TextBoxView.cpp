@@ -317,7 +317,14 @@ _Check_return_ HRESULT CTextBoxView::PullInheritedTextFormatting()
             charFormatMask |= CFM_ITALIC;
         }
 
-        m_pTextFormatting->m_nFontStretch = pParentTextFormatting->m_nFontStretch;
+        if (m_pTextFormatting->m_nFontStretch != pParentTextFormatting->m_nFontStretch)
+        {
+            m_pTextFormatting->m_nFontStretch = pParentTextFormatting->m_nFontStretch;
+
+            // RichEdit has no CHARFORMAT field for stretch - it picks the face up through
+            // IProvideFontInfo, so a stretch change needs the same invalidation as a face change.
+            charFormatMask |= CFM_FACE;
+        }
 
         if (m_pTextFormatting->m_nCharacterSpacing != pParentTextFormatting->m_nCharacterSpacing)
         {
@@ -3306,14 +3313,25 @@ _Check_return_ HRESULT CTextBoxView::GetFontFaceRun(
     _Out_ XUINT32 *pRunCount
     )
 {
-    // The use of zero for the optical size will cause the MapCharacters to fall
-    // back to legacy versions (non optical).
-    CFontFaceCriteria fontFaceCriteria(weight, style, stretch, 0.0f);
     DWriteFontFace *pDWriteFontFace;
     const TextFormatting* pTextFormatting = NULL;
     XFLOAT mappedScale;
 
     IFC_RETURN(GetTextFormatting(&pTextFormatting));
+
+    // RichEdit's CHARFORMAT2 has no font stretch field, so runs that carry no explicit stretch of
+    // their own come back as undefined. Fall back to the control's FontStretch - left undefined,
+    // MapCharacters clamps the value to ultra condensed and families that have a narrow face
+    // (Arial, Bahnschrift, ...) render at the wrong width.
+    XUINT32 resolvedStretch = stretch;
+    if (resolvedStretch == static_cast<XUINT32>(DirectUI::FontStretch::Undefined))
+    {
+        resolvedStretch = static_cast<XUINT32>(pTextFormatting->m_nFontStretch);
+    }
+
+    // The use of zero for the optical size will cause the MapCharacters to fall
+    // back to legacy versions (non optical).
+    CFontFaceCriteria fontFaceCriteria(weight, style, resolvedStretch, 0.0f);
 
     wrl::ComPtr<PALText::IFontFace> pFontFace;
     IFC_RETURN(pCompositeFontFamily->MapCharacters(
