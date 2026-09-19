@@ -19,7 +19,7 @@ PropertyProviderPropertyAccess::Initialize(
     m_pOwnerNoRef = pOwner;
 
     SetPtrValue(m_tpSource, pSource);
-    SetPtrValue(m_tpProperty, pProperty);
+    m_spProperty = pProperty;
 
     m_pPropertyType = pPropertyType;
 
@@ -112,7 +112,7 @@ PropertyProviderPropertyAccess::GetValue(_COM_Outptr_result_maybenull_ IInspecta
 {
     if (IsConnected())
     {
-        IFC_RETURN(m_tpProperty->GetValue(m_tpSource.Get(), ppValue));
+        IFC_RETURN(m_spProperty->GetValue(m_tpSource.Get(), ppValue));
     }
     else
     {
@@ -126,7 +126,7 @@ HRESULT
 PropertyProviderPropertyAccess::SetValue(_In_ IInspectable *pValue)
 {
     IFCEXPECT_RETURN(IsConnected());
-    IFC_RETURN(m_tpProperty->SetValue(m_tpSource.Get(), pValue));
+    IFC_RETURN(m_spProperty->SetValue(m_tpSource.Get(), pValue));
     return S_OK;
 }
 
