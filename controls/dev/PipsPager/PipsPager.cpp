@@ -72,6 +72,10 @@ void PipsPager::OnApplyTemplate()
 {
     winrt::AutomationProperties::SetName(*this, ResourceAccessor::GetLocalizedStringResource(SR_PipsPagerNameText));
 
+    // A scroll pending against the template we are replacing refers to elements that are about to go away.
+    m_layoutUpdatedRevoker.revoke();
+    m_pendingScrollToPipIndex = -1;
+
     m_previousPageButtonClickRevoker.revoke();
     [this](const winrt::Button button)
     {
@@ -252,20 +256,93 @@ void PipsPager::ScrollToCenterOfViewport(const winrt::UIElement sender, const in
     sender.StartBringIntoView(options);
 }
 
+// A pip that has just been realized has been measured but not arranged, so its render size is still
+// empty and bringing it into view now would centre a degenerate rect. Wait for the layout pass that
+// GetOrCreateElement has already scheduled (it invalidates the repeater's measure) instead of pumping
+// one synchronously.
+void PipsPager::RequestScrollToSelectedPip(const int index)
+{
+    m_pendingScrollToPipIndex = index;
+
+    // The handler is one shot, so always revoke before hooking: re-adding a live handler is a no-op,
+    // and the framework only starts raising LayoutUpdated on the transition from no handler to one.
+    m_layoutUpdatedRevoker.revoke();
+    m_layoutUpdatedRevoker = this->LayoutUpdated(winrt::auto_revoke, { this, &PipsPager::OnLayoutUpdatedAfterPipRealized });
+}
+
+void PipsPager::OnLayoutUpdatedAfterPipRealized(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
+{
+    // We only need this once, and the scroll below dirties layout again, so revoke first.
+    m_layoutUpdatedRevoker.revoke();
+
+    const auto index = m_pendingScrollToPipIndex;
+    m_pendingScrollToPipIndex = -1;
+
+    // The selection may have moved on, or the pip may have been recycled, while we were waiting.
+    if (index == SelectedPageIndex())
+    {
+        if (const auto repeater = m_pipsPagerRepeater.get())
+        {
+            if (const auto pip = repeater.TryGetElement(index))
+            {
+                ScrollToCenterOfViewport(pip, index);
+            }
+        }
+    }
+}
+
+// GetOrCreateElement validates the index against the repeater's items source, which can hold fewer
+// items than NumberOfPages - the pips collection and the page count are updated in separate steps,
+// and a re-templated pager need not use TemplateSettings.PipsPagerItems - and throws for anything
+// outside it. Only ask for a pip the repeater can actually produce.
+winrt::UIElement PipsPager::GetOrCreatePip(const int index)
+{
+    if (const auto repeater = m_pipsPagerRepeater.get())
+    {
+        if (const auto itemsSourceView = repeater.ItemsSourceView())
+        {
+            if (index >= 0 && index < itemsSourceView.Count())
+            {
+                return repeater.GetOrCreateElement(index);
+            }
+        }
+    }
+    return nullptr;
+}
+
 void PipsPager::UpdateSelectedPip(const int index) {
     if (NumberOfPages() != 0 && MaxVisiblePips() > 0)
     {
         if (const auto repeater = m_pipsPagerRepeater.get())
         {
-            repeater.UpdateLayout();
             if (const auto pip = repeater.TryGetElement(m_lastSelectedPageIndex).try_as<winrt::FrameworkElement>())
             {
                 ApplyStyleToPipAndUpdateOrientation(pip, NormalPipStyle());
             }
-            if (const auto pip = repeater.GetOrCreateElement(index).try_as<winrt::FrameworkElement>())
+
+            // This used to start with repeater.UpdateLayout(). UIElement.UpdateLayout() is not scoped
+            // to the repeater: it runs the whole XamlRoot's layout manager to completion. Calling it
+            // from a property changed handler - right after UpdatePipsItems has changed the repeater's
+            // items and SetScrollViewerMaxSize has changed the ScrollViewer's size - surfaced layout
+            // failures from anywhere in the tree as an HRESULT thrown out of the property setter.
+            // See microsoft/microsoft-ui-xaml#8299.
+            // Whether the pip already existed decides only whether we can scroll to it now: a pip
+            // realized by the call below has been measured but not arranged, so its render size is
+            // still empty. GetOrCreatePip is called either way, so the repeater still sees the same
+            // anchor request it saw before this change.
+            const bool wasPipRealized = repeater.TryGetElement(index) != nullptr;
+
+            if (const auto pip = GetOrCreatePip(index).try_as<winrt::FrameworkElement>())
             {
                 ApplyStyleToPipAndUpdateOrientation(pip, SelectedPipStyle());
-                ScrollToCenterOfViewport(pip, index);
+                if (wasPipRealized)
+                {
+                    ScrollToCenterOfViewport(pip, index);
+                }
+                else
+                {
+                    RequestScrollToSelectedPip(index);
+                }
             }
         }
     }
@@ -598,7 +675,7 @@ void PipsPager::OnPipsAreaGettingFocus(const IInspectable& sender, const winrt::
         {
             if (repeater.GetElementIndex(oldFocusedElement) == -1)
             {
-                if (const auto realizedElement = repeater.GetOrCreateElement(SelectedPageIndex()).try_as<winrt::UIElement>())
+                if (const auto realizedElement = GetOrCreatePip(SelectedPageIndex()))
                 {
                     if (args.TrySetNewFocusedElement(realizedElement))
                     {
