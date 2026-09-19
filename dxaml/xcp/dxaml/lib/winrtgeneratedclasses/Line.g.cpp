@@ -85,7 +85,7 @@ IFACEMETHODIMP DirectUI::Line::put_Y2(DOUBLE value)
 
 HRESULT DirectUI::LineFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Shapes::ILineStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Shapes::ILineStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Shapes::ILineStatics*>(this);
     }

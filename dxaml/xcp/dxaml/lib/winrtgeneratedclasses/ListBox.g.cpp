@@ -113,11 +113,11 @@ Cleanup:
 
 HRESULT DirectUI::ListBoxFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IListBoxFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IListBoxFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IListBoxFactory*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IListBoxStatics)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IListBoxStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IListBoxStatics*>(this);
     }

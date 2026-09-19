@@ -63,11 +63,11 @@ IFACEMETHODIMP DirectUI::Geometry::put_Transform(_In_opt_ ABI::Microsoft::UI::Xa
 
 HRESULT DirectUI::GeometryFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IGeometryFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IGeometryFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IGeometryFactory*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IGeometryStatics)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IGeometryStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IGeometryStatics*>(this);
     }

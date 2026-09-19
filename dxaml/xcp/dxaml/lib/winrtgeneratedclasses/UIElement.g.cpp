@@ -6250,15 +6250,15 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
 
 HRESULT DirectUI::UIElementFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IUIElementFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IUIElementFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IUIElementFactory*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IUIElementStatics)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IUIElementStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IUIElementStatics*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IUIElementStaticsPrivate)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IUIElementStaticsPrivate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IUIElementStaticsPrivate*>(this);
     }

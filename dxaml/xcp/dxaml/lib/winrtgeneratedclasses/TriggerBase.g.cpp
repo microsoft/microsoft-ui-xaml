@@ -49,7 +49,7 @@ HRESULT DirectUI::TriggerBase::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void
 
 HRESULT DirectUI::TriggerBaseFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::ITriggerBaseFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::ITriggerBaseFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::ITriggerBaseFactory*>(this);
     }

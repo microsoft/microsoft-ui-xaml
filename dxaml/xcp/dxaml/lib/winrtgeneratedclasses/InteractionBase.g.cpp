@@ -842,7 +842,7 @@ Cleanup:
 HRESULT DirectUI::InteractionBaseFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
 #if WI_IS_FEATURE_PRESENT(Feature_Xaml2018)
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IInteractionBaseFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IInteractionBaseFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IInteractionBaseFactory*>(this);
     }

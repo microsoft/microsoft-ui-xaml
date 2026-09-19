@@ -67,7 +67,7 @@ IFACEMETHODIMP DirectUI::RepeatButtonGenerated::put_Interval(INT value)
 
 HRESULT DirectUI::RepeatButtonFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IRepeatButtonStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IRepeatButtonStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IRepeatButtonStatics*>(this);
     }

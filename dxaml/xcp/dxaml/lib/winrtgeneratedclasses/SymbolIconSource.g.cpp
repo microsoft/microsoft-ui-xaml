@@ -58,11 +58,11 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SymbolIconSourceGenerated::pu
 
 HRESULT DirectUI::SymbolIconSourceFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISymbolIconSourceFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ISymbolIconSourceFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISymbolIconSourceFactory*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISymbolIconSourceStatics)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ISymbolIconSourceStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISymbolIconSourceStatics*>(this);
     }

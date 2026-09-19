@@ -77,7 +77,7 @@ IFACEMETHODIMP DirectUI::Viewbox::put_StretchDirection(ABI::Microsoft::UI::Xaml:
 
 HRESULT DirectUI::ViewboxFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IViewboxStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IViewboxStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IViewboxStatics*>(this);
     }

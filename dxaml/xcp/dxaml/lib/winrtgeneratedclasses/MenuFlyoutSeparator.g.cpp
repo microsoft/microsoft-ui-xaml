@@ -49,7 +49,7 @@ HRESULT DirectUI::MenuFlyoutSeparator::QueryInterfaceImpl(_In_ REFIID iid, _Outp
 
 HRESULT DirectUI::MenuFlyoutSeparatorFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSeparatorFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSeparatorFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSeparatorFactory*>(this);
     }

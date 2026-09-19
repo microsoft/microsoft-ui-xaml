@@ -76,7 +76,7 @@ IFACEMETHODIMP DirectUI::DragOverThemeAnimationGenerated::put_ToOffset(DOUBLE va
 
 HRESULT DirectUI::DragOverThemeAnimationFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDragOverThemeAnimationStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDragOverThemeAnimationStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IDragOverThemeAnimationStatics*>(this);
     }

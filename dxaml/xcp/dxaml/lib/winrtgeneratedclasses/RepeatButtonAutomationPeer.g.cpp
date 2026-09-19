@@ -71,7 +71,7 @@ Cleanup:
 
 HRESULT DirectUI::RepeatButtonAutomationPeerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IRepeatButtonAutomationPeerFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IRepeatButtonAutomationPeerFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IRepeatButtonAutomationPeerFactory*>(this);
     }

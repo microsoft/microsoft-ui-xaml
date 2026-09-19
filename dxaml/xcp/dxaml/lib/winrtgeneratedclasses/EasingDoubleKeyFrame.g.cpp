@@ -59,7 +59,7 @@ IFACEMETHODIMP DirectUI::EasingDoubleKeyFrame::put_EasingFunction(_In_opt_ ABI::
 
 HRESULT DirectUI::EasingDoubleKeyFrameFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IEasingDoubleKeyFrameStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IEasingDoubleKeyFrameStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IEasingDoubleKeyFrameStatics*>(this);
     }

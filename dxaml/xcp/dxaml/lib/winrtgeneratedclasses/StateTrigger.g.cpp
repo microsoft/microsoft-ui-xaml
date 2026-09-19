@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::StateTrigger::put_IsActive(BOOLEAN value)
 
 HRESULT DirectUI::StateTriggerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IStateTriggerStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IStateTriggerStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IStateTriggerStatics*>(this);
     }

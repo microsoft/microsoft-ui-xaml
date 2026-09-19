@@ -76,7 +76,7 @@ IFACEMETHODIMP DirectUI::RepositionThemeAnimationGenerated::put_TargetName(_In_o
 
 HRESULT DirectUI::RepositionThemeAnimationFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IRepositionThemeAnimationStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IRepositionThemeAnimationStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IRepositionThemeAnimationStatics*>(this);
     }

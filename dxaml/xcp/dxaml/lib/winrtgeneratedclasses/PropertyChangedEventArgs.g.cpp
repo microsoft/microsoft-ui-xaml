@@ -66,7 +66,7 @@ Cleanup:
 
 HRESULT DirectUI::PropertyChangedEventArgsFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::IPropertyChangedEventArgsFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Data::IPropertyChangedEventArgsFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::IPropertyChangedEventArgsFactory*>(this);
     }

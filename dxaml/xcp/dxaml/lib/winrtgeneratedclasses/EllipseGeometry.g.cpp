@@ -76,7 +76,7 @@ IFACEMETHODIMP DirectUI::EllipseGeometry::put_RadiusY(DOUBLE value)
 
 HRESULT DirectUI::EllipseGeometryFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IEllipseGeometryStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IEllipseGeometryStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IEllipseGeometryStatics*>(this);
     }

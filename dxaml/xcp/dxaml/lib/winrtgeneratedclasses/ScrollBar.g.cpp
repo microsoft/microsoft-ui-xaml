@@ -297,7 +297,7 @@ _Check_return_ HRESULT DirectUI::ScrollBarGenerated::EventRemoveHandlerByIndex(_
 
 HRESULT DirectUI::ScrollBarFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollBarStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollBarStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollBarStatics*>(this);
     }

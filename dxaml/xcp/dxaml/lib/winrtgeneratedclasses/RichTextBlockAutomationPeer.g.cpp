@@ -49,7 +49,7 @@ HRESULT DirectUI::RichTextBlockAutomationPeerGenerated::QueryInterfaceImpl(_In_ 
 
 HRESULT DirectUI::RichTextBlockAutomationPeerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IRichTextBlockAutomationPeerFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IRichTextBlockAutomationPeerFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IRichTextBlockAutomationPeerFactory*>(this);
     }

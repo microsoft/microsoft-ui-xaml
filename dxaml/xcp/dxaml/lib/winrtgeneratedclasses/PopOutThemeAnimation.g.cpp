@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::PopOutThemeAnimationGenerated::put_TargetName(_In_opt_ 
 
 HRESULT DirectUI::PopOutThemeAnimationFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPopOutThemeAnimationStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPopOutThemeAnimationStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IPopOutThemeAnimationStatics*>(this);
     }

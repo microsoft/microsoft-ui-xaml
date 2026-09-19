@@ -83,7 +83,7 @@ _Check_return_ HRESULT DirectUI::TranslateTransform::put_YAnimation(_In_opt_ IIn
 
 HRESULT DirectUI::TranslateTransformFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::ITranslateTransformStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::ITranslateTransformStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::ITranslateTransformStatics*>(this);
     }

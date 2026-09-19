@@ -384,7 +384,7 @@ _Check_return_ HRESULT DirectUI::ThumbGenerated::EventRemoveHandlerByIndex(_In_ 
 
 HRESULT DirectUI::ThumbFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IThumbStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IThumbStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IThumbStatics*>(this);
     }

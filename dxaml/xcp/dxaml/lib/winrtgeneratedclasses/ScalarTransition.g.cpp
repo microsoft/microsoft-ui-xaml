@@ -60,7 +60,7 @@ IFACEMETHODIMP DirectUI::ScalarTransitionGenerated::put_Duration(ABI::Windows::F
 
 HRESULT DirectUI::ScalarTransitionFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IScalarTransitionFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IScalarTransitionFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IScalarTransitionFactory*>(this);
     }

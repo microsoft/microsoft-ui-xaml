@@ -49,7 +49,7 @@ HRESULT DirectUI::BindingBase::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void
 
 HRESULT DirectUI::BindingBaseFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::IBindingBaseFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Data::IBindingBaseFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::IBindingBaseFactory*>(this);
     }

@@ -76,7 +76,7 @@ IFACEMETHODIMP DirectUI::SwipeBackThemeAnimationGenerated::put_TargetName(_In_op
 
 HRESULT DirectUI::SwipeBackThemeAnimationFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISwipeBackThemeAnimationStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISwipeBackThemeAnimationStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::ISwipeBackThemeAnimationStatics*>(this);
     }

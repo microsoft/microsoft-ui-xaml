@@ -49,7 +49,7 @@ HRESULT DirectUI::TimePickerAutomationPeerGenerated::QueryInterfaceImpl(_In_ REF
 
 HRESULT DirectUI::TimePickerAutomationPeerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ITimePickerAutomationPeerFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ITimePickerAutomationPeerFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::ITimePickerAutomationPeerFactory*>(this);
     }

@@ -81,7 +81,7 @@ IFACEMETHODIMP DirectUI::CollectionViewSourceGenerated::get_View(_Outptr_result_
 
 HRESULT DirectUI::CollectionViewSourceFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceStatics*>(this);
     }

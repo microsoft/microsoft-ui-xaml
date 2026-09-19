@@ -49,7 +49,7 @@ HRESULT DirectUI::Transform3D::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void
 
 HRESULT DirectUI::Transform3DFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Media3D::ITransform3DFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Media3D::ITransform3DFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Media3D::ITransform3DFactory*>(this);
     }

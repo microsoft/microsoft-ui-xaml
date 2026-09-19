@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "ExceptionRoutedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -68,7 +69,7 @@ Cleanup:
 
 HRESULT DirectUI::ExceptionRoutedEventArgsFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IExceptionRoutedEventArgsFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IExceptionRoutedEventArgsFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IExceptionRoutedEventArgsFactory*>(this);
     }

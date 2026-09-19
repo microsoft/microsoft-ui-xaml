@@ -79,7 +79,7 @@ IFACEMETHODIMP DirectUI::ResourceDictionaryGenerated::get_ThemeDictionaries(_Out
 
 HRESULT DirectUI::ResourceDictionaryFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IResourceDictionaryFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IResourceDictionaryFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IResourceDictionaryFactory*>(this);
     }

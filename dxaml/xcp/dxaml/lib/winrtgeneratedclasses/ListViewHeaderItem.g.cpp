@@ -49,7 +49,7 @@ HRESULT DirectUI::ListViewHeaderItemGenerated::QueryInterfaceImpl(_In_ REFIID ii
 
 HRESULT DirectUI::ListViewHeaderItemFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IListViewHeaderItemFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IListViewHeaderItemFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IListViewHeaderItemFactory*>(this);
     }

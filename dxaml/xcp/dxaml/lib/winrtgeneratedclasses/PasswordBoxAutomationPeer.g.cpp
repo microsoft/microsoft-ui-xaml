@@ -49,7 +49,7 @@ HRESULT DirectUI::PasswordBoxAutomationPeerGenerated::QueryInterfaceImpl(_In_ RE
 
 HRESULT DirectUI::PasswordBoxAutomationPeerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IPasswordBoxAutomationPeerFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IPasswordBoxAutomationPeerFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IPasswordBoxAutomationPeerFactory*>(this);
     }

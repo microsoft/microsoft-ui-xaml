@@ -49,7 +49,7 @@ HRESULT DirectUI::ListBoxAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID
 
 HRESULT DirectUI::ListBoxAutomationPeerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IListBoxAutomationPeerFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IListBoxAutomationPeerFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IListBoxAutomationPeerFactory*>(this);
     }

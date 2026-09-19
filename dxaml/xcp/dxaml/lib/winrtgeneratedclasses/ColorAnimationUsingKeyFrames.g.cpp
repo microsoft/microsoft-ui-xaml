@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::ColorAnimationUsingKeyFrames::get_KeyFrames(_Outptr_res
 
 HRESULT DirectUI::ColorAnimationUsingKeyFramesFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IColorAnimationUsingKeyFramesStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IColorAnimationUsingKeyFramesStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IColorAnimationUsingKeyFramesStatics*>(this);
     }

@@ -94,7 +94,7 @@ IFACEMETHODIMP DirectUI::ArcSegment::put_SweepDirection(ABI::Microsoft::UI::Xaml
 
 HRESULT DirectUI::ArcSegmentFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IArcSegmentStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IArcSegmentStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IArcSegmentStatics*>(this);
     }

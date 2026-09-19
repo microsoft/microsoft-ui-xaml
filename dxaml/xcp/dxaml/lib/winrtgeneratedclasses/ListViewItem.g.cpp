@@ -59,7 +59,7 @@ _Check_return_ HRESULT DirectUI::ListViewItemGenerated::put_TemplateSettings(_In
 
 HRESULT DirectUI::ListViewItemFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IListViewItemFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IListViewItemFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IListViewItemFactory*>(this);
     }

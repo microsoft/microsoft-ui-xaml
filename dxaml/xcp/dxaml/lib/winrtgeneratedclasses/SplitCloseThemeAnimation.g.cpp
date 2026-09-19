@@ -148,7 +148,7 @@ IFACEMETHODIMP DirectUI::SplitCloseThemeAnimationGenerated::put_OpenedTargetName
 
 HRESULT DirectUI::SplitCloseThemeAnimationFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISplitCloseThemeAnimationStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISplitCloseThemeAnimationStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::ISplitCloseThemeAnimationStatics*>(this);
     }

@@ -97,11 +97,11 @@ _Check_return_ HRESULT DirectUI::PageStackEntryGenerated::put_SourcePageType(ABI
 
 HRESULT DirectUI::PageStackEntryFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Navigation::IPageStackEntryFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Navigation::IPageStackEntryFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Navigation::IPageStackEntryFactory*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Navigation::IPageStackEntryStatics)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Navigation::IPageStackEntryStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Navigation::IPageStackEntryStatics*>(this);
     }

@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::LineSegment::put_Point(ABI::Windows::Foundation::Point 
 
 HRESULT DirectUI::LineSegmentFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::ILineSegmentStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::ILineSegmentStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::ILineSegmentStatics*>(this);
     }

@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::FadeInThemeAnimationGenerated::put_TargetName(_In_opt_ 
 
 HRESULT DirectUI::FadeInThemeAnimationFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IFadeInThemeAnimationStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IFadeInThemeAnimationStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IFadeInThemeAnimationStatics*>(this);
     }

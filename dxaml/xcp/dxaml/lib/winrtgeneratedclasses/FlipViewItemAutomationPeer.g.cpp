@@ -49,7 +49,7 @@ HRESULT DirectUI::FlipViewItemAutomationPeerGenerated::QueryInterfaceImpl(_In_ R
 
 HRESULT DirectUI::FlipViewItemAutomationPeerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IFlipViewItemAutomationPeerFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IFlipViewItemAutomationPeerFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IFlipViewItemAutomationPeerFactory*>(this);
     }

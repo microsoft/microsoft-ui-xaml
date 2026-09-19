@@ -225,7 +225,7 @@ _Check_return_ HRESULT DirectUI::VirtualizingStackPanelGenerated::EventRemoveHan
 
 HRESULT DirectUI::VirtualizingStackPanelFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IVirtualizingStackPanelStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IVirtualizingStackPanelStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IVirtualizingStackPanelStatics*>(this);
     }

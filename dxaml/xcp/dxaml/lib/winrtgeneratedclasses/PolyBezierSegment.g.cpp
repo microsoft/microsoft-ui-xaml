@@ -59,7 +59,7 @@ IFACEMETHODIMP DirectUI::PolyBezierSegment::put_Points(_In_opt_ ABI::Windows::Fo
 
 HRESULT DirectUI::PolyBezierSegmentFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IPolyBezierSegmentStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IPolyBezierSegmentStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IPolyBezierSegmentStatics*>(this);
     }

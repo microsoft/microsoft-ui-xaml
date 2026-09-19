@@ -59,7 +59,7 @@ IFACEMETHODIMP DirectUI::SplinePointKeyFrame::put_KeySpline(_In_opt_ ABI::Micros
 
 HRESULT DirectUI::SplinePointKeyFrameFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISplinePointKeyFrameStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISplinePointKeyFrameStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::ISplinePointKeyFrameStatics*>(this);
     }

@@ -59,7 +59,7 @@ _Check_return_ HRESULT DirectUI::GridViewItemGenerated::put_TemplateSettings(_In
 
 HRESULT DirectUI::GridViewItemFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IGridViewItemFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IGridViewItemFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IGridViewItemFactory*>(this);
     }

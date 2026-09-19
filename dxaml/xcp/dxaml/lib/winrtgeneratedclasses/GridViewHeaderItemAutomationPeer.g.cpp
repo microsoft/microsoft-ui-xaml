@@ -49,7 +49,7 @@ HRESULT DirectUI::GridViewHeaderItemAutomationPeerGenerated::QueryInterfaceImpl(
 
 HRESULT DirectUI::GridViewHeaderItemAutomationPeerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IGridViewHeaderItemAutomationPeerFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IGridViewHeaderItemAutomationPeerFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IGridViewHeaderItemAutomationPeerFactory*>(this);
     }

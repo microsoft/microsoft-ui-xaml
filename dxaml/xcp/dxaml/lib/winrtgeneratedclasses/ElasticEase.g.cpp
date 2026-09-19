@@ -67,7 +67,7 @@ IFACEMETHODIMP DirectUI::ElasticEase::put_Springiness(DOUBLE value)
 
 HRESULT DirectUI::ElasticEaseFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IElasticEaseStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IElasticEaseStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IElasticEaseStatics*>(this);
     }

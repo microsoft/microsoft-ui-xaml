@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "SectionsInViewChangedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -88,7 +89,7 @@ Cleanup:
 
 HRESULT DirectUI::SectionsInViewChangedEventArgsFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISectionsInViewChangedEventArgsFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ISectionsInViewChangedEventArgsFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISectionsInViewChangedEventArgsFactory*>(this);
     }

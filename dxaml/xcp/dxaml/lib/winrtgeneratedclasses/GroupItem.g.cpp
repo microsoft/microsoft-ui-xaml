@@ -53,7 +53,7 @@ HRESULT DirectUI::GroupItemGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outpt
 
 HRESULT DirectUI::GroupItemFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IGroupItemFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IGroupItemFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IGroupItemFactory*>(this);
     }

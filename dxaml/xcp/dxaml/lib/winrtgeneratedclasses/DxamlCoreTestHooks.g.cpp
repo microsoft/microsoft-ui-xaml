@@ -66,7 +66,7 @@ Cleanup:
 
 HRESULT DirectUI::DxamlCoreTestHooksFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IDxamlCoreTestHooksStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IDxamlCoreTestHooksStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IDxamlCoreTestHooksStatics*>(this);
     }

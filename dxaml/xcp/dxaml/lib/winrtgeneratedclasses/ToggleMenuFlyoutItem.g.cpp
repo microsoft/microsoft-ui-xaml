@@ -58,11 +58,11 @@ IFACEMETHODIMP DirectUI::ToggleMenuFlyoutItemGenerated::put_IsChecked(BOOLEAN va
 
 HRESULT DirectUI::ToggleMenuFlyoutItemFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IToggleMenuFlyoutItemFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IToggleMenuFlyoutItemFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IToggleMenuFlyoutItemFactory*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IToggleMenuFlyoutItemStatics)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IToggleMenuFlyoutItemStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IToggleMenuFlyoutItemStatics*>(this);
     }

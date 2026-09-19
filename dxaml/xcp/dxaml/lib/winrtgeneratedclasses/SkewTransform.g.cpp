@@ -117,7 +117,7 @@ _Check_return_ HRESULT DirectUI::SkewTransform::put_CenterYAnimation(_In_opt_ II
 
 HRESULT DirectUI::SkewTransformFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::ISkewTransformStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::ISkewTransformStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::ISkewTransformStatics*>(this);
     }

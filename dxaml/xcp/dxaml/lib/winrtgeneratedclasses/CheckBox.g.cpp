@@ -49,7 +49,7 @@ HRESULT DirectUI::CheckBoxGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr
 
 HRESULT DirectUI::CheckBoxFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ICheckBoxFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ICheckBoxFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ICheckBoxFactory*>(this);
     }

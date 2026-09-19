@@ -111,7 +111,7 @@ IFACEMETHODIMP DirectUI::VariableSizedWrapGridGenerated::put_VerticalChildrenAli
 
 HRESULT DirectUI::VariableSizedWrapGridFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IVariableSizedWrapGridStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IVariableSizedWrapGridStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IVariableSizedWrapGridStatics*>(this);
     }

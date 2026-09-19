@@ -53,7 +53,7 @@ IFACEMETHODIMP DirectUI::SetterBase::get_IsSealed(_Out_ BOOLEAN* pValue)
 
 HRESULT DirectUI::SetterBaseFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::ISetterBaseFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::ISetterBaseFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::ISetterBaseFactory*>(this);
     }

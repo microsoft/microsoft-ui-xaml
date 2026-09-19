@@ -80,7 +80,7 @@ IFACEMETHODIMP DirectUI::ColumnDefinition::put_Width(ABI::Microsoft::UI::Xaml::G
 
 HRESULT DirectUI::ColumnDefinitionFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IColumnDefinitionStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IColumnDefinitionStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IColumnDefinitionStatics*>(this);
     }

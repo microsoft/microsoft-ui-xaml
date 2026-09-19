@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::RepositionThemeTransitionGenerated::put_IsStaggeringEna
 
 HRESULT DirectUI::RepositionThemeTransitionFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IRepositionThemeTransitionStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IRepositionThemeTransitionStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IRepositionThemeTransitionStatics*>(this);
     }

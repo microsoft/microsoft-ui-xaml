@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::TransformGroup::get_Value(_Out_ ABI::Microsoft::UI::Xam
 
 HRESULT DirectUI::TransformGroupFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::ITransformGroupStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::ITransformGroupStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::ITransformGroupStatics*>(this);
     }

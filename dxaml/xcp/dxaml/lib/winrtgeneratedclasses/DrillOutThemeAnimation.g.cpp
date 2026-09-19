@@ -85,7 +85,7 @@ IFACEMETHODIMP DirectUI::DrillOutThemeAnimationGenerated::put_ExitTargetName(_In
 
 HRESULT DirectUI::DrillOutThemeAnimationFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDrillOutThemeAnimationStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDrillOutThemeAnimationStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IDrillOutThemeAnimationStatics*>(this);
     }

@@ -100,7 +100,7 @@ _Check_return_ HRESULT DirectUI::RotateTransform::put_CenterYAnimation(_In_opt_ 
 
 HRESULT DirectUI::RotateTransformFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IRotateTransformStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IRotateTransformStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IRotateTransformStatics*>(this);
     }

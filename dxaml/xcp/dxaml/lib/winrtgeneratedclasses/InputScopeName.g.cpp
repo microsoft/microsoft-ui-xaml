@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::InputScopeName::put_NameValue(ABI::Microsoft::UI::Xaml:
 
 HRESULT DirectUI::InputScopeNameFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IInputScopeNameFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IInputScopeNameFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IInputScopeNameFactory*>(this);
     }

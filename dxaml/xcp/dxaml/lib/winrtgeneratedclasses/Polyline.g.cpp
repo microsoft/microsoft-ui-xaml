@@ -68,7 +68,7 @@ IFACEMETHODIMP DirectUI::Polyline::put_Points(_In_opt_ ABI::Windows::Foundation:
 
 HRESULT DirectUI::PolylineFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Shapes::IPolylineStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Shapes::IPolylineStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Shapes::IPolylineStatics*>(this);
     }

@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "CurrentChangingEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -79,7 +80,7 @@ Cleanup:
 
 HRESULT DirectUI::CurrentChangingEventArgsFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::ICurrentChangingEventArgsFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Data::ICurrentChangingEventArgsFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::ICurrentChangingEventArgsFactory*>(this);
     }

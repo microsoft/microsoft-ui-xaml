@@ -76,7 +76,7 @@ IFACEMETHODIMP DirectUI::RectangleGeometry::put_Rect(ABI::Windows::Foundation::R
 
 HRESULT DirectUI::RectangleGeometryFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IRectangleGeometryStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IRectangleGeometryStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IRectangleGeometryStatics*>(this);
     }

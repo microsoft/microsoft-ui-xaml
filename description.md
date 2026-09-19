@@ -807,3 +807,96 @@ code adds no allocation or comparison function call. Loads and branch layout
 differ, including fallback paths for partially matching GUIDs; application
 performance has not been measured. Compilation does not establish runtime
 correctness. Failure injection and other architectures were not validated.
+
+## Follow-up: compact generated factory interface-ID comparisons
+
+Source of truth:
+`dxaml\xcp\tools\XCPTypesAutoGen\XamlGen\Templates\Code\Framework\Bodies\ClassFactory.tt`.
+The supporting `EventArgsClass.tt` change emits `<cstring>` only when the
+event-argument class has a custom factory with factory interfaces. Both
+preprocessed C# files and 402 affected framework `.g.cpp` files were
+regenerated with the existing T4 and XamlGen tools, not hand-edited.
+
+Replace the factory template's three emitted `InlineIsEqualGUID` expression
+forms with fixed-size equality checks:
+
+```cpp
+std::memcmp(&iid, &__uuidof(InterfaceType), sizeof(IID)) == 0
+```
+
+Both forms compare all 16 GUID bytes. The 544 generated comparisons preserve
+the order of factory, static, and explicitly implemented interfaces. Feature
+directives, interface casts, output writes, `AddRefOuter`, inherited fallback,
+and HRESULTs remain unchanged. Ten event-argument files gain an explicit
+include; other affected files already include `<cstring>`. Event-argument
+instance comparisons, public interfaces, class layouts, metadata, and
+compiler/linker options are unchanged.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `d009bd618`, fresh baseline | 14,377,472 | 14,376,448 | 14,386,684 |
+| Fixed-size generated factory GUID comparisons | 14,370,816 | 14,369,792 | 14,380,092 |
+| Incremental reduction | 6,656 | 6,656 | 6,592 |
+| Cumulative reduction from original baseline | 164,352 | 164,352 | 164,684 |
+
+The actual DLL file is **6,656 bytes (6.5 KiB) smaller**. Cumulative file
+savings are **164,352 bytes (160.5 KiB)** from the original 14,535,168-byte
+baseline. Only `.text` changes: raw size falls by 6,656 bytes and virtual
+size by 6,592 bytes. Other section sizes remain unchanged.
+
+As supporting attribution, the 411 factory `QueryInterfaceImpl` entries in
+`Aggregate.g.obj`, including `FactoryGenerated` names, fall from 46,283 to
+39,597 attributed bytes. Both builds have 408 positive-sized entries.
+This is a named subset, not an estimate of total savings. Resolved primary
+code blocks shrink from 205 to 160 bytes for `UIElementFactory` and from
+146 to 129 bytes for `PropertyMetadataFactory` and `GridFactory`. Their
+disassembly uses two 64-bit comparisons per GUID instead of four 32-bit
+comparisons, without an out-of-line `memcmp` call. Guarded reference-count
+calls and base fallbacks remain. Symbol totals are not added to section
+savings or assumed to be contiguous disassembly ranges.
+
+Restoring the original source contents and invalidating timestamps only on
+the owned changed files reproduced all three baseline metrics. Reapplying
+the exact candidate reproduced all three candidate metrics. Each
+non-baseline build compiled `Aggregate.g.cpp` and performed an LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260918-211102-51c343bb`.
+The `000-baseline`, `001-factory-guid-memcmp`, `002-baseline-recompiled`, and
+`003-factory-guid-memcmp-repeat` directories contain read-only DLL/PDB pairs,
+hashes, source patches, build logs/binlogs, SizeBench snapshots, receipts,
+stderr, and frozen tool identity sidecars. The first baseline and candidate
+also contain scoped factory symbol reports and resolved disassembly.
+`ownership.json`, `generation-verification.json`, `verification.json`,
+`semantic-review.json`, and `progress.json` record the experiment and handoff.
+
+All measurements use the frozen deployment and managed identity documented
+above. The full deployment manifest and file hashes were verified before and
+after each measurement. Initialization and build used the same `cmd.exe`
+process and explicit `/nopgo` recipe. Logs confirm `PGOBuildMode=Off`,
+`Configuration=Release`, `Platform=x64`, and `VCToolsVersion=14.44.35207`.
+All 934 command-tlog hashes match between the recompiled control and repeated
+candidate. Eight export ordinal/name identities, PE security flags, and five
+built WinMD hashes are unchanged.
+
+T4 preprocessing uses the installed `TextTransformCore.exe --preprocess`.
+Baseline preprocessing differs only in generator-version annotations and
+the event-argument generator's license prefix, which the regeneration script
+preserves. The existing `BuildGenerated` target ran with partial XBF
+generation. Before copying generated outputs, each file was compared against
+its backup: only factory equality expressions and the ten includes changed.
+The generated update script and `runcodegen.cmd` wrapper were not executed.
+
+**Tests not run, as requested.** Earlier regression results belong to the
+starting commit, not this experiment. Source review found no change to
+interface identity, ownership, error handling, or threading. The inspected
+code adds no allocation or comparison function call. Loads and branch layout
+differ, including fallback paths for partially matching GUIDs; application
+performance has not been measured. Compilation does not establish runtime
+correctness. Failure injection and other architectures were not validated.

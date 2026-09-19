@@ -59,7 +59,7 @@ IFACEMETHODIMP DirectUI::PolyLineSegment::put_Points(_In_opt_ ABI::Windows::Foun
 
 HRESULT DirectUI::PolyLineSegmentFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IPolyLineSegmentStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IPolyLineSegmentStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IPolyLineSegmentStatics*>(this);
     }

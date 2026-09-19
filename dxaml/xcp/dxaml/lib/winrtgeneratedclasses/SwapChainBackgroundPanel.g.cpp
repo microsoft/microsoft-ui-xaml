@@ -49,7 +49,7 @@ HRESULT DirectUI::SwapChainBackgroundPanelGenerated::QueryInterfaceImpl(_In_ REF
 
 HRESULT DirectUI::SwapChainBackgroundPanelFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISwapChainBackgroundPanelFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ISwapChainBackgroundPanelFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISwapChainBackgroundPanelFactory*>(this);
     }

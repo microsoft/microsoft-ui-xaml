@@ -76,7 +76,7 @@ IFACEMETHODIMP DirectUI::TargetPropertyPath::put_Target(_In_opt_ IInspectable* p
 
 HRESULT DirectUI::TargetPropertyPathFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::ITargetPropertyPathFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::ITargetPropertyPathFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::ITargetPropertyPathFactory*>(this);
     }

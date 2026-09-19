@@ -49,7 +49,7 @@ HRESULT DirectUI::SliderAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID 
 
 HRESULT DirectUI::SliderAutomationPeerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ISliderAutomationPeerFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ISliderAutomationPeerFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::ISliderAutomationPeerFactory*>(this);
     }

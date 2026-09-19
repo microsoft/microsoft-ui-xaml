@@ -59,7 +59,7 @@ IFACEMETHODIMP DirectUI::EasingColorKeyFrame::put_EasingFunction(_In_opt_ ABI::M
 
 HRESULT DirectUI::EasingColorKeyFrameFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IEasingColorKeyFrameStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IEasingColorKeyFrameStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IEasingColorKeyFrameStatics*>(this);
     }

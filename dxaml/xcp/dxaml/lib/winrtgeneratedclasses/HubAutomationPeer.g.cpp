@@ -49,7 +49,7 @@ HRESULT DirectUI::HubAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID iid
 
 HRESULT DirectUI::HubAutomationPeerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IHubAutomationPeerFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IHubAutomationPeerFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IHubAutomationPeerFactory*>(this);
     }

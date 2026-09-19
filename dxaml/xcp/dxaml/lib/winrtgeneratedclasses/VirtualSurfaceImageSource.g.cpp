@@ -49,7 +49,7 @@ HRESULT DirectUI::VirtualSurfaceImageSourceGenerated::QueryInterfaceImpl(_In_ RE
 
 HRESULT DirectUI::VirtualSurfaceImageSourceFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::IVirtualSurfaceImageSourceFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::IVirtualSurfaceImageSourceFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Imaging::IVirtualSurfaceImageSourceFactory*>(this);
     }

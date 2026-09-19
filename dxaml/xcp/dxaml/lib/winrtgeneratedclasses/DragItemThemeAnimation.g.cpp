@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::DragItemThemeAnimationGenerated::put_TargetName(_In_opt
 
 HRESULT DirectUI::DragItemThemeAnimationFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDragItemThemeAnimationStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IDragItemThemeAnimationStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IDragItemThemeAnimationStatics*>(this);
     }

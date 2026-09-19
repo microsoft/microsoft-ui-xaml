@@ -75,7 +75,7 @@ _Check_return_ HRESULT DirectUI::FrameworkTemplate::put_Template(_In_opt_ Direct
 
 HRESULT DirectUI::FrameworkTemplateFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IFrameworkTemplateFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IFrameworkTemplateFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IFrameworkTemplateFactory*>(this);
     }

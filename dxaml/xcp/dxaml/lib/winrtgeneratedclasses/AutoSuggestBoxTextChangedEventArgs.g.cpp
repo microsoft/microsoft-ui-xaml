@@ -77,7 +77,7 @@ Cleanup:
 
 HRESULT DirectUI::AutoSuggestBoxTextChangedEventArgsFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxTextChangedEventArgsStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxTextChangedEventArgsStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxTextChangedEventArgsStatics*>(this);
     }

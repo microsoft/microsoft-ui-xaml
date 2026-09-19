@@ -49,7 +49,7 @@ HRESULT DirectUI::ThumbAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID i
 
 HRESULT DirectUI::ThumbAutomationPeerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IThumbAutomationPeerFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IThumbAutomationPeerFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IThumbAutomationPeerFactory*>(this);
     }

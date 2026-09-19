@@ -49,7 +49,7 @@ HRESULT DirectUI::CommandBarOverflowPresenterGenerated::QueryInterfaceImpl(_In_ 
 
 HRESULT DirectUI::CommandBarOverflowPresenterFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ICommandBarOverflowPresenterFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ICommandBarOverflowPresenterFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ICommandBarOverflowPresenterFactory*>(this);
     }

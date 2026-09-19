@@ -107,7 +107,7 @@ IFACEMETHODIMP DirectUI::WrapGridGenerated::put_VerticalChildrenAlignment(ABI::M
 
 HRESULT DirectUI::WrapGridFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IWrapGridStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IWrapGridStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IWrapGridStatics*>(this);
     }

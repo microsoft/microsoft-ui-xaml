@@ -257,7 +257,7 @@ _Check_return_ HRESULT DirectUI::PlaneProjection::put_RotationZAnimation(_In_opt
 
 HRESULT DirectUI::PlaneProjectionFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IPlaneProjectionStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IPlaneProjectionStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IPlaneProjectionStatics*>(this);
     }

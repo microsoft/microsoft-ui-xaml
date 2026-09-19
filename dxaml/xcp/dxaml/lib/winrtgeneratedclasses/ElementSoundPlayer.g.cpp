@@ -49,11 +49,11 @@ HRESULT DirectUI::ElementSoundPlayer::QueryInterfaceImpl(_In_ REFIID iid, _Outpt
 
 HRESULT DirectUI::ElementSoundPlayerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IElementSoundPlayerStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IElementSoundPlayerStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IElementSoundPlayerStatics*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IElementSoundPlayerStaticsPrivate)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IElementSoundPlayerStaticsPrivate), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IElementSoundPlayerStaticsPrivate*>(this);
     }

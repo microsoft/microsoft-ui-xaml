@@ -68,7 +68,7 @@ IFACEMETHODIMP DirectUI::PathGeometry::put_FillRule(ABI::Microsoft::UI::Xaml::Me
 
 HRESULT DirectUI::PathGeometryFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IPathGeometryStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IPathGeometryStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IPathGeometryStatics*>(this);
     }

@@ -171,7 +171,7 @@ IFACEMETHODIMP DirectUI::GeneralTransform::TryTransformCore(ABI::Windows::Founda
 
 HRESULT DirectUI::GeneralTransformFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IGeneralTransformFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IGeneralTransformFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IGeneralTransformFactory*>(this);
     }

@@ -59,7 +59,7 @@ IFACEMETHODIMP DirectUI::BeginStoryboard::put_Storyboard(_In_opt_ ABI::Microsoft
 
 HRESULT DirectUI::BeginStoryboardFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IBeginStoryboardStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IBeginStoryboardStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IBeginStoryboardStatics*>(this);
     }

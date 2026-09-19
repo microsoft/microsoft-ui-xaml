@@ -68,11 +68,11 @@ IFACEMETHODIMP DirectUI::AutomationAnnotation::put_Type(ABI::Microsoft::UI::Xaml
 
 HRESULT DirectUI::AutomationAnnotationFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotationFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotationFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotationFactory*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotationStatics)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotationStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotationStatics*>(this);
     }

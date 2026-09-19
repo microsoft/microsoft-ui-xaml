@@ -16,7 +16,7 @@
 
 HRESULT DirectUI::ColorDisplayNameHelperFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IColorDisplayNameHelperStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IColorDisplayNameHelperStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IColorDisplayNameHelperStatics*>(this);
     }

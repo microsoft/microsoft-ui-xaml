@@ -58,7 +58,7 @@ _Check_return_ HRESULT DirectUI::PropertyPathGenerated::put_Path(_In_opt_ HSTRIN
 
 HRESULT DirectUI::PropertyPathFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IPropertyPathFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IPropertyPathFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IPropertyPathFactory*>(this);
     }

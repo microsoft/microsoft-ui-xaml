@@ -76,7 +76,7 @@ IFACEMETHODIMP DirectUI::SwipeHintThemeAnimationGenerated::put_ToVerticalOffset(
 
 HRESULT DirectUI::SwipeHintThemeAnimationFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISwipeHintThemeAnimationStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISwipeHintThemeAnimationStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::ISwipeHintThemeAnimationStatics*>(this);
     }

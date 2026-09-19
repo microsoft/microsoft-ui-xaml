@@ -148,7 +148,7 @@ IFACEMETHODIMP DirectUI::SplitOpenThemeAnimationGenerated::put_OpenedTargetName(
 
 HRESULT DirectUI::SplitOpenThemeAnimationFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISplitOpenThemeAnimationStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISplitOpenThemeAnimationStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::ISplitOpenThemeAnimationStatics*>(this);
     }

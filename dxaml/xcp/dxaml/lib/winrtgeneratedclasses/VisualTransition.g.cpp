@@ -96,7 +96,7 @@ IFACEMETHODIMP DirectUI::VisualTransition::put_To(_In_opt_ HSTRING value)
 
 HRESULT DirectUI::VisualTransitionFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IVisualTransitionFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IVisualTransitionFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IVisualTransitionFactory*>(this);
     }

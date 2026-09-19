@@ -67,7 +67,7 @@ IFACEMETHODIMP DirectUI::Rectangle::put_RadiusY(DOUBLE value)
 
 HRESULT DirectUI::RectangleFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Shapes::IRectangleStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Shapes::IRectangleStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Shapes::IRectangleStatics*>(this);
     }

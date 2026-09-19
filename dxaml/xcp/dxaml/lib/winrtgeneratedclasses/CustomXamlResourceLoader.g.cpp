@@ -97,11 +97,11 @@ Cleanup:
 
 HRESULT DirectUI::CustomXamlResourceLoaderFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Resources::ICustomXamlResourceLoaderFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Resources::ICustomXamlResourceLoaderFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Resources::ICustomXamlResourceLoaderFactory*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Resources::ICustomXamlResourceLoaderStatics)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Resources::ICustomXamlResourceLoaderStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Resources::ICustomXamlResourceLoaderStatics*>(this);
     }

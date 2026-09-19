@@ -49,7 +49,7 @@ HRESULT DirectUI::ImageSource::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void
 
 HRESULT DirectUI::ImageSourceFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IImageSourceFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IImageSourceFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IImageSourceFactory*>(this);
     }

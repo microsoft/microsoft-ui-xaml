@@ -49,7 +49,7 @@ HRESULT DirectUI::BasicConnectedAnimationConfigurationGenerated::QueryInterfaceI
 
 HRESULT DirectUI::BasicConnectedAnimationConfigurationFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IBasicConnectedAnimationConfigurationFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IBasicConnectedAnimationConfigurationFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IBasicConnectedAnimationConfigurationFactory*>(this);
     }

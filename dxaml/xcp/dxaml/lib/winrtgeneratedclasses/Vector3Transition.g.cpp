@@ -71,7 +71,7 @@ IFACEMETHODIMP DirectUI::Vector3TransitionGenerated::put_Duration(ABI::Windows::
 
 HRESULT DirectUI::Vector3TransitionFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IVector3TransitionFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IVector3TransitionFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IVector3TransitionFactory*>(this);
     }

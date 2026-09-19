@@ -49,7 +49,7 @@ HRESULT DirectUI::ButtonBaseAutomationPeerGenerated::QueryInterfaceImpl(_In_ REF
 
 HRESULT DirectUI::ButtonBaseAutomationPeerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IButtonBaseAutomationPeerFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IButtonBaseAutomationPeerFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IButtonBaseAutomationPeerFactory*>(this);
     }

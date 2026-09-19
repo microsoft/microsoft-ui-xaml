@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::PowerEase::put_Power(DOUBLE value)
 
 HRESULT DirectUI::PowerEaseFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPowerEaseStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPowerEaseStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IPowerEaseStatics*>(this);
     }

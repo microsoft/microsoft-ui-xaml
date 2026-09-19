@@ -59,7 +59,7 @@ IFACEMETHODIMP DirectUI::SpanGenerated::put_Inlines(_In_opt_ ABI::Windows::Found
 
 HRESULT DirectUI::SpanFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Documents::ISpanFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Documents::ISpanFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Documents::ISpanFactory*>(this);
     }

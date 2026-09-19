@@ -60,7 +60,7 @@ IFACEMETHODIMP DirectUI::BrushTransitionGenerated::put_Duration(ABI::Windows::Fo
 
 HRESULT DirectUI::BrushTransitionFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IBrushTransitionFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IBrushTransitionFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IBrushTransitionFactory*>(this);
     }

@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::PointAnimationUsingKeyFrames::get_KeyFrames(_Outptr_res
 
 HRESULT DirectUI::PointAnimationUsingKeyFramesFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPointAnimationUsingKeyFramesStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IPointAnimationUsingKeyFramesStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IPointAnimationUsingKeyFramesStatics*>(this);
     }

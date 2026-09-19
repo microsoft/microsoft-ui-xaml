@@ -49,7 +49,7 @@ HRESULT DirectUI::ImageAutomationPeerGenerated::QueryInterfaceImpl(_In_ REFIID i
 
 HRESULT DirectUI::ImageAutomationPeerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IImageAutomationPeerFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IImageAutomationPeerFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IImageAutomationPeerFactory*>(this);
     }

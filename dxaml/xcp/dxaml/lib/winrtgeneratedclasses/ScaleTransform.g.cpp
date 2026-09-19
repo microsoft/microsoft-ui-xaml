@@ -117,7 +117,7 @@ _Check_return_ HRESULT DirectUI::ScaleTransform::put_ScaleYAnimation(_In_opt_ II
 
 HRESULT DirectUI::ScaleTransformFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IScaleTransformStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IScaleTransformStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IScaleTransformStatics*>(this);
     }

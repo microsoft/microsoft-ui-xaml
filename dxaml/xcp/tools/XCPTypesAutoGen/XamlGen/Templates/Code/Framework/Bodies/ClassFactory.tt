@@ -22,21 +22,21 @@ HRESULT <#= AsCppType(Model.GeneratedFactoryFullName) #>::QueryInterfaceImpl(_In
 #if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(version.Version) #>)
 <#     }
                if (version.IdlClassInfo.HasFactoryMethods) { #>
-    <# if (!headerGenerator.IsFirst) { #>else <# } #>if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(version.IdlClassInfo.FullFactoryInterfaceName) #>)))
+    <# if (!headerGenerator.IsFirst) { #>else <# } #>if (std::memcmp(&iid, &__uuidof(<#= AsCppType(version.IdlClassInfo.FullFactoryInterfaceName) #>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<<#= AsCppType(version.IdlClassInfo.FullFactoryInterfaceName) #>*>(this);
 <# if (Model.VelocityVersion != 0) { hasVelocityObj = true; } else { hasObj = true; } #>
     }
 <#             }
                if (version.IdlClassInfo.HasStaticMembers) { #>
-    <# if (!headerGenerator.IsFirst) { #>else <# } #>if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(version.IdlClassInfo.FullStaticMembersInterfaceName) #>)))
+    <# if (!headerGenerator.IsFirst) { #>else <# } #>if (std::memcmp(&iid, &__uuidof(<#= AsCppType(version.IdlClassInfo.FullStaticMembersInterfaceName) #>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<<#= AsCppType(version.IdlClassInfo.FullStaticMembersInterfaceName) #>*>(this);
 <# if (Model.VelocityVersion != 0) { hasVelocityObj = true; } else { hasObj = true; } #>
     }
 <#             }
                foreach (var implementedInterface in version.FactoryExplicitlyImplementedInterfaces) { #>
-    <# if (!headerGenerator.IsFirst) { #>else <# } #>if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(implementedInterface.AbiFullName) #>)))
+    <# if (!headerGenerator.IsFirst) { #>else <# } #>if (std::memcmp(&iid, &__uuidof(<#= AsCppType(implementedInterface.AbiFullName) #>), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<<#= AsCppType(implementedInterface.AbiFullName) #>*>(this);
 <# if (Model.VelocityVersion != 0) { hasVelocityObj = true; } else { hasObj = true; } #>

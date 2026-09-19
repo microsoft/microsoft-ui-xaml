@@ -69,7 +69,7 @@ Cleanup:
 HRESULT DirectUI::InputValidationErrorFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
 #if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IInputValidationErrorFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IInputValidationErrorFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IInputValidationErrorFactory*>(this);
     }

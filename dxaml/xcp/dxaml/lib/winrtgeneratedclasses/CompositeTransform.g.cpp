@@ -202,7 +202,7 @@ _Check_return_ HRESULT DirectUI::CompositeTransform::put_TranslateYAnimation(_In
 
 HRESULT DirectUI::CompositeTransformFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::ICompositeTransformStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::ICompositeTransformStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::ICompositeTransformStatics*>(this);
     }

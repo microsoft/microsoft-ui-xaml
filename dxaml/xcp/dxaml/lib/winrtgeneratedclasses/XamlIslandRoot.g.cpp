@@ -137,7 +137,7 @@ Cleanup:
 
 HRESULT DirectUI::XamlIslandRootFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Hosting::IXamlIslandRootStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Hosting::IXamlIslandRootStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Hosting::IXamlIslandRootStatics*>(this);
     }

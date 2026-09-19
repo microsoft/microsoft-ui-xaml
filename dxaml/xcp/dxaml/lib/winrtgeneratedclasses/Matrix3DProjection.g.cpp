@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::Matrix3DProjection::put_ProjectionMatrix(ABI::Microsoft
 
 HRESULT DirectUI::Matrix3DProjectionFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IMatrix3DProjectionStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IMatrix3DProjectionStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IMatrix3DProjectionStatics*>(this);
     }

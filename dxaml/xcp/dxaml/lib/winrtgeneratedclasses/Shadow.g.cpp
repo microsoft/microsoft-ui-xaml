@@ -49,7 +49,7 @@ HRESULT DirectUI::Shadow::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** pp
 
 HRESULT DirectUI::ShadowFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IShadowFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IShadowFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IShadowFactory*>(this);
     }

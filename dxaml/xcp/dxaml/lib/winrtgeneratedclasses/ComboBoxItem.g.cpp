@@ -49,7 +49,7 @@ HRESULT DirectUI::ComboBoxItemGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Ou
 
 HRESULT DirectUI::ComboBoxItemFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IComboBoxItemFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IComboBoxItemFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IComboBoxItemFactory*>(this);
     }

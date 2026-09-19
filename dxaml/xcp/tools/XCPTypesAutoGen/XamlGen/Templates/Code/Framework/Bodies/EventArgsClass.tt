@@ -9,6 +9,9 @@
 #include "precomp.h"
 #include "<#= Model.CppFrameworkGeneratedHeaderFileName #>"
 #include "CoreEventArgsGroup.h"
+<# if (Model.HasCustomFactory && Model.IdlClassInfo.HasAnyFactoryInterfaces) { #>
+#include <cstring>
+<# } #>
 
 using namespace <#= OMContext.DefaultImplementationNamespace #>;
 

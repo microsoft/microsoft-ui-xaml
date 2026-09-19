@@ -49,7 +49,7 @@ HRESULT DirectUI::FlipViewItemGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Ou
 
 HRESULT DirectUI::FlipViewItemFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IFlipViewItemFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IFlipViewItemFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IFlipViewItemFactory*>(this);
     }

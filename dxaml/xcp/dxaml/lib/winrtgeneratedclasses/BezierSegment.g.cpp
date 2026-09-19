@@ -76,7 +76,7 @@ IFACEMETHODIMP DirectUI::BezierSegment::put_Point3(ABI::Windows::Foundation::Poi
 
 HRESULT DirectUI::BezierSegmentFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IBezierSegmentStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IBezierSegmentStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IBezierSegmentStatics*>(this);
     }

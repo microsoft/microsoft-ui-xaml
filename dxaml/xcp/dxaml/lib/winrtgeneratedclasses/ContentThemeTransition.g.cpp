@@ -67,7 +67,7 @@ IFACEMETHODIMP DirectUI::ContentThemeTransitionGenerated::put_VerticalOffset(DOU
 
 HRESULT DirectUI::ContentThemeTransitionFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IContentThemeTransitionStatics)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::IContentThemeTransitionStatics), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::IContentThemeTransitionStatics*>(this);
     }

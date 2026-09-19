@@ -49,7 +49,7 @@ HRESULT DirectUI::DatePickerAutomationPeerGenerated::QueryInterfaceImpl(_In_ REF
 
 HRESULT DirectUI::DatePickerAutomationPeerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IDatePickerAutomationPeerFactory)))
+    if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::IDatePickerAutomationPeerFactory), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::IDatePickerAutomationPeerFactory*>(this);
     }
