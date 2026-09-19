@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "InputValidationErrorEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,12 +27,12 @@ DirectUI::InputValidationErrorEventArgs::~InputValidationErrorEventArgs()
 
 HRESULT DirectUI::InputValidationErrorEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::InputValidationErrorEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::InputValidationErrorEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::InputValidationErrorEventArgs*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IInputValidationErrorEventArgs)) && Feature_InputValidation::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IInputValidationErrorEventArgs), sizeof(IID)) == 0 && Feature_InputValidation::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IInputValidationErrorEventArgs*>(this);
     }

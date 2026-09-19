@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "CharacterReceivedRoutedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::CharacterReceivedRoutedEventArgs::~CharacterReceivedRoutedEventArgs()
 
 HRESULT DirectUI::CharacterReceivedRoutedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CharacterReceivedRoutedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CharacterReceivedRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CharacterReceivedRoutedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::ICharacterReceivedRoutedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::ICharacterReceivedRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::ICharacterReceivedRoutedEventArgs*>(this);
     }

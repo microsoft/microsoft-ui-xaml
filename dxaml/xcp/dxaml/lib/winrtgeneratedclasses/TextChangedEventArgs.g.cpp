@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "TextChangedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::TextChangedEventArgs::~TextChangedEventArgs()
 
 HRESULT DirectUI::TextChangedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TextChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TextChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TextChangedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ITextChangedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ITextChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ITextChangedEventArgs*>(this);
     }

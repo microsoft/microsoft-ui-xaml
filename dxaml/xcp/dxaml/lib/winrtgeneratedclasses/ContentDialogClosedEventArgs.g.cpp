@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "ContentDialogClosedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::ContentDialogClosedEventArgs::~ContentDialogClosedEventArgs()
 
 HRESULT DirectUI::ContentDialogClosedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ContentDialogClosedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ContentDialogClosedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ContentDialogClosedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IContentDialogClosedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IContentDialogClosedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IContentDialogClosedEventArgs*>(this);
     }

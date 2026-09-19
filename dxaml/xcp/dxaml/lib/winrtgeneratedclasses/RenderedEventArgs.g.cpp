@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "RenderedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::RenderedEventArgs::~RenderedEventArgs()
 
 HRESULT DirectUI::RenderedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RenderedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RenderedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RenderedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::IRenderedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::IRenderedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::IRenderedEventArgs*>(this);
     }

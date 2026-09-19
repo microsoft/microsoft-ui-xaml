@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "RightTappedRoutedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::RightTappedRoutedEventArgs::~RightTappedRoutedEventArgs()
 
 HRESULT DirectUI::RightTappedRoutedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RightTappedRoutedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RightTappedRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RightTappedRoutedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IRightTappedRoutedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IRightTappedRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IRightTappedRoutedEventArgs*>(this);
     }

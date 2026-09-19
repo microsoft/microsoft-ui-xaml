@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "KeyboardAcceleratorInvokedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::KeyboardAcceleratorInvokedEventArgs::~KeyboardAcceleratorInvokedEventA
 
 HRESULT DirectUI::KeyboardAcceleratorInvokedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::KeyboardAcceleratorInvokedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::KeyboardAcceleratorInvokedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::KeyboardAcceleratorInvokedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IKeyboardAcceleratorInvokedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IKeyboardAcceleratorInvokedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IKeyboardAcceleratorInvokedEventArgs*>(this);
     }

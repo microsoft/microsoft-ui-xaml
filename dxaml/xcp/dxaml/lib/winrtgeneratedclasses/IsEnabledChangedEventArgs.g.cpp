@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "IsEnabledChangedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,7 +27,7 @@ DirectUI::IsEnabledChangedEventArgs::~IsEnabledChangedEventArgs()
 
 HRESULT DirectUI::IsEnabledChangedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IsEnabledChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::IsEnabledChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IsEnabledChangedEventArgs*>(this);
     }

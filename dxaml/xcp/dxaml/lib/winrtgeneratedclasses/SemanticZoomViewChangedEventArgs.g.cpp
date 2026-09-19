@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "SemanticZoomViewChangedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::SemanticZoomViewChangedEventArgs::~SemanticZoomViewChangedEventArgs()
 
 HRESULT DirectUI::SemanticZoomViewChangedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SemanticZoomViewChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SemanticZoomViewChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SemanticZoomViewChangedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomViewChangedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomViewChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomViewChangedEventArgs*>(this);
     }

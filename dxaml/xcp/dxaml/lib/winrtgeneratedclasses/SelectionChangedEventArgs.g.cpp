@@ -27,11 +27,11 @@ DirectUI::SelectionChangedEventArgsGenerated::~SelectionChangedEventArgsGenerate
 
 HRESULT DirectUI::SelectionChangedEventArgsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SelectionChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SelectionChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SelectionChangedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISelectionChangedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ISelectionChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISelectionChangedEventArgs*>(this);
     }

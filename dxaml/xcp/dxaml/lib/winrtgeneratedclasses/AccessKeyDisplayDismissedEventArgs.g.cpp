@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "AccessKeyDisplayDismissedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::AccessKeyDisplayDismissedEventArgs::~AccessKeyDisplayDismissedEventArg
 
 HRESULT DirectUI::AccessKeyDisplayDismissedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AccessKeyDisplayDismissedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AccessKeyDisplayDismissedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AccessKeyDisplayDismissedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IAccessKeyDisplayDismissedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IAccessKeyDisplayDismissedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IAccessKeyDisplayDismissedEventArgs*>(this);
     }

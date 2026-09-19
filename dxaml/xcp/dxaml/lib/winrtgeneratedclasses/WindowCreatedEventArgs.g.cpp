@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "WindowCreatedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,12 +27,12 @@ DirectUI::WindowCreatedEventArgs::~WindowCreatedEventArgs()
 
 HRESULT DirectUI::WindowCreatedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::WindowCreatedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::WindowCreatedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::WindowCreatedEventArgs*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_UwpSupportApi)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IWindowCreatedEventArgs)) && Feature_UwpSupportApi::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IWindowCreatedEventArgs), sizeof(IID)) == 0 && Feature_UwpSupportApi::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IWindowCreatedEventArgs*>(this);
     }

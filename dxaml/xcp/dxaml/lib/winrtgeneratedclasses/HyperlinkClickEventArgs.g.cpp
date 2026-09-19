@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "HyperlinkClickEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::HyperlinkClickEventArgs::~HyperlinkClickEventArgs()
 
 HRESULT DirectUI::HyperlinkClickEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::HyperlinkClickEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::HyperlinkClickEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::HyperlinkClickEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Documents::IHyperlinkClickEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Documents::IHyperlinkClickEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Documents::IHyperlinkClickEventArgs*>(this);
     }

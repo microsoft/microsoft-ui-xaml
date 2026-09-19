@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "AnchorRequestedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::AnchorRequestedEventArgs::~AnchorRequestedEventArgs()
 
 HRESULT DirectUI::AnchorRequestedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AnchorRequestedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AnchorRequestedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AnchorRequestedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IAnchorRequestedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IAnchorRequestedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IAnchorRequestedEventArgs*>(this);
     }

@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "CandidateWindowBoundsChangedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::CandidateWindowBoundsChangedEventArgs::~CandidateWindowBoundsChangedEv
 
 HRESULT DirectUI::CandidateWindowBoundsChangedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CandidateWindowBoundsChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CandidateWindowBoundsChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CandidateWindowBoundsChangedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ICandidateWindowBoundsChangedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ICandidateWindowBoundsChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ICandidateWindowBoundsChangedEventArgs*>(this);
     }

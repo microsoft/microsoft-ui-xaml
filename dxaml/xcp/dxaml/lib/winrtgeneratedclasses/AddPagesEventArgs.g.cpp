@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "AddPagesEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::AddPagesEventArgsGenerated::~AddPagesEventArgsGenerated()
 
 HRESULT DirectUI::AddPagesEventArgsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AddPagesEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AddPagesEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AddPagesEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Printing::IAddPagesEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Printing::IAddPagesEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Printing::IAddPagesEventArgs*>(this);
     }

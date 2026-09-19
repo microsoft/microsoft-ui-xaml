@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "CommandingContextChangedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,12 +27,12 @@ DirectUI::CommandingContextChangedEventArgs::~CommandingContextChangedEventArgs(
 
 HRESULT DirectUI::CommandingContextChangedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CommandingContextChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CommandingContextChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CommandingContextChangedEventArgs*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_CommandingImprovements)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ICommandingContextChangedEventArgs)) && Feature_CommandingImprovements::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ICommandingContextChangedEventArgs), sizeof(IID)) == 0 && Feature_CommandingImprovements::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ICommandingContextChangedEventArgs*>(this);
     }

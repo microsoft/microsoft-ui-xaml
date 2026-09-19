@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "PointerRoutedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::PointerRoutedEventArgsGenerated::~PointerRoutedEventArgsGenerated()
 
 HRESULT DirectUI::PointerRoutedEventArgsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PointerRoutedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PointerRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PointerRoutedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IPointerRoutedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IPointerRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IPointerRoutedEventArgs*>(this);
     }

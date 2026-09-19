@@ -27,11 +27,11 @@ DirectUI::DragCompletedEventArgsGenerated::~DragCompletedEventArgsGenerated()
 
 HRESULT DirectUI::DragCompletedEventArgsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DragCompletedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DragCompletedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DragCompletedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragCompletedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragCompletedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragCompletedEventArgs*>(this);
     }

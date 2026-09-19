@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "ItemClickEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::ItemClickEventArgs::~ItemClickEventArgs()
 
 HRESULT DirectUI::ItemClickEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ItemClickEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ItemClickEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ItemClickEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemClickEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemClickEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IItemClickEventArgs*>(this);
     }

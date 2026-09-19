@@ -27,11 +27,11 @@ DirectUI::DragStartedEventArgsGenerated::~DragStartedEventArgsGenerated()
 
 HRESULT DirectUI::DragStartedEventArgsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DragStartedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DragStartedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DragStartedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragStartedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragStartedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragStartedEventArgs*>(this);
     }

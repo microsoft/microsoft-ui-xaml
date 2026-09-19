@@ -27,11 +27,11 @@ DirectUI::RoutedEventArgsGenerated::~RoutedEventArgsGenerated()
 
 HRESULT DirectUI::RoutedEventArgsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::RoutedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::RoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::RoutedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IRoutedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IRoutedEventArgs*>(this);
     }

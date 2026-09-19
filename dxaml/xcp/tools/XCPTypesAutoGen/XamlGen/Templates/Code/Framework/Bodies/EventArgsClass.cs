@@ -31,11 +31,7 @@ namespace XamlGen.Templates.Code.Framework.Bodies
             this.Write(this.ToStringHelper.ToStringWithCulture(IncludeTemplate<Copyright>()));
             this.Write("\r\n\r\n#include \"precomp.h\"\r\n#include \"");
             this.Write(this.ToStringHelper.ToStringWithCulture(Model.CppFrameworkGeneratedHeaderFileName));
-            this.Write("\"\r\n#include \"CoreEventArgsGroup.h\"\r\n");
- if (Model.HasCustomFactory && Model.IdlClassInfo.HasAnyFactoryInterfaces) { 
-            this.Write("#include <cstring>\r\n");
- } 
-            this.Write("\r\nusing namespace ");
+            this.Write("\"\r\n#include \"CoreEventArgsGroup.h\"\r\n#include <cstring>\r\n\r\nusing namespace ");
             this.Write(this.ToStringHelper.ToStringWithCulture(OMContext.DefaultImplementationNamespace));
             this.Write(";\r\n\r\n// Constructors/destructors.\r\n");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(Model.GeneratedClassFullName)));
@@ -49,10 +45,10 @@ namespace XamlGen.Templates.Code.Framework.Bodies
             this.Write(this.ToStringHelper.ToStringWithCulture(Model.GeneratedClassName));
             this.Write("()\r\n{\r\n}\r\n\r\nHRESULT ");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(Model.GeneratedClassFullName)));
-            this.Write("::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)\r\n{\r\n    if (Inlin" +
-                    "eIsEqualGUID(iid, __uuidof(");
+            this.Write("::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)\r\n{\r\n    if (std::" +
+                    "memcmp(&iid, &__uuidof(");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(Model.AbiImplementationFullName)));
-            this.Write(")))\r\n    {\r\n        *ppObject = static_cast<");
+            this.Write("), sizeof(IID)) == 0)\r\n    {\r\n        *ppObject = static_cast<");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(Model.AbiImplementationFullName)));
             this.Write("*>(this);\r\n    }\r\n");
      if (Model.VelocityVersion != 0) { 
@@ -67,36 +63,36 @@ namespace XamlGen.Templates.Code.Framework.Bodies
             this.Write(")\r\n");
          }
        if (version.IdlClassInfo.HasPrimaryInterface) { 
-            this.Write("    else if (InlineIsEqualGUID(iid, __uuidof(");
+            this.Write("    else if (std::memcmp(&iid, &__uuidof(");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(version.IdlClassInfo.FullInterfaceName)));
-            this.Write("))");
+            this.Write("), sizeof(IID)) == 0");
             this.Write(this.ToStringHelper.ToStringWithCulture(VelocityFeatures.GetQueryInterfaceClause(version.VelocityVersion)));
             this.Write(")\r\n    {\r\n        *ppObject = static_cast<");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(version.IdlClassInfo.FullInterfaceName)));
             this.Write("*>(this);\r\n    }\r\n");
      }
        if (version.IdlClassInfo.HasProtectedMembers) { 
-            this.Write("    else if (InlineIsEqualGUID(iid, __uuidof(");
+            this.Write("    else if (std::memcmp(&iid, &__uuidof(");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(version.IdlClassInfo.FullProtectedMembersInterfaceName)));
-            this.Write("))");
+            this.Write("), sizeof(IID)) == 0");
             this.Write(this.ToStringHelper.ToStringWithCulture(VelocityFeatures.GetQueryInterfaceClause(version.VelocityVersion)));
             this.Write(")\r\n    {\r\n        *ppObject = static_cast<");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(version.IdlClassInfo.FullProtectedMembersInterfaceName)));
             this.Write("*>(this);\r\n    }\r\n");
      }
        if (version.IdlClassInfo.HasVirtualMembers) { 
-            this.Write("    else if (InlineIsEqualGUID(iid, __uuidof(");
+            this.Write("    else if (std::memcmp(&iid, &__uuidof(");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(version.IdlClassInfo.FullVirtualMembersInterfaceName)));
-            this.Write("))");
+            this.Write("), sizeof(IID)) == 0");
             this.Write(this.ToStringHelper.ToStringWithCulture(VelocityFeatures.GetQueryInterfaceClause(version.VelocityVersion)));
             this.Write(")\r\n    {\r\n        *ppObject = static_cast<");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(version.IdlClassInfo.FullVirtualMembersInterfaceName)));
             this.Write("*>(this);\r\n    }\r\n");
      }
        foreach (var implementedInterface in version.ImplementedInterfaces) { 
-            this.Write("    else if (InlineIsEqualGUID(iid, __uuidof(");
+            this.Write("    else if (std::memcmp(&iid, &__uuidof(");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(implementedInterface.AbiFullName)));
-            this.Write("))");
+            this.Write("), sizeof(IID)) == 0");
             this.Write(this.ToStringHelper.ToStringWithCulture(VelocityFeatures.GetQueryInterfaceClause(version.VelocityVersion)));
             this.Write(")\r\n    {\r\n        *ppObject = static_cast<");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(implementedInterface.AbiFullName)));

@@ -900,3 +900,94 @@ code adds no allocation or comparison function call. Loads and branch layout
 differ, including fallback paths for partially matching GUIDs; application
 performance has not been measured. Compilation does not establish runtime
 correctness. Failure injection and other architectures were not validated.
+
+## Follow-up: compact generated event-argument interface-ID comparisons
+
+Source of truth:
+`dxaml\xcp\tools\XCPTypesAutoGen\XamlGen\Templates\Code\Framework\Bodies\EventArgsClass.tt`.
+The preprocessed `EventArgsClass.cs` and 116 affected framework `.g.cpp` files
+were regenerated with the existing T4 and XamlGen tools, not hand-edited.
+
+Replace the event-argument instance template's five emitted
+`InlineIsEqualGUID` expression forms with fixed-size equality checks:
+
+```cpp
+std::memcmp(&iid, &__uuidof(InterfaceType), sizeof(IID)) == 0
+```
+
+Both forms compare all 16 GUID bytes. The 228 generated comparisons preserve
+interface order, feature directives and short-circuited feature checks, exact
+casts, output writes, `AddRefOuter`, inherited fallback, and HRESULTs.
+The template now always includes `<cstring>`; 106 outputs gain that include,
+while ten already included it for their factories. Factory implementations,
+event properties and methods, public interfaces, class layouts, metadata,
+and compiler/linker options are unchanged.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `c1662098d`, fresh baseline | 14,370,816 | 14,369,792 | 14,380,092 |
+| Fixed-size generated event-argument GUID comparisons | 14,367,232 | 14,366,208 | 14,376,652 |
+| Incremental reduction | 3,584 | 3,584 | 3,440 |
+| Cumulative reduction from original baseline | 167,936 | 167,936 | 168,124 |
+
+The actual DLL file is **3,584 bytes (3.5 KiB) smaller**. Cumulative file
+savings are **167,936 bytes (164 KiB)** from the original 14,535,168-byte
+baseline. Only `.text` changes: raw size falls by 3,584 bytes and virtual
+size by 3,440 bytes. Other section sizes remain unchanged.
+
+As supporting attribution, the 126 event-argument `QueryInterfaceImpl`
+entries selected by name in `Aggregate.g.obj` fall from 15,514 to 12,400
+attributed bytes. All remain positive-sized. This name subset is not complete
+coverage of the generated outputs. Resolved primary code blocks shrink from
+193 to 140 bytes for `DragStartingEventArgsGenerated` and from 125 to 96
+bytes for both `RoutedEventArgsGenerated` and `PointerRoutedEventArgsGenerated`.
+Disassembly uses two 64-bit comparisons per GUID instead of four 32-bit
+comparisons, without an out-of-line `memcmp` call. Guarded reference-count
+calls and base fallbacks remain. Symbol totals are not added to section
+savings or assumed to be contiguous disassembly ranges.
+
+Restoring original source contents and invalidating timestamps only on the
+owned changed files reproduced all three baseline metrics. Reapplying the
+exact candidate reproduced all three candidate metrics. Every non-baseline
+build compiled `Aggregate.g.cpp` and performed an LTCG link.
+
+### Provenance and limitations
+
+Evidence is preserved under
+`C:\Users\jecollin\AppData\Local\WinUI\Ralph\D_x1\20260918-214009-4be2a6d6`.
+The `000-baseline`, `001-eventargs-guid-memcmp`, `002-baseline-recompiled`,
+and `003-eventargs-guid-memcmp-repeat` directories contain read-only DLL/PDB
+pairs, hashes, source patches, build logs/binlogs, SizeBench snapshots,
+receipts, stderr, and frozen tool identity sidecars. The first baseline and
+candidate include scoped symbol reports and resolved disassembly.
+`ownership.json`, `generation-verification.json`, `verification.json`,
+`semantic-review.json`, and `progress.json` record the experiment and handoff.
+
+All four measurements use the frozen deployment and managed identity
+documented above. The full deployment manifest and file hashes were verified
+before and after each measurement. Initialization and build used the same
+`cmd.exe` process and explicit `/nopgo` recipe. Logs confirm
+`PGOBuildMode=Off`, `Configuration=Release`, `Platform=x64`, and
+`VCToolsVersion=14.44.35207`. All 934 command-tlog hashes match between the
+recompiled control and repeated candidate. Eight export ordinal/name
+identities, PE security flags, and five built WinMD hashes are unchanged.
+
+Before editing, installed `TextTransformCore.exe --preprocess` reproduced
+the original preprocessed file except its existing license prefix, which
+the regeneration script preserves. The existing `BuildGenerated` target ran
+with partial XBF generation. Every generated output was compared against its
+backup before copying: only instance equality expressions and the 106
+includes changed. The generated update script and `runcodegen.cmd` wrapper
+were not executed.
+
+**Tests not run, as requested.** Earlier regression results belong to the
+starting commit, not this experiment. Source review found no change to
+interface identity, ownership, error handling, or threading. The inspected
+code adds no allocation or comparison function call. Comparison widths,
+loads, and mismatch branch layout differ; application performance has not
+been measured. Compilation does not establish runtime correctness. Failure
+injection and other architectures were not validated.

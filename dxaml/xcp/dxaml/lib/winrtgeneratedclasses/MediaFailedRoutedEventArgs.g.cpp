@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "MediaFailedRoutedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::MediaFailedRoutedEventArgs::~MediaFailedRoutedEventArgs()
 
 HRESULT DirectUI::MediaFailedRoutedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::MediaFailedRoutedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::MediaFailedRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::MediaFailedRoutedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IMediaFailedRoutedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IMediaFailedRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IMediaFailedRoutedEventArgs*>(this);
     }

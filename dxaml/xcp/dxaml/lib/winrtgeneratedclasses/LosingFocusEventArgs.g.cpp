@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "LosingFocusEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::LosingFocusEventArgs::~LosingFocusEventArgs()
 
 HRESULT DirectUI::LosingFocusEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::LosingFocusEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::LosingFocusEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::LosingFocusEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::ILosingFocusEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::ILosingFocusEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::ILosingFocusEventArgs*>(this);
     }

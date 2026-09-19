@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "FocusedElementRemovedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::FocusedElementRemovedEventArgs::~FocusedElementRemovedEventArgs()
 
 HRESULT DirectUI::FocusedElementRemovedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FocusedElementRemovedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FocusedElementRemovedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FocusedElementRemovedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IFocusedElementRemovedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IFocusedElementRemovedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IFocusedElementRemovedEventArgs*>(this);
     }

@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "TextBoxSelectionChangingEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::TextBoxSelectionChangingEventArgs::~TextBoxSelectionChangingEventArgs(
 
 HRESULT DirectUI::TextBoxSelectionChangingEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TextBoxSelectionChangingEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TextBoxSelectionChangingEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TextBoxSelectionChangingEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ITextBoxSelectionChangingEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ITextBoxSelectionChangingEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ITextBoxSelectionChangingEventArgs*>(this);
     }

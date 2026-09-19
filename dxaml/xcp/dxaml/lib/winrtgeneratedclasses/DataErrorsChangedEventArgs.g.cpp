@@ -27,11 +27,11 @@ DirectUI::DataErrorsChangedEventArgs::~DataErrorsChangedEventArgs()
 
 HRESULT DirectUI::DataErrorsChangedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DataErrorsChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DataErrorsChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DataErrorsChangedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::IDataErrorsChangedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Data::IDataErrorsChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::IDataErrorsChangedEventArgs*>(this);
     }

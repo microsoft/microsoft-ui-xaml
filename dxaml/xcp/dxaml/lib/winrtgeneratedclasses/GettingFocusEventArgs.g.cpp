@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "GettingFocusEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::GettingFocusEventArgs::~GettingFocusEventArgs()
 
 HRESULT DirectUI::GettingFocusEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::GettingFocusEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::GettingFocusEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::GettingFocusEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IGettingFocusEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IGettingFocusEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IGettingFocusEventArgs*>(this);
     }

@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "XamlRootChangedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::XamlRootChangedEventArgs::~XamlRootChangedEventArgs()
 
 HRESULT DirectUI::XamlRootChangedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::XamlRootChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::XamlRootChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::XamlRootChangedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlRootChangedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IXamlRootChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IXamlRootChangedEventArgs*>(this);
     }

@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "SvgImageSourceFailedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::SvgImageSourceFailedEventArgs::~SvgImageSourceFailedEventArgs()
 
 HRESULT DirectUI::SvgImageSourceFailedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SvgImageSourceFailedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SvgImageSourceFailedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SvgImageSourceFailedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::ISvgImageSourceFailedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::ISvgImageSourceFailedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Imaging::ISvgImageSourceFailedEventArgs*>(this);
     }

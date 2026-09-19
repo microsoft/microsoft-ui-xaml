@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "DragItemsStartingEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::DragItemsStartingEventArgs::~DragItemsStartingEventArgs()
 
 HRESULT DirectUI::DragItemsStartingEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DragItemsStartingEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DragItemsStartingEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DragItemsStartingEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IDragItemsStartingEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IDragItemsStartingEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IDragItemsStartingEventArgs*>(this);
     }

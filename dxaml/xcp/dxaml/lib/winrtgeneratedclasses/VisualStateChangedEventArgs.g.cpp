@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "VisualStateChangedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::VisualStateChangedEventArgs::~VisualStateChangedEventArgs()
 
 HRESULT DirectUI::VisualStateChangedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::VisualStateChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::VisualStateChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::VisualStateChangedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IVisualStateChangedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IVisualStateChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IVisualStateChangedEventArgs*>(this);
     }

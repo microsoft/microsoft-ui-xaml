@@ -27,11 +27,11 @@ DirectUI::CurrentChangingEventArgsGenerated::~CurrentChangingEventArgsGenerated(
 
 HRESULT DirectUI::CurrentChangingEventArgsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CurrentChangingEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CurrentChangingEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CurrentChangingEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::ICurrentChangingEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Data::ICurrentChangingEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::ICurrentChangingEventArgs*>(this);
     }

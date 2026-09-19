@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "SvgImageSourceOpenedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::SvgImageSourceOpenedEventArgs::~SvgImageSourceOpenedEventArgs()
 
 HRESULT DirectUI::SvgImageSourceOpenedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SvgImageSourceOpenedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SvgImageSourceOpenedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SvgImageSourceOpenedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::ISvgImageSourceOpenedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::ISvgImageSourceOpenedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Imaging::ISvgImageSourceOpenedEventArgs*>(this);
     }

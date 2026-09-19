@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "ErrorEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,7 +27,7 @@ DirectUI::ErrorEventArgs::~ErrorEventArgs()
 
 HRESULT DirectUI::ErrorEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ErrorEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ErrorEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ErrorEventArgs*>(this);
     }

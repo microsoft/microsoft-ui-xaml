@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "PasswordBoxPasswordChangingEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::PasswordBoxPasswordChangingEventArgs::~PasswordBoxPasswordChangingEven
 
 HRESULT DirectUI::PasswordBoxPasswordChangingEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PasswordBoxPasswordChangingEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::PasswordBoxPasswordChangingEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::PasswordBoxPasswordChangingEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxPasswordChangingEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxPasswordChangingEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxPasswordChangingEventArgs*>(this);
     }

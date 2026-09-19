@@ -27,11 +27,11 @@ DirectUI::DragDeltaEventArgsGenerated::~DragDeltaEventArgsGenerated()
 
 HRESULT DirectUI::DragDeltaEventArgsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DragDeltaEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DragDeltaEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DragDeltaEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragDeltaEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragDeltaEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragDeltaEventArgs*>(this);
     }

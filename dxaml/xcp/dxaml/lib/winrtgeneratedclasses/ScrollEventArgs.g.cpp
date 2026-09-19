@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "ScrollEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::ScrollEventArgsGenerated::~ScrollEventArgsGenerated()
 
 HRESULT DirectUI::ScrollEventArgsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ScrollEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ScrollEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ScrollEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollEventArgs*>(this);
     }

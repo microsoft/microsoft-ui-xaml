@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "TextControlPasteEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::TextControlPasteEventArgs::~TextControlPasteEventArgs()
 
 HRESULT DirectUI::TextControlPasteEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::TextControlPasteEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::TextControlPasteEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::TextControlPasteEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ITextControlPasteEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ITextControlPasteEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ITextControlPasteEventArgs*>(this);
     }

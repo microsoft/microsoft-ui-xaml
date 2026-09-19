@@ -27,11 +27,11 @@ DirectUI::ExceptionRoutedEventArgs::~ExceptionRoutedEventArgs()
 
 HRESULT DirectUI::ExceptionRoutedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ExceptionRoutedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ExceptionRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ExceptionRoutedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IExceptionRoutedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IExceptionRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IExceptionRoutedEventArgs*>(this);
     }

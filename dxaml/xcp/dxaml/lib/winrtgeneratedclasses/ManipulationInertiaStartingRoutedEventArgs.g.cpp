@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "ManipulationInertiaStartingRoutedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::ManipulationInertiaStartingRoutedEventArgs::~ManipulationInertiaStarti
 
 HRESULT DirectUI::ManipulationInertiaStartingRoutedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ManipulationInertiaStartingRoutedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ManipulationInertiaStartingRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ManipulationInertiaStartingRoutedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IManipulationInertiaStartingRoutedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IManipulationInertiaStartingRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IManipulationInertiaStartingRoutedEventArgs*>(this);
     }

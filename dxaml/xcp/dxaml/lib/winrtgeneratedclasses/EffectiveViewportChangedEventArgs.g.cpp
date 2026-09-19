@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "EffectiveViewportChangedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::EffectiveViewportChangedEventArgs::~EffectiveViewportChangedEventArgs(
 
 HRESULT DirectUI::EffectiveViewportChangedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::EffectiveViewportChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::EffectiveViewportChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::EffectiveViewportChangedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IEffectiveViewportChangedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IEffectiveViewportChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IEffectiveViewportChangedEventArgs*>(this);
     }

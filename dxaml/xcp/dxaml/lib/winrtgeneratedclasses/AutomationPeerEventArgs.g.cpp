@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "AutomationPeerEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,7 +27,7 @@ DirectUI::AutomationPeerEventArgs::~AutomationPeerEventArgs()
 
 HRESULT DirectUI::AutomationPeerEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::AutomationPeerEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::AutomationPeerEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::AutomationPeerEventArgs*>(this);
     }

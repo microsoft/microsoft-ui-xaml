@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "ManipulationDeltaRoutedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::ManipulationDeltaRoutedEventArgsGenerated::~ManipulationDeltaRoutedEve
 
 HRESULT DirectUI::ManipulationDeltaRoutedEventArgsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ManipulationDeltaRoutedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ManipulationDeltaRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ManipulationDeltaRoutedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IManipulationDeltaRoutedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IManipulationDeltaRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IManipulationDeltaRoutedEventArgs*>(this);
     }

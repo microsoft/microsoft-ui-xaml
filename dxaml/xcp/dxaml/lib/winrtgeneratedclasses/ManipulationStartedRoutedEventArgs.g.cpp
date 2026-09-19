@@ -27,11 +27,11 @@ DirectUI::ManipulationStartedRoutedEventArgs::~ManipulationStartedRoutedEventArg
 
 HRESULT DirectUI::ManipulationStartedRoutedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ManipulationStartedRoutedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ManipulationStartedRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ManipulationStartedRoutedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IManipulationStartedRoutedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IManipulationStartedRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IManipulationStartedRoutedEventArgs*>(this);
     }

@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "ContextMenuEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::ContextMenuEventArgsGenerated::~ContextMenuEventArgsGenerated()
 
 HRESULT DirectUI::ContextMenuEventArgsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ContextMenuEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ContextMenuEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ContextMenuEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IContextMenuEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IContextMenuEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IContextMenuEventArgs*>(this);
     }

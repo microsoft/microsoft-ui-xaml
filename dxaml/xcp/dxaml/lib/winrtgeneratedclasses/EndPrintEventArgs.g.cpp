@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "EndPrintEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,7 +27,7 @@ DirectUI::EndPrintEventArgs::~EndPrintEventArgs()
 
 HRESULT DirectUI::EndPrintEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::EndPrintEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::EndPrintEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::EndPrintEventArgs*>(this);
     }

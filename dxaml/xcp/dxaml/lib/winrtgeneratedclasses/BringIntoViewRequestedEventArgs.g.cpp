@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "BringIntoViewRequestedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::BringIntoViewRequestedEventArgs::~BringIntoViewRequestedEventArgs()
 
 HRESULT DirectUI::BringIntoViewRequestedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::BringIntoViewRequestedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::BringIntoViewRequestedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::BringIntoViewRequestedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs*>(this);
     }

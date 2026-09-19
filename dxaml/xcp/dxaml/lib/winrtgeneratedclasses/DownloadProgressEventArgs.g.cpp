@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "DownloadProgressEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::DownloadProgressEventArgs::~DownloadProgressEventArgs()
 
 HRESULT DirectUI::DownloadProgressEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::DownloadProgressEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::DownloadProgressEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::DownloadProgressEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::IDownloadProgressEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Media::Imaging::IDownloadProgressEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Media::Imaging::IDownloadProgressEventArgs*>(this);
     }

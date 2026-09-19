@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "ManipulationCompletedRoutedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::ManipulationCompletedRoutedEventArgs::~ManipulationCompletedRoutedEven
 
 HRESULT DirectUI::ManipulationCompletedRoutedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ManipulationCompletedRoutedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ManipulationCompletedRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ManipulationCompletedRoutedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IManipulationCompletedRoutedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IManipulationCompletedRoutedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IManipulationCompletedRoutedEventArgs*>(this);
     }

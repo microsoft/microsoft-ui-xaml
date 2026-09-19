@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "StartupEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,7 +27,7 @@ DirectUI::StartupEventArgs::~StartupEventArgs()
 
 HRESULT DirectUI::StartupEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::StartupEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::StartupEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::StartupEventArgs*>(this);
     }

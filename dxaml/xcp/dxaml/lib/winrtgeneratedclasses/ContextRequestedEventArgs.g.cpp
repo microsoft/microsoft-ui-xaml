@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "ContextRequestedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::ContextRequestedEventArgs::~ContextRequestedEventArgs()
 
 HRESULT DirectUI::ContextRequestedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ContextRequestedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ContextRequestedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ContextRequestedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::IContextRequestedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::IContextRequestedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::IContextRequestedEventArgs*>(this);
     }

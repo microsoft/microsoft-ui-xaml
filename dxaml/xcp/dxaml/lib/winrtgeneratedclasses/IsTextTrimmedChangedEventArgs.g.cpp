@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "IsTextTrimmedChangedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::IsTextTrimmedChangedEventArgs::~IsTextTrimmedChangedEventArgs()
 
 HRESULT DirectUI::IsTextTrimmedChangedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IsTextTrimmedChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::IsTextTrimmedChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::IsTextTrimmedChangedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IIsTextTrimmedChangedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IIsTextTrimmedChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IIsTextTrimmedChangedEventArgs*>(this);
     }

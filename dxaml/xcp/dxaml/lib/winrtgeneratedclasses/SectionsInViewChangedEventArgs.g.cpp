@@ -27,11 +27,11 @@ DirectUI::SectionsInViewChangedEventArgsGenerated::~SectionsInViewChangedEventAr
 
 HRESULT DirectUI::SectionsInViewChangedEventArgsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SectionsInViewChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SectionsInViewChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SectionsInViewChangedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISectionsInViewChangedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ISectionsInViewChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISectionsInViewChangedEventArgs*>(this);
     }

@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "ScrollViewerViewChangedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::ScrollViewerViewChangedEventArgs::~ScrollViewerViewChangedEventArgs()
 
 HRESULT DirectUI::ScrollViewerViewChangedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::ScrollViewerViewChangedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::ScrollViewerViewChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::ScrollViewerViewChangedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IScrollViewerViewChangedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IScrollViewerViewChangedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IScrollViewerViewChangedEventArgs*>(this);
     }

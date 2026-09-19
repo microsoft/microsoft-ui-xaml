@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "SplitViewPaneClosingEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::SplitViewPaneClosingEventArgs::~SplitViewPaneClosingEventArgs()
 
 HRESULT DirectUI::SplitViewPaneClosingEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SplitViewPaneClosingEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::SplitViewPaneClosingEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::SplitViewPaneClosingEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISplitViewPaneClosingEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::ISplitViewPaneClosingEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISplitViewPaneClosingEventArgs*>(this);
     }

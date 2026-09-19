@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "FocusDisengagedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,11 +27,11 @@ DirectUI::FocusDisengagedEventArgs::~FocusDisengagedEventArgs()
 
 HRESULT DirectUI::FocusDisengagedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::FocusDisengagedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::FocusDisengagedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::FocusDisengagedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IFocusDisengagedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Controls::IFocusDisengagedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IFocusDisengagedEventArgs*>(this);
     }

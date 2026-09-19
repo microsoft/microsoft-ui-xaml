@@ -12,6 +12,7 @@
 #include "precomp.h"
 #include "CanExecuteRequestedEventArgs.g.h"
 #include "CoreEventArgsGroup.h"
+#include <cstring>
 
 using namespace DirectUI;
 
@@ -26,16 +27,16 @@ DirectUI::CanExecuteRequestedEventArgs::~CanExecuteRequestedEventArgs()
 
 HRESULT DirectUI::CanExecuteRequestedEventArgs::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(DirectUI::CanExecuteRequestedEventArgs)))
+    if (std::memcmp(&iid, &__uuidof(DirectUI::CanExecuteRequestedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<DirectUI::CanExecuteRequestedEventArgs*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::ICanExecuteRequestedEventArgs)))
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::ICanExecuteRequestedEventArgs), sizeof(IID)) == 0)
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::ICanExecuteRequestedEventArgs*>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_CommandingImprovements)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Input::ICanExecuteRequestedEventArgsFeature_CommandingImprovements)) && Feature_CommandingImprovements::IsEnabled())
+    else if (std::memcmp(&iid, &__uuidof(ABI::Microsoft::UI::Xaml::Input::ICanExecuteRequestedEventArgsFeature_CommandingImprovements), sizeof(IID)) == 0 && Feature_CommandingImprovements::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Input::ICanExecuteRequestedEventArgsFeature_CommandingImprovements*>(this);
     }
