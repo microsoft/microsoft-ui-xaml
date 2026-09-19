@@ -424,10 +424,9 @@ namespace DirectUI
 
         IFACEMETHODIMP UntypedInsertAt(_In_ uint32_t index, _In_ IInspectable* pItem) override
         {
-            wrl::ComPtr<IInspectable> spItem(pItem);
             wrl::ComPtr<typename std::remove_pointer<T_abi>::type> spTypedItem;
 
-            IFC_RETURN(spItem.As(&spTypedItem));
+            IFC_RETURN(pItem->QueryInterface(IID_PPV_ARGS(spTypedItem.ReleaseAndGetAddressOf())));
             if (index == Size())
             {
                 // Seems like a bug in the bounds check for TrackerCollection::InsertAt. It checks
