@@ -31,10 +31,11 @@ namespace ctl
     template <typename tobject>
     _Check_return_ typename std::enable_if<IsDependencyObject<tobject>::value, HRESULT>::type make(ctl::Internal::ComPtrRef<ComPtr<tobject>> ppNewInstance)
     {
-        ctl::ComPtr<::DirectUI::DependencyObject> spInstance;
-        IFC_RETURN(::DirectUI::DXamlServices::ActivatePeer(tobject::GetTypeIndexStatic(), &spInstance));
+        // Activation publishes only on success; transferring the result cannot fail.
+        ::DirectUI::DependencyObject* instance = nullptr;
+        IFC_RETURN(::DirectUI::DXamlServices::ActivatePeer(tobject::GetTypeIndexStatic(), &instance));
         auto ptr = ppNewInstance.ReleaseAndGetAddressOf();
-        *ptr = static_cast<tobject*>(spInstance.Detach());
+        *ptr = static_cast<tobject*>(instance);
         return S_OK;
     }
 
