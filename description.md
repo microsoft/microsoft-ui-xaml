@@ -2966,3 +2966,76 @@ All five core collections verified the complete frozen SizeBench manifest
 and used managed identity
 `e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
 No SizeBench defect was observed.
+
+## Rejected: return factory failure HRESULT through cleanup (2026-09-19)
+
+Starting from `0b9541c6f`, tried changing the existing
+`ComObjectBase::ReleaseFailedInstance` helper from a void function to an
+HRESULT-returning function that takes and returns the original failure
+result. The typed `ComObject<T>::CreateInstance` cleanup returned that
+helper call directly instead of preserving `hr` across the void call.
+The experiment touched `ComObject.h`, `ComObjectBase.h`, and
+`ComObjectBase.cpp` under `dxaml\xcp\components\com`.
+
+The hypothesis was that this would reduce caller register saves or return
+sequences. It left successful factory paths, allocation, initialization,
+typed output casts, debug leak handling, failure reporting, and the
+guarded delegating release unchanged. It introduced no new helper,
+instance field, vtable entry, export, or build option.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `0b9541c6f`, fresh baseline | 14,247,424 | 14,246,400 | 14,256,704 |
+| Failure-result return, rejected | 14,268,928 | 14,267,904 | 14,278,252 |
+| Restored source after `prodtest` | 14,247,424 | 14,246,400 | 14,256,704 |
+
+The candidate grows the actual DLL by **21,504 bytes (21 KiB)**.
+All raw growth is in `.text`. Virtual `.text` grows by 21,424 bytes,
+`.rdata` by 16 bytes, and `.pdata` by 108 bytes.
+The same-type typed factory family grows from 45,178 attributed bytes
+across 181 representatives to 45,765 across 182. The different-type
+family grows from 15,257 across 60 to 15,603 across 61. These local
+attributions do not explain the full growth and are not added to file
+differences. No precise inlining or register-allocation cause is claimed.
+
+Rejected the candidate and restored all three source files byte-for-byte.
+The final build reproduces every baseline size metric and every baseline
+`.text` byte. This turn retains no source change. Cumulative actual savings
+remain **287,744 bytes (281 KiB)**. Do not repeat HRESULT-through-cleanup
+for this factory helper as a standalone size experiment.
+
+### This turn's validation and provenance
+
+Candidate and restored-source binlogs confirm affected compilation and
+LTCG linking. The final `prodtest` build succeeded. Builds used
+same-process initialization with `amd64fre /nopgo`, `PGOBuildMode=Off`,
+`Configuration=Release`, `Platform=x64`, and `VCToolsVersion=14.44.35207`.
+Export identities are unchanged; restored PE security characteristics
+match baseline.
+
+The full CalendarView suite ran on `ge_current-260820-Desktop` in WPF mode
+against a refreshed and deployed restored-source payload:
+**121 total, 120 passed, 1 failed, 0 blocked, 0 not run, 0 skipped**.
+The complete VM log confirms 121 unique results. Only `TestCICEvents`
+failed, with the allowed `IsTrue(didOutputMatchMaster)` assertion in
+`Utilities::VerifySuccess`, line 1627. `VerifySelfAdaptivePanel` passed
+in this run; its earlier failure cause remains unknown.
+
+The built DLL, preserved final copy, local payload root/Test copies, and
+VM root/Test copies share SHA256:
+`BD1411B0726DA72A8A6F805F76CA3B9B8C4D33D362E4390FA7779CD650CA123C`.
+
+Evidence is under `D:\x1\artifacts\ralph\20260919-202747-d8588807`.
+The three numbered directories preserve measurements, source patches,
+hashes, receipts, and tool identity. `factory-families.json` in the first
+two directories preserves complete offline family queries.
+`final-test-build.log`, saved binlogs, and `build-events.json` record build
+evidence. `tests.log`, `vm-testrun-output.log`, `WexLogFileOutput`,
+`tested-dll-hashes.json`, `test-result.json`, and `verification.json`
+record this turn's validation.
+All three core collections verified the complete frozen SizeBench manifest
+and used managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No SizeBench defect was observed. The rejected candidate was not deployed
+or performance-tested; no performance or other-architecture benefit is
+claimed.
