@@ -3731,3 +3731,78 @@ Potential follow-up work should inspect emitted code for larger repeated
 operations, such as enum-reference factory completion or IID-array copying,
 while avoiding the already-rejected constructor annotations and root IID
 copy rewrites.
+
+## Rejected: advance the IID-copy destination between base classes (2026-09-20)
+
+Starting from `c2f4360475d2b172672b7a711e7cc4d87288e6e5`, change only
+the base-class call in `END_INTERFACE_MAP`, in
+`dxaml\xcp\components\com\inc\ComMacros.h`:
+
+```cpp
+BASE::CopyIIDsToArray(0, pResult + first + current);
+```
+
+The baseline passes `first + current` and the original `pResult`.
+The hypothesis was that normalizing the offset to zero at each base-class
+call would reduce repeated offset calculations. The local copy loop and
+the previously accepted local indexing expression were unchanged.
+This differs from the rejected handwritten root-copy rewrites.
+
+The tracked source contains implementations only in the two interface-map
+macros and `ComBase`, with the initial call in `ComBase::GetIidsImpl`.
+For the valid allocated IID array, advancing its destination and resetting
+the offset addresses the same subsequent elements. Counts, derived-before-base
+ordering, allocation, output publication, ownership, virtual signatures,
+and interface metadata remain unchanged. The root implementation and
+no-base macro were not edited.
+
+| Measurement | Fresh baseline | Candidate | Candidate minus baseline |
+| --- | ---: | ---: | ---: |
+| Actual DLL file bytes | 14,243,840 | 14,254,080 | +10,240 |
+| Analyzed section bytes | 14,242,816 | 14,253,056 | +10,240 |
+| Virtual section bytes | 14,253,004 | 14,263,196 | +10,192 |
+
+All section-size growth was in `.text`: raw size grew from 9,960,448 to
+9,970,688 bytes; virtual size grew from 9,960,044 to 9,970,236 bytes.
+Every other section retained its raw and virtual sizes.
+
+The emitted IID-copy families responded differently. EnumReference grew
+from 16,836 to 18,117 attributed bytes across the same 183 representatives.
+CEventSourceBase grew from 7,276 to 7,383 across 107 representatives.
+IteratorBase shrank from 5,712 to 5,280 across 48 representatives, and
+TrackerIterator shrank from 4,403 to 4,070 across 37. These family totals
+are supporting observations, not additive whole-DLL attribution. The
+candidate's IteratorBase family fell outside the top-20 report; a complete
+offline `CopyIIDsToArray` query confirmed it was still present.
+
+Reject the experiment because the actual DLL grew by **10 KiB**.
+Restore `ComMacros.h` exactly to its backed-up SHA256 and commit only this
+description update. Incremental accepted savings are **0 bytes**.
+Cumulative accepted savings remain **291,328 bytes (284.5 KiB)** against
+the original 14,535,168-byte baseline.
+
+Tests not run: experiment rejected. No prodtest build, VM setup, or
+post-restore test run was required. No runtime-performance benefit or
+regression is inferred from the code-size measurements.
+
+Evidence is under
+`D:\x1\artifacts\ralph\20260920-014426-01febf14`.
+`000-baseline` and `001-advanced-iid-destination` contain preserved DLL/PDB
+snapshots, hashes, source revision/patch, build commands/logs/binlogs, core
+SizeBench reports, receipts, and complete queried IID-copy families.
+`build-events.json` confirms actual `Boxes.g.cpp` compilation, LTCG code
+generation, and successful completion for both builds. Both used x64
+Release (`amd64fre`), explicit `/nopgo`, `PGOBuildMode=Off`, and toolset
+14.44.35207. `section-comparison.json` records section sizes and hashes.
+`ownership.json`, `originals`, `candidate.patch`,
+`iid-copy-references.txt`, and `restored-source-hashes.json` preserve the
+source investigation and exact restoration.
+Both measurements verified the complete frozen manifest and managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No SizeBench defect was observed.
+
+BuildOutput contains the rejected candidate's DLL/PDB; rebuild restored
+source before the next baseline. Do not repeat this global base-call
+normalization. A future bounded investigation could examine why the
+iterator families shrink while enum-reference families grow, using actual
+emitted blocks rather than assuming one global macro form is smaller.
