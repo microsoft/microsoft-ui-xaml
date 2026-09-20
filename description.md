@@ -4022,3 +4022,64 @@ guard. It was corrected to select only the requested wrapper RVAs and reuse
 the existing collection. A repeated helper query was correctly rejected for
 an existing output path; its original successful JSON was retained.
 Only verified primary-code-block boundaries were used for the routing review.
+
+## Rejected: share COM trust-level routing (2026-09-20)
+
+Starting from `c237dff1af48a685308ac6f5b51c92f90fec6167`, test moving
+`ComObject<T>::GetTrustLevel` into a non-template, nonvirtual, noinline
+`ComObjectBase::GetTrustLevelBase` helper. Unlike the accepted runtime-name
+and IID helpers, this candidate retained the direct `BaseTrust` store and
+`S_OK` return for unaggregated objects. It did not introduce a local
+non-delegating virtual dispatch. Aggregated objects still forwarded the
+original output pointer to the controlling outer and returned its HRESULT.
+The non-delegating trust-level method was unchanged.
+
+The fresh baseline SizeBench report showed only 128 attributed bytes across
+four representatives in the delegating family. The candidate reduced that
+family to 36 bytes across four representatives and emitted one 32-byte helper.
+Its verified primary block performs the outer CFG dispatch or the direct
+`BaseTrust` store without a helper stack frame. No new allocation, reference
+count, output check, trust policy, interface slot, or metadata change was
+intended. The direct transfer to the helper remained a runtime tradeoff;
+no timing benchmark was performed.
+
+| Metric | Fresh baseline | Rejected candidate | Candidate minus baseline |
+|---|---:|---:|---:|
+| Actual DLL file bytes | 13,438,464 | 13,438,464 | 0 |
+| Analyzed section bytes | 13,437,440 | 13,437,440 | 0 |
+| Virtual section bytes | 13,447,496 | 13,447,588 | +92 |
+
+Raw `.text` shrank by 512 bytes, but raw `.rdata` grew by 512 bytes and
+cancelled that reduction. Virtual `.text` shrank by 288 bytes, `.rdata`
+grew by 384, `.pdata` shrank by 12, and `.reloc` grew by 8.
+The smaller routing family is not a file-size improvement, and its
+overlapping attributed bytes must not be added to section deltas.
+This experiment is rejected because the actual DLL is not strictly smaller.
+Cumulative accepted savings remain **1,096,704 bytes (1,071 KiB)**.
+
+Both builds used explicit `amd64fre /nopgo`, `PGOBuildMode=Off`,
+Release/x64, and toolset 14.44.35207. Candidate binlog evidence confirms
+`Boxes.g.cpp` and `DynamicMetadata.g.cpp` recompiled, LTCG completed, and
+the build succeeded. Both full SizeBench analyses and offline queries
+succeeded after verifying the complete frozen CLI manifest and managed
+identity `e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No CLI issue was observed. The scoped helper collection was checked before
+disassembling its inclusive primary-block RVA range.
+
+All three speculative product-source files were restored byte-for-byte
+against their pre-edit backups. Only this description update is committed.
+**Tests not run: experiment rejected.** No prodtest build, VM setup, or test
+rerun was required. No additional repeatability build was needed to reject
+an unchanged actual file. Mutable BuildOutput still contains the rejected
+candidate until the next build; it is not the restored source's baseline.
+
+Evidence is under `D:\x1\artifacts\ralph\20260920-035646-7772e2ca`.
+`000-baseline` and `001-shared-trust-routing` preserve immutable snapshots,
+hashes, source revision/patch, build logs/binlogs, core reports, receipts,
+and trust-family queries. The candidate directory also contains the scoped
+`routing-symbols.json` and `helper-disassembly.txt`.
+`ownership.json`, `originals`, `candidate-source`, `candidate.patch`,
+`build-events.json`, `verification.json`, and `progress.json` preserve the
+ownership, restoration, decision, and measurements. Do not repeat this
+direct-store trust-routing variant on the same baseline merely because
+the earlier runtime-name and IID helpers saved bytes.
