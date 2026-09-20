@@ -84,6 +84,10 @@ namespace
         icon.HorizontalAlignment(winrt::HorizontalAlignment::Center);
         icon.VerticalAlignment(winrt::VerticalAlignment::Center);
         icon.Margin(winrt::ThicknessHelper::FromLengths(12, 0, 12, 0));
+        // Without this, high contrast paints a black plate behind the glyph instead of letting the
+        // item's selection background show through. The XAML-authored items get it from
+        // InkToolbarFlyoutItemContentTextStyle / InkToolbarGlyphFontStyle.
+        icon.HighContrastAdjustment(winrt::ElementHighContrastAdjustment::None);
         winrt::Grid::SetColumn(icon, 0);
         grid.Children().Append(icon);
 
@@ -101,6 +105,7 @@ namespace
         }
         text.VerticalAlignment(winrt::VerticalAlignment::Center);
         text.Margin(winrt::ThicknessHelper::FromLengths(0, 0, 12, 0));
+        text.HighContrastAdjustment(winrt::ElementHighContrastAdjustment::None);
         winrt::Grid::SetColumn(text, 1);
         grid.Children().Append(text);
 
