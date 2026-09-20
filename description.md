@@ -3380,3 +3380,70 @@ than treating those outputs as accepted binaries. A separate unexplored
 lead in this baseline is `GetCollectionItemInternal` (7,601 attributed bytes
 across 19 representatives); its ownership and failure paths need source
 review before proposing any change.
+
+## Rejected: query diagnostic collection items into an empty owner (2026-09-19)
+
+Starting from `4fe83be92b010f66d6c0888290c93f422fb9c46b`, try selecting
+the existing raw-output `ctl::do_query_interface` overload in
+`GetCollectionItemInternal<Item, IItem>` in
+`dxaml\xcp\dxaml\lib\InternalDebugInterop.cpp`:
+
+```cpp
+IFC_RETURN(ctl::do_query_interface(*spCollection.ReleaseAndGetAddressOf(), pValue));
+```
+
+The collection owner is newly constructed and empty. This writes the acquired
+reference directly into it instead of querying into a temporary owner and
+swapping. The adjacent `GetCollectionSizeInternal` already uses this pattern
+from an earlier accepted experiment. That earlier result does not establish
+a benefit for the item accessor.
+
+The requested IID, null-input handling, output initialization, query/GetAt/As
+order, and final output ownership transfer remain unchanged. All local owners
+still clean up on every return, including a populated query result on failure.
+The existing `IFC_RETURN` sites and final `S_OK` remain unchanged. No public
+interface, metadata, security setting, or build flag changes.
+
+| Measurement | Fresh baseline | Candidate | Candidate minus baseline |
+| --- | ---: | ---: | ---: |
+| Actual DLL file bytes | 14,245,888 | 14,245,888 | 0 |
+| Analyzed section bytes | 14,244,864 | 14,244,864 | 0 |
+| Virtual section bytes | 14,255,104 | 14,255,104 | 0 |
+
+Every individual section's raw and virtual sizes are unchanged. The complete
+item-accessor template-family query falls from 7,601 to 7,564 attributed
+bytes across the same 19 representatives. The `.text` hashes differ, so this
+is not an identical-code result, but there is no file-size improvement.
+The attributed 37-byte change is not added to whole-file savings.
+
+Reject the experiment and restore the source exactly to the backed-up SHA256.
+Only this description update is committed. Incremental actual savings are
+**0 bytes**; cumulative accepted savings remain **289,280 bytes (282.5 KiB)**
+against the original 14,535,168-byte baseline.
+
+Tests not run: experiment rejected. No prodtest build, VM setup, or
+post-restore test run was required. Historical test results above do not
+validate this candidate. No runtime-performance or other-architecture
+benefit is claimed.
+
+Evidence is under
+`D:\x1\artifacts\ralph\20260919-233803-db885a74`.
+`000-baseline` and `001-direct-item-query` preserve DLL/PDB snapshots,
+hashes, source revision/patch, commands, build logs/binlogs, core SizeBench
+reports, complete item-family queries, receipts, and frozen-tool identity.
+Both builds used x64 Release (`amd64fre`), explicit `/nopgo`,
+`PGOBuildMode=Off`, and toolset 14.44.35207. `build-events.json` records
+`InternalDebugInterop.cpp` compilation, LTCG linking, and successful completion
+for both builds. `verification.json` records family totals and per-section
+sizes/hashes. `ownership.json`, `originals`, and `restored-source-hashes.json`
+record ownership and restoration. Both measurements verified the full frozen
+manifest and managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No SizeBench defect was observed.
+
+BuildOutput still contains the rejected candidate DLL/PDB. Rebuild the
+restored source before the next baseline. Do not retry this isolated overload
+selection as a demonstrated saving. A distinct future lead is reducing
+repeated post-GetAt interface conversion and cleanup in these diagnostic
+accessors; preserve null output on failure and release order, and measure
+any proposed sharing rather than assuming noinline prevents specialization.
