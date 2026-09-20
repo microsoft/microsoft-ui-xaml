@@ -3544,3 +3544,66 @@ attribution and emitted-code evidence. `refined\tests.log`,
 validation. `ownership.json`, `originals`, `restored-source-hash.json`,
 `semantic-review.json`, and `progress.json` record ownership and review.
 No SizeBench defect was observed.
+
+## Rejected: keep ComObject construction out of line (2026-09-20)
+
+Starting from `bd972c95bed990fff1ec85781699f858e65d0353`, add
+`__declspec(noinline)` to the private `ctl::ComObject<TBASE>` constructor
+in `dxaml\xcp\components\com\inc\ComObject.h`. The fresh SizeBench baseline
+attributed 118,952 bytes to 500 `CreateComObjectInstanceNoInit` representatives.
+The hypothesis was that typed and untyped factory entry points could share
+construction code rather than repeat inlined base construction.
+
+This was one constructor annotation, not a change to allocation, initialization,
+ownership, aggregation, object layout, or error handling. No generator,
+metadata, public interface, or build setting was changed. The experiment
+measured the linked result rather than assuming noinline prevents LTCG
+specialization.
+
+| Measurement | Fresh baseline | Candidate | Candidate minus baseline |
+| --- | ---: | ---: | ---: |
+| Actual DLL file bytes | 14,243,840 | 14,279,168 | +35,328 |
+| Analyzed section bytes | 14,242,816 | 14,278,144 | +35,328 |
+| Virtual section bytes | 14,253,004 | 14,288,500 | +35,496 |
+
+Raw `.text` grew 28,672 bytes and `.pdata` grew 6,656 bytes.
+Virtual `.text` grew 28,608 bytes, `.pdata` grew 6,984 bytes, and `.rdata`
+shrunk 96 bytes. All other section sizes were unchanged.
+
+The complete family queries show allocation-wrapper attribution falling
+from 118,952 to 42,000 bytes across the same 500 representatives.
+However, the constructor family expanded from 10,652 bytes across
+31 unique representatives to 210,625 bytes across 1,750 representatives.
+These family totals can overlap and do not constitute an additive accounting
+of the file delta. Smaller wrappers did not yield a smaller DLL; additional
+out-of-line construction and unwind data outweighed any sharing benefit.
+
+Reject the experiment and restore the header exactly to its backed-up SHA256.
+Only this description update is committed. Incremental accepted savings
+are **0 bytes**. Cumulative accepted savings remain **291,328 bytes
+(284.5 KiB)** against the original 14,535,168-byte baseline.
+
+Tests not run: experiment rejected. No prodtest build, VM setup, or
+post-restore test run was required. Historical test results do not validate
+this candidate. No runtime-performance or other-architecture benefit is claimed.
+
+Evidence is under
+`D:\x1\artifacts\ralph\20260920-005858-77f03e1a`.
+`000-baseline` and `001-out-of-line-constructor` preserve snapshots, hashes,
+source revision/patch, build commands/logs/binlogs, core SizeBench reports,
+complete allocation/constructor family queries, receipts, and tool identity.
+Both builds used x64 Release (`amd64fre`), explicit `/nopgo`,
+`PGOBuildMode=Off`, and toolset 14.44.35207. The fresh baseline build was
+up to date with the preceding accepted source. `build-events.json` confirms
+affected `Boxes.g.cpp` compilation and LTCG linking for the candidate.
+`ownership.json`, `originals`, and `restored-source-hashes.json` record exact
+source ownership and restoration. Both measurements verified the complete
+frozen manifest and managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No SizeBench defect was observed.
+
+BuildOutput still contains the rejected candidate DLL/PDB. The next turn
+must rebuild the restored source before measuring its baseline.
+Avoid this broad constructor noinline annotation. More narrowly shared
+non-template work may still be useful, but requires identifying a repeated
+operation with preserved ownership and measuring its emitted implementation.
