@@ -2853,3 +2853,116 @@ used managed identity
 `e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
 No SizeBench defect was observed. The candidate was not runtime-tested;
 no performance benefit or coverage of other architectures is claimed.
+
+## Follow-up: share converted event-reference cleanup (2026-09-19)
+
+Files: `dxaml\xcp\dxaml\lib\JoltClasses.h` and
+`dxaml\xcp\dxaml\lib\JoltClasses.cpp`.
+
+Move the two final releases in `CEventSourceBase::UntypedRaise` and
+`CRoutedEventSourceBase::UntypedRaise` into
+`ReleaseConvertedEventReferences(IUnknown*, IUnknown*, HRESULT)`.
+The helper releases the converted source before the converted arguments
+and returns the original HRESULT. Both templates retain their interface
+queries, `Raise` call, failure reporting, and cleanup convergence.
+
+Null pointers remain permitted. Each queried reference is consumed exactly
+once, including when the second query fails or both references identify the
+same object. The change adds no reference acquisition, allocation, thread
+transition, interface, vtable slot, instance field, or exported API.
+Generated code, metadata, and compiler/linker settings are unchanged.
+
+### Measurements
+
+All values are bytes, using x64 Release with PGO off.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `09aded999`, fresh baseline | 14,254,080 | 14,253,056 | 14,263,336 |
+| Shared event cleanup | 14,247,424 | 14,246,400 | 14,256,704 |
+| Restored source, recompiled control | 14,254,080 | 14,253,056 | 14,263,336 |
+| Reapplied candidate, recompiled | 14,247,424 | 14,246,400 | 14,256,704 |
+| Final candidate after `prodtest` | 14,247,424 | 14,246,400 | 14,256,704 |
+
+The actual DLL is **6,656 bytes (6.5 KiB) smaller**. Cumulative actual
+savings are **287,744 bytes (281 KiB)** from the original 14,535,168-byte
+DLL. All raw savings are in `.text`. Virtual `.text` decreases by 6,608
+bytes and `.data` by 48 bytes; `.pdata` and `.reloc` each grow by 12 bytes.
+Other section sizes are unchanged.
+
+The largest `CEventSourceBase::UntypedRaise` family decreases from 18,340
+to 15,610 attributed bytes with 70 representatives. The selected routed
+family decreases from 6,550 to 5,575 with 25 representatives. Complete
+family queries preserve the other signature groups. These overlapping
+attributions and heuristic estimates are not added to file-size savings.
+
+Resolved primary blocks show the CalendarView day-item-changing
+`UntypedRaise` shrinking from 262 to 223 bytes. The candidate calls one
+68-byte shared cleanup block containing the same two null-guarded,
+CFG-dispatched releases, in the same order. Complete collected `.text`
+symbol coverage finds one helper symbol, not a set of specialized clones.
+This sharing result is based on emitted code, not on an assumption that
+`noinline` prevents LTCG specialization.
+
+Restoring the source reproduces every baseline size metric and every
+baseline `.text` byte. Reapplying the exact candidate reproduces every
+candidate metric and `.text` byte. The final product/test build retains
+those candidate metrics and bytes. Binlogs confirm affected compilation
+and LTCG linking for both transitions and the repeated candidate.
+
+### Runtime tradeoff and review
+
+The inspected caller makes an additional ordinary helper call, **not a
+tail jump**. The helper saves two registers and retains the same release
+dispatch; it adds no allocation or reference-count operation. This is a
+size optimization with a small call overhead, not a speed improvement.
+
+A standalone source-level probe using the installed compiler measured
+24 alternating samples of two mock interface queries plus cleanup. Median
+times were 25.46 ns before and 26.38 ns after, about 0.92 ns or 3.6% more
+for that synthetic operation. The probe also checked all null combinations,
+two references to the same object, source-before-arguments release order,
+and preservation of `S_OK`, `S_FALSE`, `E_NOINTERFACE`, and `E_FAIL`.
+Those checks passed. The probe used optimized x64 code with CFG, stack
+protection, and Spectre mitigation, without LTCG. It does not execute the
+linked DLL or establish application event-path performance.
+
+The bounded additional call is accepted for the reproducible 6.5 KiB
+reduction, with that measured tradeoff recorded. No claim is made about
+application throughput, debug performance, or other architectures.
+Source review found no ownership, HRESULT, ABI, or reentrancy contract
+change. Release-side call stacks now include the helper.
+
+### This turn's validation and provenance
+
+All builds used same-process initialization with `amd64fre /nopgo`,
+`PGOBuildMode=Off`, `Configuration=Release`, `Platform=x64`, and
+`VCToolsVersion=14.44.35207`. The final `prodtest` build succeeded.
+All eight export ordinal/name identities and PE security characteristics
+match baseline.
+
+The full CalendarView suite ran on `ge_current-260820-Desktop` in WPF mode
+against a refreshed and deployed candidate payload:
+**121 total, 119 passed, 2 failed, 0 blocked, 0 not run, 0 skipped**.
+The complete VM log confirms 121 unique results. Only `TestCICEvents` and
+`VerifySelfAdaptivePanel` failed, both with the allowed
+`IsTrue(didOutputMatchMaster)` assertion in `Utilities::VerifySuccess`,
+line 1627. No new failing test or assertion was observed.
+
+The built DLL, preserved final copy, local payload root/Test copies, and
+VM root/Test copies share SHA256:
+`2F10A900BCB64646922A276091354F13E02DB7DDB236F37C006E4A9492B224DA`.
+
+Evidence is under `D:\x1\artifacts\ralph\20260919-193137-f0921ec6`.
+The five numbered directories preserve frozen binary measurements,
+hashes, patches, receipts, and tool identity. The first two also contain
+full `.text` symbol coverage, resolved primary blocks, disassembly, and
+complete event-family queries. `EventCleanupProbe.cpp`, `probe.csv`,
+`probe-result.json`, and the probe build log record the isolated checks.
+`final-test-build.log`, saved binlogs, `build-events.json`, `tests.log`,
+`vm-testrun-output.log`, `WexLogFileOutput`, `tested-dll-hashes.json`,
+`test-result.json`, and `verification.json` record this turn's evidence.
+All five core collections verified the complete frozen SizeBench manifest
+and used managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No SizeBench defect was observed.

@@ -12,6 +12,14 @@
 using namespace DirectUI;
 using namespace DirectUISynonyms;
 
+HRESULT DirectUI::ReleaseConvertedEventReferences(
+    _In_opt_ IUnknown* source, _In_opt_ IUnknown* args, HRESULT result)
+{
+    ReleaseInterface(source);
+    ReleaseInterface(args);
+    return result;
+}
+
 // This helper method decouples this header (widely included) from DXamlCore.h (much less commonly needed)
 _Check_return_ HRESULT DirectUI::RegisterUntypedEventSourceInCore(_In_ IUntypedEventSource* pEventSource, _In_ bool bUseEventManager)
 {

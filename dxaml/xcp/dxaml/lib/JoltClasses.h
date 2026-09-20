@@ -171,6 +171,10 @@ namespace DirectUI
 
     interface IScrollInfo;
 
+    // Consumes the queried references in source-before-arguments order.
+    __declspec(noinline) HRESULT ReleaseConvertedEventReferences(
+        _In_opt_ IUnknown* source, _In_opt_ IUnknown* args, HRESULT result);
+
     template<class TEVENT, class THANDLER, class TSOURCE, class TARGS>
     class __declspec(novtable) CEventSourceBase :
         public TEVENT,
@@ -244,9 +248,7 @@ namespace DirectUI
 
         Cleanup:
 
-            ReleaseInterface(pSourceConverted);
-            ReleaseInterface(pArgsConverted);
-            RRETURN(hr);
+            return ReleaseConvertedEventReferences(pSourceConverted, pArgsConverted, hr);
         }
 
 
@@ -894,9 +896,7 @@ namespace DirectUI
 
         Cleanup:
 
-            ReleaseInterface(pSourceConverted);
-            ReleaseInterface(pArgsConverted);
-            RRETURN(hr);
+            return ReleaseConvertedEventReferences(pSourceConverted, pArgsConverted, hr);
         }
 
 
