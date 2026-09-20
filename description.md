@@ -2579,3 +2579,70 @@ preflight or final product/test build. No flags or dependencies were changed
 to address it. Source review found no behavioral or ABI change. This suite
 does not exhaustively cover interface maps; other architectures, allocation
 failure injection, and runtime performance were not measured.
+
+## Rejected: separate the root ComBase IID-copy offset (2026-09-19)
+
+Starting from `d5b5e2f14`, tried changing the handwritten
+`ComBase::CopyIIDsToArray` assignment in
+`dxaml\xcp\components\com\inc\ComBase.h` from
+`pResult[first + current]` to `(pResult + first)[current]`.
+The accepted interface-map macro change remained in place.
+
+The root loop copies `IUnknown` and `IInspectable` after the derived maps.
+The proposed expression addresses the same elements for the existing valid
+indices, with unchanged counts, ordering, allocation, ownership, and ABI.
+However, applying it to this root loop reverses the size benefit observed
+when changing only the derived macro. Do not assume the two locations have
+additive benefits.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `d5b5e2f14`, fresh baseline | 14,254,080 | 14,253,056 | 14,263,336 |
+| Root-loop candidate, rejected | 14,257,152 | 14,256,128 | 14,266,632 |
+| Restored source after `prodtest` | 14,254,080 | 14,253,056 | 14,263,336 |
+
+The candidate grows the actual DLL by **3,072 bytes**, all in raw `.text`.
+Virtual `.text` grows by 3,296 bytes; other section sizes are unchanged.
+The `EnumReference<T>::CopyIIDsToArray` family grows from 16,836 to 18,117
+attributed bytes with 183 representatives in both builds. Family totals
+are supporting attribution, not additional savings or disassembly ranges.
+The source header was restored byte-for-byte. Rebuilding restored all three
+baseline measurements and every baseline `.text` byte. This turn retains
+**no source optimization**; cumulative file savings remain **281,088 bytes**.
+
+### This turn's validation and provenance
+
+Both candidate and restored-source builds compiled affected consumers and
+performed LTCG linking. The final product/test build succeeded. All builds
+used same-process initialization with `amd64fre /nopgo`, `PGOBuildMode=Off`,
+`Configuration=Release`, `Platform=x64`, and `VCToolsVersion=14.44.35207`.
+Export ordinal/name identities are unchanged. Final PE security
+characteristics match the baseline.
+
+The full CalendarView suite ran again on `ge_current-260820-Desktop` in
+WPF mode using a freshly generated and deployed restored-source payload:
+**121 total, 120 passed, 1 failed, 0 blocked, 0 not run, 0 skipped**.
+Only `TestCICEvents` failed, at the allowed
+`IsTrue(didOutputMatchMaster)` assertion. `VerifySelfAdaptivePanel` passed.
+The complete VM log contains all 121 distinct results. The live host tail
+omitted the `VerifySkippedDaysInSamoa` completion line; the complete VM log
+confirms that test passed. This is this turn's run, not earlier coverage.
+
+SHA256 of the final built DLL, frozen snapshot, local payload root/Test
+copies, and VM root/Test copies:
+`F05524AA05F4FC5C52D4087331C36E31044EB6AAC40643B9C225244376697408`.
+
+Evidence is under `D:\x1\artifacts\ralph\20260919-163821-29f34dbc`.
+`000-baseline`, `001-root-iid-indexing`, and `002-restored-final` contain
+preserved measurements, hashes, source patches, receipts, and tool identity.
+`final-test-build.log`, `final-test-build.binlog`, `restored-native.binlog`,
+and `build-events.json` preserve build evidence. `tests.log`,
+`vm-testrun-output.log`, `WexLogFileOutput`, `test-result.json`,
+`tested-dll-hashes.json`, and `verification.json` preserve validation.
+The complete VM output combines a UTF-8 setup prefix with UTF-16LE test
+output; the verification script reads its ASCII TAEF fields accordingly.
+The frozen SizeBench managed identity remains
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`;
+its full manifest was verified for every core collection. No tool defect
+was observed. No candidate runtime performance benefit is claimed, and the
+rejected candidate was not deployed to the VM.
