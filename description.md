@@ -2646,3 +2646,67 @@ The frozen SizeBench managed identity remains
 its full manifest was verified for every core collection. No tool defect
 was observed. No candidate runtime performance benefit is claimed, and the
 rejected candidate was not deployed to the VM.
+
+## Rejected: compact iterator interface-ID comparison (2026-09-19)
+
+Starting from `0c03c6b58`, tried replacing the single `InlineIsEqualGUID`
+predicate in `IteratorBase<T>::QueryInterfaceImpl` with
+`std::memcmp(&iid, &__uuidof(wfc::IIterator<T>), sizeof(IID)) == 0`.
+The source is `dxaml\xcp\dxaml\lib\JoltCollections.h`; its existing
+`<cstring>` include and adjacent fixed-size comparison pattern were reused.
+Both expressions compare all 16 GUID bytes. The interface cast, output,
+`AddRefOuter`, inherited `WeakReferenceSource` fallback, HRESULTs, and
+threading behavior were unchanged. Iterator creation and ownership were
+not changed.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `0c03c6b58`, fresh baseline | 14,254,080 | 14,253,056 | 14,263,336 |
+| Iterator GUID candidate, rejected | 14,254,080 | 14,253,056 | 14,263,908 |
+| Restored source after `prodtest` | 14,254,080 | 14,253,056 | 14,263,336 |
+
+The actual DLL file does not shrink. Raw `.text` falls by 512 bytes, but
+raw `.rdata` grows by 512 bytes. Virtual section bytes grow by 572:
+`.text` falls by 224, `.rdata` grows by 512, `.pdata` by 168, and `.reloc`
+by 116. The iterator `QueryInterfaceImpl` family falls from 3,969 to 3,185
+attributed bytes with 49 representatives in both builds. This local
+improvement is not a whole-file saving; it does not include all effects
+of compiler and linker decisions.
+
+Rejected the candidate and restored the header byte-for-byte. The restored
+product/test build reproduces all baseline size metrics and every baseline
+`.text` byte. No source optimization is retained. Cumulative file savings
+remain **281,088 bytes**. Do not repeat this GUID-only candidate as a
+standalone size reduction.
+
+### This turn's validation and provenance
+
+Candidate and restoration binlogs confirm affected source compilation and
+LTCG linking. Builds used same-process `amd64fre /nopgo` initialization,
+`PGOBuildMode=Off`, `Configuration=Release`, `Platform=x64`, and
+`VCToolsVersion=14.44.35207`. The final `prodtest` build succeeded.
+Exports are unchanged; restored PE security characteristics match baseline.
+
+The complete CalendarView suite ran on `ge_current-260820-Desktop` in WPF
+mode using a fresh restored-source payload: **121 total, 120 passed,
+1 failed, 0 blocked, 0 not run, 0 skipped**. The only failure was
+`TestCICEvents` at the allowed `IsTrue(didOutputMatchMaster)` assertion.
+`VerifySelfAdaptivePanel` passed. All 121 distinct results were confirmed
+in this turn's complete VM log; no earlier result was reused.
+
+The built DLL, frozen final snapshot, local payload root/Test copies, and
+VM root/Test copies share SHA256:
+`BC39878133434BD02F7C7D949E7AD53227C8EDCEC9A6DD2D4FC2AA11E3D44983`.
+
+Evidence is under `D:\x1\artifacts\ralph\20260919-172635-9ab8bdcb`.
+The numbered baseline, candidate, and restored directories contain frozen
+measurements, hashes, source patches, receipts, and tool identities.
+`final-test-build.log`, `final-test-build.binlog`, `restored-native.binlog`,
+and `build-events.json` preserve build evidence. `tests.log`,
+`vm-testrun-output.log`, `WexLogFileOutput`, `tested-dll-hashes.json`,
+`test-result.json`, and `verification.json` preserve validation.
+SizeBench used frozen managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`;
+the complete deployment manifest was verified before every core collection.
+No SizeBench defect was observed. The rejected candidate was not deployed,
+and no performance improvement or other-architecture coverage is claimed.
