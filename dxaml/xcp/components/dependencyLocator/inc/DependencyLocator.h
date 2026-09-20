@@ -326,14 +326,7 @@ namespace DependencyLocator
                 }
             }
 
-            template<class T>
-            void RegisterActivator(_In_ ActivatorFunction activator, _In_ StoragePolicyFlags flags)
-            {
-                auto activatorMap = GetActivatorMap();
-                auto insertResult = activatorMap.Get().insert(std::make_pair(__uuidof(T), std::make_pair(std::move(activator), flags)));
-                ASSERT(insertResult.second);
-                MarkInitialized();
-            }
+            void RegisterActivator(_In_ const GUID& guid, _In_ ActivatorFunction activator, _In_ StoragePolicyFlags flags);
 
             void SetDestroyedCallback(INotifyLocalDependencyStorageDestroyed* callback) override
             {
@@ -399,7 +392,7 @@ namespace DependencyLocator
         void RegisterActivator(_In_ ActivatorFunction activator, _In_ StoragePolicyFlags flags)
         {
             LocalDependencyStorage& storage = LocalDependencyStorage::Instance();
-            storage.RegisterActivator<T>(activator, flags);
+            storage.RegisterActivator(__uuidof(T), activator, flags);
         }
 
         template<class T>
@@ -510,4 +503,3 @@ namespace DependencyLocator
 #define PROVIDE_RAW_ALLOC_DEPENDENCY(typeName, ...) PROVIDE_RAW_ALLOC_DEPENDENCY_WITHNAME(__COUNTER__##typeName, typeName, __VA_ARGS__)
 
 #pragma pop_macro("max")
-

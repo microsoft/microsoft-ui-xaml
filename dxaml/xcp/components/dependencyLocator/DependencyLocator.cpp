@@ -25,6 +25,14 @@ namespace DependencyLocator {
             return ProtectedResource<DependencyActivatorMap>(m_activatorMutex, m_activatorMap);
         }
 
+        void LocalDependencyStorage::RegisterActivator(const GUID& guid, ActivatorFunction activator, StoragePolicyFlags flags)
+        {
+            auto activatorMap = GetActivatorMap();
+            auto insertResult = activatorMap.Get().insert(std::make_pair(guid, std::make_pair(std::move(activator), flags)));
+            ASSERT(insertResult.second);
+            MarkInitialized();
+        }
+
         bool LocalDependencyStorage::IsInitialized() const
         {
             return m_initialized;

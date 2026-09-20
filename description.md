@@ -4458,3 +4458,108 @@ complete frozen CLI manifest and managed identity
 `e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
 No SizeBench issue was observed. Do not repeat this raw-pointer
 make_ignoreleak handoff as a standalone optimization on this baseline.
+
+## Follow-up: share dependency-provider registration (2026-09-20)
+
+Starting from `9aff4232bb3aa91d9fe2cb6256494116c1943ddb`, rebuilt restored
+source and collected the frozen SizeBench core reports before editing.
+The dependency-provider constructor family occupied 5,532 attributed
+bytes across eight representatives.
+
+Moved `LocalDependencyStorage::RegisterActivator` from its templated
+definition in `DependencyLocator.h` into the existing
+`DependencyLocator.cpp`. The free template wrapper still chooses
+`__uuidof(T)` and passes that GUID to the shared method. The map insertion,
+by-value callable parameter, move into the map pair, recursive lock scope,
+duplicate-registration assertion, and initialization marker are unchanged.
+This does not change callable-copy semantics to obtain a size saving.
+Storage layout, virtual interfaces, external exports, and the dependency
+resolution path are unchanged.
+
+### Measurements and attribution
+
+| Metric | Fresh baseline | First candidate | Restored control | Final candidate |
+|---|---:|---:|---:|---:|
+| Actual DLL file bytes | 13,437,952 | 13,434,880 | 13,437,952 | 13,434,880 |
+| Analyzed section bytes | 13,436,928 | 13,433,856 | 13,436,928 | 13,433,856 |
+| Virtual section bytes | 13,446,896 | 13,444,716 | 13,446,896 | 13,444,716 |
+
+Accepted incremental file saving: **3,072 bytes (3 KiB)**.
+Cumulative accepted saving from the original 14,535,168-byte DLL:
+**1,100,288 bytes (1,074.5 KiB)**.
+
+Raw `.text` shrank by 2,048 bytes, `.rdata` by 512, and `.pdata` by 512.
+Virtual deltas were `.text` -1,872, `.rdata` -272, `.data` +16,
+`.pdata` -36, and `.reloc` -16, totaling -2,180 bytes.
+Other section sizes were unchanged. The independently rebuilt restored
+control reproduced baseline sizes and full raw `.text` hash. Reapplying
+the candidate and building prodtest reproduced candidate sizes and full
+raw `.text` hash. All four builds retained the eight exports and PE
+security characteristics.
+
+The provider constructor family fell from 5,532 to 3,621 attributed bytes
+with eight representatives on both sides. The inspected
+ActivationFactoryCache provider fell from 678 to 437 contiguous bytes.
+Its final body directly calls the shared registration method. The scoped
+DependencyLocator object report contains a 759-byte primary registration
+body. These overlapping symbol totals are not added to section or file
+savings, and scoped inspection is not a claim of exhaustive clone absence.
+
+The change adds a shared call boundary during provider registration,
+not on dependency resolution. It introduces no new source-level
+allocation or callable copy. Registration already performs locking,
+map insertion, and callable ownership operations. No timing benchmark
+was run; this result does not claim a startup speed improvement.
+
+### This turn's validation and provenance
+
+The final source was built with prodtest under explicit `amd64fre /nopgo`,
+Release/x64, toolset 14.44.35207, and `PGOBuildMode=Off`. Build records
+contain DependencyLocator.cpp compiler inputs, successful LTCG, and
+successful completion. The new registration symbol and changed provider
+code confirm the changed implementation reached the linked DLL.
+
+The full CalendarViewIntegrationTests suite ran on
+`ge_current-260820-Desktop`, using WPF and a refreshed payload:
+**121 total, 119 passed, two failed, zero blocked, skipped, or not run**.
+The only failures were `TestCICEvents` and `VerifySelfAdaptivePanel`,
+each with exactly `IsTrue(didOutputMatchMaster)` in
+`Private::Infrastructure::Utilities::VerifySuccess`, Utilities.cpp line 1627.
+These match the two allowed failures; all tests did not pass.
+The complete log contained 121 distinct completed test groups.
+
+The final built DLL, preserved final snapshot, local payload root and Test
+copies, and VM payload root and Test copies all matched SHA256:
+`AD724DA3A89517BE90E755BF62A3E63DD880D8961CFF031271864DD63EA09B45`.
+
+The existing isolated dependency test DLL was also rebuilt under explicit
+PGO-off settings. An initial ad hoc local run passed eight local-storage
+tests but crashed in three external-storage cases in combase with
+0xC0000602 while loading external test storage. Those tests derive their
+mock DLL path from the executable/module layout. That local run did not
+establish a product regression or a passing result.
+Rerunning through the standard refreshed VM payload required no product
+change and passed all 11 enabled dependency tests, including all three
+external-storage cases. The broader `*Dependency*UnitTests*` filter also
+selected 67 other tests: **78 total, 78 passed, zero failed, blocked,
+skipped, or not run**. The preexisting
+`ValidateUniqueObjectPerThread` declaration remains marked `Ignore=True`;
+it was not enabled or claimed as executed. Final product and isolated-test
+DLL hashes were checked against the VM copies after this run.
+No failure allowance was added.
+
+Evidence is under `D:\x1\artifacts\ralph\20260920-061506-583b16da`.
+The four measurement directories preserve snapshots, hashes, reports,
+source revisions/patches, build logs/binlogs, receipts, and CLI identity.
+Baseline/final `detail.json`, provider-family reports, code-bound records,
+and disassembly preserve attribution. `ownership.json`, `originals`,
+`candidate-source`, `final-source`, `semantic-review.json`,
+`verification.json`, and `progress.json` record the experiment and review.
+`final-test-build.log`, `tests.log`, `vm-testrun-output.log`,
+`WexLogFileOutput`, and `tested-dll-hashes.json` preserve the CalendarView
+run. `tests-dependency-final`, `dependency-vm.log`,
+`dependency-vm-full.log`, `dependency-vm-artifacts`, and
+`dependency-verification.json` preserve both dependency-test attempts.
+All analysis used the same verified frozen manifest and managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No SizeBench issue was observed.
