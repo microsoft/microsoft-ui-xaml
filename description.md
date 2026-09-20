@@ -3092,3 +3092,58 @@ Both measurements verified the complete frozen CLI manifest and used managed
 identity `e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
 No CLI defect was observed. Investigate another family, such as
 `ActivationFactoryCreator`, rather than repeating this noinline annotation.
+
+## Rejected: use the activation factory's null result for failure (2026-09-19)
+
+Starting from `256354ba2a55cc79aa27fdc8627391008063bd70`, this experiment
+removed the explicit failed-HRESULT branch in
+`ctl::ActivationFactoryCreator<T>::CreateActivationFactory`, in
+`dxaml\xcp\dxaml\lib\comTemplateLibrary.h`. Instead, it ignored the HRESULT
+and returned the existing null-preserving `interface_cast` of the output.
+The local output starts as null, and the typed `ComObject<T>::CreateInstance`
+overload writes it only after successful initialization. Failure cleanup,
+the typed factory overload, the debug leak-check flag, successful reference
+transfer, and interface conversion remained unchanged.
+
+Fresh baseline SizeBench evidence attributed 10,688 bytes across 58
+representatives to this activation-factory family. The candidate increased
+that figure to 11,140 bytes across 57 representatives. Fewer representatives
+did not mean a smaller DLL. Family totals are not added to section savings.
+
+| Measurement | Fresh baseline | Candidate | Delta |
+| --- | ---: | ---: | ---: |
+| Actual DLL file bytes | 14,247,424 | 14,254,592 | +7,168 |
+| Analyzed section bytes | 14,246,400 | 14,253,568 | +7,168 |
+| Virtual section bytes | 14,256,704 | 14,263,956 | +7,252 |
+
+Raw growth was entirely in `.text`. Virtual `.text` grew 7,264 bytes and
+`.pdata` shrank 12 bytes. Other section sizes were unchanged. The candidate
+compiled affected consumers, including `Boxes.g.cpp`, and performed an LTCG
+link. Both builds used x64 Release (`amd64fre`) with explicit `/nopgo`,
+reported `PGOBuildMode=Off`, and used toolset 14.44.35207. Build logs and the
+candidate binlog report success.
+
+Rejected because the actual DLL grew 7,168 bytes (7 KiB). The owned header
+was restored byte-for-byte against its pre-edit backup. This commit changes
+only documentation; no speculative source change is retained. Incremental
+savings are zero, and cumulative actual savings remain 287,744 bytes
+(281 KiB). No runtime or other-architecture benefit is claimed.
+
+**Tests not run: experiment rejected.** This turn skipped prodtest, VM
+setup, and CalendarView execution under the updated rejection policy.
+There was no post-restoration build; the mutable build output still contains
+the rejected candidate until the next build. The next experiment must build
+the restored source for its baseline, not measure that stale output.
+
+Evidence is under
+`D:\x1\artifacts\ralph\20260919-212209-042193f5`.
+`000-baseline` and `001-factory-null-result` preserve revision and patch,
+build command/log/binlog, DLL/PDB snapshots and hashes, core SizeBench
+collections, offline reports, receipts, stderr, and tool identity.
+Each `factory-family.json` contains the complete offline query for the
+selected family. `ownership.json` and `originals` record ownership and
+backups; `verification.json` records section metrics and exact source
+restoration; `build-events.json` records compilation and link evidence.
+Both measurements verified the complete frozen CLI manifest and used managed
+identity `e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No CLI defect was observed. Keep the explicit factory HRESULT branch.
