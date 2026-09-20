@@ -7,10 +7,35 @@
 #include <ComBase.h>
 #include <ComObject.h>
 #include <ComPtr.h>
+#include <InterfaceForwarder.h>
 #include <memory>
 #include <string>
 
 using namespace ctl;
+
+namespace ComObjectForwarderTests
+{
+    struct IForwardedInspectable : IInspectable {};
+    class Inspectable;
+}
+
+namespace ctl
+{
+    template<>
+    class interface_forwarder<ComObjectForwarderTests::IForwardedInspectable, ComObjectForwarderTests::Inspectable> :
+        public iinspectable_forwarder_base<ComObjectForwarderTests::IForwardedInspectable, ComObjectForwarderTests::Inspectable>
+    {};
+}
+
+namespace ComObjectForwarderTests
+{
+    class Inspectable : public ctl::ComBase, public ctl::forwarder_holder<IForwardedInspectable, Inspectable>
+    {
+    public:
+        static constexpr WCHAR RuntimeName[] = L"ComObjectUnitTests.ForwardedInspectable";
+        INSPECTABLE_CLASS(RuntimeName);
+    };
+}
 
 namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace Com {
 
@@ -131,6 +156,59 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
     void ComObjectUnitTests::RuntimeClassNamePreservesOwnership()
     {
         ValidateRuntimeClassName<NamedInspectable>();
+    }
+
+    void ComObjectUnitTests::InspectableForwarderPreservesResults()
+    {
+        using namespace ComObjectForwarderTests;
+        ctl::ComPtr<Inspectable> instance;
+        THROW_IF_FAILED(ComObject<Inspectable>::CreateInstance(instance.ReleaseAndGetAddressOf()));
+        auto forwarded = ctl::interface_cast<IForwardedInspectable>(instance.Get());
+        VERIFY_IS_TRUE(static_cast<IInspectable*>(forwarded) != ctl::iinspectable_cast(instance.Get()));
+        VERIFY_IS_TRUE(ctl::impl_cast<Inspectable>(forwarded) == instance.Get());
+        VERIFY_IS_NULL(ctl::impl_cast<Inspectable>(static_cast<IForwardedInspectable*>(nullptr)));
+
+        ULONG count = 0;
+        IID* iids = nullptr;
+        THROW_IF_FAILED(forwarded->GetIids(&count, &iids));
+        std::unique_ptr<IID, decltype(&CoTaskMemFree)> ownedIids(iids, CoTaskMemFree);
+        VERIFY_ARE_EQUAL(2ul, count);
+        VERIFY_IS_TRUE(iids[0] == IID_IUnknown);
+        VERIFY_IS_TRUE(iids[1] == IID_IInspectable);
+
+        wrl_wrappers::HString name;
+        THROW_IF_FAILED(forwarded->GetRuntimeClassName(name.GetAddressOf()));
+        #pragma warning(suppress: 6387)
+        VERIFY_ARE_EQUAL(E_INVALIDARG, forwarded->GetRuntimeClassName(nullptr));
+        TrustLevel trust = FullTrust;
+        THROW_IF_FAILED(forwarded->GetTrustLevel(&trust));
+        VERIFY_ARE_EQUAL(BaseTrust, trust);
+        instance.Reset();
+        VERIFY_ARE_EQUAL(std::wstring(Inspectable::RuntimeName), std::wstring(name.GetRawBuffer(nullptr)));
+        VERIFY_IS_TRUE(ownedIids.get()[0] == IID_IUnknown);
+    }
+
+    void ComObjectUnitTests::AggregatedInspectableForwarderUsesOuter()
+    {
+        using namespace ComObjectForwarderTests;
+        ctl::ComPtr<IidResultInspectable> outer;
+        THROW_IF_FAILED(ComObject<IidResultInspectable>::CreateInstance(outer.ReleaseAndGetAddressOf()));
+        ComObject<Inspectable>* inner = nullptr;
+        THROW_IF_FAILED(ComObject<Inspectable>::CreateInstance(outer.Get(), &inner));
+        auto releaseInner = [](ComObject<Inspectable>* value) { value->NonDelegatingRelease(); };
+        std::unique_ptr<ComObject<Inspectable>, decltype(releaseInner)> innerOwner(inner, releaseInner);
+        auto forwarded = ctl::interface_cast<IForwardedInspectable>(inner);
+        ValidateIidResults(forwarded, outer.Get());
+
+        wrl_wrappers::HString delegatedName;
+        THROW_IF_FAILED(forwarded->GetRuntimeClassName(delegatedName.GetAddressOf()));
+        VERIFY_IS_NULL(delegatedName.Get());
+        wrl_wrappers::HString localName;
+        THROW_IF_FAILED(inner->NonDelegatingGetRuntimeClassName(localName.GetAddressOf()));
+        VERIFY_ARE_EQUAL(std::wstring(Inspectable::RuntimeName), std::wstring(localName.GetRawBuffer(nullptr)));
+        TrustLevel trust = FullTrust;
+        THROW_IF_FAILED(forwarded->GetTrustLevel(&trust));
+        VERIFY_ARE_EQUAL(BaseTrust, trust);
     }
 
     void ComObjectUnitTests::GetIidsPreservesOwnership()

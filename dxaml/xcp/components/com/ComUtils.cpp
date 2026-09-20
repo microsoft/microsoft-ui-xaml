@@ -3,6 +3,22 @@
 
 #include "precomp.h"
 #include "ComUtils.h"
+#include "InterfaceForwarder.h"
+
+HRESULT ctl::details::ForwardGetIids(_In_ IInspectable* instance, _Out_ ULONG* iidCount, _Outptr_ IID** iids)
+{
+    return instance->GetIids(iidCount, iids);
+}
+
+HRESULT ctl::details::ForwardGetRuntimeClassName(_In_ IInspectable* instance, _Outptr_result_maybenull_ HSTRING* className)
+{
+    return instance->GetRuntimeClassName(className);
+}
+
+HRESULT ctl::details::ForwardGetTrustLevel(_In_ IInspectable* instance, _Out_ TrustLevel* trustLevel)
+{
+    return instance->GetTrustLevel(trustLevel);
+}
 
 _Check_return_ HRESULT ctl::do_get_property_type(_In_ IInspectable *pIn, _Out_ wf::PropertyType* pType)
 {

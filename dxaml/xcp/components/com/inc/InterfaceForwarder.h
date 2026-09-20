@@ -50,6 +50,10 @@ namespace ctl
 
     namespace details
     {
+        __declspec(noinline) HRESULT ForwardGetIids(_In_ IInspectable* instance, _Out_ ULONG* iidCount, _Outptr_ IID** iids);
+        __declspec(noinline) HRESULT ForwardGetRuntimeClassName(_In_ IInspectable* instance, _Outptr_result_maybenull_ HSTRING* className);
+        __declspec(noinline) HRESULT ForwardGetTrustLevel(_In_ IInspectable* instance, _Out_ TrustLevel* trustLevel);
+
         struct interface_forwarded_tag;
         template<typename impl_type, typename interface_type>
         impl_type* impl_cast_helper(interface_type* pInterface, interface_forwarded_tag);
@@ -141,20 +145,20 @@ namespace ctl
             /* [out] */ __RPC__out ULONG *iidCount,
             /* [size_is][size_is][out] */ __RPC__deref_out_ecount_full_opt(*iidCount) IID **iids) final
         {
-            return iinspectable_cast(this->template This_helper<impl_type>())->GetIids(iidCount, iids);
+            return details::ForwardGetIids(iinspectable_cast(this->template This_helper<impl_type>()), iidCount, iids);
         }
 
         #pragma warning(suppress: 6387 28196) // It doesn't like that classname can be null
         IFACEMETHODIMP GetRuntimeClassName(
             /* [out] */ __RPC__deref_out_opt HSTRING *className) final
         {
-            return iinspectable_cast(this->template This_helper<impl_type>())->GetRuntimeClassName(className);
+            return details::ForwardGetRuntimeClassName(iinspectable_cast(this->template This_helper<impl_type>()), className);
         }
 
         IFACEMETHODIMP GetTrustLevel(
             /* [out] */ __RPC__out TrustLevel *trustLevel) final
         {
-            return iinspectable_cast(this->template This_helper<impl_type>())->GetTrustLevel(trustLevel);
+            return details::ForwardGetTrustLevel(iinspectable_cast(this->template This_helper<impl_type>()), trustLevel);
         }
     };
 

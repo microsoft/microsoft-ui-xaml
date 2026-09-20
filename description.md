@@ -4150,3 +4150,103 @@ contains `wrapper-symbol.json` and `wrapper-disassembly.txt`.
 experiment and exact restoration. Do not repeat this reference-downcast
 spelling change on the same toolset in expectation of removing the
 null-preserving adjustments.
+
+## Accepted: share final IInspectable forwarder dispatch (2026-09-20)
+
+Starting from `800aa4eeef017fc827d326c27b8c8ad4dbbce6bd`, retain the
+type-dependent owner recovery in `iinspectable_forwarder_base`, but move
+its final GetIids, GetRuntimeClassName, and GetTrustLevel virtual calls
+into non-template helpers in `ComUtils.cpp`. The helpers take the same
+`IInspectable*` and output arguments and return the original HRESULT.
+`InterfaceForwarder.h` declares the helpers noinline and calls them after
+the existing `This_helper` and `iinspectable_cast` expressions.
+The rejected reference-downcast spelling change is not included.
+
+| Metric | Fresh baseline | Final candidate | Candidate minus baseline |
+|---|---:|---:|---:|
+| Actual DLL file bytes | 13,438,464 | 13,437,952 | -512 |
+| Analyzed section bytes | 13,437,440 | 13,436,928 | -512 |
+| Virtual section bytes | 13,447,496 | 13,446,896 | -600 |
+
+Raw `.text` shrank by 1,024 bytes, partly offset by 512 bytes of raw
+`.rdata` growth. Virtual deltas were `.text` -960, `.rdata` +384,
+`.data` -16, `.pdata` -12, and `.reloc` +4.
+This adds **512 bytes (0.5 KiB)** of actual file savings.
+Cumulative accepted savings from the original 14,535,168-byte DLL are
+**1,097,216 bytes (1,071.5 KiB)**.
+
+Each of the three forwarder families fell from 1,054 to 775 attributed
+bytes, retaining 31 representatives. The inspected MediaPlayerElement
+automation-peer wrappers occupy 31 bytes each and tail-jump to shared
+dispatch after the unchanged owner adjustment. The IID and runtime-name
+helpers each own a 14-byte primary block. The trust helper is a zero-sized
+folded alias of the existing 14-byte `BorderBackgroundPart::ShouldUseNineGrid`
+body. Its exact target was resolved from the wrapper's relative jump and
+confirmed with SizeBench's folded-alias detail. The three dispatch bodies
+load the appropriate virtual slot and jump through
+`__guard_dispatch_icall_fptr`. Zero-sized aliases are not missing code;
+these overlapping attribution totals are not added to the file savings.
+
+The helpers do not change owner offsets, null conversion guards, interface
+layout, metadata, allocations, reference counts, output validation, or
+aggregation routing. They preserve the same virtual call and output
+pointer/HRESULT forwarding. The inspected code adds a direct tail transfer,
+not another virtual dispatch or helper stack frame. No timing benchmark
+was performed, so this is not a measured performance improvement.
+No correctness issue was found in the source and emitted-code review.
+The bounded transfer cost is accepted for these metadata methods.
+
+Both initial and final candidate builds reproduced the smaller file and
+section sizes. Restoring the exact original product source and rebuilding
+reproduced the baseline sizes and full raw `.text` SHA256
+`D5616E2632DA7C32609807739C1D274F5661622566ACDEC828FE47DA595305BB`.
+Reapplying the exact candidate and building prodtest reproduced candidate
+`.text` SHA256
+`6AC19899898A35C27DC9D950091F91C452D33FF9931A0476B9B04C24E0F15D25`.
+The eight exports and PE security characteristics are unchanged.
+All builds used toolset 14.44.35207, Release/x64, explicit
+`amd64fre /nopgo`, and `PGOBuildMode=Off`. Binlog evidence confirms
+recompilation of `Boxes.g.cpp` and `DynamicMetadata.g.cpp`, completed
+LTCG, and successful builds, rather than reuse of stale product output.
+
+Add two isolated COM tests using a real embedded IInspectable forwarder.
+They cover owner round-trip and null conversion, IID order and lifetime,
+runtime-name ownership and null-output rejection, BaseTrust, and controlling
+outer routing. The outer IID test checks exact S_FALSE/E_FAIL propagation,
+output-pointer identity, and unchanged failure outputs. All nine isolated
+COM tests passed on both restored control and final candidate. These tests
+do not inject allocation failure or a distinct outer trust value.
+
+This turn also ran all 121 CalendarViewIntegrationTests on
+`ge_current-260820-Desktop`, WPF, `amd64fre /nopgo`, with a refreshed payload
+and no exclusions. **119 passed and two failed**: `TestCICEvents` and
+`VerifySelfAdaptivePanel`, each with exactly `IsTrue(didOutputMatchMaster)`
+in `Utilities.cpp`, `Private::Infrastructure::Utilities::VerifySuccess`,
+line 1627. There were no blocked, skipped, not-run, duplicate, or missing
+tests and no additional errors. These are the two allowed baseline
+failures; their cause remains unestablished. The runner exited 1.
+The final built DLL, frozen final snapshot, local payload root/Test copies,
+and VM root/Test copies all had SHA256
+`F400239EF166E5DAF2811026938BFF5E2349A43B41A6C02CAECF54BFB9561D59`.
+These results are from this turn's final source, not an earlier test run.
+
+Evidence is under `D:\x1\artifacts\ralph\20260920-042533-bec78990`.
+`000-baseline`, `001-shared-forwarder-dispatch`, `002-restored-control`,
+and `003-candidate-final` preserve snapshots, hashes, source state,
+reports, and receipts. `final-test-build.log`, `final-native.binlog`,
+`tests.log`, `vm-testrun-output.log`, `WexLogFileOutput`,
+`tested-dll-hashes.json`, `test-result.json`, `tests-com-control`,
+`tests-com-final`, and `verification.json` record builds and validation.
+`build-events.json` and the final directory's `routing-*` and `trust-target*`
+files record emitted-code evidence. `ownership.json`, `originals`,
+`candidate-source`, `candidate.patch`, `semantic-review.json`, and
+`progress.json` preserve ownership, review, and the decision.
+
+Every measurement verified the complete frozen CLI manifest and managed
+identity `e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No CLI defect was found. An inspection assertion initially expected three
+positive helper bodies in `ComUtils.obj`; the trust helper's folding made
+that assumption false. The existing collection was reused, and the missing
+target coverage was collected separately before disassembly. A PowerShell
+immutable-array conversion error was corrected before that collection.
+Neither was treated as a zero-size result or a failed product build.

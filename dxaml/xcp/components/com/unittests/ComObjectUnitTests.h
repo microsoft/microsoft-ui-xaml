@@ -22,6 +22,14 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
             TEST_METHOD_PROPERTY(L"Description", L"Validates IID order and independently owned CoTaskMem arrays.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(InspectableForwarderPreservesResults)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates forwarded IID, runtime name, trust level, and owner conversion results.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(AggregatedInspectableForwarderUsesOuter)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates forwarded inspectable methods use the controlling outer.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(GetIidsForwardsResults)
             TEST_METHOD_PROPERTY(L"Description", L"Validates exact HRESULT and output forwarding to the local implementation.")
         END_TEST_METHOD()
