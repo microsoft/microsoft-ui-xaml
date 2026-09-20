@@ -2710,3 +2710,74 @@ SizeBench used frozen managed identity
 the complete deployment manifest was verified before every core collection.
 No SizeBench defect was observed. The rejected candidate was not deployed,
 and no performance improvement or other-architecture coverage is claimed.
+
+## Rejected: explicitly copy the two root interface IDs (2026-09-19)
+
+Starting from `c09910f32`, tried replacing the fixed two-iteration loop in
+`ComBase::CopyIIDsToArray` with assignments to `pResult[first]` and
+`pResult[first + 1]`, reading entries zero and one from the existing local
+IID table. A `static_assert` tied the table's two-entry count to the explicit
+copies. The source was `dxaml\xcp\components\com\inc\ComBase.h`.
+
+This was distinct from the rejected pointer-offset rewrite: it removed the
+root loop, rather than changing its indexing expression. The existing
+table remained the source of the `IUnknown` and `IInspectable` values and
+order. Counts, derived-map traversal, allocation, output publication,
+ownership, errors, and virtual signatures were unchanged.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `c09910f32`, fresh baseline | 14,254,080 | 14,253,056 | 14,263,336 |
+| Explicit root copies, rejected | 14,306,816 | 14,305,792 | 14,316,328 |
+| Restored source after `prodtest` | 14,254,080 | 14,253,056 | 14,263,336 |
+
+The candidate grows the DLL by **52,736 bytes (51.5 KiB)**, all in raw
+`.text`. Virtual `.text` grows by 52,992 bytes; other section sizes are
+unchanged. The `EnumReference<T>::CopyIIDsToArray` family decreases from
+16,836 to 16,653 attributed bytes, with 183 representatives in both builds,
+but that small local decrease does not represent the overall effect.
+`Aggregate.g.obj` attribution grows from 1,569,592 to 1,620,167 bytes.
+These figures locate the larger impact without establishing a particular
+inlining or folding mechanism; they are not added to file-size differences.
+
+Rejected the candidate and restored `ComBase.h` byte-for-byte. Rebuilding
+restored all baseline size metrics and every baseline `.text` byte.
+This turn retains no source change. Cumulative file savings remain
+**281,088 bytes**. Avoid retrying explicit root IID-loop unrolling as a
+standalone optimization.
+
+### This turn's validation and provenance
+
+Candidate and restored-source binlogs confirm affected compilation and
+LTCG linking. The final `prodtest` build succeeded. Builds retained
+same-process initialization with `amd64fre /nopgo`, `PGOBuildMode=Off`,
+`Configuration=Release`, `Platform=x64`, and `VCToolsVersion=14.44.35207`.
+Export identities are unchanged; restored PE security characteristics
+match baseline.
+
+The full CalendarView suite ran on `ge_current-260820-Desktop` in WPF mode
+against a freshly generated and deployed restored-source payload:
+**121 total, 121 passed, 0 failed, 0 blocked, 0 not run, 0 skipped**.
+Both previously allowed failing tests passed in this run. This does not
+establish why they failed earlier or imply a source fix: the optimization
+was removed before this run. The complete VM log contains all 121 distinct
+passing results.
+
+The built DLL, preserved final copy, local payload root/Test copies, and
+VM root/Test copies share SHA256:
+`7176201EE3B7880FD5C87C9BCD07A73D4A0922B143E48F66CD5C2E656DFE6EB7`.
+
+Evidence is under `D:\x1\artifacts\ralph\20260919-180724-14a7bf42`.
+The numbered baseline, candidate, and restored directories preserve
+measurements, hashes, source patches, receipts, and tool identity.
+`compiland-growth.json` and the family reports contain supporting
+attribution. `final-test-build.log`, `final-test-build.binlog`,
+`restored-native.binlog`, and `build-events.json` preserve build evidence.
+`tests.log`, `vm-testrun-output.log`, `WexLogFileOutput`,
+`tested-dll-hashes.json`, `test-result.json`, and `verification.json`
+preserve this turn's validation.
+All core collections verified the complete frozen SizeBench manifest and
+used managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No SizeBench defect was observed. The candidate was not runtime-tested,
+and no performance benefit or coverage of other architectures is claimed.
