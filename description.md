@@ -2781,3 +2781,75 @@ used managed identity
 `e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
 No SizeBench defect was observed. The candidate was not runtime-tested,
 and no performance benefit or coverage of other architectures is claimed.
+
+## Rejected: scoped cleanup for untyped collection append (2026-09-19)
+
+Starting from `9272f4964`, tried replacing the raw pointer and goto cleanup
+in `PresentationFrameworkCollection<T>::UntypedAppend` with an existing
+`ctl::ComPtr` owner and early HRESULT propagation. The only source edit was
+in `dxaml\xcp\dxaml\lib\JoltCollections.h`.
+
+The candidate kept the thread check before querying or appending, preserved
+the query helper's null-input behavior, and held the queried reference
+through `Append`. The smart pointer released that reference on success and
+failure. It retained the full `Append` HRESULT, including successful values
+other than `S_OK`, and failure reporting before release. It changed no
+interface, class layout, metadata, or build option. Diagnostic expression
+text and source locations changed.
+
+| Source state | DLL file | Analyzed sections | Section virtual size |
+|---|---:|---:|---:|
+| `9272f4964`, fresh baseline | 14,254,080 | 14,253,056 | 14,263,336 |
+| Scoped append cleanup, rejected | 14,254,080 | 14,253,056 | 14,263,448 |
+| Restored source after `prodtest` | 14,254,080 | 14,253,056 | 14,263,336 |
+
+The candidate does **not reduce the actual DLL file**. Raw section sizes
+are unchanged. Virtual `.text` grows by 96 bytes and `.data` by 16 bytes.
+The targeted template family decreases from 8,125 to 8,080 attributed bytes,
+with 37 representatives in both builds, but this is not a whole-file saving.
+The family falls out of the candidate's top-20 report; the complete offline
+name-filtered query confirms that it remains present. These attribution
+figures are not added to section or file differences.
+
+Rejected the candidate and restored `JoltCollections.h` byte-for-byte.
+The final build reproduces all baseline size metrics and every baseline
+`.text` byte. No source optimization is retained. Cumulative actual savings
+remain **281,088 bytes (274.5 KiB)** from the original 14,535,168-byte DLL.
+Avoid repeating this scoped-cleanup rewrite as a standalone size experiment.
+
+### This turn's validation and provenance
+
+The candidate and restored-source binlogs confirm affected compilation and
+LTCG linking. The final `prodtest` build succeeded. All builds used
+same-process initialization with `amd64fre /nopgo`, `PGOBuildMode=Off`,
+`Configuration=Release`, `Platform=x64`, and `VCToolsVersion=14.44.35207`.
+Export identities are unchanged; restored PE security characteristics
+match baseline.
+
+The full CalendarView suite ran on `ge_current-260820-Desktop` in WPF mode
+with a refreshed and deployed restored-source payload:
+**121 total, 119 passed, 2 failed, 0 blocked, 0 not run, 0 skipped**.
+The complete VM log confirms all 121 unique results. Only `TestCICEvents`
+and `VerifySelfAdaptivePanel` failed, both at
+`IsTrue(didOutputMatchMaster)` in `Utilities::VerifySuccess`, line 1627.
+These exactly match the allowed baseline failures; no new failure was
+observed. The previous turn's all-passing result is separate evidence and
+does not establish the cause of this variation.
+
+The built DLL, preserved final copy, local payload root/Test copies, and
+VM root/Test copies share SHA256:
+`3D399D5AD89B76B5891034BD2E5B4961EBFDA5C4B2FBC8844657F1886B97C50B`.
+
+Evidence is under `D:\x1\artifacts\ralph\20260919-185211-c33c728d`.
+The numbered baseline, candidate, and restored directories preserve
+measurements, source patches, hashes, receipts, and tool identity.
+`append-family.json` in the baseline and candidate directories contains
+the complete family queries. `final-test-build.log`, the saved binlogs,
+and `build-events.json` preserve build evidence. `tests.log`,
+`vm-testrun-output.log`, `WexLogFileOutput`, `tested-dll-hashes.json`,
+`test-result.json`, and `verification.json` preserve this turn's validation.
+All three core collections verified the full frozen SizeBench manifest and
+used managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No SizeBench defect was observed. The candidate was not runtime-tested;
+no performance benefit or coverage of other architectures is claimed.
