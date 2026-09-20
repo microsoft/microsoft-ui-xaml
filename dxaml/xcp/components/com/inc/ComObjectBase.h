@@ -20,6 +20,7 @@ namespace ctl
 
         // IInspectable (delegating) implementation
         IFACEMETHODIMP QueryInterfaceBase(REFIID iid, void **ppValue);
+        __declspec(noinline) HRESULT GetRuntimeClassNameBase(_Out_ HSTRING* pClassName);
 
     public:
         virtual HRESULT QueryInterfaceImplBase(_In_ REFIID iid, _Outptr_ void** ppObject) = 0;

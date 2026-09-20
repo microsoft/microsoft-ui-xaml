@@ -3806,3 +3806,121 @@ source before the next baseline. Do not repeat this global base-call
 normalization. A future bounded investigation could examine why the
 iterator families shrink while enum-reference families grow, using actual
 emitted blocks rather than assuming one global macro form is smaller.
+
+## Follow-up: share COM runtime-class-name routing (2026-09-20)
+
+Starting from `2d765ce19b08c63437469a745855d00b597ef7d5`, move the
+outer-object decision from `ComObject<T>::GetRuntimeClassName` into
+the non-template, nonvirtual `ComObjectBase::GetRuntimeClassNameBase`.
+The template wrapper returns the helper result directly. The helper calls
+the controlling outer's `GetRuntimeClassName` when aggregated, otherwise
+the existing `NonDelegatingGetRuntimeClassName` virtual method.
+
+Files: `dxaml\xcp\components\com\inc\ComObject.h`,
+`dxaml\xcp\components\com\inc\ComObjectBase.h`, and
+`dxaml\xcp\components\com\ComObjectBase.cpp`.
+
+`ComObject` and its non-delegating method are final. That method already
+forwards to exactly the same `TBASE::GetRuntimeClassNameImpl` used before
+this change. Returned HRESULTs and HSTRING outputs pass through unchanged,
+including errors and null output arguments. No reference-count operations,
+new error-reporting hooks, allocations, fields, virtual slots, interface
+definitions, metadata definitions, or build/security settings were added.
+
+### Measurements and attribution
+
+All values are bytes, with x64 Release and explicit PGO off.
+
+| Measurement | Fresh baseline | Final candidate | Candidate minus baseline |
+| --- | ---: | ---: | ---: |
+| Actual DLL file bytes | 14,243,840 | 13,439,488 | -804,352 |
+| Analyzed section bytes | 14,242,816 | 13,438,464 | -804,352 |
+| Virtual section bytes | 14,253,004 | 13,448,496 | -804,508 |
+
+The actual incremental saving is **804,352 bytes (785.5 KiB)**.
+Cumulative savings are **1,095,680 bytes (1,070 KiB)** against the original
+14,535,168-byte baseline.
+
+Raw section reductions are `.text` **90,624**, `.rdata` **574,464**, and
+`.reloc` **139,264** bytes. Other raw section sizes are unchanged.
+Virtual deltas are `.text` -90,608, `.rdata` -574,592, `.reloc` -139,336,
+`.pdata` -36, and `.data` +64 bytes; `.didat` and `.rsrc` are unchanged.
+
+The runtime-name template family falls from 32,588 attributed bytes across
+785 representatives to 36 bytes across four representatives. Each of the
+four emitted primary blocks is a nine-byte this-pointer adjustment followed
+by a tail jump to the same 31-byte helper. The helper selects the outer or
+local object and tail-dispatches through the existing CFG mechanism.
+This emitted-code evidence establishes sharing; `noinline` alone would not.
+
+The saving is much larger than the template-family reduction. Removing the
+type-specific routing bodies also permits additional folding of associated
+code and data. In the scoped `DynamicMetadata.g.obj` report, attributed
+static data falls from 995,172 to 446,508 bytes; thunk count falls from
+4,002 to 715 and attributed thunk bytes from 45,522 to 7,638. The full
+`.rdata` COFF group falls from 2,763,760 to 2,210,720 bytes, and `.gfids`
+falls from 159,868 to 138,336. These overlapping observations support the
+whole-file result; they are not additional savings to sum. The inspected
+dependency-property runtime-data and type-activation tables retain their
+sizes. No metadata source was removed or changed.
+
+An exact restored-source control reproduced all three baseline metrics and
+the complete raw `.text` hash. Reapplying the candidate and rebuilding
+`prodtest` reproduced all three candidate metrics and its complete `.text`
+hash. Both sides actually recompiled affected source and ran LTCG.
+All eight exported ordinal/name pairs and PE security characteristics
+match across the four preserved builds.
+
+### Behavior, runtime tradeoff, and validation
+
+The unaggregated path now uses a guarded virtual dispatch through the existing
+non-delegating method instead of embedding the class-specific implementation
+in every delegating wrapper. The observed wrappers and helper use tail jumps,
+without an additional helper stack frame. String creation, ownership, and
+aggregation semantics remain unchanged. This accepts a bounded dispatch
+cost for the measured file reduction; it does not claim faster execution.
+No runtime timing benchmark, allocation-failure injection, or other-architecture
+measurement was performed.
+
+The existing isolated COM suite passed all four tests. It covers construction,
+runtime-name ownership and null output handling, empty and embedded-null names,
+and aggregated outer-name versus non-delegating inner-name behavior.
+This is a new run on this candidate, recorded under `tests-com`.
+
+The full CalendarViewIntegrationTests suite ran on
+`ge_current-260820-Desktop` in **WPF** mode with **amd64fre /nopgo** and
+`PGOBuildMode=Off`, after rebuilding the product and test targets and
+refreshing the payload. All **121** unique tests completed:
+**119 passed, 2 failed, 0 blocked, 0 skipped, and 0 not run**.
+The only failures were `TestCICEvents` and `VerifySelfAdaptivePanel`.
+Each had exactly the allowed `IsTrue(didOutputMatchMaster)` assertion in
+`Private::Infrastructure::Utilities::VerifySuccess`, Utilities.cpp line 1627.
+No additional error or failure mode appeared. These are the two allowed
+baseline failures, not an all-passed result; their cause remains unestablished.
+
+The built DLL, frozen final snapshot, local payload root/Test copies, and
+deployed VM root/Test copies all matched SHA256
+`38227E61D7AECD3F7BD2BF3F4D778109B4E44C64641CF9627E029777DF568F46`.
+The isolated COM build did not change that product DLL.
+
+### Provenance and limitations
+
+Evidence is under `D:\x1\artifacts\ralph\20260920-020134-3284cca9`.
+`000-baseline`, `001-shared-runtime-name-routing`, `002-restored-control`,
+and `003-candidate-final` preserve snapshots, hashes, revision/patch,
+build logs/binlogs, SizeBench reports, and receipts. All builds use toolset
+14.44.35207, x64 Release, and explicit `PGOBuildMode=Off`.
+`final-test-build.log`, `tests.log`, `vm-testrun-output.log`,
+`WexLogFileOutput`, `tested-dll-hashes.json`, and `verification.json`
+record this turn's build, deployment, complete assertions, and repeatability.
+`routing-symbols.json`, `folding-symbols.json`, `wrapper-symbols.json`,
+the disassembly files, `folding-summary.json`, and `build-events.json`
+preserve the emitted-code investigation. `semantic-review.json` records
+the behavior and runtime-risk review.
+
+Both measurement sides verified the complete frozen CLI manifest and managed
+identity `e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No SizeBench defect was observed. Folded aliases and family attribution are
+not distinct contiguous byte ranges; disassembly used verified primary-block
+boundaries. Future work should inspect other repeated delegating methods
+individually rather than assume they offer the same benefit.
