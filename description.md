@@ -3319,3 +3319,64 @@ tested snapshot only by restoring original trailing blank-line formatting.
 All core collections verified the complete frozen manifest and managed
 identity `e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
 No SizeBench defect was observed.
+
+## Rejected: use ctl ownership for untyped insertion (2026-09-19)
+
+Starting from `ada7ae440e9836db530a0534f9637504dba47151`, try changing
+the local typed owner in `PresentationFrameworkCollection<T>::UntypedInsertAt`
+from `wrl::ComPtr` to the existing `ctl::ComPtr` in
+`dxaml\xcp\dxaml\lib\JoltCollections.h`. The hypothesis was that using
+the repository's existing cleanup implementation could improve linked-code
+sharing. No new helper, manual lifetime management, or build setting was added.
+
+Both owners start null, expose the same typed output slot for QueryInterface,
+and release the acquired reference on scope exit. Thread checking, the borrowed
+input query, insertion order, HRESULT propagation, and cleanup on failure
+were unchanged. This was a one-line experiment, not another removal of the
+input AddRef already eliminated by an earlier accepted change.
+
+| Measurement | Fresh baseline | Candidate | Candidate minus baseline |
+| --- | ---: | ---: | ---: |
+| Actual DLL file bytes | 14,245,888 | 14,245,888 | 0 |
+| Analyzed section bytes | 14,244,864 | 14,244,864 | 0 |
+| Virtual section bytes | 14,255,104 | 14,255,412 | +308 |
+
+Every raw section size stayed unchanged. Virtual `.text` grew 160 bytes,
+`.rdata` grew 128 bytes, `.pdata` grew 12 bytes, and `.reloc` grew 8 bytes.
+The complete template-family query shows the targeted untyped insertion
+family shrinking from 9,435 to 9,333 attributed bytes across the same
+37 representatives. That local reduction is not a whole-file improvement
+and does not justify keeping the change. The tracker insertion family
+remained 4,458 attributed bytes across 18 representatives; it was not edited.
+No overlapping symbol totals or heuristic savings are added to these metrics.
+
+Reject the experiment because the actual DLL is not smaller. Restore the
+header exactly to its backed-up SHA256; only this description update is
+committed. Incremental actual savings are **0 bytes**. Cumulative accepted
+savings remain **289,280 bytes (282.5 KiB)** against the original
+14,535,168-byte baseline.
+
+Tests not run: experiment rejected. No prodtest build, VM setup, or post-restore
+test run was required. Previous sections describe historical validation only,
+not validation of this rejected candidate. No runtime-performance claim is made.
+
+Evidence is under
+`D:\x1\artifacts\ralph\20260919-232403-203d7f4b`.
+`000-baseline` and `001-ctl-insertion-owner` preserve DLL/PDB snapshots,
+hashes, source revision/patch, build commands/logs/binlogs, complete core
+SizeBench reports, offline insertion-family queries, receipts, and tool
+identity. Both builds used x64 Release (`amd64fre`), explicit `/nopgo`,
+`PGOBuildMode=Off`, and toolset 14.44.35207. `build-events.json` confirms
+affected compilation and LTCG linking in both builds. `ownership.json`,
+`originals`, and `restored-source-hashes.json` record the owned files and
+exact restoration. Both measurements verified the frozen CLI manifest and
+managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No SizeBench defect was observed.
+
+The mutable BuildOutput DLL/PDB still contain the rejected candidate.
+The next turn must build restored source for its fresh baseline, rather
+than treating those outputs as accepted binaries. A separate unexplored
+lead in this baseline is `GetCollectionItemInternal` (7,601 attributed bytes
+across 19 representatives); its ownership and failure paths need source
+review before proposing any change.
