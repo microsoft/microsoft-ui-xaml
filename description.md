@@ -4250,3 +4250,91 @@ that assumption false. The existing collection was reused, and the missing
 target coverage was collected separately before disassembly. A PowerShell
 immutable-array conversion error was corrected before that collection.
 Neither was treated as a zero-size result or a failed product build.
+
+## Rejected: share resolved event-subscriber cleanup (2026-09-20)
+
+Starting from `30c7d05302e40d8b13bf199ecbcd18adea07c7f9`, try moving the
+final `ReleaseInterface(pInterface)` and HRESULT return in
+`ClassMemberEventHandler::Invoke` and `ClassMemberCallback2::Invoke` into
+`ReleaseResolvedEventHandler(IUnknown*, HRESULT)`. The helper was declared
+noinline in `JoltClasses.h` and defined in `JoltClasses.cpp`.
+The fresh baseline's largest Invoke family occupied 10,101 attributed
+bytes across 31 representatives.
+
+The candidate preserved weak-reference resolution, self-subscription
+pointer tagging, callback invocation, and the autopeg scope. Unpegging still
+completed before releasing the resolved subscriber. Null references remained
+permitted, each resolved reference was released once, and the original
+HRESULT and existing failure-reporting sites were preserved. No reference
+acquisition, allocation, interface, metadata, or build-setting change was
+introduced.
+
+| Metric | Fresh baseline | Rejected candidate | Candidate minus baseline |
+|---|---:|---:|---:|
+| Actual DLL file bytes | 13,437,952 | 13,437,440 | -512 |
+| Analyzed section bytes | 13,436,928 | 13,436,416 | -512 |
+| Virtual section bytes | 13,446,896 | 13,446,580 | -316 |
+
+Raw `.text` shrank by 512 bytes; other raw section sizes stayed unchanged.
+Virtual `.text` shrank by 320 bytes, `.pdata` grew by 12, and `.reloc`
+shrank by 8. The two event-handler Invoke families fell from 10,101 to
+9,680 bytes and from 1,104 to 1,065 bytes. The callback family fell from
+1,345 to 1,280 bytes. Representative counts stayed 31, three, and four.
+These overlapping attributed totals are not added to the file saving.
+
+The scoped `JoltClasses.obj` collection contains one positive 34-byte
+helper body. It saves a register, creates a stack frame, conditionally
+calls Release through CFG, restores the original HRESULT, and returns.
+The inspected ApplicationBarService wrapper tail-jumps to it, but the
+Hub and BitmapSource wrappers make ordinary calls before their existing
+security-cookie epilogues. This is not universally a tail-transfer
+optimization. The helper also executes on the null self-subscription path,
+where the original cleanup skipped Release and returned without a helper.
+The scoped collection is not a claim of exhaustive DLL-wide clone coverage.
+
+A source-level probe used the exact extracted candidate helper body and
+the installed x64 compiler with optimization, CFG, GS, and Spectre
+mitigation, without LTCG. It checked null cleanup, exactly one release,
+and unchanged S_OK, S_FALSE, E_NOINTERFACE, E_FAIL, and E_POINTER results;
+those checks passed. Across 24 alternating samples per path, with two
+million operations per sample, median null/self-path time rose from
+2.24 ns to 3.65 ns (+1.41 ns), and modeled acquisition/release time rose
+from 12.05 ns to 12.47 ns (+0.43 ns). This probe does not execute the linked
+DLL, real weak resolution, autopeg, or application event handlers. It does
+not establish an application-level performance regression.
+
+Reject the candidate because the small 512-byte saving does not justify
+adding cleanup work to these callback paths, particularly the previously
+release-free self-subscription path. This is a size/performance judgment,
+not a build failure or an unchanged-file result. No independent
+repeatability build was needed for rejection. Both product-source files
+were restored byte-for-byte against their pre-edit backups.
+Only this description update is committed. Retained incremental savings
+are **0 bytes**; cumulative accepted savings remain
+**1,097,216 bytes (1,071.5 KiB)**.
+
+The source-level probe ran as described above. No prodtest build or
+CalendarView VM test run was performed because the experiment was rejected
+after performance review. The VM readiness query made no configuration
+change. No post-restore test rerun was required, and earlier turns' test
+results are not claimed for this candidate. Mutable BuildOutput still
+contains the rejected candidate; the next turn must build restored source
+for a fresh baseline.
+
+Evidence is under `D:\x1\artifacts\ralph\20260920-052910-1c9fcf2d`.
+`000-baseline` and `001-shared-subscriber-cleanup` preserve snapshots,
+hashes, source revision/patch, build commands/logs/binlogs, core reports,
+complete handler-family queries, scoped symbol details, disassembly, and
+receipts. `build-events.json` confirms recompilation of `JoltClasses.cpp`,
+`Aggregate.g.cpp`, and `DynamicMetadata.g.cpp` and successful LTCG.
+Both builds used toolset 14.44.35207, Release/x64, explicit
+`amd64fre /nopgo`, and `PGOBuildMode=Off`.
+`SubscriberCleanupProbe.cpp`, `CleanupUnderTest.inc`, `probe.csv`,
+`probe-result.json`, and the probe build log preserve the source-level
+evidence. `ownership.json`, `originals`, `candidate-source`,
+`candidate.patch`, `restored-source-hashes.json`, `semantic-review.json`,
+`verification.json`, and `progress.json` record the decision and restoration.
+Both measurements verified the complete frozen CLI manifest and managed
+identity `e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No SizeBench issue was observed. Do not repeat this unconditional
+subscriber-cleanup extraction as a standalone optimization on this baseline.
