@@ -3447,3 +3447,100 @@ selection as a demonstrated saving. A distinct future lead is reducing
 repeated post-GetAt interface conversion and cleanup in these diagnostic
 accessors; preserve null output on failure and release order, and measure
 any proposed sharing rather than assuming noinline prevents specialization.
+
+## Follow-up: share diagnostic collection-item conversion (2026-09-20)
+
+Starting from `b1de4bdf1fbfd2fa59eb517d3f76155985e1d75e`, extract the
+fixed DependencyObject conversion from `GetCollectionItemInternal<Item, IItem>`
+into the non-template `GetCollectionItemAsDependencyObject` helper in
+`dxaml\xcp\dxaml\lib\InternalDebugInterop.cpp`.
+
+The helper borrows the item's IUnknown pointer without adding a reference.
+It uses the same raw `do_query_interface` operation as `ComPtr::As`, keeps
+the queried reference in a local owner, and transfers it only on success.
+It preserves null-item behavior (S_OK with a null result), normalizes
+nonnegative query results to S_OK, and returns failures unchanged.
+The accessor still initializes the caller's output to null before any work.
+On failure, a populated query result is released before the item and then
+the collection, matching the original destruction order. Collection querying,
+GetAt, typed item ownership, and caller-visible interfaces are unchanged.
+
+The accessor returns the helper's HRESULT directly. The first measured
+version also used IFC_RETURN around the helper call, duplicating its failure
+hook. Final review removed that redundant hook, then rebuilt and reran the
+full suite. The final code retains one conversion-failure reporting site
+before cleanup, now inside the helper.
+
+| Measurement | Fresh baseline | Final candidate | Reduction |
+| --- | ---: | ---: | ---: |
+| Actual DLL file bytes | 14,245,888 | 14,243,840 | 2,048 |
+| Analyzed section bytes | 14,244,864 | 14,242,816 | 2,048 |
+| Virtual section bytes | 14,255,104 | 14,253,004 | 2,100 |
+
+Incremental actual savings are **2,048 bytes (2 KiB)**. Cumulative actual
+savings are **291,328 bytes (284.5 KiB)** against the original
+14,535,168-byte baseline. Raw `.text` shrinks 2,048 bytes. Virtual `.text`
+shrinks 2,112 bytes and `.pdata` grows 12 bytes; all other raw and virtual
+section sizes are unchanged.
+
+The complete accessor family query falls from 7,601 to 5,414 attributed
+bytes across 19 unique representatives. Scoped code collection and
+disassembly show all 20 emitted accessor primary blocks calling one
+138-byte helper. Thus sharing is observed in the emitted code, not assumed
+from noinline. The ColumnDefinition accessor's resolved primary block shrinks
+from 404 to 290 bytes. These figures may overlap and are not added to the
+whole-file saving.
+
+The tradeoff is one additional ordinary helper call, its stack frame, and
+its cookie check. The inspected caller retains its 64-byte local stack
+reservation. No allocation, AddRef, or additional QueryInterface is introduced.
+This path serves diagnostic collection inspection, not normal rendering.
+No timing benchmark, fault injection, or other-architecture benefit is claimed.
+The guarded COM calls, failure mitigation barriers, and stack-cookie checks
+remain. The eight exported ordinal/name pairs and PE security characteristics
+are unchanged; no build settings, class layouts, or metadata definitions change.
+
+Restoring the exact original source and recompiling reproduces every baseline
+size metric and `.text` byte. Recompiling the refined candidate through
+prodtest reproduces every refined candidate metric and `.text` byte.
+Binlogs confirm actual InternalDebugInterop.cpp compilation and LTCG linking,
+not merely an up-to-date build. All builds use x64 Release (`amd64fre`),
+explicit `/nopgo`, `PGOBuildMode=Off`, and toolset 14.44.35207.
+
+The final full CalendarViewIntegrationTests run used
+`ge_current-260820-Desktop`, WPF hosting, and `amd64fre /nopgo`:
+121 total, 120 passed, 1 failed, none blocked, skipped, or not run.
+The only failure was `TestCICEvents` with
+`IsTrue(didOutputMatchMaster)` in Utilities.cpp line 1627.
+`VerifySelfAdaptivePanel` passed. The raw log contains all 121 unique test
+endings, the expected complete summary, and no additional error assertions.
+This meets the allowed-failure gate; it is not an all-tests-passed result.
+The earlier unrefined version ran 121 tests, with 119 passed and both exact
+allowed failures. That first run is retained separately and was not reused
+as final validation.
+
+The final built DLL, frozen final snapshot, local payload root/Test copies,
+and remote payload root/Test copies all match SHA256
+`58ED589E1CDA6B7A301308868C556D4FBBEAC20111C3C48477312272C3DF83BF`.
+
+Evidence is under
+`D:\x1\artifacts\ralph\20260919-235014-ee40fcfc`.
+`000-baseline`, `001-shared-item-conversion`, `002-restored-control`, and
+`003-candidate-final` retain the initial experiment and control. The initial
+candidate had the same actual size as the final version, but virtual size
+14,253,352 bytes. `refined\001-refined` and
+`refined\003-candidate-final` contain the final measurements and repeat.
+Each measurement preserves snapshots, hashes, source revision/patch,
+SizeBench receipts, and frozen-tool identity; build logs and binlogs record
+the corresponding build commands. Core analysis verified the complete
+frozen manifest and managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+
+`refined\verification.json`, `refined\helper-sharing.json`, scoped symbol
+reports, primary-block disassembly, and both `build-events.json` files record
+attribution and emitted-code evidence. `refined\tests.log`,
+`refined\vm-testrun-output.log`, `refined\WexLogFileOutput`,
+`refined\test-result.json`, and `refined\tested-dll-hashes.json` record final
+validation. `ownership.json`, `originals`, `restored-source-hash.json`,
+`semantic-review.json`, and `progress.json` record ownership and review.
+No SizeBench defect was observed.

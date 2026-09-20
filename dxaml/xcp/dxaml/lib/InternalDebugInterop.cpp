@@ -38,6 +38,16 @@ namespace
         return S_OK;
     }
 
+    __declspec(noinline) HRESULT GetCollectionItemAsDependencyObject(
+        _In_opt_ IUnknown* pItem,
+        _Outptr_result_maybenull_ xaml::IDependencyObject** ppDO)
+    {
+        ctl::ComPtr<xaml::IDependencyObject> spItemAsDO;
+        IFC_RETURN(ctl::do_query_interface(*spItemAsDO.ReleaseAndGetAddressOf(), pItem));
+        spItemAsDO.MoveTo(ppDO);
+        return S_OK;
+    }
+
     template <typename Item, typename IItem>
     static HRESULT
         GetCollectionItemInternal(
@@ -47,16 +57,12 @@ namespace
     {
         ctl::ComPtr<wfc::IVector<Item*>> spCollection;
         ctl::ComPtr<IItem> spItem;
-        ctl::ComPtr<xaml::IDependencyObject> spItemAsDO;
 
         *ppDO = nullptr;
 
         IFC_RETURN(ctl::do_query_interface(spCollection, pValue));
         IFC_RETURN(spCollection->GetAt(index, &spItem));
-        IFC_RETURN(spItem.As(&spItemAsDO));
-        spItemAsDO.MoveTo(ppDO);
-
-        return S_OK;
+        return GetCollectionItemAsDependencyObject(ctl::iunknown_cast(spItem.Get()), ppDO);
     }
 
     typedef HRESULT (*PFNGetSize)(_In_ IInspectable*, _In_ UINT*);
