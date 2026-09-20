@@ -3666,3 +3666,68 @@ identical code bytes. Rebuild restored source for the next baseline.
 Do not retry this destructor annotation alone. Remaining leads should
 identify a repeated operation and a concrete shared implementation rather
 than assume compiler annotations alone produce savings.
+
+## Rejected: compact root COM interface-ID comparisons (2026-09-20)
+
+Starting from `e3ec12b5f0a16ea69487f67564dddfd34b53e8d8`, replace the
+three `InlineIsEqualGUID` calls in `ctl::ComBase::QueryInterfaceImpl` with
+`std::memcmp` equality over `sizeof(IID)`. Add the required `<cstring>`
+include in `dxaml\xcp\components\com\inc\ComBase.h`. This is a new target
+for the comparison simplification, not a retry of the earlier iterator or
+event-source comparisons.
+
+The fresh SizeBench baseline retained 19,932 attributed bytes across 1,475
+`ComObject<T>::QueryInterfaceImplBase` representatives. Source inspection
+identified the shared root fallback and its three fixed comparisons.
+The experiment preserved the order of the IUnknown, IInspectable, and
+IMarshal branches, returned interface pointers, AddRef, EnsureFTM,
+marshaler query, error reporting, and HRESULT paths. It did not change
+interface shape, metadata, object layout, or security settings.
+
+| Measurement | Fresh baseline | Candidate | Candidate minus baseline |
+| --- | ---: | ---: | ---: |
+| Actual DLL file bytes | 14,243,840 | 14,243,840 | 0 |
+| Analyzed section bytes | 14,242,816 | 14,242,816 | 0 |
+| Virtual section bytes | 14,253,004 | 14,252,940 | -64 |
+
+The virtual `.text` size decreased from 9,960,044 to 9,959,980 bytes, but
+its aligned raw size remained 9,960,448 bytes. Every other section's raw
+and virtual sizes were unchanged. The complete `.text` hashes differ;
+this was not an unchanged-code result. The `QueryInterfaceImplBase`
+family's attributed size and representative count remained unchanged,
+so that family total is not evidence of savings in the shared fallback.
+Do not count the 64 virtual bytes as an actual DLL-file reduction.
+
+Reject the experiment and restore `ComBase.h` byte-for-byte to its backed-up
+SHA256. Only this description update is committed. Incremental accepted
+savings are **0 bytes**. Cumulative accepted savings remain **291,328 bytes
+(284.5 KiB)** against the original 14,535,168-byte baseline.
+
+Tests not run: experiment rejected. No prodtest build, VM setup, or
+post-restore test run was required. Earlier validation results do not apply
+to this candidate. No runtime-performance benefit is claimed.
+
+Evidence is under
+`D:\x1\artifacts\ralph\20260920-012548-48478222`.
+`000-baseline` and `001-root-guid-comparisons` preserve DLL/PDB snapshots,
+hashes, source revision/patch, build commands/logs/binlogs, core SizeBench
+reports, receipts, and frozen tool identity. `build-events.json` confirms
+actual `Boxes.g.cpp` compilation, LTCG code generation, and successful
+completion on both sides. Both builds used x64 Release (`amd64fre`),
+explicit `/nopgo`, `PGOBuildMode=Off`, and toolset 14.44.35207.
+`section-comparison.json` records section sizes and hashes;
+`ownership.json`, `originals`, and `restored-source-hashes.json` record
+source ownership and exact restoration. Both measurements verified the
+complete frozen manifest and managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No SizeBench defect was observed. A successful offline compiland query
+for `ComBase` returned no matching compiland; it does not establish
+that this header's emitted functions occupy zero bytes.
+
+BuildOutput still contains the rejected candidate's DLL/PDB. Rebuild the
+restored source before the next baseline. Do not repeat these three root
+comparisons alone: their measured reduction did not cross file alignment.
+Potential follow-up work should inspect emitted code for larger repeated
+operations, such as enum-reference factory completion or IID-array copying,
+while avoiding the already-rejected constructor annotations and root IID
+copy rewrites.
