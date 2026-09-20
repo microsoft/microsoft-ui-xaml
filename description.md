@@ -3607,3 +3607,62 @@ must rebuild the restored source before measuring its baseline.
 Avoid this broad constructor noinline annotation. More narrowly shared
 non-template work may still be useful, but requires identifying a repeated
 operation with preserved ownership and measuring its emitted implementation.
+
+## Rejected: prevent ComBase destructor inlining (2026-09-20)
+
+Starting from `13ee690692e29f339c70b773c849ae5d29b85413`, add
+`__declspec(noinline)` to the existing virtual `ctl::ComBase` destructor
+in `dxaml\xcp\components\com\inc\ComBase.h`. The fresh baseline attributed
+23,375 bytes to 365 ComObject scalar-deleting-destructor representatives.
+The hypothesis was that keeping the non-template base cleanup out of line
+could reduce repeated cleanup in derived destructors. This is distinct from
+the preceding rejected constructor annotation.
+
+The experiment did not alter the destructor body: free-threaded marshaler
+release still precedes weak-reference decoding and release. Virtual
+destruction, ownership, aggregation, object layout, and build settings stayed
+unchanged. No public interface or metadata definition changed.
+
+| Measurement | Fresh baseline | Candidate | Candidate minus baseline |
+| --- | ---: | ---: | ---: |
+| Actual DLL file bytes | 14,243,840 | 14,243,840 | 0 |
+| Analyzed section bytes | 14,242,816 | 14,242,816 | 0 |
+| Virtual section bytes | 14,253,004 | 14,253,004 | 0 |
+
+Every section's raw and virtual sizes are unchanged. The complete raw `.text`
+bytes are also identical, with SHA256
+`CAF48C7F9171BC0C3DFEE2CF5393E4C7C38ECE544ACB5BF292509856A0B302F8`
+on both sides. Candidate compilation and LTCG linking did occur, so this
+is an ineffective annotation rather than an up-to-date build mistaken for
+a measurement. No conclusion about general noinline specialization behavior
+is inferred from this particular result.
+
+Reject the experiment and restore the header exactly to its backed-up SHA256.
+Only this description update is committed. Incremental accepted savings
+are **0 bytes**. Cumulative accepted savings remain **291,328 bytes
+(284.5 KiB)** against the original 14,535,168-byte baseline.
+
+Tests not run: experiment rejected. No prodtest build, VM setup, or
+post-restore test run was required. Earlier validation results do not apply
+to this candidate. No runtime-performance or other-architecture benefit
+is claimed.
+
+Evidence is under
+`D:\x1\artifacts\ralph\20260920-010928-5e41cf85`.
+`000-baseline` and `001-shared-base-destructor` preserve DLL/PDB snapshots,
+hashes, source revision/patch, commands, build logs/binlogs, complete core
+SizeBench reports, receipts, and tool identity. `section-comparison.json`
+records section sizes and hashes. `build-events.json` records affected
+`Boxes.g.cpp` compilation and LTCG linking for both builds. Both used x64
+Release (`amd64fre`), explicit `/nopgo`, `PGOBuildMode=Off`, and toolset
+14.44.35207. `ownership.json`, `originals`, and
+`restored-source-hashes.json` record ownership and restoration.
+Both measurements verified the complete frozen manifest and managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No SizeBench defect was observed.
+
+BuildOutput still holds the rejected candidate's DLL/PDB identity, despite
+identical code bytes. Rebuild restored source for the next baseline.
+Do not retry this destructor annotation alone. Remaining leads should
+identify a repeated operation and a concrete shared implementation rather
+than assume compiler annotations alone produce savings.
