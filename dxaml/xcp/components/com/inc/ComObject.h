@@ -116,14 +116,7 @@ namespace ctl
 
         IFACEMETHODIMP GetIids(_Out_ ULONG *iidCount, _Outptr_result_buffer_all_maybenull_(*iidCount) IID **iids) final
         {
-            if (m_pControllingUnknown)
-            {
-                return m_pControllingUnknown->GetIids(iidCount, iids);
-            }
-            else
-            {
-                return TBASE::GetIidsImpl(iidCount, iids);
-            }
+            return GetIidsBase(iidCount, iids);
         }
 
     public:

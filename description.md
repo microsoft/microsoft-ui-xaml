@@ -3924,3 +3924,101 @@ No SizeBench defect was observed. Folded aliases and family attribution are
 not distinct contiguous byte ranges; disassembly used verified primary-block
 boundaries. Future work should inspect other repeated delegating methods
 individually rather than assume they offer the same benefit.
+
+## Follow-up: share COM IID-enumeration routing (2026-09-20)
+
+Starting from `1f90837ce2cab57f4dee41c54b4794df7686598e`, move the
+aggregation decision in `ComObject<T>::GetIids` into a non-template,
+nonvirtual `ComObjectBase::GetIidsBase` helper. The helper calls the
+controlling outer's `GetIids` for aggregated objects. Otherwise, it calls
+the existing final `NonDelegatingGetIids`, which still invokes the same
+qualified `TBASE::GetIidsImpl`.
+
+The change leaves IID allocation, contents, order, output publication,
+HRESULTs, reference counting, and error reporting in their existing
+implementations. It adds no object fields, virtual slots, exports, or
+metadata changes. The helper's noinline annotation keeps the shared routing
+boundary; emitted-code inspection, not the annotation alone, confirms sharing.
+
+### Measured result
+
+| Metric | Fresh baseline | Final candidate | Reduction |
+|---|---:|---:|---:|
+| Actual DLL file bytes | 13,439,488 | 13,438,464 | 1,024 |
+| Analyzed section bytes | 13,438,464 | 13,437,440 | 1,024 |
+| Virtual section bytes | 13,448,496 | 13,447,496 | 1,000 |
+
+**Accepted incremental saving: 1,024 bytes (1 KiB). Cumulative saving:
+1,096,704 bytes (1,071 KiB)** against the original 14,535,168-byte DLL.
+Raw `.text` and `.rdata` each shrink by 512 bytes. Their virtual sizes
+shrink by 592 and 384 bytes respectively; virtual `.reloc` shrinks by
+24 bytes without changing its raw size.
+
+The baseline `ComObject<T>::GetIids` family was already small: 334 bytes
+across ten representatives. It falls to 36 bytes across four representatives.
+Each candidate representative is a nine-byte this-pointer adjustment and
+tail jump to the single 31-byte helper. The non-delegating family remains
+54 bytes across six representatives. These attributed family sizes overlap
+section measurements and are not additional file savings.
+
+An exact restored-product-source control reproduced all three baseline
+metrics and the full raw `.text` hash. Reapplying the candidate and building
+`prodtest` reproduced all three candidate metrics and its full `.text` hash.
+The changed header consumers actually recompiled, and LTCG ran in both
+candidate builds and the restored control. All eight exported ordinal/name
+pairs and PE security characteristics match across the four builds.
+
+### Behavior and performance review
+
+The helper uses the existing IInspectable or non-delegating IID slot and
+tail-dispatches through CFG. No allocation, reference-count operation,
+error hook, or helper stack frame is added. The unaggregated path gains one
+guarded virtual dispatch instead of directly invoking `TBASE::GetIidsImpl`.
+This is a bounded dispatch tradeoff for a measured 1 KiB reduction, not a
+runtime-speed improvement. Runtime timing was not measured.
+
+Three new isolated COM tests cover independently owned CoTaskMem arrays,
+IID order and lifetime after object release, exact `S_FALSE` and failure
+HRESULT forwarding, original output-pointer forwarding, unchanged failure
+outputs, aggregated outer results, and non-delegating inner enumeration.
+All seven isolated COM tests passed on both the restored control and final
+candidate. The final isolated build did not change the measured product DLL.
+The failure test injects a failing implementation result, not allocator
+failure; allocation-failure injection and other architectures remain untested.
+
+### Required VM validation and provenance
+
+This turn rebuilt product and test targets with **amd64fre /nopgo**,
+`PGOBuildMode=Off`, Release/x64, and toolset 14.44.35207, then refreshed and
+deployed the payload. The full CalendarViewIntegrationTests suite ran on
+`ge_current-260820-Desktop` in **WPF** mode. All **121** unique tests
+completed: **119 passed, 2 failed, 0 blocked, 0 skipped, and 0 not run**.
+The only failures were `TestCICEvents` and `VerifySelfAdaptivePanel`, each
+with exactly the allowed `IsTrue(didOutputMatchMaster)` assertion in
+`Private::Infrastructure::Utilities::VerifySuccess`, Utilities.cpp line 1627.
+No additional errors appeared. These are the allowed baseline failures,
+not an all-passed result, and their cause remains unestablished.
+
+The built DLL, frozen final snapshot, local payload root/Test copies, and
+deployed VM root/Test copies all matched SHA256
+`D7687D52AEEDDBAB34457982EA2DD979D98CBA55C21A96F4BBD25E5D6D0E5650`.
+
+Evidence is under `D:\x1\artifacts\ralph\20260920-030400-a2958cac`:
+`000-baseline`, `001-shared-iid-routing`, `002-restored-control`, and
+`003-candidate-final` preserve measurements, hashes, source patches, and
+SizeBench reports. `final-test-build.log`, `tests.log`,
+`vm-testrun-output.log`, `WexLogFileOutput`, `tested-dll-hashes.json`,
+`tests-com-control`, `tests-com-final`, and `verification.json` record this
+turn's builds and tests. `build-events.json`, `routing-symbols.json`,
+`routing-blocks.json`, and `routing-disassembly-0.txt` through
+`routing-disassembly-4.txt` record the compile and emitted-code evidence;
+the routing files are in `003-candidate-final`.
+
+Every measurement verified the complete frozen CLI manifest and managed
+identity `e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No CLI defect was found. The inspection script initially included synthetic
+pdata details from a scoped collection, then stopped at its primary-block
+guard. It was corrected to select only the requested wrapper RVAs and reuse
+the existing collection. A repeated helper query was correctly rejected for
+an existing output path; its original successful JSON was retained.
+Only verified primary-code-block boundaries were used for the routing review.

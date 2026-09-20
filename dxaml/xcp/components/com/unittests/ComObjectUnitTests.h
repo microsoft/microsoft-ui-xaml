@@ -18,6 +18,18 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can instantiate a ComObject instance.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(GetIidsPreservesOwnership)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates IID order and independently owned CoTaskMem arrays.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(GetIidsForwardsResults)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates exact HRESULT and output forwarding to the local implementation.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(AggregatedGetIidsUsesOuter)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates outer IID results and non-delegating inner IID enumeration.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(RuntimeClassNamePreservesOwnership)
             TEST_METHOD_PROPERTY(L"Description", L"Validates runtime class name contents, ownership, and null output handling.")
         END_TEST_METHOD()

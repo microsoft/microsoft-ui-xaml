@@ -42,6 +42,47 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
         INSPECTABLE_CLASS(RuntimeName);
     };
 
+    class IidResultInspectable : public ComBase
+    {
+    public:
+        HRESULT Result = S_FALSE;
+        ULONG* LastCount = nullptr;
+        IID** LastIids = nullptr;
+
+        HRESULT GetIidsImpl(_Out_ ULONG* iidCount, _Outptr_ IID** iids)
+        {
+            LastCount = iidCount;
+            LastIids = iids;
+            if (SUCCEEDED(Result))
+            {
+                *iidCount = 0;
+                *iids = nullptr;
+            }
+            return Result;
+        }
+    };
+
+    static void ValidateIidResults(IInspectable* instance, IidResultInspectable* implementation)
+    {
+        ULONG count = 7;
+        IID sentinel = IID_IUnknown;
+        IID* iids = &sentinel;
+        VERIFY_ARE_EQUAL(S_FALSE, instance->GetIids(&count, &iids));
+        VERIFY_ARE_EQUAL(0ul, count);
+        VERIFY_IS_NULL(iids);
+        VERIFY_IS_TRUE(implementation->LastCount == &count);
+        VERIFY_IS_TRUE(implementation->LastIids == &iids);
+
+        implementation->Result = E_FAIL;
+        count = 7;
+        iids = &sentinel;
+        VERIFY_ARE_EQUAL(E_FAIL, instance->GetIids(&count, &iids));
+        VERIFY_ARE_EQUAL(7ul, count);
+        VERIFY_IS_TRUE(iids == &sentinel);
+        VERIFY_IS_TRUE(implementation->LastCount == &count);
+        VERIFY_IS_TRUE(implementation->LastIids == &iids);
+    }
+
     template<typename T>
     static void ValidateRuntimeClassName()
     {
@@ -90,6 +131,56 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
     void ComObjectUnitTests::RuntimeClassNamePreservesOwnership()
     {
         ValidateRuntimeClassName<NamedInspectable>();
+    }
+
+    void ComObjectUnitTests::GetIidsPreservesOwnership()
+    {
+        ctl::ComPtr<ComBase> instance;
+        THROW_IF_FAILED(ComObject<ComBase>::CreateInstance(instance.ReleaseAndGetAddressOf()));
+
+        ULONG count = 0;
+        IID* iids = nullptr;
+        THROW_IF_FAILED(instance->GetIids(&count, &iids));
+        std::unique_ptr<IID, decltype(&CoTaskMemFree)> first(iids, CoTaskMemFree);
+        VERIFY_ARE_EQUAL(2ul, count);
+
+        THROW_IF_FAILED(instance->GetIids(&count, &iids));
+        std::unique_ptr<IID, decltype(&CoTaskMemFree)> second(iids, CoTaskMemFree);
+        VERIFY_ARE_EQUAL(2ul, count);
+        VERIFY_IS_TRUE(first.get() != second.get());
+        instance.Reset();
+
+        VERIFY_IS_TRUE(first.get()[0] == IID_IUnknown);
+        VERIFY_IS_TRUE(first.get()[1] == IID_IInspectable);
+        VERIFY_IS_TRUE(second.get()[0] == IID_IUnknown);
+        VERIFY_IS_TRUE(second.get()[1] == IID_IInspectable);
+    }
+
+    void ComObjectUnitTests::GetIidsForwardsResults()
+    {
+        ctl::ComPtr<IidResultInspectable> instance;
+        THROW_IF_FAILED(ComObject<IidResultInspectable>::CreateInstance(instance.ReleaseAndGetAddressOf()));
+        ValidateIidResults(instance.Get(), instance.Get());
+    }
+
+    void ComObjectUnitTests::AggregatedGetIidsUsesOuter()
+    {
+        ctl::ComPtr<IidResultInspectable> outer;
+        THROW_IF_FAILED(ComObject<IidResultInspectable>::CreateInstance(outer.ReleaseAndGetAddressOf()));
+
+        ComObject<ComBase>* inner = nullptr;
+        THROW_IF_FAILED(ComObject<ComBase>::CreateInstance(outer.Get(), &inner));
+        auto releaseInner = [](ComObject<ComBase>* value) { value->NonDelegatingRelease(); };
+        std::unique_ptr<ComObject<ComBase>, decltype(releaseInner)> innerOwner(inner, releaseInner);
+        ValidateIidResults(inner, outer.Get());
+
+        ULONG count = 0;
+        IID* iids = nullptr;
+        THROW_IF_FAILED(inner->NonDelegatingGetIids(&count, &iids));
+        std::unique_ptr<IID, decltype(&CoTaskMemFree)> ownedIids(iids, CoTaskMemFree);
+        VERIFY_ARE_EQUAL(2ul, count);
+        VERIFY_IS_TRUE(iids[0] == IID_IUnknown);
+        VERIFY_IS_TRUE(iids[1] == IID_IInspectable);
     }
 
     void ComObjectUnitTests::RuntimeClassNameHandlesEmptyAndEmbeddedNulls()

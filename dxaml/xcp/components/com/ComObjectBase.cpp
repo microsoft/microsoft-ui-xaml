@@ -51,6 +51,18 @@ HRESULT ctl::ComObjectBase::GetRuntimeClassNameBase(_Out_ HSTRING* pClassName)
     }
 }
 
+HRESULT ctl::ComObjectBase::GetIidsBase(_Out_ ULONG* iidCount, _Outptr_ IID** iids)
+{
+    if (m_pControllingUnknown)
+    {
+        return m_pControllingUnknown->GetIids(iidCount, iids);
+    }
+    else
+    {
+        return NonDelegatingGetIids(iidCount, iids);
+    }
+}
+
 HRESULT ctl::ComObjectBase::CreateInstanceBase(_In_ ComBase* pNewInstance, bool fNoInit)
 {
     if (!fNoInit)
