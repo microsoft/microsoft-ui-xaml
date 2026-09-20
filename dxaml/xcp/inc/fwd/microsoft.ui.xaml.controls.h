@@ -342,6 +342,7 @@ namespace Controls {
     interface IAutoSuggestBox2;
     interface IAutoSuggestBox3;
     interface IAutoSuggestBox4;
+    interface IAutoSuggestBoxFactory;
     interface IAutoSuggestBoxFeature_HeaderPlacement;
     interface IAutoSuggestBoxQuerySubmittedEventArgs;
     interface IAutoSuggestBoxStatics;
