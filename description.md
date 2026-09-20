@@ -3147,3 +3147,97 @@ restoration; `build-events.json` records compilation and link evidence.
 Both measurements verified the complete frozen CLI manifest and used managed
 identity `e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
 No CLI defect was observed. Keep the explicit factory HRESULT branch.
+
+## Follow-up: transfer tracker iterators directly (2026-09-19)
+
+Starting from `7b71afaaf02da80867382804627c5f152ca34e12`, change
+`TrackerView<T>::First` and `TrackerCollection<T>::First` in
+`dxaml\xcp\dxaml\lib\TrackerCollections.h` to create a concrete iterator
+pointer and transfer it directly to the caller. This removes a local
+interface `ComPtr` and its redundant failure-path release check.
+
+The factory still initializes the iterator and releases it on initialization
+failure. It writes the output only on success. After successful creation,
+`SetCollection` returns void and the iterator is transferred to the output.
+Thread checking, output-pointer error origination, HRESULT propagation,
+tracker registration and collection-reference acquisition remain unchanged.
+The concrete-to-interface conversion uses the same public base interface;
+no QueryInterface call, extra reference, helper, vtable change, or public
+signature change is introduced.
+
+| Measurement | Fresh baseline | Final candidate | Reduction |
+| --- | ---: | ---: | ---: |
+| Actual DLL file bytes | 14,247,424 | 14,246,400 | 1,024 |
+| Analyzed section bytes | 14,246,400 | 14,245,376 | 1,024 |
+| Virtual section bytes | 14,256,704 | 14,255,548 | 1,156 |
+
+Incremental actual savings are **1,024 bytes (1 KiB)**. Cumulative actual
+savings are **288,768 bytes (282 KiB)** against the original
+14,535,168-byte baseline. Raw savings are in `.text`; virtual `.text`
+shrinks 1,152 bytes and `.reloc` shrinks 4 bytes.
+
+Each tracker `First` family falls from 4,158 to 3,582 attributed bytes
+across 18 representatives. These family figures may overlap and are not
+summed or substituted for file savings. Resolved AutomationPeer primary
+blocks shrink from 231 to 199 bytes for both methods. Disassembly shows the
+same initialization, registration, and reference-setting operations, without
+the local null-test/virtual-release cleanup. The inspected collection body
+reserves 32 rather than 48 bytes of local stack space. No runtime timing
+claim is made.
+
+Restoring and recompiling the original header reproduces all baseline
+metrics and every baseline `.text` byte. Reapplying the candidate and
+building prodtest reproduces all candidate metrics and every candidate
+`.text` byte. The eight exports and PE security characteristics remain
+unchanged. All builds use x64 Release (`amd64fre`), explicit `/nopgo`,
+`PGOBuildMode=Off`, and toolset 14.44.35207. Binlogs confirm affected
+compilation and LTCG linking.
+
+One attempted control build, `002-restored-control`, was invalid: copying
+the backup preserved an old header timestamp, so the incremental build
+retained the candidate. Its evidence is kept but excluded from comparisons.
+After refreshing that owned header's timestamp,
+`002b-restored-recompiled` performed the required recompile and reproduced
+the baseline. The final source restores the original trailing blank line;
+`final-source-formatting.json` verifies that this is the only difference
+from the source used for the final measured and tested candidate.
+
+### Behavior review and validation
+
+The removed owner has no HRESULT failure path to cover after successful
+creation. `SetCollection` calls the existing void `SetPtrValue`; its
+registration implementation uses the existing allocation policy and is
+built through the lifetime component's `_HAS_EXCEPTIONS=0` configuration.
+This does not introduce an exception-handling policy or change allocation
+behavior. A future fallible setup step would need explicit local ownership
+again. No fault-injection or other-architecture validation was performed.
+
+This turn's complete CalendarViewIntegrationTests run used
+`ge_current-260820-Desktop`, WPF hosting, and `amd64fre /nopgo`:
+121 total, 119 passed, 2 failed, and none blocked, skipped, or not run.
+The failures were exactly `TestCICEvents` and `VerifySelfAdaptivePanel`,
+each with the approved `IsTrue(didOutputMatchMaster)` assertion in
+`Utilities.cpp` line 1627. These are allowed baseline failures, not a claim
+that all tests passed or that their cause is known. The runner returned 1;
+the complete raw VM log and all 121 unique test endings were reviewed.
+
+Built, frozen-final, local payload root/Test, and remote payload root/Test
+DLL copies all matched SHA256
+`820F05C0F716AD20FBFF8623378CF4CAB35F4A7E53975E271E5356E9784AC9BF`.
+
+### Provenance
+
+Evidence is under
+`D:\x1\artifacts\ralph\20260919-213559-66ad6105`.
+`000-baseline`, `001-direct-tracker-iterator`,
+`002b-restored-recompiled`, and `003-candidate-final` preserve measurements,
+snapshots, hashes, source patches, receipts, and frozen tool identity.
+`first-family-full.json`, resolved primary-block reports and disassembly
+provide the emitted-code evidence. Ownership and source backups are kept
+separately. `final-test-build.log`, binlogs, and `build-events.json` record
+build evidence; `tests.log`, `vm-testrun-output.log`, `WexLogFileOutput`,
+`test-result.json`, `tested-dll-hashes.json`, and `verification.json` record
+this turn's validation. All core collections verified the complete frozen
+manifest and managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No SizeBench defect was observed.

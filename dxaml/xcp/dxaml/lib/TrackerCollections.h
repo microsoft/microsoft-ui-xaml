@@ -162,17 +162,17 @@ namespace DirectUI
         IFACEMETHODIMP First(_Outptr_ wfc::IIterator<T> **iterator) override
         {
             HRESULT hr = S_OK;
-            ctl::ComPtr<wfc::IIterator<T>> spResult;
+            TrackerIterator<T, wfc::IVectorView<T>>* pResult = nullptr;
 
             IFC(CheckThread());
             ARG_VALIDRETURNPOINTER(iterator);
 
-            hr = ctl::ComObject<TrackerIterator<T, wfc::IVectorView<T>>>::CreateInstance(spResult.ReleaseAndGetAddressOf());
+            hr = ctl::ComObject<TrackerIterator<T, wfc::IVectorView<T>>>::CreateInstance(&pResult);
             IFC(hr);
 
-            spResult.template Cast<TrackerIterator<T, wfc::IVectorView<T>>>()->SetCollection(this);
+            pResult->SetCollection(this);
 
-            *iterator = spResult.Detach();
+            *iterator = pResult;
 
         Cleanup:
 
@@ -289,15 +289,15 @@ namespace DirectUI
         IFACEMETHODIMP First(_Outptr_ wfc::IIterator<T> **iterator) override
         {
             HRESULT hr = S_OK;
-            ctl::ComPtr<wfc::IIterator<T>> spResult;
+            TrackerIterator<T>* pResult = nullptr;
 
             IFC(CheckThread());
             ARG_VALIDRETURNPOINTER(iterator);
 
-            IFC(ctl::ComObject<TrackerIterator<T>>::CreateInstance(spResult.ReleaseAndGetAddressOf()));
-            spResult.template Cast<TrackerIterator<T>>()->SetCollection(this);
+            IFC(ctl::ComObject<TrackerIterator<T>>::CreateInstance(&pResult));
+            pResult->SetCollection(this);
 
-            *iterator = spResult.Detach();
+            *iterator = pResult;
 
         Cleanup:
 
