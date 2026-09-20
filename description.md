@@ -4338,3 +4338,63 @@ Both measurements verified the complete frozen CLI manifest and managed
 identity `e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
 No SizeBench issue was observed. Do not repeat this unconditional
 subscriber-cleanup extraction as a standalone optimization on this baseline.
+
+### Rejected experiment: direct deferral ownership transfer (2026-09-20)
+
+Starting from `3dcae7de9cfa148d8d5dbd8ee25e9ddce4a3df0c`, rebuilt the
+restored source and collected the complete core SizeBench reports before
+editing. The baseline includes the accepted IInspectable forwarder dispatch,
+not the previous turn's rejected subscriber-cleanup helper.
+
+Changed only `DeferralManager<TDeferral>::GetDeferral` in
+`dxaml\xcp\dxaml\lib\DeferralManager.h`: replaced the final same-type
+`spDeferral.CopyTo(ppDeferral)` with the existing `MoveTo` overload.
+Both operations publish the same concrete pointer and return S_OK.
+MoveTo transfers the factory-owned reference instead of adding a reference
+and then releasing the local owner. Factory initialization, error cleanup,
+generation checks, and the preceding deferral-count increment were unchanged.
+The event args' public interface conversions were not changed.
+No helper, ABI change, or new call boundary was introduced.
+
+| Metric | Fresh baseline | Rejected candidate | Candidate minus baseline |
+|---|---:|---:|---:|
+| Actual DLL file bytes | 13,437,952 | 13,437,952 | 0 |
+| Analyzed section bytes | 13,436,928 | 13,436,928 | 0 |
+| Virtual section bytes | 13,446,896 | 13,446,704 | -192 |
+
+Virtual `.text` shrank by 64 bytes and virtual `.rdata` by 128 bytes.
+Every raw section size stayed unchanged. The two deferral factory
+representatives remained 650 attributed bytes in total; the
+DecrementDeferralCount family remained 508 bytes across two representatives.
+GetDeferral was not a separate template family in the collected report;
+that absence is not evidence of zero contribution, since callers may
+inline it. These attributed family totals are not added to section totals.
+
+Reject the change because it does not reduce the actual DLL file length.
+The small virtual reduction does not cross the existing file alignment.
+No runtime performance claim or independent repeatability claim is made.
+Restored the header byte-for-byte against the pre-edit backup. Only this
+description update is committed. Retained incremental savings are
+**0 bytes**; cumulative accepted savings remain
+**1,097,216 bytes (1,071.5 KiB)**.
+
+Tests not run: experiment rejected. No prodtest build, VM setup, or VM
+test run was performed. No post-restore test run was required, and prior
+turns' results are not claimed for this candidate. Mutable BuildOutput
+still contains the rejected candidate; the next turn must rebuild the
+restored source for a fresh baseline.
+
+Evidence is under `D:\x1\artifacts\ralph\20260920-054539-544ca82b`.
+`000-baseline` and `001-direct-deferral-transfer` preserve DLL/PDB snapshots,
+hashes, source revision/patch, build commands/logs/binlogs, core SizeBench
+reports, offline summary and template queries, receipts, and stderr.
+`build-events.json` confirms recompilation of `ContentDialog_Partial.cpp`
+and successful LTCG. Both builds used toolset 14.44.35207, Release/x64,
+explicit `amd64fre /nopgo`, and `PGOBuildMode=Off`.
+`ownership.json`, `originals`, `candidate-source`, `candidate.patch`,
+`restored-source-hashes.json`, `verification.json`, and `progress.json`
+record the hypothesis, semantic review, metrics, and restoration.
+Both measurements verified the full frozen CLI manifest and managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No SizeBench issue was observed. Do not repeat this one-line transfer as a
+standalone file-size optimization on this baseline.
