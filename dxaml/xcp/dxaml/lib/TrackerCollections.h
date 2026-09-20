@@ -326,15 +326,15 @@ namespace DirectUI
         IFACEMETHOD(GetView)(_Outptr_result_maybenull_ wfc::IVectorView<T>** view) override
         {
             HRESULT hr = S_OK;
-            ctl::ComPtr<wfc::IVectorView<T>> spResult;
+            TrackerView<T>* pResult = nullptr;
 
             IFC(CheckThread());
             ARG_VALIDRETURNPOINTER(view);
 
-            IFC(ctl::ComObject<TrackerView<T>>::CreateInstance(spResult.ReleaseAndGetAddressOf()));
-            spResult.template Cast<TrackerView<T>>()->SetCollection(this);
+            IFC(ctl::ComObject<TrackerView<T>>::CreateInstance(&pResult));
+            pResult->SetCollection(this);
 
-            *view = spResult.Detach();
+            *view = pResult;
 
         Cleanup:
 

@@ -3241,3 +3241,81 @@ this turn's validation. All core collections verified the complete frozen
 manifest and managed identity
 `e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
 No SizeBench defect was observed.
+
+## Follow-up: transfer tracker collection views directly (2026-09-19)
+
+Starting from `da8bf1b2c35573ce0ea16ce1bc484ea26d005b21`, change
+`TrackerCollection<T>::GetView` in
+`dxaml\xcp\dxaml\lib\TrackerCollections.h` to create a concrete
+`TrackerView<T>` pointer and transfer it directly to the output.
+This removes the local interface `ComPtr`, its downcast, and redundant
+failure-path release check. The factory still initializes the view and
+releases it on failure; it only writes the output on success.
+
+Thread checking, output-pointer error origination, HRESULT propagation,
+tracker registration, and collection-reference acquisition are unchanged.
+After successful creation, `SetCollection` returns void and ownership
+transfers to the caller. The implicit base conversion adjusts the concrete
+pointer to the same `IVectorView<T>` interface. No extra AddRef,
+QueryInterface, helper, interface change, or build-setting change is added.
+
+| Measurement | Fresh baseline | Final candidate | Reduction |
+| --- | ---: | ---: | ---: |
+| Actual DLL file bytes | 14,246,400 | 14,245,888 | 512 |
+| Analyzed section bytes | 14,245,376 | 14,244,864 | 512 |
+| Virtual section bytes | 14,255,548 | 14,255,104 | 444 |
+
+Incremental actual savings are **512 bytes (0.5 KiB)**. Cumulative actual
+savings are **289,280 bytes (282.5 KiB)** against the original
+14,535,168-byte baseline. Raw savings are in `.text`. Virtual `.text`
+shrinks 448 bytes, `.pdata` grows 12 bytes, and `.reloc` shrinks 8 bytes.
+
+The complete GetView family query shows the tracker family falling from
+4,464 to 3,999 attributed bytes across 18 representatives. These attributed
+figures are not summed with whole-file savings. The resolved AutomationPeer
+primary block shrinks from 248 to 217 bytes. Its disassembly retains thread
+and pointer checks, initialization, registration, and reference-setting,
+but removes the local guarded release. Local stack reservation falls from
+48 to 32 bytes. No timing benchmark or other-architecture benefit is claimed.
+
+Restoring the exact original header and refreshing its timestamp before
+recompiling reproduces every baseline metric and `.text` byte. Reapplying
+the candidate and building prodtest reproduces every candidate metric and
+`.text` byte. The eight exports and PE security characteristics are unchanged.
+All builds used x64 Release (`amd64fre`), explicit `/nopgo`,
+`PGOBuildMode=Off`, and toolset 14.44.35207. Binlogs confirm affected
+compilation and LTCG linking.
+
+As with the preceding iterator change, the removed local owner has no
+HRESULT failure path after successful creation. Tracker registration uses
+the existing allocation policy and lifetime component configuration
+(`_HAS_EXCEPTIONS=0`); neither changes here. A future fallible setup step
+would need local ownership again. Fault injection was not performed.
+
+This turn's full CalendarViewIntegrationTests run used the local VM
+`ge_current-260820-Desktop`, WPF hosting, and `amd64fre /nopgo`:
+121 total, 120 passed, 1 failed, none blocked, skipped, or not run.
+The only failure was `TestCICEvents`, with the approved
+`IsTrue(didOutputMatchMaster)` assertion in `Utilities.cpp` line 1627.
+`VerifySelfAdaptivePanel` passed. The runner returned 1; the complete raw
+log, exact failure assertion, and all 121 unique test endings were reviewed.
+This is an allowed baseline failure, not an all-tests-passed claim.
+
+The built DLL, frozen final snapshot, local payload root/Test copies, and
+remote payload root/Test copies all matched SHA256
+`70F5D460F565E7A437085A8AEB445B3DBA9F26FEE3F5F65BEC5CF3641A80C53A`.
+
+Evidence is under
+`D:\x1\artifacts\ralph\20260919-223317-1631e747`.
+`000-baseline`, `001-direct-tracker-view`, `002-restored-control`, and
+`003-candidate-final` preserve snapshots, hashes, source patches,
+measurements, receipts, and tool identity. Full GetView family queries,
+resolved primary-block reports, and disassembly record emitted-code evidence.
+Build logs/binlogs and `build-events.json` prove compilation and linking.
+`tests.log`, `vm-testrun-output.log`, `WexLogFileOutput`, `test-result.json`,
+`tested-dll-hashes.json`, and `verification.json` record fresh validation.
+`final-source-formatting.json` records that final source differs from the
+tested snapshot only by restoring original trailing blank-line formatting.
+All core collections verified the complete frozen manifest and managed
+identity `e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No SizeBench defect was observed.
