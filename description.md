@@ -3039,3 +3039,56 @@ and used managed identity
 No SizeBench defect was observed. The rejected candidate was not deployed
 or performance-tested; no performance or other-architecture benefit is
 claimed.
+
+## Rejected: prevent boxed runtime-name implementation inlining (2026-09-19)
+
+Starting from `d7a39b0249ff86621515b93455026883d2cd43da`, this experiment
+added `__declspec(noinline)` to the existing explicit
+`ReferenceBase<T>::GetRuntimeClassNameImpl` specializations through
+`REFERENCE_ELEMENT_NAME_IMPL` in `dxaml\xcp\dxaml\lib\DXamlTypes.h`.
+The hypothesis was that keeping the already-emitted virtual implementation
+out of `ComObject<T>::GetRuntimeClassName` wrappers might reduce duplication.
+It did not change the function bodies, HSTRING ownership, HRESULT handling,
+controlling-outer dispatch, or interface shape.
+
+Fresh baseline SizeBench evidence ranked the COM runtime-name family at
+32,588 attributed bytes across 785 representatives and the reference
+implementation family at 10,149 bytes across 199 representatives.
+Both families retained exactly those figures in the candidate. More
+importantly, every raw `.text` byte and all three whole-image metrics were
+unchanged. This is not evidence that noinline guarantees sharing or prevents
+LTCG specialization; it produced no emitted-code benefit here.
+
+| Measurement | Fresh baseline | Candidate | Delta |
+| --- | ---: | ---: | ---: |
+| Actual DLL file bytes | 14,247,424 | 14,247,424 | 0 |
+| Analyzed section bytes | 14,246,400 | 14,246,400 | 0 |
+| Virtual section bytes | 14,256,704 | 14,256,704 | 0 |
+
+The candidate rebuilt affected code, including `Boxes.g.cpp`, and performed
+an LTCG link. Both builds used x64 Release (`amd64fre`) with explicit
+`/nopgo`, reported `PGOBuildMode=Off`, and used toolset 14.44.35207.
+Build logs and the candidate binlog report success.
+
+Rejected because the actual DLL did not shrink. The owned header was restored
+byte-for-byte against its pre-edit backup; this commit changes documentation
+only. No source change or performance benefit is retained. Incremental
+savings are zero. Cumulative actual savings remain 287,744 bytes (281 KiB)
+against the original 14,535,168-byte baseline.
+
+**Tests not run: experiment rejected.** Per the updated rejection policy,
+this turn did not build prodtest, set up the VM, or run or reuse prior
+CalendarView results. No runtime performance claim is made.
+
+Evidence is under
+`D:\x1\artifacts\ralph\20260919-211050-f35d3c2b`.
+`000-baseline` and `001-noinline-reference-name` preserve source revision
+and patch, build command/log/binlog, DLL/PDB snapshots and hashes, core
+SizeBench collections, offline reports, receipts, stderr, and tool identity.
+`ownership.json` and `originals` record ownership and exact source backups;
+`verification.json` records unchanged metrics, identical `.text`, and exact
+restoration; `build-events.json` records compilation and link evidence.
+Both measurements verified the complete frozen CLI manifest and used managed
+identity `e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No CLI defect was observed. Investigate another family, such as
+`ActivationFactoryCreator`, rather than repeating this noinline annotation.
