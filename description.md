@@ -4083,3 +4083,70 @@ and trust-family queries. The candidate directory also contains the scoped
 ownership, restoration, decision, and measurements. Do not repeat this
 direct-store trust-routing variant on the same baseline merely because
 the earlier runtime-name and IID helpers saved bytes.
+
+## Rejected: reference downcast for forwarder owner recovery (2026-09-20)
+
+Starting from `5c5087e1b15406365fa9217091642c6954b4f7ad`, investigate
+`ctl::interface_forwarder_base::This_helper` in
+`dxaml\xcp\components\com\inc\InterfaceForwarder.h`.
+The fresh SizeBench report attributes 1,054 bytes across 31 representatives
+to each of the `iinspectable_forwarder_base` GetIids, GetRuntimeClassName,
+and GetTrustLevel families. A verified 40-byte primary GetTrustLevel block
+for MediaPlayerElementAutomationPeer contains null-preserving pointer
+adjustments before the CFG dispatch.
+
+Test replacing only `static_cast<impl_type*>(pHolder)` with
+`&static_cast<impl_type&>(*pHolder)`. A live embedded forwarder has a holder
+and owner, so a reference downcast expresses that non-null relationship
+without an explicit compiler assumption. The public `impl_cast_helper`
+null guard, `interface_cast_helper`, owner-offset calculation, forwarded
+calls, ownership, and interface layout remain unchanged. The hypothesis
+was that the reference form would remove redundant null-preserving code,
+without adding dispatch, allocation, or runtime work.
+
+| Metric | Fresh baseline | Rejected candidate | Change |
+|---|---:|---:|---:|
+| Actual DLL file bytes | 13,438,464 | 13,438,464 | 0 |
+| Analyzed section bytes | 13,437,440 | 13,437,440 | 0 |
+| Virtual section bytes | 13,447,496 | 13,447,496 | 0 |
+
+The complete raw `.text` SHA256 is identical on both sides:
+`D5616E2632DA7C32609807739C1D274F5661622566ACDEC828FE47DA595305BB`.
+All three inspected forwarding families retain the same 1,054 bytes and
+31 representatives. This source spelling change does not alter emitted
+code with the current compiler and LTCG configuration; it does not establish
+that all possible forwarder optimizations are ineffective.
+The overlapping family sizes are not summed as file savings.
+
+Candidate binlog evidence confirms that `Boxes.g.cpp` and
+`DynamicMetadata.g.cpp` recompiled and LTCG completed successfully.
+Both measurements used toolset 14.44.35207, Release/x64,
+`amd64fre /nopgo`, and `PGOBuildMode=Off`. The unchanged result is not
+from skipping compilation or analyzing stale mutable output.
+Both complete SizeBench analyses and offline queries succeeded after
+verifying the frozen manifest and managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No CLI issue was observed. The baseline disassembly used verified primary
+block boundaries; zero-sized aliases and overlapping families were not
+treated as independent code.
+
+Reject the candidate because it does not reduce actual file size.
+The one speculative header was restored byte-for-byte against its original
+backup. Only this description update is committed.
+**Tests not run: experiment rejected.** No prodtest build or VM operation
+was performed. No timing benchmark or acceptance claim is made.
+Cumulative accepted savings remain **1,096,704 bytes (1,071 KiB)**.
+BuildOutput contains the candidate build until the next build; despite
+identical text and sizes, the next turn must rebuild the restored source
+for its own baseline.
+
+Evidence is under `D:\x1\artifacts\ralph\20260920-040826-43bc52fc`.
+`000-baseline` and `001-forwarder-reference-downcast` preserve frozen
+DLL/PDB snapshots, hashes, source state, build logs/binlogs, core reports,
+receipts, and complete forwarder-family queries. `000-baseline` also
+contains `wrapper-symbol.json` and `wrapper-disassembly.txt`.
+`ownership.json`, `originals`, `candidate-source`, `candidate.patch`,
+`build-events.json`, `verification.json`, and `progress.json` record the
+experiment and exact restoration. Do not repeat this reference-downcast
+spelling change on the same toolset in expectation of removing the
+null-preserving adjustments.
