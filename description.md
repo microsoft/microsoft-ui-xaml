@@ -4398,3 +4398,63 @@ Both measurements verified the full frozen CLI manifest and managed identity
 `e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
 No SizeBench issue was observed. Do not repeat this one-line transfer as a
 standalone file-size optimization on this baseline.
+
+## Rejected: simplify ignore-leak factory result transfer (2026-09-20)
+
+Starting from `09ff915783d04d73e381dd67105ff674b4c2462c`, rebuilt restored
+source for a fresh PGO-off baseline and collected SizeBench before editing.
+The bounded candidate applied the existing ordinary `ctl::make` result
+handoff pattern to `ctl::make_ignoreleak` in
+`dxaml\xcp\dxaml\lib\comInstantiation.h`.
+
+Replaced its temporary `ComPtr<tobject>` with an initially null raw pointer.
+The typed `ComObject<tobject>::CreateInstance` cleans up failed instances
+and publishes only on success. Both versions leave the caller's existing
+owner unchanged on creation failure, then release it and transfer the new
+reference on success. The `TRUE` disable-leak-check argument, debug leak
+tracking, and parameterized Initialize wrapper remained unchanged.
+The two identified consumers create a dynamic activation factory and a
+dependency-property handle. No interface conversion, ABI, metadata, or
+security setting changed.
+
+| Metric | Fresh baseline | Rejected candidate | Candidate minus baseline |
+|---|---:|---:|---:|
+| Actual DLL file bytes | 13,437,952 | 13,437,952 | 0 |
+| Analyzed section bytes | 13,436,928 | 13,436,928 | 0 |
+| Virtual section bytes | 13,446,896 | 13,446,896 | 0 |
+
+Every section's raw and virtual sizes stayed unchanged. Scoped symbol
+collections show the parameterized dependency-property-handle factory at
+251 bytes and `BetterActivationFactoryCreator::GetForDO` at 230 bytes on
+both sides, with unchanged RVAs. Those attributed totals are not added to
+section sizes. The full `.text` and `.rdata` hashes differ, so this is not
+a claim of identical machine code. The remaining raw section hashes match.
+Recompilation of `comTemplateLibrary.cpp` and `MetadataAPI.cpp`, followed
+by successful LTCG, confirms this was not a stale or no-op build.
+
+Reject the candidate because the actual DLL did not become smaller.
+Restored `comInstantiation.h` byte-for-byte against its pre-edit backup.
+Only this description update is committed. Retained incremental savings
+are **0 bytes**; cumulative accepted savings remain
+**1,097,216 bytes (1,071.5 KiB)**. No runtime performance or independent
+repeatability claim is made.
+
+Tests not run: experiment rejected. No prodtest build or VM test run was
+performed, and no post-restore test rerun was required. Earlier results
+are not claimed for this candidate. BuildOutput still contains the
+rejected candidate; the next turn must rebuild restored source.
+
+Evidence is under `D:\x1\artifacts\ralph\20260920-060004-8ee375ee`.
+`000-baseline` and `001-ignoreleak-transfer` preserve snapshots, hashes,
+source revision/patch, build logs/binlogs, core and scoped reports,
+queries, receipts, and stderr. `scoped-requests.json` records the selected
+metadata and factory compilation scopes. `ownership.json`, `originals`,
+`candidate-source`, `candidate.patch`, `build-events.json`,
+`restored-source-hashes.json`, `verification.json`, and `progress.json`
+preserve the hypothesis, semantic review, attribution, and restoration.
+Both builds used toolset 14.44.35207, Release/x64, explicit
+`amd64fre /nopgo`, and `PGOBuildMode=Off`. Both measurements verified the
+complete frozen CLI manifest and managed identity
+`e48a876c7c9dcd2ff9248d28a630f85873439ccb44a9c0a4ecf30c1d286af4f0`.
+No SizeBench issue was observed. Do not repeat this raw-pointer
+make_ignoreleak handoff as a standalone optimization on this baseline.
