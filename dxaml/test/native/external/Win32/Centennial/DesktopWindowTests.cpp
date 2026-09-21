@@ -74,7 +74,7 @@ namespace Microsoft::UI::Xaml::Tests::DesktopWindow {
             TestServices::WindowHelper->WaitForIdle();
         }
 
-        static void VerifyWindowRedirectionSurface(bool skipRedirectionSurface)
+        static void VerifyWindowRedirectionSurface(bool changeEnabled)
         {
             TestCleanupWrapper cleanup;
             WindowAutoCloser window;
@@ -82,7 +82,14 @@ namespace Microsoft::UI::Xaml::Tests::DesktopWindow {
             RunOnUIThread([&]()
             {
                 const auto changeId = xaml_settings::XamlChangeId::SkipWindowRedirectionSurface;
-                VERIFY_ARE_EQUAL(skipRedirectionSurface, xaml_settings::XamlOptionalChanges::IsChangeEnabled(changeId));
+                VERIFY_ARE_EQUAL(changeEnabled, xaml_settings::XamlOptionalChanges::IsChangeEnabled(changeId));
+
+                const auto compositor = xaml_media::CompositionTarget::GetCompositorForCurrentThread();
+                VERIFY_IS_NOT_NULL(compositor);
+                const bool isSystemCompositor =
+                    Microsoft::UI::Composition::CompositionEngine::GetForSystemEngine(compositor) != nullptr;
+                const bool skipRedirectionSurface = changeEnabled && isSystemCompositor;
+                LOG_OUTPUT(L"Using the %s compositor.", isSystemCompositor ? L"system" : L"lifted");
 
                 window.Attach(ref new Window());
                 wrl::ComPtr<IWindowNative> windowNative;
@@ -142,11 +149,11 @@ namespace Microsoft::UI::Xaml::Tests::DesktopWindow {
                 {
                     xaml_settings::XamlOptionalChanges::Lock();
                 });
-                if (!skipRedirectionSurface)
+                if (!changeEnabled)
                 {
                     VERIFY_IS_TRUE(xaml_settings::XamlOptionalChanges::EnableChange(changeId));
                 }
-                VERIFY_ARE_EQUAL(!skipRedirectionSurface, xaml_settings::XamlOptionalChanges::IsChangeEnabled(changeId));
+                VERIFY_ARE_EQUAL(!changeEnabled, xaml_settings::XamlOptionalChanges::IsChangeEnabled(changeId));
 
                 verifyWindowState();
             });
@@ -157,7 +164,7 @@ namespace Microsoft::UI::Xaml::Tests::DesktopWindow {
             VerifyWindowRedirectionSurface(false);
         }
 
-        void DesktopWindowTests::ValidateSkippedRedirectionSurface()
+        void DesktopWindowTests::ValidateOptedInRedirectionSurface()
         {
             VerifyWindowRedirectionSurface(true);
         }

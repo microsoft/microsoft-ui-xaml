@@ -24,6 +24,7 @@
 #include <windowing.h>
 #include "Microsoft.UI.Windowing.h"
 #include <FrameworkUdk/Theming.h>
+#include <Microsoft.UI.Composition.h>
 #include <Microsoft.UI.Interop.h>
 #include <OptionalChangeState.h>
 
@@ -1682,10 +1683,26 @@ void DesktopWindowImpl::CreateDesktopWindow()
     // full-window 32-bit bitmap. Skipping it drops both.
     //
     // The catch is that the window can no longer paint with GDI, which is a behavior change rather than a pure
-    // optimization, so it is opt-in through XamlChangeId::SkipWindowRedirectionSurface. The style is only
-    // honored here - adding it later with SetWindowLongPtr is silently dropped - so the decision has to be made
-    // for the window as a whole, before the app can set anything on it.
-    const DWORD extendedStyle = OptionalChangeState::IsSkipWindowRedirectionSurfaceEnabled() ? WS_EX_NOREDIRECTIONBITMAP : 0;
+    // optimization, so it is opt-in through XamlChangeId::SkipWindowRedirectionSurface. We also require the
+    // system compositor: the lifted compositor still needs the themed background to avoid a transparent flash
+    // before its first frame. The style is only honored here - adding it later with SetWindowLongPtr is silently
+    // dropped - so the decision has to be made for the window as a whole, before the app can set anything on it.
+    DWORD extendedStyle = 0;
+    if (OptionalChangeState::IsSkipWindowRedirectionSurfaceEnabled())
+    {
+        ctl::ComPtr<ixp::ICompositionEngineStatics> compositionEngineStatics;
+        IFCFAILFAST(ctl::GetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionEngine).Get(),
+            &compositionEngineStatics));
+
+        ctl::ComPtr<IInspectable> systemCompositor;
+        IFCFAILFAST(compositionEngineStatics->GetForSystemEngine(
+            m_dxamlCoreNoRef->GetHandle()->GetCompositor(), &systemCompositor));
+        if (systemCompositor)
+        {
+            extendedStyle = WS_EX_NOREDIRECTIONBITMAP;
+        }
+    }
 
     _CreateWindow(
         extendedStyle,                     // Extended Style

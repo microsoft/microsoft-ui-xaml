@@ -82,14 +82,13 @@ using Microsoft.UI.Xaml.Settings;
 XamlOptionalChanges.EnableChange(XamlChangeId.SkipWindowRedirectionSurface);
 ```
 
-Xaml passes the style when `XamlChangeId.SkipWindowRedirectionSurface` is enabled:
+Xaml passes the style only when `XamlChangeId.SkipWindowRedirectionSurface` is enabled **and** Xaml is running
+on the system compositor. It checks the actual compositor with `CompositionEngine.GetForSystemEngine`, rather
+than relying on a requested compositor mode. On the lifted compositor, the HWND keeps its GDI redirection
+surface and themed `WM_ERASEBKGND` fill even when the change is enabled, avoiding a transparent flash before
+the island's first frame.
 
-``` cpp
-// DesktopWindowImpl.cpp
-const DWORD extendedStyle = OptionalChangeState::IsSkipWindowRedirectionSurfaceEnabled() ? WS_EX_NOREDIRECTIONBITMAP : 0;
-```
-
-Two things make this opt-in rather than the default:
+When running on the system compositor, two things still make this opt-in rather than the default:
 
 * **The window can no longer paint with GDI.** The `WM_ERASEBKGND` themed fill stops having any effect, as does
   any GDI painting an app does on the Xaml HWND. That is a behavior change as much as an optimization, so it is
