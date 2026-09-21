@@ -50,6 +50,8 @@ Put the **InkToolbar** above the **InkCanvas** and point it at the canvas with `
 
 All ink configuration flows through `InkCanvas.InkPresenter`, exactly as in UWP:
 
+As in UWP, an `InkCanvas` accepts pen input only by default. Mouse and touch are opt-in through `InkPresenter.InputDeviceTypes`, which is a flags mask and can be updated incrementally.
+
 ```csharp
 var presenter = InkSurface.InkPresenter;
 
@@ -432,19 +434,16 @@ namespace Microsoft.UI.Xaml.Controls
 {
     // ---- InkCanvas / InkPresenter surface ----
 
-    [MUX_PREVIEW]
     runtimeclass InkStrokesCollectedEventArgs
     {
         Windows.Foundation.Collections.IVectorView<Windows.UI.Input.Inking.InkStroke> Strokes{ get; };
     }
 
-    [MUX_PREVIEW]
     runtimeclass InkStrokesErasedEventArgs
     {
         Windows.Foundation.Collections.IVectorView<Windows.UI.Input.Inking.InkStroke> Strokes{ get; };
     }
 
-    [MUX_PREVIEW]
     runtimeclass InkStrokeContainer
     {
         void Clear();
@@ -467,27 +466,22 @@ namespace Microsoft.UI.Xaml.Controls
         Boolean CanPasteFromClipboard();
     }
 
-    [MUX_PREVIEW]
     enum InkInputProcessingMode { None = 0, Inking = 1, Erasing = 2 };
 
-    [MUX_PREVIEW]
     enum InkInputRightDragAction { LeaveUnprocessed = 0, AllowProcessing = 1 };
 
-    [MUX_PREVIEW]
     runtimeclass InkInputProcessingConfiguration
     {
         InkInputProcessingMode Mode;
         InkInputRightDragAction RightDragAction;
     }
 
-    [MUX_PREVIEW]
     runtimeclass InkInputConfiguration
     {
         Boolean IsPrimaryBarrelButtonInputEnabled;
         Boolean IsEraserInputEnabled;
     }
 
-    [MUX_PREVIEW]
     enum InkHighContrastAdjustment
     {
         UseSystemColorsWhenNecessary = 0,
@@ -495,7 +489,6 @@ namespace Microsoft.UI.Xaml.Controls
         UseOriginalColors = 2,
     };
 
-    [MUX_PREVIEW]
     runtimeclass InkStrokeInput
     {
         event Windows.Foundation.TypedEventHandler<InkStrokeInput, Windows.UI.Core.PointerEventArgs> StrokeStarted;
@@ -505,7 +498,6 @@ namespace Microsoft.UI.Xaml.Controls
         InkPresenter InkPresenter{ get; };
     }
 
-    [MUX_PREVIEW]
     runtimeclass InkUnprocessedInput
     {
         event Windows.Foundation.TypedEventHandler<InkUnprocessedInput, Windows.UI.Core.PointerEventArgs> PointerEntered;
@@ -518,7 +510,6 @@ namespace Microsoft.UI.Xaml.Controls
         InkPresenter InkPresenter{ get; };
     }
 
-    [MUX_PREVIEW]
     runtimeclass InkSynchronizer
     {
         // Take over rendering of dry (committed) ink. BeginDry hands back the strokes the presenter
@@ -528,7 +519,6 @@ namespace Microsoft.UI.Xaml.Controls
         void EndDry();
     }
 
-    [MUX_PREVIEW]
     runtimeclass InkPresenter
     {
         Windows.UI.Core.CoreInputDeviceTypes InputDeviceTypes;
@@ -549,7 +539,6 @@ namespace Microsoft.UI.Xaml.Controls
         event Windows.Foundation.TypedEventHandler<InkPresenter, InkStrokesErasedEventArgs> StrokesErased;
     }
 
-    [MUX_PREVIEW]
     unsealed runtimeclass InkCanvas : Microsoft.UI.Xaml.FrameworkElement
     {
         InkCanvas();
@@ -558,24 +547,22 @@ namespace Microsoft.UI.Xaml.Controls
 
     // ---- InkToolbar surface (enums) ----
 
-    [MUX_PREVIEW] enum InkToolbarButtonFlyoutPlacement { Auto, Top, Bottom, Left, Right };
-    [MUX_PREVIEW] enum InkToolbarFlyoutItemKind { Simple, Radio, Check, RadioCheck };
-    [MUX_PREVIEW] enum InkToolbarInitialControls { All, None, PensOnly, AllExceptPens };
-    [MUX_PREVIEW] enum InkToolbarMenuKind { Stencil };
-    [MUX_PREVIEW] enum InkToolbarStencilKind { Ruler, Protractor };
-    [MUX_PREVIEW] enum InkToolbarToggle { Ruler, Custom };
-    [MUX_PREVIEW] enum InkToolbarTool { BallpointPen, Pencil, Highlighter, Eraser, CustomPen, CustomTool };
+    enum InkToolbarButtonFlyoutPlacement { Auto, Top, Bottom, Left, Right };
+    enum InkToolbarFlyoutItemKind { Simple, Radio, Check, RadioCheck };
+    enum InkToolbarInitialControls { All, None, PensOnly, AllExceptPens };
+    enum InkToolbarMenuKind { Stencil };
+    enum InkToolbarStencilKind { Ruler, Protractor };
+    enum InkToolbarToggle { Ruler, Custom };
+    enum InkToolbarTool { BallpointPen, Pencil, Highlighter, Eraser, CustomPen, CustomTool };
 
     // ---- InkToolbar surface (classes) ----
 
-    [MUX_PREVIEW]
     runtimeclass InkToolbarIsStencilButtonCheckedChangedEventArgs
     {
         InkToolbarStencilButton StencilButton{ get; };
         InkToolbarStencilKind StencilKind{ get; };
     };
 
-    [MUX_PREVIEW]
     [contentproperty("Children")]
     unsealed runtimeclass InkToolbar : Microsoft.UI.Xaml.Controls.Control
     {
@@ -601,7 +588,6 @@ namespace Microsoft.UI.Xaml.Controls
         // + generated DependencyProperty statics for each property above.
     };
 
-    [MUX_PREVIEW]
     [constructor_name("Microsoft.UI.Xaml.Controls.IInkToolbarCustomPenFactory")]
     unsealed runtimeclass InkToolbarCustomPen : Microsoft.UI.Xaml.DependencyObject
     {
@@ -610,14 +596,12 @@ namespace Microsoft.UI.Xaml.Controls
         overridable Windows.UI.Input.Inking.InkDrawingAttributes CreateInkDrawingAttributesCore(Microsoft.UI.Xaml.Media.Brush brush, Double strokeWidth);
     };
 
-    [MUX_PREVIEW]
     unsealed runtimeclass InkToolbarPenConfigurationControl : Microsoft.UI.Xaml.Controls.Control
     {
         [method_name("CreateInstance")] InkToolbarPenConfigurationControl();
         InkToolbarPenButton PenButton{ get; };
     };
 
-    [MUX_PREVIEW]
     unsealed runtimeclass InkToolbarFlyoutItem : Microsoft.UI.Xaml.Controls.Primitives.ButtonBase
     {
         [method_name("CreateInstance")] InkToolbarFlyoutItem();
@@ -627,7 +611,6 @@ namespace Microsoft.UI.Xaml.Controls
         event Windows.Foundation.TypedEventHandler<InkToolbarFlyoutItem, Object> Unchecked;
     };
 
-    [MUX_PREVIEW]
     [constructor_name("Microsoft.UI.Xaml.Controls.IInkToolbarMenuButtonFactory")]
     unsealed runtimeclass InkToolbarMenuButton : Microsoft.UI.Xaml.Controls.Primitives.ToggleButton
     {
@@ -635,7 +618,6 @@ namespace Microsoft.UI.Xaml.Controls
         Boolean IsExtensionGlyphShown;
     };
 
-    [MUX_PREVIEW]
     unsealed runtimeclass InkToolbarStencilButton : InkToolbarMenuButton
     {
         [method_name("CreateInstance")] InkToolbarStencilButton();
@@ -646,14 +628,12 @@ namespace Microsoft.UI.Xaml.Controls
         [MUX_DEFAULT_VALUE("true")] Boolean IsProtractorItemVisible;
     };
 
-    [MUX_PREVIEW]
     [constructor_name("Microsoft.UI.Xaml.Controls.IInkToolbarToggleButtonFactory")]
     unsealed runtimeclass InkToolbarToggleButton : Microsoft.UI.Xaml.Controls.CheckBox
     {
         InkToolbarToggle ToggleKind{ get; };
     };
 
-    [MUX_PREVIEW]
     [constructor_name("Microsoft.UI.Xaml.Controls.IInkToolbarToolButtonFactory")]
     unsealed runtimeclass InkToolbarToolButton : Microsoft.UI.Xaml.Controls.RadioButton
     {
@@ -661,24 +641,21 @@ namespace Microsoft.UI.Xaml.Controls
         Boolean IsExtensionGlyphShown;
     };
 
-    [MUX_PREVIEW] unsealed runtimeclass InkToolbarCustomToggleButton : InkToolbarToggleButton { [method_name("CreateInstance")] InkToolbarCustomToggleButton(); };
-    [MUX_PREVIEW] unsealed runtimeclass InkToolbarRulerButton : InkToolbarToggleButton { [method_name("CreateInstance")] InkToolbarRulerButton(); };
+    unsealed runtimeclass InkToolbarCustomToggleButton : InkToolbarToggleButton { [method_name("CreateInstance")] InkToolbarCustomToggleButton(); };
+    unsealed runtimeclass InkToolbarRulerButton : InkToolbarToggleButton { [method_name("CreateInstance")] InkToolbarRulerButton(); };
 
-    [MUX_PREVIEW]
     unsealed runtimeclass InkToolbarCustomToolButton : InkToolbarToolButton
     {
         [method_name("CreateInstance")] InkToolbarCustomToolButton();
         Microsoft.UI.Xaml.UIElement ConfigurationContent;
     };
 
-    [MUX_PREVIEW]
     unsealed runtimeclass InkToolbarEraserButton : InkToolbarToolButton
     {
         [method_name("CreateInstance")] InkToolbarEraserButton();
         [MUX_DEFAULT_VALUE("true")] Boolean IsClearAllVisible;
     };
 
-    [MUX_PREVIEW]
     [constructor_name("Microsoft.UI.Xaml.Controls.IInkToolbarPenButtonFactory")]
     unsealed runtimeclass InkToolbarPenButton : InkToolbarToolButton
     {
@@ -690,9 +667,8 @@ namespace Microsoft.UI.Xaml.Controls
         Double SelectedStrokeWidth;
     };
 
-    [MUX_PREVIEW] unsealed runtimeclass InkToolbarBallpointPenButton : InkToolbarPenButton { [method_name("CreateInstance")] InkToolbarBallpointPenButton(); };
+    unsealed runtimeclass InkToolbarBallpointPenButton : InkToolbarPenButton { [method_name("CreateInstance")] InkToolbarBallpointPenButton(); };
 
-    [MUX_PREVIEW]
     unsealed runtimeclass InkToolbarCustomPenButton : InkToolbarPenButton
     {
         [method_name("CreateInstance")] InkToolbarCustomPenButton();
@@ -700,40 +676,35 @@ namespace Microsoft.UI.Xaml.Controls
         Microsoft.UI.Xaml.UIElement ConfigurationContent;
     };
 
-    [MUX_PREVIEW] unsealed runtimeclass InkToolbarHighlighterButton : InkToolbarPenButton { [method_name("CreateInstance")] InkToolbarHighlighterButton(); };
-    [MUX_PREVIEW] unsealed runtimeclass InkToolbarPencilButton : InkToolbarPenButton { [method_name("CreateInstance")] InkToolbarPencilButton(); };
+    unsealed runtimeclass InkToolbarHighlighterButton : InkToolbarPenButton { [method_name("CreateInstance")] InkToolbarHighlighterButton(); };
+    unsealed runtimeclass InkToolbarPencilButton : InkToolbarPenButton { [method_name("CreateInstance")] InkToolbarPencilButton(); };
 }
 
 namespace Microsoft.UI.Xaml.Automation.Peers
 {
-    [MUX_PREVIEW]
     unsealed runtimeclass InkCanvasAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
     {
         InkCanvasAutomationPeer(Microsoft.UI.Xaml.Controls.InkCanvas owner);
     }
 
-    [MUX_PREVIEW]
     unsealed runtimeclass InkToolbarAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
     {
         InkToolbarAutomationPeer(Microsoft.UI.Xaml.Controls.InkToolbar owner);
     }
 
     // Tool and menu buttons expose ExpandCollapse (open / close the tool flyout); flyout items expose Invoke.
-    [MUX_PREVIEW]
     unsealed runtimeclass InkToolbarToolButtonAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.RadioButtonAutomationPeer,
         Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
     {
         InkToolbarToolButtonAutomationPeer(Microsoft.UI.Xaml.Controls.InkToolbarToolButton owner);
     }
 
-    [MUX_PREVIEW]
     unsealed runtimeclass InkToolbarMenuButtonAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.ToggleButtonAutomationPeer,
         Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
     {
         InkToolbarMenuButtonAutomationPeer(Microsoft.UI.Xaml.Controls.InkToolbarMenuButton owner);
     }
 
-    [MUX_PREVIEW]
     unsealed runtimeclass InkToolbarFlyoutItemAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.ButtonBaseAutomationPeer,
         Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider
     {
