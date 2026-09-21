@@ -197,11 +197,20 @@ void InkToolbarPenConfigurationControl::ConfigureLocalizableElements(winrt::Cont
 {
     UNREFERENCED_PARAMETER(me);
 
+    // ResourceAccessor throws ERROR_NOT_FOUND when a name is absent, which an app carrying an older
+    // merged PRI than the framework will hit; this runs from OnApplyTemplate, so a missing string
+    // must not take the app down.
+    auto tryGetString = [](std::wstring_view name) -> winrt::hstring
+    {
+        try { return ResourceAccessor::GetLocalizedStringResource(name); }
+        catch (...) { return {}; }
+    };
+
     // The template ships English defaults for these two headings, so they must be replaced here or
     // they never localize.
     if (auto colorsTitle = GetTemplateChild(L"PenColorPaletteTitle").try_as<winrt::TextBlock>())
     {
-        if (auto text = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarPenConfigurationColorsLabel); !text.empty())
+        if (auto text = tryGetString(SR_InkToolbarPenConfigurationColorsLabel); !text.empty())
         {
             colorsTitle.Text(text);
         }
@@ -209,7 +218,7 @@ void InkToolbarPenConfigurationControl::ConfigureLocalizableElements(winrt::Cont
 
     if (auto sizeTitle = GetTemplateChild(L"PenStrokeWidthTitle").try_as<winrt::TextBlock>())
     {
-        if (auto text = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarPenConfigurationSizeLabel); !text.empty())
+        if (auto text = tryGetString(SR_InkToolbarPenConfigurationSizeLabel); !text.empty())
         {
             sizeTitle.Text(text);
         }
