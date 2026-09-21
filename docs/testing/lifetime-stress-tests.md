@@ -26,28 +26,31 @@ aggressively settles and collects so a dangling peer faults promptly rather than
   Popup open/close, NavigationView menu churn, and TabView add/remove.
 - **Isolation.** The tests are tagged into their own TAEF test suite (`LifetimeStressTestSuite`). The Helix
   work-item generator emits a dedicated work item for that suite, so a lifetime crash does not cascade into
-  unrelated tests and the soak can be scheduled independently.
+  unrelated tests and the soak can be scheduled independently. That work item is only emitted on the dedicated
+  lifetime-stress pipeline (see below), so the suite does not run on the shared PR gate or Nightly.
 
 Source: [`controls/test/MUXControlsTestApp/LifetimeStressTests.cs`](../../controls/test/MUXControlsTestApp/LifetimeStressTests.cs)
 
 ## How it runs in CI
 
 Each test carries `[TestProperty("TestSuite", "LifetimeStressTestSuite")]` and the class is
-`[TestProperty("Classification", "Integration")]`, so the existing Helix work-item generation
-(`Helix/common/pipeline/GenerateHelixWorkItems.ps1`) produces an **isolated** work item for the suite on every
-DevTestSuite test pass. Isolation means a lifetime crash cannot cascade into unrelated tests.
+`[TestProperty("Classification", "Integration")]`, so the Helix work-item generation
+(`Helix/common/pipeline/GenerateHelixWorkItems.ps1`) can produce an **isolated** work item for the suite. That
+work item is **only** emitted when `WINUI_LIFETIME_STRESS_ENABLED=1`, which is set exclusively by the dedicated
+lifetime-stress pipeline ([`build/WinUI-LifetimeStress.yml`](../../build/WinUI-LifetimeStress.yml)). On every other
+test pass — the shared per-PR gate, Nightly, etc. — the generator skips the suite, so it never runs there.
+Isolation means a lifetime crash cannot cascade into unrelated tests.
 
-**Reports in the PR run, but never gates it.** The suite runs its create/teardown/GC workload on **every** test
-pass — including the per-PR gate and Nightly — so a lifetime **report** is produced right there in the pipeline run.
-It is engineered so it can never fail the pipeline: every catchable failure is downgraded to a non-gating warning,
-so the suite never records a *Failed* test result (and so never trips the Run Tests stage's *Publish Test Results*
-step, which fails the task on any failed test). Two layers do this:
+**Gating leak detection on the dedicated pipeline.** When the suite runs, a residual reference after forced
+collection is reported through `VerifyCollected(failOnLeak: true)` as a `Verify.Fail`, which records a *Failed*
+test result and fails the Run Tests stage's *Publish Test Results* step. Because the suite runs only on the
+dedicated pipeline, that gating affects that pipeline alone and never the shared PR gate. Other catchable
+failures are still handled so a stray exception cannot be mistaken for a leak:
 
 - **UI-thread exceptions** are caught *inside* the UI-thread callback (`SafeUI`), before `RunOnUIThread.Execute` can
-  turn an escaping exception into a `Verify.Fail` — which would record a Failed verdict that a later catch could not
-  undo.
-- **Test-thread exceptions and leaks** are caught in the outer per-iteration wrapper (`RunIterationReporting`) and by
-  `VerifyCollected(failOnLeak: false)` respectively, and logged as `Log.Warning`.
+  turn an escaping exception into a `Verify.Fail`, and are logged as `Log.Warning`.
+- **Test-thread exceptions** are caught in the outer per-iteration wrapper (`RunIterationReporting`) and logged as
+  `Log.Warning`; **leaks** are reported as gating `Verify.Fail` by `VerifyCollected(failOnLeak: true)`.
 
 The **one** thing no managed catch can intercept is a genuine *native* crash / fail-fast (for example a stowed
 exception in `combase.dll`) that terminates the TAEF test host outright — and that is exactly the lifetime signal we
@@ -72,14 +75,16 @@ non-gating.
 
 Run modes (all optional; the default needs no configuration):
 
-- **PR gate + Nightly (default)** — neither environment variable set: each scenario runs a small non-gating
-  **report pass** (`DefaultReportIterations` cycles). Fast, and it produces the report in the PR run.
-- **Scheduled soak** — [`build/WinUI-LifetimeStress.yml`](../../build/WinUI-LifetimeStress.yml) sets
-  `WINUI_LIFETIME_STRESS_MINUTES > 0`, so each scenario loops on a wall-clock budget. That pipeline must be
-  registered in Azure DevOps and its schedule/soak duration tuned there.
+- **Dedicated pipeline only** — the suite runs only when `WINUI_LIFETIME_STRESS_ENABLED=1`, which is set by
+  [`build/WinUI-LifetimeStress.yml`](../../build/WinUI-LifetimeStress.yml). It does **not** run on the shared PR
+  gate or Nightly. With no soak/iteration variable set, each scenario runs a small **report pass**
+  (`DefaultReportIterations` cycles); leaks are gating (`failOnLeak: true`).
+- **Scheduled soak** — the same dedicated pipeline sets `WINUI_LIFETIME_STRESS_MINUTES > 0`, so each scenario loops
+  on a wall-clock budget. That pipeline must be registered in Azure DevOps and its schedule/soak duration tuned there.
 - **Explicit local/manual run** — set `WINUI_LIFETIME_STRESS_ITERATIONS > 0` to run a heavier fixed cycle count.
 
-To make leak detection fail locally while iterating, flip a scenario's `failOnLeak` argument to `true`.
+Leak detection is gating everywhere the suite runs (`failOnLeak: true`); a residual reference records a *Failed*
+test result.
 
 > **Note:** the `StressItemsRepeaterRealizationAndRecycling` scenario is currently **quarantined**
 > (`[TestProperty("Ignore", "True")]`) because it reproduces a deterministic native crash. Re-enable it once that
@@ -88,11 +93,12 @@ To make leak detection fail locally while iterating, flip a scenario's `failOnLe
 ## Configuration
 
 All knobs are read from the environment, so they work locally, on pipeline agents, and when injected into a Helix
-work item. With nothing set — the default, including the PR gate and Nightly — each scenario runs the small
-non-gating report pass, so the suite is safe everywhere by default.
+work item. The suite only runs where `WINUI_LIFETIME_STRESS_ENABLED=1` (the dedicated lifetime-stress pipeline);
+with no soak/iteration variable set it runs the small report pass, and leak detection is gating there.
 
 | Variable | Meaning | Default |
 | --- | --- | --- |
+| `WINUI_LIFETIME_STRESS_ENABLED` | If `1`, the Helix work-item generator emits the isolated `LifetimeStressTestSuite` work item. Set only by the dedicated lifetime-stress pipeline, so the suite runs there and not on the PR gate or Nightly. | unset (suite not scheduled) |
 | `WINUI_LIFETIME_STRESS_MINUTES` | If > 0, each scenario soaks for this many minutes (wall-clock). The scheduled soak pipeline sets this. | `0` (disabled) |
 | `WINUI_LIFETIME_STRESS_ITERATIONS` | If > 0 **and** soak mode is off, run this many create/destroy cycles per scenario — a heavier local/manual run. | `0` (use the default report pass) |
 

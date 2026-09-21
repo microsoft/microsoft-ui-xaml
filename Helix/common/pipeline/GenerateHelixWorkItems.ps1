@@ -448,6 +448,15 @@ foreach ($testModule in $testModules)
             
             foreach ($testSuiteName in $testSuiteNames)
             {
+                # The lifetime stress suite runs only on its dedicated soak pipeline
+                # (build/WinUI-LifetimeStress.yml), which sets WINUI_LIFETIME_STRESS_ENABLED=1. Skip it on
+                # every other test pass (the shared PR gate, Nightly, etc.) so it no longer runs there.
+                if ($testSuiteName -eq 'LifetimeStressTestSuite' -and $env:WINUI_LIFETIME_STRESS_ENABLED -ne '1')
+                {
+                    Write-Host "    Skipping test suite $testSuiteName (WINUI_LIFETIME_STRESS_ENABLED != 1; it runs only on the dedicated lifetime-stress pipeline)."
+                    continue
+                }
+
                 $taefSuiteQuery = (Combine-TaefQuery $TaefBaseQuery "$testNameQuery AND @TestSuite='$testSuiteName'")
 
                 $commandArgs = [System.Web.HttpUtility]::HtmlEncode("$testFileName /taefQuery /select:`"$taefSuiteQuery`" $taefParameters")

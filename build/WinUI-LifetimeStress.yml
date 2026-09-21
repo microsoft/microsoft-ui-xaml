@@ -34,6 +34,11 @@ variables:
 - template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
 - template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
 - group: WinUI-Variable-Library
+# Opt in to the lifetime stress suite. The Helix work-item generator only emits the isolated
+# LifetimeStressTestSuite work item when this is set, so the suite runs on this dedicated pipeline
+# only (never on the shared PR gate or Nightly).
+- name: WINUI_LIFETIME_STRESS_ENABLED
+  value: 1
 # Soak mode: each scenario loops until this many minutes elapse instead of the default gate iteration count.
 - name: WINUI_LIFETIME_STRESS_MINUTES
   value: ${{ parameters.lifetimeStressMinutes }}
