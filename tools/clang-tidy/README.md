@@ -1,7 +1,7 @@
 # WinUI/XAML clang-tidy checks
 
 This directory contains a custom **clang-tidy module** that enforces
-**Pillar B — "storage correctness by construction"** from the WinUI
+**"storage correctness by construction"** from the WinUI
 Peer-Lifetime Synchronization design: storing a peer in a GC-invisible way
 should be *uncompilable*, not merely discouraged.
 
