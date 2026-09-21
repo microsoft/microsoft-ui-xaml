@@ -48,7 +48,9 @@ const DWORD TLS_UNINITIALIZED = -1;
 HINSTANCE g_hInstance = NULL;
 HMODULE g_platformResourcesModuleHandle = nullptr;
 DWORD g_dwTlsIndex = TLS_UNINITIALIZED;
-DLL_DIRECTORY_COOKIE muxDllDirectoryCookie = nullptr;
+DLL_DIRECTORY_COOKIE g_muxDllDirectoryCookie = nullptr;
+SRWLOCK g_init2Lock { SRWLOCK_INIT };
+bool g_init2Initialized = false;
 
 // A flag to indicate if the CCoreServices are ready for action
 // Used to prevent some destructor activities from occurring after the core has already been destroyed.
@@ -91,21 +93,32 @@ EnsurePlatformResourceModuleHandle()
     }
 }
 
-BOOL InitializeDll()
+void EnsureWinUIInitialized()
 {
-    HRESULT hr = S_OK;
-    IPlatformServices* pPal = NULL;
+    // Dll detach - needs a couple of new events, DllUnloadPreparing and DllUnloadPreparationComplete.
+    // Preparing is where each component clears outstanding static event handlers and clears CppWinRT factory caches (CsWinRT factory cache cannot be cleared yet)
+    // PreparationComplete is where the app detaches the remaining PreparationsComplete handler and posts a message to call CoFreeUnusedLibraries (can't call CoFree immediately because it might unload MUX, which is still on the unwind stack)
+    //
+    // MUX itself needs to do prep work in Preparing. That's stuff that was in the old DeinitializeDll method.
+    // All that cleanup needs an initialization counterpart. EnsureWinUIUninitialized and
+    // EnsureWinUIInitialized are staging areas for us to verify that the deinit/init operations don't mess up MUX.
+
+    auto guard = wil::AcquireSRWLockExclusive(&g_init2Lock);
+    if (g_init2Initialized)
+    {
+        return;
+    }
 
     // Static data initialization. Initialize first as the shutdown part (DeinitializeDll) relies on them.
-    IFC(DirectUI::StaticLockGlobalInit());
+    IFCFAILFAST(DirectUI::StaticLockGlobalInit());
 
     // Initialize this among the first as lots of other components can rely on this being initialized.
     DependencyLocator::InitializeProcess();
 
     // Do this second so we can capture any errors that occur during the rest of DLL initialization.
-    IFC(ErrorContextGlobalInit(TLS_UNINITIALIZED));
+    IFCFAILFAST(ErrorContextGlobalInit(TLS_UNINITIALIZED));
 
-    IFC(WarningContextGlobalInit(TLS_UNINITIALIZED));
+    IFCFAILFAST(WarningContextGlobalInit(TLS_UNINITIALIZED));
 
     // Register ETW Tracing
     EventRegisterMicrosoft_Windows_XAML();
@@ -121,21 +134,22 @@ BOOL InitializeDll()
     // Initialize telemetry fallback provider as early as possible so all IFC-type macros will log errors
     wil::SetResultTelemetryFallback(&XamlFallbackLogging::FallbackTelemetryCallback);
 
-    IFC(ObtainPlatformServices(&pPal));
-    gps.Set(pPal);
+    IPlatformServices* pPalNoRef = ObtainPlatformServices();
+    FAIL_FAST_ASSERT(pPalNoRef);
+    gps.Set(pPalNoRef);
 
     g_nTlsIsCoreServicesReady = TlsAlloc();
-    IFCEXPECT(TLS_OUT_OF_INDEXES != g_nTlsIsCoreServicesReady);
+    FAIL_FAST_ASSERT(TLS_OUT_OF_INDEXES != g_nTlsIsCoreServicesReady);
 
-    IFC(DXamlInstanceStorage::Initialize());
+    IFCFAILFAST(DXamlInstanceStorage::Initialize());
 
-    IFC(FrameworkApplication::GlobalInit());
+    IFCFAILFAST(FrameworkApplication::GlobalInit());
 
-    IFC(DCompSurfaceMonitor::Initialize());
+    IFCFAILFAST(DCompSurfaceMonitor::Initialize());
 
     DCompSurfaceFactoryManager::EnsureInitialized();
 
-    IFC(BackgroundTaskFrameworkContext::GlobalInit());
+    IFCFAILFAST(BackgroundTaskFrameworkContext::GlobalInit());
 
     // We can sometimes be in the situation in which the executable that has MUX DLLs loaded
     // is not in the same folder as the MUX DLLs themselves - e.g., in the case of a XAML islands
@@ -146,9 +160,9 @@ BOOL InitializeDll()
     HMODULE muxModule;
     if (!GetModuleHandleEx(
             GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-            (LPWSTR) &InitializeDll, &muxModule))
+            reinterpret_cast<LPCWSTR>(&EnsureWinUIInitialized), &muxModule))
     {
-        IFC(HRESULT_FROM_WIN32(GetLastError()));
+        FAIL_FAST_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
     }
 
     {
@@ -156,19 +170,24 @@ BOOL InitializeDll()
         auto lastSlash = muxPathStr.find_last_of(L'\\');
         FAIL_FAST_ASSERT(lastSlash != std::wstring::npos);
         muxPathStr.resize(lastSlash);
-        muxDllDirectoryCookie = AddDllDirectory(muxPathStr.c_str());
+        g_muxDllDirectoryCookie = AddDllDirectory(muxPathStr.c_str());
     }
 
-Cleanup:
-    return SUCCEEDED(hr) ? TRUE : FALSE;
+    g_init2Initialized = true;
 }
 
-void DeinitializeDll()
+void EnsureWinUIUninitialized()
 {
-    if (muxDllDirectoryCookie != nullptr)
+    auto guard = wil::AcquireSRWLockExclusive(&g_init2Lock);
+    if (!g_init2Initialized)
     {
-        RemoveDllDirectory(muxDllDirectoryCookie);
-        muxDllDirectoryCookie = nullptr;
+        return;
+    }
+
+    if (g_muxDllDirectoryCookie != nullptr)
+    {
+        RemoveDllDirectory(g_muxDllDirectoryCookie);
+        g_muxDllDirectoryCookie = nullptr;
     }
 
     if (TLS_OUT_OF_INDEXES != g_nTlsIsCoreServicesReady)
@@ -191,7 +210,8 @@ void DeinitializeDll()
 
     BackgroundTaskFrameworkContext::GlobalDeinit();
 
-    IGNORERESULT(FrameworkApplication::GlobalDeinit());
+    // This removes the Application critical section, anybody trying to get Application.Current after this crashes.
+    //FrameworkApplication::GlobalDeinit();
 
     IGNORERESULT(DXamlInstanceStorage::Deinitialize());
 
@@ -207,7 +227,7 @@ void DeinitializeDll()
     // Unregister trace logging provider
     TraceLoggingUnregister(g_hTraceProvider);
 
-    IGNORERESULT(DCompSurfaceMonitor::DeInitialize());
+    IFCFAILFAST(DCompSurfaceMonitor::DeInitialize());
 
     ctl::__module.ClearFactoryCache();
 
@@ -228,12 +248,24 @@ void DeinitializeDll()
     // Any of the above calls could rely on a Dependency and since we never get this far in
     // a normal modern app process, uninitializing it any earlier is a bug farm waiting to happen
     // in the few processes that use other hosting APIs like the designer.
-    DependencyLocator::UninitializeProcess();
-
-    // *we'll deinit the lock last since this **should** never have a dependency on anything
-    // DependencyLocator related. It's more likely a Depenency will try to take the lock, so we
-    // don't want to deinit the lock beforehand.
+    // Note: This is commented out because UninitializeProcess clears activators registered by static
+    // DependencyProviders, whose constructors will not run again. DLL unload support must replace that
+    // static initialization with explicit registration that EnsureWinUIInitialized can repeat.
+    //DependencyLocator::UninitializeProcess();
     DirectUI::StaticLockGlobalDeinit();
+
+    g_init2Initialized = false;
+}
+
+BOOL InitializeDll()
+{
+    EnsureWinUIInitialized();
+    return TRUE;
+}
+
+void DeinitializeDll()
+{
+    EnsureWinUIUninitialized();
 }
 
 extern "C"

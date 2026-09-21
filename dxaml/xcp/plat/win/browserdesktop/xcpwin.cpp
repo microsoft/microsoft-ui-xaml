@@ -134,19 +134,13 @@ void EmitHeapHandleExportEtwEvent()
 //
 //------------------------------------------------------------------------
 
-_Check_return_ HRESULT
+_Ret_maybenull_ IPlatformServices*
 ObtainPlatformServices(
 #if DBG
-    _Outptr_ IPlatformServices **ppInterface,
     XUINT8 testMode
-#else
-    _Outptr_ IPlatformServices **ppInterface
 #endif // #if DBG
 )
 {
-    HRESULT hr = S_OK;
-    *ppInterface = NULL;
-
     // A single global monitor used only in the highly unlikely case that there is no
     // thread local storage available.
 #if XCP_MONITOR
@@ -178,35 +172,26 @@ ObtainPlatformServices(
         g_pThreadMonitor = &theonlyThreadMonitor;
 
 #if DBG
-        IFC(gps->XcpTraceMonitorInitialize(testMode));
+        IFCFAILFAST(gps->XcpTraceMonitorInitialize(testMode));
         // Have to initialize the trace flags before calling this.
 #else
-        IFC(gps->XcpTraceMonitorInitialize());
+        IFCFAILFAST(gps->XcpTraceMonitorInitialize());
 #endif // #if DBG
 
 #endif // #if XCP_MONITOR
 
 #if RENDERCOUNTERS
-        IFC(gps->XcpRenderCountersInitialize());
+        IFCFAILFAST(gps->XcpRenderCountersInitialize());
 #endif // #if RENDERCOUNTERS
 
         gps->InitDebugTrace();
     }
 
-    *ppInterface = gps.Get();
-
 #if DBG
     SetSupressAssertDlgFlag();
 #endif
 
-    if (0)
-    {
-        // Forcing to keep the label in to support the other compilation variables
-        goto Cleanup;
-    }
-
-Cleanup:
-    RRETURN(hr);
+    return gps.Get();
 }
 
 //------------------------------------------------------------------------
@@ -2321,4 +2306,3 @@ CWindowsServices::GetTrackerStressFromEnvironment( _Out_ int *maxIterations, _Ou
 }
 
 #endif
-

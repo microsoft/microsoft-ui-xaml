@@ -26,6 +26,9 @@
 using namespace ctl;
 using namespace DirectUI;
 
+void EnsureWinUIInitialized();
+void EnsureWinUIUninitialized();
+
 namespace DirectUI {
 
 namespace
@@ -99,7 +102,7 @@ public:
         auto it = std::find(m_managers.begin(), m_managers.end(), manager);
         if (it == m_managers.end())
         {
-            m_managers.push_back(manager);        
+            m_managers.push_back(manager);
         }
     }
 
@@ -180,7 +183,7 @@ public:
     {
         return false;
     }
-    
+
     _Check_return_ HRESULT OnFrameworkShutdownStarting(
         _In_ msy::IDispatcherQueueShutdownStartingEventArgs* args) override
     {
@@ -260,7 +263,7 @@ _Check_return_ HRESULT WindowsXamlManagerFactory::InitializeForCurrentThreadImpl
         IFC_RETURN(make<WindowsXamlManager>(&newManager));
         IFC_RETURN(newManager.CopyTo(ppReturnValue));
     }
-    
+
     return S_OK;
 }
 
@@ -274,7 +277,7 @@ _Check_return_ HRESULT WindowsXamlManagerFactory::GetForCurrentThreadImpl(_Outpt
     {
         *ppReturnValue = nullptr;
     }
-    
+
     return S_OK;
 }
 
@@ -312,7 +315,7 @@ IFACEMETHODIMP WindowsXamlManagerFactory::remove_WinUIProcessShutdownCompleted(E
 {
     if (tls_xamlCore)
     {
-        return tls_xamlCore->GetForCurrentThread();    
+        return tls_xamlCore->GetForCurrentThread();
     }
     return nullptr;
 }
@@ -402,6 +405,8 @@ _Check_return_ HRESULT WindowsXamlManager::XamlCore::Initialize(msy::IDispatcher
 
 _Check_return_ HRESULT WindowsXamlManager::Initialize()
 {
+    EnsureWinUIInitialized();
+
     IFC_RETURN(WeakReferenceSourceNoThreadId::Initialize());
 
     wrl::ComPtr<msy::IDispatcherQueueStatics> dispatcherQueueStatics;
@@ -433,7 +438,7 @@ _Check_return_ HRESULT WindowsXamlManager::Initialize()
             tls_xamlCore = std::make_shared<XamlCoreNewShutdown>();
         }
 
-        // We need to call RegisterManager here to make sure we're tracking it for the current thread before the 
+        // We need to call RegisterManager here to make sure we're tracking it for the current thread before the
         // below call to Initialize().  This is because Initialize() will call Application.OnLaunched(), which calls
         // out to app code, which may call WindowsXamlManager.InitializeForCurrentThread().
         tls_xamlCore->RegisterManager(this);
@@ -504,7 +509,7 @@ void WindowsXamlManager::RaiseXamlShutdownCompletedOnThreadEvent(_In_ msy::IDisp
         IFCFAILFAST(ctl::make<XamlShutdownCompletedOnThreadEventArgs>(&args));
 
         args->SetDispatcherQueueShutdownStartingEventArgs(shutdownStartingArgs);
-        
+
         ctl::ComPtr<xaml_hosting::IXamlShutdownCompletedOnThreadEventArgs> argsInterface;
         IFCFAILFAST(args.As(&argsInterface));
 
@@ -676,6 +681,9 @@ void WindowsXamlManager::XamlCore::RaiseProcessShutdownEvents()
     }
 
     GetWinUIProcessShutdownEvents().RaiseCompleted();
+
+    // TODO: this belongs in a separate DllUnloadPreparing/PreparationCompleted stage
+    EnsureWinUIUninitialized();
 }
 
 _Check_return_ HRESULT WindowsXamlManager::Close()
