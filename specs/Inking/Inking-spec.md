@@ -207,8 +207,6 @@ presenter.StrokesCollected += (s, e) =>
 > If `ActivateCustomDrying()` is not called, the `InkPresenter` uses the default drying behavior and
 > renders committed (dry) strokes automatically.
 
-![Custom drying: app-rendered dry strokes next to default drying](./inking-customdry.png)
-
 # API Pages
 
 ## Differences from UWP
