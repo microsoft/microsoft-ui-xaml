@@ -888,12 +888,19 @@ WeakReferenceSourceNoThreadId::IsLegalPeerStateTransition(PeerLifetimeState from
                 || to == PeerLifetimeState::TornDown;
 
         case PeerLifetimeState::Releasing:
-            // Release only proceeds to teardown.
+            // Releasing is a teardown facet, not a strict predecessor of TornDown. The peer may already have
+            // been disconnected (TornDown) before final release runs, or it may be disconnected afterwards.
+            // Either ordering is legal; the only thing forbidden is resurrecting back to a live state.
             return to == PeerLifetimeState::TornDown;
 
         case PeerLifetimeState::TornDown:
-            // Terminal.
-            return false;
+            // TornDown is a terminal *live-state* sink: a torn-down peer must never resurrect to Detached,
+            // Pegged, or Tracked. It is NOT ordered strictly after Releasing, however. XAML routinely
+            // disconnects a peer first (via DXamlCore::ShutdownAllPeers / tree removal, which sets the
+            // disconnect flags GetPeerLifetimeState() reads as TornDown) and only later runs OnFinalRelease,
+            // which announces Releasing. Allow that disconnect-first-then-final-release ordering; keep every
+            // transition back to a live state illegal so the assert still catches genuine resurrection bugs.
+            return to == PeerLifetimeState::Releasing;
     }
 
     return false;
