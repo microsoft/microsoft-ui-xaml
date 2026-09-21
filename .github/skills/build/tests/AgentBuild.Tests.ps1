@@ -188,6 +188,57 @@ Test-Case 'Progress written to stderr by a successful tool does not abort the bu
     finally { Remove-StubRepo $root }
 }
 
+Test-Case 'An incomplete inherited git configuration is cleared before the build' {
+    # Agent hosts inject git settings through GIT_CONFIG_COUNT and KEY/VALUE pairs. An
+    # empty value is dropped crossing into the build's cmd.exe, so git sees a key with no
+    # value, rejects its configuration, and exits 128 in every project that calls git.
+    Reset-StubBehavior
+    $saved = @(Get-ChildItem Env: | Where-Object { $_.Name -like 'GIT_CONFIG*' } |
+        ForEach-Object { @{ Name = $_.Name; Value = $_.Value } })
+    $root = New-StubRepo -Initialized
+    try {
+        $env:GIT_CONFIG_COUNT = '2'
+        $env:GIT_CONFIG_KEY_0 = 'safe.bareRepository'
+        $env:GIT_CONFIG_VALUE_0 = 'explicit'
+        $env:GIT_CONFIG_KEY_1 = 'core.fsmonitor'
+        [Environment]::SetEnvironmentVariable('GIT_CONFIG_VALUE_1', '')
+
+        $result = Invoke-Wrapper -Root $root
+        Assert-Equal 0 $result.ExitCode 'An unusable git configuration failed the build.'
+        Assert-True ($result.Output -match 'core\.fsmonitor') 'The offending key was not named in the output.'
+        Assert-True ($null -eq $env:GIT_CONFIG_COUNT) 'GIT_CONFIG_COUNT was left in place for the build.'
+    }
+    finally {
+        Get-ChildItem Env: | Where-Object { $_.Name -like 'GIT_CONFIG*' } | Remove-Item -ErrorAction SilentlyContinue
+        foreach ($v in $saved) { [Environment]::SetEnvironmentVariable($v.Name, $v.Value) }
+        Remove-StubRepo $root
+    }
+}
+
+Test-Case 'A complete inherited git configuration is left alone' {
+    # The guard must only fire on a set that cannot work. Clearing a healthy
+    # configuration would change how git behaves for the build.
+    Reset-StubBehavior
+    $saved = @(Get-ChildItem Env: | Where-Object { $_.Name -like 'GIT_CONFIG*' } |
+        ForEach-Object { @{ Name = $_.Name; Value = $_.Value } })
+    $root = New-StubRepo -Initialized
+    try {
+        Get-ChildItem Env: | Where-Object { $_.Name -like 'GIT_CONFIG*' } | Remove-Item -ErrorAction SilentlyContinue
+        $env:GIT_CONFIG_COUNT = '1'
+        $env:GIT_CONFIG_KEY_0 = 'safe.bareRepository'
+        $env:GIT_CONFIG_VALUE_0 = 'explicit'
+
+        $result = Invoke-Wrapper -Root $root
+        Assert-Equal 0 $result.ExitCode 'A healthy git configuration failed the build.'
+        Assert-Equal 'explicit' $env:GIT_CONFIG_VALUE_0 'A healthy git configuration was cleared.'
+    }
+    finally {
+        Get-ChildItem Env: | Where-Object { $_.Name -like 'GIT_CONFIG*' } | Remove-Item -ErrorAction SilentlyContinue
+        foreach ($v in $saved) { [Environment]::SetEnvironmentVariable($v.Name, $v.Value) }
+        Remove-StubRepo $root
+    }
+}
+
 Test-Case 'A failed build is reported as a failure even when it exits 0' {
     # The bug this wrapper exists for: build.cmd loses the failing exit code.
     Reset-StubBehavior

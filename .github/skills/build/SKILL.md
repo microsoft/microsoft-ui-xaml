@@ -197,6 +197,25 @@ build is not available through the supported entry point.
 If the reduced-parallelism retry fails, stop and report both errors, the exit code, and
 the binary log.
 
+### `git rev-parse` or another git command exits 128
+
+Output such as `fatal: missing config value` or a project failing on `git rev-parse HEAD`
+usually means the environment the agent runs in declared a git setting without a value.
+Git reads `GIT_CONFIG_COUNT` with matching `GIT_CONFIG_KEY_<n>` and `GIT_CONFIG_VALUE_<n>`
+pairs; an empty value is dropped when the environment reaches the build's `cmd.exe`, so
+git refuses its own configuration. It is not a repository problem.
+
+`Invoke-AgentBuild.ps1` detects an incomplete set and clears those variables for the
+build, reporting which key was at fault. If you are running `build.cmd` yourself, clear
+them in that shell first:
+
+```powershell
+Get-ChildItem Env: | Where-Object { $_.Name -like 'GIT_CONFIG*' } | Remove-Item
+```
+
+Do not do this in a shell you will push from: the same variables can carry credential
+settings.
+
 ### Missing Spectre mitigation libraries
 
 Import `.vsconfig` from the repository root through the Visual Studio Installer:

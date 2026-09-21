@@ -141,6 +141,40 @@ function Test-Initialized {
            (Test-Path -LiteralPath (Join-Path $Root '.tools'))
 }
 
+function Repair-GitConfigEnvironment {
+    <#
+        Git reads configuration from GIT_CONFIG_COUNT together with the
+        GIT_CONFIG_KEY_<n> / GIT_CONFIG_VALUE_<n> pairs. Some agent hosts inject a pair
+        whose value is empty. An empty variable is dropped when the environment crosses
+        into the build's cmd.exe, so git sees a key it has no value for, rejects its own
+        configuration, and exits 128. The build calls git, so every project that does
+        fails for a reason that has nothing to do with this repository.
+
+        Only a provably incomplete set is cleared, because a key declared without a value
+        is never valid, and only in this process.
+    #>
+    $countText = [Environment]::GetEnvironmentVariable('GIT_CONFIG_COUNT')
+    $count = 0
+    if (-not [int]::TryParse($countText, [ref]$count) -or $count -le 0) { return }
+
+    $incomplete = @()
+    for ($i = 0; $i -lt $count; $i++) {
+        $key = [Environment]::GetEnvironmentVariable("GIT_CONFIG_KEY_$i")
+        $value = [Environment]::GetEnvironmentVariable("GIT_CONFIG_VALUE_$i")
+        if (-not [string]::IsNullOrEmpty($key) -and [string]::IsNullOrEmpty($value)) {
+            $incomplete += $key
+        }
+    }
+    if ($incomplete.Count -eq 0) { return }
+
+    Get-ChildItem Env: |
+        Where-Object { $_.Name -like 'GIT_CONFIG*' } |
+        Remove-Item -ErrorAction SilentlyContinue
+
+    Write-Host ("Cleared the inherited GIT_CONFIG_* variables for this build: " +
+        ($incomplete -join ', ') + " declared no value, which makes git exit 128.")
+}
+
 function Invoke-Captured {
     <#
         Runs a command, streams its output to the host, and returns the captured lines.
@@ -202,6 +236,10 @@ foreach ($required in @($initCmd, $initRun, $buildCmd)) {
 
 $powershell = Get-WindowsPowerShell
 $startedAt = Get-Date
+
+# The build shells out to git. Clear an inherited git configuration that cannot work
+# before anything runs, so init and build are not failed by the host's environment.
+Repair-GitConfigEnvironment
 
 # --- Step 1: initialize once, if needed -------------------------------------------------
 
