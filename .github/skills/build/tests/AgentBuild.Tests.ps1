@@ -75,6 +75,7 @@ exit /b 0
 @echo off
 echo Initializing stub environment for %1
 echo ran > "%~dp0init-was-run.txt"
+if defined AGENTBUILD_TEST_INIT_OUTPUT echo %AGENTBUILD_TEST_INIT_OUTPUT%
 if "%AGENTBUILD_TEST_INIT_FAIL%"=="1" (
     echo ERROR: init.cmd %1 /envcheck failed
     exit /b 1
@@ -130,6 +131,7 @@ function Reset-StubBehavior {
     $env:AGENTBUILD_TEST_EXIT = $null
     $env:AGENTBUILD_TEST_BINLOG = '1'
     $env:AGENTBUILD_TEST_INIT_FAIL = $null
+    $env:AGENTBUILD_TEST_INIT_OUTPUT = $null
     $env:AGENTBUILD_TEST_STDERR = $null
 }
 
@@ -184,6 +186,54 @@ Test-Case 'Progress written to stderr by a successful tool does not abort the bu
         Assert-Equal 0 $result.ExitCode 'A benign stderr message failed the build.'
         Assert-True ($result.Output -match 'BUILD SUCCEEDED') 'Success was not reported.'
         Assert-True ($result.Output -match 'Cloning into') 'The stderr line was not captured in the output.'
+    }
+    finally { Remove-StubRepo $root }
+}
+
+Test-Case 'Setup that installed nothing is reported instead of building' {
+    # scripts\MSBuildFunctions.psm1 counts the Visual Studio installer's 5007, "could not
+    # make changes", as a success, so an unelevated init reports that it worked after
+    # installing nothing. The build would then fail an hour later for missing components,
+    # with errors that read as broken source code.
+    Reset-StubBehavior
+    $root = New-StubRepo
+    try {
+        $env:AGENTBUILD_TEST_INIT_OUTPUT = 'Warning: could not update build tools. If necessary, run init elevated.'
+
+        $result = Invoke-Wrapper -Root $root
+        Assert-Equal 1 $result.ExitCode 'A setup that installed nothing was treated as usable.'
+        Assert-True ($result.Output -match 'elevated') 'The output did not say elevation was needed.'
+        Assert-True ($result.Output -notmatch 'BUILD SUCCEEDED') 'The build ran on an incomplete setup.'
+    }
+    finally { Remove-StubRepo $root }
+}
+
+Test-Case 'A failure to enable long path support stops the build' {
+    # Long paths are enabled through a consent prompt that an unattended session cannot
+    # answer. Building without them fails in paths this repository routinely exceeds.
+    Reset-StubBehavior
+    $root = New-StubRepo
+    try {
+        $env:AGENTBUILD_TEST_INIT_OUTPUT = 'Error enabling long path support.'
+
+        $result = Invoke-Wrapper -Root $root
+        Assert-Equal 1 $result.ExitCode 'A failed long path setup was ignored.'
+    }
+    finally { Remove-StubRepo $root }
+}
+
+Test-Case 'Machine setup is only attempted when init installs it' {
+    # The setup step reads real machine state and can launch an installer, so it must stay
+    # out of the way of a repository whose initialization does no machine setup. Keyed off
+    # the setup scripts themselves rather than a test hook, so the wrapper behaves
+    # identically either way.
+    Reset-StubBehavior
+    $root = New-StubRepo
+    try {
+        $result = Invoke-Wrapper -Root $root
+        Assert-Equal 0 $result.ExitCode 'A repository needing no machine setup was blocked.'
+        Assert-True ($result.Output -notmatch 'Machine setup') 'Setup was considered with no setup scripts present.'
+        Assert-True ($result.Output -notmatch 'administrator rights') 'Elevation was requested with no setup scripts present.'
     }
     finally { Remove-StubRepo $root }
 }

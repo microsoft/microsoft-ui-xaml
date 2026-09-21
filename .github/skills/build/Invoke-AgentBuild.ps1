@@ -37,6 +37,14 @@
 .PARAMETER SkipInitialize
     Do not run a full initialization even when the repository looks uninitialized.
 
+.PARAMETER SkipMachineSetup
+    Do not install Visual Studio or its missing components, and build with the machine as
+    it is. The build may fail for missing components.
+
+.PARAMETER SetupMachineOnly
+    Perform the machine setup and exit without building. Used to run the setup step
+    elevated; can also be run directly from an elevated prompt.
+
 .PARAMETER RepoRoot
     Repository root. Defaults to the root inferred from this script's location.
 
@@ -66,6 +74,10 @@ param(
 
     [switch]$SkipInitialize,
 
+    [switch]$SkipMachineSetup,
+
+    [switch]$SetupMachineOnly,
+
     [string]$RepoRoot
 )
 
@@ -90,6 +102,16 @@ $script:FailureMarkers = @(
 
 # Compiler, linker and MSBuild diagnostics, e.g. "error MSB4217:" or "error C3859:".
 $script:ErrorPattern = '\berror\s+(MSB|C|LNK|CS|CVT|RC|AL)\d+\b'
+
+# Initialization installs Visual Studio build tools and enables long path support, and
+# both need elevation. Neither failure stops init: the installer's 5007 ("could not make
+# changes") is counted as a success by scripts\MSBuildFunctions.psm1, so a run that
+# installed nothing reports that it worked. The build then fails much later, for missing
+# components, in a way that reads as broken source code.
+$script:SetupIncompletePatterns = @(
+    'could not update build tools',
+    'Error enabling long path support'
+)
 
 # A build can fail for missing packages or tools even though the initialization check
 # passed, because that check only confirms the two directories exist and not that their
@@ -175,6 +197,223 @@ function Repair-GitConfigEnvironment {
         ($incomplete -join ', ') + " declared no value, which makes git exit 128.")
 }
 
+function Test-Elevated {
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object Security.Principal.WindowsPrincipal($identity)
+    return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+function Test-LongPathsEnabled {
+    # The same registry value scripts\init\Initialize-CheckLongPathSupport.ps1 reads.
+    try {
+        $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
+        return (Get-ItemProperty -LiteralPath $key -Name 'LongPathsEnabled' -ErrorAction Stop).LongPathsEnabled -eq 1
+    }
+    catch { return $false }
+}
+
+function Get-VisualStudioPath {
+    <#
+        The installation path of a Visual Studio that can build this repository, or $null.
+        vswhere ships with the Visual Studio Installer. VS 17 and earlier install it under
+        Program Files (x86); VS 18 installs under Program Files, so look in both.
+    #>
+    foreach ($programFiles in @(${env:ProgramFiles(x86)}, $env:ProgramFiles)) {
+        if (-not $programFiles) { continue }
+        $vswhere = Join-Path $programFiles 'Microsoft Visual Studio\Installer\vswhere.exe'
+        if (-not (Test-Path -LiteralPath $vswhere)) { continue }
+
+        $found = @(& $vswhere -products '*' -latest -requires 'Microsoft.Component.MSBuild' -property 'installationPath' 2>$null)
+        if ($found.Count -gt 0 -and $found[0]) { return $found[0] }
+    }
+    return $null
+}
+
+function Get-VisualStudioInstaller {
+    foreach ($programFiles in @(${env:ProgramFiles(x86)}, $env:ProgramFiles)) {
+        if (-not $programFiles) { continue }
+        $installer = Join-Path $programFiles 'Microsoft Visual Studio\Installer\vs_installer.exe'
+        if (Test-Path -LiteralPath $installer) { return $installer }
+    }
+    return $null
+}
+
+function Get-MissingVisualStudioComponent {
+    <#
+        The components listed in the repository's .vsconfig that the installation does not
+        have. init only ever probes for ATL/ARM64 and repairs against .vsconfig_buildtools,
+        so an installation missing anything else is found only here.
+    #>
+    param([string]$Root, [string]$InstallPath)
+
+    $configPath = Join-Path $Root '.vsconfig'
+    if (-not (Test-Path -LiteralPath $configPath)) { return @() }
+
+    $vswhere = $null
+    foreach ($programFiles in @(${env:ProgramFiles(x86)}, $env:ProgramFiles)) {
+        if (-not $programFiles) { continue }
+        $candidate = Join-Path $programFiles 'Microsoft Visual Studio\Installer\vswhere.exe'
+        if (Test-Path -LiteralPath $candidate) { $vswhere = $candidate; break }
+    }
+    if (-not $vswhere) { return @() }
+
+    try { $components = @((Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json).components) }
+    catch { return @() }
+
+    $missing = @()
+    foreach ($component in $components) {
+        if (-not $component) { continue }
+        $has = @(& $vswhere -path $InstallPath -products '*' -requires $component -property 'installationPath' 2>$null)
+        if ($has.Count -eq 0 -or -not $has[0]) { $missing += $component }
+    }
+    return $missing
+}
+
+function Get-MachineSetupWork {
+    <#
+        What setup this machine still needs before it can build, as a list of descriptions.
+        Empty means the machine is ready.
+    #>
+    param([string]$Root)
+
+    $work = @()
+    if (-not (Test-LongPathsEnabled)) { $work += 'enable long path support' }
+
+    $vs = Get-VisualStudioPath
+    if (-not $vs) {
+        $work += 'install Visual Studio with the components in .vsconfig'
+    }
+    else {
+        $missing = @(Get-MissingVisualStudioComponent -Root $Root -InstallPath $vs)
+        if ($missing.Count -gt 0) {
+            $work += "add $($missing.Count) missing Visual Studio component(s): $($missing -join ', ')"
+        }
+    }
+    return $work
+}
+
+function Install-MachineSetup {
+    <#
+        Performs the machine setup itself. Must run elevated: the Visual Studio Installer
+        refuses to change an installation without it, and reports 5007 rather than failing,
+        and the long path setting lives under HKLM.
+    #>
+    param([string]$Root)
+
+    if (-not (Test-LongPathsEnabled)) {
+        Write-Host 'Enabling long path support.'
+        $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
+        New-ItemProperty -LiteralPath $key -Name 'LongPathsEnabled' -Value 1 -PropertyType DWord -Force | Out-Null
+    }
+
+    $config = Join-Path $Root '.vsconfig'
+    if (-not (Test-Path -LiteralPath $config)) {
+        Write-Host 'No .vsconfig in the repository root; leaving the Visual Studio installation alone.'
+        return
+    }
+
+    $vs = Get-VisualStudioPath
+    if ($vs) {
+        $missing = @(Get-MissingVisualStudioComponent -Root $Root -InstallPath $vs)
+        if ($missing.Count -eq 0) { return }
+
+        $installer = Get-VisualStudioInstaller
+        if (-not $installer) { throw 'Visual Studio is installed but vs_installer.exe was not found.' }
+
+        Write-Host "Adding $($missing.Count) missing component(s) to $vs. This can take several minutes."
+        $arguments = @('modify', '--installPath', $vs, '--config', $config, '--quiet', '--norestart', '--force', '--wait')
+    }
+    else {
+        # The same bootstrapper scripts\MSBuildFunctions.psm1 uses, with the repository's
+        # own component list rather than the build tools subset.
+        $bootstrapper = Join-Path $env:TEMP 'vs_community.exe'
+        Write-Host 'No Visual Studio found. Downloading the installer.'
+        Invoke-WebRequest -Uri 'https://aka.ms/vs/17/release/vs_community.exe' -OutFile $bootstrapper
+
+        Write-Host 'Installing Visual Studio with the components in .vsconfig. This takes a while.'
+        $installer = $bootstrapper
+        $arguments = @('--config', $config, '--quiet', '--norestart', '--wait')
+    }
+
+    $process = Start-Process -FilePath $installer -ArgumentList $arguments -Wait -PassThru
+    $code = $process.ExitCode
+
+    # 3010 asks for a reboot we do not need. 5007 means the installer changed nothing,
+    # which scripts\MSBuildFunctions.psm1 treats as success and must not be treated as one.
+    if ($code -eq 5007) { throw 'The Visual Studio Installer could not make changes (5007). Setup was not applied.' }
+    if ($code -ne 0 -and $code -ne 3010) { throw "The Visual Studio Installer failed with exit code $code." }
+
+    Write-Host 'Visual Studio setup complete.'
+}
+
+function Initialize-Machine {
+    <#
+        Brings the machine up to what the build needs, installing Visual Studio and its
+        missing components when they are absent, so a clean machine needs no manual setup.
+
+        The installer requires administrator rights, which cannot be granted from inside an
+        unelevated process, so this relaunches itself elevated for the setup step only. On
+        an interactive desktop that is one consent prompt; where no consent can be given the
+        setup is reported as needed rather than failing later for missing components.
+    #>
+    param([string]$Root)
+
+    # Only meaningful for a repository whose init does machine setup. Keyed off the setup
+    # scripts themselves so the wrapper behaves the same way with or without a test hook.
+    $setupScripts = @(
+        (Join-Path $Root 'scripts\init\Initialize-InstallMSBuild.ps1'),
+        (Join-Path $Root 'scripts\init\Initialize-CheckLongPathSupport.ps1')
+    )
+    if (-not ($setupScripts | Where-Object { Test-Path -LiteralPath $_ })) { return }
+
+    $work = @(Get-MachineSetupWork -Root $Root)
+    if ($work.Count -eq 0) {
+        Write-Host 'Machine setup: Visual Studio and long path support are already in place.'
+        return
+    }
+
+    Write-Host "Machine setup required: $($work -join '; ')."
+
+    if (Test-Elevated) {
+        Install-MachineSetup -Root $Root
+    }
+    elseif ($SkipMachineSetup) {
+        Write-Host 'Skipping machine setup as requested.' -ForegroundColor Yellow
+    }
+    else {
+        Write-Host 'Requesting administrator rights to perform it. Approve the prompt if one appears.'
+        $arguments = @(
+            '-NoProfile', '-ExecutionPolicy', 'Bypass',
+            '-File', $PSCommandPath,
+            '-SetupMachineOnly',
+            '-RepoRoot', $Root
+        )
+        try {
+            $elevatedRun = Start-Process -FilePath (Get-WindowsPowerShell) -ArgumentList $arguments -Verb RunAs -Wait -PassThru
+            $elevatedCode = $elevatedRun.ExitCode
+        }
+        catch {
+            $elevatedCode = -1
+        }
+
+        if ($elevatedCode -ne 0) {
+            Write-Host '---' -ForegroundColor Red
+            Write-Host 'ERROR: The machine setup could not be performed.' -ForegroundColor Red
+            Write-Host "       Still required: $($work -join '; ')." -ForegroundColor Red
+            Write-Host '       Elevation was refused or unavailable. Run this script once from an' -ForegroundColor Red
+            Write-Host '       elevated PowerShell, or run it with -SkipMachineSetup to build anyway.' -ForegroundColor Red
+            Write-Host '       Not starting the build: it would fail later for missing components,' -ForegroundColor Red
+            Write-Host '       with errors that read as broken source code.' -ForegroundColor Red
+            exit 1
+        }
+    }
+
+    $remaining = @(Get-MachineSetupWork -Root $Root)
+    if ($remaining.Count -gt 0 -and -not $SkipMachineSetup) {
+        Write-Host "WARNING: Setup ran but the machine still needs: $($remaining -join '; ')." -ForegroundColor Yellow
+    }
+}
+
 function Invoke-Captured {
     <#
         Runs a command, streams its output to the host, and returns the captured lines.
@@ -222,6 +461,17 @@ function Test-FailureInOutput {
     return $false
 }
 
+function Test-SetupIncomplete {
+    param([string[]]$Lines)
+
+    foreach ($line in $Lines) {
+        foreach ($pattern in $script:SetupIncompletePatterns) {
+            if ($line -match $pattern) { return $true }
+        }
+    }
+    return $false
+}
+
 $initCmd = Join-Path $RepoRoot 'init.cmd'
 $initRun = Join-Path $RepoRoot 'initrun.ps1'
 $buildCmd = Join-Path $RepoRoot 'Build.cmd'
@@ -241,6 +491,22 @@ $startedAt = Get-Date
 # before anything runs, so init and build are not failed by the host's environment.
 Repair-GitConfigEnvironment
 
+# Running elevated purely to set the machine up: do that and stop.
+if ($SetupMachineOnly) {
+    try {
+        Install-MachineSetup -Root $RepoRoot
+        exit 0
+    }
+    catch {
+        Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
+        exit 1
+    }
+}
+
+# Install Visual Studio and any components .vsconfig asks for that are missing, so a
+# machine with none of them can build without anyone setting it up by hand.
+Initialize-Machine -Root $RepoRoot
+
 # --- Step 1: initialize once, if needed -------------------------------------------------
 
 if (-not (Test-Initialized -Root $RepoRoot)) {
@@ -254,6 +520,18 @@ if (-not (Test-Initialized -Root $RepoRoot)) {
 
     $initOutput = @(Invoke-Captured -FilePath $env:ComSpec -ArgumentList @('/c', "`"$initCmd`" $Flavor"))
     $initExit = $LASTEXITCODE
+
+    # The build tools installer reports 5007 when it could not make changes, and that is
+    # counted as a success, so this is the only signal that setup did nothing.
+    if (Test-SetupIncomplete -Lines $initOutput) {
+        Write-Host '---' -ForegroundColor Red
+        Write-Host 'ERROR: Initialization could not complete the machine setup it attempted.' -ForegroundColor Red
+        Write-Host '       Build tools or long path support were left unchanged because the' -ForegroundColor Red
+        Write-Host '       installer was not allowed to make changes. Rerun init.cmd from an' -ForegroundColor Red
+        Write-Host '       elevated PowerShell, then build again.' -ForegroundColor Red
+        Write-Host '       Not starting the build: it would fail later for missing components.' -ForegroundColor Red
+        exit 1
+    }
 
     # init.cmd reports a bad flavor or a missing path through its exit code, but a failed
     # restore can still leave the repository unusable, so check the outcome as well.

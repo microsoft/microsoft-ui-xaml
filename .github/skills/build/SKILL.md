@@ -70,6 +70,38 @@ Never repeat the same failed command indefinitely, hide an error, or claim succe
 smaller build. A generic "build the repo" request succeeds only when the full default
 build exits with code 0.
 
+## Machine setup
+
+On a machine that has never built WinUI, `Invoke-AgentBuild.ps1` sets the machine up
+before it initializes the repository:
+
+- **Visual Studio.** If none is installed, the installer is downloaded and Visual Studio
+  is installed with every component in `.vsconfig` at the repository root.
+- **Missing components.** If Visual Studio is installed but is missing components
+  `.vsconfig` asks for, they are added to the existing installation. `init.cmd` does not
+  do this: it only probes for ATL/ARM64 and repairs against `.vsconfig_buildtools`.
+- **Long path support.** Enabled if it is off. The build uses paths that exceed the
+  default limit.
+
+Nothing is installed when the machine already has it, so this costs one `vswhere` probe on
+a machine that is ready.
+
+Installing Visual Studio requires administrator rights. When the session is not elevated,
+the setup step is relaunched elevated on its own, which raises one consent prompt. Where no
+consent can be given, the setup that is still required is reported and the build does not
+start, because a build missing those components fails later with errors that read as broken
+source code.
+
+```powershell
+# Set the machine up without building. Run from an elevated prompt to avoid the prompt.
+.\.github\skills\build\Invoke-AgentBuild.ps1 -SetupMachineOnly
+
+# Build with the machine as it is, installing nothing.
+.\.github\skills\build\Invoke-AgentBuild.ps1 -SkipMachineSetup
+```
+
+A Microsoft account is not needed. The repository restores from a public feed.
+
 ## First-time setup
 
 A full initialization runs once per flavor to download tools and restore NuGet packages.
