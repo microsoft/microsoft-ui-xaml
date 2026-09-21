@@ -54,24 +54,28 @@ failures are still handled so a stray exception cannot be mistaken for a leak:
 
 The **one** thing no managed catch can intercept is a genuine *native* crash / fail-fast (for example a stowed
 exception in `combase.dll`) that terminates the TAEF test host outright — and that is exactly the lifetime signal we
-want. A known deterministic crasher is quarantined per-scenario with `[TestProperty("Ignore", "True")]` (see the
-note below) so it does not gate while its underlying product bug is pending; if a *new* scenario is found to crash
-the host deterministically, quarantine it the same way.
+want. That native crash is now **gating**: [`RunHelixWorkItem.ps1`](../../Helix/common/test/RunHelixWorkItem.ps1)
+(`Report-LifetimeNativeCrash` + `Set-LifetimeResultsGating`) detects it (non-zero `te.exe` exit code, a new crash
+dump, or a scenario that started but never completed) and records a *Failed* test result — a synthetic failing entry
+when the host produced no results file, or an injected failing entry when the partial results carry no failure — so
+the *Publish Test Results* step fails the shard. A known deterministic crasher is quarantined per-scenario with
+`[TestProperty("Ignore", "True")]` (see the note below) so it does not gate while its underlying product bug is
+pending; if a *new* scenario is found to crash the host deterministically, quarantine it the same way.
 
-**Native crash/warning totals (PostTestRun).** Each native host crash and each non-gating native scenario warning
+**Native crash/warning totals (PostTestRun).** Each native host crash and each native scenario warning
 (a thrown-exception/COMException report) is recorded per work item in `LifetimeNativeCrashReport.json` by
 [`RunHelixWorkItem.ps1`](../../Helix/common/test/RunHelixWorkItem.ps1) (`Report-LifetimeNativeCrash`). After the
 test run, the **PostTestRun** step in
 [`WinUI-RunTestPassOnPipeline-Job.yml`](../../build/AzurePipelinesTemplates/WinUI-RunTestPassOnPipeline-Job.yml)
 runs [`Report-LifetimeNativeCrashTotals.ps1`](../../Helix/common/pipeline/Report-LifetimeNativeCrashTotals.ps1),
 which totals those records across every lifetime work item on the shard and surfaces a single count — printed to
-the log, emitted as a non-gating warning, published as the `LifetimeNativeCrashTotal` pipeline variable, and
+the log, published as the `LifetimeNativeCrashTotal` pipeline variable, and
 written to `LifetimeNativeCrashSummary.json`. The suite runs as one isolated work item in the **checked (chk)
 build flavor** (lifetime/TrackerHandle leak detection needs the reference-tracker instrumentation that free builds
 lack), so its `LifetimeNativeCrashSummary.json` in that job carries the leg's full total. Test-pass jobs that ran
 no lifetime work item (e.g. the fre flavor) total zero and **do not write a summary file**, so the only
-`LifetimeNativeCrashSummary.json` in the artifacts is the populated one. Like everything else here, the step is
-non-gating.
+`LifetimeNativeCrashSummary.json` in the artifacts is the populated one. This totals step is only an informational
+summary; the crash itself already gated the shard through the work item's failing test result.
 
 Run modes (all optional; the default needs no configuration):
 
