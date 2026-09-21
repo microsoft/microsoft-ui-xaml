@@ -86,6 +86,11 @@ before it initializes the repository:
 Nothing is installed when the machine already has it, so this costs one `vswhere` probe on
 a machine that is ready.
 
+Setup is verified against the machine afterwards rather than trusted from the installer's
+exit code. The Visual Studio Installer is a singleton: started while another instance is
+open, it exits `0` without installing anything. An open installer window is reported before
+setup begins, and an install that changed nothing is reported as a failure.
+
 Installing Visual Studio requires administrator rights. When the session is not elevated,
 the setup step is relaunched elevated on its own, which raises one consent prompt. Where no
 consent can be given, the setup that is still required is reported and the build does not
@@ -247,6 +252,22 @@ Get-ChildItem Env: | Where-Object { $_.Name -like 'GIT_CONFIG*' } | Remove-Item
 
 Do not do this in a shell you will push from: the same variables can carry credential
 settings.
+
+### `Filename too long` when cloning
+
+Clone to a short path such as `C:\mx`. The repository has paths long enough that
+`git checkout` fails partway under a deep directory, leaving an incomplete working tree.
+Enabling long path support does not lift the limit for every git operation.
+
+### Setup reports success but Visual Studio is still missing
+
+The Visual Studio Installer is a singleton. Started while another instance is open, even
+an idle installer window left over from an earlier install or uninstall, it exits `0`
+having done nothing. `init.cmd` then stops with a message about not finding MSBuild.
+
+Close any Visual Studio Installer window and run the build again. `Invoke-AgentBuild.ps1`
+checks for a running installer before it starts, and re-checks the machine afterwards, so
+it reports this rather than continuing into a build that cannot work.
 
 ### Missing Spectre mitigation libraries
 

@@ -58,7 +58,7 @@ function New-StubRepo {
         calls. Behaviour is driven by AGENTBUILD_TEST_* environment variables so each
         test can choose what the build does.
     #>
-    param([switch]$WithSpaceInPath, [switch]$Initialized)
+    param([switch]$WithSpaceInPath, [switch]$Initialized, [switch]$WithSetupScripts)
 
     $suffix = [guid]::NewGuid().Guid.Substring(0, 8)
     $leaf = if ($WithSpaceInPath) { "agent build $suffix" } else { "agentbuild$suffix" }
@@ -120,6 +120,15 @@ exit $code
     if ($Initialized) {
         New-Item -ItemType Directory -Path (Join-Path $root 'packages') -Force | Out-Null
         New-Item -ItemType Directory -Path (Join-Path $root '.tools') -Force | Out-Null
+    }
+
+    if ($WithSetupScripts) {
+        # Presence alone is what the wrapper keys machine setup off, so an empty file is
+        # enough. Never combine this with a run that is allowed to install: the setup step
+        # reads real machine state and can launch the Visual Studio Installer.
+        $initDir = Join-Path $root 'scripts\init'
+        New-Item -ItemType Directory -Path $initDir -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $initDir 'Initialize-InstallMSBuild.ps1') -Value '# stub' -Encoding ASCII
     }
 
     $env:AGENTBUILD_TEST_ARGSFILE = Join-Path $root 'invocation.txt'
@@ -234,6 +243,36 @@ Test-Case 'Machine setup is only attempted when init installs it' {
         Assert-Equal 0 $result.ExitCode 'A repository needing no machine setup was blocked.'
         Assert-True ($result.Output -notmatch 'Machine setup') 'Setup was considered with no setup scripts present.'
         Assert-True ($result.Output -notmatch 'administrator rights') 'Elevation was requested with no setup scripts present.'
+    }
+    finally { Remove-StubRepo $root }
+}
+
+Test-Case 'Machine setup installs nothing when it is skipped' {
+    # -SkipMachineSetup was only honoured when the session was not elevated, so an agent
+    # running as administrator got an install it had explicitly opted out of. Nothing here
+    # may reach the installer, whatever the machine running the tests looks like.
+    Reset-StubBehavior
+    $root = New-StubRepo -WithSetupScripts
+    try {
+        $result = Invoke-Wrapper -Root $root -Arguments @{ SkipMachineSetup = $true }
+        Assert-Equal 0 $result.ExitCode 'A skipped machine setup blocked the build.'
+        Assert-True ($result.Output -notmatch 'Downloading the installer') 'The installer was downloaded despite the skip.'
+        Assert-True ($result.Output -notmatch 'Installing Visual Studio') 'Visual Studio was installed despite the skip.'
+        Assert-True ($result.Output -notmatch 'missing component') 'Components were added despite the skip.'
+    }
+    finally { Remove-StubRepo $root }
+}
+
+Test-Case 'Machine setup is considered when init does machine setup' {
+    # The counterpart to the repository that has no setup scripts: those present, the
+    # wrapper must say what it found. Skipped so the assertion holds on a machine that
+    # genuinely needs setup without that machine being changed by a test run.
+    Reset-StubBehavior
+    $root = New-StubRepo -WithSetupScripts
+    try {
+        $result = Invoke-Wrapper -Root $root -Arguments @{ SkipMachineSetup = $true }
+        Assert-Equal 0 $result.ExitCode 'A repository with setup scripts was blocked.'
+        Assert-True ($result.Output -match 'Machine setup') 'Setup was not considered with setup scripts present.'
     }
     finally { Remove-StubRepo $root }
 }

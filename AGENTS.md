@@ -13,6 +13,10 @@ build, and returns a non-zero exit code if the build fails:
 
 Allow at least **300 seconds**, and treat over an hour as normal for a first full build.
 
+Clone to a short path such as `C:\mx`. The repository contains paths long enough that
+`git checkout` fails with `Filename too long` when the clone sits under a deep directory,
+before any build starts.
+
 **Do not call `build.cmd` directly and trust its exit code.** It can exit with code `0`
 after a failed build, because the failing code is not preserved on the way out of the
 script. An agent that trusts it will continue on a broken tree.

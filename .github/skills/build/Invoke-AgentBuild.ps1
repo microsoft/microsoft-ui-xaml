@@ -238,6 +238,22 @@ function Get-VisualStudioInstaller {
     return $null
 }
 
+function Get-RunningVisualStudioInstaller {
+    <#
+        The Visual Studio Installer processes already running, as "name (PID n)" strings.
+        The installer is a singleton. A second instance started while one is open exits 0
+        without installing anything, so an unattended setup that ignores this reports
+        success and the build then fails for components nobody installed.
+    #>
+    $filter = "Name='setup.exe' or Name='vs_installer.exe' or Name='vs_installershell.exe'"
+    try { $processes = @(Get-CimInstance Win32_Process -Filter $filter -ErrorAction Stop) }
+    catch { return @() }
+
+    return @($processes |
+        Where-Object { $_.ExecutablePath -and $_.ExecutablePath -like '*Microsoft Visual Studio*Installer*' } |
+        ForEach-Object { "$($_.Name) (PID $($_.ProcessId))" })
+}
+
 function Get-MissingVisualStudioComponent {
     <#
         The components listed in the repository's .vsconfig that the installation does not
@@ -316,7 +332,18 @@ function Install-MachineSetup {
     if ($vs) {
         $missing = @(Get-MissingVisualStudioComponent -Root $Root -InstallPath $vs)
         if ($missing.Count -eq 0) { return }
+    }
 
+    # Checked before anything is started, so the singleton lock is reported as the cause
+    # rather than showing up later as an install that claimed to work and did nothing.
+    $running = @(Get-RunningVisualStudioInstaller)
+    if ($running.Count -gt 0) {
+        throw ("A Visual Studio Installer is already running: $($running -join ', '). " +
+            'It holds a lock that makes an unattended install exit successfully without ' +
+            'installing anything. Close it, then run this again.')
+    }
+
+    if ($vs) {
         $installer = Get-VisualStudioInstaller
         if (-not $installer) { throw 'Visual Studio is installed but vs_installer.exe was not found.' }
 
@@ -342,6 +369,25 @@ function Install-MachineSetup {
     # which scripts\MSBuildFunctions.psm1 treats as success and must not be treated as one.
     if ($code -eq 5007) { throw 'The Visual Studio Installer could not make changes (5007). Setup was not applied.' }
     if ($code -ne 0 -and $code -ne 3010) { throw "The Visual Studio Installer failed with exit code $code." }
+
+    # Exit code 0 is not proof the work happened: an instance that loses the singleton race
+    # exits 0 having installed nothing. Confirm against the machine before reporting success,
+    # so the failure is named here rather than surfacing later as a missing compiler.
+    $remaining = @(Get-MachineSetupWork -Root $Root)
+    if ($remaining.Count -gt 0) {
+        $message = "The Visual Studio Installer reported success but the machine still needs: $($remaining -join '; ')."
+        if ($code -eq 3010) {
+            $message += ' The installer asked for a reboot. Restart the machine, then run this again.'
+        }
+        else {
+            $stillRunning = @(Get-RunningVisualStudioInstaller)
+            if ($stillRunning.Count -gt 0) {
+                $message += " A Visual Studio Installer is still running: $($stillRunning -join ', ')." +
+                    ' Close it, then run this again.'
+            }
+        }
+        throw $message
+    }
 
     Write-Host 'Visual Studio setup complete.'
 }
@@ -374,11 +420,11 @@ function Initialize-Machine {
 
     Write-Host "Machine setup required: $($work -join '; ')."
 
-    if (Test-Elevated) {
-        Install-MachineSetup -Root $Root
-    }
-    elseif ($SkipMachineSetup) {
+    if ($SkipMachineSetup) {
         Write-Host 'Skipping machine setup as requested.' -ForegroundColor Yellow
+    }
+    elseif (Test-Elevated) {
+        Install-MachineSetup -Root $Root
     }
     else {
         Write-Host 'Requesting administrator rights to perform it. Approve the prompt if one appears.'
