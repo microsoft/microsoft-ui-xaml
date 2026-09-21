@@ -128,9 +128,10 @@ namespace
                 });
 
             winrt::Microsoft::UI::Xaml::Hosting::WindowsXamlManager::WinUIProcessShutdownCompleted(
-                [](const auto&, const auto&)
+                [](const auto&, const auto& args)
                 {
                     s_winUIState = WinUIState::ShutdownComplete;
+                    args.RequestDllUnload(true);
                     ::OutputDebugString(L">>> WinUIProcessShutdownCompleted fired\n");
                 });
         });

@@ -74,7 +74,13 @@ namespace DirectUI
         typedef CEventSource<ABI::Windows::Foundation::IEventHandler<IInspectable*>, IInspectable, IInspectable> WinUIProcessShutdownStartingEventSourceType;
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-        typedef CEventSource<ABI::Windows::Foundation::IEventHandler<IInspectable*>, IInspectable, IInspectable> WinUIProcessShutdownCompletedEventSourceType;
+        typedef CEventSource<ABI::Windows::Foundation::IEventHandler<ABI::Microsoft::UI::Xaml::Hosting::WinUIProcessShutdownCompletedEventArgs*>, IInspectable, ABI::Microsoft::UI::Xaml::Hosting::IWinUIProcessShutdownCompletedEventArgs> WinUIProcessShutdownCompletedEventSourceType;
+#endif
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        typedef CEventSource<ABI::Windows::Foundation::IEventHandler<IInspectable*>, IInspectable, IInspectable> DllUnloadPreparingEventSourceType;
+#endif
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        typedef CEventSource<ABI::Windows::Foundation::IEventHandler<IInspectable*>, IInspectable, IInspectable> DllUnloadPreparationCompleteEventSourceType;
 #endif
 
 
@@ -140,8 +146,12 @@ namespace DirectUI
         // Static events.
         IFACEMETHOD(add_WinUIProcessShutdownStarting)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) FEATURE_EXPERIMENTALAPI_OVERRIDE;
         IFACEMETHOD(remove_WinUIProcessShutdownStarting)(EventRegistrationToken token) FEATURE_EXPERIMENTALAPI_OVERRIDE;
-        IFACEMETHOD(add_WinUIProcessShutdownCompleted)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        IFACEMETHOD(add_WinUIProcessShutdownCompleted)(_In_ ABI::Windows::Foundation::IEventHandler<ABI::Microsoft::UI::Xaml::Hosting::WinUIProcessShutdownCompletedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) FEATURE_EXPERIMENTALAPI_OVERRIDE;
         IFACEMETHOD(remove_WinUIProcessShutdownCompleted)(EventRegistrationToken token) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        IFACEMETHOD(add_DllUnloadPreparing)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        IFACEMETHOD(remove_DllUnloadPreparing)(EventRegistrationToken token) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        IFACEMETHOD(add_DllUnloadPreparationComplete)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        IFACEMETHOD(remove_DllUnloadPreparationComplete)(EventRegistrationToken token) FEATURE_EXPERIMENTALAPI_OVERRIDE;
 
     protected:
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;

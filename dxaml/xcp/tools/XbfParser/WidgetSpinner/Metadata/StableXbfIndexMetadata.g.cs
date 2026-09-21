@@ -3833,6 +3833,8 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
         WindowsXamlManager_XamlProcessShutdownCompleted_Deleted0 = 343,
         WindowsXamlManager_WinUIProcessShutdownStarting = 344,
         WindowsXamlManager_WinUIProcessShutdownCompleted = 345,
+        WindowsXamlManager_DllUnloadPreparing = 346,
+        WindowsXamlManager_DllUnloadPreparationComplete = 347,
     }
 
     [Flags]

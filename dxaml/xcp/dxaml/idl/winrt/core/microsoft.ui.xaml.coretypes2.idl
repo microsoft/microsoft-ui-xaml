@@ -2332,7 +2332,9 @@ namespace Microsoft.UI.Xaml.Hosting
         [static_name("Microsoft.UI.Xaml.Hosting.IWindowsXamlManagerStaticsFeature_ExperimentalApi")]
         {
             static event Windows.Foundation.EventHandler<Object> WinUIProcessShutdownStarting;
-            static event Windows.Foundation.EventHandler<Object> WinUIProcessShutdownCompleted;
+            static event Windows.Foundation.EventHandler<Microsoft.UI.Xaml.Hosting.WinUIProcessShutdownCompletedEventArgs> WinUIProcessShutdownCompleted;
+            static event Windows.Foundation.EventHandler<Object> DllUnloadPreparing;
+            static event Windows.Foundation.EventHandler<Object> DllUnloadPreparationComplete;
         }
     };
 

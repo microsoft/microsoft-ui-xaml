@@ -8,6 +8,7 @@
 #include "XamlIsland_Partial.h"
 #include "XamlIslandRoot_Partial.h"
 #include "XamlShutdownCompletedOnThreadEventArgs.g.h"
+#include "WinUIProcessShutdownCompletedEventArgs.g.h"
 
 #include <XamlOneCoreTransforms.h>
 #include <DependencyLocator.h>
@@ -36,10 +37,12 @@ namespace
 class WinUIProcessShutdownEvents
 {
 public:
-    using HandlerType = wf::IEventHandler<IInspectable*>;
+    using UntypedHandlerType = wf::IEventHandler<IInspectable*>;
+    using CompletedHandlerType =
+        wf::IEventHandler<xaml_hosting::WinUIProcessShutdownCompletedEventArgs*>;
 
     _Check_return_ HRESULT AddStartingHandler(
-        _In_ HandlerType* handler,
+        _In_ UntypedHandlerType* handler,
         _Out_ EventRegistrationToken* token)
     {
         return m_startingEventSource.Add(handler, token);
@@ -51,7 +54,7 @@ public:
     }
 
     _Check_return_ HRESULT AddCompletedHandler(
-        _In_ HandlerType* handler,
+        _In_ CompletedHandlerType* handler,
         _Out_ EventRegistrationToken* token)
     {
         return m_completedEventSource.Add(handler, token);
@@ -62,6 +65,30 @@ public:
         return m_completedEventSource.Remove(token);
     }
 
+    _Check_return_ HRESULT AddDllUnloadPreparingHandler(
+        _In_ UntypedHandlerType* handler,
+        _Out_ EventRegistrationToken* token)
+    {
+        return m_dllUnloadPreparingEventSource.Add(handler, token);
+    }
+
+    _Check_return_ HRESULT RemoveDllUnloadPreparingHandler(EventRegistrationToken token)
+    {
+        return m_dllUnloadPreparingEventSource.Remove(token);
+    }
+
+    _Check_return_ HRESULT AddDllUnloadPreparationCompleteHandler(
+        _In_ UntypedHandlerType* handler,
+        _Out_ EventRegistrationToken* token)
+    {
+        return m_dllUnloadPreparationCompleteEventSource.Add(handler, token);
+    }
+
+    _Check_return_ HRESULT RemoveDllUnloadPreparationCompleteHandler(EventRegistrationToken token)
+    {
+        return m_dllUnloadPreparationCompleteEventSource.Remove(token);
+    }
+
     void RaiseStarting()
     {
         IGNOREHR(m_startingEventSource.InvokeAll(nullptr, nullptr));
@@ -69,12 +96,16 @@ public:
 
     void RaiseCompleted()
     {
-        IGNOREHR(m_completedEventSource.InvokeAll(nullptr, nullptr));
+        ctl::ComPtr<WinUIProcessShutdownCompletedEventArgs> args;
+        IFCFAILFAST(ctl::make(&args));
+        IGNOREHR(m_completedEventSource.InvokeAll(nullptr, args.Get()));
     }
 
 private:
-    Microsoft::WRL::EventSource<HandlerType> m_startingEventSource;
-    Microsoft::WRL::EventSource<HandlerType> m_completedEventSource;
+    Microsoft::WRL::EventSource<UntypedHandlerType> m_startingEventSource;
+    Microsoft::WRL::EventSource<CompletedHandlerType> m_completedEventSource;
+    Microsoft::WRL::EventSource<UntypedHandlerType> m_dllUnloadPreparingEventSource;
+    Microsoft::WRL::EventSource<UntypedHandlerType> m_dllUnloadPreparationCompleteEventSource;
 };
 
 WinUIProcessShutdownEvents& GetWinUIProcessShutdownEvents()
@@ -297,7 +328,7 @@ IFACEMETHODIMP WindowsXamlManagerFactory::remove_WinUIProcessShutdownStarting(Ev
 }
 
 IFACEMETHODIMP WindowsXamlManagerFactory::add_WinUIProcessShutdownCompleted(
-    _In_ wf::IEventHandler<IInspectable*>* value,
+    _In_ wf::IEventHandler<xaml_hosting::WinUIProcessShutdownCompletedEventArgs*>* value,
     _Out_ EventRegistrationToken* token)
 {
     ARG_VALIDRETURNPOINTER(token);
@@ -309,6 +340,36 @@ IFACEMETHODIMP WindowsXamlManagerFactory::add_WinUIProcessShutdownCompleted(
 IFACEMETHODIMP WindowsXamlManagerFactory::remove_WinUIProcessShutdownCompleted(EventRegistrationToken token)
 {
     return GetWinUIProcessShutdownEvents().RemoveCompletedHandler(token);
+}
+
+IFACEMETHODIMP WindowsXamlManagerFactory::add_DllUnloadPreparing(
+    _In_ wf::IEventHandler<IInspectable*>* value,
+    _Out_ EventRegistrationToken* token)
+{
+    ARG_VALIDRETURNPOINTER(token);
+    ARG_NOTNULL_RETURN(value, "value");
+
+    return GetWinUIProcessShutdownEvents().AddDllUnloadPreparingHandler(value, token);
+}
+
+IFACEMETHODIMP WindowsXamlManagerFactory::remove_DllUnloadPreparing(EventRegistrationToken token)
+{
+    return GetWinUIProcessShutdownEvents().RemoveDllUnloadPreparingHandler(token);
+}
+
+IFACEMETHODIMP WindowsXamlManagerFactory::add_DllUnloadPreparationComplete(
+    _In_ wf::IEventHandler<IInspectable*>* value,
+    _Out_ EventRegistrationToken* token)
+{
+    ARG_VALIDRETURNPOINTER(token);
+    ARG_NOTNULL_RETURN(value, "value");
+
+    return GetWinUIProcessShutdownEvents().AddDllUnloadPreparationCompleteHandler(value, token);
+}
+
+IFACEMETHODIMP WindowsXamlManagerFactory::remove_DllUnloadPreparationComplete(EventRegistrationToken token)
+{
+    return GetWinUIProcessShutdownEvents().RemoveDllUnloadPreparationCompleteHandler(token);
 }
 
 /*static*/ ctl::ComPtr<WindowsXamlManager> WindowsXamlManager::GetForCurrentThread()

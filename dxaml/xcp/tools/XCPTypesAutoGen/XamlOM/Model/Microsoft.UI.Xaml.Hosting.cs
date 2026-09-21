@@ -338,6 +338,23 @@ namespace Microsoft.UI.Xaml.Hosting
         public Windows.Foundation.Deferral GetDispatcherQueueDeferral() { return null; }
     }
 
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [FrameworkTypePattern]
+    [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
+    [CodeGen(partial: true)]
+    [Guids(ClassGuid = "70459eb6-638b-4ee4-be4e-34400191762d")]
+    public sealed class WinUIProcessShutdownCompletedEventArgs
+    {
+        internal WinUIProcessShutdownCompletedEventArgs() { }
+
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public bool RequestDllUnload
+        {
+            get;
+            set;
+        }
+    }
+
     [Contract(typeof(WinUIContract), 5, ForcePrimaryInterfaceGeneration = true)]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 6)]
     [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
@@ -376,6 +393,14 @@ namespace Microsoft.UI.Xaml.Hosting
 
 	    [VelocityFeature("Feature_ExperimentalApi")]
 	    [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-	    public static event Windows.Foundation.EventHandler<Windows.Foundation.Object> WinUIProcessShutdownCompleted;
+	    public static event Windows.Foundation.EventHandler<WinUIProcessShutdownCompletedEventArgs> WinUIProcessShutdownCompleted;
+
+	    [VelocityFeature("Feature_ExperimentalApi")]
+	    [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+	    public static event Windows.Foundation.EventHandler<Windows.Foundation.Object> DllUnloadPreparing;
+
+	    [VelocityFeature("Feature_ExperimentalApi")]
+	    [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+	    public static event Windows.Foundation.EventHandler<Windows.Foundation.Object> DllUnloadPreparationComplete;
     }
 }
