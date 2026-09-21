@@ -283,7 +283,7 @@ public:
     BEGIN_TEST_METHOD(CompositorTest)
         TEST_METHOD_PROPERTY(L"Description", L"Verifies the app has access to the Compositor")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Test requires Window::Current that is not available in Win32
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(Translation1WUCFull)
@@ -378,4 +378,3 @@ private:
     void ElementCulling_Transform();
 };
 } } } } } }
-

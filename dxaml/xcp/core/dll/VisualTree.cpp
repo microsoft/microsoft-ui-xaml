@@ -1594,7 +1594,7 @@ xref_ptr<CLayoutTransitionElement> VisualTree::AddTestLTE(
     return lte;
 }
 
-void VisualTree::RemoveTestLTE(_In_ CUIElement *lte)
+bool VisualTree::RemoveTestLTE(_In_ CUIElement *lte)
 {
     CLayoutTransitionElement* lteNoRef = static_cast<CLayoutTransitionElement*>(lte);
     for (unsigned int i = 0; i < m_testLTEs.size(); i++)
@@ -1603,9 +1603,11 @@ void VisualTree::RemoveTestLTE(_In_ CUIElement *lte)
         {
             lteNoRef->DetachTransition();
             m_testLTEs.erase(m_testLTEs.begin() + i);
-            break;
+            return true;
         }
     }
+
+    return false;
 }
 
 void VisualTree::ClearTestLTEs()

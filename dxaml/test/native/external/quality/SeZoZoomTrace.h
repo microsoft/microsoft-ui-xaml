@@ -26,7 +26,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
                         BEGIN_TEST_METHOD(VerifyZoomingTraceWheel)
                             TEST_METHOD_PROPERTY(L"Description", L"Validates that the correct event is fired when Semantic Zoom zooms in or out with the mouse wheel.")
                             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                         END_TEST_METHOD()
 
                         BEGIN_TEST_METHOD(VerifyZoomingTracePinch)
@@ -37,7 +37,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
 
                         BEGIN_TEST_METHOD(VerifyZoomingTraceTap)
                             TEST_METHOD_PROPERTY(L"Description", L"Validates that the correct event is fired when Semantic Zoom zooms in with tap.")
-                            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                         END_TEST_METHOD()
 
                         void SetUpPage(Grid^ &grid, SemanticZoom^ &seZo, GridView^ &innerView, GridView^ &outerView, GridViewItem^ &innerItem, GridViewItem^ &outerItem);

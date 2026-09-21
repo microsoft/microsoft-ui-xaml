@@ -24,6 +24,16 @@ using namespace MockDComp;
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace Microsoft::UI::Xaml::Tests::Foundation::Graphics;
 
+namespace
+{
+    void SetWindowContentTopLeft(FrameworkElement^ content)
+    {
+        content->HorizontalAlignment = HorizontalAlignment::Left;
+        content->VerticalAlignment = VerticalAlignment::Top;
+        TestServices::WindowHelper->WindowContent = content;
+    }
+}
+
 bool UIElementFacadeTests::ClassSetup()
 {
     CommonTestSetupHelper::CommonTestClassSetup();
@@ -58,10 +68,12 @@ void UIElementFacadeTests::ActualOffsetAPI()
     TestCleanupWrapper cleanup;
 
     auto wh = TestServices::WindowHelper;
+    Canvas^ root;
     Canvas^ canvas;
 
     RunOnUIThread([&]()
     {
+        root = ref new Canvas();
         canvas = ref new Canvas();
         wfn_::float3 actualOffset = canvas->ActualOffset;
         VERIFY_IS_TRUE(actualOffset == wfn_::float3(0, 0, 0));
@@ -71,7 +83,8 @@ void UIElementFacadeTests::ActualOffsetAPI()
 
         VERIFY_IS_TRUE(actualOffset == wfn_::float3(0, 0, 0));    // Layout must run first
 
-        wh->WindowContent = canvas;
+        root->Children->Append(canvas);
+        wh->WindowContent = root;
     });
     wh->WaitForIdle();
 
@@ -608,7 +621,7 @@ void UIElementFacadeTests::TranslationAPIInternal(bool useClip)
         VERIFY_IS_TRUE(translation == wfn_::float3(10, 20, 30));
 
         root->Children->Append(canvas);
-        wh->WindowContent = root;
+        SetWindowContentTopLeft(root);
     });
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
@@ -684,7 +697,7 @@ void UIElementFacadeTests::RotationAPI()
         canvas->Rotation = 45;
         VERIFY_IS_TRUE(canvas->Rotation == 45);
 
-        wh->WindowContent = canvas;
+        SetWindowContentTopLeft(canvas);
     });
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
@@ -719,7 +732,7 @@ void UIElementFacadeTests::ScaleAPI()
         scale = canvas->Scale;
         VERIFY_IS_TRUE(scale == wfn_::float3(1, 2, 3));
 
-        wh->WindowContent = canvas;
+        SetWindowContentTopLeft(canvas);
     });
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
@@ -754,7 +767,7 @@ void UIElementFacadeTests::TransformMatrixAPI()
         transformMatrix = canvas->TransformMatrix;
         VERIFY_IS_TRUE(transformMatrix == wfn_::float4x4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16));
 
-        wh->WindowContent = canvas;
+        SetWindowContentTopLeft(canvas);
     });
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
@@ -789,7 +802,7 @@ void UIElementFacadeTests::CenterPointAPI()
         centerPoint = canvas->CenterPoint;
         VERIFY_IS_TRUE(centerPoint == wfn_::float3(4, 5, 6));
 
-        wh->WindowContent = canvas;
+        SetWindowContentTopLeft(canvas);
     });
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
@@ -824,7 +837,7 @@ void UIElementFacadeTests::RotationAxisAPI()
         rotationAxis = canvas->RotationAxis;
         VERIFY_IS_TRUE(rotationAxis == wfn_::float3(7, 8, 9));
 
-        wh->WindowContent = canvas;
+        SetWindowContentTopLeft(canvas);
     });
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
@@ -866,7 +879,7 @@ void UIElementFacadeTests::CombinedAPI()
         VERIFY_IS_TRUE(canvas->CenterPoint == wfn_::float3(4, 5, 6));
         VERIFY_IS_TRUE(canvas->RotationAxis == wfn_::float3(7, 8, 9));
 
-        wh->WindowContent = canvas;
+        SetWindowContentTopLeft(canvas);
     });
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
@@ -1856,7 +1869,7 @@ void UIElementFacadeTests::TranslationAnimationPlusECPInternal(bool useClip)
         VERIFY_IS_TRUE(translation == wfn_::float3(11, 21, 31));
 
         root->Children->Append(canvas);
-        wh->WindowContent = root;
+        SetWindowContentTopLeft(root);
     });
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
@@ -2041,7 +2054,7 @@ void UIElementFacadeTests::TranslationPlusLTETarget()
         canvas->Translation = {10, 20, 30};
 
         root->Children->Append(canvas);
-        wh->WindowContent = root;
+        SetWindowContentTopLeft(root);
     });
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
@@ -4068,7 +4081,7 @@ void UIElementFacadeTests::HitTestingAnimated()
         canvas->Height = 100;
         canvas->Background = ref new xaml_media::SolidColorBrush(mu::Colors::Red);
 
-        wh->WindowContent = canvas;
+        SetWindowContentTopLeft(canvas);
         compositor = CompositionTarget::GetCompositorForCurrentThread();
     });
     wh->WaitForIdle();
@@ -4300,7 +4313,7 @@ void UIElementFacadeTests::HitTestingAnimatedAndReferenced()
         canvas->Height = 100;
         canvas->Background = ref new xaml_media::SolidColorBrush(mu::Colors::Red);
 
-        wh->WindowContent = canvas;
+        SetWindowContentTopLeft(canvas);
         compositor = CompositionTarget::GetCompositorForCurrentThread();
     });
     wh->WaitForIdle();
@@ -4659,7 +4672,7 @@ void UIElementFacadeTests::HitTesting3D()
         canvas->Height = 100;
         canvas->Children->Append(rect);
 
-        wh->WindowContent = canvas;
+        SetWindowContentTopLeft(canvas);
         compositor = CompositionTarget::GetCompositorForCurrentThread();
     });
     wh->WaitForIdle();
@@ -4908,7 +4921,7 @@ void UIElementFacadeTests::HitTesting2DRotations()
         canvas->Height = 100;
         canvas->Children->Append(rect);
 
-        wh->WindowContent = canvas;
+        SetWindowContentTopLeft(canvas);
         compositor = CompositionTarget::GetCompositorForCurrentThread();
     });
     wh->WaitForIdle();
@@ -5353,7 +5366,7 @@ void UIElementFacadeTests::TranslationTransition()
         wfn_::float3 translation = canvas->Translation;
         VERIFY_IS_TRUE(translation == wfn_::float3(0, 0, 0));
 
-        wh->WindowContent = canvas;
+        SetWindowContentTopLeft(canvas);
     });
     wh->WaitForIdle();
 
@@ -5496,7 +5509,7 @@ void UIElementFacadeTests::ScaleTransition()
         wfn_::float3 scale = canvas->Scale;
         VERIFY_IS_TRUE(scale == wfn_::float3(1, 1, 1));
 
-        wh->WindowContent = canvas;
+        SetWindowContentTopLeft(canvas);
     });
     wh->WaitForIdle();
 
@@ -5642,7 +5655,7 @@ void UIElementFacadeTests::RotationTransition()
         float rotation = canvas->Rotation;
         VERIFY_IS_TRUE(rotation == 0);
 
-        wh->WindowContent = canvas;
+        SetWindowContentTopLeft(canvas);
     });
     wh->WaitForIdle();
 
@@ -5766,7 +5779,7 @@ void UIElementFacadeTests::OpacityTransition()
         double opacity = canvas->Opacity;
         VERIFY_IS_TRUE(opacity == 1);
 
-        wh->WindowContent = canvas;
+        SetWindowContentTopLeft(canvas);
     });
     wh->WaitForIdle();
 
@@ -5894,7 +5907,7 @@ void UIElementFacadeTests::OpacityTransitionTo0()
         transition->Duration = { 1000L * 10000L };
         canvas->OpacityTransition = transition;
 
-        wh->WindowContent = canvas;
+        SetWindowContentTopLeft(canvas);
     });
     wh->WaitForIdle();
 
@@ -5967,7 +5980,7 @@ void UIElementFacadeTests::TransitionsFromMarkup()
         LOG_OUTPUT(L"> Loading markup.");
 
         canvas = dynamic_cast<Canvas^>(xaml_markup::XamlReader::Load(
-            L"<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' Background='Red' Width='100' Height='100' > "
+            L"<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' Background='Red' Width='100' Height='100' HorizontalAlignment='Left' VerticalAlignment='Top' > "
             L"  <Canvas.BackgroundTransition> "
             L"    <BrushTransition /> "
             L"  </Canvas.BackgroundTransition> "
@@ -6001,6 +6014,12 @@ void UIElementFacadeTests::TransitionsFromMarkup()
     });
     wh->SynchronouslyTickUIThread(2);
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+
+    // Clear the content so we don't need to wait for the animation to complete.
+    RunOnUIThread([&]()
+    {
+        wh->WindowContent = nullptr;
+    });
 }
 
 void UIElementFacadeTests::VerifyCannotQIToDO(IInspectable* inspectable)
@@ -6090,7 +6109,7 @@ void UIElementFacadeTests::PropertiesFromMarkup()
                 L"<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' Background='Red' Width='100' Height='100' Rotation='45' Scale='1,2,3' Translation='-0.5,2e3,2.5' /> "));
             VERIFY_IS_NOT_NULL(canvas);
 
-            wh->WindowContent = canvas;
+            SetWindowContentTopLeft(canvas);
 
             LOG_OUTPUT(L"> Loaded markup.");
         });

@@ -183,7 +183,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateDCompTree)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the DComp tree and surfaces using MockDComp.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // WPF_HOSTING_MODE_FAILURE - DComp baseline doesn't match
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestSuite", L"A")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
@@ -575,7 +575,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateChromeFocusDecade)
             TEST_METHOD_PROPERTY(L"Description", L"Vaidate chrome focus state in Decade mode.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // WPF_HOSTING_MODE_FAILURE - DComp baseline doesn't match
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestSuite", L"B")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()

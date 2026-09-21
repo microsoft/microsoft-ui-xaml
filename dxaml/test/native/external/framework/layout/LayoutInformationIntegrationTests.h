@@ -26,7 +26,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         //
         BEGIN_TEST_METHOD(VerifyGetLayoutExceptionElement)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that GetLayoutExceptionElement returns an element responsible for throwing an exception inside a layout cycle.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateLayoutRoundingMargin)
@@ -37,13 +37,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that CUIElement::Measure and CUIElement::Arrange do not restore the "
                 L"OnMeasureDirtyPath or OnArrangeDirtyPath flags after a UIElement that was originally MeasureDirty-and-OnMeasureDirtyPath "
                 L"or ArrangeDirty-and-OnArrangeDirtyPath is marked as IsAncestorDirty after calling MeasureInternal or ArrangeInternal.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateGetAvailableSize)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the correct previous available size is returned")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
     };
 

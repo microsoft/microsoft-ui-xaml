@@ -52,11 +52,25 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     private ref class ArrangeOverrideExceptionControl sealed: public Microsoft::UI::Xaml::Controls::Control
     {
-    protected:
-        ::Windows::Foundation::Size ArrangeOverride(::Windows::Foundation::Size) override
+    public:
+        void EnableException()
         {
-            throw ref new Platform::NotImplementedException();
+            m_throwException = true;
         }
+
+    protected:
+        ::Windows::Foundation::Size ArrangeOverride(::Windows::Foundation::Size finalSize) override
+        {
+            if (m_throwException)
+            {
+                throw ref new Platform::NotImplementedException();
+            }
+
+            return finalSize;
+        }
+
+    private:
+        bool m_throwException = false;
     };
 
     //
@@ -71,59 +85,75 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         RunOnUIThread([&]()
         {
             LOG_OUTPUT(L"Verify GetLayoutExceptionElement returns NULL when no exception.");
-            VERIFY_IS_NULL(xaml_primitives::LayoutInformation::GetLayoutExceptionElement(Window::Current->CoreWindow->Dispatcher));
+            VERIFY_IS_NULL(xaml_primitives::LayoutInformation::GetLayoutExceptionElement(TestServices::WindowHelper->CurrentDispatcher));
         });
 
+        xaml_controls::Grid^ root = nullptr;
         RunOnUIThread([&]()
         {
-            auto measureExceptionControl = ref new MeasureOverrideExceptionControl();
-            TestServices::WindowHelper->WindowContent = measureExceptionControl;
-
-            LOG_OUTPUT(L"Make control throw exception.");
-            VERIFY_THROWS_WINRT(measureExceptionControl->Measure(wf::Size(400, 400)), Platform::NotImplementedException^);
-
-            UIElement^ measureExceptionUIElement = safe_cast<UIElement^>(measureExceptionControl);
-            LOG_OUTPUT(L"Verify that control linked to exception matches original control.");
-            UIElement^ measureExceptionResult = xaml_primitives::LayoutInformation::GetLayoutExceptionElement(Window::Current->CoreWindow->Dispatcher);
-            VERIFY_ARE_EQUAL(measureExceptionUIElement, measureExceptionResult);
-            TestServices::WindowHelper->WindowContent = nullptr;
-
-            auto arrangeExceptionControl = ref new ArrangeOverrideExceptionControl();
-            TestServices::WindowHelper->WindowContent = arrangeExceptionControl;
-
-            LOG_OUTPUT(L"Make control throw exception.");
-            VERIFY_THROWS_WINRT(arrangeExceptionControl->Arrange(::Windows::Foundation::Rect(0, 0, 40, 40)), Platform::NotImplementedException^);
-
-            UIElement^ arrangeExceptionUIElement = safe_cast<UIElement^>(arrangeExceptionControl);
-            LOG_OUTPUT(L"Verify that control linked to exception matches original control.");
-            UIElement^ arrangeExceptionResult = xaml_primitives::LayoutInformation::GetLayoutExceptionElement(Window::Current->CoreWindow->Dispatcher);
-            VERIFY_ARE_EQUAL(arrangeExceptionUIElement, arrangeExceptionResult);
-            TestServices::WindowHelper->WindowContent = nullptr;
+            root = ref new xaml_controls::Grid();
+            TestServices::WindowHelper->WindowContent = root;
         });
         TestServices::WindowHelper->WaitForIdle();
 
         RunOnUIThread([&]()
         {
             auto measureExceptionControl = ref new MeasureOverrideExceptionControl();
-            auto arrangeExceptionControl = ref new ArrangeOverrideExceptionControl();
-            auto stackPanel = ref new xaml_controls::StackPanel();
-            TestServices::WindowHelper->WindowContent = stackPanel;
+            root->Children->Append(measureExceptionControl);
 
-            stackPanel->Children->Append(measureExceptionControl);
-            stackPanel->Children->Append(arrangeExceptionControl);
-
-            LOG_OUTPUT(L"Make controls throw exception.");
+            LOG_OUTPUT(L"Make control throw exception in Measure.");
             VERIFY_THROWS_WINRT(measureExceptionControl->Measure(wf::Size(400, 400)), Platform::NotImplementedException^);
+
+            UIElement^ measureExceptionUIElement = safe_cast<UIElement^>(measureExceptionControl);
+            LOG_OUTPUT(L"Verify that control linked to exception matches original control.");
+            UIElement^ measureExceptionResult = xaml_primitives::LayoutInformation::GetLayoutExceptionElement(TestServices::WindowHelper->CurrentDispatcher);
+            VERIFY_ARE_EQUAL(measureExceptionUIElement, measureExceptionResult);
+            root->Children->Clear();
+
+            auto arrangeExceptionControl = ref new ArrangeOverrideExceptionControl();
+            root->Children->Append(arrangeExceptionControl);
+
+            LOG_OUTPUT(L"Make control throw exception in Arrange.");
+            root->UpdateLayout(); // force Measure to complete so Arrange will run
+            arrangeExceptionControl->EnableException();
+            arrangeExceptionControl->InvalidateArrange();
+            VERIFY_THROWS_WINRT(arrangeExceptionControl->Arrange(::Windows::Foundation::Rect(0, 0, 40, 40)), Platform::NotImplementedException^);
+
+            UIElement^ arrangeExceptionUIElement = safe_cast<UIElement^>(arrangeExceptionControl);
+            LOG_OUTPUT(L"Verify that control linked to exception matches original control.");
+            UIElement^ arrangeExceptionResult = xaml_primitives::LayoutInformation::GetLayoutExceptionElement(TestServices::WindowHelper->CurrentDispatcher);
+            VERIFY_ARE_EQUAL(arrangeExceptionUIElement, arrangeExceptionResult);
+            root->Children->Clear();
+        });
+
+        RunOnUIThread([&]()
+        {
+            auto measureExceptionControl = ref new MeasureOverrideExceptionControl();
+            auto arrangeExceptionControl = ref new ArrangeOverrideExceptionControl();
+
+            root->Children->Append(measureExceptionControl);
+            root->Children->Append(arrangeExceptionControl);
+
+            LOG_OUTPUT(L"Make controls throw exception in Measure during UpdateLayout.");
+            arrangeExceptionControl->Measure(wf::Size(40, 40));
+            VERIFY_THROWS_WINRT(root->UpdateLayout(), Platform::NotImplementedException^);
+            UIElement^ exceptionResult = xaml_primitives::LayoutInformation::GetLayoutExceptionElement(TestServices::WindowHelper->CurrentDispatcher);
+            VERIFY_ARE_EQUAL(safe_cast<UIElement^>(measureExceptionControl), exceptionResult);
+
+            LOG_OUTPUT(L"Make controls throw exception in Arrange.");
+            arrangeExceptionControl->EnableException();
+            arrangeExceptionControl->InvalidateArrange();
             VERIFY_THROWS_WINRT(arrangeExceptionControl->Arrange(::Windows::Foundation::Rect(0, 0, 40, 40)), Platform::NotImplementedException^);
 
             UIElement^ measureExceptionUIElement = safe_cast<UIElement^>(measureExceptionControl);
             UIElement^ arrangeExceptionUIElement = safe_cast<UIElement^>(arrangeExceptionControl);
 
-            UIElement^ exceptionResult = xaml_primitives::LayoutInformation::GetLayoutExceptionElement(Window::Current->CoreWindow->Dispatcher);
+            exceptionResult = xaml_primitives::LayoutInformation::GetLayoutExceptionElement(TestServices::WindowHelper->CurrentDispatcher);
 
             LOG_OUTPUT(L"Verify GetLayoutExceptionElement returns last control that generated an exception.");
             VERIFY_ARE_NOT_EQUAL(measureExceptionUIElement, exceptionResult);
             VERIFY_ARE_EQUAL(arrangeExceptionUIElement, exceptionResult);
+            root->Children->Clear();
             TestServices::WindowHelper->WindowContent = nullptr;
         });
 

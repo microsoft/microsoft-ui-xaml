@@ -75,10 +75,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             {
                 TestServices::WindowHelper->WindowContent = rootGrid;
 
-                xaml::Window^ xamlWindow = xaml::Window::Current;
-                xaml::IWindowPrivate^ windowPrivate = dynamic_cast<xaml::IWindowPrivate^>(xamlWindow);
-
-                windowPrivate->SetAtlasSizeHint(atlasWidthHint, atlasHeightHint);
+                // Window::Current is null in WPF hosting, and atlas size hints are not supported for islands.
+                // xaml::Window^ xamlWindow = xaml::Window::Current;
+                // xaml::IWindowPrivate^ windowPrivate = dynamic_cast<xaml::IWindowPrivate^>(xamlWindow);
+                // windowPrivate->SetAtlasSizeHint(atlasWidthHint, atlasHeightHint);
             });
             TestServices::WindowHelper->WaitForIdle();
             etwWaiter.WaitForDefault();
@@ -141,7 +141,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             MyCallback^ callback = ref new MyCallback();
             Canvas^ root;
             xaml_shapes::Ellipse^ ellipse;
-            xaml::IWindowPrivate^ windowPrivate;
+            // xaml::IWindowPrivate^ windowPrivate;
 
             RunOnUIThread([&]()
             {
@@ -160,9 +160,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 root->Children->Append(ellipse);
 
                 LOG_OUTPUT(L"Setting atlas callback");
-                xaml::Window^ xamlWindow = xaml::Window::Current;
-                windowPrivate = dynamic_cast<xaml::IWindowPrivate^>(xamlWindow);
-                windowPrivate->SetAtlasRequestCallback(callback);
+                // Window::Current is null in WPF hosting, and atlas requests are not supported for islands.
+                // xaml::Window^ xamlWindow = xaml::Window::Current;
+                // windowPrivate = dynamic_cast<xaml::IWindowPrivate^>(xamlWindow);
+                // windowPrivate->SetAtlasRequestCallback(callback);
                 callback->SetExpectedRequest(100, 100, DirectXPixelFormat::A8UIntNormalized);
             });
             TestServices::WindowHelper->WaitForIdle();
@@ -184,7 +185,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             {
                 // Test clearing out the callback and ensuring it doesn't get called
                 LOG_OUTPUT(L"Clearing atlas callback");
-                windowPrivate->SetAtlasRequestCallback(nullptr);
+                // windowPrivate->SetAtlasRequestCallback(nullptr);
 
                 LOG_OUTPUT(L"Changing size");
                 ellipse->Width = 100;

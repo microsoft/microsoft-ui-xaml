@@ -1521,12 +1521,21 @@ HRESULT WindowHelper::ResetDeviceAndVisuals()
 {
     COM_START_GROUP(L"WindowHelper::ResetDeviceAndVisuals")
     {
+        LogThrow_IfFailed(ResetDeviceAndVisualsWithoutUIThreadTick());
+
+        TickUIThreadAfterDeviceLostIfNeeded();
+    }
+    COM_END
+}
+
+HRESULT WindowHelper::ResetDeviceAndVisualsWithoutUIThreadTick()
+{
+    COM_START_GROUP(L"WindowHelper::ResetDeviceAndVisualsWithoutUIThreadTick")
+    {
         RunOnUIThread([&]() {
             ResetDeviceAndVisualsHelper();
             LogThrow_IfFailed(OnSimulatedDeviceLost());
         });
-
-        TickUIThreadAfterDeviceLostIfNeeded();
     }
     COM_END
 }
