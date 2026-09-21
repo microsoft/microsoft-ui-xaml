@@ -3519,9 +3519,7 @@ void UIElementFacadeTests::MultiAnimation()
 
 void UIElementFacadeTests::AnimationAndReference()
 {
-    // WPF shutdown reports DesktopWindowXamlSource,
-    // Canvas, SizeChangedEventArgs, and associated event-source/weak-reference allocations.
-    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+    TestCleanupWrapper cleanup;
 
     auto wh = TestServices::WindowHelper;
     auto u = TestServices::Utilities;

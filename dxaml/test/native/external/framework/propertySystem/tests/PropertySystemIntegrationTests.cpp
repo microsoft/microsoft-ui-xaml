@@ -778,8 +778,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void PropertySystemIntegrationTests::CanUseCustomDependencyPropertyWithBadDefaultValue()
         {
-            // WPF shutdown reports the Border peer used as the unresolved binding's source.
-            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+            TestCleanupWrapper cleanup;
 
             RunOnUIThread([&]()
             {
@@ -1065,8 +1064,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void PropertySystemIntegrationTests::ImageSourceDoesNotReturnStaleValue()
         {
-            // WPF shutdown reports Canvas and SizeChangedEventArgs peers plus DesktopWindowXamlSource.
-            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+            TestCleanupWrapper cleanup;
 
             RunOnUIThread([&]()
             {
@@ -1092,8 +1090,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void PropertySystemIntegrationTests::ThemeExpressionEvaluationDoesNotOverwriteBaseValueSource()
         {
-            // WPF shutdown reports Grid, Style, and SizeChangedEventArgs peers plus DesktopWindowXamlSource.
-            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+            TestCleanupWrapper cleanup;
 
             RunOnUIThread([&]()
             {
@@ -1133,8 +1130,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void PropertySystemIntegrationTests::NewStyleClearsThemeResourceExpression()
         {
-            // WPF shutdown reports Grid, Border, and SizeChangedEventArgs peers plus DesktopWindowXamlSource.
-            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+            TestCleanupWrapper cleanup;
 
             RunOnUIThread([&]()
             {
