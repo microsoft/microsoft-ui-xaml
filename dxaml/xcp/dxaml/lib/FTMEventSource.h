@@ -8,6 +8,8 @@
 
 #include "GitHelper.h"
 #include "ErrorHelper.h"
+#include "refcounting.h"
+#include "xref_ptr.h"
 
 namespace DirectUI
 {
@@ -149,25 +151,28 @@ public:
         RRETURN(hr);
     }
 
-    _Check_return_ HRESULT Remove(DWORD dwCookie)
+    _Check_return_ HRESULT Remove(DWORD dwCookie, _Outptr_result_maybenull_ CGITCookie<T>** ppRemovedCookie)
     {
         HRESULT hr = S_OK;
         XUINT32 size = m_list.size();
         XUINT32 i = 0;
 
+        *ppRemovedCookie = NULL;
+
         for (; i < size; i++)
         {
             if (m_list[i] && dwCookie == m_list[i]->GetCookie())
             {
-                ReleaseInterface(m_list[i]);
+                CGITCookie<T>* pGITCookie = m_list[i];
                 IFC(m_list.erase(i));
+                // The caller releases the cookie after leaving its mutation lock.
+                *ppRemovedCookie = pGITCookie;
                 break;
             }
         }
 
         // If the cookie wasn't found, treat this as a no-op rather than a failure. This can legitimately
-        // happen if the event source was already cleared (e.g. via Clear(), which eagerly revokes all
-        // registrations when the owning object is closed/shut down) before the caller got a chance to
+        // happen if the event source was already cleared before the caller got a chance to
         // explicitly unsubscribe with the token it was given from Add().
 
     Cleanup:
@@ -218,8 +223,7 @@ class CFTMEventSource
 {
 public:
     CFTMEventSource() :
-        m_fInitialized(FALSE),
-        m_pHandlers(NULL)
+        m_fInitialized(FALSE)
     {
         BOOL fRet;
         HRESULT hr;
@@ -236,7 +240,7 @@ public:
             return;
         }
 
-        hr = CGITCookieList<THANDLER>::Create(&m_pHandlers);
+        hr = EnsureHandlerState();
         if (FAILED(hr))
         {
             return;
@@ -247,9 +251,11 @@ public:
 
     ~CFTMEventSource()
     {
+        m_fInitialized = FALSE;
+        HandlerState* pState = m_handlerState.detach();
+        ReleaseInterface(pState);
         DeleteCriticalSection(&m_csAddRemove);
         DeleteCriticalSection(&m_csRaise);
-        delete m_pHandlers;
     }
 
     _Check_return_ HRESULT Add(_In_ THANDLER* pHandler, _Out_ EventRegistrationToken* pToken)
@@ -264,7 +270,9 @@ public:
         {
             Lock lock(m_csAddRemove);
 
-            IFC(m_pHandlers->Add(pGITCookie));
+            CGITCookieList<THANDLER>* pList = NULL;
+            IFC(GetHandlersListForAddRemove(&pList));
+            IFC(pList->Add(pGITCookie));
         }
 
         pToken->value = pGITCookie->GetCookie();
@@ -279,16 +287,23 @@ public:
     {
         HRESULT hr = S_OK;
         DWORD dwCookie = static_cast<DWORD>(token.value);
+        CGITCookie<THANDLER>* pRemovedCookie = NULL;
 
         IFCEXPECT(m_fInitialized);
 
         {
             Lock lock(m_csAddRemove);
 
-            IFC(m_pHandlers->Remove(dwCookie));
+            if (m_handlerState)
+            {
+                CGITCookieList<THANDLER>* pList = NULL;
+                IFC(GetHandlersListForAddRemove(&pList));
+                IFC(pList->Remove(dwCookie, &pRemovedCookie));
+            }
         }
 
     Cleanup:
+        ReleaseInterface(pRemovedCookie);
         RRETURN(hr);
     }
 
@@ -296,26 +311,43 @@ public:
     {
         HRESULT hr = S_OK;
         Lock lock(m_csRaise);
-        XUINT32 size;
+        XUINT32 size = 0;
         THANDLER* pHandler = NULL;
-        CGITCookieList<THANDLER>* pHandlers = NULL;
+        CGITCookie<THANDLER>* pGITCookie = NULL;
+        xref_ptr<HandlerState> state;
 
         IFCEXPECT(m_fInitialized);
 
         {
             Lock lock2(m_csAddRemove);
-            // Close can clear the source synchronously from a handler.
-            IFC(CGITCookieList<THANDLER>::Copy(m_pHandlers, &pHandlers));
+            state = m_handlerState;
+            if (state)
+            {
+                state->m_fInRaise = TRUE;
+                size = state->m_pHandlers->GetSize();
+            }
         }
-
-        size = pHandlers->GetSize();
 
         for (XUINT32 i = 0; i < size; i++)
         {
-            CGITCookie<THANDLER>* pGITCookie = pHandlers->Get(i);
+            {
+                Lock lock2(m_csAddRemove);
+                // A nested raise publishes its changes before the outer raise resumes.
+                // Keep the entry-size limit, but account for a list that has since shrunk.
+                if (i >= state->m_pHandlers->GetSize())
+                {
+                    break;
+                }
+
+                pGITCookie = state->m_pHandlers->Get(i);
+                AddRefInterface(pGITCookie);
+            }
+
             if (pGITCookie)
             {
-                IFC(pGITCookie->GetInterface(&pHandler));
+                HRESULT getResult = pGITCookie->GetInterface(&pHandler);
+                ReleaseInterface(pGITCookie);
+                IFC(getResult);
                 HRESULT invokeResult = pHandler->Invoke(pSource, pArgs);
                 if (FAILED(invokeResult))
                 {
@@ -327,8 +359,27 @@ public:
 
     Cleanup:
         ReleaseInterface(pHandler);
-        delete pHandlers;
+        ReleaseInterface(pGITCookie);
 
+        if (state)
+        {
+            CGITCookieList<THANDLER>* pRetiredHandlers = NULL;
+            {
+                Lock lock2(m_csAddRemove);
+                if (state->m_pHandlersCopy)
+                {
+                    pRetiredHandlers = state->m_pHandlers;
+                    state->m_pHandlers = state->m_pHandlersCopy;
+                    state->m_pHandlersCopy = NULL;
+                }
+                // Route reentrant Add/Remove to the published list before releasing delegates.
+                state->m_fInRaise = FALSE;
+            }
+
+            delete pRetiredHandlers;
+        }
+
+        // The retained state is released before m_csRaise, including on failure.
         RRETURN(hr);
     }
 
@@ -340,21 +391,69 @@ public:
         }
 
         Lock raiseLock(m_csRaise);
-        Lock addRemoveLock(m_csAddRemove);
-
-        m_pHandlers->Clear();
+        xref_ptr<HandlerState> retiredState;
+        {
+            Lock addRemoveLock(m_csAddRemove);
+            // Active raises keep their shared state; new raises and registrations cannot see it.
+            retiredState.attach(m_handlerState.detach());
+        }
     }
 
 private:
+    struct HandlerState final : CXcpObjectBase<>
+    {
+        ~HandlerState() override
+        {
+            delete m_pHandlers;
+            delete m_pHandlersCopy;
+        }
+
+        bool m_fInRaise = FALSE;
+        CGITCookieList<THANDLER>* m_pHandlers = NULL;
+        CGITCookieList<THANDLER>* m_pHandlersCopy = NULL;
+    };
+
     // state
     bool m_fInitialized;
+    xref_ptr<HandlerState> m_handlerState;
 
     // locks
     CRITICAL_SECTION m_csAddRemove;
     CRITICAL_SECTION m_csRaise;
 
-    // list of GIT cookies
-    CGITCookieList<THANDLER>* m_pHandlers;
+    _Check_return_ HRESULT EnsureHandlerState()
+    {
+        if (!m_handlerState)
+        {
+            xref_ptr<HandlerState> state;
+            state.attach(new HandlerState());
+            IFC_RETURN(CGITCookieList<THANDLER>::Create(&state->m_pHandlers));
+            m_handlerState.attach(state.detach());
+        }
+
+        return S_OK;
+    }
+
+    // Called under m_csAddRemove.
+    _Check_return_ HRESULT GetHandlersListForAddRemove(_Outptr_ CGITCookieList<THANDLER>** ppList)
+    {
+        IFC_RETURN(EnsureHandlerState());
+
+        if (m_handlerState->m_fInRaise)
+        {
+            if (!m_handlerState->m_pHandlersCopy)
+            {
+                IFC_RETURN(CGITCookieList<THANDLER>::Copy(m_handlerState->m_pHandlers, &m_handlerState->m_pHandlersCopy));
+            }
+            *ppList = m_handlerState->m_pHandlersCopy;
+        }
+        else
+        {
+            *ppList = m_handlerState->m_pHandlers;
+        }
+
+        return S_OK;
+    }
 
     class Lock
     {
