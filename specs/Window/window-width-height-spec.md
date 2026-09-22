@@ -634,10 +634,6 @@ release, and possibly service it to WinAppSDK 2.x.
 These are implementation details, not part of the public contract. They are
 here for posterity, not for the public docs.
 
-**TODO (implementation):** Align first-show tracking with the visibility-based contract above.
-Current sizing code tracks the first `Window.Activate` call. Showing does not require successful
-foreground activation; hiding and showing again must not restart initial sizing.
-
 **Applying the size.** The setter computes the matching *window rect* by adding the
 window's non-client chrome to the requested client size. How it applies depends on
 state:
