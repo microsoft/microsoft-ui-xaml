@@ -51,7 +51,7 @@ namespace
         for (auto managerIterator = s_windowsXamlManagers.begin(); managerIterator != s_windowsXamlManagers.end();)
         {
             const auto manager = managerIterator->get();
-            FAIL_FAST_ASSERT(manager);
+            WINRT_ASSERT(manager);
 
             if (winrt::get_abi(manager.as<IInspectable>()) == managerIdentity)
             {
@@ -77,7 +77,7 @@ namespace
         for (auto managerIterator = s_windowsXamlManagers.begin(); managerIterator != s_windowsXamlManagers.end();)
         {
             const auto manager = managerIterator->get();
-            FAIL_FAST_ASSERT(manager);
+            WINRT_ASSERT(manager);
 
             if (manager.as<IInspectable>() == currentManager.as<IInspectable>())
             {
