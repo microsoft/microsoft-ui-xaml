@@ -4877,7 +4877,7 @@
               opcode="win:Start"
               symbol="GetBuiltInStyleBegin"
               task="GetBuiltInStyle"
-              template="ElementIdData"
+              template="SimpleEvent"
               value="3"
               version="0"
               />
@@ -5306,7 +5306,7 @@
               opcode="win:Start"
               symbol="LayoutBegin"
               task="Layout"
-              template="ElementIdData"
+              template="SimpleEvent"
               value="41"
               version="0"
               />
@@ -5328,7 +5328,7 @@
               opcode="win:Start"
               symbol="MeasureBegin"
               task="Measure"
-              template="ElementIdData"
+              template="SimpleEvent"
               value="43"
               version="0"
               />
@@ -5350,7 +5350,7 @@
               opcode="win:Start"
               symbol="ArrangeBegin"
               task="Arrange"
-              template="ElementIdData"
+              template="SimpleEvent"
               value="45"
               version="0"
               />
@@ -5763,7 +5763,7 @@
               opcode="win:Start"
               symbol="RefreshTemplateBindingsBegin"
               task="RefreshTemplateBindings"
-              template="ElementIdData"
+              template="SimpleEvent"
               value="82"
               version="0"
               />

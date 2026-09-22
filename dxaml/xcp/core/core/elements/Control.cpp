@@ -15,6 +15,9 @@
 #include "CVisualStateManager2.h"
 #include <Theme.h>
 #include "XamlTelemetry.h"
+#ifdef XAMLPROFILER_ENABLED
+#include "XamlProfilerTracing.h"
+#endif
 #include "MetadataAPI.h"
 #include <OptionalChangeState.h>
 
@@ -952,7 +955,11 @@ _Check_return_ HRESULT CControl::RefreshTemplateBindings(
     auto onExit = wil::scope_exit([this]()
     {
         m_fRequestTemplateBindingRefresh = FALSE;
+#ifdef XAMLPROFILER_ENABLED
+        XamlProfilerTracing::RefreshTemplateBindingsStop();
+#else
         TraceRefreshTemplateBindingsEnd();
+#endif
 
         TraceLoggingProviderWrite(
             XamlTelemetry, "Control_RefreshTemplateBindings",
@@ -961,7 +968,11 @@ _Check_return_ HRESULT CControl::RefreshTemplateBindings(
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
     });
 
-    TraceRefreshTemplateBindingsBegin((XUINT64)this);
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::RefreshTemplateBindingsStart(reinterpret_cast<uint64_t>(this));
+#else
+    TraceRefreshTemplateBindingsBegin();
+#endif
 
     TraceLoggingProviderWrite(
         XamlTelemetry, "Control_RefreshTemplateBindings",
@@ -1110,7 +1121,11 @@ _Check_return_ HRESULT CControl::GetBuiltInStyle(_Outptr_ CStyle** ppStyle)
 
     IFCPTR(ppStyle);
 
-    TraceGetBuiltInStyleBegin((XUINT64)this);
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::GetBuiltInStyleStart(reinterpret_cast<uint64_t>(this));
+#else
+    TraceGetBuiltInStyleBegin();
+#endif
 
     // If the CLR is initialized, then get the builtin style from the managed side.
     // else, retrieve the native builtin style.
@@ -1121,6 +1136,9 @@ _Check_return_ HRESULT CControl::GetBuiltInStyle(_Outptr_ CStyle** ppStyle)
 
     IFC(FxCallbacks::Control_GetBuiltInStyle(this, &pStyle));
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::GetBuiltInStyleStop();
+#else
     if (EventEnabledGetBuiltInStyleEnd())
     {
         if (pStyle)
@@ -1134,6 +1152,7 @@ _Check_return_ HRESULT CControl::GetBuiltInStyle(_Outptr_ CStyle** ppStyle)
             TraceGetBuiltInStyleEnd(L"None");
         }
     }
+#endif
 
     *ppStyle = pStyle;
     pStyle = NULL;
