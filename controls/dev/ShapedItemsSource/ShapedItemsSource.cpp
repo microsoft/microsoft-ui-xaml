@@ -1128,6 +1128,12 @@ void ShapedItemsSource::Refresh()
         auto rows = Materialize(authoritativeSource);
         RefreshLiveShapingSubscriptions(rows);
 
+        // Every snapshot was just recaptured from the current source against the committed spec,
+        // so whatever a live-shaping change was waiting for has now happened -- whether this
+        // refresh was the posted restore or something else that got here first. A restore that
+        // arrives after this finds nothing to do and returns.
+        m_liveShapingDirty = false;
+
         if (!HasAnyShapingVerb())
         {
             // Nothing is being shaped, so this is a plain mirror of the source. Identity buys
@@ -1608,6 +1614,9 @@ void ShapedItemsSource::ClearLiveShapingSubscriptions()
 {
     m_liveShaping->UnsubscribeAll();
     m_liveShapeSnapshots.clear();
+    // Nothing is tracked any more, so there is no stale shape to restore. Leaving this set would
+    // hand a posted restore a reason to re-shape after live shaping was switched off.
+    m_liveShapingDirty = false;
 }
 
 void ShapedItemsSource::ResubscribeLiveShapingFromSource()
@@ -1630,15 +1639,82 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
         return;
     }
 
-    auto const key = LiveShapingKeyFor(item);
-    auto const snapshot = CaptureLiveShapeSnapshot(item);
-    auto const existing = m_liveShapeSnapshots.find(key);
-    if (existing != m_liveShapeSnapshots.end() &&
-        !LiveShapeSnapshotsDiffer(existing->second, snapshot))
+    // A restore is already posted, and it re-shapes from the source in full. A second changed item
+    // cannot add anything to that, so there is nothing to learn by pricing its snapshot. This is
+    // what makes a bulk mutation cost one snapshot capture rather than one per changed row --
+    // without it the early-out below still runs every sort selector, the group selector and the
+    // filter predicate for each notification.
+    if (m_liveShapingDirty)
     {
         return;
     }
 
-    m_liveShapeSnapshots[key] = snapshot;
+    // The subscription is deliberately blanket: the source raises PropertyChanged for properties
+    // no active verb reads, and this is where those are discarded. The snapshot is compared, not
+    // stored -- until the restore runs, the cached snapshot is the shape the projection actually
+    // reflects, and overwriting it here would claim a reshape that has not happened.
+    auto const key = LiveShapingKeyFor(item);
+    auto const existing = m_liveShapeSnapshots.find(key);
+    if (existing != m_liveShapeSnapshots.end() &&
+        !LiveShapeSnapshotsDiffer(existing->second, CaptureLiveShapeSnapshot(item)))
+    {
+        return;
+    }
+
+    MarkLiveShapingDirty();
+}
+
+void ShapedItemsSource::MarkLiveShapingDirty()
+{
+    if (m_liveShapingDirty)
+    {
+        return;
+    }
+    m_liveShapingDirty = true;
+
+    // Posting rather than re-shaping inline is the whole point. An app that writes several
+    // properties, or several rows, does so within one turn; re-shaping on each write would rebuild
+    // the projection once per write and publish a Reset the UI has to absorb each time. Deferring
+    // to the queue collapses the whole turn into a single rebuild, and it also keeps the reshape
+    // out of the app's own PropertyChanged handler, where re-entering the projection would be
+    // hostile.
+    auto weakThis = weak_from_this();
+    if (auto const queue = winrt::DispatcherQueue::GetForCurrentThread())
+    {
+        if (queue.TryEnqueue([weakThis]()
+            {
+                if (auto const strongThis = weakThis.lock())
+                {
+                    strongThis->RestoreLiveShaping();
+                }
+            }))
+        {
+            return;
+        }
+    }
+
+    // No queue on this thread, or the queue is shutting down and refused the work. Degrade to the
+    // eager behaviour: slower, but a stale projection that never restores would be a correctness
+    // bug, and silently dropping the change is worse than paying for it now.
+    RestoreLiveShaping();
+}
+
+void ShapedItemsSource::RestoreLiveShaping()
+{
+    if (!m_liveShapingDirty)
+    {
+        // A refresh ran for another reason between the mark and this callback -- a shaping verb, a
+        // collection change -- and it recaptured every snapshot. The projection is already true.
+        return;
+    }
+
+    if (!IsLiveShapingEnabled())
+    {
+        // Live shaping was turned off while this was in flight. Whatever was stale is no longer
+        // anyone's concern: with the flags down the projection is not expected to track items.
+        m_liveShapingDirty = false;
+        return;
+    }
+
     Refresh();
 }

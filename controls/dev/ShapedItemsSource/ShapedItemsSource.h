@@ -262,6 +262,11 @@ private:
     void OnLiveShapedItemChanged(
         winrt::IInspectable const& item,
         winrt::hstring const& propertyName);
+    // Coalescing. A property change does not re-shape inline; it marks the projection stale and
+    // posts ONE restore to the owning DispatcherQueue. Every further change in the same turn is
+    // absorbed by the flag, so mutating N rows costs one re-shape instead of N.
+    void MarkLiveShapingDirty();
+    void RestoreLiveShaping();
     void RaiseProjectionRebuilt() const { if (m_projectionRebuilt) { m_projectionRebuilt(); } }
     void RaiseShapeSwapped() const { if (m_shapeSwapped) { m_shapeSwapped(); } }
     void RaiseShapingChanged(bool reorderOnly) const { if (m_shapingChanged) { m_shapingChanged(reorderOnly); } }
@@ -311,6 +316,11 @@ private:
     bool m_liveGrouping{ false };
     bool m_liveFiltering{ false };
     std::unordered_map<void const*, LiveShapeSnapshot> m_liveShapeSnapshots;
+    // Set when a tracked item's shape-relevant state has moved but the projection has not caught
+    // up yet, cleared by the refresh that recaptures every snapshot. It is both the "there is work
+    // to do" record and the "a restore is already posted" guard, which is why marking twice in one
+    // turn enqueues once.
+    bool m_liveShapingDirty{ false };
 
     std::function<void()> m_projectionRebuilt{ nullptr };
     std::function<void()> m_shapeSwapped{ nullptr };
