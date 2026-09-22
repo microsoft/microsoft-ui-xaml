@@ -14,7 +14,6 @@
 #include <winrt\Windows.ApplicationModel.DataTransfer.DragDrop.h>
 #include <winrt\Windows.ApplicationModel.Resources.h>
 #include <winrt\Windows.ApplicationModel.Resources.Core.h>
-#include <winrt\Windows.Devices.Geolocation.h>
 #include <winrt\Windows.Globalization.h>
 #include <winrt\Windows.Globalization.NumberFormatting.h>
 #include <winrt\Windows.Graphics.h>
@@ -48,7 +47,6 @@
 #endif
 #include <winrt\Microsoft.UI.Content.h>
 #include <winrt\Microsoft.UI.Input.h>
-#include <winrt\Microsoft.UI.Input.Experimental.h>
 #include <winrt\Microsoft.UI.Text.h>
 #include <winrt\Microsoft.UI.Windowing.h>
 #include <winrt\Microsoft.UI.Xaml.h>
@@ -119,7 +117,6 @@ namespace winrt
     using namespace ::winrt::Microsoft::UI::Composition::SystemBackdrops;
     using namespace ::winrt::Microsoft::UI::Content;
     using namespace ::winrt::Microsoft::UI::Input;
-    using namespace ::winrt::Microsoft::UI::Input::Experimental;
 
     using namespace ::winrt::Microsoft::Web::WebView2::Core;
 
