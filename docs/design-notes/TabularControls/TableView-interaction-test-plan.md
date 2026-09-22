@@ -556,7 +556,51 @@ Reaching the scroll routes took four runs. What works, and what does not:
 (`HeaderH=…`) so finding #18 can be stated as "body moved, header scroller did not" without inferring it from header
 peer bounds. The app is built with it; the confirming run was cut short and has not been read.
 
-### Tooling hazard: `runtests.ps1` must be run from Windows PowerShell 5.1, not `pwsh` 7
+### §9/§10 tooltip and UIA-client tier: 3/6 — two new product findings (#21, #22), one blockage retracted
+
+| Test | Verdict |
+| --- | --- |
+| `HeaderToolTipAppearsOnHover` | passing |
+| `CellToolTipAppearsOnHover` | passing |
+| `RecycledRowShowsCurrentToolTipOnHover` | passing |
+| `VerifyStructureChangedEventsReachAUiaClient` | **FAILING — product finding #21** |
+| `VerifyAxeScanPasses` | **FAILING — 24 errors: product finding #22** (predicted to be blocked by #13; it was not) |
+| `VerifyTableIsNavigableByAUiaClient` | **FAILING — product finding #13**: headers (5) and rows (12) walk fine; the app fail-fasts at the row → cell edge |
+
+**Finding #21 — a column added or removed at runtime raises no `StructureChanged`, so no UIA client learns the grid
+changed shape.** Measured: `sort=True addColumn=False removeColumn=False`. The sort probe is a positive control and it
+fired, which is what makes the other two readable — listener registered, peer raised, provider marshalled, client
+notified, all on the same waiter in the same run. The raise exists only on the shaping path (`TableView.cpp:1021-1046`)
+and for group expansion (`TableViewAutomationPeer.cpp:119`); column changes route through `QueueRebuildHeaders`
+(`:1775/:1786`) and raise nothing. Full write-up in §10.3.
+
+**Finding #22 — every row peer is nameless and exposes one degenerate child instead of cell peers.** 24 Axe errors, all
+on the TableView, all on the same 12 elements — which is *every* row in `BasicTableView`: 12 × `NameNotNull` on the
+`TableViewRow` peers themselves, and 12 × `BoundingRectangleNotNull` on the single child each row exposes, a child with
+no control type, no class name, no name and no rectangle. Full write-up in §10.1.
+
+**Finding #13 is client-dependent, and that is new information.** Axe enumerates a row's children and survives, getting
+one empty placeholder; MITA asks the same question and the app fail-fasts, with `Children.Count` returning 0 *after*
+the crash. The walk is otherwise sound — 5 header peers and 12 row peers resolve correctly — so the break is precisely
+at the row → cell edge. Leading hypothesis: the placeholder and the crash are one defect at two levels of demand,
+observing it is safe and asking the provider to populate it is not. See §10.2, including the experiment that would
+settle it.
+
+**Lesson (the fifth way this tier could have lied, and the discipline that stopped it).** `addColumn=False` on its own
+is worthless — it is equally consistent with "the product is silent" and "this client never listens". The same
+positive-control discipline that produced #20 and characterised #19 is what turned a null reading into a finding here.
+By this point the pattern is not a per-section tactic but the tier's entry requirement: **no failure gets written up
+without a reading, in the same run, that proves the channel it came through was live.**
+
+**Countervailing lesson, and it has now cost twice: a blockage asserted from reasoning is a hypothesis.** §9's two cell
+items sat deferred behind finding #13 on the reading "hovering a cell needs a cell peer" — #13 actually forbids
+*descending into* a row, and a cell can be pointed at by composing the column's x from its header with the row's y from
+the row peer. Both were written; both pass. Then `VerifyAxeScanPasses` was recorded as blocked because "Axe walks the
+whole provider tree, so it enters a row and dies" — it walked all 12 rows *and their children* and the app survived,
+and the run produced finding #22 plus a narrowing of #13 itself (§10.2). **Run the thing before recording it as
+blocked.** Every remaining item deferred on #13 should be re-checked rather than left on its original reading.
+
+
 
 Under **PowerShell 7 the script's filter is silently discarded and the entire suite runs** — ~1680 tests instead of the
 dozen you asked for. Measured with the identical command line:
@@ -1581,18 +1625,146 @@ Added after surveying what the repo's own interaction tier actually holds. §12 
 nothing so far asserts that a real UIA **client** — a separate process walking the tree through the provider stack — sees
 the same thing. Those are different claims, and only the second is what Narrator does.
 
-- [ ] `VerifyAxeScanPasses` — An Axe scan of the TableView test page reports no issues. **Repo convention:** 12 controls
-      already run `AxeTestHelper.TestForAxeIssues()` from their interaction tests (Expander, ItemsView, TabView, TreeView and
-      others), and it exists at no tier but this one. **Failure means** the table trips a general accessibility rule —
-      contrast, missing name, bad role — that per-peer assertions do not look for. **Blocked by product finding #13:** Axe
-      walks the whole provider tree, so it enters a row and takes the app down before it can report anything.
+- [x] `VerifyAxeScanPasses` **(written, FAILING — 24 errors: product finding #22. The prediction that #13 would block it is RETRACTED.)** — An Axe scan of the TableView test page
+      reports no issues. **Repo convention:** 12 controls already run `AxeTestHelper.TestForAxeIssues()` from their
+      interaction tests (Expander, ItemsView, TabView, TreeView and others), and it exists at no tier but this one.
+      `TableViewPage` was already registered as `TableView-Axe` (`TableViewPage.xaml.cs:90`), so only the test method was
+      missing. **Failure means** the table trips a general accessibility rule — contrast, missing name, bad role — that
+      per-peer assertions do not look for.
+  - **Measured result:** the scan **completed without crashing** and reported **24 errors**, all of them on the
+    TableView: 12 × `NameNotNull` and 12 × `BoundingRectangleNotNull`. See finding #22.
+  - **This item was recorded as "blocked by finding #13" and that was wrong.** The reasoning was that Axe walks the whole
+    provider tree, so it would enter a row and take the app down. It enumerated all 12 rows *and their children* and the
+    app survived — which is itself a result, because it narrows #13 (see §10.2). The lesson generalises: a blockage
+    asserted from reasoning rather than from a run is a hypothesis, and this is the second one in this plan to fall
+    (§9's cell items were the first).
+
 - [x] `VerifyTableIsNavigableByAUiaClient` **(written, FAILING — product finding #13: the app fail-fasts with `0xC0000420` when a client asks a row peer for its children)** — From out of process, find the TableView by name, then walk to a column header
       and a cell through the real provider tree. **Failure means** the peers are correct in-proc but the tree does not
       marshal or connect — a class of break that is invisible to every §12 test, because those never cross a process
       boundary.
-- [ ] `VerifyStructureChangedEventsReachAUiaClient` — Add and remove a column with a client-side event waiter armed.
-      **Failure means** AT never learns the grid changed shape. §12.6 already records that automation *events* are not
-      API-testable; this is where that item lands.
+  - **Measured result:** the walk is sound until it reaches a row. Header host → **5** header peers, first one named
+    `Name`. Rows host → **12** row peers. Then `firstRow.Children.Count` → the app fail-fasts with `0xC0000420` and the
+    count comes back **0**. The crash is logged *before* the assertion, so the zero is the post-mortem value, not a
+    reading of an empty row.
+  - **The three levels of the tree fail differently, and that is the useful part.** Columns are fine, rows are fine as
+    *elements*, and the break is entirely at the row → cell edge. Whatever is wrong is in the row's child production,
+    not in the TableView's peer, the header band, or row realization.
+  - **Operational note: run this test and `VerifyAxeScanPasses` last.** The fail-fast takes the app down mid-test, which
+    then fails `TestCleanup` (`GoBack` cannot find the Back button), crashes `te.processhost.exe` with `0xE0434352`, and
+    fails `AssemblyCleanup`. Anything scheduled after it in the same invocation is running against a restarted app at
+    best.
+- [x] `VerifyStructureChangedEventsReachAUiaClient` **(new — written, FAILING: product finding #21)**
+  - **Description:** Arms a `StructureChangedEventWaiter` on the TableView, then drives three shape changes and records
+    which of them reach the client: a sort (click the `Name` header), an `AddColumnButton` invoke, and a
+    `RemoveColumnButton` invoke.
+  - **Expected result:** all three raise `StructureChanged`.
+  - **Measured result:** `sort=True addColumn=False removeColumn=False`. The positive control passed and both subjects
+    failed — see finding #21 in §10.3.
+  - **Failure means:** assistive technology never learns the grid changed shape — it keeps reading the old column set,
+    announcing a column that is gone or staying silent about one that appeared.
+  - **Remarks:** §12.6 records that automation *events* are not API-testable — an in-proc peer test can call the raise
+    method but cannot show anything arrived — which is why this lands here. The waiter registers at `Scope.Element`,
+    never `Subtree`: subtree registration is an invitation for UIA to walk into the rows, which is the descent finding
+    #13 fail-fasts on. Element scope is also where the events actually arrive, since they are raised on the TableView's
+    own peer. **The sort is a positive control, not a subject**, and this run is what earns the finding: it fired, so
+    the listener was registered, the provider marshalled, and the client heard it. Without it, `addColumn=False` would
+    have been indistinguishable from a client that never listens.
+
+### §10.1 Product finding #22 — row peers are nameless, and expose a single degenerate child instead of cell peers
+
+`VerifyAxeScanPasses` reported 24 errors. Every one is on the TableView, and they are two rules over the same 12
+elements — `BasicTableView` holds exactly 12 items (`TableViewPage.xaml.cs:112-115`), so this is **every row, not an edge
+case**:
+
+| Rule | Count | Element | Measured |
+| --- | --- | --- | --- |
+| `NameNotNull` — "the Name property of a focusable element must not be null" | 12 | `Microsoft.UI.Xaml.Controls.Tabular.TableViewRow`, control type `DataItem` | `Name` is empty |
+| `BoundingRectangleNotNull` — "an on-screen element must not have a null BoundingRectangle" | 12 | the row's **sole child** | no control type, no class name, no name, no rectangle |
+
+Read from the scan's own `el.snapshot`, not inferred from the log text.
+
+**Two distinct defects, and the second is the more serious.**
+
+1. **A row has no `Name`.** Its control type is `DataItem` and it is focusable, so a screen reader landing on a row
+   announces nothing identifying. The row's own rectangle is fine (`625,513,1006,41`) — it is on screen and correctly
+   placed; it is simply anonymous.
+2. **A row exposes one empty child, where the contract says one cell peer per visible column.** The child carries no
+   control type, no class name, no name and no bounding rectangle. That is not a cell — it is a placeholder that
+   satisfies nothing. `VerifyTableIsNavigableByAUiaClient` asserts exactly this shape ("a row peer should expose one cell
+   peer per visible column to an out-of-proc client") and the scan now shows what a client actually receives.
+
+These two are almost certainly the same defect seen twice: whatever fails to produce real cell peers is plausibly what
+leaves the row with nothing to build a name from. `TableViewRowAutomationPeer::GetChildrenCore` is the place to start,
+and finding #13 lives on that same path.
+
+### §10.2 Finding #13 is client-dependent — two clients, two different outcomes, one probable cause
+
+Axe asked all 12 row peers for their children and read their properties. **The app did not fail-fast.** MITA asks the
+same question and the app dies. Both measurements are now in hand:
+
+| Client | Asks a row for its children | Result |
+| --- | --- | --- |
+| Axe (`VerifyAxeScanPasses`) | yes, all 12 rows | survives; each row yields **one** child with no control type, no class name, no name and no rectangle (finding #22) |
+| MITA (`VerifyTableIsNavigableByAUiaClient`) | yes, row 0 | **`0xC0000420` fail-fast**; `Children.Count` returns **0**, logged *after* the crash |
+
+So #13 as previously stated — "asking a `TableViewRow` peer for its children crashes the app" — is true of MITA and
+false of Axe. The open question from the previous run ("does `Children.Count` return 1 before anything crashes?") is
+answered: **no, it returns 0, and the crash comes first.**
+
+**Leading hypothesis, and it unifies #13 with #22.** A row's children appear to be produced incompletely: something
+stands in the child position without being a real cell peer. A client that merely *observes* that placeholder gets the
+empty element Axe reported. A client that asks the provider to **populate** it — which is what MITA does, via
+`Cache.PopulateDefaultCache` → `AutomationElement.GetUpdatedCache` → `IUIAutomationElement::BuildUpdatedCache`, visible
+in this run's own stack traces — forces the materialization that fail-fasts. On that reading the degenerate child and
+the crash are the same defect observed at two different levels of demand, and repairing
+`TableViewRowAutomationPeer::GetChildrenCore` so it returns one real cell peer per visible column closes both.
+
+**Confirming experiment, before anything is restated as fact.** Ask a row for its children through a request that
+prefetches *no* properties and see whether the count comes back as 1 without a crash. If it does, the trigger is
+property population, not enumeration, and #13 should be re-stated in those terms — which also means every item parked
+behind it needs re-checking against the narrower rule, not the old one.
+
+**Consequence for the items parked behind #13.** At least one — `VerifyAxeScanPasses` — was never blocked at all. The
+§9 cell items were the other. Everything else deferred on #13 should be re-checked against what is now known rather
+than left on the original reading.
+
+### §10.3 Product finding #21 — a column added or removed at runtime notifies no UIA client
+
+Measured by `VerifyStructureChangedEventsReachAUiaClient` on its first run:
+
+| Probe | `StructureChanged` reached the client? |
+| --- | --- |
+| Sort (click the `Name` header) | **yes** |
+| `AddColumnButton` | **no** |
+| `RemoveColumnButton` | **no** |
+
+**The sort probe is what makes the other two readable.** It proves the whole chain was live for the same waiter, in the
+same run, against the same element: a listener was registered — which matters, because the product checks
+`AutomationPeer::ListenerExists` before it raises at all (`TableView.cpp:1024`) — the peer raised, the provider
+marshalled across the process boundary, and the client was notified. So `addColumn=False` is the product staying silent,
+not the test failing to listen.
+
+**Where it goes missing.** `StructureChanged` is raised from exactly two places: `OnTableViewSourceShapingChanged` for
+shaping (`TableView.cpp:1021-1046`, splitting `ChildrenReordered` from `ChildrenInvalidated`) and
+`RaiseStructureChangedForGroupExpansion` (`TableViewAutomationPeer.cpp:119`). A column added or removed at runtime goes
+through `QueueRebuildHeaders` (`TableView.cpp:1775/:1786`) instead, which rebuilds the header band and every row's cells
+and raises nothing. Both gaps are symmetric — add and remove take the same route — which points at that one path rather
+than at anything specific to insertion or deletion.
+
+**Why it matters more than the shaping case that is handled.** A re-order changes the order of a row's children; a
+column change changes the *set* of them, and the grid's column count with it. A cached client is left describing a
+column that no longer exists, or silent about one that appeared — and `GridPattern.ColumnCount` disagreeing with what a
+client can enumerate is a stronger break than a stale ordering. The obligation is one the control already accepts
+elsewhere; the column path simply does not discharge it.
+
+**Suggested fix:** raise from the column-collection change handler that feeds `QueueRebuildHeaders`, with
+`AutomationStructureChangeType::ChildrenInvalidated` — the type `OnTableViewSourceShapingChanged` already uses for a
+change that adds or removes children, rather than `ChildrenReordered`. The existing `ListenerExists` guard and the
+`FromElement` / `CreatePeerForElement` fallback in that method are the pattern to follow.
+
+**The test stays failing (AGENTS.md Step 5).** The expectation is the contract, and the run is evidence against the
+implementation, not against the expectation.
 
 **Deliberately not here: the §13 density and theming tests.** Both were checked against this tier and both belong in the API
 plan. Evidence:
