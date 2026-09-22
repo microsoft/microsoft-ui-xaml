@@ -176,8 +176,8 @@ namespace DirectUI
         bool AppWindowPresenterSupportsSizing();
         // True when the live window represents its restored geometry (sizing presenter, not min/maxed).
         bool IsInOverlappedRestoredState();
-        // True once the app has set Width or Height (opted into the feature).
-        bool HasExplicitClientSize() const { return m_hasExplicitClientSize; }
+        // True once the app has opted into preserving client height across title-bar toggles.
+        bool HasExplicitClientHeight() const { return m_hasExplicitClientHeight; }
 
         // Records the live client size as the restored size, but only while in the restored state.
         void UpdateLastRestoredClientSize();
@@ -219,8 +219,8 @@ namespace DirectUI
         // Window sizing support
         // --------------------------------------------------
 
-        // True once the app has set Width or Height at least once.
-        bool m_hasExplicitClientSize = false;
+        // True once the app has set Height at least once.
+        bool m_hasExplicitClientHeight = false;
 
         // When the app has set Width/Height, but we haven't been able to honor them yet,
         // we store them here.
@@ -229,8 +229,9 @@ namespace DirectUI
 
         // The window's last known restored size in DIPs - the client-area size and its non-client
         // chrome (outer window rect minus client rect) the window has, or returns to, when it isn't
-        // maximized, minimized, or in a non-sizing presenter. Client and chrome are always tracked
-        // together (see SetTrackedRestoredSize).
+        // maximized, minimized, or in a non-sizing presenter. While open, client and chrome are
+        // tracked together (see SetTrackedRestoredSize). After close, client preserves the final
+        // resolved size; pending requests still take precedence and chrome is no longer used.
         struct TrackedRestoredSize
         {
             wf::Size client;
