@@ -24,7 +24,7 @@ The types this spec covers, all in `Microsoft.UI.Xaml.Controls` (automation peer
 - **`InkToolbar`** - a `Control` that auto-populates pen / pencil / highlighter / eraser / stencil
   buttons and drives an attached `InkCanvas`.
 
-<img src="./inking-overview.png" alt="An InkCanvas with an InkToolbar, toolbar expanded to show the tool options" width="480"/>
+<img src="./inking-overview.png" alt="Annotated diagram of an InkCanvas with an InkToolbar; the pen flyout is expanded to show the color palette and stroke size, with the InkCanvas drawing surface and an ink stroke labelled." width="560"/>
 
 # Conceptual pages (How To)
 
