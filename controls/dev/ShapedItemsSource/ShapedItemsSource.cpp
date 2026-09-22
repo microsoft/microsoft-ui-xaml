@@ -60,43 +60,6 @@ void ShapedItemsSource::Start()
     Refresh();
 }
 
-void ShapedItemsSource::BeginShapingBatch()
-{
-    ++m_shapingBatchDepth;
-}
-
-ShapedItemsSource::DeferRefreshScope ShapedItemsSource::DeferRefresh()
-{
-    BeginShapingBatch();
-    return DeferRefreshScope{ this };
-}
-
-void ShapedItemsSource::EndShapingBatch()
-{
-    MUX_ASSERT(m_shapingBatchDepth > 0);
-    if (m_shapingBatchDepth == 0 || --m_shapingBatchDepth > 0)
-    {
-        return;
-    }
-
-    bool const rebuild = m_shapingBatchHasRefresh;
-    bool const shapingChange = m_shapingBatchHasShapingChange;
-    m_shapingBatchHasRefresh = false;
-    m_shapingBatchHasShapingChange = false;
-
-    // A pending identity-selector change is the stronger of the two: it invalidates the whole
-    // projection, and the spec diff that ApplyShapingChange would commit is still owed either
-    // way, so commit it first and let the rebuild publish the result.
-    if (shapingChange)
-    {
-        ApplyShapingChange();
-    }
-    if (rebuild)
-    {
-        Refresh();
-    }
-}
-
 void ShapedItemsSource::SetFilter(ShapingHelpers::Predicate const& predicate)
 {
     m_pipeline.SetFilter(predicate);
@@ -181,14 +144,6 @@ std::vector<ShapedItemsSource::ActiveSortAxisInfo> ShapedItemsSource::ActiveSort
 
 void ShapedItemsSource::ApplyShapingChange()
 {
-    if (m_shapingBatchDepth > 0)
-    {
-        // Deliberately do NOT commit the spec here: the pipeline diffs against the last
-        // committed spec, so deferring the commit is what lets the whole batch read as one delta.
-        m_shapingBatchHasShapingChange = true;
-        return;
-    }
-
     // Commit unconditionally, even when the in-place path is not taken: the committed spec is
     // the baseline the NEXT verb diffs against, so skipping it would make that diff report a
     // change that has already been applied.
@@ -1366,11 +1321,6 @@ bool ShapedItemsSource::TryGetSourceItemCount(uint32_t& count) const
     }
     count = m_sourceAccessor.Count();
     return true;
-}
-
-winrt::hstring ShapedItemsSource::StringifyKey(winrt::IInspectable const& key)
-{
-    return RowIdentity::StringifyKey(key);
 }
 
 winrt::hstring ShapedItemsSource::Diagnostic(std::wstring_view text) const
