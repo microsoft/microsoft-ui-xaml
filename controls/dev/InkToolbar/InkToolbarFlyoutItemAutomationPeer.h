@@ -18,6 +18,10 @@ public:
     InkToolbarFlyoutItemAutomationPeer(winrt::InkToolbarFlyoutItem const& owner)
         : ReferenceTracker(owner)
     {
+        // Resolve here (peer creation, UI thread) and cache. The same lookup from the
+        // GetLocalizedControlTypeCore UIA callback can escape as a fatal error and fail-fast.
+        try { m_localizedControlType = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarFlyoutItemControlTypeName); }
+        catch (...) { m_localizedControlType = L"flyout item"; }
     }
 
     // IAutomationPeerOverrides
@@ -35,17 +39,11 @@ public:
         return winrt::AutomationControlType::Custom;
     }
 
+    // Custom would make Narrator read "custom"; return the cached "flyout item" instead. Never looks
+    // up a resource here - doing so from this callback can fail-fast.
     hstring GetLocalizedControlTypeCore()
     {
-        // Custom would make Narrator read "custom"; UWP supplies "flyout item" instead.
-        try
-        {
-            return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarFlyoutItemControlTypeName);
-        }
-        catch (winrt::hresult_error const&)
-        {
-            return __super::GetLocalizedControlTypeCore();
-        }
+        return m_localizedControlType;
     }
 
     hstring GetClassNameCore()
@@ -73,6 +71,8 @@ public:
     }
 
 private:
+    winrt::hstring m_localizedControlType;
+
     com_ptr<InkToolbarFlyoutItem> GetImpl()
     {
         com_ptr<InkToolbarFlyoutItem> impl;

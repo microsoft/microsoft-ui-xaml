@@ -18,6 +18,10 @@ public:
     InkToolbarMenuButtonAutomationPeer(winrt::InkToolbarMenuButton const& owner)
         : ReferenceTracker(owner)
     {
+        // Resolve here (peer creation, UI thread) and cache. The same lookup from the
+        // GetLocalizedControlTypeCore UIA callback can escape as a fatal error and fail-fast.
+        try { m_localizedControlType = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarMenuButtonControlTypeName); }
+        catch (...) { m_localizedControlType = L"menu button"; }
     }
 
     // IAutomationPeerOverrides
@@ -35,17 +39,11 @@ public:
         return winrt::AutomationControlType::Custom;
     }
 
+    // Custom would make Narrator read "custom"; return the cached "menu button" instead. Never looks
+    // up a resource here - doing so from this callback can fail-fast.
     hstring GetLocalizedControlTypeCore()
     {
-        // Custom would make Narrator read "custom"; UWP supplies "menu button" instead.
-        try
-        {
-            return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarMenuButtonControlTypeName);
-        }
-        catch (winrt::hresult_error const&)
-        {
-            return __super::GetLocalizedControlTypeCore();
-        }
+        return m_localizedControlType;
     }
 
     // IExpandCollapseProvider
@@ -79,6 +77,8 @@ public:
     }
 
 private:
+    winrt::hstring m_localizedControlType;
+
     com_ptr<InkToolbarMenuButton> GetImpl()
     {
         com_ptr<InkToolbarMenuButton> impl;
