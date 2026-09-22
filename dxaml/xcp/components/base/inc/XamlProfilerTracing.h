@@ -333,6 +333,129 @@ public:
         uint64_t, NonLocalBudget,
         bool,     NonLocalAvailable,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // =====================================================================
+    // Element-Scoped Activity Events
+    //
+    // Each of these mirrors a retail Microsoft-Windows-XAML operation (layout,
+    // transition, focus, selection, virtualization, ...) that previously emitted
+    // no element identity, so an out-of-process consumer could only attribute it
+    // to an element by scope-nesting inference. The profiler copy carries the
+    // owning element's core pointer (CUIElement*/CDependencyObject*) directly as
+    // ElementId, so the consumer can attribute the operation to that element
+    // deterministically. ElementId is the same id space stitched across all other
+    // profiler events (reinterpret_cast<uint64_t> of the live core object); it is
+    // 0 only when the producing site legitimately has no element in scope.
+    //
+    // Routing model (see XAMLPROFILER_ENABLED): when the profiler is enabled the
+    // owning element's identity is emitted HERE, on Microsoft-Windows-XAML-Profiler,
+    // and the matching retail Microsoft-Windows-XAML operation is suppressed at the
+    // call site; when disabled, only the retail operation fires. The consumer keys a
+    // scope by (provider + task) and pairs Start/Stop by opcode, so each activity
+    // below reuses the retail operation's name as its ETW task and preserves the
+    // Begin/End timing while adding ElementId.
+    //
+    // Two shapes are used:
+    //   * Activity events  (DEFINE_ELEMENT_ACTIVITY): a Start/Stop pair mirroring the
+    //     retail Begin/End so per-operation duration is preserved. ElementId may ride
+    //     the Start (element known on entry) or the Stop (element known only on exit,
+    //     e.g. container generation); the consumer back-fills a scope from either edge.
+    //   * Point events     (DEFINE_TRACELOGGING_EVENT_PARAM1): a single marker for
+    //     operations whose retail form is win:Info, or whose element identity is
+    //     per-iteration inside a pass-level Begin/End (RealizeTransition).
+    // =====================================================================
+
+    // Emits a Start/Stop activity pair on this provider under one ETW task (== OpName),
+    // so the consumer pairs them into a duration exactly like the retail Begin/End.
+    // Overloads let ElementId ride whichever edge knows the element; the empty edge
+    // carries opcode + level only.
+#define DEFINE_ELEMENT_ACTIVITY(OpName) \
+    static void OpName##Start(uint64_t ElementId) \
+    { \
+        TraceLoggingWrite(TraceLoggingType::Provider(), #OpName, \
+            TraceLoggingOpcode(WINEVENT_OPCODE_START), \
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE), \
+            TraceLoggingValue(ElementId, "ElementId")); \
+    } \
+    static void OpName##Start() \
+    { \
+        TraceLoggingWrite(TraceLoggingType::Provider(), #OpName, \
+            TraceLoggingOpcode(WINEVENT_OPCODE_START), \
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE)); \
+    } \
+    static void OpName##Stop(uint64_t ElementId) \
+    { \
+        TraceLoggingWrite(TraceLoggingType::Provider(), #OpName, \
+            TraceLoggingOpcode(WINEVENT_OPCODE_STOP), \
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE), \
+            TraceLoggingValue(ElementId, "ElementId")); \
+    } \
+    static void OpName##Stop() \
+    { \
+        TraceLoggingWrite(TraceLoggingType::Provider(), #OpName, \
+            TraceLoggingOpcode(WINEVENT_OPCODE_STOP), \
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE)); \
+    }
+
+    // Layout-manager passes (CLayoutManager) — ElementId is the layout root the pass ran for.
+    DEFINE_ELEMENT_ACTIVITY(FireLayoutUpdated);
+    DEFINE_ELEMENT_ACTIVITY(FireSizeChanged);
+    // Per-element size-changed notification — ElementId is the element whose size changed.
+    DEFINE_ELEMENT_ACTIVITY(IndividualSizeChanged);
+    // Root visual set on a visual tree — ElementId is the root element.
+    DEFINE_ELEMENT_ACTIVITY(PutRootVisual);
+
+    // Layout transitions — ElementId is the element the transition targets.
+    // RealizeTransition stays a point event: its retail Begin/End brackets a whole
+    // pass while the element identity is per-iteration inside the loop.
+    DEFINE_TRACELOGGING_EVENT_PARAM1(RealizeTransition,
+        uint64_t, ElementId, TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_ELEMENT_ACTIVITY(CancelTransitions);
+    DEFINE_ELEMENT_ACTIVITY(ProcessLayoutForTransition);
+
+    // Focus (CFocusManager) — ElementId is the element gaining/holding focus.
+    DEFINE_ELEMENT_ACTIVITY(UpdateFocus);
+    DEFINE_ELEMENT_ACTIVITY(XYFocusEntered);
+
+    // Text selection (TextSelectionManager) — ElementId is the owning text control.
+    DEFINE_ELEMENT_ACTIVITY(ChangeSelection);
+    DEFINE_ELEMENT_ACTIVITY(ExtendSelectionRange);
+
+    // Touch-selection grippers (CTextSelectionGripper) — ElementId is the gripper element.
+    DEFINE_TRACELOGGING_EVENT_PARAM1(TouchSelectionGripperShowBegin,
+        uint64_t, ElementId, TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_TRACELOGGING_EVENT_PARAM1(TouchSelectionGripperShowEnd,
+        uint64_t, ElementId, TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_TRACELOGGING_EVENT_PARAM1(TouchSelectionGripperHideBegin,
+        uint64_t, ElementId, TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_TRACELOGGING_EVENT_PARAM1(TouchSelectionGripperHideEnd,
+        uint64_t, ElementId, TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_TRACELOGGING_EVENT_PARAM1(TouchSelectionGripperReposition,
+        uint64_t, ElementId, TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_TRACELOGGING_EVENT_PARAM1(TouchSelectionGripperTetherBegin,
+        uint64_t, ElementId, TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_TRACELOGGING_EVENT_PARAM1(TouchSelectionGripperTetherEnd,
+        uint64_t, ElementId, TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // Items virtualization (dxaml projection layer) — ElementId is the container/panel.
+    // GenerateContainer carries ElementId on its Stop: the container is only realized near the
+    // end of the generate call (inverted Start/Stop pair; CopyTo keeps it live through Cleanup).
+    DEFINE_ELEMENT_ACTIVITY(GenerateContainer);
+    DEFINE_ELEMENT_ACTIVITY(GenerateItems);
+    // GenerateMCContainer is a point event: its container is moved out (MoveTo) before Cleanup,
+    // so it emits a single marker at realization instead of an inverted Start/Stop pair.
+    DEFINE_TRACELOGGING_EVENT_PARAM1(GenerateMCContainer,
+        uint64_t, ElementId, TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_ELEMENT_ACTIVITY(PlaceElement);
+    DEFINE_ELEMENT_ACTIVITY(PrepareContainer);
+    DEFINE_ELEMENT_ACTIVITY(MeasureChild);
+    DEFINE_ELEMENT_ACTIVITY(VirtualizationMeasure);
+    // VirtualizationIsEnabledByLayout stays a point event (retail form is win:Info).
+    DEFINE_TRACELOGGING_EVENT_PARAM1(VirtualizationIsEnabledByLayout,
+        uint64_t, ElementId, TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_ELEMENT_ACTIVITY(GetElementCount);
+
+#undef DEFINE_ELEMENT_ACTIVITY
 };
 
 #endif // XAMLPROFILER_ENABLED

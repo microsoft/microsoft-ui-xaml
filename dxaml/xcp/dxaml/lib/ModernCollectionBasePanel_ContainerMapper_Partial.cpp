@@ -2,6 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#ifdef XAMLPROFILER_ENABLED
+#include <XamlProfilerTracing.h>
+#endif
 #include "ModernCollectionBasePanel.g.h"
 #include "UIElementCollection.g.h"
 
@@ -338,12 +341,20 @@ void ModernCollectionBasePanel::ContainerManager::UpdateDataIndexForFirstValidEl
 // that it is realized.
 _Check_return_ HRESULT ModernCollectionBasePanel::ContainerManager::PlaceInValidElements(_In_ xaml_controls::ElementType type, _In_ INT32 dataIndex, _In_ const ctl::ComPtr<IUIElement>& spElement)
 {
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::PlaceElementStart(spElement ? reinterpret_cast<uint64_t>(spElement.Cast<UIElement>()->GetHandle()) : 0);
+    auto guard = wil::scope_exit([]()
+    {
+        XamlProfilerTracing::PlaceElementStop();
+    });
+#else
     TracePlaceElementBegin(dataIndex);
 
     auto guard = wil::scope_exit([]()
     {
         TracePlaceElementEnd();
     });
+#endif
 
     ctl::WeakRefPtr weakRef;
     IFC_RETURN(ctl::ComPtr<IUIElement>(spElement).AsWeak(&weakRef));

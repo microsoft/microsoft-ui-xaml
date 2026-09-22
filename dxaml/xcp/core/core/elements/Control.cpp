@@ -961,7 +961,7 @@ _Check_return_ HRESULT CControl::RefreshTemplateBindings(
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
     });
 
-    TraceRefreshTemplateBindingsBegin();
+    TraceRefreshTemplateBindingsBegin((XUINT64)this);
 
     TraceLoggingProviderWrite(
         XamlTelemetry, "Control_RefreshTemplateBindings",
@@ -1110,7 +1110,7 @@ _Check_return_ HRESULT CControl::GetBuiltInStyle(_Outptr_ CStyle** ppStyle)
 
     IFCPTR(ppStyle);
 
-    TraceGetBuiltInStyleBegin();
+    TraceGetBuiltInStyleBegin((XUINT64)this);
 
     // If the CLR is initialized, then get the builtin style from the managed side.
     // else, retrieve the native builtin style.

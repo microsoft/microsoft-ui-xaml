@@ -14,6 +14,7 @@
 #include "XamlIslandRoot.h"
 #include <XamlIslandRootScale.h>
 #include <XamlOneCoreTransforms.h>
+#include "XamlProfilerTracing.h"
 
 // Marked noinline so we can easily breakpoint
 // When we hit this warning, it represents code that will not work correctly in DesktopWindowXamlSource or AppWindows
@@ -434,7 +435,11 @@ _Check_return_ HRESULT VisualTree::SetPublicRootVisual(
         goto Cleanup;
     }
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::PutRootVisualStart(reinterpret_cast<uint64_t>(pRoot));
+#else
     TracePutRootVisualBegin();
+#endif
 
     // If the public root visual changes, we need to remove and re-add the existing roots so that
     // they use the new public visual as namescope owner if needed, but we don't want to release them.
@@ -520,7 +525,11 @@ Cleanup:
         RECORDFAILURE(ResetRoots(nullptr));
     }
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::PutRootVisualStop();
+#else
     TracePutRootVisualEnd();
+#endif
 
     return hr;
 }

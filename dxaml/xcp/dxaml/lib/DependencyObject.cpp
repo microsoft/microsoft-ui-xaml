@@ -2,6 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#ifdef XAMLPROFILER_ENABLED
+#include <XamlProfilerTracing.h>
+#endif
 #include "DependencyObject.h"
 #include "BindingExpression.g.h"
 #include "DependencyPropertyChangedEventArgs.g.h"
@@ -283,7 +286,11 @@ public:
 
     IFACEMETHODIMP GetCountOfDescendantUIElements(_Out_ UINT64* count) override
     {
+#ifdef XAMLPROFILER_ENABLED
+        XamlProfilerTracing::GetElementCountStart(reinterpret_cast<uint64_t>(m_owner->GetHandle()));
+#else
         TraceGetElementCountBegin();
+#endif
 
         DXamlServices::GetDXamlCore()->SetRTWElementCount(0);
 
@@ -292,7 +299,11 @@ public:
 
         *count = DXamlServices::GetDXamlCore()->GetRTWElementCount();
 
+#ifdef XAMLPROFILER_ENABLED
+        XamlProfilerTracing::GetElementCountStop();
+#else
         TraceGetElementCountEnd();
+#endif
 
         return S_OK;
     }
