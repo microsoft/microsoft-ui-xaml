@@ -34,6 +34,15 @@ variables:
 - template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
 - template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
 - group: WinUI-Variable-Library
+# The lifetime-stress soak builds WinUI only to run tests - it never ships the binaries, so it does not need
+# PGO-optimized output. Disabling PGO keeps the build from depending on a matching
+# Microsoft.Internal.PGO-Helpers.Cpp package (which is not published for these experimental soak builds and
+# otherwise fails the native build with "Could not find matching PGO package"). Mirrors the GitHub-PR pipeline,
+# which also builds with PGOBuildMode=Off.
+- name: PGODisable
+  value: 'true'
+- name: pgoBuildMode
+  value: 'Off'
 # Soak mode: each scenario loops until this many minutes elapse instead of the default gate iteration count.
 - name: WINUI_LIFETIME_STRESS_MINUTES
   value: ${{ parameters.lifetimeStressMinutes }}
