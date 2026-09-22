@@ -79,18 +79,6 @@ hstring ResizeGripperAutomationPeer::GetNameCore()
     return name;
 }
 
-winrt::hstring ResizeGripperAutomationPeer::GetAutomationIdCore()
-{
-    if (auto const automationId = __super::GetAutomationIdCore(); !automationId.empty())
-    {
-        return automationId;
-    }
-
-    // Empty rather than a constant: AutomationId must be unique among siblings, and a host
-    // stamping one gripper per column would otherwise publish the same id on every one.
-    return {};
-}
-
 winrt::AutomationControlType ResizeGripperAutomationPeer::GetAutomationControlTypeCore()
 {
     // Not a Slider: the gripper reports drag distance and owns no value or range. The column
