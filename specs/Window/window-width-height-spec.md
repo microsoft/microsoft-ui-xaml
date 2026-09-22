@@ -72,12 +72,17 @@ The **restored size** is conceptually the size the window is (or will be) when i
 AppWindow is using the default presenter, and it's not minimized or maximized. For the default WinUI `Window`,
 the `AppWindow.Presenter` is `Overlapped`. That's the "normal" desktop window mode.
 
-While the window is open, setting `Width` or `Height` updates the restored size. After first activation,
+**First shown** means the window has been made visible at least once. Apps currently show a
+WinUI `Window` by calling `Window.Activate()`. The sizing boundary is showing the window,
+not whether it receives input focus or becomes the foreground window. Hiding and showing it
+again does not reset this state.
+
+While the window is open, setting `Width` or `Height` updates the restored size. After first showing,
 if the window has the default `Overlapped` presenter and is restored, it resizes immediately.
 
 Otherwise, the resize is deferred:
 
-- Before first activation, the runtime stores the request and applies it on activation if the
+- Before first showing, the runtime stores the request and applies it when the window is first shown if the
   presenter supports sizing.
 - If `Window.AppWindow.Presenter` is `FullScreen` or `CompactOverlay`, the runtime remembers the
   restored size and reapplies it when the presenter switches back to `Overlapped`.
@@ -153,7 +158,7 @@ A few things to notice:
   (caption and borders included).
 - **Live vs restored.** Almost every API reports the **live** window.
   `Window.Width/Height` reports the window's restored size. When the window is in the overlapped, restored state, that is
-  also the live size. When the window is maximized, minimized, not yet activated/shown, or using
+  also the live size. When the window is maximized, minimized, not yet shown, or using
   another AppWindow presenter, it may differ from the live size.
 - **Minimized state.** The APIs that report "live size" use the restored size when
   the window is minimized (rather than returning 0,0).
@@ -195,7 +200,7 @@ window.ExtendsContentIntoTitleBar = true; // Changes the client area without res
 window.Height = 300;                      // Requests a client height of 300 logical pixels.
 ```
 
-Before first activation, a pending `Height` request uses the title-bar configuration in effect when
+Before first showing, a pending `Height` request uses the title-bar configuration in effect when
 the request is applied. Toggling `ExtendsContentIntoTitleBar` while minimized, maximized, or using a non-default
 presenter does not itself preserve the restored client height.
 
@@ -239,7 +244,7 @@ without canceling and immediately before native teardown, not necessarily the la
 
 - If the user resized the restored window, preserve the resulting client size.
 - If the window is minimized or maximized, preserve the restored size, not the live size.
-- If a request is still pending, such as before first activation or while using a non-default
+- If a request is still pending, such as before first showing or while using a non-default
   presenter, preserve that request.
 
 For example, this code runs on the owning thread and assumes no `Closed` handler cancels closing:
@@ -381,9 +386,9 @@ public double Width { get; set; }
 
 **Getter**: returns the restored client-area width in logical pixels.
 
-- Before first activation, a pending `Width` request is returned as supplied. Without a pending
+- Before first showing, a pending `Width` request is returned as supplied. Without a pending
   request, the getter uses the current presenter's restored-width behavior described below.
-- In the **Restored** state after activation this equals `Window.Bounds.Width`.
+- In the **Restored** state after first showing this equals `Window.Bounds.Width`.
 - In the **Maximized** or **Minimized** state it returns the *restored* width -- the
   width the window will have when it returns to the restored state. The OS tracks this
   restored size, so it works even if you never set `Width`.
@@ -410,9 +415,9 @@ The non-default presenters, `FullScreen` and `CompactOverlay`, remember the
 requested size and apply it when the window returns to `Overlapped`, without
 affecting the live window in the meantime.
 
-- **Before first activation**: the requested width is stored and returned by the getter. It is
-  applied on activation if the presenter supports sizing, or when it subsequently does.
-- **Restored, after activation**: the window resizes right away to the requested client width.
+- **Before first showing**: the requested width is stored and returned by the getter. It is
+  applied when the window is first shown if the presenter supports sizing, or when it subsequently does.
+- **Restored, after first showing**: the window resizes right away to the requested client width.
   Position is preserved.
 - **Maximized**: the live (maximized) window does not resize. The *restored*
   bounds (the size the window snaps to when un-maximized) get updated. The other
@@ -491,9 +496,9 @@ public double Height { get; set; }
 
 **Getter**: returns the restored client-area height in logical pixels.
 
-- Before first activation, a pending `Height` request is returned as supplied. Without a pending
+- Before first showing, a pending `Height` request is returned as supplied. Without a pending
   request, the getter uses the current presenter's restored-height behavior described below.
-- In the **Restored** state after activation this equals `Window.Bounds.Height`.
+- In the **Restored** state after first showing this equals `Window.Bounds.Height`.
 - In the **Maximized** or **Minimized** state it returns the *restored* height -- the
   height the window will have when it returns to the restored state. The OS tracks this
   restored size, so it works even if you never set `Height`.
@@ -520,9 +525,9 @@ The non-default presenters, `FullScreen` and `CompactOverlay`, remember the
 requested size and apply it when the window returns to `Overlapped`, without
 affecting the live window in the meantime.
 
-- **Before first activation**: the requested height is stored and returned by the getter. It is
-  applied on activation if the presenter supports sizing, or when it subsequently does.
-- **Restored, after activation**: the window resizes right away to the requested client height.
+- **Before first showing**: the requested height is stored and returned by the getter. It is
+  applied when the window is first shown if the presenter supports sizing, or when it subsequently does.
+- **Restored, after first showing**: the window resizes right away to the requested client height.
   Position is preserved.
 - **Maximized**: the live (maximized) window does not resize. The *restored*
   bounds (the size the window snaps to when un-maximized) get updated. The other
@@ -562,7 +567,7 @@ the move.
 client height, including subsequent user resizes. If your app has set only `Width`, or neither
 property, the outer window size stays unchanged and the client height changes instead. See
 [How Window sizing works with Window.ExtendsContentIntoTitleBar](#22-how-window-sizing-works-with-windowextendscontentintotitlebar)
-for behavior before activation and in other window states.
+for behavior before first showing and in other window states.
 
 **XAML markup.** Width and Height are settable from code-behind
 AND from XAML on the `<Window>` object.
@@ -629,12 +634,16 @@ release, and possibly service it to WinAppSDK 2.x.
 These are implementation details, not part of the public contract. They are
 here for posterity, not for the public docs.
 
+**TODO (implementation):** Align first-show tracking with the visibility-based contract above.
+Current sizing code tracks the first `Window.Activate` call. Showing does not require successful
+foreground activation; hiding and showing again must not restart initial sizing.
+
 **Applying the size.** The setter computes the matching *window rect* by adding the
 window's non-client chrome to the requested client size. How it applies depends on
 state:
 
-- **Before first activation**: retain the request until activation with a sizing-capable presenter.
-- **Restored, after activation**: `SetWindowPos` on the live window.
+- **Before first showing**: retain the request until first showing with a sizing-capable presenter.
+- **Restored, after first showing**: `SetWindowPos` on the live window.
 - **Maximized / Minimized**: updates `rcNormalPosition` via `SetWindowPlacement`, so
   the window snaps to the new size when it is restored.
 - **FullScreen / CompactOverlay** (presenters that don't support sizing): the value
@@ -666,7 +675,7 @@ calculation is used instead, with a correction that zeros out the top chrome whe
 **Reading the size back.** While the window is open, the getter returns the restored client-area
 size in logical pixels. After close, it returns the preserved pre-teardown value.
 
-- In the pre-activated state, before ShowWindow is called, the getters return the
+- Before the window is first shown, the getters return the
   restored size (same as `Window.Bounds` at that point, unless the app set a new value).
 - In the restored state, it returns the same size as `Window.Bounds`.
 - In the **Maximized / Minimized** state it computes the restored client size from the
@@ -719,7 +728,7 @@ by calling win32 functions that are virtualized for DPI mode for the underlying 
 honor the DPI mode just as those functions do.
 
 **If I set `Width` and then `Height`, will the window flicker between the two sizes?**
-For an open, activated window in the restored state, each setter resizes the window right away,
+For an open window that has been shown and is in the restored state, each setter resizes the window right away,
 so setting both is technically two
 resizes: one frame at the new width with the old height, then the final size. But both calls run in
 the same synchronous turn, before the next frame is drawn, so that in-between size doesn't actually
@@ -729,7 +738,7 @@ this way for years.
 If you want a single, guaranteed atomic resize -- for example, if you set the two values across an
 `await` -- you have a couple of options:
 
-- Set `Width` and `Height` before you call `Activate`. The window isn't shown yet, so there's
+- Set `Width` and `Height` before the first call to `Activate`. The window isn't shown yet, so there's
   nothing to flicker.
 - Use `AppWindow.ResizeClient(...)`, which takes both dimensions in one call (physical pixels).
 
