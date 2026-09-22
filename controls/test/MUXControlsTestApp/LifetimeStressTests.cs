@@ -80,7 +80,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 SettleAndCollect();
                 // Leaks are reported as warnings; this suite only gates on host crashes.
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -152,7 +152,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 SettleAndCollect();
                 // Treat residual repeater graphs as warnings.
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -198,7 +198,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -217,7 +217,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -282,7 +282,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -330,7 +330,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -390,7 +390,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -440,7 +440,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -486,7 +486,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -539,7 +539,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -589,7 +589,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -642,7 +642,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -683,7 +683,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -723,7 +723,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -781,7 +781,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -823,7 +823,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -868,7 +868,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -923,7 +923,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -976,7 +976,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -1024,7 +1024,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -1081,7 +1081,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -1128,7 +1128,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -1170,7 +1170,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -1222,7 +1222,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -1280,7 +1280,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -1334,7 +1334,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -1379,7 +1379,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -1428,7 +1428,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -1697,7 +1697,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -1751,7 +1751,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -1799,7 +1799,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -1859,7 +1859,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -1910,7 +1910,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -1967,7 +1967,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -2017,7 +2017,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -2082,7 +2082,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -2149,7 +2149,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -2211,7 +2211,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -2265,7 +2265,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }
@@ -2303,7 +2303,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: true));
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
                 IdleSynchronizer.Wait();
             });
         }

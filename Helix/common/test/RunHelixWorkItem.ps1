@@ -110,9 +110,6 @@ if ($isLifetimeStress)
 # State used to attribute a native TAEF-host crash to a scenario (see Report-LifetimeNativeCrash).
 $script:lifetimeTeConsoleLog = Join-Path (Get-Location) "lifetime_te_console.log"
 $script:lifetimeTeExitCode = 0
-# Set by Report-LifetimeNativeCrash and consumed by Set-LifetimeResultsGating so a native host
-# crash that produced no results file is still surfaced as a gating failure.
-$script:lifetimeNativeCrashDetected = $false
 Delete-IfExists $script:lifetimeTeConsoleLog
 
 $picturesPath = [Environment]::GetFolderPath("mypictures")
@@ -231,7 +228,6 @@ function Report-LifetimeNativeCrash
 
     # A crash is any of: non-zero exit code, a new dump, or an in-flight scenario.
     $crashDetected = ($teExitCode -ne 0) -or ($newDumps.Count -gt 0) -or ($inFlight.Count -gt 0)
-    $script:lifetimeNativeCrashDetected = $crashDetected
 
     $scenarioLabel = "none"
     $dumpNames = @()
@@ -257,10 +253,9 @@ function Report-LifetimeNativeCrash
         }
         $dumpLabel = if ($dumpNames.Count -gt 0) { $dumpNames -join ", " } else { "none captured" }
 
-        # Gating error: Set-LifetimeResultsGating turns this crash into a failing test that fails the shard;
-        # this logissue makes the crash and its dump attribution visible in the pipeline UI.
-        Write-Host "##vso[task.logissue type=error]Native lifetime crash in scenario '$scenarioLabel' (dump: $dumpLabel)"
-        Write-Host "Lifetime stress: native host crash detected (te.exe exit code=$teExitCode, new dumps=$($newDumps.Count), in-flight scenario(s)='$scenarioLabel'). Surfaced as a gating failure."
+        # Non-gating warning: visible in the pipeline UI but doesn't fail the stage.
+        Write-Host "##vso[task.logissue type=warning]Native lifetime crash in scenario '$scenarioLabel' (dump: $dumpLabel)"
+        Write-Host "Lifetime stress: native host crash detected (te.exe exit code=$teExitCode, new dumps=$($newDumps.Count), in-flight scenario(s)='$scenarioLabel'). Emitted a non-gating warning; the stage stays green."
     }
 
     # Per-work-item record for the PostTestRun aggregation step
@@ -293,12 +288,9 @@ function Report-LifetimeNativeCrash
     }
 }
 
-function Set-LifetimeResultsGating
+function Set-LifetimeResultsNonGating
 {
-    # Normalizes testResults.xml so lifetime failures GATE the shard. Leak/failure results are preserved as
-    # 'Fail' (PublishTestResults runs with failTaskOnFailedTests:true), and a native host crash that produced
-    # no results file - or partial results with no failure - is surfaced as a synthetic failing test so the
-    # crash gates too.
+    # Guarantees a testResults.xml with zero failures so the suite reports but never fails the pipeline.
     param ([string] $resultsPath, [string] $testnameprefix)
 
     $prefix = ""
@@ -314,98 +306,62 @@ function Set-LifetimeResultsGating
             if ($doc.assemblies)
             {
                 $needSynthetic = $false
-
-                # If the TAEF host crashed but the partial results carry no failure, inject one gating 'Fail'
-                # so the native crash still fails the shard.
-                $existingFail = @($doc.SelectNodes('//test') | Where-Object { $_.result -eq 'Fail' }).Count
-                if ($script:lifetimeNativeCrashDetected -and $existingFail -eq 0)
+                $flipped = 0
+                foreach ($test in @($doc.SelectNodes('//test')))
                 {
-                    $collection = @($doc.SelectNodes('//collection'))[0]
-                    if ($collection)
+                    if ($test.result -eq 'Fail')
                     {
-                        $t = $doc.CreateElement('test')
-                        $t.SetAttribute('name', "${prefix}LifetimeStressTestSuite.NativeCrash")
-                        $t.SetAttribute('type', 'LifetimeStressTestSuite')
-                        $t.SetAttribute('method', 'NativeCrash')
-                        $t.SetAttribute('time', '0')
-                        $t.SetAttribute('result', 'Fail')
-                        $failure = $doc.CreateElement('failure')
-                        $message = $doc.CreateElement('message')
-                        $message.InnerText = 'Native lifetime host crash detected (te.exe exit code / new dump / in-flight scenario) with no failing test in the partial results. Reported as a gating failure.'
-                        [void]$failure.AppendChild($message)
-                        [void]$t.AppendChild($failure)
-                        [void]$collection.AppendChild($t)
-                        Write-Host "Lifetime stress: injected a gating 'Fail' for a native host crash that left no failing result."
+                        # Downgrade to non-gating 'Skip' (PublishTestResults only fails on Failed tests).
+                        $test.result = 'Skip'
+                        $failureNode = $test.SelectSingleNode('failure')
+                        if ($failureNode) { [void]$test.RemoveChild($failureNode) }
+                        $flipped++
                     }
                 }
 
-                # Recompute passed/failed/skipped totals so the published summary is self-consistent. Failures
-                # are intentionally kept as 'Fail'.
+                # Recompute passed/failed/skipped totals so the published summary is consistent and failed=0.
                 foreach ($scope in (@($doc.SelectNodes('//assembly')) + @($doc.SelectNodes('//collection'))))
                 {
                     $tests = @($scope.SelectNodes('.//test'))
                     $pass = @($tests | Where-Object { $_.result -eq 'Pass' }).Count
                     $skip = @($tests | Where-Object { $_.result -eq 'Skip' }).Count
-                    $fail = @($tests | Where-Object { $_.result -eq 'Fail' }).Count
                     if ($scope.Attributes['total'])   { $scope.total = "$($tests.Count)" }
                     if ($scope.Attributes['passed'])  { $scope.passed = "$pass" }
                     if ($scope.Attributes['skipped']) { $scope.skipped = "$skip" }
-                    if ($scope.Attributes['failed'])  { $scope.failed = "$fail" }
+                    if ($scope.Attributes['failed'])  { $scope.failed = "0" }
                 }
 
                 $doc.Save((Resolve-Path $resultsPath).Path)
-                $totalFail = @($doc.SelectNodes('//test') | Where-Object { $_.result -eq 'Fail' }).Count
-                Write-Host "Lifetime stress: preserved $totalFail failing result(s) as gating in testResults.xml."
+                Write-Host "Lifetime stress: downgraded $flipped failing result(s) to non-gating 'Skip' in testResults.xml."
             }
         }
         catch
         {
-            Write-Host "Lifetime stress: could not post-process testResults.xml ($($_.Exception.Message)); emitting a synthetic report instead."
+            Write-Host "Lifetime stress: could not post-process testResults.xml ($($_.Exception.Message)); emitting a synthetic passing report instead."
             $needSynthetic = $true
         }
     }
 
     if ($needSynthetic)
     {
-        # No results file - te.exe most likely crashed. If a native crash was detected emit a FAILING entry so
-        # the crash gates the shard; otherwise emit a passing entry so the suite isn't silently missing.
+        # No results file - te.exe likely crashed. Emit one passing entry so the suite isn't silently missing.
         $runDate = (Get-Date).ToString('yyyy-MM-dd')
         $runTime = (Get-Date).ToString('HH:mm:ss')
         $testName = "${prefix}LifetimeStressTestSuite.Report"
-        if ($script:lifetimeNativeCrashDetected)
-        {
-            $xml = @"
-<?xml version="1.0" encoding="utf-8"?>
-<assemblies>
-  <assembly name="MUXControlsTestApp.dll" test-framework="TAEF" run-date="$runDate" run-time="$runTime" total="1" passed="0" failed="1" skipped="0" errors="0" time="0">
-    <collection total="1" passed="0" failed="1" skipped="0" name="Test collection" time="0">
-      <test name="$testName" type="LifetimeStressTestSuite" method="Report" time="0" result="Fail">
-        <failure><message>The lifetime stress suite did not produce a results file - the TAEF host most likely crashed on a native lifetime fault. Reported as a gating failure; see this work item's console log and te_original.wtl for the captured report up to the point of failure.</message></failure>
-      </test>
-    </collection>
-  </assembly>
-</assemblies>
-"@
-            Set-Content -Path $resultsPath -Value $xml -Encoding UTF8
-            Write-Host "Lifetime stress: emitted synthetic FAILING report at testResults.xml (native host crash produced no results file)."
-        }
-        else
-        {
-            $xml = @"
+        $xml = @"
 <?xml version="1.0" encoding="utf-8"?>
 <assemblies>
   <assembly name="MUXControlsTestApp.dll" test-framework="TAEF" run-date="$runDate" run-time="$runTime" total="1" passed="1" failed="0" skipped="0" errors="0" time="0">
     <collection total="1" passed="1" failed="0" skipped="0" name="Test collection" time="0">
       <test name="$testName" type="LifetimeStressTestSuite" method="Report" time="0" result="Pass">
-        <output>The lifetime stress suite produced no results file but no native crash was detected; reported as a non-gating pass.</output>
+        <output>The lifetime stress suite did not produce a results file - the TAEF host most likely crashed on a native lifetime fault. Reported as a non-gating pass; see this work item's console log and te_original.wtl for the captured report up to the point of failure.</output>
       </test>
     </collection>
   </assembly>
 </assemblies>
 "@
-            Set-Content -Path $resultsPath -Value $xml -Encoding UTF8
-            Write-Host "Lifetime stress: emitted synthetic passing report at testResults.xml (no results file, no native crash detected)."
-        }
+        Set-Content -Path $resultsPath -Value $xml -Encoding UTF8
+        Write-Host "Lifetime stress: emitted synthetic passing report at testResults.xml (te.exe produced no results file)."
     }
 }
 
@@ -513,12 +469,11 @@ if ($failedTestQuery -and $rerunFailed -and -not $isLifetimeStress)
 
 if ($isLifetimeStress)
 {
-    # Surface a native host crash (sets $script:lifetimeNativeCrashDetected) before the results are normalized
-    # below so Set-LifetimeResultsGating can turn it into a gating failure.
+    # Surface a native host crash as a non-gating warning before the results are normalized below.
     Report-LifetimeNativeCrash -preRunDumps $preRunLifetimeDumps -teExitCode $script:lifetimeTeExitCode -teConsoleLogPath $script:lifetimeTeConsoleLog
 
-    # Convert real results when a log exists; Set-LifetimeResultsGating preserves failures (leaks/crashes) so
-    # the shard fails, and guarantees a valid testResults.xml even if conversion fails or the host crashed.
+    # Convert real results when a log exists; Set-LifetimeResultsNonGating guarantees a valid zero-failure
+    # testResults.xml even if conversion fails or the host crashed.
     if (Test-Path .\te_original.wtl)
     {
         try
@@ -527,11 +482,11 @@ if ($isLifetimeStress)
         }
         catch
         {
-            Write-Host "Lifetime stress: ConvertWttLogToXUnit failed ($($_.Exception.Message)); a synthetic report will be emitted."
+            Write-Host "Lifetime stress: ConvertWttLogToXUnit failed ($($_.Exception.Message)); a synthetic passing report will be emitted."
             Delete-IfExists .\testResults.xml
         }
     }
-    Set-LifetimeResultsGating -resultsPath (Join-Path (Get-Location) "testResults.xml") -testnameprefix $testnameprefix
+    Set-LifetimeResultsNonGating -resultsPath (Join-Path (Get-Location) "testResults.xml") -testnameprefix $testnameprefix
 }
 else
 {

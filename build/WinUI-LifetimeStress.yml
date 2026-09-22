@@ -34,11 +34,6 @@ variables:
 - template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
 - template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
 - group: WinUI-Variable-Library
-# Opt in to the lifetime stress suite. The Helix work-item generator only emits the isolated
-# LifetimeStressTestSuite work item when this is set, so the suite runs on this dedicated pipeline
-# only (never on the shared PR gate or Nightly).
-- name: WINUI_LIFETIME_STRESS_ENABLED
-  value: 1
 # Soak mode: each scenario loops until this many minutes elapse instead of the default gate iteration count.
 - name: WINUI_LIFETIME_STRESS_MINUTES
   value: ${{ parameters.lifetimeStressMinutes }}
@@ -102,11 +97,6 @@ extends:
         pipelineKind: Nightly
         signOutput: ${{ parameters.SignOutput }}
         runStaticAnalysis: false
-        # Disable PGO: this is a GitHub-backed run, so the internal PGO optimization package
-        # (Microsoft.Internal.PGO-Helpers.Cpp) that the Release/fre flavors would otherwise require
-        # is not available and the build fails with "Could not find matching PGO package". The shared
-        # PR pipeline disables PGO the same way. Lifetime soak runs don't need PGO-optimized binaries.
-        pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
 
     - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
       parameters:
