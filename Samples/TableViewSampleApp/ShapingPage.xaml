@@ -33,6 +33,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -118,10 +119,37 @@
             <Button x:Name="DumpBandingButton" Content="Dump banding" Click="DumpBanding_Click"/>
         </StackPanel>
 
-        <Border x:Name="TableHost" Grid.Row="5" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
+        <!-- Live shaping: whether a row that changes UNDERNEATH the projection re-shapes. Each flag
+             is an independent opt-in on the source, and all three default off — that is the classic
+             ItemsControl behaviour, where a reshape happens only on a collection change. The
+             mutators on the right change ONE property of the selected row, which is the notification
+             these flags subscribe to; "Add item" above changes the collection instead, so it
+             reshapes whether or not any of these are on. -->
+        <StackPanel Grid.Row="5" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="Live:" VerticalAlignment="Center" Width="52"/>
+            <CheckBox x:Name="LiveSortToggle" Content="Sorting"
+                      Checked="LiveShaping_Toggled" Unchecked="LiveShaping_Toggled"/>
+            <CheckBox x:Name="LiveFilterToggle" Content="Filtering"
+                      Checked="LiveShaping_Toggled" Unchecked="LiveShaping_Toggled"/>
+            <CheckBox x:Name="LiveGroupToggle" Content="Grouping"
+                      Checked="LiveShaping_Toggled" Unchecked="LiveShaping_Toggled"/>
+            <CheckBox x:Name="EditableToggle" Content="Editable cells"
+                      Checked="Editable_Toggled" Unchecked="Editable_Toggled"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="5" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                    HorizontalAlignment="Right">
+            <TextBlock Text="Mutate selected:" VerticalAlignment="Center" Opacity="0.7" FontSize="12"/>
+            <Button x:Name="MutateRoleButton" Content="Role" Click="MutateRole_Click"/>
+            <Button x:Name="MutateCityButton" Content="City" Click="MutateCity_Click"/>
+            <Button x:Name="MutateNameButton" Content="Name" Click="MutateName_Click"/>
+            <Button x:Name="MutateScoreButton" Content="Score" Click="MutateScore_Click"/>
+        </StackPanel>
+
+        <Border x:Name="TableHost" Grid.Row="6" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
             <tv:TableView x:Name="Table" SelectionMode="Single"/>
         </Border>
 
-        <TextBlock x:Name="StatusText" Grid.Row="6" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>
+        <TextBlock x:Name="StatusText" Grid.Row="7" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>
     </Grid>
 </Page>

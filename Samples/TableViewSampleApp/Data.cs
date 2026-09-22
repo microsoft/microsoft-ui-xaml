@@ -16,6 +16,7 @@ public sealed class Item : INotifyPropertyChanged
     private string _role = "";
     private string _city = "";
     private string _notes = "";
+    private int _score;
     private DateTimeOffset _joined;
 
     public string Name { get => _name; set => Set(ref _name, value); }
@@ -23,7 +24,10 @@ public sealed class Item : INotifyPropertyChanged
     public string City { get => _city; set => Set(ref _city, value); }
     public string Notes { get => _notes; set => Set(ref _notes, value); }
 
-    public int Score { get; init; }
+    // Settable and observable like the text properties, so the Shaping page can drive live
+    // sorting/filtering/grouping through the numeric dimensions too - the "Score >= 50" filter
+    // and the Score-band grouping both hinge on this value.
+    public int Score { get => _score; set => Set(ref _score, value); }
     public string Bio { get; init; } = "";
     public DateTimeOffset Joined
     {
@@ -56,6 +60,16 @@ public sealed class Item : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
+    private void Set(ref int field, int value, [CallerMemberName] string? propertyName = null)
+    {
+        if (field == value)
+        {
+            return;
+        }
+        field = value;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
     public Item(string name, string role, string city, int score, string bio, DateTimeOffset joined, string notes, ImageSource? avatar, double imageSize = 40)
     {
         _name = name; _role = role; _city = city; _notes = notes;
@@ -75,8 +89,11 @@ internal static class Data
         "Anastasia Konstantinova Rozhdestvenskaya",
         "Wolfgang Amadeus von Habsburg-Lothringen",
     };
-    private static readonly string[] Roles = { "Dev", "QA", "PM", "Designer", "Architect", "Researcher" };
-    private static readonly string[] Cities = { "London", "Oslo", "Kyoto", "New York", "Shenzhen", "Berlin" };
+    // Exposed so the Shaping page can cycle a selected row through the same value sets the data
+    // was built from -- a mutation that lands on an existing bucket or filter outcome rather than
+    // inventing a new one.
+    internal static readonly string[] Roles = { "Dev", "QA", "PM", "Designer", "Architect", "Researcher" };
+    internal static readonly string[] Cities = { "London", "Oslo", "Kyoto", "New York", "Shenzhen", "Berlin" };
 
     // Bio strings of varied length so the wrapping Bio column drives variable row height.
     private static readonly string[] Bios =

@@ -15,6 +15,7 @@
 #include "ShapingPipeline.h"
 #include "ShapingHelpers.h"
 #include "RowIdentity.h"
+#include "LiveShapingTracker.h"
 
 class GroupedSourceAdapter;
 class ShapedGroup;
@@ -169,6 +170,12 @@ public:
 
     void Refresh();
 
+    void SetLiveShaping(bool liveSorting, bool liveGrouping, bool liveFiltering);
+    bool IsLiveSorting() const noexcept { return m_liveSorting; }
+    bool IsLiveGrouping() const noexcept { return m_liveGrouping; }
+    bool IsLiveFiltering() const noexcept { return m_liveFiltering; }
+    bool IsLiveShapingEnabled() const noexcept { return m_liveSorting || m_liveGrouping || m_liveFiltering; }
+
     // Suppresses intermediate projections while several verbs are declared as one change.
     // A consumer whose API surfaces shaping as a COLLECTION (e.g. a vector of sort descriptions)
     // has to re-declare every axis whenever one of them moves; without this each axis would
@@ -228,6 +235,33 @@ private:
     winrt::hstring Diagnostic(std::wstring_view text) const;
     ShapingHelpers::ShapingPipeline::SortedInsertPlacement SortedInsertPlacementFor(winrt::IInspectable const& item) const;
     bool TryGetSourceItemCount(uint32_t& count) const;
+    struct LiveShapeSnapshot
+    {
+        std::vector<winrt::hstring> SortKeys;
+        winrt::hstring GroupKey;
+        bool PassesFilter{ true };
+    };
+    LiveShapeSnapshot CaptureLiveShapeSnapshot(winrt::IInspectable const& item) const;
+    static bool LiveShapeSnapshotsDiffer(
+        LiveShapeSnapshot const& left,
+        LiveShapeSnapshot const& right);
+    static void const* LiveShapingKeyFor(winrt::IInspectable const& item);
+    // Mark-and-sweep reconcile against the complete source. An item that is still present keeps
+    // its existing subscription, so a refresh costs no revoke/re-add churn.
+    void RefreshLiveShapingSubscriptions(std::vector<winrt::IInspectable> const& items);
+    void ClearLiveShapingSubscriptions();
+    void ResubscribeLiveShapingFromSource();
+    // Delta maintenance for the incremental paths: O(1) per changed item, so a source change does
+    // not degrade to a full re-enumeration of the source.
+    void AddLiveShapingSubscription(winrt::IInspectable const& item);
+    void RemoveLiveShapingSubscription(winrt::IInspectable const& item);
+    // Applies the subscription delta a collection-changed notification implies. Driven by the
+    // args rather than by the projection, so it is correct for every branch below it -- including
+    // the sorted fast-path and the fallbacks that rebuild.
+    void ApplyLiveShapingDelta(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
+    void OnLiveShapedItemChanged(
+        winrt::IInspectable const& item,
+        winrt::hstring const& propertyName);
     void RaiseProjectionRebuilt() const { if (m_projectionRebuilt) { m_projectionRebuilt(); } }
     void RaiseShapeSwapped() const { if (m_shapeSwapped) { m_shapeSwapped(); } }
     void RaiseShapingChanged(bool reorderOnly) const { if (m_shapingChanged) { m_shapingChanged(reorderOnly); } }
@@ -272,6 +306,11 @@ private:
     bool m_shapingBatchHasRefresh{ false };
     std::unordered_map<winrt::hstring, winrt::com_ptr<ShapedGroup>> m_groupCache;
     std::shared_ptr<GroupedSourceAdapter> m_groupedAdapter{};
+    std::shared_ptr<LiveShapingTracker> m_liveShaping{ std::make_shared<LiveShapingTracker>() };
+    bool m_liveSorting{ false };
+    bool m_liveGrouping{ false };
+    bool m_liveFiltering{ false };
+    std::unordered_map<void const*, LiveShapeSnapshot> m_liveShapeSnapshots;
 
     std::function<void()> m_projectionRebuilt{ nullptr };
     std::function<void()> m_shapeSwapped{ nullptr };

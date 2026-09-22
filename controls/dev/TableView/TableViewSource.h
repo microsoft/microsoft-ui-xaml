@@ -77,6 +77,13 @@ public:
     // own path-based axis, and so re-sorting one path replaces it instead of stacking.
     static winrt::hstring SortAxisTokenForPath(winrt::hstring const& sortMemberPath);
 
+    bool IsLiveSorting() const;
+    void IsLiveSorting(bool value);
+    bool IsLiveFiltering() const;
+    void IsLiveFiltering(bool value);
+    bool IsLiveGrouping() const;
+    void IsLiveGrouping(bool value);
+
     // UI-thread affine after construction/binding: shaping verbs and projection mutation must
     // run on the owning UI thread. Only source change notifications are marshaled back here.
     winrt::ItemsSourceView GetItemsSourceView();

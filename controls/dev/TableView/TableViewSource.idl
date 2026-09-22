@@ -83,6 +83,11 @@ runtimeclass TableViewSource
     TableViewSource ClearGroupBy();
     TableViewSource ClearSort();
 
+    // Live shaping is opt-in and subscribes to source item property changes.
+    Boolean IsLiveSorting{ get; set; };
+    Boolean IsLiveFiltering{ get; set; };
+    Boolean IsLiveGrouping{ get; set; };
+
 }
 
 }

@@ -47,17 +47,46 @@ ShapedItemsSource::ShapedItemsSource(winrt::IInspectable const& source) :
     m_source(source),
     m_rows(winrt::single_threaded_observable_vector<winrt::IInspectable>())
 {
+    m_liveShaping->SetChangeHandler(
+        [this](winrt::IInspectable const& item, winrt::hstring const& propertyName)
+        {
+            OnLiveShapedItemChanged(item, propertyName);
+        });
 }
 
 ShapedItemsSource::~ShapedItemsSource()
 {
     UnsubscribeFromSourceCollectionChanges();
+    ClearLiveShapingSubscriptions();
 }
 
 void ShapedItemsSource::Start()
 {
     SubscribeToSourceCollectionChanges();
     Refresh();
+}
+
+void ShapedItemsSource::SetLiveShaping(bool liveSorting, bool liveGrouping, bool liveFiltering)
+{
+    if (m_liveSorting == liveSorting &&
+        m_liveGrouping == liveGrouping &&
+        m_liveFiltering == liveFiltering)
+    {
+        return;
+    }
+
+    m_liveSorting = liveSorting;
+    m_liveGrouping = liveGrouping;
+    m_liveFiltering = liveFiltering;
+
+    if (IsLiveShapingEnabled())
+    {
+        ResubscribeLiveShapingFromSource();
+    }
+    else
+    {
+        ClearLiveShapingSubscriptions();
+    }
 }
 
 void ShapedItemsSource::BeginShapingBatch()
@@ -205,6 +234,14 @@ void ShapedItemsSource::ApplyShapingChange()
 
     if (TryApplyShapingDeltaInPlace(delta))
     {
+        // This path deliberately skips Refresh(), which is where live-shaping keys are normally
+        // re-captured. The committed spec just changed, so every cached key describes the OLD
+        // shape; re-capture against the new one. Subscriptions themselves are unaffected (the
+        // reconcile is mark-and-sweep), so this costs one pass over the source and no COM churn.
+        if (IsLiveShapingEnabled())
+        {
+            ResubscribeLiveShapingFromSource();
+        }
         RaiseShapingChanged(true /* reorderOnly */);
         return;
     }
@@ -443,6 +480,11 @@ void ShapedItemsSource::OnSourceVectorChanged(winrt::Windows::Foundation::Collec
 
 void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
 {
+    // Subscription maintenance is a DELTA, derived from the notification itself. Doing it here
+    // rather than at each splice site below keeps it correct for every branch -- the sorted
+    // fast-path, the flat splice, and the Refresh() fallbacks alike -- and costs work proportional
+    // to the items that actually changed instead of to the size of the source.
+    ApplyLiveShapingDelta(args);
 
     // Every path below either mutates m_rows without going through Refresh or falls back to
     // Refresh. The first leaves the retained layer-1 membership describing a projection that no
@@ -608,6 +650,10 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
 
 void ShapedItemsSource::ApplyIncrementalVectorChange(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
 {
+    // Unlike NotifyCollectionChangedEventArgs, VectorChanged carries no items -- only a verb and
+    // an index -- so the subscription delta cannot be derived up front. It is applied at each
+    // splice site below, where the affected object is in hand. Every other path here ends in
+    // Refresh(), which reconciles subscriptions itself.
 
     // Same reasoning as ApplyIncrementalChange: the retained membership stops describing m_rows
     // the moment this splices it.
@@ -659,6 +705,7 @@ void ShapedItemsSource::ApplyIncrementalVectorChange(winrt::Windows::Foundation:
         }
 
         m_rows.InsertAt(index, item);
+        AddLiveShapingSubscription(item);
         return;
     }
     case CollectionChange::ItemRemoved:
@@ -686,6 +733,7 @@ void ShapedItemsSource::ApplyIncrementalVectorChange(winrt::Windows::Foundation:
         }
 
         m_rows.RemoveAt(index);
+        RemoveLiveShapingSubscription(item);
         return;
     }
     case CollectionChange::ItemChanged:
@@ -728,7 +776,12 @@ void ShapedItemsSource::ApplyIncrementalVectorChange(winrt::Windows::Foundation:
             }
         }
 
+        auto const outgoing = m_rows.GetAt(index);
         m_rows.SetAt(index, newItem);
+        // Remove before add: when the slot was reassigned to the SAME object, adding first would
+        // be a no-op and the removal would then drop the live subscription entirely.
+        RemoveLiveShapingSubscription(outgoing);
+        AddLiveShapingSubscription(newItem);
         return;
     }
     case CollectionChange::Reset:
@@ -1073,6 +1126,7 @@ void ShapedItemsSource::Refresh()
 
         auto const authoritativeSource = m_source;
         auto rows = Materialize(authoritativeSource);
+        RefreshLiveShapingSubscriptions(rows);
 
         if (!HasAnyShapingVerb())
         {
@@ -1378,3 +1432,213 @@ winrt::hstring ShapedItemsSource::Diagnostic(std::wstring_view text) const
     return m_diagnosticName + L": " + winrt::hstring{ text };
 }
 
+void const* ShapedItemsSource::LiveShapingKeyFor(winrt::IInspectable const& item)
+{
+    if (!item)
+    {
+        return nullptr;
+    }
+
+    auto const unknown = item.as<winrt::Windows::Foundation::IUnknown>();
+    return winrt::get_abi(unknown);
+}
+
+ShapedItemsSource::LiveShapeSnapshot ShapedItemsSource::CaptureLiveShapeSnapshot(
+    winrt::IInspectable const& item) const
+{
+    LiveShapeSnapshot snapshot{};
+
+    if (m_liveSorting)
+    {
+        for (auto const& axis : m_pipeline.ActiveSortAxes(-1, -1))
+        {
+            winrt::IInspectable key{ nullptr };
+            if (axis.Key)
+            {
+                key = axis.Key(item);
+            }
+            snapshot.SortKeys.push_back(StringifyKey(key));
+        }
+    }
+
+    if (m_liveGrouping && m_groupSelector)
+    {
+        snapshot.GroupKey = StringifyKey(m_groupSelector(item));
+    }
+
+    if (m_liveFiltering)
+    {
+        snapshot.PassesFilter = m_pipeline.PassesFilter(item);
+    }
+
+    return snapshot;
+}
+
+bool ShapedItemsSource::LiveShapeSnapshotsDiffer(
+    LiveShapeSnapshot const& left,
+    LiveShapeSnapshot const& right)
+{
+    return left.PassesFilter != right.PassesFilter ||
+        left.GroupKey != right.GroupKey ||
+        left.SortKeys != right.SortKeys;
+}
+
+void ShapedItemsSource::RefreshLiveShapingSubscriptions(
+    std::vector<winrt::IInspectable> const& items)
+{
+    if (!IsLiveShapingEnabled())
+    {
+        ClearLiveShapingSubscriptions();
+        return;
+    }
+
+    // Mark-and-sweep against the complete source. Clearing and rebuilding would revoke and re-add
+    // every subscription on every refresh -- two COM calls plus a QI per row to arrive back at the
+    // subscription set we already had. Here an item that is still present keeps its existing
+    // revoker untouched, so only arrivals subscribe and only departures revoke.
+    std::unordered_set<void const*> live;
+    live.reserve(items.size());
+
+    // Snapshots are rebuilt rather than reconciled: a refresh is also where the committed shaping
+    // spec can have changed (a new sort axis, a different filter), which invalidates every cached
+    // key. Building into a fresh map drops entries for departed items as a side effect.
+    std::unordered_map<void const*, LiveShapeSnapshot> snapshots;
+    snapshots.reserve(items.size());
+
+    for (auto const& item : items)
+    {
+        if (!item)
+        {
+            continue;
+        }
+
+        auto const key = LiveShapingKeyFor(item);
+        live.insert(key);
+        m_liveShaping->Subscribe(item);
+        snapshots[key] = CaptureLiveShapeSnapshot(item);
+    }
+
+    m_liveShaping->RetainOnly(live);
+    m_liveShapeSnapshots = std::move(snapshots);
+}
+
+void ShapedItemsSource::AddLiveShapingSubscription(winrt::IInspectable const& item)
+{
+    if (!IsLiveShapingEnabled() || !item)
+    {
+        return;
+    }
+
+    m_liveShaping->Subscribe(item);
+    m_liveShapeSnapshots[LiveShapingKeyFor(item)] = CaptureLiveShapeSnapshot(item);
+}
+
+void ShapedItemsSource::RemoveLiveShapingSubscription(winrt::IInspectable const& item)
+{
+    // Deliberately not gated on IsLiveShapingEnabled: pruning an entry left over from a mode that
+    // has since been turned off is always correct, and never pruning would strand it.
+    if (!item)
+    {
+        return;
+    }
+
+    m_liveShaping->Unsubscribe(item);
+    m_liveShapeSnapshots.erase(LiveShapingKeyFor(item));
+}
+
+void ShapedItemsSource::ApplyLiveShapingDelta(
+    winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
+{
+    if (!IsLiveShapingEnabled())
+    {
+        return;
+    }
+
+    using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
+
+    auto const unsubscribeAll = [this](winrt::Microsoft::UI::Xaml::Interop::IBindableVector const& items)
+    {
+        if (!items)
+        {
+            return;
+        }
+        for (uint32_t i = 0; i < items.Size(); ++i)
+        {
+            RemoveLiveShapingSubscription(items.GetAt(i));
+        }
+    };
+
+    auto const subscribeAll = [this](winrt::Microsoft::UI::Xaml::Interop::IBindableVector const& items)
+    {
+        if (!items)
+        {
+            return;
+        }
+        for (uint32_t i = 0; i < items.Size(); ++i)
+        {
+            AddLiveShapingSubscription(items.GetAt(i));
+        }
+    };
+
+    switch (args.Action())
+    {
+    case NotifyCollectionChangedAction::Add:
+        subscribeAll(args.NewItems());
+        break;
+    case NotifyCollectionChangedAction::Remove:
+        unsubscribeAll(args.OldItems());
+        break;
+    case NotifyCollectionChangedAction::Replace:
+        // Remove before add, so a replace that reuses the same object ends up subscribed.
+        unsubscribeAll(args.OldItems());
+        subscribeAll(args.NewItems());
+        break;
+    case NotifyCollectionChangedAction::Move:
+        // Membership is unchanged; only ordering moved, which no subscription depends on.
+        break;
+    case NotifyCollectionChangedAction::Reset:
+    default:
+        // A reset says nothing about which items survived. Every caller funnels a reset into
+        // Refresh(), whose mark-and-sweep reconcile is the cheapest correct answer.
+        break;
+    }
+}
+
+void ShapedItemsSource::ClearLiveShapingSubscriptions()
+{
+    m_liveShaping->UnsubscribeAll();
+    m_liveShapeSnapshots.clear();
+}
+
+void ShapedItemsSource::ResubscribeLiveShapingFromSource()
+{
+    if (!IsLiveShapingEnabled())
+    {
+        ClearLiveShapingSubscriptions();
+        return;
+    }
+
+    RefreshLiveShapingSubscriptions(Materialize(m_source));
+}
+
+void ShapedItemsSource::OnLiveShapedItemChanged(
+    winrt::IInspectable const& item,
+    winrt::hstring const&)
+{
+    if (!IsLiveShapingEnabled() || !item)
+    {
+        return;
+    }
+
+    auto const key = LiveShapingKeyFor(item);
+    auto const snapshot = CaptureLiveShapeSnapshot(item);
+    auto const existing = m_liveShapeSnapshots.find(key);
+    if (existing != m_liveShapeSnapshots.end() &&
+        !LiveShapeSnapshotsDiffer(existing->second, snapshot))
+    {
+        return;
+    }
+
+    m_liveShapeSnapshots[key] = snapshot;
+    Refresh();
+}
