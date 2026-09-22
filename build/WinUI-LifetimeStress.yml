@@ -34,15 +34,6 @@ variables:
 - template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
 - template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
 - group: WinUI-Variable-Library
-# The lifetime-stress soak builds WinUI only to run tests - it never ships the binaries, so it does not need
-# PGO-optimized output. Disabling PGO keeps the build from depending on a matching
-# Microsoft.Internal.PGO-Helpers.Cpp package (which is not published for these experimental soak builds and
-# otherwise fails the native build with "Could not find matching PGO package"). Mirrors the GitHub-PR pipeline,
-# which also builds with PGOBuildMode=Off.
-- name: PGODisable
-  value: 'true'
-- name: pgoBuildMode
-  value: 'Off'
 # Soak mode: each scenario loops until this many minutes elapse instead of the default gate iteration count.
 - name: WINUI_LIFETIME_STRESS_MINUTES
   value: ${{ parameters.lifetimeStressMinutes }}
@@ -106,6 +97,14 @@ extends:
         pipelineKind: Nightly
         signOutput: ${{ parameters.SignOutput }}
         runStaticAnalysis: false
+        # Disable PGO by forcing PGOBuildMode=Off directly onto every solution's MSBuild args. This soak
+        # only builds WinUI to run tests - it never ships the binaries, so it does not need PGO-optimized
+        # output. Overriding the parameter (rather than the pgoBuildMode variable) is required because the
+        # Nightly matrix marks the fre legs shouldPgo=true; on those legs the variable can still resolve to
+        # Optimize, which invokes RestorePGONuget and fails the native build with "Could not find matching
+        # PGO package" (the matching Microsoft.WinUI.PGO data package is not published for experimental soak
+        # builds). The shared GitHub-PR pipeline disables PGO the same way.
+        pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
 
     - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
       parameters:
