@@ -106,17 +106,18 @@ No changes are made to existing sort or group public methods.
 
 ## Validation
 
-Extend or port existing TableView shaping tests to cover:
+Validation is app-only. Use the TableView sample apps to exercise:
 
-1. Live filtering admits and evicts rows after item property changes.
-2. Live sorting reorders rows after an active sort-key change.
-3. Live grouping moves rows after a group-key change.
-4. Each live mode is independently opt-in; disabled dimensions remain stale.
-5. Filtered-out items are still observed and can re-enter.
-6. Add/remove/replace/reset collection changes maintain the subscription set.
-7. Fluent and column-owned sort axes continue to honor current token and
-   precedence rules.
-8. Disabling live shaping removes subscriptions without changing the current
+1. Live filtering admitting and evicting rows after item property changes.
+2. Live sorting reordering rows after an active sort-key change.
+3. Live grouping moving rows after a group-key change.
+4. Each live mode being independently opt-in, with disabled dimensions
+   remaining stale.
+5. Filtered-out items remaining observed and re-entering when eligible.
+6. Collection add/remove/replace/reset changes maintaining the subscription set.
+7. Fluent and column-owned sort axes preserving current token and precedence
+   rules.
+8. Disabling live shaping removing subscriptions without changing the current
    projection.
 
-Build the Tabular project and run the targeted TableView shaping tests.
+Do not add or run automated validation for this migration.

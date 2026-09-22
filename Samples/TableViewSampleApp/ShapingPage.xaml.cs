@@ -52,6 +52,12 @@ public sealed partial class ShapingPage : Page
         Table.CanUserSortColumns = HeaderSortToggle.IsChecked == true;
         UpdateCycleHint();
 
+        // Seeded from the checkboxes rather than assumed, so the control and the UI cannot start
+        // out disagreeing. All four are off/read-only by default: live shaping is opt-in, and
+        // TableView.IsReadOnly defaults to true.
+        ApplyLiveShaping();
+        Table.IsReadOnly = EditableToggle.IsChecked != true;
+
         _ready = true;
         UpdateStatus();
     }
@@ -493,6 +499,125 @@ public sealed partial class ShapingPage : Page
         UpdateStatus();
     }
 
+    // ---- Live shaping ----------------------------------------------------------------------
+    //
+    // A collection change always reshapes. A PROPERTY change on a row already in the projection
+    // only reshapes when the matching live flag is on - otherwise the row keeps the position,
+    // bucket and filter verdict it had when it was last shaped, and goes stale in place. These
+    // handlers exist to make that difference observable side by side.
+
+    private const string RenamePrefix = "zz ";
+
+    private void ApplyLiveShaping()
+    {
+        _source.IsLiveSorting = LiveSortToggle.IsChecked == true;
+        _source.IsLiveFiltering = LiveFilterToggle.IsChecked == true;
+        _source.IsLiveGrouping = LiveGroupToggle.IsChecked == true;
+    }
+
+    private void LiveShaping_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (!_ready)
+        {
+            return;
+        }
+
+        ApplyLiveShaping();
+        UpdateStatus();
+    }
+
+    private void Editable_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (!_ready)
+        {
+            return;
+        }
+
+        // Editing a cell commits through the column's own two-way editor, so it raises exactly the
+        // same PropertyChanged the mutate buttons do - the same live-shaping trigger, reached by
+        // typing instead of clicking.
+        Table.IsReadOnly = EditableToggle.IsChecked != true;
+        UpdateStatus();
+    }
+
+    // Selection is reported as the underlying item even while grouped, so a mutation lands on the
+    // data row regardless of how the projection is arranged.
+    private Item? MutationTarget()
+    {
+        if (Table.SelectedItem is Item item)
+        {
+            return item;
+        }
+
+        _diag = "mutate: no row selected";
+        UpdateStatus();
+        return null;
+    }
+
+    private void MutateRole_Click(object sender, RoutedEventArgs e)
+    {
+        if (MutationTarget() is not { } item)
+        {
+            return;
+        }
+
+        // Cycles within the authored value set, so the row moves to a bucket that already exists
+        // rather than creating one - the case where a stale live grouping is most obvious.
+        var next = Data.Roles[(Array.IndexOf(Data.Roles, item.Role) + 1) % Data.Roles.Length];
+        _diag = $"mutate: '{item.Name}' Role '{item.Role}' -> '{next}'";
+        item.Role = next;
+
+        UpdateStatus();
+    }
+
+    private void MutateCity_Click(object sender, RoutedEventArgs e)
+    {
+        if (MutationTarget() is not { } item)
+        {
+            return;
+        }
+
+        var next = Data.Cities[(Array.IndexOf(Data.Cities, item.City) + 1) % Data.Cities.Length];
+        _diag = $"mutate: '{item.Name}' City '{item.City}' -> '{next}'";
+        item.City = next;
+
+        UpdateStatus();
+    }
+
+    private void MutateName_Click(object sender, RoutedEventArgs e)
+    {
+        if (MutationTarget() is not { } item)
+        {
+            return;
+        }
+
+        // Toggling a prefix that sorts last moves the row across the whole range under a Name sort
+        // and flips whether it matches a text filter, and clicking again puts it back.
+        var next = item.Name.StartsWith(RenamePrefix, StringComparison.Ordinal)
+            ? item.Name.Substring(RenamePrefix.Length)
+            : RenamePrefix + item.Name;
+        _diag = $"mutate: Name '{item.Name}' -> '{next}'";
+        item.Name = next;
+
+        UpdateStatus();
+    }
+
+    private void MutateScore_Click(object sender, RoutedEventArgs e)
+    {
+        if (MutationTarget() is not { } item)
+        {
+            return;
+        }
+
+        // A step that is not a divisor of the range keeps crossing the 50 threshold the filter uses
+        // and the band boundaries the grouping uses, instead of settling into a short orbit.
+        var next = (item.Score + 30) % 101;
+        _diag = $"mutate: '{item.Name}' Score {item.Score} -> {next}";
+        item.Score = next;
+
+        UpdateStatus();
+    }
+
     private void UpdateStatus()
     {
         var text = FilterBox.Text?.Trim() ?? string.Empty;
@@ -518,10 +643,16 @@ public sealed partial class ShapingPage : Page
 
         var selected = Table.SelectedItem as Item;
 
+        var livePart =
+            $"{(LiveSortToggle.IsChecked == true ? "sort" : "-")}/" +
+            $"{(LiveFilterToggle.IsChecked == true ? "filter" : "-")}/" +
+            $"{(LiveGroupToggle.IsChecked == true ? "group" : "-")}";
+
         StatusText.Text =
             $"rows {visible.Count}/{_items.Count}   filter '{text}'{(highOnly ? " + score>=50" : "")}   " +
             $"group {groupPart}   sort {sortPart}   cycle {((ComboBoxItem)CycleCombo.SelectedItem).Content}   " +
             $"selected {(selected is null ? "none" : $"'{selected.Name}' @ {Table.SelectedIndex}")}" +
+            $"\nlive {livePart}   edit {(Table.IsReadOnly ? "off" : "on")}" +
             $"\nselLog[{_selLog.Count}] {string.Join(" | ", _selLog)}" +
             $"\ndiag {_diag}";
     }
