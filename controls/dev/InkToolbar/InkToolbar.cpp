@@ -453,10 +453,12 @@ void InkToolbar::ExecuteToolAction(winrt::InkToolbarToolButton const& toolButton
     {
     case winrt::InkToolbarButtonFlyoutPlacement::Auto:
     case winrt::InkToolbarButtonFlyoutPlacement::Bottom:
-        flyoutPlacement = winrt::FlyoutPlacementMode::Bottom;
+        // Edge-aligned (not centred) so a button near the window's left edge doesn't push the wide
+        // pen-config flyout off-screen and clip it; it opens directly under the button instead.
+        flyoutPlacement = winrt::FlyoutPlacementMode::BottomEdgeAlignedLeft;
         break;
     case winrt::InkToolbarButtonFlyoutPlacement::Top:
-        flyoutPlacement = winrt::FlyoutPlacementMode::Top;
+        flyoutPlacement = winrt::FlyoutPlacementMode::TopEdgeAlignedLeft;
         break;
     case winrt::InkToolbarButtonFlyoutPlacement::Left:
         flyoutPlacement = winrt::FlyoutPlacementMode::Left;

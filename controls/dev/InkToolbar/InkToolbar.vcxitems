@@ -17,6 +17,8 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)InkToolbarCustomPen.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InkToolbarAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolbarStrokeWidthSlider.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolbarStrokeWidthSliderAutomationPeer.h" />
   </ItemGroup>
 
   <ItemGroup>
@@ -50,8 +52,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarPencilButton.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarPenConfigurationControl.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarStencilButton.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarStrokeWidthSlider.properties.cpp" />
 
     <ClCompile Include="$(MSBuildThisFileDirectory)InkToolbarAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InkToolbarStrokeWidthSlider.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InkToolbarStrokeWidthSliderAutomationPeer.cpp" />
   </ItemGroup>
   
   <ItemGroup>
@@ -71,6 +76,8 @@
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)InkToolbar.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)InkToolbarAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)InkToolbarStrokeWidthSlider.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)InkToolbarStrokeWidthSliderAutomationPeer.idl" />
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />

@@ -1,0 +1,16 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+// The pen-flyout size slider is instantiated from the InkToolbar template markup, so it must live in
+// a namespace the XAML metadata provider registers (private namespaces are code-instantiated only).
+namespace MU_XCP_NAMESPACE
+{
+
+[MUX_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass InkToolbarStrokeWidthSlider : Microsoft.UI.Xaml.Controls.Slider
+{
+    InkToolbarStrokeWidthSlider();
+}
+
+}
