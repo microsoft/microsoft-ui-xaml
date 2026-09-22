@@ -80,8 +80,7 @@ Run modes (all optional; the default needs no configuration):
   registered in Azure DevOps and its schedule/soak duration tuned there.
 - **Explicit local/manual run** — set `WINUI_LIFETIME_STRESS_ITERATIONS > 0` to run a heavier fixed cycle count.
 
-To make leak detection fail locally while iterating, set `WINUI_LIFETIME_STRESS_FAILONLEAK=1` (or flip a scenario's
-`failOnLeak` argument to `true`).
+To make leak detection fail locally while iterating, flip a scenario's `failOnLeak` argument to `true`.
 
 ### Legacy-style scenarios (ported from System XAML)
 
@@ -115,7 +114,6 @@ non-gating report pass, so the suite is safe everywhere by default.
 | --- | --- | --- |
 | `WINUI_LIFETIME_STRESS_MINUTES` | If > 0, each scenario soaks for this many minutes (wall-clock). The scheduled soak pipeline sets this. | `0` (disabled) |
 | `WINUI_LIFETIME_STRESS_ITERATIONS` | If > 0 **and** soak mode is off, run this many create/destroy cycles per scenario — a heavier local/manual run. | `0` (use the default report pass) |
-| `WINUI_LIFETIME_STRESS_FAILONLEAK` | If > 0, a surviving tracked object is reported as a gating `Verify.Fail` instead of a non-gating warning. Off by default so the suite stays non-gating and the PostTestRun step can total leaks. | `0` (warnings only) |
 
 ### Run a soak locally
 

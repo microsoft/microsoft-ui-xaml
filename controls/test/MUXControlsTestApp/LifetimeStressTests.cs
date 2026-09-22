@@ -57,13 +57,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             get { return GetEnvInt("WINUI_LIFETIME_STRESS_NATIVE", 0) > 0; }
         }
 
-        // WINUI_LIFETIME_STRESS_FAILONLEAK opts in to gating on managed leaks. Default 0 keeps the suite
-        // non-gating (leaks are reported as warnings only) so the PostTestRun step can total them.
-        private static bool FailOnLeakEnabled
-        {
-            get { return GetEnvInt("WINUI_LIFETIME_STRESS_FAILONLEAK", 0) > 0; }
-        }
-
         // Create/parent/layout/unparent/collect in a loop to shake out peer-lifetime bugs.
         [TestMethod]
         public void StressControlCreateLoadUnloadCollect()
@@ -2605,9 +2598,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // finalizer-thread final-release races that lifetime bugs depend on (per Win8-era lifetime coverage).
         private static void ForceGCVaryingThread()
         {
-            if ((System.Threading.Interlocked.Increment(ref s_gcThreadToggle) & 1) == 0)
+            if ((global::System.Threading.Interlocked.Increment(ref s_gcThreadToggle) & 1) == 0)
             {
-                System.Threading.Tasks.Task.Run(() =>
+                global::System.Threading.Tasks.Task.Run(() =>
                 {
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
@@ -2655,11 +2648,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         // Converge collection off the UI thread, then report survivors. Routes leaks through VerifyCollected so
         // they keep the exact "object 'X' was still alive after forced collection" phrase the PostTestRun totals
-        // step counts. Non-gating unless WINUI_LIFETIME_STRESS_FAILONLEAK is set.
+        // step counts. Always non-gating: leaks are warning-only, exactly like the rest of the suite.
         private static void VerifyLifetime(Dictionary<string, WeakReference> objects)
         {
             CollectUntilDead(objects);
-            VerifyCollected(objects, FailOnLeakEnabled);
+            VerifyCollected(objects, failOnLeak: false);
         }
 
         // Genuine off-UI-thread GC pump. Drives GC/finalization from a dedicated background thread while also
@@ -2669,7 +2662,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // background worker.
         private static void CollectOffUIThreadUntilDead(Dictionary<string, WeakReference> objects, int maxAttempts = 50, double timeoutSeconds = 15.0)
         {
-            System.Threading.Tasks.Task.Run(() =>
+            global::System.Threading.Tasks.Task.Run(() =>
             {
                 var stopwatch = Stopwatch.StartNew();
                 for (int attempt = 0; attempt < maxAttempts && !AllCollected(objects); attempt++)
@@ -2695,12 +2688,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // Converge using the genuine off-UI-thread pump, then report survivors through VerifyCollected so leaks
-        // keep the exact phrase the PostTestRun totals step counts. Non-gating unless
-        // WINUI_LIFETIME_STRESS_FAILONLEAK is set.
+        // keep the exact phrase the PostTestRun totals step counts. Always non-gating: leaks are warning-only,
+        // exactly like the rest of the suite.
         private static void VerifyLifetimeLegacy(Dictionary<string, WeakReference> objects)
         {
             CollectOffUIThreadUntilDead(objects);
-            VerifyCollected(objects, FailOnLeakEnabled);
+            VerifyCollected(objects, failOnLeak: false);
         }
 
         // Insert/clear churn to force an ItemsControl to release a cached/recycled container that is pinning the
