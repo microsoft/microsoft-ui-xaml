@@ -405,6 +405,11 @@ public:
     // Root visual set on a visual tree — ElementId is the root element.
     DEFINE_ELEMENT_ACTIVITY(PutRootVisual);
 
+    // Top-level layout passes (CLayoutManager::UpdateLayout) — ElementId is the layout root.
+    DEFINE_ELEMENT_ACTIVITY(Layout);
+    DEFINE_ELEMENT_ACTIVITY(Measure);
+    DEFINE_ELEMENT_ACTIVITY(Arrange);
+
     // Layout transitions — ElementId is the element the transition targets.
     // RealizeTransition stays a point event: its retail Begin/End brackets a whole
     // pass while the element identity is per-iteration inside the loop.
@@ -454,6 +459,10 @@ public:
     DEFINE_TRACELOGGING_EVENT_PARAM1(VirtualizationIsEnabledByLayout,
         uint64_t, ElementId, TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
     DEFINE_ELEMENT_ACTIVITY(GetElementCount);
+
+    // Control template/style operations (CControl) — ElementId is the control.
+    DEFINE_ELEMENT_ACTIVITY(RefreshTemplateBindings);
+    DEFINE_ELEMENT_ACTIVITY(GetBuiltInStyle);
 
 #undef DEFINE_ELEMENT_ACTIVITY
 };

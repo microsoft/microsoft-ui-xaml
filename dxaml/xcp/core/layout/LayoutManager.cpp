@@ -7,7 +7,9 @@
 #include <EffectiveViewportChangedEventArgs.h>
 #include <string>
 #include <LayoutCycleDebugSettings.h>
+#ifdef XAMLPROFILER_ENABLED
 #include "XamlProfilerTracing.h"
+#endif
 
 // Apps usually tend to have a few entries in the sizeChangedQueue and
 // sometimes up to a dozen. The value of 24 is a conservative estimate to
@@ -249,7 +251,11 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
 
     m_isInUpdateLayout = TRUE;
 
-    TraceLayoutBegin((XUINT64)pRoot);
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::LayoutStart(reinterpret_cast<uint64_t>(pRoot));
+#else
+    TraceLayoutBegin();
+#endif
 
     XUINT32 count = MaxLayoutIterations;
     std::wstring extraInfoEntries[WarningLayoutIterations];
@@ -290,11 +296,19 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
                 m_arrangeRect.Height = (XFLOAT) controlHeight;
             }
 
-            TraceMeasureBegin((XUINT64)pRoot);
+#ifdef XAMLPROFILER_ENABLED
+            XamlProfilerTracing::MeasureStart(reinterpret_cast<uint64_t>(pRoot));
+            auto scopeGuard = wil::scope_exit([&]
+            {
+                XamlProfilerTracing::MeasureStop();
+            });
+#else
+            TraceMeasureBegin();
             auto scopeGuard = wil::scope_exit([&]
             {
                 TraceMeasureEnd();
             });
+#endif
 
             if (StoreLayoutCycleWarningContexts())
             {
@@ -322,11 +336,19 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
         }
         else if (pRoot->GetRequiresArrange())
         {
-            TraceArrangeBegin((XUINT64)pRoot);
+#ifdef XAMLPROFILER_ENABLED
+            XamlProfilerTracing::ArrangeStart(reinterpret_cast<uint64_t>(pRoot));
+            auto scopeGuard = wil::scope_exit([&]
+            {
+                XamlProfilerTracing::ArrangeStop();
+            });
+#else
+            TraceArrangeBegin();
             auto scopeGuard = wil::scope_exit([&]
             {
                 TraceArrangeEnd();
             });
+#endif
 
             if (StoreLayoutCycleWarningContexts())
             {
@@ -502,7 +524,11 @@ Cleanup:
 
     m_isInUpdateLayout = FALSE;
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::LayoutStop();
+#else
     TraceLayoutEnd();
+#endif
 
     // Firing a UIAutomation automation properties change check
     if (m_bUIAClientsListeningToProperty)
