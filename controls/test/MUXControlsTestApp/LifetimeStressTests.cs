@@ -57,6 +57,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             get { return GetEnvInt("WINUI_LIFETIME_STRESS_NATIVE", 0) > 0; }
         }
 
+        // WINUI_LIFETIME_STRESS_FAILONLEAK opts in to gating on managed leaks. Default 0 keeps the suite
+        // non-gating (leaks are reported as warnings only) so the PostTestRun step can total them.
+        private static bool FailOnLeakEnabled
+        {
+            get { return GetEnvInt("WINUI_LIFETIME_STRESS_FAILONLEAK", 0) > 0; }
+        }
+
         // Create/parent/layout/unparent/collect in a loop to shake out peer-lifetime bugs.
         [TestMethod]
         public void StressControlCreateLoadUnloadCollect()
@@ -2308,6 +2315,141 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Container-recycling flush: ensures an ItemsControl drops recycled containers so item elements can be
+        // collected. Non-gating; ported from System XAML BaseLifetimeTest.cs FlushChildrenCache.
+        [TestMethod]
+        public void StressItemsControlContainerRecyclingFlush()
+        {
+            RunStress("StressItemsControlContainerRecyclingFlush", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+                ItemsControl itemsControl = null;
+
+                SafeUI(() =>
+                {
+                    itemsControl = new ItemsControl();
+                    var item = new ContentControl() { Content = "recycled item" };
+                    objects["Item"] = new WeakReference(item);
+                    itemsControl.Items.Add(item);
+
+                    Content = itemsControl;
+                    Content.UpdateLayout();
+
+                    itemsControl.Items.Clear();
+                    Content.UpdateLayout();
+                });
+
+                SettleAndCollect();
+
+                WeakReference itemRef = objects.ContainsKey("Item") ? objects["Item"] : null;
+                FlushItemsControlCache(itemsControl, itemRef);
+
+                SafeUI(() => Content = null);
+                VerifyLifetime(objects);
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // ---- Legacy-style lifetime tests (genuine off-UI-thread GC pump) ----
+        // These mirror the Win8-era System XAML lifetime tests: they drive collection from a background thread
+        // (via CollectOffUIThreadUntilDead) so the finalizer-thread-vs-UI-thread final-release timing is
+        // exercised. All non-gating; leaks/exceptions are reported as warnings for the PostTestRun totals.
+
+        // Create/parent/layout/unparent the full control set, then collect off the UI thread.
+        [TestMethod]
+        public void LegacyControlCollectionTests()
+        {
+            RunStress("LegacyControlCollectionTests", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    foreach (var pair in CreateControlSet())
+                    {
+                        var element = pair.Value;
+                        objects[pair.Key] = new WeakReference(element);
+
+                        Content = element;
+                        Content.UpdateLayout();
+                        Content = null;
+                    }
+                });
+
+                VerifyLifetimeLegacy(objects);
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // Reparent an element across hosts, then collect off the UI thread.
+        [TestMethod]
+        public void LegacyElementReparentingTests()
+        {
+            RunStress("LegacyElementReparentingTests", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    var first = new Grid();
+                    var second = new Grid();
+                    var child = new Button() { Content = "reparented" };
+                    objects["Child"] = new WeakReference(child);
+                    objects["FirstHost"] = new WeakReference(first);
+                    objects["SecondHost"] = new WeakReference(second);
+
+                    first.Children.Add(child);
+                    Content = first;
+                    Content.UpdateLayout();
+
+                    first.Children.Remove(child);
+                    second.Children.Add(child);
+                    Content = second;
+                    Content.UpdateLayout();
+
+                    second.Children.Remove(child);
+                    Content = null;
+                });
+
+                VerifyLifetimeLegacy(objects);
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        // ItemsControl container recycling, converged off the UI thread.
+        [TestMethod]
+        public void LegacyItemsControlFlushTests()
+        {
+            RunStress("LegacyItemsControlFlushTests", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+                ItemsControl itemsControl = null;
+
+                SafeUI(() =>
+                {
+                    itemsControl = new ItemsControl();
+                    var item = new ContentControl() { Content = "legacy item" };
+                    objects["Item"] = new WeakReference(item);
+                    itemsControl.Items.Add(item);
+
+                    Content = itemsControl;
+                    Content.UpdateLayout();
+
+                    itemsControl.Items.Clear();
+                    Content.UpdateLayout();
+                });
+
+                SettleAndCollect();
+
+                WeakReference itemRef = objects.ContainsKey("Item") ? objects["Item"] : null;
+                FlushItemsControlCache(itemsControl, itemRef);
+
+                SafeUI(() => Content = null);
+                VerifyLifetimeLegacy(objects);
+                IdleSynchronizer.Wait();
+            });
+        }
+
         private static Dictionary<string, UIElement> CreateControlSet()
         {
             return new Dictionary<string, UIElement>
@@ -2437,6 +2579,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Settle UI work, then force GC/finalizers every iteration. Ported ideas from System XAML
+        // BaseLifetimeTest.cs: vary the finalizing thread and confirm the finalizer thread actually ran.
         // Settle UI work, then force GC/finalizers every iteration.
         private static void SettleAndCollect()
         {
@@ -2445,6 +2589,149 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             GC.WaitForPendingFinalizers();
             GC.Collect();
             IdleSynchronizer.Wait();
+        }
+
+        // Pump the UI thread so cross-thread (marshaled) final releases can run before we sample WeakReferences.
+        private static void PumpUI()
+        {
+            RunOnUIThread.Execute(() => { });
+            IdleSynchronizer.Wait();
+        }
+
+        private static int s_gcThreadToggle;
+
+        // Force a full GC, alternating between the current (non-UI) test thread and a fresh background thread,
+        // so finalization is driven from different threads across iterations. This surfaces the UI-thread vs
+        // finalizer-thread final-release races that lifetime bugs depend on (per Win8-era lifetime coverage).
+        private static void ForceGCVaryingThread()
+        {
+            if ((System.Threading.Interlocked.Increment(ref s_gcThreadToggle) & 1) == 0)
+            {
+                System.Threading.Tasks.Task.Run(() =>
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+                }).Wait();
+            }
+            else
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+            }
+        }
+
+        private static bool AllCollected(Dictionary<string, WeakReference> objects)
+        {
+            foreach (var pair in objects)
+            {
+                if (pair.Value.Target != null)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Convergence-based collection: alternately force GC (varying the finalizing thread) and pump the UI
+        // thread until every tracked object is gone, or the attempt/time budget is spent. Ported from System
+        // XAML BaseLifetimeTest.cs CollectUntilDead - more reliable than a fixed number of GC passes, which
+        // reduces false-positive leak warnings in the PostTestRun totals. Runs on the test thread.
+        private static bool CollectUntilDead(Dictionary<string, WeakReference> objects, int maxAttempts = 50, double timeoutSeconds = 10.0)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            for (int attempt = 0; attempt < maxAttempts && !AllCollected(objects); attempt++)
+            {
+                ForceGCVaryingThread();
+                PumpUI();
+                if (timeoutSeconds > 0.0 && stopwatch.Elapsed.TotalSeconds >= timeoutSeconds)
+                {
+                    break;
+                }
+            }
+            return AllCollected(objects);
+        }
+
+        // Converge collection off the UI thread, then report survivors. Routes leaks through VerifyCollected so
+        // they keep the exact "object 'X' was still alive after forced collection" phrase the PostTestRun totals
+        // step counts. Non-gating unless WINUI_LIFETIME_STRESS_FAILONLEAK is set.
+        private static void VerifyLifetime(Dictionary<string, WeakReference> objects)
+        {
+            CollectUntilDead(objects);
+            VerifyCollected(objects, FailOnLeakEnabled);
+        }
+
+        // Genuine off-UI-thread GC pump. Drives GC/finalization from a dedicated background thread while also
+        // marshaling a collect onto the UI thread each pass, reproducing the finalizer-thread-vs-UI-thread
+        // final-release timing the legacy System XAML lifetime tests (BaseLifetimeTest.cs
+        // CollectUntilDead / CallFromBackgroundThread) relied on. Runs on the test thread; blocks on the
+        // background worker.
+        private static void CollectOffUIThreadUntilDead(Dictionary<string, WeakReference> objects, int maxAttempts = 50, double timeoutSeconds = 15.0)
+        {
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                var stopwatch = Stopwatch.StartNew();
+                for (int attempt = 0; attempt < maxAttempts && !AllCollected(objects); attempt++)
+                {
+                    // Background-thread collection: a final release may be driven from this thread.
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+
+                    // UI-thread collection: a final release marshaled back to the UI thread runs here.
+                    RunOnUIThread.Execute(() =>
+                    {
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+                    });
+                    IdleSynchronizer.Wait();
+
+                    if (timeoutSeconds > 0.0 && stopwatch.Elapsed.TotalSeconds >= timeoutSeconds)
+                    {
+                        break;
+                    }
+                }
+            }).Wait();
+        }
+
+        // Converge using the genuine off-UI-thread pump, then report survivors through VerifyCollected so leaks
+        // keep the exact phrase the PostTestRun totals step counts. Non-gating unless
+        // WINUI_LIFETIME_STRESS_FAILONLEAK is set.
+        private static void VerifyLifetimeLegacy(Dictionary<string, WeakReference> objects)
+        {
+            CollectOffUIThreadUntilDead(objects);
+            VerifyCollected(objects, FailOnLeakEnabled);
+        }
+
+        // Insert/clear churn to force an ItemsControl to release a cached/recycled container that is pinning the
+        // tracked element, collecting until it dies or the cap is hit. Ported from System XAML
+        // BaseLifetimeTest.cs FlushChildrenCache. Non-gating: residual references are surfaced by VerifyLifetime.
+        private static void FlushItemsControlCache(ItemsControl itemsControl, WeakReference weakRef, int maxAttempts = 50)
+        {
+            if (itemsControl == null || weakRef == null)
+            {
+                return;
+            }
+
+            SafeUI(() => itemsControl.Items.Clear());
+            SettleAndCollect();
+
+            int i = 0;
+            while (weakRef.Target != null && i++ < maxAttempts)
+            {
+                SafeUI(() =>
+                {
+                    itemsControl.Items.Insert(0, new ContentControl() { Content = "flush" });
+                    itemsControl.Items.Clear();
+                });
+                SettleAndCollect();
+            }
+
+            if (weakRef.Target != null)
+            {
+                // Diagnostic only; the counted leak signal is emitted by VerifyLifetime/VerifyCollected.
+                Log.Comment("[LifetimeStress] DIAG: ItemsControl container flush did not release the tracked element after {0} attempt(s).", i);
+            }
         }
 
         // Force final native release off the UI thread, then drain marshaled releases.

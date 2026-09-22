@@ -55,8 +55,9 @@ want. A known deterministic crasher is quarantined per-scenario with `[TestPrope
 note below) so it does not gate while its underlying product bug is pending; if a *new* scenario is found to crash
 the host deterministically, quarantine it the same way.
 
-**Native crash/warning totals (PostTestRun).** Each native host crash and each non-gating native scenario warning
-(a thrown-exception/COMException report) is recorded per work item in `LifetimeNativeCrashReport.json` by
+**Native crash/warning totals (PostTestRun).** Each native host crash, each non-gating native scenario warning
+(a thrown-exception/COMException report), and each managed leak warning (a surviving `WeakReference` from
+`VerifyCollected`) is recorded per work item in `LifetimeNativeCrashReport.json` by
 [`RunHelixWorkItem.ps1`](../../Helix/common/test/RunHelixWorkItem.ps1) (`Report-LifetimeNativeCrash`). After the
 test run, the **PostTestRun** step in
 [`WinUI-RunTestPassOnPipeline-Job.yml`](../../build/AzurePipelinesTemplates/WinUI-RunTestPassOnPipeline-Job.yml)
@@ -79,7 +80,26 @@ Run modes (all optional; the default needs no configuration):
   registered in Azure DevOps and its schedule/soak duration tuned there.
 - **Explicit local/manual run** — set `WINUI_LIFETIME_STRESS_ITERATIONS > 0` to run a heavier fixed cycle count.
 
-To make leak detection fail locally while iterating, flip a scenario's `failOnLeak` argument to `true`.
+To make leak detection fail locally while iterating, set `WINUI_LIFETIME_STRESS_FAILONLEAK=1` (or flip a scenario's
+`failOnLeak` argument to `true`).
+
+### Legacy-style scenarios (ported from System XAML)
+
+A set of `Legacy*Tests()` scenarios port techniques from the Win8-era System XAML lifetime tests
+(`os.2020` `BaseLifetimeTest.cs`) that the broad sweep did not cover:
+
+- **Genuine off-UI-thread GC pump** (`CollectOffUIThreadUntilDead`) — drives GC/finalization from a dedicated
+  background thread while also marshaling a collect onto the UI thread each pass, reproducing the
+  finalizer-thread-vs-UI-thread final-release timing that lifetime bugs depend on. Used by
+  `LegacyControlCollectionTests`, `LegacyElementReparentingTests`, and `LegacyItemsControlFlushTests`.
+- **Collect-until-dead convergence** (`CollectUntilDead`) — loops GC + UI pump until each tracked object is
+  actually gone (or a cap/timeout), instead of a fixed number of GC passes. This reduces false-positive leak
+  warnings in the totals.
+- **Container-recycling flush** (`FlushItemsControlCache`) — insert/clear churn that forces an `ItemsControl` to
+  drop a cached/recycled container pinning an element, ported from `FlushChildrenCache`.
+
+All of these are non-gating by default and route residual-object reports through `VerifyCollected`, so leaks keep
+the exact phrase the PostTestRun totals step counts.
 
 > **Note:** the `StressItemsRepeaterRealizationAndRecycling` scenario is currently **quarantined**
 > (`[TestProperty("Ignore", "True")]`) because it reproduces a deterministic native crash. Re-enable it once that
@@ -95,6 +115,7 @@ non-gating report pass, so the suite is safe everywhere by default.
 | --- | --- | --- |
 | `WINUI_LIFETIME_STRESS_MINUTES` | If > 0, each scenario soaks for this many minutes (wall-clock). The scheduled soak pipeline sets this. | `0` (disabled) |
 | `WINUI_LIFETIME_STRESS_ITERATIONS` | If > 0 **and** soak mode is off, run this many create/destroy cycles per scenario — a heavier local/manual run. | `0` (use the default report pass) |
+| `WINUI_LIFETIME_STRESS_FAILONLEAK` | If > 0, a surviving tracked object is reported as a gating `Verify.Fail` instead of a non-gating warning. Off by default so the suite stays non-gating and the PostTestRun step can total leaks. | `0` (warnings only) |
 
 ### Run a soak locally
 
