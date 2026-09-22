@@ -14,6 +14,9 @@
 //      - Implements IOrientedPanel interface for logical and physical Orientation
 
 #include "precomp.h"
+#ifdef XAMLPROFILER_ENABLED
+#include <XamlProfilerTracing.h>
+#endif
 #include "OrientedVirtualizingPanel.g.h"
 #include "ScrollViewer.g.h"
 #include "ScrollContentPresenter.g.h"
@@ -2666,7 +2669,12 @@ OrientedVirtualizingPanel::MeasureChild(
     _In_ wf::Size layoutSlotSize,
     _Out_opt_ wf::Size* returnValue)
 {
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::MeasureChildStart(pChild ? reinterpret_cast<uint64_t>(static_cast<UIElement*>(pChild)->GetHandle()) : 0);
+#else
     TraceMeasureChildBegin();
+#endif
+
     HRESULT hr = S_OK;
     wf::Size childDesiredSize = {};
     wf::Size updatedDesiredSize = {};
@@ -2692,7 +2700,11 @@ OrientedVirtualizingPanel::MeasureChild(
     }
 
 Cleanup:
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::MeasureChildStop();
+#else
     TraceMeasureChildEnd();
+#endif
     RRETURN(hr);
 }
 

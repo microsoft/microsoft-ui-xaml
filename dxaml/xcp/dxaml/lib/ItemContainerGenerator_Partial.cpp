@@ -2,6 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#ifdef XAMLPROFILER_ENABLED
+#include <XamlProfilerTracing.h>
+#endif
 #include "ItemContainerGenerator.g.h"
 #include "GroupStyle.g.h"
 #include "Panel.g.h"
@@ -1350,7 +1353,11 @@ ItemContainerGenerator::Generator::GenerateNext(
     _Out_ BOOLEAN* isNewlyRealized,
     _Outptr_ xaml::IDependencyObject** returnValue)
 {
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::GenerateContainerStart();
+#else
     TraceGenerateContainerBegin();
+#endif
     HRESULT hr = S_OK;
     ctl::ComPtr<xaml::IDependencyObject> spContainer;
     ctl::ComPtr<IGeneratorHost> spHost;
@@ -1483,7 +1490,11 @@ ItemContainerGenerator::Generator::GenerateNext(
     IFC(spContainer.CopyTo(returnValue));
 
 Cleanup:
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::GenerateContainerStop(spContainer ? reinterpret_cast<uint64_t>(spContainer.Cast<DependencyObject>()->GetHandle()) : 0);
+#else
     TraceGenerateContainerEnd();
+#endif
     RRETURN(hr);
 }
 

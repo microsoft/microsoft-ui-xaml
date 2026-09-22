@@ -100,11 +100,15 @@
     </XamlCommonPreprocessorDefinitions>
   </PropertyGroup>
 
-  <!-- XamlProfiler producer master switch. The ETW tree-tracking instrumentation is enabled in
-       Debug builds and disabled by default for all other configurations. -->
+  <!-- XamlProfiler producer master switch. Compiles the ETW tree-tracking instrumentation and
+       routes the element-scoped events to Microsoft-Windows-XAML-Profiler (retail
+       Microsoft-Windows-XAML operations are suppressed at those call sites when it is on).
+       Defaults ON for Debug and OFF for retail, so shipping builds never drop the retail events.
+       Overridable: an explicit value from the environment (set XamlProfilerEnabled=true) or a
+       global -p:XamlProfilerEnabled=true wins, because the defaults only fill a blank value. -->
   <PropertyGroup>
-    <XamlProfilerEnabled>false</XamlProfilerEnabled>
-    <XamlProfilerEnabled Condition="'$(Configuration)'=='Debug'">true</XamlProfilerEnabled>
+    <XamlProfilerEnabled Condition="'$(XamlProfilerEnabled)'=='' and '$(Configuration)'=='Debug'">true</XamlProfilerEnabled>
+    <XamlProfilerEnabled Condition="'$(XamlProfilerEnabled)'==''">false</XamlProfilerEnabled>
   </PropertyGroup>
 
 </Project>

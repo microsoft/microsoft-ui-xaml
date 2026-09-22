@@ -5,6 +5,9 @@
 //      ListViewBase displays a rich, interactive collection of items.
 
 #include "precomp.h"
+#ifdef XAMLPROFILER_ENABLED
+#include <XamlProfilerTracing.h>
+#endif
 #include "ListViewBase.g.h"
 #include "ListViewBaseAutomationPeer.g.h"
 #include "ScrollViewer.g.h"
@@ -785,6 +788,10 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
             }
             ctl::ComPtr<xaml::IDependencyObject> spParent;
             IFC(static_cast<ListViewBase*>(this)->get_Parent(&spParent));
+#ifdef XAMLPROFILER_ENABLED
+            (void)isVirtualizationActive; // consumed by the retail event; the profiler copy carries the element only
+            XamlProfilerTracing::VirtualizationIsEnabledByLayout(reinterpret_cast<uint64_t>(GetHandle()));
+#else
             TraceVirtualizationIsEnabledByLayoutInfo1(
                 isVirtualizationActive,
                 reinterpret_cast<UINT64>(GetHandle()),
@@ -792,6 +799,7 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
                 GetHandle()->GetClassName().GetBuffer(),
                 (spParent) ? static_cast<DependencyObject*>(spParent.Get())->GetHandle()->GetClassName().GetBuffer() : L"NULL"
             );
+#endif
         } // else if not modern panel, we shouldn't trace it here.
     }
 

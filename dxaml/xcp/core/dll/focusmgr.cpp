@@ -21,6 +21,7 @@
 
 #include "InitialFocusSIPSuspender.h"
 #include "FocusLockOverrideGuard.h"
+#include "XamlProfilerTracing.h"
 
 #define E_FOCUS_ASYNCOP_INPROGRESS 64L
 
@@ -1848,7 +1849,11 @@ CFocusManager::UpdateFocus(_In_ const FocusMovement& movement)
     bool shouldBringIntoView = false;
     GUID correlationId = m_asyncOperation != nullptr ? m_asyncOperation->GetCorrelationId() : movement.GetCorrelationId();
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::UpdateFocusStart(reinterpret_cast<uint64_t>(movement.GetTarget()));
+#else
     TraceUpdateFocusBegin();
+#endif
 
     DirectUI::InputDeviceType lastInputDeviceType = DirectUI::InputDeviceType::None;
 
@@ -2145,7 +2150,11 @@ CFocusManager::UpdateFocus(_In_ const FocusMovement& movement)
     }
 
 Cleanup:
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::UpdateFocusStop();
+#else
     TraceUpdateFocusEnd((UINT64)pNewFocus);
+#endif
     ReleaseInterface(pOldFocusedElement);
 
     // Before RS2, UpdateFocus did not propagate errors. As a result, we want to limit the number of failure
@@ -2588,6 +2597,7 @@ CDependencyObject* CFocusManager::FindNextFocus(
         direction == DirectUI::FocusNavigationDirection::Right || direction == DirectUI::FocusNavigationDirection::Up ||
         direction == DirectUI::FocusNavigationDirection::Next || direction == DirectUI::FocusNavigationDirection::Previous);
 
+#ifndef XAMLPROFILER_ENABLED
      switch (direction)
      {
          case DirectUI::FocusNavigationDirection::Next:
@@ -2611,6 +2621,9 @@ CDependencyObject* CFocusManager::FindNextFocus(
          default:
            TraceXYFocusEnteredBegin(L"Invalid");
      }
+#else
+    XamlProfilerTracing::XYFocusEnteredStart(reinterpret_cast<uint64_t>(m_pFocusedElement));
+#endif
 
     xref_ptr<CDependencyObject> nextFocusedElement;
     CControl* const engagedControl = xyFocusOptions.considerEngagement ? m_spEngagedControl : nullptr;
@@ -2678,7 +2691,11 @@ CDependencyObject* CFocusManager::FindNextFocus(
         nextFocusedElement = m_xyFocus.GetNextFocusableElement(direction, currentFocusedElementOrComponent, engagedControl, m_contentRoot.GetVisualTreeNoRef(), updateManifolds, xyFocusOptions);
     }
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::XYFocusEnteredStop();
+#else
     TraceXYFocusEnteredEnd();
+#endif
 
     return nextFocusedElement;
 }
