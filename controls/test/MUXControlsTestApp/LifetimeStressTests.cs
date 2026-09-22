@@ -239,6 +239,67 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return reference;
         }
 
+        // Window event-handler dispatch + teardown stress. Targets the reentrant Window-event dispatch and the
+        // weak/strong Window retention path (DesktopWindowImpl::OnMessage / CFTMEventSource::Raise), where the
+        // managed Window peer could be finalized while a window message is still dispatching its handlers.
+        // Unlike StressWindowOpenClose, this registers handlers on every Window event source first, so add_*
+        // captures the owner weak reference and OnMessage dispatches through populated event sources during
+        // activation/close. Regression signal is a native host crash; leaks stay warning-only (non-gating).
+        [TestMethod]
+        public void StressWindowEventHandlerTeardown()
+        {
+            RunStress("StressWindowEventHandlerTeardown", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+
+                SafeUI(() =>
+                {
+                    objects["Window"] = CreateWindowWithHandlersAndClose();
+                });
+
+                SettleAndCollect();
+                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+                IdleSynchronizer.Wait();
+            });
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static WeakReference CreateWindowWithHandlersAndClose()
+        {
+            var window = new Window();
+            var reference = new WeakReference(window);
+
+            var content = new Grid();
+            content.Children.Add(new TextBlock() { Text = "lifetime-events" });
+            window.Content = content;
+
+            // Register handlers on every DesktopWindowImpl event source so add_* captures the owner weak
+            // reference (UpdateWindowWeakReference) and OnMessage dispatches through the populated
+            // CFTMEventSource during activation/close.
+            global::Windows.Foundation.TypedEventHandler<object, WindowActivatedEventArgs> activated = null;
+            activated = (s, e) =>
+            {
+                // Reentrant churn: add/remove a handler while a window message is dispatching to exercise the
+                // reentrant-cleanup handler-retention path in CFTMEventSource::Raise.
+                var raisedWindow = s as Window;
+                if (raisedWindow != null)
+                {
+                    global::Windows.Foundation.TypedEventHandler<object, WindowVisibilityChangedEventArgs> transient = (s2, e2) => { };
+                    raisedWindow.VisibilityChanged += transient;
+                    raisedWindow.VisibilityChanged -= transient;
+                }
+            };
+            window.Activated += activated;
+            window.SizeChanged += (s, e) => { };
+            window.VisibilityChanged += (s, e) => { };
+            window.Closed += (s, e) => { };
+
+            window.Activate();
+            window.Close();
+
+            return reference;
+        }
+
         // Virtualized ListView container generation/recycling stress.
         [TestMethod]
         public void StressListViewContainerRecycling()

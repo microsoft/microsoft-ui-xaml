@@ -22,7 +22,8 @@ aggressively settles and collects so a dangling peer faults promptly rather than
   iterations later.
 - **Targeted torture paths.** In addition to a broad create/load/unload sweep across many controls, we exercise the
   paths that have historically produced lifetime crashes: ItemsRepeater realization/recycling (currently
-  quarantined — see below), element reparenting (enter/leave), window open/close, ListView container recycling,
+  quarantined — see below), element reparenting (enter/leave), window open/close, window event-handler
+  dispatch/teardown (reentrant Window-event dispatch during finalization), ListView container recycling,
   Popup open/close, NavigationView menu churn, and TabView add/remove.
 - **Isolation.** The tests are tagged into their own TAEF test suite (`LifetimeStressTestSuite`). The Helix
   work-item generator emits a dedicated work item for that suite, so a lifetime crash does not cascade into
