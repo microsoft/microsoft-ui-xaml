@@ -4,6 +4,7 @@
 #pragma once
 
 #include "InkCanvas.g.h"
+#include "InkTelemetry.h"
 #include <dcomp.h>
 #include <CppWinrtContentExternalOutputLinkHelper.h>
 #include <windows.ui.input.inking.h>
@@ -53,6 +54,10 @@ private:
     // into the XAML tree via ContentExternalOutputLink (AttachToLiftedCompositor).
     void EnsureCompositionDevice();
     bool IsSystemCompositor();
+
+    InkTelemetry::CompositorEngine CompositorEngineForTelemetry() noexcept;
+    void ReportUsageTelemetry(InkTelemetry::CompositorEngine engine) noexcept;
+    void SubscribeToStrokeTelemetry() noexcept;
     void AttachToSystemCompositor();
     void AttachToLiftedCompositor();
     // Shared by both compositor paths: creates the ink visual on the shared DComp device and binds
@@ -97,5 +102,13 @@ private:
     // touching torn-down visual resources. Data ops (see QueueInkPresenterWorkItem) do NOT gate on
     // this. AttachToVisualLink clears it for the rapid Loaded/Unloaded re-attach case.
     std::atomic<bool> m_isDetached{ false };
+
+    InkTelemetry::CanvasState m_telemetryState;
+
+    // Decided during the attach fork so the noexcept accessor never re-enters the compositor query.
+    InkTelemetry::CompositorEngine m_telemetryEngine{ InkTelemetry::CompositorEngine::Unknown };
+
+    winrt::InkPresenter::StrokesCollected_revoker m_strokesCollectedTelemetryRevoker{};
+    winrt::InkPresenter::StrokesErased_revoker m_strokesErasedTelemetryRevoker{};
 
 };
