@@ -380,13 +380,7 @@ bool TableView::RaiseSortingAndCheckCanceled(
     }
 
     auto args = winrt::make_self<TableViewSortingEventArgs>(trigger, direction);
-    try
-    {
-        m_sortingEventSource(*this, *args);
-    }
-    catch (...)
-    {
-    }
+    m_sortingEventSource(*this, *args);
 
     return args->Cancel();
 }
@@ -650,13 +644,7 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     {
         const auto appliedDirection = trigger ? trigger.SortDirection() : winrt::SortDirection::None;
         auto args = winrt::make_self<TableViewSortedEventArgs>(trigger, appliedDirection);
-        try
-        {
-            m_sortedEventSource(*this, *args);
-        }
-        catch (...)
-        {
-        }
+        m_sortedEventSource(*this, *args);
     }
 
     // A programmatic or header-driven re-sort has no input event behind it, so without an
@@ -847,13 +835,7 @@ void TableView::ReconcileSortStateWithSource()
         auto args = winrt::make_self<TableViewSortedEventArgs>(
             matchedColumn,
             matchedColumn ? foreignDirection : winrt::SortDirection::None);
-        try
-        {
-            m_sortedEventSource(*this, *args);
-        }
-        catch (...)
-        {
-        }
+        m_sortedEventSource(*this, *args);
     }
 }
 
