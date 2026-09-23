@@ -191,8 +191,57 @@ bool TableView::TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& 
     return true;
 }
 
-void TableView::OnPreviewKeyDownForNavigation(
-    const winrt::IInspectable& /*sender*/,
+// Enter/Space sorts the column whose header has focus - the keyboard equivalent of the header's
+// Tapped handler, and the only path by which a keyboard-only user can sort at all. Placed with the
+// resize key handling because both act on a focused header cell rather than on a row.
+bool TableView::TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args)
+{
+    if (args.Handled())
+    {
+        return false;
+    }
+
+    const auto key = args.Key();
+    if (key != winrt::Windows::System::VirtualKey::Enter &&
+        key != winrt::Windows::System::VirtualKey::Space)
+    {
+        return false;
+    }
+
+    // Only the unmodified press is the activation gesture. Alt alone opens the window menu, and
+    // Ctrl/Shift+Space are selection gestures in the grid idiom - none of them mean "sort".
+    if (IsKeyDown(winrt::VirtualKey::Menu) ||
+        IsKeyDown(winrt::VirtualKey::Control) ||
+        IsKeyDown(winrt::VirtualKey::Shift))
+    {
+        return false;
+    }
+
+    if (!CanUserSortColumns())
+    {
+        return false;
+    }
+
+    winrt::FrameworkElement headerCell{ nullptr };
+    auto const column = ResolveFocusedHeaderColumn(args.OriginalSource(), m_headerHost.get(), headerCell);
+    if (!column || !column.CanSort())
+    {
+        return false;
+    }
+
+    // Same Handled policy as the Tapped handler: consume the key only when the toggle actually ran.
+    // ToggleSortDirection returns false when an open editor blocks the reshape or the app cancelled
+    // Sorting, and in those cases the key belongs to whatever else wants it.
+    if (!ToggleSortDirection(column))
+    {
+        return false;
+    }
+
+    args.Handled(true);
+    return true;
+}
+
+void TableView::OnPreviewKeyDownForNavigation(    const winrt::IInspectable& /*sender*/,
     const winrt::KeyRoutedEventArgs& args)
 {
     // Runs on the tunneling pass, before the framework's built-in focus navigation moves focus for
@@ -243,6 +292,14 @@ void TableView::OnKeyDownForNavigation(
     // Column resize from a focused header: after the editing guard, so an open editor keeps its
     // arrow keys, and before row navigation, since the header band is not part of it.
     if (TryHandleHeaderColumnResizeKey(args))
+    {
+        return;
+    }
+
+    // Sort from a focused header, for the same reason and at the same point in the order. Ahead of
+    // the Space-selects-the-row case below, which requires focus to be on a TableViewRow and so
+    // cannot fire for a header, but returning here keeps the two gestures textually separate.
+    if (TryHandleHeaderSortKey(args))
     {
         return;
     }

@@ -1551,10 +1551,13 @@ void TableView::RebuildHeaders()
             // The header cell, not the gripper, is the keyboard target: column commands live here,
             // and a bare focusable Grid is unnamed and Raw to a screen reader. Only a tab stop when
             // focusing it can actually do something -- otherwise every column costs a Tab press for
-            // nothing. Same condition that decides whether a gripper is created at all.
+            // nothing. Both commands count: Left/Right resizes and Enter/Space sorts, so a column
+            // that is sortable but not resizable must still be reachable or sorting is mouse-only.
             const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
-            headerCell.IsTabStop(headerIsResizable);
-            headerCell.UseSystemFocusVisuals(headerIsResizable);
+            const bool headerIsSortable = canUserSortColumns && column.CanSort();
+            const bool headerIsInteractive = headerIsResizable || headerIsSortable;
+            headerCell.IsTabStop(headerIsInteractive);
+            headerCell.UseSystemFocusVisuals(headerIsInteractive);
             const winrt::hstring headerText = GetColumnHeaderText(column);
             if (!headerText.empty())
             {
@@ -1609,7 +1612,7 @@ void TableView::RebuildHeaders()
 
             // Sort affordance. Gated on both the control-wide and the per-column opt-in, so an
             // opted-out column carries no chevron and no click handler at all.
-            if (canUserSortColumns && column.CanSort())
+            if (headerIsSortable)
             {
                 // Hosted in its own panel so the chevron sits on the logical trailing edge without
                 // competing with the header content's Stretch alignment.
