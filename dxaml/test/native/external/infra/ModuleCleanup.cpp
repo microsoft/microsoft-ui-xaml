@@ -18,6 +18,10 @@
 
 #define LOG_OUTPUT(fmt, ...) WEX::Logging::Log::Comment(WEX::Common::String().Format(fmt, __VA_ARGS__))
 
+#if DBG
+#define _DEBUG
+#endif
+
 // These methods will be called from the out-of-proc loaded instance of
 // this DLL. They will register our RPC server.
 
