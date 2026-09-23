@@ -369,6 +369,17 @@ _Check_return_ HRESULT DesktopWindowImpl::UpdateWindowWeakReference()
     return S_OK;
 }
 
+_Check_return_ HRESULT DesktopWindowImpl::ResolveWindowWeakReference(_Outptr_result_maybenull_ xaml::IWindow** window)
+{
+    ctl::WeakRefPtr weakWindow;
+    {
+        auto lock = m_weakWindowLock.lock();
+        weakWindow = m_weakWindow;
+    }
+
+    return weakWindow.CopyTo(window);
+}
+
 IFACEMETHODIMP DesktopWindowImpl::add_Activated(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowActivatedEventArgs*>* pHandler, _Out_ EventRegistrationToken* pToken)
 {
     IFC_RETURN(UpdateWindowWeakReference());
@@ -466,6 +477,9 @@ _Check_return_ HRESULT DesktopWindowImpl::ActivateImpl()
 
 _Check_return_ HRESULT DesktopWindowImpl::CloseImpl()
 {
+    // Keep the owner alive through direct Close without reviving an owner queued for final release.
+    ctl::ComPtr<xaml::IWindow> spWindow;
+    IFC_RETURN(ResolveWindowWeakReference(&spWindow));
 
     if (!m_bIsClosed && !m_bIsClosing)
     {
@@ -1232,14 +1246,8 @@ LRESULT DesktopWindowImpl::OnMessage(
     LPARAM lParam) noexcept
 {
     // Keep the Window alive through callbacks without reviving an owner queued for final release.
-    ctl::WeakRefPtr weakWindow;
-    {
-        auto lock = m_weakWindowLock.lock();
-        weakWindow = m_weakWindow;
-    }
-
     ctl::ComPtr<xaml::IWindow> spWindow;
-    IFCFAILFAST(weakWindow.As(&spWindow));
+    IFCFAILFAST(ResolveWindowWeakReference(&spWindow));
 
     // When DispatcherShutdownMode is OnLastWindowClose, exit FrameworkApplication::ProcessMessage when the last WinUI
     // Desktop Window is destroyed.

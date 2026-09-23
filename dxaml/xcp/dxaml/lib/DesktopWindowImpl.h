@@ -145,6 +145,7 @@ namespace DirectUI
         void RegisterDesktopWindowClass();
         void CreateDesktopWindow();
         _Check_return_ HRESULT UpdateWindowWeakReference();
+        _Check_return_ HRESULT ResolveWindowWeakReference(_Outptr_result_maybenull_ xaml::IWindow** window);
         _Check_return_ HRESULT RaiseWindowSizeChangedEvent();
         _Check_return_ HRESULT RaiseWindowActivatedEvent(_In_ const xaml::WindowActivationState state);
         _Check_return_ HRESULT RaiseWindowVisibilityChangedEvent(_In_ const BOOLEAN visible);
