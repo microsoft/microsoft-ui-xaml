@@ -37,10 +37,10 @@ if (-not [string]::IsNullOrEmpty($version))
 {
     # ignore quality and channel
     . $dotnetInstallScript -Version $version -InstallDir $x64InstallDir -Architecture x64
-    Write-Host "Installed SDK (x64) with Version $version to $x64InstallDir." -ForegroundColor green
+    Write-Host ".NET SDK (x64), version $version, is available at $x64InstallDir." -ForegroundColor green
 
     . $dotnetInstallScript -Version $version -InstallDir $x86InstallDir -Architecture x86
-    Write-Host "Installed SDK (x86) with Version $version to $x86InstallDir." -ForegroundColor green    
+    Write-Host ".NET SDK (x86), version $version, is available at $x86InstallDir." -ForegroundColor green
 }
 elseif (-not [string]::IsNullOrEmpty($quality)) 
 {
@@ -55,10 +55,10 @@ elseif (-not [string]::IsNullOrEmpty($quality))
         Write-Host "Using channel: $channel and quality: $quality"
 
         . $dotnetInstallScript -channel $channel -quality $quality -InstallDir $x64InstallDir -Architecture x64
-        Write-Host "Installed SDK (x64) with channel $channel and quality $quality to $x64InstallDir." -ForegroundColor green
+        Write-Host ".NET SDK (x64), channel $channel and quality $quality, is available at $x64InstallDir." -ForegroundColor green
     
         . $dotnetInstallScript -channel $channel -quality $quality -InstallDir $x86InstallDir -Architecture x86
-        Write-Host "Installed SDK (x86) with channel $channel and version $quality to $x86InstallDir." -ForegroundColor green 
+        Write-Host ".NET SDK (x86), channel $channel and quality $quality, is available at $x86InstallDir." -ForegroundColor green
     }
 }
 elseif (-not [string]::IsNullOrEmpty($channel)) 
@@ -67,10 +67,10 @@ elseif (-not [string]::IsNullOrEmpty($channel))
     Write-Host "Using channel: $channel"
 
     . $dotnetInstallScript -channel $channel -InstallDir $x64InstallDir -Architecture x64
-    Write-Host "Installed SDK (x64) with channel $channel to $x64InstallDir." -ForegroundColor green
+    Write-Host ".NET SDK (x64), channel $channel, is available at $x64InstallDir." -ForegroundColor green
 
     . $dotnetInstallScript -channel $channel -InstallDir $x86InstallDir -Architecture x86
-    Write-Host "Installed SDK (x86) with channel $channel to $x86InstallDir." -ForegroundColor green
+    Write-Host ".NET SDK (x86), channel $channel, is available at $x86InstallDir." -ForegroundColor green
 }
 else 
 {
@@ -85,10 +85,8 @@ else
     }    
 
     . $dotnetInstallScript -channel $backupChannel -InstallDir $x64InstallDir -Architecture x64
-    Write-Host "Installed SDK (x64) from Version.props with channel $backupChannel to $x64InstallDir." -ForegroundColor green
+    Write-Host ".NET SDK (x64), channel $backupChannel from eng\Versions.props, is available at $x64InstallDir." -ForegroundColor green
 
     . $dotnetInstallScript -channel $backupChannel -InstallDir $x86InstallDir -Architecture x86
-    Write-Host "Installed SDK (x86) from Version.props with channel $backupChannel to $x86InstallDir." -ForegroundColor green
+    Write-Host ".NET SDK (x86), channel $backupChannel from eng\Versions.props, is available at $x86InstallDir." -ForegroundColor green
 }
-
-
