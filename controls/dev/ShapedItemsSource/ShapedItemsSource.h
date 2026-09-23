@@ -43,10 +43,17 @@ class ShapedGroup;
 class ShapedItemsSource : public std::enable_shared_from_this<ShapedItemsSource>
 {
 public:
-    // What the last rebuild actually produced -- the EFFECTIVE shape, not the requested one. A
-    // grouping request degrades to Flat when group identity is unresolvable or collides, and a
-    // source with no usable row identity degrades to Unshaped, a plain 1:1 mirror. Consumers read
-    // this to decide how to interpret a row, so it must never report intent.
+    // What the last rebuild actually produced -- the EFFECTIVE shape, not the requested one.
+    // Consumers read this to decide how to interpret a row, so it must never report intent.
+    //
+    // Only ONE shaping request degrades: a source with no usable ROW identity degrades to
+    // Unshaped, a plain 1:1 mirror (RebuildUnshapedRows). A GROUPING request does NOT degrade --
+    // an unresolvable, unstable or colliding group identity throws hresult_invalid_argument out of
+    // RebuildGroupedRows instead of quietly producing Flat. The asymmetry is deliberate: a row
+    // identity the engine cannot derive is a property of the app's data that the app may not be
+    // able to change, and an unshaped mirror still shows every row; a bad group identity comes
+    // from the GroupBy(...) selector the app just wrote, and silently rendering ungrouped is a bug
+    // an app ships without ever noticing.
     enum class ProjectionKind
     {
         // No projection has been built yet.

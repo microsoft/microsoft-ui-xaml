@@ -4,7 +4,7 @@ TableView is a preview tabular control for WinUI 3. It presents an `ItemsSource`
 
 Rows are virtualized: TableView renders rows with `ItemsRepeater`, so large row counts are virtualized (only on-screen rows plus a small cache are realized).
 
-This API is intentionally small: **opt-in cell editing** and **single row selection** on top of the existing read-only data presentation, with cell value automation added to the grid/table peers. Additional interactive features — multiple/extended selection, single-column sort, filtering, grouping, two-level hierarchy, and column resize/reorder — are planned separately. Marquee selection, multi-column sort, column virtualization, and row headers remain out of scope for v1.
+This API is intentionally small: **opt-in cell editing**, **single row selection**, and **single-level grouping** on top of the existing read-only data presentation, with cell value automation added to the grid/table peers. Additional interactive features — multiple/extended selection, two-level hierarchy, and column resize/reorder — are planned separately. Marquee selection, multi-column sort, column virtualization, and row headers remain out of scope for v1.
 
 TableView types are in the preview namespace:
 
@@ -302,6 +302,71 @@ Selection follows the **item**, not the index. Inserting a row above the selecte
 
 Selection is also independent of editing. The current cell and an open editor are unaffected by what is selected, and vice versa — so a `CellEditEnding` handler can read `SelectedItem` without worrying about ordering.
 
+### Grouping rows
+
+Grouping is declared on the **data source**, not on the control. Wrap your collection in a `TableViewSource`, declare a `GroupBy`, and hand that to `ItemsSource`:
+
+```csharp
+var source = TableViewSource.From(People)
+                            .GroupBy(item => ((Person)item).Department);
+
+PeopleTable.ItemsSource = source;
+```
+
+```xaml
+<tabular:TableView x:Name="PeopleTable">
+    <tabular:TableView.GroupHeaderTemplate>
+        <DataTemplate x:DataType="tabular:TableViewGroupInfo">
+            <TextBlock>
+                <Run Text="{x:Bind KeyText}" FontWeight="SemiBold" />
+                <Run Text="{x:Bind ItemCountText}" />
+            </TextBlock>
+        </DataTemplate>
+    </tabular:TableView.GroupHeaderTemplate>
+</tabular:TableView>
+```
+
+`GroupHeaderTemplate` fills only the **content region** of the control-owned group-header band; the chevron and the themed background stay with the control, so a header template cannot accidentally remove the expander. Its data context is a `TableViewGroupInfo`, which exposes the raw `Key` and `ItemCount` as well as the culture-formatted `KeyText` and `ItemCountText`. Binding only `Key`/`ItemCount` costs nothing extra — the formatted strings are computed lazily.
+
+The group key is any object, but its **string identity** is what buckets rows. `String`, `Int32`, `Int64`, `Guid`, `Boolean` and enum keys have a built-in identity and work with the single-argument overload. A key of any other (reference) type needs the two-argument overload, which names the identity explicitly:
+
+```csharp
+var source = TableViewSource.From(People)
+                            .GroupBy(item => ((Person)item).Team,          // key object
+                                     item => ((Person)item).Team.Id);      // stable string identity
+```
+
+If an identity cannot be produced — it is empty, it is not a string, the selector throws, or two genuinely different keys collapse onto the same identity without the identity overload — the call **throws** rather than quietly rendering an ungrouped table, so the mistake surfaces at development time.
+
+This includes a key that is `null` or the **empty string**, even though `String` is a supported key type: `""` is not a usable bucket identity. Group on a property that can be blank or null and you must supply the fallback yourself:
+
+```csharp
+.GroupBy(item => ((Person)item).Department is string d && d.Length > 0 ? d : "(none)")
+```
+
+Grouping composes with filtering and sorting, and the order in which the verbs are declared is meaningful:
+
+```csharp
+var source = TableViewSource.From(People)
+                            .Filter(item => ((Person)item).IsActive)
+                            .Sort("Department", SortDirection.Ascending)   // orders the GROUPS
+                            .GroupBy(item => ((Person)item).Department)
+                            .Sort("Name", SortDirection.Ascending);        // orders rows WITHIN each group
+```
+
+A filter always runs first, so a group whose last remaining row is filtered out disappears entirely. `ClearGroupBy()` removes grouping; a second `GroupBy` replaces the first rather than nesting, since v1 is single-level.
+
+Every group can be expanded and collapsed by clicking or tapping the header band, or through its UI Automation `ExpandCollapse` pattern. Expand or collapse everything at once with:
+
+```csharp
+PeopleTable.ExpandAllGroups();
+PeopleTable.CollapseAllGroups();
+```
+
+Expansion is remembered as intent about a **group identity**, not as state on a group object, so collapsing a group and then re-sorting, re-filtering or regrouping keeps that group collapsed — and a group that appears later inherits whatever `ExpandAllGroups`/`CollapseAllGroups` last established, rather than an intent nobody expressed about it.
+
+One thing to know when combining grouping with selection: group headers occupy the same index space as data rows, so under grouping `SelectedIndex` is **not** an index into `ItemsSource`. Headers themselves are never selectable — `Select(index)` on a header index is rejected, and keyboard selection-follows-focus leaves the selection alone while focus is on a header.
+
 ### Editing cells
 
 Editing is opt-in. Clear `IsReadOnly` on the control, and optionally set `IsReadOnly` on individual columns to keep them display-only.
@@ -394,6 +459,7 @@ Template parts:
 | `RowBackground` | `Brush` | `null` | Background brush for rows. |
 | `AlternatingRowBackground` | `Brush` | `null` | Optional alternating row background for banding. |
 | `EmptyTemplate` | `DataTemplate` | `null` | Template displayed when there are no rows. |
+| `GroupHeaderTemplate` | `DataTemplate` | `null` | Content template for the group-header band shown when the source is grouped. Fills only the header's content region; the chevron and themed band remain control-owned. The data context is a `TableViewGroupInfo`. Ignored when the source is not grouped. |
 | `IsReadOnly` | `Boolean` | `true` | Gates editing for the whole control. Editing is opt-in: while `true`, user gestures do not open an editor regardless of per-column `IsReadOnly`. Setting it to `true` while a cell is open closes that edit. |
 | `IsEditing` | `Boolean` | `false` | `true` while a cell editor is open, through the matching commit/cancel close. Read-only. |
 | `SelectionMode` | `TableViewSelectionMode` | `Single` | Gates row selection for the whole control. Selection is on by default, matching `ItemsView`, `ListView` and WPF's `DataGrid`; set `None` for a display-only table, which also clears any selection. |
@@ -471,6 +537,74 @@ These are understood and deliberately not addressed by single selection:
 - **The in-file brush fallbacks cannot vary the selection indicator by theme.** `CommonStyles/TabularSurfaces_themeresources.xaml` is the canonical source and maps the indicator to `SystemColorHighlightColor` in High Contrast. The last-resort fallbacks in `TableView.xaml` are a flat dictionary, so the indicator stays `SystemAccentColor` there — a host that does not merge the shared dictionary gets an accent-coloured indicator in High Contrast. The row fills and foregrounds are unaffected: they use `{ThemeResource}` colours that do resolve per theme.
 - **Reconciliation order is load-bearing.** Row chrome is restamped from `ItemsSourceView.CollectionChanged`, which is correct only because `SelectionModel` is handed the repeater's *shared* `ItemsSourceView` and is subscribed ahead of the control. Handing the model a raw source, or reordering those two calls in `ResolveSelectionAfterSourceChange`, silently reintroduces stale-index stamping — and an insert above the selection raises no event to correct it. This is deliberately different from `ItemsView`, which hands the model a raw source and repairs the resulting race afterwards with a dispatcher hop; the ordering here is structural instead.
 - **Adding `Multiple`/`Extended` is not purely additive.** The enum values are appended and the event args already carry both vectors, so the shapes that are expensive to reverse are settled. But `SelectedItems` is deliberately **not** exposed in this release — it would be redundant with `SelectedItem` while at most one row can be selected, and `SelectionModel`'s view leaves `IndexOf` and `GetMany` unimplemented, so `Contains`, `ToList` and `ToArray` throw. It should be added with `Multiple`, where it becomes the only way to read the whole selection and those sharp edges are worth the capability. The gesture layer also routes through `SelectRowIndexFromInteraction(index, toggle)`, which carries no anchor or range state, and `ApplySelection` encodes single-selection semantics; multi-selection needs modifier state threaded through those entry points and an anchor model, closer to `ItemsView`'s `SelectorBase` strategy split.
+
+## TableView grouping members
+
+Grouping itself is declared on the data source (`TableViewSource.GroupBy`); the control contributes only presentation and the bulk expand/collapse commands.
+
+| Member | Kind | Description |
+|---|---|---|
+| `GroupHeaderTemplate` | `DataTemplate` DP | Content template for the group-header band. The data context is a `TableViewGroupInfo`. |
+| `ExpandAllGroups()` | method | Expands every group, including groups that do not exist yet — it moves the default rather than looping over the realized headers. No-op when the source is not grouped. |
+| `CollapseAllGroups()` | method | Collapses every group, on the same terms. No-op when the source is not grouped. |
+
+There is no per-group programmatic expand/collapse in this release: an individual group is toggled by the user through its header, or by an automation client through the header's `ExpandCollapse` pattern.
+
+Expansion is stored as intent keyed by a group's **identity**, so it survives a reshape (sort, filter, or regroup) that re-creates every group object. Setting the bulk state also resets per-group exceptions, which is what makes "collapse all, then expand two, then re-sort" behave the way the user expects.
+
+## TableViewSource grouping verbs
+
+`TableViewSource` wraps an app collection and declares the shape the control should render. It accepts the same collection interfaces as `ItemsSourceView`; anything else throws `E_INVALIDARG`. The verbs return the same source, so they chain.
+
+| Member | Returns | Description |
+|---|---|---|
+| `TableViewSource.From(Object items)` | `TableViewSource` | Wraps a collection. The projection is populated by the time `From` returns. |
+| `GroupBy(TableViewKeySelector keySelector)` | `TableViewSource` | Groups rows by the key the selector returns. The key's identity must be resolvable by the built-in value-type identity (`String`, `Int32`, `Int64`, `Guid`, `Boolean`, enum). A null `keySelector` throws `E_INVALIDARG`; use `ClearGroupBy()` to remove grouping. |
+| `GroupBy(TableViewKeySelector keySelector, TableViewIdentitySelector groupIdentitySelector)` | `TableViewSource` | Same, with the group's stable string identity supplied explicitly. Required for reference-typed keys. Supplying an identity selector is also the opt-in that makes two distinct key instances sharing one identity intentional rather than a collision. A null `groupIdentitySelector` selects the built-in identity. |
+| `ClearGroupBy()` | `TableViewSource` | Removes grouping. |
+
+Contract notes:
+
+- **Single level.** A second `GroupBy` replaces the first; grouping axes do not nest or stack.
+- **Fail fast.** An identity that is empty, non-string, produced by a throwing selector, or shared by two genuinely different keys without the identity overload throws `hresult_invalid_argument` at the point the projection is built. The projection does not silently fall back to ungrouped. A `null` key and an empty-string key are both rejected on these terms, so a group key derived from a nullable or possibly-blank property must be coalesced to a real label by the app.
+- **Ordering.** A sort declared before `GroupBy` orders the groups; a sort declared after it orders rows within each group. A filter applies before either, and a group whose last member is filtered out disappears.
+- **Rows are identified by object identity.** There is no app-supplied row key, so selection and focus re-anchor across a reshape, but not across an item being re-created; the same object appearing in two rows fails fast.
+- **UI-thread affine**, like any XAML items source. The wrapped collection must also raise its change notifications on that thread.
+
+## TableViewGroupInfo class
+
+The read-only projection a `GroupHeaderTemplate` binds against. It implements `INotifyPropertyChanged` and is updated **in place** when a header is recycled, so a recycled header does not re-evaluate every binding in the template.
+
+| Property | Type | Description |
+|---|---|---|
+| `Key` | `Object` | The `GroupBy` key for this group. |
+| `ItemCount` | `Int32` | Number of members in the group. |
+| `Level` | `Int32` | Nesting level. Always `0` in v1 (single-level grouping). |
+| `IsExpandable` | `Boolean` | `false` when the group cannot expand (for example, it has no members). |
+| `IsExpanded` | `Boolean` | Current expansion state. |
+| `KeyText` | `String` | Culture-formatted display text for `Key`, computed lazily. |
+| `ItemCountText` | `String` | Culture-formatted display text for `ItemCount`, computed lazily. |
+
+## TableViewGroupHeader class
+
+The realized group-header container: a templated `ContentControl` whose `Content` is the `TableViewGroupInfo` and whose `ContentTemplate` is the app's `GroupHeaderTemplate`. Making it a templated control rather than a code-built visual tree means the chevron and themed band live in a control-owned `ControlTemplate`, so a header content template cannot drop them; replacing `Style`/`Template` outright still hands the whole visual to the app, which is why the parts are documented.
+
+| Member | Kind | Description |
+|---|---|---|
+| `IsExpanded` | `Boolean` DP | Expansion state of this header. |
+| `IsExpandable` | `Boolean` DP | Whether this header can expand. |
+| `ToggleRequested` | event (`TableViewGroupHeaderToggleRequestedEventArgs`) | Raised when the band is activated. The args carry `GroupKey`, so a handler that re-enters and mutates the header still sees the key that was actually activated. |
+
+Template parts (all optional; omitting one degrades rather than fails):
+
+| Part | Type | Purpose |
+|---|---|---|
+| `PART_ExpanderGutter` | `Border` | Reserves the chevron column so header content stays aligned with the rows below. |
+| `PART_ExpanderIcon` | `FontIcon` | Glyph driven by `ExpansionStates`, not by code. |
+
+Visual states: `CommonStates` (`Normal`/`PointerOver`/`Pressed`/`Disabled`), `ExpansionStates` (`Expanded`/`Collapsed`), `ExpandabilityStates` (`Expandable`/`NotExpandable`).
+
+The **whole band** is the toggle target, matching `ListView` and `TreeView`, rather than a nested button inside it — one interactive element, one automation story.
 
 ## TableViewColumn class
 
@@ -718,7 +852,8 @@ TableView provides UI Automation peers for grid/table accessibility, cell value 
 |---|---|---|
 | `TableViewAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionProvider`, `IGridProvider`, `ITableProvider`, `IItemContainerProvider` |
 | `TableViewRowAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionItemProvider` |
-| `TableViewColumnHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | (none) |
+| `TableViewColumnHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IInvokeProvider` |
+| `TableViewGroupHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IExpandCollapseProvider`, `IGridItemProvider` |
 | `TableViewCellAutomationPeer` | `FrameworkElementAutomationPeer` | `IGridItemProvider`, `ITableItemProvider`, `IValueProvider` |
 
 These peers expose the table structure to assistive technologies. Cell peers also expose their value.
@@ -791,6 +926,65 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn Column { get; };
         Microsoft.UI.Xaml.Controls.Tabular.TableViewEditAction EditAction { get; };
         Boolean Cancel;
+    };
+
+    [MUX_PREVIEW, webhosthidden]
+    delegate Object TableViewKeySelector(Object item);
+
+    // Stable string identity for a group key (GroupBy overload). Row identity is not
+    // app-supplied: the projection derives it from each item's object identity.
+    [MUX_PREVIEW, webhosthidden]
+    delegate String TableViewIdentitySelector(Object item);
+
+    [MUX_PREVIEW, webhosthidden]
+    runtimeclass TableViewSource
+    {
+        static Microsoft.UI.Xaml.Controls.Tabular.TableViewSource From(Object items);
+
+        [default_overload] [method_name("GroupBy")]
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewSource GroupBy(
+            Microsoft.UI.Xaml.Controls.Tabular.TableViewKeySelector keySelector);
+
+        [method_name("GroupByWithIdentity")]
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewSource GroupBy(
+            Microsoft.UI.Xaml.Controls.Tabular.TableViewKeySelector keySelector,
+            Microsoft.UI.Xaml.Controls.Tabular.TableViewIdentitySelector groupIdentitySelector);
+
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewSource ClearGroupBy();
+
+        // Filter and Sort verbs are omitted here; see the shaping section of the dev spec.
+    };
+
+    [MUX_PREVIEW, webhosthidden]
+    runtimeclass TableViewGroupInfo : Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+    {
+        Object Key { get; };
+        Int32 ItemCount { get; };
+        Int32 Level { get; };
+        Boolean IsExpandable { get; };
+        Boolean IsExpanded { get; };
+        String KeyText { get; };
+        String ItemCountText { get; };
+    };
+
+    [MUX_PREVIEW, webhosthidden]
+    runtimeclass TableViewGroupHeaderToggleRequestedEventArgs
+    {
+        Object GroupKey { get; };
+    };
+
+    [MUX_PREVIEW, webhosthidden]
+    unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentControl
+    {
+        TableViewGroupHeader();
+
+        Boolean IsExpanded;
+        Boolean IsExpandable;
+
+        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupHeader, Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupHeaderToggleRequestedEventArgs> ToggleRequested;
+
+        static Microsoft.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty IsExpandableProperty { get; };
     };
 
     [MUX_PREVIEW, webhosthidden, contentproperty("Header")]
@@ -870,6 +1064,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Microsoft.UI.Xaml.Media.Brush RowBackground;
         Microsoft.UI.Xaml.Media.Brush AlternatingRowBackground;
         Microsoft.UI.Xaml.DataTemplate EmptyTemplate;
+        Microsoft.UI.Xaml.DataTemplate GroupHeaderTemplate;
         Microsoft.UI.Xaml.Controls.Tabular.TableViewDensity Density;
         Boolean IsReadOnly;
 
@@ -896,6 +1091,11 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
 
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs> SelectionChanged;
 
+        // ----- Grouping -----
+
+        void ExpandAllGroups();
+        void CollapseAllGroups();
+
         static Microsoft.UI.Xaml.DependencyProperty ItemsSourceProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeadersVisibilityProperty { get; };
@@ -903,6 +1103,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         static Microsoft.UI.Xaml.DependencyProperty RowBackgroundProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty AlternatingRowBackgroundProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty EmptyTemplateProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty GroupHeaderTemplateProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty DensityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty SelectionModeProperty { get; };
@@ -931,11 +1132,21 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
 
     [MUX_PREVIEW, webhosthidden]
     unsealed runtimeclass TableViewColumnHeaderAutomationPeer :
-        Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+        Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
+        Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider
     {
         TableViewColumnHeaderAutomationPeer(
             Microsoft.UI.Xaml.Controls.Tabular.TableView owner,
             Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn column);
+    };
+
+    [MUX_PREVIEW, webhosthidden]
+    unsealed runtimeclass TableViewGroupHeaderAutomationPeer :
+        Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
+        Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider,
+        Microsoft.UI.Xaml.Automation.Provider.IGridItemProvider
+    {
+        TableViewGroupHeaderAutomationPeer(Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupHeader owner);
     };
 
     [MUX_PREVIEW, webhosthidden]
@@ -1018,8 +1229,7 @@ The display-only base delivered previously:
 These ship additively in a later change — they are part of v1, not non-goals:
 
 - Row selection: multiple/extended (Ctrl/Shift range selection). **Single selection ships here.**
-- Single-column sort and filtering.
-- Grouping and two-level hierarchy.
+- Two-level hierarchy.
 - Column resize and reorder.
 
 ## Non-goals (out of scope for v1)

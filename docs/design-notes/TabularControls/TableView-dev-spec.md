@@ -2,7 +2,7 @@
 
 `TableView` is the minimal, display-only tabular base control for `Microsoft.UI.Xaml.Controls.Tabular.dll`. It renders an `ItemsSource` as virtualized rows and uses `Columns` to generate one cell per realized row/column intersection.
 
-This is the minimal, display-only base of the control, and it is read-only. It establishes column ownership, header/body layout, row virtualization, cell generation, leading frozen columns, basic row keyboard navigation, automation peers, density/theming hooks, and the lifetime patterns later work builds on. The interactive v1 features (selection, single-column sort, filtering, grouping, two-level hierarchy, column resize/reorder) land additively in later releases.
+This is the minimal, display-only base of the control, and it is read-only. It establishes column ownership, header/body layout, row virtualization, cell generation, leading frozen columns, basic row keyboard navigation, automation peers, density/theming hooks, and the lifetime patterns later work builds on. The interactive v1 features land additively on top of it: selection, filtering, single-column sort and single-level grouping are delivered; two-level hierarchy and column resize/reorder are still outstanding.
 
 Feature-level requirements and the v1-vs-deferred breakdown are in [`TableView-functional-spec.md`](./TableView-functional-spec.md).
 
@@ -22,9 +22,9 @@ The API preserves migration-compatible concepts where useful:
 
 Frozen columns are limited to a contiguous leading prefix in v1. `TableViewFrozenEdge.Trailing` is reserved.
 
-Grouped and two-level hierarchical presentations are v1 features but deferred to a later release because they require different layout, virtualization, focus, and accessibility models that layer onto the flat-table base. Hierarchy deeper than two levels is out of scope for v1.
+Single-level grouping is delivered (see *Grouping model* below): group headers are their own container kind interleaved into the flat row projection, not a second nesting level in the layout. Two-level hierarchical presentation is still deferred, because a real nesting level requires different layout, virtualization, focus and accessibility models than a banded header does. Hierarchy deeper than two levels is out of scope for v1.
 
-`TableViewRow` is intentionally a public `unsealed` `Control` despite carrying no v1 dependency properties: it is the realized row container (mirroring `ListViewItem`/`DataGridRow`) and is referenced by the public `TableViewRowAutomationPeer` and `TableViewCellAutomationPeer` constructors, so it cannot be internalized without collapsing the public accessibility surface. Row-level features (selection, grouping, hierarchy) layer onto it in later releases.
+`TableViewRow` is intentionally a public `unsealed` `Control` despite carrying no v1 dependency properties: it is the realized row container (mirroring `ListViewItem`/`DataGridRow`) and is referenced by the public `TableViewRowAutomationPeer` and `TableViewCellAutomationPeer` constructors, so it cannot be internalized without collapsing the public accessibility surface. Row-level features layer onto it: selection already does, and hierarchy will. Grouping deliberately does **not** — a group header is a `TableViewGroupHeader`, a separate container kind chosen by `TableViewRowTemplateSelector`, so `TableViewRow` never grows an "am I a header?" adaptive branch.
 
 
 ## Column model: `TextColumn` vs `TemplateColumn`
@@ -201,6 +201,93 @@ how `DataGrid` matches a column and lights its arrow, while a data-layer sort wi
 name stays headerless.
 
 
+## Grouping model
+
+Grouping is declared on the **data source**, never on the control: `TableViewSource.GroupBy(...)`
+installs a grouping verb, and `TableView` renders whatever shape the source publishes. The control
+has no `GroupBy` property and no group-key API of its own, which is what keeps the shaping stack
+(`TabularShaping` ← `ShapedItemsSource` ← `TableViewSource` ← `TableView`) one-directional: the
+engine never learns what a `TableView` is.
+
+**Projection shape.** A grouped source publishes one flat row vector in which group headers are
+interleaved with their member rows (`ShapedItemsSource::ProjectionKind::Grouped`). There is no
+second nesting level in the layout and no nested repeater: the header is simply another entry in
+the same index space. `TableView::GetRowKindForItem` classifies an entry, and
+`TableViewRowTemplateSelector` picks `TableViewGroupHeader` or `TableViewRow` accordingly, so
+neither container carries an adaptive "am I the other kind?" branch.
+
+**Group identity is the bucketing key, not the key object.** `BucketizeToGroups` asks for a
+stable, non-empty string identity per key. Value-typed keys (`String`, `Int32`, `Int64`, `Guid`,
+`Boolean`, enums) resolve through a built-in identity; anything else requires the
+`GroupBy(keySelector, groupIdentitySelector)` overload. An identity that is empty, non-string,
+throwing, or that collides across two genuinely different keys **throws**
+`hresult_invalid_argument` rather than degrading to a flat projection — the same fail-fast contract
+row identity uses. A `null` key and an empty-string key are rejected on the same terms
+(`ValueKey::TryGetStablePropertyKey` is called with `rejectEmptyString`), so grouping on a
+nullable or blank-able property needs an app-supplied fallback label. Degrading silently would
+ship apps whose grouping mysteriously does nothing, with no diagnostic. (Two distinct key
+instances *may* map to one identity when the app supplied a `groupIdentitySelector`; supplying one
+is the opt-in that makes the collapse intentional.)
+
+Only **row** identity degrades, and the asymmetry is deliberate: a row identity the engine cannot
+derive is a property of the app's data that the app may not control, and the `Unshaped` mirror
+still shows every row; a bad *group* identity comes from the `GroupBy(...)` selector the app just
+wrote, and an ungrouped table is an outcome it would not notice.
+
+**Composition order is meaningful.** A sort declared **before** `GroupBy` orders the groups; a
+sort declared **after** `GroupBy` orders rows within each bucket
+(`ApplySort(rows, -1, GroupOrder())` for the group axis, then `ApplySort(bucket.Items,
+GroupOrder(), -1)` per bucket). A filter runs first in either case, and a group whose last member
+is filtered out ceases to exist.
+
+**Expansion is intent keyed by identity, held outside the groups.** `RowExpansionModel` (layer 1)
+stores only the *exceptions* to a default, so `ExpandAllGroups`/`CollapseAllGroups` move the
+default in O(1), a group that appears later inherits the current default rather than someone
+else's stale intent, and a collapse survives a re-sort, a re-filter or a regroup that re-mints
+every `ShapedGroup`. Storing `IsExpanded` on the group object instead is what used to lose a
+collapse across a re-sort. `RetainOnly` prunes intent for identities that no longer exist so the
+store cannot grow without bound across changing data sets.
+
+**Toggle path.** `TableViewGroupHeader` raises `ToggleRequested`; the owning container forwards it
+to `TableView::ToggleGroupExpansion`, so the header stays free of `TableView` plumbing and is
+testable on its own. The whole band is the toggle target (matching `ListView`/`TreeView`) rather
+than a nested button, so there is one interactive element and one automation story. Because
+expanding or collapsing re-publishes the projection, the realized header the gesture started on is
+gone by the time the work runs: expansion is queued **by identity** with a generation stamp
+(`QueueGroupExpansionByIdentity` / `ApplyGroupExpansionByIdentity`), and focus is captured and
+restored by identity too (`CaptureGroupHeaderFocusForRestore` /
+`RestoreGroupHeaderFocusIfPending`), so a keyboard user does not lose focus to the top of the
+table on every collapse.
+
+**Header presentation.** `TableViewGroupHeader` is a templated `ContentControl`, not a code-built
+visual tree: the chevron gutter (`PART_ExpanderGutter` / `PART_ExpanderIcon`) and the themed band
+live in the control-owned `ControlTemplate`, while `TableView.GroupHeaderTemplate` fills only the
+content region — so an app template cannot accidentally drop the expander. Its `Content` is a
+`TableViewGroupInfo` projection that is updated **in place** and raises `PropertyChanged`, so
+recycling a header does not re-evaluate every binding in the template. `KeyText`/`ItemCountText`
+are computed lazily through a `DecimalFormatter`, so a template that binds only `Key`/`ItemCount`
+pays nothing for them.
+
+**Interaction with selection.** Group headers share the flat projection's index space with data
+rows but are **not** selectable. `Select(index)` on a header index is rejected rather than coerced
+(without that, the internal grouped entry would be handed to the app as `SelectedItem`), and
+selection-follows-focus leaves the existing selection alone when keyboard navigation lands on a
+header, resuming on the next data row. The consequence an app must know: under grouping,
+`SelectedIndex` is an index into a row space that *includes* headers, so it is not an index into
+`ItemsSource`.
+
+**Accessibility.** `TableViewGroupHeaderAutomationPeer` is separate from
+`TableViewRowAutomationPeer` because the header is its own container: there are no `GridItem`
+coordinates for a band spanning every column, and `ExpandCollapse` is advertised unconditionally —
+a non-expandable group reports `LeafNode` rather than dropping the pattern, so an AT client never
+sees the pattern appear and disappear as data changes.
+
+**Known limitations.** A source change under grouping rebuilds the projection rather than splicing
+it (the flat incremental fast path is explicitly disabled by `ClearFlatRowIdentityTracking`), so
+grouping is O(N) per collection change. There is no per-group programmatic expand/collapse by key,
+only the bulk commands plus the header's own gesture and UIA pattern. Grouping is single-level:
+`TableViewGroupInfo.Level` exists for the shape but is always `0` in v1.
+
 # Styling model
 
 Styling is layered so the display-only base stays minimal while a richer surface can grow
@@ -260,7 +347,16 @@ they can be obsoleted while the API is still `[MUX_PREVIEW]`.
 
 **`TableViewRow`** — `Control` representing one realized item row. `GetOwningTableView()`.
 
-**Automation peers** — `TableViewAutomationPeer`, `TableViewRowAutomationPeer`, `TableViewCellAutomationPeer`, `TableViewColumnHeaderAutomationPeer` (providers: `IGridProvider`, `ITableProvider`, `IGridItemProvider`, `ITableItemProvider`, `IItemContainerProvider`).
+**`TableViewGroupHeader`** — `ContentControl` representing one realized group-header band under a
+grouped source. DPs `IsExpanded`, `IsExpandable`; event `ToggleRequested`
+(`TableViewGroupHeaderToggleRequestedEventArgs.GroupKey`). Template parts `PART_ExpanderGutter`,
+`PART_ExpanderIcon`; visual states `CommonStates`, `ExpansionStates`, `ExpandabilityStates`.
+
+**`TableViewGroupInfo`** — read-only `INotifyPropertyChanged` projection bound by a
+`GroupHeaderTemplate`: `Key`, `ItemCount`, `Level`, `IsExpandable`, `IsExpanded`, and the
+culture-formatted `KeyText` / `ItemCountText`. Updated in place across recycling.
+
+**Automation peers** — `TableViewAutomationPeer`, `TableViewRowAutomationPeer`, `TableViewCellAutomationPeer`, `TableViewColumnHeaderAutomationPeer`, `TableViewGroupHeaderAutomationPeer` (providers: `IGridProvider`, `ITableProvider`, `IGridItemProvider`, `ITableItemProvider`, `IItemContainerProvider`, `IExpandCollapseProvider`).
 
 **Enums** — `TableViewFrozenEdge` (`None`/`Leading`/`Trailing`), `TableViewHeadersVisibility` (`None`/`Column`), `TableViewGridLinesVisibility` (`All`/`Horizontal`/`None`/`Vertical`), `TableViewDensity` (`Compact`/`Standard`/`Comfortable`), `TableViewEditingUnit` (`Cell`/`Row`), `TableViewEditAction` (`Commit`/`Cancel`/`Discard`).
 
@@ -311,16 +407,20 @@ Row recycling, cell rebuild and dependency-property change callbacks can all run
 - **Cell wrappers** — per-row/per-column `Border` elements that host generated cell content, carry gridline/background visuals, and are arranged by the hosting `TableViewCellsPanel` at the owning column's `ActualWidth`.
 - **Frozen-column translation/clipping layer** — pins leading columns while clipping non-frozen content out of the pinned band.
 - **`GridCoordinateHelper`** — internal C++ helper for row/column ↔ flat-index and focus-navigation math used by keyboard navigation; not projected (no public runtimeclass).
+- **`TableViewRowTemplateSelector`** — picks the container kind for an entry in the projection: a `TableViewGroupHeader` for a group entry, a `TableViewRow` for a data row.
+- **`RowExpansionModel`** — internal layer-1 store of expand/collapse *intent*, keyed by group identity and holding only the exceptions to a default. Carries no XAML or tabular vocabulary, so hierarchy can reuse it unchanged.
 
 # Appendix
 
 ## Non-goals
 
-`TableView` v1 does not attempt to replace `DataGrid`. The true v1 non-goals are marquee selection, multi-column sort, column virtualization, row headers, hierarchy deeper than two levels, and spreadsheet-like interaction. (Selection, single-column sort, filtering, grouping, and two-level hierarchy are v1 features delivered in a later release — not non-goals. Cell editing is delivered by this PR.)
+`TableView` v1 does not attempt to replace `DataGrid`. The true v1 non-goals are marquee selection, multi-column sort, column virtualization, row headers, hierarchy deeper than two levels, and spreadsheet-like interaction. (Selection, single-column sort, filtering, grouping, and two-level hierarchy are v1 features, not non-goals; selection, sort, filtering and single-level grouping are delivered, and two-level hierarchy lands later. Cell editing is delivered by this PR.)
 
 ## Out of Scope
 
-Delivered later in the v1 stack: row selection · single-column sort · filtering · grouping · two-level hierarchy · column reorder · navigation-state persistence · shaping primitives · samples · tests · theme-XBF emission.
+Delivered later in the v1 stack: two-level hierarchy · column reorder · navigation-state persistence · samples · tests · theme-XBF emission.
+
+Already delivered in the v1 stack: row selection · shaping primitives · filtering · single-column sort · single-level grouping.
 
 Out of v1 / follow-up work (see Non-goals): `Auto` auto-shrink (v1 widths grow monotonically) · trailing frozen columns · multi-column sort · column virtualization · row headers · clipboard · incremental loading · multi-cell row edit transactions · editing a11y announcements.
 
