@@ -755,8 +755,15 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
     HRESULT hr = S_OK; // WARNING_IGNORES_FAILURES
 
     // ETW Trace, we want to raise an ETW event here if we can determine that the configuration
-    // does not allow virtualization to happen
+    // does not allow virtualization to happen. Gate on whichever provider this build emits to:
+    // the profiler provider when XAMLPROFILER_ENABLED, the retail Microsoft-Windows-XAML provider
+    // otherwise. A profiler-only session never enables the retail provider, so gating solely on
+    // EventEnabledVirtualizationIsEnabledByLayoutInfo() would drop the profiler event.
+#ifdef XAMLPROFILER_ENABLED
+    if (XamlProfilerTracing::IsEnabled())
+#else
     if (EventEnabledVirtualizationIsEnabledByLayoutInfo())
+#endif
     {
         BOOLEAN isVirtualizationActive = TRUE;
         ctl::ComPtr<IPanel> spItemsPanel;
