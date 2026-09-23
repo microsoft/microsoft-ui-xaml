@@ -202,8 +202,15 @@ void InkToolbarPenConfigurationControl::ConfigureLocalizableElements(winrt::Cont
     // must not take the app down.
     auto tryGetString = [](std::wstring_view name) -> winrt::hstring
     {
-        try { return ResourceAccessor::GetLocalizedStringResource(name); }
-        catch (...) { return {}; }
+        try
+        {
+            return ResourceAccessor::GetLocalizedStringResource(name);
+        }
+        catch (winrt::hresult_error const& e)
+        {
+            InkToolbarLogHResult(e.code(), L"pen flyout heading string lookup");
+            return {};
+        }
     };
 
     // The template ships English defaults for these two headings, so they must be replaced here or
