@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="InkParityLab.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:InkParityLab"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid x:Name="RootGrid" Padding="10" RowSpacing="8" Loaded="OnRootLoaded">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Shared options: exercise InputDeviceTypes and InkToolbar.Orientation on both surfaces. -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center"
+                    AutomationProperties.Name="Test options">
+            <TextBlock Text="Input devices:" VerticalAlignment="Center" FontWeight="SemiBold" />
+            <CheckBox x:Name="PenInput" Content="Pen" IsChecked="True"
+                      AutomationProperties.AutomationId="PenInput"
+                      Checked="OnInputDevicesChanged" Unchecked="OnInputDevicesChanged" />
+            <CheckBox x:Name="MouseInput" Content="Mouse" IsChecked="True"
+                      AutomationProperties.AutomationId="MouseInput"
+                      Checked="OnInputDevicesChanged" Unchecked="OnInputDevicesChanged" />
+            <CheckBox x:Name="TouchInput" Content="Touch" IsChecked="True"
+                      AutomationProperties.AutomationId="TouchInput"
+                      Checked="OnInputDevicesChanged" Unchecked="OnInputDevicesChanged" />
+
+            <Border Width="1" Background="Gray" Margin="6,2"
+                    AutomationProperties.AccessibilityView="Raw" />
+
+            <ToggleSwitch x:Name="VerticalToolbars" MinWidth="0"
+                          AutomationProperties.Name="Toolbar orientation"
+                          AutomationProperties.AutomationId="VerticalToolbars"
+                          OffContent="Horizontal toolbars" OnContent="Vertical toolbars"
+                          Toggled="OnToolbarOrientationToggled" />
+
+            <TextBlock Text="High contrast:" VerticalAlignment="Center" FontWeight="SemiBold" />
+            <ComboBox x:Name="HighContrastMode" MinWidth="210" SelectedIndex="0"
+                      AutomationProperties.Name="Ink high contrast adjustment"
+                      AutomationProperties.AutomationId="HighContrastMode"
+                      SelectionChanged="OnHighContrastModeChanged">
+                <ComboBoxItem Content="UseSystemColorsWhenNecessary" />
+                <ComboBoxItem Content="UseSystemColors" />
+                <ComboBoxItem Content="UseOriginalColors" />
+            </ComboBox>
+
+            <Button Content="Clear both" Click="OnClearBoth"
+                    AutomationProperties.AutomationId="ClearBoth" />
+        </StackPanel>
+
+        <Grid Grid.Row="1" ColumnSpacing="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Surface A: toolbar ABOVE the canvas (normal layout, known-good). -->
+            <Grid Grid.Column="0" RowSpacing="6">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Surface A - toolbar above canvas (control)" FontWeight="SemiBold" />
+
+                <controls:InkToolbar x:Name="ToolbarA" Grid.Row="1" HorizontalAlignment="Left"
+                                     AutomationProperties.Name="Ink toolbar for surface A"
+                                     AutomationProperties.AutomationId="ToolbarA" />
+
+                <Border Grid.Row="2" BorderBrush="Gray" BorderThickness="1" Background="{ThemeResource InkCanvasBackgroundBrush}">
+                    <ScrollViewer x:Name="ScrollA"
+                                  AutomationProperties.Name="Scroll area for surface A"
+                                  AutomationProperties.AutomationId="ScrollA"
+                                  HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto"
+                                  ZoomMode="Enabled" MinZoomFactor="0.5" MaxZoomFactor="3.0">
+                        <!-- InkCanvas has no automation name of its own, so the app supplies one. -->
+                        <controls:InkCanvas x:Name="CanvasA" Width="1600" Height="1200"
+                                            AutomationProperties.Name="Drawing surface A"
+                                            AutomationProperties.AutomationId="CanvasA" />
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+
+            <!-- Surface B: toolbar OVERLAID on the canvas (repro for draw-over / no-hit-test). -->
+            <Grid Grid.Column="1" RowSpacing="6">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Surface B - toolbar overlaid on canvas (CornerRadius=12)"
+                           FontWeight="SemiBold" />
+
+                <Grid Grid.Row="1">
+                    <Border BorderBrush="Gray" BorderThickness="1" Background="{ThemeResource InkCanvasBackgroundBrush}">
+                        <ScrollViewer x:Name="ScrollB"
+                                      AutomationProperties.Name="Scroll area for surface B"
+                                      AutomationProperties.AutomationId="ScrollB"
+                                      HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto"
+                                      ZoomMode="Enabled" MinZoomFactor="0.5" MaxZoomFactor="3.0">
+                            <controls:InkCanvas x:Name="CanvasB" Width="1600" Height="1200"
+                                                AutomationProperties.Name="Drawing surface B"
+                                                AutomationProperties.AutomationId="CanvasB" />
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Sits on top of the InkCanvas in XAML z-order. -->
+                    <controls:InkToolbar x:Name="ToolbarB"
+                                         HorizontalAlignment="Left" VerticalAlignment="Top" Margin="12"
+                                         CornerRadius="12"
+                                         Background="LightYellow"
+                                         BorderBrush="DarkRed" BorderThickness="2"
+                                         AutomationProperties.Name="Ink toolbar for surface B"
+                                         AutomationProperties.AutomationId="ToolbarB" />
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <TextBlock Grid.Row="2" x:Name="StatusText" Opacity="0.7" TextWrapping="Wrap"
+                   AutomationProperties.AutomationId="StatusText"
+                   AutomationProperties.LiveSetting="Polite"
+                   Text="Each surface is a 1600x1200 InkCanvas inside a ScrollViewer. Scroll with the wheel or scrollbars; zoom with Ctrl+wheel (0.5x - 3x). The two surfaces are independent." />
+    </Grid>
+</Window>
