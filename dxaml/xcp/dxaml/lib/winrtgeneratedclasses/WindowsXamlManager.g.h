@@ -71,10 +71,10 @@ namespace DirectUI
         // Event source typedefs.
         typedef CEventSource<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Hosting::WindowsXamlManager*, ABI::Microsoft::UI::Xaml::Hosting::XamlShutdownCompletedOnThreadEventArgs*>, ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager, ABI::Microsoft::UI::Xaml::Hosting::IXamlShutdownCompletedOnThreadEventArgs> XamlShutdownCompletedOnThreadEventSourceType;
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-        typedef CEventSource<ABI::Windows::Foundation::IEventHandler<IInspectable*>, IInspectable, IInspectable> WinUIProcessShutdownStartingEventSourceType;
+        typedef CEventSource<ABI::Windows::Foundation::IEventHandler<IInspectable*>, IInspectable, IInspectable> XamlShutdownStartingForProcessEventSourceType;
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-        typedef CEventSource<ABI::Windows::Foundation::IEventHandler<IInspectable*>, IInspectable, IInspectable> WinUIProcessShutdownCompletedEventSourceType;
+        typedef CEventSource<ABI::Windows::Foundation::IEventHandler<IInspectable*>, IInspectable, IInspectable> XamlShutdownCompletedForProcessEventSourceType;
 #endif
 
 
@@ -138,10 +138,10 @@ namespace DirectUI
         IFACEMETHOD(GetForCurrentThread)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager** ppResult) override;
 
         // Static events.
-        IFACEMETHOD(add_WinUIProcessShutdownStarting)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) FEATURE_EXPERIMENTALAPI_OVERRIDE;
-        IFACEMETHOD(remove_WinUIProcessShutdownStarting)(EventRegistrationToken token) FEATURE_EXPERIMENTALAPI_OVERRIDE;
-        IFACEMETHOD(add_WinUIProcessShutdownCompleted)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) FEATURE_EXPERIMENTALAPI_OVERRIDE;
-        IFACEMETHOD(remove_WinUIProcessShutdownCompleted)(EventRegistrationToken token) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        IFACEMETHOD(add_XamlShutdownStartingForProcess)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        IFACEMETHOD(remove_XamlShutdownStartingForProcess)(EventRegistrationToken token) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        IFACEMETHOD(add_XamlShutdownCompletedForProcess)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        IFACEMETHOD(remove_XamlShutdownCompletedForProcess)(EventRegistrationToken token) FEATURE_EXPERIMENTALAPI_OVERRIDE;
 
     protected:
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;

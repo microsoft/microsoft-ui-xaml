@@ -372,10 +372,10 @@ namespace Microsoft.UI.Xaml.Hosting
 
 	    [VelocityFeature("Feature_ExperimentalApi")]
 	    [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-	    public static event Windows.Foundation.EventHandler<Windows.Foundation.Object> WinUIProcessShutdownStarting;
+	    public static event Windows.Foundation.EventHandler<Windows.Foundation.Object> XamlShutdownStartingForProcess;
 
 	    [VelocityFeature("Feature_ExperimentalApi")]
 	    [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-	    public static event Windows.Foundation.EventHandler<Windows.Foundation.Object> WinUIProcessShutdownCompleted;
+	    public static event Windows.Foundation.EventHandler<Windows.Foundation.Object> XamlShutdownCompletedForProcess;
     }
 }

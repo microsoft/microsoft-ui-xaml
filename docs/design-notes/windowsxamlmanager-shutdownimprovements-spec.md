@@ -64,8 +64,8 @@ Represents a handle to the instance of the Xaml runtime that's running on a spec
 | Name | Description |
 |-|-|
 | XamlShutdownCompletedOnThread | Raised when the Xaml runtime has finished its shutdown process on the current thread. |
-| WinUIProcessShutdownStarting | Raised after the thread that closes the final Xaml core completes its thread shutdown notification. Frameworks must synchronously release state associated with the previous Xaml generation. |
-| WinUIProcessShutdownCompleted | Raised after all starting handlers and Xaml's process-wide cleanup have completed. Apps may retry Xaml initialization after this event. |
+| XamlShutdownStartingForProcess | Raised after the thread that closes the final Xaml core completes its thread shutdown notification. Frameworks must synchronously release state associated with the previous Xaml generation. |
+| XamlShutdownCompletedForProcess | Raised after all starting handlers and Xaml's process-wide cleanup have completed. Apps may retry Xaml initialization after this event. |
 
 ## WindowsXamlManager.XamlShutdownCompletedOnThread Event
 
@@ -143,35 +143,35 @@ This is the event args type used by the **XamlShutdownCompletedOnThread** event.
 
 When the final WinUI thread shuts down, WinUI immediately blocks new initialization and resets its process-wide metadata
 and activation-factory caches. There can still be outstanding state that prevent WinUI from restarting in the process,
-and the `WinUIProcessShutdownStarting` and `WinUIProcessShutdownCompleted` events give apps and libraries a chance to do
+and the `XamlShutdownStartingForProcess` and `XamlShutdownCompletedForProcess` events give apps and libraries a chance to do
 additional cleanup.
 
-### WinUIProcessShutdownStarting
+### XamlShutdownStartingForProcess
 
-* `WinUIProcessShutdownStarting` is raised on the final WinUI thread. It's raised synchronously after
+* `XamlShutdownStartingForProcess` is raised on the final WinUI thread. It's raised synchronously after
 `XamlShutdownCompletedOnThread` handlers return. Note that if there are multiple UI threads in the app,
-`WinUIProcessShutdownStarting` can be raised on an arbitrary one depending on shutdown order.
-* Apps and libraries are expected to release process-dependent state in `WinUIProcessShutdownStarting` handlers. This
+`XamlShutdownStartingForProcess` can be raised on an arbitrary one depending on shutdown order.
+* Apps and libraries are expected to release process-dependent state in `XamlShutdownStartingForProcess` handlers. This
 includes custom dependency properties and metadata objects. Note that anything released here should be agile, since the
 event can be raised on an arbitrary UI thread.
-* WinUI guarantees that `WinUIProcessShutdownStarting` is raised after `XamlShutdownCompletedOnThread` only on the final
+* WinUI guarantees that `XamlShutdownStartingForProcess` is raised after `XamlShutdownCompletedOnThread` only on the final
 WinUI thread. It makes no guarantees about the ordering of `XamlShutdownCompletedOnThread` events on other UI threads.
 Other UI threads may be switched out before their `XamlShutdownCompletedOnThread` handlers run, while the final thread
-is going through a `WinUIProcessShutdownStarting` event.
+is going through a `XamlShutdownStartingForProcess` event.
 
-### WinUIProcessShutdownCompleted
+### XamlShutdownCompletedForProcess
 
-* After the synchronous `WinUIProcessShutdownStarting` handlers return, WinUI assumes that all process-dependent state
-has been cleaned up. It then unblocks new initialization and synchronously raises `WinUIProcessShutdownCompleted`,
+* After the synchronous `XamlShutdownStartingForProcess` handlers return, WinUI assumes that all process-dependent state
+has been cleaned up. It then unblocks new initialization and synchronously raises `XamlShutdownCompletedForProcess`,
 signaling to the app that it's now safe to restart WinUI in the process.
 * Note that this is a cooperative process between WinUI, the app, and controls libraries. If the app or a control library
 does not fully release state (e.g. leave a custom DP registered and attempt to reuse it after WinUI reinitializes), then
 WinUI may crash after reinitializing in the process. WinUI itself has no way of knowing when stale state remains after
 process shutdown.
 * Note that WinUI cannot guarantee that WinUI initialization will succeed. It's possible for thread A to switch out after
-handling `WinUIProcessShutdownCompleted`, then for thread B to reinitialize WinUI and start a second shutdown before thread A
+handling `XamlShutdownCompletedForProcess`, then for thread B to reinitialize WinUI and start a second shutdown before thread A
 is switched back in. Thread A will then see WinUI initialization blocked due to the second shutdown, even though it just
-processed a `WinUIProcessShutdownCompleted` event. Apps still need to check for `ERROR_INVALID_STATE` when calling
+processed a `XamlShutdownCompletedForProcess` event. Apps still need to check for `ERROR_INVALID_STATE` when calling
 `InitializeForCurrentThread`.
 
 # API Details
@@ -192,8 +192,8 @@ namespace Microsoft.UI.Xaml.Hosting
         event Windows.Foundation.TypedEventHandler<WindowsXamlManager,XamlShutdownCompletedOnThreadEventArgs> XamlShutdownCompletedOnThread;
 
         // Added as experimental after WASDK 2.4.1
-        static event Windows.Foundation.EventHandler<Object> WinUIProcessShutdownStarting;
-        static event Windows.Foundation.EventHandler<Object> WinUIProcessShutdownCompleted;
+        static event Windows.Foundation.EventHandler<Object> XamlShutdownStartingForProcess;
+        static event Windows.Foundation.EventHandler<Object> XamlShutdownCompletedForProcess;
     }
 }
 ```

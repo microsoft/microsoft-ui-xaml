@@ -34,6 +34,10 @@ class WinUIProcessShutdownEvents
 {
 public:
     using HandlerType = wf::IEventHandler<IInspectable*>;
+    using FireAllEventSourceOptions =
+        Microsoft::WRL::InvokeModeOptions<Microsoft::WRL::FireAll>;
+    using FireAllEventSource =
+        Microsoft::WRL::EventSource<HandlerType, FireAllEventSourceOptions>;
 
     _Check_return_ HRESULT AddStartingHandler(
         _In_ HandlerType* handler,
@@ -61,17 +65,17 @@ public:
 
     void RaiseStarting()
     {
-        IGNOREHR(m_startingEventSource.InvokeAll(nullptr, nullptr));
+        IFCFAILFAST(m_startingEventSource.InvokeAll(nullptr, nullptr));
     }
 
     void RaiseCompleted()
     {
-        IGNOREHR(m_completedEventSource.InvokeAll(nullptr, nullptr));
+        IFCFAILFAST(m_completedEventSource.InvokeAll(nullptr, nullptr));
     }
 
 private:
-    Microsoft::WRL::EventSource<HandlerType> m_startingEventSource;
-    Microsoft::WRL::EventSource<HandlerType> m_completedEventSource;
+    FireAllEventSource m_startingEventSource;
+    FireAllEventSource m_completedEventSource;
 };
 
 WinUIProcessShutdownEvents& GetWinUIProcessShutdownEvents()
@@ -283,7 +287,7 @@ _Check_return_ HRESULT WindowsXamlManagerFactory::GetForCurrentThreadImpl(_Outpt
     return S_OK;
 }
 
-IFACEMETHODIMP WindowsXamlManagerFactory::add_WinUIProcessShutdownStarting(
+IFACEMETHODIMP WindowsXamlManagerFactory::add_XamlShutdownStartingForProcess(
     _In_ wf::IEventHandler<IInspectable*>* value,
     _Out_ EventRegistrationToken* token)
 {
@@ -293,12 +297,12 @@ IFACEMETHODIMP WindowsXamlManagerFactory::add_WinUIProcessShutdownStarting(
     return GetWinUIProcessShutdownEvents().AddStartingHandler(value, token);
 }
 
-IFACEMETHODIMP WindowsXamlManagerFactory::remove_WinUIProcessShutdownStarting(EventRegistrationToken token)
+IFACEMETHODIMP WindowsXamlManagerFactory::remove_XamlShutdownStartingForProcess(EventRegistrationToken token)
 {
     return GetWinUIProcessShutdownEvents().RemoveStartingHandler(token);
 }
 
-IFACEMETHODIMP WindowsXamlManagerFactory::add_WinUIProcessShutdownCompleted(
+IFACEMETHODIMP WindowsXamlManagerFactory::add_XamlShutdownCompletedForProcess(
     _In_ wf::IEventHandler<IInspectable*>* value,
     _Out_ EventRegistrationToken* token)
 {
@@ -308,7 +312,7 @@ IFACEMETHODIMP WindowsXamlManagerFactory::add_WinUIProcessShutdownCompleted(
     return GetWinUIProcessShutdownEvents().AddCompletedHandler(value, token);
 }
 
-IFACEMETHODIMP WindowsXamlManagerFactory::remove_WinUIProcessShutdownCompleted(EventRegistrationToken token)
+IFACEMETHODIMP WindowsXamlManagerFactory::remove_XamlShutdownCompletedForProcess(EventRegistrationToken token)
 {
     return GetWinUIProcessShutdownEvents().RemoveCompletedHandler(token);
 }
@@ -352,7 +356,7 @@ _Check_return_ HRESULT WindowsXamlManager::XamlCore::Initialize(msy::IDispatcher
                 HRESULT_FROM_WIN32(ERROR_INVALID_STATE),
                 XSTRING_PTR_EPHEMERAL(
                     L"Xaml cannot be initialized while process shutdown is in progress. "
-                    L"Wait until WinUIProcessShutdownCompleted is raised."
+                    L"Wait until XamlShutdownCompletedForProcess is raised."
                 ), true /*outputToDebugger*/));
         }
         ++s_instancesInProcess;

@@ -4378,8 +4378,8 @@ enum class KnownEventIndex: UINT16
     DesktopWindowXamlSource_TakeFocusRequested,
     DesktopWindowXamlSource_GotFocus,
     WindowsXamlManager_XamlShutdownCompletedOnThread,
-    WindowsXamlManager_WinUIProcessShutdownStarting,
-    WindowsXamlManager_WinUIProcessShutdownCompleted,
+    WindowsXamlManager_XamlShutdownStartingForProcess,
+    WindowsXamlManager_XamlShutdownCompletedForProcess,
 };
 
 constexpr UINT16 KnownNamespaceCount            = static_cast<UINT16>(KnownNamespaceIndex::Microsoft_UI_Xaml_Automation_Provider) + 1;
@@ -4388,5 +4388,5 @@ constexpr UINT16 KnownPropertyCount             = static_cast<UINT16>(KnownPrope
 constexpr UINT16 KnownDependencyPropertyCount   = static_cast<UINT16>(KnownPropertyIndex::RadioButton_GroupName) + 1;
 constexpr UINT16 KnownSimplePropertyCount       = 29; // KnownPropertyIndex::LinearGradientBrush_Translation
 constexpr UINT16 KnownMethodCount               = static_cast<UINT16>(KnownMethodIndex::XamlOptionalChanges_IsLocked) + 1;
-constexpr UINT16 KnownEventCount                = static_cast<UINT16>(KnownEventIndex::WindowsXamlManager_WinUIProcessShutdownCompleted) + 1;
+constexpr UINT16 KnownEventCount                = static_cast<UINT16>(KnownEventIndex::WindowsXamlManager_XamlShutdownCompletedForProcess) + 1;
 constexpr KnownEventIndex LastControlEvent = KnownEventIndex::Control_InheritedPropertyChanged;

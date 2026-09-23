@@ -2331,8 +2331,8 @@ namespace Microsoft.UI.Xaml.Hosting
         [feature(Feature_ExperimentalApi)]
         [static_name("Microsoft.UI.Xaml.Hosting.IWindowsXamlManagerStaticsFeature_ExperimentalApi")]
         {
-            static event Windows.Foundation.EventHandler<Object> WinUIProcessShutdownStarting;
-            static event Windows.Foundation.EventHandler<Object> WinUIProcessShutdownCompleted;
+            static event Windows.Foundation.EventHandler<Object> XamlShutdownStartingForProcess;
+            static event Windows.Foundation.EventHandler<Object> XamlShutdownCompletedForProcess;
         }
     };
 

@@ -138,8 +138,8 @@ internal sealed class MainForm : Forms.Form
     {
         base.OnLoad(args);
 
-        WindowsXamlManager.WinUIProcessShutdownStarting += OnWinUIProcessShutdownStarting;
-        WindowsXamlManager.WinUIProcessShutdownCompleted += OnWinUIProcessShutdownCompleted;
+        WindowsXamlManager.XamlShutdownStartingForProcess += OnXamlShutdownStartingForProcess;
+        WindowsXamlManager.XamlShutdownCompletedForProcess += OnXamlShutdownCompletedForProcess;
         _processEventHandlersRegistered = true;
 
         AppendLog("Native WinForms host started. WinUI is not initialized.");
@@ -165,8 +165,8 @@ internal sealed class MainForm : Forms.Form
     {
         if (_processEventHandlersRegistered)
         {
-            WindowsXamlManager.WinUIProcessShutdownStarting -= OnWinUIProcessShutdownStarting;
-            WindowsXamlManager.WinUIProcessShutdownCompleted -= OnWinUIProcessShutdownCompleted;
+            WindowsXamlManager.XamlShutdownStartingForProcess -= OnXamlShutdownStartingForProcess;
+            WindowsXamlManager.XamlShutdownCompletedForProcess -= OnXamlShutdownCompletedForProcess;
         }
 
         base.OnFormClosed(args);
@@ -181,7 +181,7 @@ internal sealed class MainForm : Forms.Form
 
         if (_state == WinUIState.ShuttingDown)
         {
-            ShowError("Wait for WinUIProcessShutdownCompleted before restarting WinUI.");
+            ShowError("Wait for XamlShutdownCompletedForProcess before restarting WinUI.");
             return;
         }
 
@@ -282,18 +282,18 @@ internal sealed class MainForm : Forms.Form
         UpdateState(WinUIState.ShutdownComplete);
     }
 
-    private void OnWinUIProcessShutdownStarting(object? sender, object? args)
+    private void OnXamlShutdownStartingForProcess(object? sender, object? args)
     {
         UpdateState(WinUIState.ShuttingDown);
         AppendLog(
-            $"WinUIProcessShutdownStarting (sender null: {sender is null}, args null: {args is null})");
+            $"XamlShutdownStartingForProcess (sender null: {sender is null}, args null: {args is null})");
     }
 
-    private void OnWinUIProcessShutdownCompleted(object? sender, object? args)
+    private void OnXamlShutdownCompletedForProcess(object? sender, object? args)
     {
         UpdateState(WinUIState.ShutdownComplete);
         AppendLog(
-            $"WinUIProcessShutdownCompleted (sender null: {sender is null}, args null: {args is null})");
+            $"XamlShutdownCompletedForProcess (sender null: {sender is null}, args null: {args is null})");
     }
 
     private void UpdateState(WinUIState state)

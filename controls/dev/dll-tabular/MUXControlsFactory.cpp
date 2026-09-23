@@ -24,7 +24,7 @@ void MUXControlsFactory::EnsureInitialized()
     static std::once_flag processShutdownSubscription;
     std::call_once(processShutdownSubscription, []()
     {
-        winrt::Microsoft::UI::Xaml::Hosting::WindowsXamlManager::WinUIProcessShutdownStarting(
+        winrt::Microsoft::UI::Xaml::Hosting::WindowsXamlManager::XamlShutdownStartingForProcess(
             [](const auto&, const auto&)
             {
                 DeinitializeTabular();

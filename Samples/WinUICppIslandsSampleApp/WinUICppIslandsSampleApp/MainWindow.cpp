@@ -109,18 +109,18 @@ namespace
         static std::once_flag processShutdownEventHandlers;
         std::call_once(processShutdownEventHandlers, []()
         {
-            winrt::Microsoft::UI::Xaml::Hosting::WindowsXamlManager::WinUIProcessShutdownStarting(
+            winrt::Microsoft::UI::Xaml::Hosting::WindowsXamlManager::XamlShutdownStartingForProcess(
                 [](const auto&, const auto&)
                 {
                     s_winUIState = WinUIState::ShuttingDown;
-                    ::OutputDebugString(L">>> WinUIProcessShutdownStarting fired\n");
+                    ::OutputDebugString(L">>> XamlShutdownStartingForProcess fired\n");
                 });
 
-            winrt::Microsoft::UI::Xaml::Hosting::WindowsXamlManager::WinUIProcessShutdownCompleted(
+            winrt::Microsoft::UI::Xaml::Hosting::WindowsXamlManager::XamlShutdownCompletedForProcess(
                 [](const auto&, const auto&)
                 {
                     s_winUIState = WinUIState::ShutdownComplete;
-                    ::OutputDebugString(L">>> WinUIProcessShutdownCompleted fired\n");
+                    ::OutputDebugString(L">>> XamlShutdownCompletedForProcess fired\n");
                 });
         });
     }
@@ -667,7 +667,7 @@ bool MainWindow::StartXaml()
     {
         ::MessageBox(
             GetHandle(),
-            L"Wait for WinUIProcessShutdownCompleted before restarting WinUI.",
+            L"Wait for XamlShutdownCompletedForProcess before restarting WinUI.",
             L"XAML shutdown in progress",
             MB_OK | MB_ICONWARNING);
         return false;

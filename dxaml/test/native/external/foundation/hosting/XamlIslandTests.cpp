@@ -448,6 +448,60 @@ void XamlIslandTests::WindowsXamlManagerKeptAlive()
     WaitForSingleObjectWithTimeout(uiThread);
 }
 
+void XamlIslandTests::XamlShutdownStartingForProcessInvokesAllHandlersOnFailure()
+{
+    VERIFY_SUCCEEDED(::RoInitialize(RO_INIT_MULTITHREADED));
+
+    int firstHandlerCallCount = 0;
+    int secondHandlerCallCount = 0;
+
+    auto firstHandlerToken =
+        WindowsXamlManager::XamlShutdownStartingForProcess +=
+            ref new EventHandler<Object^>(
+                [&](Object^ sender, Object^ args)
+                {
+                    ++firstHandlerCallCount;
+                    VERIFY_IS_NULL(sender);
+                    VERIFY_IS_NULL(args);
+                    throw ref new Platform::COMException(E_FAIL);
+                });
+
+    auto secondHandlerToken =
+        WindowsXamlManager::XamlShutdownStartingForProcess +=
+            ref new EventHandler<Object^>(
+                [&](Object^ sender, Object^ args)
+                {
+                    ++secondHandlerCallCount;
+                    VERIFY_IS_NULL(sender);
+                    VERIFY_IS_NULL(args);
+                    throw ref new Platform::COMException(E_FAIL);
+                });
+
+    auto uiThread = RunOnNewThread([]()
+    {
+        VERIFY_SUCCEEDED(::RoInitialize(RO_INIT_SINGLETHREADED));
+
+        auto dqc = DispatcherQueueController::CreateOnCurrentThread();
+        auto wxm = WindowsXamlManager::InitializeForCurrentThread();
+
+        dqc->ShutdownQueue();
+
+        wxm = nullptr;
+        dqc = nullptr;
+        ::RoUninitialize();
+    });
+
+    WaitForSingleObjectWithTimeout(uiThread);
+
+    VERIFY_ARE_EQUAL(1, firstHandlerCallCount);
+    VERIFY_ARE_EQUAL(1, secondHandlerCallCount);
+
+    WindowsXamlManager::XamlShutdownStartingForProcess -= firstHandlerToken;
+    WindowsXamlManager::XamlShutdownStartingForProcess -= secondHandlerToken;
+
+    ::RoUninitialize();
+}
+
 void XamlIslandTests::ValidateXamlShutdownCompletedOnThread()
 {
     VERIFY_SUCCEEDED(::RoInitialize(RO_INIT_MULTITHREADED));
@@ -470,12 +524,12 @@ void XamlIslandTests::ValidateXamlShutdownCompletedOnThread()
     DWORD finalXamlThreadId = 0;
 
     auto processShutdownStartingToken =
-        WindowsXamlManager::WinUIProcessShutdownStarting +=
+        WindowsXamlManager::XamlShutdownStartingForProcess +=
             ref new EventHandler<Object^>(
                 [&](Object^ sender, Object^ args)
                 {
                     ++processShutdownStartingCount;
-                    LOG_OUTPUT(L"WinUIProcessShutdownStarting raised.");
+                    LOG_OUTPUT(L"XamlShutdownStartingForProcess raised.");
                     VERIFY_IS_NULL(sender);
                     VERIFY_IS_NULL(args);
                     VERIFY_IS_TRUE(didWxm2RaiseEvent);
@@ -484,12 +538,12 @@ void XamlIslandTests::ValidateXamlShutdownCompletedOnThread()
                 });
 
     auto processShutdownCompletedToken =
-        WindowsXamlManager::WinUIProcessShutdownCompleted +=
+        WindowsXamlManager::XamlShutdownCompletedForProcess +=
             ref new EventHandler<Object^>(
                 [&](Object^ sender, Object^ args)
                 {
                     ++processShutdownCompletedCount;
-                    LOG_OUTPUT(L"WinUIProcessShutdownCompleted raised.");
+                    LOG_OUTPUT(L"XamlShutdownCompletedForProcess raised.");
                     VERIFY_IS_NULL(sender);
                     VERIFY_IS_NULL(args);
                     VERIFY_ARE_EQUAL(finalXamlThreadId, GetCurrentThreadId());
@@ -556,8 +610,8 @@ void XamlIslandTests::ValidateXamlShutdownCompletedOnThread()
     VERIFY_ARE_EQUAL(1, processShutdownStartingCount);
     VERIFY_ARE_EQUAL(1, processShutdownCompletedCount);
 
-    WindowsXamlManager::WinUIProcessShutdownStarting -= processShutdownStartingToken;
-    WindowsXamlManager::WinUIProcessShutdownCompleted -= processShutdownCompletedToken;
+    WindowsXamlManager::XamlShutdownStartingForProcess -= processShutdownStartingToken;
+    WindowsXamlManager::XamlShutdownCompletedForProcess -= processShutdownCompletedToken;
 
     ::RoUninitialize();
 }
@@ -581,11 +635,11 @@ void XamlIslandTests::ValidateXamlShutdownCompletedOnThreadWithDeferral()
     VERIFY_IS_NULL(WindowsXamlManager::GetForCurrentThread());
 
     auto processShutdownStartingToken =
-        WindowsXamlManager::WinUIProcessShutdownStarting +=
+        WindowsXamlManager::XamlShutdownStartingForProcess +=
             ref new EventHandler<Object^>(
                 [&](Object^ sender, Object^ args)
                 {
-                    LOG_OUTPUT(L"WinUIProcessShutdownStarting raised.");
+                    LOG_OUTPUT(L"XamlShutdownStartingForProcess raised.");
                     VERIFY_IS_NULL(sender);
                     VERIFY_IS_NULL(args);
                     VERIFY_IS_TRUE(didWxm1RaiseEvent);
@@ -598,11 +652,11 @@ void XamlIslandTests::ValidateXamlShutdownCompletedOnThreadWithDeferral()
                 });
 
     auto processShutdownCompletedToken =
-        WindowsXamlManager::WinUIProcessShutdownCompleted +=
+        WindowsXamlManager::XamlShutdownCompletedForProcess +=
             ref new EventHandler<Object^>(
                 [&](Object^ sender, Object^ args)
                 {
-                    LOG_OUTPUT(L"WinUIProcessShutdownCompleted raised.");
+                    LOG_OUTPUT(L"XamlShutdownCompletedForProcess raised.");
                     VERIFY_IS_NULL(sender);
                     VERIFY_IS_NULL(args);
                     VERIFY_IS_TRUE(didProcessShutdownStartingRaiseEvent);
@@ -722,8 +776,8 @@ void XamlIslandTests::ValidateXamlShutdownCompletedOnThreadWithDeferral()
     deferral = nullptr;
     uiThreadDqc = nullptr;
 
-    WindowsXamlManager::WinUIProcessShutdownStarting -= processShutdownStartingToken;
-    WindowsXamlManager::WinUIProcessShutdownCompleted -= processShutdownCompletedToken;
+    WindowsXamlManager::XamlShutdownStartingForProcess -= processShutdownStartingToken;
+    WindowsXamlManager::XamlShutdownCompletedForProcess -= processShutdownCompletedToken;
 
     ::RoUninitialize();
 }

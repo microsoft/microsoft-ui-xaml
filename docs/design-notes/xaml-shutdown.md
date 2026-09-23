@@ -126,8 +126,8 @@ this:
         * When the final Xaml thread shuts down, Xaml resets its process-wide metadata and activation-factory caches.
         * Xaml raises the XamlShutdownCompletedOnThread event.  This signals to the app that Xaml is now finished on the thread.
         * If this thread closed the final Xaml core, after its XamlShutdownCompletedOnThread handlers have returned:
-          * Xaml raises WindowsXamlManager.WinUIProcessShutdownStarting so process-wide frameworks can clear state tied to the previous Xaml generation.
-          * Xaml raises WindowsXamlManager.WinUIProcessShutdownCompleted. Apps may retry Xaml initialization after receiving this event.
+          * Xaml raises WindowsXamlManager.XamlShutdownStartingForProcess so process-wide frameworks can clear state tied to the previous Xaml generation.
+          * Xaml raises WindowsXamlManager.XamlShutdownCompletedForProcess. Apps may retry Xaml initialization after receiving this event.
       * DispatcherQueue.PlatformShutdownStarting fires
         * Any active WinAppSDK platform object closes itself, including the Compositor, islands, and input objects
 
@@ -172,12 +172,12 @@ poisoning is fixed end-to-end for WinAppSDK scenarios generally.
 When the final Xaml thread shuts down, Xaml marks process shutdown as active so another thread cannot initialize Xaml
 while cleanup is pending, then resets its process-wide metadata and activation-factory caches. After the thread that
 closes the final Xaml core has raised `XamlShutdownCompletedOnThread` and its synchronous handlers have returned, Xaml
-raises `WindowsXamlManager.WinUIProcessShutdownStarting` on that same thread. Controls frameworks use this event to
+raises `WindowsXamlManager.XamlShutdownStartingForProcess` on that same thread. Controls frameworks use this event to
 synchronously clear dependency properties, metadata objects, and other state associated with the previous Xaml
 generation. No ordering is guaranteed between the process events and `XamlShutdownCompletedOnThread` notifications on
 other threads.
 
-After the process shutdown handlers finish, Xaml raises `WindowsXamlManager.WinUIProcessShutdownCompleted` on the same
+After the process shutdown handlers finish, Xaml raises `WindowsXamlManager.XamlShutdownCompletedForProcess` on the same
 thread. The app may retry Xaml initialization after receiving this event. Another shutdown can begin before the retry runs, so
 `InitializeForCurrentThread` remains the authoritative check and can still return `ERROR_INVALID_STATE`. These events
 allow Xaml to be fully shut down and restarted in the same process without retaining state from the previous Xaml

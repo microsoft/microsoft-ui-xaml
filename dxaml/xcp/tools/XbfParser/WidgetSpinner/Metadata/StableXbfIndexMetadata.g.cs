@@ -3827,8 +3827,8 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
         FrameworkApplication_ResourceManagerInitializing_Deleted0 = 337,
         FrameworkApplication_ResourceManagerRequested = 338,
         WindowsXamlManager_XamlShutdownCompletedOnThread = 339,
-        WindowsXamlManager_WinUIProcessShutdownStarting = 340,
-        WindowsXamlManager_WinUIProcessShutdownCompleted = 341,
+        WindowsXamlManager_XamlShutdownStartingForProcess = 340,
+        WindowsXamlManager_XamlShutdownCompletedForProcess = 341,
     }
 
     [Flags]

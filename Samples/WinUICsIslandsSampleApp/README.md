@@ -17,7 +17,7 @@ Use the buttons to:
 3. **Restart WinUI** - perform a complete shutdown followed by another initialization.
 
 The event log records `XamlShutdownCompletedOnThread`,
-`WinUIProcessShutdownStarting`, `WinUIProcessShutdownCompleted`, and the DispatcherQueue
+`XamlShutdownStartingForProcess`, `XamlShutdownCompletedForProcess`, and the DispatcherQueue
 shutdown events. It also records whether the process-event sender and arguments are null.
 
 Open `WinUICsIslandsSampleApp.sln`, select an architecture such as x64, and run the
