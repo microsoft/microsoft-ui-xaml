@@ -58,21 +58,34 @@ public:
 
     hstring GetNameCore()
     {
+        auto name = __super::GetNameCore();
+
+        // Fold the selected-colour text (set by UpdatePenButtonHelpText) into the name; Narrator does
+        // not reliably read HelpText, so pen/pencil/highlighter colours would otherwise go unannounced.
+        if (auto color = winrt::AutomationProperties::GetHelpText(Owner()); !color.empty())
+        {
+            name = name.empty() ? color
+                                : winrt::hstring{ std::wstring{ name.c_str() } + L", " + std::wstring{ color.c_str() } };
+        }
+
         // The Custom control type suppresses Narrator's native selected-state read, so fold "selected"
         // into the name of the active tool to guarantee the current tool is announced.
-        auto name = __super::GetNameCore();
         if (auto toggle = Owner().try_as<winrt::Microsoft::UI::Xaml::Controls::Primitives::ToggleButton>())
         {
             if (auto checked = toggle.IsChecked(); checked && checked.Value() && !m_selectedStateName.empty())
             {
-                if (name.empty())
-                {
-                    return m_selectedStateName;
-                }
-                return winrt::hstring{ std::wstring{ name.c_str() } + L", " + std::wstring{ m_selectedStateName.c_str() } };
+                name = name.empty() ? m_selectedStateName
+                                    : winrt::hstring{ std::wstring{ name.c_str() } + L", " + std::wstring{ m_selectedStateName.c_str() } };
             }
         }
         return name;
+    }
+
+    hstring GetHelpTextCore()
+    {
+        // The colour is now folded into the name (Narrator does not reliably read HelpText); suppress the
+        // separate help read so the colour is not announced twice.
+        return {};
     }
 
     // IExpandCollapseProvider
