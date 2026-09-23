@@ -10,6 +10,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 {
     internal class TypeInfoDefinition : Definition
     {
+        internal const string CSharpPass1StubMarker = "// XamlMetaDataProvider API stub for managed pass 1.";
+        internal const string CSharpPass1WarningPragma = "#pragma warning disable 3002, 3021";
+        internal const string CSharpNoTypeInfoMarker = "// No local types.";
+        internal const string XamlMetadataProviderClassDeclaration = "public sealed partial class XamlMetaDataProvider";
+
         private List<MemberGenInfo> _memberInfos = new List<MemberGenInfo>();
         private Dictionary<String, int> _typeInfoIndexes;
         private UInt32[] _typeInfoLookup;
@@ -22,13 +27,20 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         }
 
         internal ClassName AppXamlInfo { get; set; }
+        internal bool IsPass1 { get; set; }
+        internal bool? GenerateTypeInfoOverride { get; set; }
 
         public bool GenerateTypeInfo
         {
             get
             {
-                return SchemaInfo.UserTypeInfo.Count != 0 || ProjectInfo.EnableTypeInfoReflection;
+                return GenerateTypeInfoOverride ?? ShouldGenerateTypeInfo(ProjectInfo, SchemaInfo);
             }
+        }
+
+        internal static bool ShouldGenerateTypeInfo(XamlProjectInfo projectInfo, XamlSchemaCodeInfo schemaInfo)
+        {
+            return schemaInfo.UserTypeInfo.Count != 0 || projectInfo.EnableTypeInfoReflection;
         }
 
         public IEnumerable<String> AllLocalXamlHeaderFiles
@@ -314,6 +326,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                 {
                     addCppWinRTHeaderForTypeIfNecessary(typeInfo.TypeEntry?.UnderlyingType);
                 }
+            }
+
+            // OtherProviders() constructs each provider in the generated type-info source. A managed
+            // component can place its provider in a nested <Ns>.<Ns>_XamlTypeInfo namespace whose
+            // C++/WinRT header is not implied by any registered XAML type, so include it explicitly.
+            foreach (var provider in SchemaInfo.OtherMetadataProviders)
+            {
+                addCppWinRTHeaderForTypeIfNecessary(provider.UnderlyingType);
             }
 
             // Sort the projection headers by namespace

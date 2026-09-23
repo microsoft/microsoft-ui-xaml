@@ -31,26 +31,30 @@ jobs:
       gci env:* | sort-object name
     displayName: Display build machine environment variable
 
-  # Authenticate to NuGet feeds used by this pipeline (WinUI.Dependencies has nuget.org as an upstream source,
-  # so public releases are available through it without direct nuget.org access)
+  # Fork PRs must not authenticate to private package feeds.
   - task: NuGetAuthenticate@1
-    displayName: 'NuGet Authenticate'
+    displayName: 'Authenticate to WinUI.Dependencies'
+    condition: and(succeeded(), ne(variables['System.PullRequest.IsFork'], 'True'))
 
   # In this pipeline configuration, 'NuGetCommand' is ambiguous so the specific task guid must be used instead
   # See known NuGet task issue notes.
-  # The latest public release is resolved via the WinUI.Dependencies feed (which has nuget.org as an upstream)
-  # The package is installed into a temp directory to ensure it doesn't get used elsewhere for a build
+  # Install the latest public release.
   - task: NuGetCommand@2
     displayName: 'NuGet install Microsoft.WindowsAppSDK'
     inputs:
       command: 'custom'
-      arguments: 'install Microsoft.WindowsAppSDK -OutputDirectory $(packagesDir) -ConfigFile $(Build.SourcesDirectory)\nuget.config'
+      arguments: 'install Microsoft.WindowsAppSDK -OutputDirectory $(packagesDir) -ConfigFile $(Build.SourcesDirectory)\nuget.config -NonInteractive'
 
-  - task: NuGetCommand@2
-    displayName: 'NuGet install WinMDVersionVerifyLcr'
+  - task: DownloadPackage@1
+    displayName: 'Download latest WinMDVersionVerifyLcr'
+    condition: and(succeeded(), ne(variables['System.PullRequest.IsFork'], 'True'))
     inputs:
-      command: 'custom'
-      arguments: 'install WinMDVersionVerifyLcr -OutputDirectory $(packagesDir) -ConfigFile $(Build.SourcesDirectory)\nuget.config'
+      packageType: 'nuget'
+      feed: 'WinUI.Dependencies'
+      definition: 'WinMDVersionVerifyLcr'
+      version: 'latest'
+      extract: true
+      downloadPath: '$(packagesDir)\WinMDVersionVerifyLcr'
 
   - template: WinUI-DownloadPipelineArtifacts-Steps.yml
     parameters:
@@ -61,8 +65,14 @@ jobs:
 
   - task: powershell@2
     displayName: 'Run WinMD Compat Test'
+    condition: and(succeeded(), ne(variables['System.PullRequest.IsFork'], 'True'))
     inputs:
       targetType: filePath
       filePath: $(Build.SourcesDirectory)\build\PipelineScripts\VerifyWinMDCompat.ps1
       arguments: -WinMDPath '$(artifactsDir)\packaging\Release\lib\uap10.0' -PackagesDirectory '$(packagesDir)' -isRelease:$${{ parameters.MUXFinalRelease }}
       pwsh: true
+
+  - powershell: |
+      Write-Host "WinMD compatibility validation is not available for fork PRs."
+    displayName: 'Skip WinMD compatibility validation'
+    condition: and(succeeded(), eq(variables['System.PullRequest.IsFork'], 'True'))

@@ -5,6 +5,7 @@
 
 #include "SystemBackdropElement.g.h"
 #include "SystemBackdropElement.properties.h"
+#include <CppWinrtContentExternalBackdropLinkHelper.h>
 
 class SystemBackdropElement :
     public ReferenceTracker<SystemBackdropElement, winrt::implementation::SystemBackdropElementT>,
@@ -27,7 +28,7 @@ private:
     void TryConnectSystemBackdrop();
 
     // Member variables
-    winrt::Microsoft::UI::Content::ContentExternalBackdropLink m_backdropLink{ nullptr };
+    ContentExternalLinkHelper::BackdropLink m_backdropLink{ nullptr };
     winrt::Microsoft::UI::Composition::Compositor m_compositor{ nullptr };
     winrt::Microsoft::UI::Xaml::Media::SystemBackdrop m_systemBackdrop{ nullptr };
     winrt::Microsoft::UI::Composition::RectangleClip m_clip{ nullptr };

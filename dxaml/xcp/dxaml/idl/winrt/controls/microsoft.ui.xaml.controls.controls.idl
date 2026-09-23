@@ -446,6 +446,15 @@ namespace Microsoft.UI.Xaml
     }
 }
 
+namespace Microsoft.UI.Xaml
+{
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    delegate Microsoft.UI.Xaml.UIElement DataTemplateElementFactory();
+
+}
 namespace Microsoft.UI.Xaml.Controls
 {
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
@@ -591,6 +600,14 @@ namespace Microsoft.UI.Xaml
         static Microsoft.UI.Xaml.DependencyProperty ExtensionInstanceProperty{ get; };
         static Microsoft.UI.Xaml.IDataTemplateExtension GetExtensionInstance(Microsoft.UI.Xaml.FrameworkElement element);
         static void SetExtensionInstance(Microsoft.UI.Xaml.FrameworkElement element, Microsoft.UI.Xaml.IDataTemplateExtension value);
+    
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        [feature(Feature_ExperimentalApi)]
+        [constructor_name("Microsoft.UI.Xaml.IDataTemplateFactoryFeature_ExperimentalApi")]
+        [interface_name("Microsoft.UI.Xaml.IDataTemplateFeature_ExperimentalApi")]
+        {
+            [method_name("CreateInstanceFromCallback")] DataTemplate(Microsoft.UI.Xaml.DataTemplateElementFactory elementFactory);
+        }
     };
 
 }

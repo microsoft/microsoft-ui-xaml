@@ -17,20 +17,27 @@ Follow these steps:
    cd C:\winui3
    ```
 
-3. Switch to the `winui3/main` branch:
+3. Switch to the `main` branch:
    ```
-   git checkout winui3/main
+   git checkout main
    ```
 
-4. Install the necessary MSBuild / Visual Studio 2022 dependencies. If you already have VS 2022
-   ([see notes](#other-notes)) installed, this command will ensure you have the required components:
+4. Install the required Visual Studio components:
+
+   * If you have Visual Studio 2026, use Visual Studio Installer to import the `.vsconfig` file
+     from the root of the repository into your existing installation.
+   * Otherwise, run the following command to install or configure Visual Studio 2022 Build Tools:
+
    ```
    cd C:\winui3
    .\OneTimeSetup.cmd -Install MSBuild
    ```
 
+   `OneTimeSetup.cmd -Install MSBuild` always targets Visual Studio 2022 Build Tools. Do not run it
+   to configure an existing Visual Studio 2026 installation.
+
    Click the various "Yes", "Continue", and "Modify"/"Install" buttons as needed to complete
-  the installation. When installation completes, close the Visual Studio Installer window.
+   the installation. When installation completes, close the Visual Studio Installer window.
 
 ## Building WinUI
 
@@ -261,5 +268,6 @@ command at the root of the repo:
 
 ### Other notes
 
-* `OneTimeSetup.cmd` currently assumes Visual Studio 2022. However, this project can also be built
-  with Visual Studio 2026 if all necessary components are installed.
+* `OneTimeSetup.cmd -Install MSBuild` installs or modifies Visual Studio 2022 Build Tools. To use
+  Visual Studio 2026, import the repository's `.vsconfig` file into that installation instead.
+* `init.cmd` sets up the build environment and can install or update build tools when required.

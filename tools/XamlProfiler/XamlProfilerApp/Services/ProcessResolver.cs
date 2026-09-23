@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace XamlProfiler.Services;
 
@@ -9,14 +11,26 @@ namespace XamlProfiler.Services;
 /// </summary>
 internal static class ProcessResolver
 {
+    private const int ErrorSuccess = 0;
+    private const int ErrorInsufficientBuffer = 122;
+
     /// <summary>
-    /// Heuristic: true when a process's main module path contains the package family name.
+    /// Returns true when Windows reports that the process belongs to the package family.
+    /// This works for both installed packages and loose development registrations.
     /// </summary>
     public static bool ProcessMatchesPackageFamily(Process proc, string packageFamilyName)
     {
         try
         {
-            return proc.MainModule?.FileName?.Contains(packageFamilyName, StringComparison.OrdinalIgnoreCase) == true;
+            uint length = 0;
+            int result = GetPackageFamilyName(proc.Handle, ref length, null);
+            if (result != ErrorInsufficientBuffer || length == 0)
+                return false;
+
+            var familyName = new StringBuilder((int)length);
+            result = GetPackageFamilyName(proc.Handle, ref length, familyName);
+            return result == ErrorSuccess &&
+                string.Equals(familyName.ToString(), packageFamilyName, StringComparison.OrdinalIgnoreCase);
         }
         catch
         {
@@ -26,8 +40,8 @@ internal static class ProcessResolver
     }
 
     /// <summary>
-    /// Finds the first process whose main module path contains the package family name.
-    /// Works for most packaged apps.
+    /// Finds the first process whose OS-reported package identity matches the package
+    /// family name.
     /// </summary>
     public static Process? FindProcessByPackageFamily(string packageFamilyName)
     {
@@ -100,4 +114,10 @@ internal static class ProcessResolver
 
         return fallback ?? (launched != null && match(launched) && !launched.HasExited ? launched : null);
     }
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+    private static extern int GetPackageFamilyName(
+        IntPtr process,
+        ref uint packageFamilyNameLength,
+        StringBuilder? packageFamilyName);
 }

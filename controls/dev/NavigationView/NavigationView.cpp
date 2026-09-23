@@ -3188,7 +3188,9 @@ bool NavigationView::BumperNavigation(int offset)
             const auto topPrimaryListSize = m_topDataProvider.GetPrimaryListSize();
 
             auto footerRepeater = m_topNavFooterMenuRepeater.get();
-            auto footerItemsSize = FooterMenuItems().Size();
+            // Use the footer ItemsSourceView count so this works for both FooterMenuItems and
+            // FooterMenuItemsSource (FooterMenuItems() is empty when FooterMenuItemsSource is bound).
+            auto footerItemsSize = m_footerItemsSource ? m_footerItemsSource.Count() : 0;
 
             if (IsSettingsVisible())
             {

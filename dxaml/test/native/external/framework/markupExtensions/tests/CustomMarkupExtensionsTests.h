@@ -27,6 +27,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                     L"the 'Extension' suffix.")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(VerifyEscapedQuotesInMarkupExtensionValue)
+                TEST_METHOD_PROPERTY(L"Description", L"Verifies that backslash-escaped quotes and backslashes inside "
+                    L"quoted markup extension property values are honored and do not raise an unexpected-quote error.")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(VerifyCustomMarkupExtensionAsTypeOfProperty)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies using a custom markup extension as the value of a property "
                     L"whose type is the type of the markup extension does not result in a call to ProvideValue().")

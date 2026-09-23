@@ -448,11 +448,27 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                 var paramList = Instance.Parameters.ForCall();
                 return new LanguageSpecificString(
                     () => $"{parentPathExpression.CppCXName()}{parentMemberAccessOperator.CppCXName()}{Instance.MethodName}({paramList})",
-                    () => $"{parentPathExpression.CppWinRTName()}{parentMemberAccessOperator.CppWinRTName()}{Instance.MethodName}({paramList})",
+                    () => CppWinRTPathExpression(parentPathExpression, parentMemberAccessOperator, paramList),
                     () => $"{parentPathExpression.CSharpName()}.{Instance.MethodName}({paramList})",
                     () => $"{parentPathExpression.VBName()}.{Instance.MethodName}({paramList})"
                     );
             }
+        }
+
+        // C++/WinRT value types do not expose ToString(); emit winrt::to_hstring for explicit
+        // parameterless calls. Runtime classes keep their projected IStringable method.
+        private string CppWinRTPathExpression(ICodeGenOutput parentPathExpression,
+                                              ICodeGenOutput parentMemberAccessOperator,
+                                              string paramList)
+        {
+            if (Instance.MethodName == KnownStrings.ToString &&
+                Instance.Parameters.Count == 0 &&
+                Instance.OwnerType.NeedsBoxUnbox())
+            {
+                return $"::winrt::to_hstring({parentPathExpression.CppWinRTName()})";
+            }
+
+            return $"{parentPathExpression.CppWinRTName()}{parentMemberAccessOperator.CppWinRTName()}{Instance.MethodName}({paramList})";
         }
     }
 

@@ -851,5 +851,78 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 return FindElement.ByName("SelectionChangedResult").GetText();
             }
         }
+
+        [TestMethod]
+        public void VerifyShoulderNavigationReachesFooterMenuItemsSourceItems()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationViewFooterMenuItemsSourcePage" }))
+            {
+                var navView = FindElement.ByName("NavView");
+
+                Log.Comment("Select the first main menu item to start.");
+                FindElement.ByName("Main 0").Click();
+                Wait.ForIdle();
+                Verify.AreEqual("Main 0", GetSelectedItem());
+
+                // Forward (right shoulder): walk the main list, then cross into the bound footer.
+                // FooterMenuItemsSource is bound, so FooterMenuItems() is empty. Without the fix the
+                // footer count comes back as 0 (or 1 with Settings visible), so selection saturates at
+                // the first footer item instead of walking through the rest.
+                Log.Comment("Walk forward from the main list into the footer items.");
+                string[] forwardTrail = { "Main 1", "Main 2", "Footer 0", "Footer 1", "Footer 2" };
+                foreach (var expected in forwardTrail)
+                {
+                    PressShoulderUntilSelected(navView, GamepadButton.RightShoulder, expected);
+                }
+
+                // Backward (left shoulder): walk back through the footer, then cross into the main list.
+                // Without the fix the in-footer walk reports "nothing here" and the offset < 0 fallback
+                // jumps straight to the main list, so the intermediate footer items are skipped.
+                Log.Comment("Walk backward from the footer items into the main list.");
+                string[] backwardTrail = { "Footer 1", "Footer 0", "Main 2", "Main 1", "Main 0" };
+                foreach (var expected in backwardTrail)
+                {
+                    PressShoulderUntilSelected(navView, GamepadButton.LeftShoulder, expected);
+                }
+            }
+
+            string GetSelectedItem()
+            {
+                return FindElement.ByName("SelectionChangedResult").GetText();
+            }
+
+            // Injected shoulder presses are occasionally dropped, so give each step a retry budget.
+            // A press that leaves the selection unchanged is treated as a dropped keystroke and retried;
+            // a press that moves the selection to the wrong item is a real ordering bug and fails
+            // immediately. This keeps a lost keystroke from looking identical to a skipped item.
+            void PressShoulderUntilSelected(UIObject navView, GamepadButton button, string expected)
+            {
+                const int maxAttempts = 5;
+                string before = GetSelectedItem();
+
+                for (int attempt = 1; attempt <= maxAttempts; attempt++)
+                {
+                    GamepadHelper.PressButton(navView, button);
+                    Wait.ForIdle();
+
+                    string after = GetSelectedItem();
+                    if (after == expected)
+                    {
+                        return;
+                    }
+
+                    if (after != before)
+                    {
+                        // Selection moved but not to the expected item: a real ordering bug, not a dropped press.
+                        Verify.AreEqual(expected, after, "Shoulder navigation reached the wrong item.");
+                        return;
+                    }
+
+                    Log.Comment("Shoulder press appears dropped (selection still '{0}', attempt {1}/{2}), retrying.", before, attempt, maxAttempts);
+                }
+
+                Verify.AreEqual(expected, GetSelectedItem(), "Shoulder navigation never reached the expected item.");
+            }
+        }
     }
 }

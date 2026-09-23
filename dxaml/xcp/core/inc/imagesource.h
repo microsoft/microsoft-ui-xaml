@@ -177,6 +177,9 @@ public:
 protected:
     bool m_fDecodeToRenderSize;
     bool m_fDecodeToRenderSizeForcedOff;
+
+    // Set when only liveness disabled DecodeToRenderSize, cleared when the SVG enters the live tree.
+    bool m_decodeToRenderSizeDisqualifiedByLiveness;
     uint32_t m_frameIndex = 0;
 
     _Check_return_ HRESULT OnImageAvailableCommon(

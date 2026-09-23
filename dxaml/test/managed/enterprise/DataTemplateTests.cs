@@ -36,7 +36,6 @@ namespace Microsoft.UI.Xaml.Tests
         }
         
         [TestMethod]
-        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // Catgates - ApplyManifestPhone.exe doesn't run on OneCore
         [TestProperty("Hosting:Mode", "UAP")]
         public void TestDataTemplateGeneration()
         {
@@ -60,7 +59,6 @@ namespace Microsoft.UI.Xaml.Tests
         }
 
         [TestMethod]
-        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // Catgates - ApplyManifestPhone.exe doesn't run on OneCore
         public void TestDataTemplateSelectorGeneration()
         {
             UIExecutor.Execute(() =>
@@ -131,7 +129,6 @@ namespace Microsoft.UI.Xaml.Tests
 
 
         [TestMethod]
-        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // Catgates - ApplyManifestPhone.exe doesn't run on OneCore
         [TestProperty("Hosting:Mode", "UAP")]   // DCPP: Test fails on WPF from failure to activate DMManager
         public void VerifyElementFromDataTemplateSelectorGetsArranged()
         {
@@ -180,7 +177,6 @@ namespace Microsoft.UI.Xaml.Tests
         }
 
         [TestMethod]
-        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // Catgates - ApplyManifestPhone.exe doesn't run on OneCore
         [TestProperty("Hosting:Mode", "UAP")]   // DCPP: Test fails on WPF from failure to activate DMManager
         public void VerifyRecyclingBetweenTemplateAndSelector()
         {
@@ -233,7 +229,6 @@ namespace Microsoft.UI.Xaml.Tests
         }
 
         [TestMethod]
-        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // Catgates - ApplyManifestPhone.exe doesn't run on OneCore
         public void TestDataTemplateRecycling()
         {
             UIExecutor.Execute(() =>
@@ -290,7 +285,6 @@ namespace Microsoft.UI.Xaml.Tests
         }
 
         [TestMethod]
-        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // This test only runs on Desktop
         public void TestDataTemplateRecyclingOwnerAffinity()
         {
             UIExecutor.Execute(() =>
@@ -341,6 +335,83 @@ namespace Microsoft.UI.Xaml.Tests
                 Verify.IsTrue(parent1.Children.Contains(recycled0_parent1));
                 Verify.IsTrue(parent1.Children.Contains(recycled1_parent1));
                 Verify.IsTrue(parent1.Children.Contains(recycled2_parent1));
+            });
+        }
+
+        [TestMethod]
+        public void TestDataTemplateFromCallback()
+        {
+            UIExecutor.Execute(() =>
+            {
+                var template = new DataTemplate(() => new Button() { Content = "FromCallback" });
+
+                var tree0 = GetElement(template, null);
+                Verify.IsNotNull(tree0);
+                var button0 = tree0 as Button;
+                Verify.IsNotNull(button0);
+                Verify.AreEqual(button0.Content, "FromCallback");
+                Verify.IsNull(button0.DataContext);
+            });
+        }
+
+        [TestMethod]
+        public void TestDataTemplateFromCallbackLoadContent()
+        {
+            UIExecutor.Execute(() =>
+            {
+                var template = new DataTemplate(() => new Button() { Content = "FromCallback" });
+
+                // LoadContent should route through the app callback and produce a fresh tree each time.
+                var content0 = template.LoadContent() as Button;
+                var content1 = template.LoadContent() as Button;
+                Verify.IsNotNull(content0);
+                Verify.IsNotNull(content1);
+                Verify.AreEqual(content0.Content, "FromCallback");
+                Verify.AreEqual(content1.Content, "FromCallback");
+                Verify.AreNotSame(content0, content1);
+            });
+        }
+
+        [TestMethod]
+        public void TestDataTemplateFromCallbackRecycling()
+        {
+            UIExecutor.Execute(() =>
+            {
+                var template = new DataTemplate(() => new Button() { Content = "FromCallback" });
+
+                var tree0 = GetElement(template, null);
+                Verify.IsNotNull(tree0);
+
+                RecycleElement(template, tree0, null);
+
+                // The recycled, callback-created element should be served from the pool.
+                var recycledTree = GetElement(template, null);
+                Verify.AreSame(tree0, recycledTree);
+            });
+        }
+
+        [TestMethod]
+        public void TestDataTemplateFromCallbackInvokedPerCreate()
+        {
+            UIExecutor.Execute(() =>
+            {
+                int invokeCount = 0;
+                var template = new DataTemplate(() =>
+                {
+                    invokeCount++;
+                    return new Button() { Content = "FromCallback" };
+                });
+
+                // Each cache miss invokes the callback.
+                var tree0 = GetElement(template, null);
+                var tree1 = GetElement(template, null);
+                Verify.AreEqual(2, invokeCount);
+
+                // Recycling and re-fetching should reuse the pooled element, not re-invoke the callback.
+                RecycleElement(template, tree0, null);
+                var recycled = GetElement(template, null);
+                Verify.AreSame(tree0, recycled);
+                Verify.AreEqual(2, invokeCount);
             });
         }
 

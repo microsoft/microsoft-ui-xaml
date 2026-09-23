@@ -59,6 +59,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(CodeAuthoredItemTemplateReceivesDataContext)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a code-authored DataTemplate (new DataTemplate(callback)) used as a GridView ItemTemplate realizes each item container through the core CDataTemplate::LoadContent path, raises DataContextChanged on each realized root as it goes live, and that each realized root receives its item as its inherited DataContext so a classic {Binding} authored on the code-built element (its Text) resolves - proving the app's peer, with its handlers and bindings, survives into the live tree. Also covers recycling: after clearing and re-populating the source, pooled elements are reused (the callback is not re-invoked) yet still receive the new item as DataContext, re-raise DataContextChanged, and update their binding.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(CodeAuthoredItemTemplateWithNullSubtreeDoesNotCrash)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a code-authored GridView ItemTemplate whose callback returns no subtree (null) is tolerated end-to-end (realization, layout, phasing) without crashing, matching an empty markup <DataTemplate/>.")
+        END_TEST_METHOD()
+
         //
         // Platform:Desktop
         //

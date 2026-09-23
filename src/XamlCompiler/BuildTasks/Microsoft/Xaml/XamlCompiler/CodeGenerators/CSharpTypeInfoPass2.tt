@@ -11,14 +11,19 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-<#  if(!Model.GenerateTypeInfo)  #>
+<#  if(Model.IsPass1)
+    {
+        WriteLine(TypeInfoDefinition.CSharpPass1StubMarker);
+        WriteLine(TypeInfoDefinition.CSharpPass1WarningPragma);
+    }
+    if(!Model.GenerateTypeInfo)#>
 <#  {                                       #>
-// No local types.
+<#=TypeInfoDefinition.CSharpNoTypeInfoMarker#>
 <#  }                                       #>
 <#  else                                    #>
 <#  {                                       #>
 
-<#  if (!ProjectInfo.IsLibrary && Model.AppMetadataProviderNamespace != null) #>
+<#  if (!Model.IsPass1 && !ProjectInfo.IsLibrary && Model.AppMetadataProviderNamespace != null)#>
 <#  { #>
 namespace <#=Model.AppMetadataProviderNamespace#>
 {
@@ -36,8 +41,10 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#  if (ProjectInfo.GenerateFullXamlMetadataProvider) { #>
     [<#=Globalize(KnownNamespaces.XamlMarkup)#>.FullXamlMetadataProvider()]
 <#  } #>
-    public sealed partial class XamlMetaDataProvider : <#=Globalize(KnownTypes.IXamlMetadataProvider)#>
+    <#=TypeInfoDefinition.XamlMetadataProviderClassDeclaration#> : <#=Globalize(KnownTypes.IXamlMetadataProvider)#>
     {
+<#  if (!Model.IsPass1)#>
+<#  {#>
         private <#=Globalize(ProjectInfo.XamlTypeInfoNamespace)#>.XamlTypeInfoProvider _provider = null;
 
         private <#=Globalize(ProjectInfo.XamlTypeInfoNamespace)#>.XamlTypeInfoProvider Provider
@@ -63,13 +70,21 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
         }
 
 <#      }#>
+<#  }#>
         /// <summary>
         /// GetXamlType(Type)
         /// </summary>
         <#=OverloadAttribute#>
         <#=NotCLSCompliantAttribute#>public <#=Globalize(KnownTypes.IXamlType)#> GetXamlType(global::System.Type type)
         {
+<#  if (Model.IsPass1)#>
+<#  {#>
+            throw new global::System.NotImplementedException();
+<#  }#>
+<#  else#>
+<#  {#>
             return Provider.GetXamlTypeByType(type);
+<#  }#>
         }
 
         /// <summary>
@@ -77,7 +92,14 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
         /// </summary>
         <#=NotCLSCompliantAttribute#>public <#=Globalize(KnownTypes.IXamlType)#> GetXamlType(string fullName)
         {
+<#  if (Model.IsPass1)#>
+<#  {#>
+            throw new global::System.NotImplementedException();
+<#  }#>
+<#  else#>
+<#  {#>
             return Provider.GetXamlTypeByName(fullName);
+<#  }#>
         }
 
         /// <summary>
@@ -85,10 +107,19 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
         /// </summary>
         <#=NotCLSCompliantAttribute#>public <#=Globalize(KnownTypes.XmlnsDefinition)#>[] GetXmlnsDefinitions()
         {
+<#  if (Model.IsPass1)#>
+<#  {#>
+            throw new global::System.NotImplementedException();
+<#  }#>
+<#  else#>
+<#  {#>
             return new <#=Globalize(KnownTypes.XmlnsDefinition)#>[0];
+<#  }#>
         }
     }
 
+<#  if (!Model.IsPass1)#>
+<#  {#>
 <#    if(ProjectInfo.EnableTypeInfoReflection)#>
 <#    { #>
     <#=GeneratedCodeAttribute#>
@@ -392,7 +423,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 
         override public void RunInitializer() 
         {
-            StaticInitializer();
+            StaticInitializer?.Invoke();
         }
 
         override public object CreateFromString(string input)
@@ -602,6 +633,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
         }
     }
 <#  } //End of non-reflection type info provider #>
+<#  } // End of pass 2 implementation#>
 }
 <# } // End of both type info providers codegen#>
 <#+ #>
@@ -707,12 +739,12 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+             InternalTypeEntry entry = SchemaInfo.TypeTable[i];      #>
 <#+             if (entry.IsDeprecated)                                 #>
 <#+             {                                                       #>
-#pragma warning disable 0618  //   Warning on Deprecated usage
+#pragma warning disable 0612, 0618  //   Warning on Deprecated usage
 <#+             }                                                       #>
             _typeTable[<#=entry.TypeIndex#>] = typeof(<#=entry.FullName#>);
 <#+             if (entry.IsDeprecated)                                 #>
 <#+             {                                                       #>
-#pragma warning restore 0618
+#pragma warning restore 0612, 0618
 <#+             }                                                       #>
 <#+         }                                                           #>
         }
@@ -797,7 +829,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                         {                               #>
                 userType.Activator = <#=Model.ActivatorName(uentry)#>;
 <#+                         }                               #>
-<#+                         if(!uentry.IsArray)  #>
+<#+                         if(uentry.RequiresStaticInitializer)  #>
 <#+                         {                               #>
                 userType.StaticInitializer = <#=Model.StaticInitializerName(uentry)#>;
 <#+                         }                               #>
@@ -819,7 +851,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                             // ([Obsolete(message, true)]) emits CS0619 (an error), which pragma 0618 does not suppress.#>
 <#+                             if (uentry.IsDeprecated)#>
 <#+                             {#>
-#pragma warning disable 0618  //   Warning on Deprecated usage
+#pragma warning disable 0612, 0618  //   Warning on Deprecated usage
 <#+                             }#>
 <#+                             if (uentry.TypeEntry.UnderlyingType.IsValueType)#>
 <#+                             {#>
@@ -831,7 +863,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                             }#>
 <#+                             if (uentry.IsDeprecated)#>
 <#+                             {#>
-#pragma warning restore 0618
+#pragma warning restore 0612, 0618
 <#+                             }#>
 <#+                         }#>
 <#+                         foreach(InternalXamlUserMemberInfo mem in uentry.Members)   #>
@@ -842,7 +874,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                         {                               #>
 <#+                             if (uentry.IsDeprecated)    #>
 <#+                             {                           #>
-#pragma warning disable 0618  //   Warning on Deprecated usage
+#pragma warning disable 0612, 0618  //   Warning on Deprecated usage
 <#+                             }                                            #>
 <#+                             foreach(string eValue in uentry.EnumValues)  #>
 <#+                             {                                            #>
@@ -850,7 +882,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                             }                           #>
 <#+                             if (uentry.IsDeprecated)    #>
 <#+                             {                           #>
-#pragma warning restore 0618
+#pragma warning restore 0612, 0618
 <#+                             }                           #>
 <#+                         }                               #>
 <#+                         if(uentry.IsBindable)           #>
@@ -888,12 +920,12 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                 {                                                               #>
 <#+                     if (entry.IsDeprecated)                                     #>
 <#+                     {                                                           #>
-#pragma warning disable 0618  //   Warning on Deprecated usage
+#pragma warning disable 0612, 0618  //   Warning on Deprecated usage
 <#+                     }                                                           #>
         private object <#=Model.ActivatorName(entry)#>() { return new <#=entry.FullName#>(); }
 <#+                     if (entry.IsDeprecated)                                     #>
 <#+                     {                                                           #>
-#pragma warning restore 0618
+#pragma warning restore 0612, 0618
 <#+                     }                                                           #>
 
 <#+                 }           #>
@@ -904,16 +936,16 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+         {                                                                       #>
 <#+             foreach(InternalXamlUserTypeInfo entry in SchemaInfo.UserTypeInfo)  #>
 <#+             {                                                                   #>
-<#+                 if(!entry.IsArray)                                              #>
+<#+                 if(entry.RequiresStaticInitializer)                             #>
 <#+                 {                                                               #>
 <#+                     if (entry.IsDeprecated)                                     #>
 <#+                     {                                                           #>
-#pragma warning disable 0618  //   Warning on Deprecated usage
+#pragma warning disable 0612, 0618  //   Warning on Deprecated usage
 <#+                     }                                                           #>
         private void <#=Model.StaticInitializerName(entry)#>() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(<#=entry.FullName#>).TypeHandle);
 <#+                     if (entry.IsDeprecated)                                     #>
 <#+                     {                                                           #>
-#pragma warning restore 0618
+#pragma warning restore 0612, 0618
 <#+                     }                                                           #>
 <#+                 }           #>
 <#+             }               #>
@@ -927,7 +959,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                 {                                                               #>
 <#+                     if (entry.IsDeprecated)                                     #>
 <#+                     {                                                           #>
-#pragma warning disable 0618  //   Warning on Deprecated usage
+#pragma warning disable 0612, 0618  //   Warning on Deprecated usage
 <#+                     }                                                           #>
         private void <#=Model.VectorAddName(entry)#>(object instance, object item)
         {
@@ -937,7 +969,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
         }
 <#+                     if (entry.IsDeprecated)                                     #>
 <#+                     {                                                           #>
-#pragma warning restore 0618
+#pragma warning restore 0612, 0618
 <#+                     }                                                           #>
 
 <#+                 }                       #>
@@ -945,7 +977,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                 {                       #>
 <#+                     if (entry.IsDeprecated)                                     #>
 <#+                     {                                                           #>
-#pragma warning disable 0618  //   Warning on Deprecated usage
+#pragma warning disable 0612, 0618  //   Warning on Deprecated usage
 <#+                     }                                                           #>
         private void <#=Model.MapAddName(entry)#>(object instance, object key, object item)
         {
@@ -956,7 +988,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
         }
 <#+                     if (entry.IsDeprecated)                                     #>
 <#+                     {                                                           #>
-#pragma warning restore 0618
+#pragma warning restore 0612, 0618
 <#+                     }                                                           #>
 
 <#+                 }           #>
@@ -1028,7 +1060,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 
 <#+                 if (entry.IsDeprecated)             #>
 <#+                 {                                   #>
-#pragma warning disable 0618  //   Warning on Deprecated usage
+#pragma warning disable 0612, 0618  //   Warning on Deprecated usage
 <#+                 }                                   #>
 <#+                 if (entry.HasPublicGetter)          #>
 <#+                 {                                   #>
@@ -1080,7 +1112,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                }    #>
 <#+                     if (entry.IsDeprecated) #>
 <#+                     {                       #>
-#pragma warning restore 0618
+#pragma warning restore 0612, 0618
 <#+                     }                       #>
 <#+            }        #>
 <#+        }            #>

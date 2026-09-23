@@ -202,23 +202,9 @@ steps:
         projectCaching: ${{ parameters.projectCaching }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
 
-  # Tabular lives in the internal-only MUXControlsTabular.sln (kept out of the mirrored MUXControls.sln
-  # so the public source drop has no dangling project reference). Built after MUXControls.sln so MUXC's
-  # component winmd exists first (see EnsureMuxcComponentWinMDBuilt in the Tabular vcxproj). This step
-  # MUST stay after the MUXControls.sln step. The solution is excluded from the public mirror, so it is
-  # guarded off GitHub-backed legs (where the source tree does not contain it), matching the
-  # XamlCompilerPrerequisites idiom above.
-  - ${{ if eq(parameters.buildProductOnly, 'false') }}:
-    - template: WinUI-BuildProject-Steps.yml
-      parameters:
-        solutionName: MUXControlsTabular.sln
-        solutionPath: $(Build.SourcesDirectory)\controls
-        nugetConfigPath: nuget.config
-        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:DisableWarnForInvalidRestoreProjects=true ${{parameters.additionalMSBuildOptions}} /p:WinUIVersion=$(versionFinal) /p:PublishAot=$(publishAotValue)'
-        msbuildInstallDir: $(_buildToolsDirectory)
-        projectCaching: ${{ parameters.projectCaching }}
-        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-        condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+  # Tabular builds as part of MUXControls.sln. Microsoft.UI.Xaml.Controls.Tabular.vcxproj carries
+  # build-order-only ProjectReferences to MergedWinMD and to MUXC's controls DLL, so the solution
+  # graph sequences MUXC -> Tabular on its own and no separate solution or step is needed.
 
   - script: |
      dir /b /s $(Build.SourcesDirectory)\packages\*.nupkg

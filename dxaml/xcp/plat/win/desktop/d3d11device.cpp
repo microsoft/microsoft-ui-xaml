@@ -82,6 +82,12 @@ CD3D11Device::CD3D11Device()
 //-------------------------------------------------------------------------
 CD3D11Device::~CD3D11Device()
 {
+    // m_deviceInstance is empty if CD3D11DeviceInstance::GetInstance failed inside Create.
+    if (m_deviceInstance != nullptr)
+    {
+        m_deviceInstance->ReleaseDeviceSpecificD2DResources(this);
+    }
+
     // Release intermediate upload texture
     ReleaseInterface(m_UploadIntermediate.pTexture);
 }

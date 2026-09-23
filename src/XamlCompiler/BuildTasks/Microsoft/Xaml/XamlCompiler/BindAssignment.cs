@@ -385,6 +385,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 bool canAssignTo = this.ValueType.CanAssignDirectlyTo(this.MemberType) || this.ValueType.CanBoxTo(this.MemberType);
                 bool canAssignBack = this.MemberType.CanAssignDirectlyTo(this.ValueType) || this.MemberType.CanInlineConvert(this.ValueType);
 
+                // A bool/bool? function result bound to Visibility is converted inline from "result"
+                // (see GitHub issue #8644), so it needs no converter for OneTime/OneWay bindings.
+                if (this.PathStep is FunctionStep && !this.IsTrackingTarget && this.IsBoolToVisibilitySpecialCase)
+                {
+                    canAssignTo = true;
+                }
+
                 if (!dontNeedConverter && !this.IsTrackingTarget)
                 {
                     // For One Time and One Way bindings, we can assign directly from model to property.
@@ -440,12 +447,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             }
 
             if ( this.PathStep is FunctionStep && 
-                !this.PathStep.ValueType.CanAssignDirectlyTo(this.MemberType))
+                !this.PathStep.ValueType.CanAssignDirectlyTo(this.MemberType) &&
+                !this.IsBoolToVisibilitySpecialCase)
             {
                 if (!this.MemberType.IsString() || this.PathStep.ValueType.IsVoid())
                 {
-                    // Function return type must match the binding target, unless the target is
-                    // a string so we can call ConvertValue on the return of the function.
                     issues.Add(new BindAssignmentValidationError(this.bindItem, ResourceUtilities.FormatString(
                         XamlCompilerResources.BindAssignment_FunctionReturnTypeInvalid,
                         this.PathStep.ValueType.UnderlyingType.FullName, this.MemberType)));
@@ -453,6 +459,16 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 }
             }
             return true;
+        }
+
+        private bool IsBoolToVisibilitySpecialCase
+        {
+            get
+            {
+                return this.Converter == null &&
+                    this.MemberType.UnderlyingType.FullName == KnownTypes.Visibility &&
+                    this.ValueType.IsBoolOrNullableBool();
+            }
         }
 
         private bool ValidateBindBackAssignment(IList<XamlCompileErrorBase> issues)
@@ -503,13 +519,22 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         private void ApplySpecialCaseCasting()
         {
             // artificially append a cast for bool to visibility
-            if (this.Converter == null && this.MemberType.UnderlyingType.FullName == KnownTypes.Visibility)
+            if (this.IsBoolToVisibilitySpecialCase)
             {
-                if (this.ValueType.IsBoolOrNullableBool())
+                // Functions must be the leaf of a bind path (see FunctionNotLeaf), so a FunctionStep
+                // cannot legally have a child. Appending an artificial CastStep here would produce a
+                // child whose update reads the conventional "obj" parameter, but a FunctionStep's
+                // generated update/invoke methods expose the value as "result" instead of "obj",
+                // yielding code that references an undefined "obj" (see GitHub issue #8644).
+                // The bool->Visibility conversion is a registered inline conversion, so keeping the
+                // assignment on the FunctionStep lets the value be converted directly from "result".
+                if (this.PathStep is FunctionStep)
                 {
-                    BindPathStep cast = new CastStep(this.MemberType, this.PathStep, this.ApiInformation);
-                    this.PathStep = BindUniverse.EnsureUniquePathStep(cast);
+                    return;
                 }
+
+                BindPathStep cast = new CastStep(this.MemberType, this.PathStep, this.ApiInformation);
+                this.PathStep = BindUniverse.EnsureUniquePathStep(cast);
             }
         }
 

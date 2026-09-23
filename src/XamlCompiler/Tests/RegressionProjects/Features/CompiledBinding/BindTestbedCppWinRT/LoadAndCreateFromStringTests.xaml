@@ -166,6 +166,15 @@
                     <Button Click="UpdateValuesClick" >Update Values</Button>
                     <Button Click="ResetValuesClick" >Reset Values</Button>
                 </StackPanel>
+
+                <!-- Regression for GitHub #9255: a deferred (x:Load) element whose object-typed
+                     attached property is bound to an hstring source. The deferred assignment must
+                     box the value (::winrt::box_value) just like the immediate Set_ call, otherwise
+                     the generated C++/WinRT code fails to compile (an hstring cannot be assigned to
+                     the IInspectable-typed deferred field). -->
+                <TextBlock Text="Boxed deferred value x:Bind" x:Name="BoxedDeferredValueLoad"
+                           x:Load="{x:Bind Model.BoolPropWithINPC, Mode=OneWay}"
+                           ToolTipService.ToolTip="{x:Bind Model.StringPropertyDP, Mode=OneWay}"/>
             </StackPanel>
         </ScrollViewer>
     </Grid>

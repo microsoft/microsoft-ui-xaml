@@ -900,7 +900,7 @@ namespace DirectUI
             std::unique_ptr<VirtualizationInformation> m_pVirtualizationInformation;
 
 #if WI_IS_FEATURE_PRESENT(Feature_Xaml2018)
-            ctl::ComPtr<wfc::IVector<xaml::InteractionBase*>> m_interactions;
+            TrackerPtr<wfc::IVector<xaml::InteractionBase*>> m_interactions;
 #endif // WI_IS_FEATURE_PRESENT(Feature_Xaml2018)
     };
 }

@@ -38,7 +38,7 @@ parameters:
 
 variables:
 - template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
-- template: build\AzurePipelinesTemplates\WinUI-BuildVariables.yml@WinUIInternal
+- template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
 - group: WinUI-Variable-Library
 - name: WindowsContainerImage
   value: 'onebranch.azurecr.io/windows/ltsc2022/vse2022:latest'
@@ -48,10 +48,6 @@ resources:
     - repository: templates
       type: git
       name: OneBranch.Pipelines/GovernedTemplates
-      ref: refs/heads/main
-    - repository: WinUIInternal
-      type: git
-      name: WinUI/microsoft-ui-xaml-lift
       ref: refs/heads/main
     - repository: WindowsAppSDKConfig
       type: git
@@ -146,7 +142,7 @@ extends:
               Write-Host "GitHub PR context validation completed."
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
+      - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
         parameters:
           pipelineKind: GitHubPR
           buildScenarioApps: true
@@ -157,7 +153,7 @@ extends:
           dependsOn: ValidateGitHubPrContext
 
     - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false)) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
+      - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
         parameters:
           stageName: Build_MUXFinalRelease
           pipelineKind: PR-2
@@ -169,19 +165,17 @@ extends:
           dependsOn: ValidateGitHubPrContext
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-RunTests-Stage.yml@WinUIInternal
+      - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
         parameters:
           pipelineKind: PR
-          # Test results are published but do not gate the pipeline yet.
-          failOnTestFailure: false
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml@WinUIInternal
+      - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml
         parameters:
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml@WinUIInternal
+      - template: AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml
         parameters:
           pipelineKind: GitHubPR
           dependsOn: Build

@@ -10,6 +10,8 @@
 
 #include "DispatcherHelper.h"
 
+#include <dcomp.h>
+#include <CppWinrtContentExternalOutputLinkHelper.h>
 #include <Microsoft.UI.Content.h>
 
 #include "WebView2.g.h"
@@ -223,7 +225,7 @@ private:
     HWND m_inputWindowHwnd{ nullptr };
     winrt::hstring m_stopNavigateOnUriChanged{};
     bool m_canGoPropSetInternally{};
-    winrt::IContentExternalOutputLink m_systemVisualBridge;
+    ContentExternalLinkHelper::OutputLink m_systemVisualBridge;
 
     winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker;
     winrt::UIElement::GotFocus_revoker m_gotFocusRevoker;
