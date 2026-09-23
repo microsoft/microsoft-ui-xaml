@@ -759,6 +759,32 @@ void InkToolbar::OnFlyoutOpened(winrt::IInspectable const& sender, winrt::IInspe
             winrt::get_self<InkToolbarEraserButton>(eraserButton)->SetFocusToSelectedEraser(winrt::FocusState::Programmatic);
         }
     }
+
+    // The flyout name is set on the flyout content, but ShouldConstrainToRootBounds(false) hosts it in
+    // a separate popup window that Narrator reads as "Popup". Copy the name onto that popup so the
+    // flyout is announced by name instead of "popup".
+    auto flyoutName = winrt::AutomationProperties::GetName(flyout);
+    if (!flyoutName.empty())
+    {
+        winrt::UIElement contentRoot{ nullptr };
+        if (found->m_penL3)
+        {
+            contentRoot = found->m_penL3.try_as<winrt::UIElement>();
+        }
+        else if (auto asFlyout = flyout.try_as<winrt::Flyout>())
+        {
+            contentRoot = asFlyout.Content().try_as<winrt::UIElement>();
+        }
+
+        for (winrt::DependencyObject node = contentRoot; node; node = winrt::VisualTreeHelper::GetParent(node))
+        {
+            if (node.try_as<winrt::Microsoft::UI::Xaml::Controls::FlyoutPresenter>() ||
+                node.try_as<winrt::Microsoft::UI::Xaml::Controls::Primitives::Popup>())
+            {
+                winrt::AutomationProperties::SetName(node, flyoutName);
+            }
+        }
+    }
 }
 
 // ---- Visual / flyout helpers ---------------------------------------------------------------
@@ -872,6 +898,20 @@ void InkToolbar::OnActiveToolChanged(winrt::DependencyPropertyChangedEventArgs c
     {
         UpdateToolButtonVisuals(newTool, newTool);
         penButton = newTool.try_as<winrt::InkToolbarPenButton>();
+
+        // Announce the new tool to Narrator; without an ElementSelected event, picking a tool is silent.
+        if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::SelectionItemPatternOnElementSelected))
+        {
+            auto peer = winrt::FrameworkElementAutomationPeer::FromElement(newTool);
+            if (!peer)
+            {
+                peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(newTool);
+            }
+            if (peer)
+            {
+                peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementSelected);
+            }
+        }
     }
 
     if (penButton)
