@@ -23,6 +23,11 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <Thickness x:Key="ResizeGripperSeparatorThickness">0,0,2,0</Thickness>
+    <!-- Horizontal grippers sit on their host's logical trailing edge, which is the LEFT edge under
+         RTL. The gripper's subtree is not auto-mirrored (its host arranges it at explicit physical
+         coordinates and it mirrors its own drag axis by hand), so a right-sided thickness would draw
+         the separator a full gripper width inboard of the column edge instead of on it. -->
+    <Thickness x:Key="ResizeGripperSeparatorThicknessMirrored">2,0,0,0</Thickness>
     <Thickness x:Key="ResizeGripperSeparatorThicknessVertical">0,0,0,2</Thickness>
 
     <Style TargetType="privatecontrols:ResizeGripper">
@@ -73,6 +78,12 @@
                                 <VisualState x:Name="Horizontal">
                                     <VisualState.Setters>
                                         <Setter Target="Separator.BorderThickness" Value="{ThemeResource ResizeGripperSeparatorThickness}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <!-- Horizontal under RTL: same affordance on the mirrored edge. -->
+                                <VisualState x:Name="HorizontalMirrored">
+                                    <VisualState.Setters>
+                                        <Setter Target="Separator.BorderThickness" Value="{ThemeResource ResizeGripperSeparatorThicknessMirrored}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Vertical">

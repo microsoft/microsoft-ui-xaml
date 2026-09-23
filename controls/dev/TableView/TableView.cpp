@@ -307,6 +307,10 @@ TableView::TableView()
             if (auto strongThis = weakThis.get())
             {
                 strongThis->QueueRebuildHeaders();
+                // Body cells carry the same stamp as a one-sided BorderThickness, and realized rows
+                // are not rebuilt by the header pass - refresh them or the body grid lines stay on
+                // the edge the previous direction chose.
+                strongThis->RefreshGridLinesOnRealizedRows();
             }
         });
 
