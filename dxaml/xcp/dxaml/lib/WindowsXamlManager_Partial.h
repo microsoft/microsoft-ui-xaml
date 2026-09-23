@@ -74,14 +74,21 @@ namespace DirectUI
             virtual _Check_return_ HRESULT OnFrameworkShutdownStarting(
                 _In_ msy::IDispatcherQueueShutdownStartingEventArgs* args) = 0;
 
+            void RecordThreadShutdownCompleted();
+
         private:
+            void PrepareForDllUnloadIfReady(bool requestDllUnload, bool threadShutdownCompleted);
+
             wrl::ComPtr<msy::IDispatcherQueue> m_dispatcherQueue;
             wrl::ComPtr<msy::IDispatcherQueue3> m_dispatcherQueue3;
             EventRegistrationToken m_frameworkShutdownStartingToken {};
             State m_state {State::Normal};
 
             inline static std::atomic<int> s_instancesInProcess{};
+            inline static int s_threadShutdownCompletionsPending{};
             inline static bool s_processShutdownInProgress{ false };
+            inline static bool s_dllUnloadRequested{ false };
+            inline static bool s_dllUnloadPreparationInProgress{ false };
         };
 
         friend class XamlCoreLegacyShutdown;

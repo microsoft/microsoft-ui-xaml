@@ -40,6 +40,12 @@ public:
     using UntypedHandlerType = wf::IEventHandler<IInspectable*>;
     using CompletedHandlerType =
         wf::IEventHandler<xaml_hosting::WinUIProcessShutdownCompletedEventArgs*>;
+    using FireAllEventSourceOptions =
+        Microsoft::WRL::InvokeModeOptions<Microsoft::WRL::FireAll>;
+
+    template<typename HandlerType>
+    using FireAllEventSource =
+        Microsoft::WRL::EventSource<HandlerType, FireAllEventSourceOptions>;
 
     _Check_return_ HRESULT AddStartingHandler(
         _In_ UntypedHandlerType* handler,
@@ -91,27 +97,48 @@ public:
 
     void RaiseStarting()
     {
-        IGNOREHR(m_startingEventSource.InvokeAll(nullptr, nullptr));
+        IFCFAILFAST(m_startingEventSource.InvokeAll(nullptr, nullptr));
     }
 
-    void RaiseCompleted()
+    bool RaiseCompleted()
     {
         ctl::ComPtr<WinUIProcessShutdownCompletedEventArgs> args;
         IFCFAILFAST(ctl::make(&args));
-        IGNOREHR(m_completedEventSource.InvokeAll(nullptr, args.Get()));
+        IFCFAILFAST(m_completedEventSource.InvokeAll(nullptr, args.Get()));
+
+        BOOLEAN requestDllUnload = false;
+        IFCFAILFAST(args->get_RequestDllUnload(&requestDllUnload));
+        return !!requestDllUnload;
+    }
+
+    void RaiseDllUnloadPreparing()
+    {
+        IFCFAILFAST(m_dllUnloadPreparingEventSource.InvokeAll(nullptr, nullptr));
+    }
+
+    void RaiseDllUnloadPreparationComplete()
+    {
+        IFCFAILFAST(m_dllUnloadPreparationCompleteEventSource.InvokeAll(nullptr, nullptr));
     }
 
 private:
-    Microsoft::WRL::EventSource<UntypedHandlerType> m_startingEventSource;
-    Microsoft::WRL::EventSource<CompletedHandlerType> m_completedEventSource;
-    Microsoft::WRL::EventSource<UntypedHandlerType> m_dllUnloadPreparingEventSource;
-    Microsoft::WRL::EventSource<UntypedHandlerType> m_dllUnloadPreparationCompleteEventSource;
+    FireAllEventSource<UntypedHandlerType> m_startingEventSource;
+    FireAllEventSource<CompletedHandlerType> m_completedEventSource;
+    FireAllEventSource<UntypedHandlerType> m_dllUnloadPreparingEventSource;
+    FireAllEventSource<UntypedHandlerType> m_dllUnloadPreparationCompleteEventSource;
 };
 
 WinUIProcessShutdownEvents& GetWinUIProcessShutdownEvents()
 {
     static WinUIProcessShutdownEvents events;
     return events;
+}
+
+void PrepareForDllUnload()
+{
+    GetWinUIProcessShutdownEvents().RaiseDllUnloadPreparing();
+    EnsureWinUIUninitialized();
+    GetWinUIProcessShutdownEvents().RaiseDllUnloadPreparationComplete();
 }
 }
 
@@ -225,6 +252,8 @@ public:
         IGNOREHR(core->Close(&shouldRaiseProcessShutdownEvents));
 
         managerStrongRef->RaiseXamlShutdownCompletedOnThreadEvent(args);
+
+        core->RecordThreadShutdownCompleted();
 
         if (shouldRaiseProcessShutdownEvents)
         {
@@ -405,16 +434,19 @@ _Check_return_ HRESULT WindowsXamlManager::XamlCore::Initialize(msy::IDispatcher
         // Take the lock here to ensure FrameworkApplication::ReleaseCurrent isn't happening on another thread while
         //  we're starting up the Application (see XamlCore::Close)
         CApplicationLock lock;
-        if (s_processShutdownInProgress)
+        if (s_processShutdownInProgress || s_dllUnloadPreparationInProgress)
         {
             IFC_RETURN(ErrorHelper::OriginateError(
                 HRESULT_FROM_WIN32(ERROR_INVALID_STATE),
                 XSTRING_PTR_EPHEMERAL(
-                    L"Xaml cannot be initialized while process shutdown is in progress. "
-                    L"Wait until WinUIProcessShutdownCompleted is raised."
+                    L"Xaml cannot be initialized while process shutdown or DLL unload preparation is in progress."
                 ), true /*outputToDebugger*/));
         }
         ++s_instancesInProcess;
+        if (FrameworkApplication::GetCurrentShutdownModel() == xaml::ShutdownModel_Version2)
+        {
+            ++s_threadShutdownCompletionsPending;
+        }
 
         frameworkApplication = FrameworkApplication::GetCurrentNoRef();
         if (frameworkApplication)
@@ -730,6 +762,44 @@ _Check_return_ HRESULT WindowsXamlManager::XamlCore::Close(_Out_ bool* shouldRai
     return S_OK;
 }
 
+void WindowsXamlManager::XamlCore::RecordThreadShutdownCompleted()
+{
+    PrepareForDllUnloadIfReady(false /*requestDllUnload*/, true /*threadShutdownCompleted*/);
+}
+
+void WindowsXamlManager::XamlCore::PrepareForDllUnloadIfReady(
+    bool requestDllUnload,
+    bool threadShutdownCompleted)
+{
+    bool shouldPrepareForDllUnload = false;
+    {
+        CApplicationLock applicationLock;
+
+        if (threadShutdownCompleted)
+        {
+            FAIL_FAST_ASSERT(s_threadShutdownCompletionsPending > 0);
+            --s_threadShutdownCompletionsPending;
+        }
+
+        s_dllUnloadRequested |= requestDllUnload;
+
+        if (s_dllUnloadRequested &&
+            !s_processShutdownInProgress &&
+            s_instancesInProcess == 0 &&
+            s_threadShutdownCompletionsPending == 0)
+        {
+            s_dllUnloadRequested = false;
+            s_dllUnloadPreparationInProgress = true;
+            shouldPrepareForDllUnload = true;
+        }
+    }
+
+    if (shouldPrepareForDllUnload)
+    {
+        PrepareForDllUnload();
+    }
+}
+
 void WindowsXamlManager::XamlCore::RaiseProcessShutdownEvents()
 {
     GetWinUIProcessShutdownEvents().RaiseStarting();
@@ -741,10 +811,8 @@ void WindowsXamlManager::XamlCore::RaiseProcessShutdownEvents()
         s_processShutdownInProgress = false;
     }
 
-    GetWinUIProcessShutdownEvents().RaiseCompleted();
-
-    // TODO: this belongs in a separate DllUnloadPreparing/PreparationCompleted stage
-    EnsureWinUIUninitialized();
+    const bool requestDllUnload = GetWinUIProcessShutdownEvents().RaiseCompleted();
+    PrepareForDllUnloadIfReady(requestDllUnload, false /*threadShutdownCompleted*/);
 }
 
 _Check_return_ HRESULT WindowsXamlManager::Close()
