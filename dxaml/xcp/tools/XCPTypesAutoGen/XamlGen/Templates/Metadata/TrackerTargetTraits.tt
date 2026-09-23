@@ -11,7 +11,6 @@
 #include "TrackerTargetTraits.h"
 
 <# foreach (var type in Model.GetAllTypeTableTypes().OfType<ClassDefinition>().Where(c => c.IsTrackerTarget && c.IsADependencyObject && !c.IsGenericType)) { #>
-class <#= type.CoreName #>;
 template<>
-struct is_tracker_target<<#= type.CoreName #>> : std::true_type {};
+struct is_tracker_target<<#= AsCppType(new TypeReference(type).AbiFullName) #>> : std::true_type {};
 <# } #>

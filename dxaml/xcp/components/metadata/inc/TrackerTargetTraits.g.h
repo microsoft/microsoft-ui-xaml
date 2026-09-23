@@ -13,1677 +13,1119 @@
 
 #include "TrackerTargetTraits.h"
 
-class CDependencyObject;
 template<>
-struct is_tracker_target<CDependencyObject> : std::true_type {};
-class CAppBarButtonTemplateSettings;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IDependencyObject> : std::true_type {};
 template<>
-struct is_tracker_target<CAppBarButtonTemplateSettings> : std::true_type {};
-class CAppBarTemplateSettings;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IAppBarButtonTemplateSettings> : std::true_type {};
 template<>
-struct is_tracker_target<CAppBarTemplateSettings> : std::true_type {};
-class CAppBarToggleButtonTemplateSettings;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IAppBarTemplateSettings> : std::true_type {};
 template<>
-struct is_tracker_target<CAppBarToggleButtonTemplateSettings> : std::true_type {};
-class CApplication;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IAppBarToggleButtonTemplateSettings> : std::true_type {};
 template<>
-struct is_tracker_target<CApplication> : std::true_type {};
-class CApplicationBarService;
+struct is_tracker_target<DirectUI::Application> : std::true_type {};
 template<>
-struct is_tracker_target<CApplicationBarService> : std::true_type {};
-class CAutomationAnnotation;
+struct is_tracker_target<DirectUI::ApplicationBarService> : std::true_type {};
 template<>
-struct is_tracker_target<CAutomationAnnotation> : std::true_type {};
-class CAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation> : std::true_type {};
 template<>
-struct is_tracker_target<CAutomationPeer> : std::true_type {};
-class CAutomationPeerAnnotation;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CAutomationPeerAnnotation> : std::true_type {};
-class CAutoSuggestBoxQuerySubmittedEventArgs;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerAnnotation> : std::true_type {};
 template<>
-struct is_tracker_target<CAutoSuggestBoxQuerySubmittedEventArgs> : std::true_type {};
-class CAutoSuggestBoxSuggestionChosenEventArgs;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxQuerySubmittedEventArgs> : std::true_type {};
 template<>
-struct is_tracker_target<CAutoSuggestBoxSuggestionChosenEventArgs> : std::true_type {};
-class CAutoSuggestBoxTextChangedEventArgs;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxSuggestionChosenEventArgs> : std::true_type {};
 template<>
-struct is_tracker_target<CAutoSuggestBoxTextChangedEventArgs> : std::true_type {};
-class CBrush;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxTextChangedEventArgs> : std::true_type {};
 template<>
-struct is_tracker_target<CBrush> : std::true_type {};
-class CBrushTransition;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IBrush> : std::true_type {};
 template<>
-struct is_tracker_target<CBrushTransition> : std::true_type {};
-class CCacheMode;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IBrushTransition> : std::true_type {};
 template<>
-struct is_tracker_target<CCacheMode> : std::true_type {};
-class CCalendarViewTemplateSettings;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::ICacheMode> : std::true_type {};
 template<>
-struct is_tracker_target<CCalendarViewTemplateSettings> : std::true_type {};
-class CCollectionView;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::ICalendarViewTemplateSettings> : std::true_type {};
 template<>
-struct is_tracker_target<CCollectionView> : std::true_type {};
-class CCollectionViewGroup;
+struct is_tracker_target<DirectUI::CollectionView> : std::true_type {};
 template<>
-struct is_tracker_target<CCollectionViewGroup> : std::true_type {};
-class CCollectionViewSource;
+struct is_tracker_target<DirectUI::CollectionViewGroup> : std::true_type {};
 template<>
-struct is_tracker_target<CCollectionViewSource> : std::true_type {};
-class CColorKeyFrame;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Data::ICollectionViewSource> : std::true_type {};
 template<>
-struct is_tracker_target<CColorKeyFrame> : std::true_type {};
-class CColumnDefinition;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IColorKeyFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CColumnDefinition> : std::true_type {};
-class CComboBoxTemplateSettings;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IColumnDefinition> : std::true_type {};
 template<>
-struct is_tracker_target<CComboBoxTemplateSettings> : std::true_type {};
-class CCommandBarTemplateSettings;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IComboBoxTemplateSettings> : std::true_type {};
 template<>
-struct is_tracker_target<CCommandBarTemplateSettings> : std::true_type {};
-class CConnectedAnimation;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::ICommandBarTemplateSettings> : std::true_type {};
 template<>
-struct is_tracker_target<CConnectedAnimation> : std::true_type {};
-class CConnectedAnimationService;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IConnectedAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CConnectedAnimationService> : std::true_type {};
-class CDebugSettings;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IConnectedAnimationService> : std::true_type {};
 template<>
-struct is_tracker_target<CDebugSettings> : std::true_type {};
-class CDeferredElement;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IDebugSettings> : std::true_type {};
 template<>
-struct is_tracker_target<CDeferredElement> : std::true_type {};
-class CDependencyObjectWrapper;
+struct is_tracker_target<DirectUI::DeferredElement> : std::true_type {};
 template<>
-struct is_tracker_target<CDependencyObjectWrapper> : std::true_type {};
-class CDependencyPropertyProxy;
+struct is_tracker_target<DirectUI::DependencyObjectWrapper> : std::true_type {};
 template<>
-struct is_tracker_target<CDependencyPropertyProxy> : std::true_type {};
-class CDeployment;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Internal::IDependencyPropertyProxy> : std::true_type {};
 template<>
-struct is_tracker_target<CDeployment> : std::true_type {};
-class CDoubleKeyFrame;
+struct is_tracker_target<DirectUI::Deployment> : std::true_type {};
 template<>
-struct is_tracker_target<CDoubleKeyFrame> : std::true_type {};
-class CEasingFunctionBase;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IDoubleKeyFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CEasingFunctionBase> : std::true_type {};
-class CEnumerated;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IEasingFunctionBase> : std::true_type {};
 template<>
-struct is_tracker_target<CEnumerated> : std::true_type {};
-class CManagedObjectReference;
+struct is_tracker_target<DirectUI::Enumerated> : std::true_type {};
 template<>
-struct is_tracker_target<CManagedObjectReference> : std::true_type {};
-class CFlyoutBase;
+struct is_tracker_target<DirectUI::ExternalObjectReference> : std::true_type {};
 template<>
-struct is_tracker_target<CFlyoutBase> : std::true_type {};
-class CFontFamily;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IFlyoutBase> : std::true_type {};
 template<>
-struct is_tracker_target<CFontFamily> : std::true_type {};
-class CFrameworkTemplate;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IFontFamily> : std::true_type {};
 template<>
-struct is_tracker_target<CFrameworkTemplate> : std::true_type {};
-class CGeneralTransform;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IFrameworkTemplate> : std::true_type {};
 template<>
-struct is_tracker_target<CGeneralTransform> : std::true_type {};
-class CGeometry;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IGeneralTransform> : std::true_type {};
 template<>
-struct is_tracker_target<CGeometry> : std::true_type {};
-class CGradientStop;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IGeometry> : std::true_type {};
 template<>
-struct is_tracker_target<CGradientStop> : std::true_type {};
-class CGroupStyle;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IGradientStop> : std::true_type {};
 template<>
-struct is_tracker_target<CGroupStyle> : std::true_type {};
-class HWCompNode;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IGroupStyle> : std::true_type {};
 template<>
-struct is_tracker_target<HWCompNode> : std::true_type {};
-class CIconSource;
+struct is_tracker_target<DirectUI::HWCompNode> : std::true_type {};
 template<>
-struct is_tracker_target<CIconSource> : std::true_type {};
-class CImageSource;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IIconSource> : std::true_type {};
 template<>
-struct is_tracker_target<CImageSource> : std::true_type {};
-class CInertiaExpansionBehavior;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IImageSource> : std::true_type {};
 template<>
-struct is_tracker_target<CInertiaExpansionBehavior> : std::true_type {};
-class CInertiaRotationBehavior;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Input::IInertiaExpansionBehavior> : std::true_type {};
 template<>
-struct is_tracker_target<CInertiaRotationBehavior> : std::true_type {};
-class CInertiaTranslationBehavior;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Input::IInertiaRotationBehavior> : std::true_type {};
 template<>
-struct is_tracker_target<CInertiaTranslationBehavior> : std::true_type {};
-class CInputScope;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Input::IInertiaTranslationBehavior> : std::true_type {};
 template<>
-struct is_tracker_target<CInputScope> : std::true_type {};
-class CInputScopeName;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Input::IInputScope> : std::true_type {};
 template<>
-struct is_tracker_target<CInputScopeName> : std::true_type {};
-class CInputValidationCommand;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Input::IInputScopeName> : std::true_type {};
 template<>
-struct is_tracker_target<CInputValidationCommand> : std::true_type {};
-class CIRawElementProviderSimple;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IInputValidationCommand> : std::true_type {};
 template<>
-struct is_tracker_target<CIRawElementProviderSimple> : std::true_type {};
-class CIsApiContractNotPresentPredicate;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple> : std::true_type {};
 template<>
-struct is_tracker_target<CIsApiContractNotPresentPredicate> : std::true_type {};
-class CIsApiContractPresentPredicate;
+struct is_tracker_target<DirectUI::IsApiContractNotPresent> : std::true_type {};
 template<>
-struct is_tracker_target<CIsApiContractPresentPredicate> : std::true_type {};
-class CIsPropertyNotPresentPredicate;
+struct is_tracker_target<DirectUI::IsApiContractPresent> : std::true_type {};
 template<>
-struct is_tracker_target<CIsPropertyNotPresentPredicate> : std::true_type {};
-class CIsPropertyPresentPredicate;
+struct is_tracker_target<DirectUI::IsPropertyNotPresent> : std::true_type {};
 template<>
-struct is_tracker_target<CIsPropertyPresentPredicate> : std::true_type {};
-class CIsTypeNotPresentPredicate;
+struct is_tracker_target<DirectUI::IsPropertyPresent> : std::true_type {};
 template<>
-struct is_tracker_target<CIsTypeNotPresentPredicate> : std::true_type {};
-class CIsTypePresentPredicate;
+struct is_tracker_target<DirectUI::IsTypeNotPresent> : std::true_type {};
 template<>
-struct is_tracker_target<CIsTypePresentPredicate> : std::true_type {};
-class CKeyboardAccelerator;
+struct is_tracker_target<DirectUI::IsTypePresent> : std::true_type {};
 template<>
-struct is_tracker_target<CKeyboardAccelerator> : std::true_type {};
-class CKeySpline;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Input::IKeyboardAccelerator> : std::true_type {};
 template<>
-struct is_tracker_target<CKeySpline> : std::true_type {};
-class CLayoutTransitionStaggerItem;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IKeySpline> : std::true_type {};
 template<>
-struct is_tracker_target<CLayoutTransitionStaggerItem> : std::true_type {};
-class CLengthConverter;
+struct is_tracker_target<DirectUI::LayoutTransitionStaggerItem> : std::true_type {};
 template<>
-struct is_tracker_target<CLengthConverter> : std::true_type {};
-class CListViewBaseItemTemplateSettings;
+struct is_tracker_target<DirectUI::LengthConverter> : std::true_type {};
 template<>
-struct is_tracker_target<CListViewBaseItemTemplateSettings> : std::true_type {};
-class CLoadedImageSurface;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IListViewBaseItemTemplateSettings> : std::true_type {};
 template<>
-struct is_tracker_target<CLoadedImageSurface> : std::true_type {};
-class CManipulationDelta;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface> : std::true_type {};
 template<>
-struct is_tracker_target<CManipulationDelta> : std::true_type {};
-class CManipulationPivot;
+struct is_tracker_target<DirectUI::ManipulationDelta> : std::true_type {};
 template<>
-struct is_tracker_target<CManipulationPivot> : std::true_type {};
-class CManipulationVelocities;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Input::IManipulationPivot> : std::true_type {};
 template<>
-struct is_tracker_target<CManipulationVelocities> : std::true_type {};
-class CMarkupExtensionBase;
+struct is_tracker_target<DirectUI::ManipulationVelocities> : std::true_type {};
 template<>
-struct is_tracker_target<CMarkupExtensionBase> : std::true_type {};
-class CMediaPlaybackItemConverter;
+struct is_tracker_target<DirectUI::MarkupExtensionBase> : std::true_type {};
 template<>
-struct is_tracker_target<CMediaPlaybackItemConverter> : std::true_type {};
-class CMenuFlyoutItemTemplateSettings;
+struct is_tracker_target<DirectUI::MediaPlaybackItemConverter> : std::true_type {};
 template<>
-struct is_tracker_target<CMenuFlyoutItemTemplateSettings> : std::true_type {};
-class CMenuFlyoutPresenterTemplateSettings;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IMenuFlyoutItemTemplateSettings> : std::true_type {};
 template<>
-struct is_tracker_target<CMenuFlyoutPresenterTemplateSettings> : std::true_type {};
-class CNavigationTransitionInfo;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IMenuFlyoutPresenterTemplateSettings> : std::true_type {};
 template<>
-struct is_tracker_target<CNavigationTransitionInfo> : std::true_type {};
-class CNullKeyedResource;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo> : std::true_type {};
 template<>
-struct is_tracker_target<CNullKeyedResource> : std::true_type {};
-class CObjectKeyFrame;
+struct is_tracker_target<DirectUI::NullKeyedResource> : std::true_type {};
 template<>
-struct is_tracker_target<CObjectKeyFrame> : std::true_type {};
-class CPageStackEntry;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IObjectKeyFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CPageStackEntry> : std::true_type {};
-class CParametricCurve;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Navigation::IPageStackEntry> : std::true_type {};
 template<>
-struct is_tracker_target<CParametricCurve> : std::true_type {};
-class CParametricCurveSegment;
+struct is_tracker_target<DirectUI::ParametricCurve> : std::true_type {};
 template<>
-struct is_tracker_target<CParametricCurveSegment> : std::true_type {};
-class CPathFigure;
+struct is_tracker_target<DirectUI::ParametricCurveSegment> : std::true_type {};
 template<>
-struct is_tracker_target<CPathFigure> : std::true_type {};
-class CPathSegment;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IPathFigure> : std::true_type {};
 template<>
-struct is_tracker_target<CPathSegment> : std::true_type {};
-class CPointer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IPathSegment> : std::true_type {};
 template<>
-struct is_tracker_target<CPointer> : std::true_type {};
-class CPointerKeyFrame;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Input::IPointer> : std::true_type {};
 template<>
-struct is_tracker_target<CPointerKeyFrame> : std::true_type {};
-class CPointKeyFrame;
+struct is_tracker_target<DirectUI::PointerKeyFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CPointKeyFrame> : std::true_type {};
-class CCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IPointKeyFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CCollection> : std::true_type {};
-class CPrintDocument;
+struct is_tracker_target<DirectUI::PresentationFrameworkCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CPrintDocument> : std::true_type {};
-class CProjection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Printing::IPrintDocument> : std::true_type {};
 template<>
-struct is_tracker_target<CProjection> : std::true_type {};
-class CPropertyPath;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IProjection> : std::true_type {};
 template<>
-struct is_tracker_target<CPropertyPath> : std::true_type {};
-class CRowDefinition;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IPropertyPath> : std::true_type {};
 template<>
-struct is_tracker_target<CRowDefinition> : std::true_type {};
-class CScalarTransition;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IRowDefinition> : std::true_type {};
 template<>
-struct is_tracker_target<CScalarTransition> : std::true_type {};
-class CSecondaryContentRelationship;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IScalarTransition> : std::true_type {};
 template<>
-struct is_tracker_target<CSecondaryContentRelationship> : std::true_type {};
-class CSetterBase;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship> : std::true_type {};
 template<>
-struct is_tracker_target<CSetterBase> : std::true_type {};
-class CShadow;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::ISetterBase> : std::true_type {};
 template<>
-struct is_tracker_target<CShadow> : std::true_type {};
-class CSplitViewTemplateSettings;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IShadow> : std::true_type {};
 template<>
-struct is_tracker_target<CSplitViewTemplateSettings> : std::true_type {};
-class CStaggerFunctionBase;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::ISplitViewTemplateSettings> : std::true_type {};
 template<>
-struct is_tracker_target<CStaggerFunctionBase> : std::true_type {};
-class CStateTriggerBase;
+struct is_tracker_target<DirectUI::StaggerFunctionBase> : std::true_type {};
 template<>
-struct is_tracker_target<CStateTriggerBase> : std::true_type {};
-class CStyle;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IStateTriggerBase> : std::true_type {};
 template<>
-struct is_tracker_target<CStyle> : std::true_type {};
-class CSystemBackdrop;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IStyle> : std::true_type {};
 template<>
-struct is_tracker_target<CSystemBackdrop> : std::true_type {};
-class CTargetPropertyPath;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop> : std::true_type {};
 template<>
-struct is_tracker_target<CTargetPropertyPath> : std::true_type {};
-class CTemplateContent;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::ITargetPropertyPath> : std::true_type {};
 template<>
-struct is_tracker_target<CTemplateContent> : std::true_type {};
-class CTextAdapter;
+struct is_tracker_target<DirectUI::TemplateContent> : std::true_type {};
 template<>
-struct is_tracker_target<CTextAdapter> : std::true_type {};
-class CTextElement;
+struct is_tracker_target<DirectUI::TextAdapter> : std::true_type {};
 template<>
-struct is_tracker_target<CTextElement> : std::true_type {};
-class CTextHighlighterBase;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Documents::ITextElement> : std::true_type {};
 template<>
-struct is_tracker_target<CTextHighlighterBase> : std::true_type {};
-class CTextPointerWrapper;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Documents::ITextHighlighterBase> : std::true_type {};
 template<>
-struct is_tracker_target<CTextPointerWrapper> : std::true_type {};
-class CTextProvider;
+struct is_tracker_target<DirectUI::TextPointerWrapper> : std::true_type {};
 template<>
-struct is_tracker_target<CTextProvider> : std::true_type {};
-class CTextRangeAdapter;
+struct is_tracker_target<DirectUI::TextProvider> : std::true_type {};
 template<>
-struct is_tracker_target<CTextRangeAdapter> : std::true_type {};
-class CTextRangeProvider;
+struct is_tracker_target<DirectUI::TextRangeAdapter> : std::true_type {};
 template<>
-struct is_tracker_target<CTextRangeProvider> : std::true_type {};
-class CTimeline;
+struct is_tracker_target<DirectUI::TextRangeProvider> : std::true_type {};
 template<>
-struct is_tracker_target<CTimeline> : std::true_type {};
-class CToggleSwitchTemplateSettings;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::ITimeline> : std::true_type {};
 template<>
-struct is_tracker_target<CToggleSwitchTemplateSettings> : std::true_type {};
-class CToolTipTemplateSettings;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IToggleSwitchTemplateSettings> : std::true_type {};
 template<>
-struct is_tracker_target<CToolTipTemplateSettings> : std::true_type {};
-class CTransform3D;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IToolTipTemplateSettings> : std::true_type {};
 template<>
-struct is_tracker_target<CTransform3D> : std::true_type {};
-class CTransition;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Media3D::ITransform3D> : std::true_type {};
 template<>
-struct is_tracker_target<CTransition> : std::true_type {};
-class CTransitionTarget;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::ITransition> : std::true_type {};
 template<>
-struct is_tracker_target<CTransitionTarget> : std::true_type {};
-class CTriggerAction;
+struct is_tracker_target<DirectUI::TransitionTarget> : std::true_type {};
 template<>
-struct is_tracker_target<CTriggerAction> : std::true_type {};
-class CTriggerBase;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::ITriggerAction> : std::true_type {};
 template<>
-struct is_tracker_target<CTriggerBase> : std::true_type {};
-class CUIElement;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::ITriggerBase> : std::true_type {};
 template<>
-struct is_tracker_target<CUIElement> : std::true_type {};
-class CVector3Transition;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IUIElement> : std::true_type {};
 template<>
-struct is_tracker_target<CVector3Transition> : std::true_type {};
-class CVisualState;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IVector3Transition> : std::true_type {};
 template<>
-struct is_tracker_target<CVisualState> : std::true_type {};
-class CVisualStateGroup;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IVisualState> : std::true_type {};
 template<>
-struct is_tracker_target<CVisualStateGroup> : std::true_type {};
-class CVisualStateManager;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IVisualStateGroup> : std::true_type {};
 template<>
-struct is_tracker_target<CVisualStateManager> : std::true_type {};
-class CVisualTransition;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IVisualStateManager> : std::true_type {};
 template<>
-struct is_tracker_target<CVisualTransition> : std::true_type {};
-class CWindow;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IVisualTransition> : std::true_type {};
 template<>
-struct is_tracker_target<CWindow> : std::true_type {};
-class CXamlLight;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IWindow> : std::true_type {};
 template<>
-struct is_tracker_target<CXamlLight> : std::true_type {};
-class CXamlUICommand;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IXamlLight> : std::true_type {};
 template<>
-struct is_tracker_target<CXamlUICommand> : std::true_type {};
-class CAdaptiveTrigger;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Input::IXamlUICommand> : std::true_type {};
 template<>
-struct is_tracker_target<CAdaptiveTrigger> : std::true_type {};
-class CAddDeleteThemeTransition;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IAdaptiveTrigger> : std::true_type {};
 template<>
-struct is_tracker_target<CAddDeleteThemeTransition> : std::true_type {};
-class CArcSegment;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IAddDeleteThemeTransition> : std::true_type {};
 template<>
-struct is_tracker_target<CArcSegment> : std::true_type {};
-class CBackInterpolator;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IArcSegment> : std::true_type {};
 template<>
-struct is_tracker_target<CBackInterpolator> : std::true_type {};
-class CBeginStoryboard;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IBackEase> : std::true_type {};
 template<>
-struct is_tracker_target<CBeginStoryboard> : std::true_type {};
-class CBezierSegment;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IBeginStoryboard> : std::true_type {};
 template<>
-struct is_tracker_target<CBezierSegment> : std::true_type {};
-class CBindingBase;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IBezierSegment> : std::true_type {};
 template<>
-struct is_tracker_target<CBindingBase> : std::true_type {};
-class CBitmapCache;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Data::IBindingBase> : std::true_type {};
 template<>
-struct is_tracker_target<CBitmapCache> : std::true_type {};
-class CBitmapIconSource;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IBitmapCache> : std::true_type {};
 template<>
-struct is_tracker_target<CBitmapIconSource> : std::true_type {};
-class CBitmapSource;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IBitmapIconSource> : std::true_type {};
 template<>
-struct is_tracker_target<CBitmapSource> : std::true_type {};
-class CBlock;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Imaging::IBitmapSource> : std::true_type {};
 template<>
-struct is_tracker_target<CBlock> : std::true_type {};
-class CBounceInterpolator;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Documents::IBlock> : std::true_type {};
 template<>
-struct is_tracker_target<CBounceInterpolator> : std::true_type {};
-class CCalendarViewHeaderAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IBounceEase> : std::true_type {};
 template<>
-struct is_tracker_target<CCalendarViewHeaderAutomationPeer> : std::true_type {};
-class CCircInterpolator;
+struct is_tracker_target<DirectUI::CalendarViewHeaderAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CCircInterpolator> : std::true_type {};
-class CColorAnimation;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::ICircleEase> : std::true_type {};
 template<>
-struct is_tracker_target<CColorAnimation> : std::true_type {};
-class CColorAnimationUsingKeyFrames;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IColorAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CColorAnimationUsingKeyFrames> : std::true_type {};
-class CCompositeTransform3D;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IColorAnimationUsingKeyFrames> : std::true_type {};
 template<>
-struct is_tracker_target<CCompositeTransform3D> : std::true_type {};
-class CContentDialogOpenCloseThemeTransition;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Media3D::ICompositeTransform3D> : std::true_type {};
 template<>
-struct is_tracker_target<CContentDialogOpenCloseThemeTransition> : std::true_type {};
-class CContentThemeTransition;
+struct is_tracker_target<DirectUI::ContentDialogOpenCloseThemeTransition> : std::true_type {};
 template<>
-struct is_tracker_target<CContentThemeTransition> : std::true_type {};
-class CControlTemplate;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IContentThemeTransition> : std::true_type {};
 template<>
-struct is_tracker_target<CControlTemplate> : std::true_type {};
-class CCubicInterpolator;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IControlTemplate> : std::true_type {};
 template<>
-struct is_tracker_target<CCubicInterpolator> : std::true_type {};
-class CustomResourceExtension;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::ICubicEase> : std::true_type {};
 template<>
-struct is_tracker_target<CustomResourceExtension> : std::true_type {};
-class CDataTemplate;
+struct is_tracker_target<DirectUI::CustomResource> : std::true_type {};
 template<>
-struct is_tracker_target<CDataTemplate> : std::true_type {};
-class CDiscreteColorKeyFrame;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IDataTemplate> : std::true_type {};
 template<>
-struct is_tracker_target<CDiscreteColorKeyFrame> : std::true_type {};
-class CDiscreteDoubleKeyFrame;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IDiscreteColorKeyFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CDiscreteDoubleKeyFrame> : std::true_type {};
-class CDiscreteObjectKeyFrame;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IDiscreteDoubleKeyFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CDiscreteObjectKeyFrame> : std::true_type {};
-class CDiscretePointKeyFrame;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IDiscreteObjectKeyFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CDiscretePointKeyFrame> : std::true_type {};
-class CDispatcherTimer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IDiscretePointKeyFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CDispatcherTimer> : std::true_type {};
-class CDoubleAnimation;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IDispatcherTimer> : std::true_type {};
 template<>
-struct is_tracker_target<CDoubleAnimation> : std::true_type {};
-class CDoubleAnimationUsingKeyFrames;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IDoubleAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CDoubleAnimationUsingKeyFrames> : std::true_type {};
-class CDynamicTimeline;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IDoubleAnimationUsingKeyFrames> : std::true_type {};
 template<>
-struct is_tracker_target<CDynamicTimeline> : std::true_type {};
-class CEasingColorKeyFrame;
+struct is_tracker_target<DirectUI::DynamicTimeline> : std::true_type {};
 template<>
-struct is_tracker_target<CEasingColorKeyFrame> : std::true_type {};
-class CEasingDoubleKeyFrame;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IEasingColorKeyFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CEasingDoubleKeyFrame> : std::true_type {};
-class CEasingPointKeyFrame;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IEasingDoubleKeyFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CEasingPointKeyFrame> : std::true_type {};
-class CEdgeUIThemeTransition;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IEasingPointKeyFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CEdgeUIThemeTransition> : std::true_type {};
-class CElasticInterpolator;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IEdgeUIThemeTransition> : std::true_type {};
 template<>
-struct is_tracker_target<CElasticInterpolator> : std::true_type {};
-class CEllipseGeometry;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IElasticEase> : std::true_type {};
 template<>
-struct is_tracker_target<CEllipseGeometry> : std::true_type {};
-class CEntranceThemeTransition;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IEllipseGeometry> : std::true_type {};
 template<>
-struct is_tracker_target<CEntranceThemeTransition> : std::true_type {};
-class CEventTrigger;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IEntranceThemeTransition> : std::true_type {};
 template<>
-struct is_tracker_target<CEventTrigger> : std::true_type {};
-class CExponentialInterpolator;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IEventTrigger> : std::true_type {};
 template<>
-struct is_tracker_target<CExponentialInterpolator> : std::true_type {};
-class CFlyout;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IExponentialEase> : std::true_type {};
 template<>
-struct is_tracker_target<CFlyout> : std::true_type {};
-class CFontIconSource;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IFlyout> : std::true_type {};
 template<>
-struct is_tracker_target<CFontIconSource> : std::true_type {};
-class CFrameworkElement;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IFontIconSource> : std::true_type {};
 template<>
-struct is_tracker_target<CFrameworkElement> : std::true_type {};
-class CFrameworkElementAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IFrameworkElement> : std::true_type {};
 template<>
-struct is_tracker_target<CFrameworkElementAutomationPeer> : std::true_type {};
-class CFrameworkElementEx;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IFrameworkElementAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CFrameworkElementEx> : std::true_type {};
-class CGeometryGroup;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IFrameworkElementEx> : std::true_type {};
 template<>
-struct is_tracker_target<CGeometryGroup> : std::true_type {};
-class CGradientBrush;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IGeometryGroup> : std::true_type {};
 template<>
-struct is_tracker_target<CGradientBrush> : std::true_type {};
-class CGridViewItemTemplateSettings;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IGradientBrush> : std::true_type {};
 template<>
-struct is_tracker_target<CGridViewItemTemplateSettings> : std::true_type {};
-class CGroupedDataCollectionView;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IGridViewItemTemplateSettings> : std::true_type {};
 template<>
-struct is_tracker_target<CGroupedDataCollectionView> : std::true_type {};
-class HWCompLeafNode;
+struct is_tracker_target<DirectUI::GroupedDataCollectionView> : std::true_type {};
 template<>
-struct is_tracker_target<HWCompLeafNode> : std::true_type {};
-class HWCompTreeNode;
+struct is_tracker_target<DirectUI::HWCompLeafNode> : std::true_type {};
 template<>
-struct is_tracker_target<HWCompTreeNode> : std::true_type {};
-class CHyperlinkAutomationPeer;
+struct is_tracker_target<DirectUI::HWCompTreeNode> : std::true_type {};
 template<>
-struct is_tracker_target<CHyperlinkAutomationPeer> : std::true_type {};
-class CInline;
+struct is_tracker_target<DirectUI::HyperlinkAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CInline> : std::true_type {};
-class CInputPaneThemeTransition;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Documents::IInline> : std::true_type {};
 template<>
-struct is_tracker_target<CInputPaneThemeTransition> : std::true_type {};
-class CInternalTransform;
+struct is_tracker_target<DirectUI::InputPaneThemeTransition> : std::true_type {};
 template<>
-struct is_tracker_target<CInternalTransform> : std::true_type {};
-class CItemAutomationPeer;
+struct is_tracker_target<DirectUI::InternalTransform> : std::true_type {};
 template<>
-struct is_tracker_target<CItemAutomationPeer> : std::true_type {};
-class CItemsPanelTemplate;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CItemsPanelTemplate> : std::true_type {};
-class CLayoutTransitionElement;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IItemsPanelTemplate> : std::true_type {};
 template<>
-struct is_tracker_target<CLayoutTransitionElement> : std::true_type {};
-class CLinearColorKeyFrame;
+struct is_tracker_target<DirectUI::LayoutTransitionElement> : std::true_type {};
 template<>
-struct is_tracker_target<CLinearColorKeyFrame> : std::true_type {};
-class CLinearDoubleKeyFrame;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::ILinearColorKeyFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CLinearDoubleKeyFrame> : std::true_type {};
-class CLinearPointKeyFrame;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::ILinearDoubleKeyFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CLinearPointKeyFrame> : std::true_type {};
-class CLineGeometry;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::ILinearPointKeyFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CLineGeometry> : std::true_type {};
-class CLineSegment;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::ILineGeometry> : std::true_type {};
 template<>
-struct is_tracker_target<CLineSegment> : std::true_type {};
-class CListViewItemTemplateSettings;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::ILineSegment> : std::true_type {};
 template<>
-struct is_tracker_target<CListViewItemTemplateSettings> : std::true_type {};
-class CMatrix3DProjection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IListViewItemTemplateSettings> : std::true_type {};
 template<>
-struct is_tracker_target<CMatrix3DProjection> : std::true_type {};
-class CMediaSwapChainElement;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IMatrix3DProjection> : std::true_type {};
 template<>
-struct is_tracker_target<CMediaSwapChainElement> : std::true_type {};
-class CMenuFlyout;
+struct is_tracker_target<DirectUI::MediaSwapChainElement> : std::true_type {};
 template<>
-struct is_tracker_target<CMenuFlyout> : std::true_type {};
-class CMenuPopupThemeTransition;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IMenuFlyout> : std::true_type {};
 template<>
-struct is_tracker_target<CMenuPopupThemeTransition> : std::true_type {};
-class CNullExtension;
+struct is_tracker_target<DirectUI::MenuPopupThemeTransition> : std::true_type {};
 template<>
-struct is_tracker_target<CNullExtension> : std::true_type {};
-class CObjectAnimationUsingKeyFrames;
+struct is_tracker_target<DirectUI::NullExtension> : std::true_type {};
 template<>
-struct is_tracker_target<CObjectAnimationUsingKeyFrames> : std::true_type {};
-class CPanelEx;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IObjectAnimationUsingKeyFrames> : std::true_type {};
 template<>
-struct is_tracker_target<CPanelEx> : std::true_type {};
-class CPaneThemeTransition;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IPanelEx> : std::true_type {};
 template<>
-struct is_tracker_target<CPaneThemeTransition> : std::true_type {};
-class CParallelTimeline;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IPaneThemeTransition> : std::true_type {};
 template<>
-struct is_tracker_target<CParallelTimeline> : std::true_type {};
-class CPathGeometry;
+struct is_tracker_target<DirectUI::ParallelTimeline> : std::true_type {};
 template<>
-struct is_tracker_target<CPathGeometry> : std::true_type {};
-class CPathIconSource;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IPathGeometry> : std::true_type {};
 template<>
-struct is_tracker_target<CPathIconSource> : std::true_type {};
-class CPerspectiveTransform3D;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IPathIconSource> : std::true_type {};
 template<>
-struct is_tracker_target<CPerspectiveTransform3D> : std::true_type {};
-class CPickerFlyoutThemeTransition;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Media3D::IPerspectiveTransform3D> : std::true_type {};
 template<>
-struct is_tracker_target<CPickerFlyoutThemeTransition> : std::true_type {};
-class CPlaneProjection;
+struct is_tracker_target<DirectUI::PickerFlyoutThemeTransition> : std::true_type {};
 template<>
-struct is_tracker_target<CPlaneProjection> : std::true_type {};
-class CPointAnimation;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IPlaneProjection> : std::true_type {};
 template<>
-struct is_tracker_target<CPointAnimation> : std::true_type {};
-class CPointAnimationUsingKeyFrames;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IPointAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CPointAnimationUsingKeyFrames> : std::true_type {};
-class CPointerAnimationUsingKeyFrames;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IPointAnimationUsingKeyFrames> : std::true_type {};
 template<>
-struct is_tracker_target<CPointerAnimationUsingKeyFrames> : std::true_type {};
-class CPolyBezierSegment;
+struct is_tracker_target<DirectUI::PointerAnimationUsingKeyFrames> : std::true_type {};
 template<>
-struct is_tracker_target<CPolyBezierSegment> : std::true_type {};
-class CPolyLineSegment;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IPolyBezierSegment> : std::true_type {};
 template<>
-struct is_tracker_target<CPolyLineSegment> : std::true_type {};
-class CPolyQuadraticSegment;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IPolyLineSegment> : std::true_type {};
 template<>
-struct is_tracker_target<CPolyQuadraticSegment> : std::true_type {};
-class CPopupThemeTransition;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IPolyQuadraticBezierSegment> : std::true_type {};
 template<>
-struct is_tracker_target<CPopupThemeTransition> : std::true_type {};
-class CPowerInterpolator;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IPopupThemeTransition> : std::true_type {};
 template<>
-struct is_tracker_target<CPowerInterpolator> : std::true_type {};
-class CPVLStaggerFunction;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IPowerEase> : std::true_type {};
 template<>
-struct is_tracker_target<CPVLStaggerFunction> : std::true_type {};
-class CQuadraticSegment;
+struct is_tracker_target<DirectUI::PVLStaggerFunction> : std::true_type {};
 template<>
-struct is_tracker_target<CQuadraticSegment> : std::true_type {};
-class CQuadraticInterpolator;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IQuadraticBezierSegment> : std::true_type {};
 template<>
-struct is_tracker_target<CQuadraticInterpolator> : std::true_type {};
-class CQuarticInterpolator;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IQuadraticEase> : std::true_type {};
 template<>
-struct is_tracker_target<CQuarticInterpolator> : std::true_type {};
-class CQuinticInterpolator;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IQuarticEase> : std::true_type {};
 template<>
-struct is_tracker_target<CQuinticInterpolator> : std::true_type {};
-class CRectangleGeometry;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IQuinticEase> : std::true_type {};
 template<>
-struct is_tracker_target<CRectangleGeometry> : std::true_type {};
-class CRelativeSource;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IRectangleGeometry> : std::true_type {};
 template<>
-struct is_tracker_target<CRelativeSource> : std::true_type {};
-class CRenderTargetBitmap;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Data::IRelativeSource> : std::true_type {};
 template<>
-struct is_tracker_target<CRenderTargetBitmap> : std::true_type {};
-class CReorderThemeTransition;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Imaging::IRenderTargetBitmap> : std::true_type {};
 template<>
-struct is_tracker_target<CReorderThemeTransition> : std::true_type {};
-class CRepositionThemeTransition;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IReorderThemeTransition> : std::true_type {};
 template<>
-struct is_tracker_target<CRepositionThemeTransition> : std::true_type {};
-class CSetter;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IRepositionThemeTransition> : std::true_type {};
 template<>
-struct is_tracker_target<CSetter> : std::true_type {};
-class CSineInterpolator;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::ISetter> : std::true_type {};
 template<>
-struct is_tracker_target<CSineInterpolator> : std::true_type {};
-class CSoftwareBitmapSource;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::ISineEase> : std::true_type {};
 template<>
-struct is_tracker_target<CSoftwareBitmapSource> : std::true_type {};
-class CSolidColorBrush;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Imaging::ISoftwareBitmapSource> : std::true_type {};
 template<>
-struct is_tracker_target<CSolidColorBrush> : std::true_type {};
-class CSplineColorKeyFrame;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::ISolidColorBrush> : std::true_type {};
 template<>
-struct is_tracker_target<CSplineColorKeyFrame> : std::true_type {};
-class CSplineDoubleKeyFrame;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::ISplineColorKeyFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CSplineDoubleKeyFrame> : std::true_type {};
-class CSplinePointKeyFrame;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::ISplineDoubleKeyFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CSplinePointKeyFrame> : std::true_type {};
-class CStandardUICommand;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::ISplinePointKeyFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CStandardUICommand> : std::true_type {};
-class CStateTrigger;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Input::IStandardUICommand> : std::true_type {};
 template<>
-struct is_tracker_target<CStateTrigger> : std::true_type {};
-class CStaticResourceExtension;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IStateTrigger> : std::true_type {};
 template<>
-struct is_tracker_target<CStaticResourceExtension> : std::true_type {};
-class CSurfaceImageSource;
+struct is_tracker_target<DirectUI::StaticResource> : std::true_type {};
 template<>
-struct is_tracker_target<CSurfaceImageSource> : std::true_type {};
-class CSvgImageSource;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Imaging::ISurfaceImageSource> : std::true_type {};
 template<>
-struct is_tracker_target<CSvgImageSource> : std::true_type {};
-class CSwapChainElement;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Imaging::ISvgImageSource> : std::true_type {};
 template<>
-struct is_tracker_target<CSwapChainElement> : std::true_type {};
-class CSymbolIconSource;
+struct is_tracker_target<DirectUI::SwapChainElement> : std::true_type {};
 template<>
-struct is_tracker_target<CSymbolIconSource> : std::true_type {};
-class CTemplateBindingExtension;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ISymbolIconSource> : std::true_type {};
 template<>
-struct is_tracker_target<CTemplateBindingExtension> : std::true_type {};
-class CTextHighlighter;
+struct is_tracker_target<DirectUI::TemplateBinding> : std::true_type {};
 template<>
-struct is_tracker_target<CTextHighlighter> : std::true_type {};
-class CThemeResourceExtension;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Documents::ITextHighlighter> : std::true_type {};
 template<>
-struct is_tracker_target<CThemeResourceExtension> : std::true_type {};
-class CThemeShadow;
+struct is_tracker_target<DirectUI::ThemeResource> : std::true_type {};
 template<>
-struct is_tracker_target<CThemeShadow> : std::true_type {};
-class CTileBrush;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IThemeShadow> : std::true_type {};
 template<>
-struct is_tracker_target<CTileBrush> : std::true_type {};
-class CTransform;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::ITileBrush> : std::true_type {};
 template<>
-struct is_tracker_target<CTransform> : std::true_type {};
-class CVectorCollectionView;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::ITransform> : std::true_type {};
 template<>
-struct is_tracker_target<CVectorCollectionView> : std::true_type {};
-class CVectorViewCollectionView;
+struct is_tracker_target<DirectUI::VectorCollectionView> : std::true_type {};
 template<>
-struct is_tracker_target<CVectorViewCollectionView> : std::true_type {};
-class CXamlCompositionBrush;
+struct is_tracker_target<DirectUI::VectorViewCollectionView> : std::true_type {};
 template<>
-struct is_tracker_target<CXamlCompositionBrush> : std::true_type {};
-class CAppBarAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IXamlCompositionBrushBase> : std::true_type {};
 template<>
-struct is_tracker_target<CAppBarAutomationPeer> : std::true_type {};
-class CAppBarLightDismissAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IAppBarAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CAppBarLightDismissAutomationPeer> : std::true_type {};
-class CAutomationAnnotationCollection;
+struct is_tracker_target<DirectUI::AppBarLightDismissAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CAutomationAnnotationCollection> : std::true_type {};
-class CAutomationPeerAnnotationCollection;
+struct is_tracker_target<DirectUI::AutomationAnnotationCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CAutomationPeerAnnotationCollection> : std::true_type {};
-class CAutomationPeerCollection;
+struct is_tracker_target<DirectUI::AutomationPeerAnnotationCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CAutomationPeerCollection> : std::true_type {};
-class CAutoSuggestBoxAutomationPeer;
+struct is_tracker_target<DirectUI::AutomationPeerCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CAutoSuggestBoxAutomationPeer> : std::true_type {};
-class CBinding;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IAutoSuggestBoxAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CBinding> : std::true_type {};
-class CBitmapImage;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Data::IBinding> : std::true_type {};
 template<>
-struct is_tracker_target<CBitmapImage> : std::true_type {};
-class CBorder;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Imaging::IBitmapImage> : std::true_type {};
 template<>
-struct is_tracker_target<CBorder> : std::true_type {};
-class CBrushCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IBorder> : std::true_type {};
 template<>
-struct is_tracker_target<CBrushCollection> : std::true_type {};
-class CButtonBaseAutomationPeer;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Brush*>> : std::true_type {};
 template<>
-struct is_tracker_target<CButtonBaseAutomationPeer> : std::true_type {};
-class CCalendarDatePickerAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IButtonBaseAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CCalendarDatePickerAutomationPeer> : std::true_type {};
-class CCalendarViewAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::ICalendarDatePickerAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CCalendarViewAutomationPeer> : std::true_type {};
-class CCalendarViewBaseItemAutomationPeer;
+struct is_tracker_target<DirectUI::CalendarViewAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CCalendarViewBaseItemAutomationPeer> : std::true_type {};
-class CColorKeyFrameCollection;
+struct is_tracker_target<DirectUI::CalendarViewBaseItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CColorKeyFrameCollection> : std::true_type {};
-class CColumnDefinitionCollection;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::ColorKeyFrame*>> : std::true_type {};
 template<>
-struct is_tracker_target<CColumnDefinitionCollection> : std::true_type {};
-class CComboBoxItemAutomationPeer;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Controls::ColumnDefinition*>> : std::true_type {};
 template<>
-struct is_tracker_target<CComboBoxItemAutomationPeer> : std::true_type {};
-class CComboBoxLightDismissAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IComboBoxItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CComboBoxLightDismissAutomationPeer> : std::true_type {};
-class CCompositeTransform;
+struct is_tracker_target<DirectUI::ComboBoxLightDismissAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CCompositeTransform> : std::true_type {};
-class CConnectedAnimationRoot;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::ICompositeTransform> : std::true_type {};
 template<>
-struct is_tracker_target<CConnectedAnimationRoot> : std::true_type {};
-class CContentPresenter;
+struct is_tracker_target<DirectUI::ConnectedAnimationRoot> : std::true_type {};
 template<>
-struct is_tracker_target<CContentPresenter> : std::true_type {};
-class CControl;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IContentPresenter> : std::true_type {};
 template<>
-struct is_tracker_target<CControl> : std::true_type {};
-class CDatePickerAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IControl> : std::true_type {};
 template<>
-struct is_tracker_target<CDatePickerAutomationPeer> : std::true_type {};
-class CDisplayMemberTemplate;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IDatePickerAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CDisplayMemberTemplate> : std::true_type {};
-class CDoubleCollection;
+struct is_tracker_target<DirectUI::DisplayMemberTemplate> : std::true_type {};
 template<>
-struct is_tracker_target<CDoubleCollection> : std::true_type {};
-class CDoubleKeyFrameCollection;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<DOUBLE>> : std::true_type {};
 template<>
-struct is_tracker_target<CDoubleKeyFrameCollection> : std::true_type {};
-class CDragItemThemeAnimation;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::DoubleKeyFrame*>> : std::true_type {};
 template<>
-struct is_tracker_target<CDragItemThemeAnimation> : std::true_type {};
-class CDragOverThemeAnimation;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IDragItemThemeAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CDragOverThemeAnimation> : std::true_type {};
-class CDrillInThemeAnimation;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IDragOverThemeAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CDrillInThemeAnimation> : std::true_type {};
-class CDrillOutThemeAnimation;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IDrillInThemeAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CDrillOutThemeAnimation> : std::true_type {};
-class CDropTargetItemThemeAnimation;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IDrillOutThemeAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CDropTargetItemThemeAnimation> : std::true_type {};
-class CFaceplateContentPresenterAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IDropTargetItemThemeAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CFaceplateContentPresenterAutomationPeer> : std::true_type {};
-class CFadeInThemeAnimation;
+struct is_tracker_target<DirectUI::FaceplateContentPresenterAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CFadeInThemeAnimation> : std::true_type {};
-class CFadeOutThemeAnimation;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IFadeInThemeAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CFadeOutThemeAnimation> : std::true_type {};
-class CFlipViewItemAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IFadeOutThemeAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CFlipViewItemAutomationPeer> : std::true_type {};
-class CFloatCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IFlipViewItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CFloatCollection> : std::true_type {};
-class CFlyoutPresenterAutomationPeer;
+struct is_tracker_target<DirectUI::FloatCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CFlyoutPresenterAutomationPeer> : std::true_type {};
-class CFullWindowMediaRootAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IFlyoutPresenterAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CFullWindowMediaRootAutomationPeer> : std::true_type {};
-class CGeometryCollection;
+struct is_tracker_target<DirectUI::FullWindowMediaRootAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CGeometryCollection> : std::true_type {};
-class CGlyphs;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Geometry*>> : std::true_type {};
 template<>
-struct is_tracker_target<CGlyphs> : std::true_type {};
-class CGradientStopCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Documents::IGlyphs> : std::true_type {};
 template<>
-struct is_tracker_target<CGradientStopCollection> : std::true_type {};
-class CGroupItemAutomationPeer;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::GradientStop*>> : std::true_type {};
 template<>
-struct is_tracker_target<CGroupItemAutomationPeer> : std::true_type {};
-class CHubAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IGroupItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CHubAutomationPeer> : std::true_type {};
-class CHubSectionAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IHubAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CHubSectionAutomationPeer> : std::true_type {};
-class CHubSectionCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IHubSectionAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CHubSectionCollection> : std::true_type {};
-class HWCompMediaNode;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Controls::HubSection*>> : std::true_type {};
 template<>
-struct is_tracker_target<HWCompMediaNode> : std::true_type {};
-class HWCompRenderDataNode;
+struct is_tracker_target<DirectUI::HWCompMediaNode> : std::true_type {};
 template<>
-struct is_tracker_target<HWCompRenderDataNode> : std::true_type {};
-class HWCompSwapChainNode;
+struct is_tracker_target<DirectUI::HWCompRenderDataNode> : std::true_type {};
 template<>
-struct is_tracker_target<HWCompSwapChainNode> : std::true_type {};
-class HWRedirectedCompTreeNodeWinRT;
+struct is_tracker_target<DirectUI::HWCompSwapChainNode> : std::true_type {};
 template<>
-struct is_tracker_target<HWRedirectedCompTreeNodeWinRT> : std::true_type {};
-class CIconElement;
+struct is_tracker_target<DirectUI::HWRedirectedCompTreeNodeWinRT> : std::true_type {};
 template<>
-struct is_tracker_target<CIconElement> : std::true_type {};
-class CImage;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IIconElement> : std::true_type {};
 template<>
-struct is_tracker_target<CImage> : std::true_type {};
-class CImageAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IImage> : std::true_type {};
 template<>
-struct is_tracker_target<CImageAutomationPeer> : std::true_type {};
-class CImageBrush;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IImageAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CImageBrush> : std::true_type {};
-class CInlineUIContainer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IImageBrush> : std::true_type {};
 template<>
-struct is_tracker_target<CInlineUIContainer> : std::true_type {};
-class CInputScopeNameCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Documents::IInlineUIContainer> : std::true_type {};
 template<>
-struct is_tracker_target<CInputScopeNameCollection> : std::true_type {};
-class CItemsControlAutomationPeer;
+struct is_tracker_target<DirectUI::InputScopeNameCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CItemsControlAutomationPeer> : std::true_type {};
-class CItemsPresenter;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IItemsControlAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CItemsPresenter> : std::true_type {};
-class CIterableCollectionView;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IItemsPresenter> : std::true_type {};
 template<>
-struct is_tracker_target<CIterableCollectionView> : std::true_type {};
-class CKeyboardAcceleratorCollection;
+struct is_tracker_target<DirectUI::IterableCollectionView> : std::true_type {};
 template<>
-struct is_tracker_target<CKeyboardAcceleratorCollection> : std::true_type {};
-class CLandmarkTargetAutomationPeer;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Input::KeyboardAccelerator*>> : std::true_type {};
 template<>
-struct is_tracker_target<CLandmarkTargetAutomationPeer> : std::true_type {};
-class CLinearGradientBrush;
+struct is_tracker_target<DirectUI::LandmarkTargetAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CLinearGradientBrush> : std::true_type {};
-class CLineBreak;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::ILinearGradientBrush> : std::true_type {};
 template<>
-struct is_tracker_target<CLineBreak> : std::true_type {};
-class CListBoxItemAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Documents::ILineBreak> : std::true_type {};
 template<>
-struct is_tracker_target<CListBoxItemAutomationPeer> : std::true_type {};
-class CListViewBaseHeaderItemAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IListBoxItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CListViewBaseHeaderItemAutomationPeer> : std::true_type {};
-class CListViewBaseItemAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IListViewBaseHeaderItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CListViewBaseItemAutomationPeer> : std::true_type {};
-class CListViewBaseItemSecondaryChrome;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IListViewBaseItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CListViewBaseItemSecondaryChrome> : std::true_type {};
-class CMatrixTransform;
+struct is_tracker_target<DirectUI::ListViewBaseItemSecondaryChrome> : std::true_type {};
 template<>
-struct is_tracker_target<CMatrixTransform> : std::true_type {};
-class CMediaBase;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IMatrixTransform> : std::true_type {};
 template<>
-struct is_tracker_target<CMediaBase> : std::true_type {};
-class CMediaPlayerElementAutomationPeer;
+struct is_tracker_target<DirectUI::MediaBase> : std::true_type {};
 template<>
-struct is_tracker_target<CMediaPlayerElementAutomationPeer> : std::true_type {};
-class CMediaPlayerPresenter;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IMediaPlayerElementAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CMediaPlayerPresenter> : std::true_type {};
-class CMediaTransportControlsAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IMediaPlayerPresenter> : std::true_type {};
 template<>
-struct is_tracker_target<CMediaTransportControlsAutomationPeer> : std::true_type {};
-class CMenuFlyoutItemAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IMediaTransportControlsAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CMenuFlyoutItemAutomationPeer> : std::true_type {};
-class CMenuFlyoutItemBaseCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IMenuFlyoutItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CMenuFlyoutItemBaseCollection> : std::true_type {};
-class CMenuFlyoutSubItemAutomationPeer;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Controls::MenuFlyoutItemBase*>> : std::true_type {};
 template<>
-struct is_tracker_target<CMenuFlyoutSubItemAutomationPeer> : std::true_type {};
-class CNamedContainerAutomationPeer;
+struct is_tracker_target<DirectUI::MenuFlyoutSubItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CNamedContainerAutomationPeer> : std::true_type {};
-class CObjectKeyFrameCollection;
+struct is_tracker_target<DirectUI::NamedContainerAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CObjectKeyFrameCollection> : std::true_type {};
-class CPanel;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::ObjectKeyFrame*>> : std::true_type {};
 template<>
-struct is_tracker_target<CPanel> : std::true_type {};
-class CParagraph;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IPanel> : std::true_type {};
 template<>
-struct is_tracker_target<CParagraph> : std::true_type {};
-class CParametricCurveCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Documents::IParagraph> : std::true_type {};
 template<>
-struct is_tracker_target<CParametricCurveCollection> : std::true_type {};
-class CParametricCurveSegmentCollection;
+struct is_tracker_target<DirectUI::ParametricCurveCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CParametricCurveSegmentCollection> : std::true_type {};
-class CPasswordBoxAutomationPeer;
+struct is_tracker_target<DirectUI::ParametricCurveSegmentCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CPasswordBoxAutomationPeer> : std::true_type {};
-class CPathFigureCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IPasswordBoxAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CPathFigureCollection> : std::true_type {};
-class CPathSegmentCollection;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::PathFigure*>> : std::true_type {};
 template<>
-struct is_tracker_target<CPathSegmentCollection> : std::true_type {};
-class CPointCollection;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::PathSegment*>> : std::true_type {};
 template<>
-struct is_tracker_target<CPointCollection> : std::true_type {};
-class CPointerCollection;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Windows::Foundation::Point>> : std::true_type {};
 template<>
-struct is_tracker_target<CPointerCollection> : std::true_type {};
-class CPointerDownThemeAnimation;
+struct is_tracker_target<DirectUI::PointerCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CPointerDownThemeAnimation> : std::true_type {};
-class CPointerKeyFrameCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IPointerDownThemeAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CPointerKeyFrameCollection> : std::true_type {};
-class CPointerUpThemeAnimation;
+struct is_tracker_target<DirectUI::PointerKeyFrameCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CPointerUpThemeAnimation> : std::true_type {};
-class CPointKeyFrameCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IPointerUpThemeAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CPointKeyFrameCollection> : std::true_type {};
-class CPopInThemeAnimation;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::PointKeyFrame*>> : std::true_type {};
 template<>
-struct is_tracker_target<CPopInThemeAnimation> : std::true_type {};
-class CPopOutThemeAnimation;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IPopInThemeAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CPopOutThemeAnimation> : std::true_type {};
-class CPopup;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IPopOutThemeAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CPopup> : std::true_type {};
-class CPopupAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopup> : std::true_type {};
 template<>
-struct is_tracker_target<CPopupAutomationPeer> : std::true_type {};
-class CPopupRootAutomationPeer;
+struct is_tracker_target<DirectUI::PopupAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CPopupRootAutomationPeer> : std::true_type {};
-class CRangeBaseAutomationPeer;
+struct is_tracker_target<DirectUI::PopupRootAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CRangeBaseAutomationPeer> : std::true_type {};
-class CRepositionThemeAnimation;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IRangeBaseAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CRepositionThemeAnimation> : std::true_type {};
-class CResourceDictionary;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IRepositionThemeAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CResourceDictionary> : std::true_type {};
-class CResourceDictionaryCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IResourceDictionary> : std::true_type {};
 template<>
-struct is_tracker_target<CResourceDictionaryCollection> : std::true_type {};
-class CRichEditBoxAutomationPeer;
+struct is_tracker_target<DirectUI::ResourceDictionaryCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CRichEditBoxAutomationPeer> : std::true_type {};
-class CRichTextBlock;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IRichEditBoxAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CRichTextBlock> : std::true_type {};
-class CRichTextBlockAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IRichTextBlock> : std::true_type {};
 template<>
-struct is_tracker_target<CRichTextBlockAutomationPeer> : std::true_type {};
-class CRichTextBlockOverflow;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IRichTextBlockAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CRichTextBlockOverflow> : std::true_type {};
-class CRichTextBlockOverflowAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IRichTextBlockOverflow> : std::true_type {};
 template<>
-struct is_tracker_target<CRichTextBlockOverflowAutomationPeer> : std::true_type {};
-class CRotateTransform;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IRichTextBlockOverflowAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CRotateTransform> : std::true_type {};
-class CRowDefinitionCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IRotateTransform> : std::true_type {};
 template<>
-struct is_tracker_target<CRowDefinitionCollection> : std::true_type {};
-class CRun;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Controls::RowDefinition*>> : std::true_type {};
 template<>
-struct is_tracker_target<CRun> : std::true_type {};
-class CScaleTransform;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Documents::IRun> : std::true_type {};
 template<>
-struct is_tracker_target<CScaleTransform> : std::true_type {};
-class CScrollViewerAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::IScaleTransform> : std::true_type {};
 template<>
-struct is_tracker_target<CScrollViewerAutomationPeer> : std::true_type {};
-class CSelectorItemAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IScrollViewerAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CSelectorItemAutomationPeer> : std::true_type {};
-class CSemanticZoomAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::ISelectorItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CSemanticZoomAutomationPeer> : std::true_type {};
-class CSetterBaseCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::ISemanticZoomAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CSetterBaseCollection> : std::true_type {};
-class CShape;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::ISetterBaseCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CShape> : std::true_type {};
-class CSkewTransform;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Shapes::IShape> : std::true_type {};
 template<>
-struct is_tracker_target<CSkewTransform> : std::true_type {};
-class CSpan;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::ISkewTransform> : std::true_type {};
 template<>
-struct is_tracker_target<CSpan> : std::true_type {};
-class CSplitCloseThemeAnimation;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Documents::ISpan> : std::true_type {};
 template<>
-struct is_tracker_target<CSplitCloseThemeAnimation> : std::true_type {};
-class CSplitMenuFlyoutItemAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::ISplitCloseThemeAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CSplitMenuFlyoutItemAutomationPeer> : std::true_type {};
-class CSplitOpenThemeAnimation;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::ISplitMenuFlyoutItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CSplitOpenThemeAnimation> : std::true_type {};
-class CSplitViewLightDismissAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::ISplitOpenThemeAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CSplitViewLightDismissAutomationPeer> : std::true_type {};
-class CSplitViewPaneAutomationPeer;
+struct is_tracker_target<DirectUI::SplitViewLightDismissAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CSplitViewPaneAutomationPeer> : std::true_type {};
-class CStateTriggerCollection;
+struct is_tracker_target<DirectUI::SplitViewPaneAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CStateTriggerCollection> : std::true_type {};
-class CStoryboard;
+struct is_tracker_target<DirectUI::StateTriggerCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CStoryboard> : std::true_type {};
-class CStoryboardCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IStoryboard> : std::true_type {};
 template<>
-struct is_tracker_target<CStoryboardCollection> : std::true_type {};
-class CSwipeBackThemeAnimation;
+struct is_tracker_target<DirectUI::StoryboardCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CSwipeBackThemeAnimation> : std::true_type {};
-class CSwipeHintThemeAnimation;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::ISwipeBackThemeAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CSwipeHintThemeAnimation> : std::true_type {};
-class CTextBlock;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::ISwipeHintThemeAnimation> : std::true_type {};
 template<>
-struct is_tracker_target<CTextBlock> : std::true_type {};
-class CTextBlockAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ITextBlock> : std::true_type {};
 template<>
-struct is_tracker_target<CTextBlockAutomationPeer> : std::true_type {};
-class CTextBoxAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::ITextBlockAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CTextBoxAutomationPeer> : std::true_type {};
-class CTextBoxBaseAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::ITextBoxAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CTextBoxBaseAutomationPeer> : std::true_type {};
-class CTextBoxView;
+struct is_tracker_target<DirectUI::TextBoxBaseAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CTextBoxView> : std::true_type {};
-class CTextElementCollection;
+struct is_tracker_target<DirectUI::TextBoxView> : std::true_type {};
 template<>
-struct is_tracker_target<CTextElementCollection> : std::true_type {};
-class CTextHighlighterCollection;
+struct is_tracker_target<DirectUI::TextElementCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CTextHighlighterCollection> : std::true_type {};
-class CTextRangeCollection;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Documents::TextHighlighter*>> : std::true_type {};
 template<>
-struct is_tracker_target<CTextRangeCollection> : std::true_type {};
-class CThemeAnimationBase;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Documents::TextRange>> : std::true_type {};
 template<>
-struct is_tracker_target<CThemeAnimationBase> : std::true_type {};
-class CThumbAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Animation::IThemeAnimationBase> : std::true_type {};
 template<>
-struct is_tracker_target<CThumbAutomationPeer> : std::true_type {};
-class CTimelineCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IThumbAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CTimelineCollection> : std::true_type {};
-class CTimePickerAutomationPeer;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Timeline*>> : std::true_type {};
 template<>
-struct is_tracker_target<CTimePickerAutomationPeer> : std::true_type {};
-class CToggleMenuFlyoutItemAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::ITimePickerAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CToggleMenuFlyoutItemAutomationPeer> : std::true_type {};
-class CToggleSwitchAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IToggleMenuFlyoutItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CToggleSwitchAutomationPeer> : std::true_type {};
-class CToolTipAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IToggleSwitchAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CToolTipAutomationPeer> : std::true_type {};
-class CTransformCollection;
+struct is_tracker_target<DirectUI::ToolTipAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CTransformCollection> : std::true_type {};
-class CTransformGroup;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Transform*>> : std::true_type {};
 template<>
-struct is_tracker_target<CTransformGroup> : std::true_type {};
-class CTransitionCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::ITransformGroup> : std::true_type {};
 template<>
-struct is_tracker_target<CTransitionCollection> : std::true_type {};
-class CTranslateTransform;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Transition*>> : std::true_type {};
 template<>
-struct is_tracker_target<CTranslateTransform> : std::true_type {};
-class CTriggerActionCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::ITranslateTransform> : std::true_type {};
 template<>
-struct is_tracker_target<CTriggerActionCollection> : std::true_type {};
-class CTriggerCollection;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::TriggerAction*>> : std::true_type {};
 template<>
-struct is_tracker_target<CTriggerCollection> : std::true_type {};
-class CUIElementCollection;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::TriggerBase*>> : std::true_type {};
 template<>
-struct is_tracker_target<CUIElementCollection> : std::true_type {};
-class CUIElementWeakCollection;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::UIElement*>> : std::true_type {};
 template<>
-struct is_tracker_target<CUIElementWeakCollection> : std::true_type {};
-class CViewbox;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::UIElement*>> : std::true_type {};
 template<>
-struct is_tracker_target<CViewbox> : std::true_type {};
-class CVirtualSurfaceImageSource;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IViewbox> : std::true_type {};
 template<>
-struct is_tracker_target<CVirtualSurfaceImageSource> : std::true_type {};
-class CVisualStateCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Imaging::IVirtualSurfaceImageSource> : std::true_type {};
 template<>
-struct is_tracker_target<CVisualStateCollection> : std::true_type {};
-class CVisualStateGroupCollection;
+struct is_tracker_target<DirectUI::VisualStateCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CVisualStateGroupCollection> : std::true_type {};
-class CVisualTransitionCollection;
+struct is_tracker_target<DirectUI::VisualStateGroupCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CVisualTransitionCollection> : std::true_type {};
-class CWriteableBitmap;
+struct is_tracker_target<DirectUI::VisualTransitionCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CWriteableBitmap> : std::true_type {};
-class CXamlLightCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Media::Imaging::IWriteableBitmap> : std::true_type {};
 template<>
-struct is_tracker_target<CXamlLightCollection> : std::true_type {};
-class CAppBarSeparator;
+struct is_tracker_target<DirectUI::XamlLightCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CAppBarSeparator> : std::true_type {};
-class CBasedOnSetterCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IAppBarSeparator> : std::true_type {};
 template<>
-struct is_tracker_target<CBasedOnSetterCollection> : std::true_type {};
-class CBitmapIcon;
+struct is_tracker_target<DirectUI::BasedOnSetterCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CBitmapIcon> : std::true_type {};
-class CBold;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IBitmapIcon> : std::true_type {};
 template<>
-struct is_tracker_target<CBold> : std::true_type {};
-class CButtonAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Documents::IBold> : std::true_type {};
 template<>
-struct is_tracker_target<CButtonAutomationPeer> : std::true_type {};
-class CCalendarDatePicker;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IButtonAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CCalendarDatePicker> : std::true_type {};
-class CCalendarScrollViewerAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ICalendarDatePicker> : std::true_type {};
 template<>
-struct is_tracker_target<CCalendarScrollViewerAutomationPeer> : std::true_type {};
-class CCalendarView;
+struct is_tracker_target<DirectUI::CalendarScrollViewerAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CCalendarView> : std::true_type {};
-class CCalendarViewBaseItemChrome;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ICalendarView> : std::true_type {};
 template<>
-struct is_tracker_target<CCalendarViewBaseItemChrome> : std::true_type {};
-class CCalendarViewDayItemAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::ICalendarViewBaseItem> : std::true_type {};
 template<>
-struct is_tracker_target<CCalendarViewDayItemAutomationPeer> : std::true_type {};
-class CCalendarViewItemAutomationPeer;
+struct is_tracker_target<DirectUI::CalendarViewDayItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CCalendarViewItemAutomationPeer> : std::true_type {};
-class CCanvas;
+struct is_tracker_target<DirectUI::CalendarViewItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CCanvas> : std::true_type {};
-class CCaretBrowsingCaret;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ICanvas> : std::true_type {};
 template<>
-struct is_tracker_target<CCaretBrowsingCaret> : std::true_type {};
-class CColorPaletteResources;
+struct is_tracker_target<DirectUI::CaretBrowsingCaret> : std::true_type {};
 template<>
-struct is_tracker_target<CColorPaletteResources> : std::true_type {};
-class CComboBoxItemDataAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IColorPaletteResources> : std::true_type {};
 template<>
-struct is_tracker_target<CComboBoxItemDataAutomationPeer> : std::true_type {};
-class CCommandBarElementCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IComboBoxItemDataAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CCommandBarElementCollection> : std::true_type {};
-class CCommandingContainer;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Controls::ICommandBarElement*>> : std::true_type {};
 template<>
-struct is_tracker_target<CCommandingContainer> : std::true_type {};
-class CContentControl;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ICommandingContainer> : std::true_type {};
 template<>
-struct is_tracker_target<CContentControl> : std::true_type {};
-class CDatePicker;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IContentControl> : std::true_type {};
 template<>
-struct is_tracker_target<CDatePicker> : std::true_type {};
-class CDependencyObjectCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IDatePicker> : std::true_type {};
 template<>
-struct is_tracker_target<CDependencyObjectCollection> : std::true_type {};
-class CEllipse;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::DependencyObject*>> : std::true_type {};
 template<>
-struct is_tracker_target<CEllipse> : std::true_type {};
-class CFlipViewItemDataAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Shapes::IEllipse> : std::true_type {};
 template<>
-struct is_tracker_target<CFlipViewItemDataAutomationPeer> : std::true_type {};
-class CFontIcon;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IFlipViewItemDataAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CFontIcon> : std::true_type {};
-class CFullWindowMediaRoot;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IFontIcon> : std::true_type {};
 template<>
-struct is_tracker_target<CFullWindowMediaRoot> : std::true_type {};
-class CGrid;
+struct is_tracker_target<DirectUI::FullWindowMediaRoot> : std::true_type {};
 template<>
-struct is_tracker_target<CGrid> : std::true_type {};
-class CGridViewHeaderItemAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IGrid> : std::true_type {};
 template<>
-struct is_tracker_target<CGridViewHeaderItemAutomationPeer> : std::true_type {};
-class CGridViewItemAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IGridViewHeaderItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CGridViewItemAutomationPeer> : std::true_type {};
-class CHub;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IGridViewItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CHub> : std::true_type {};
-class CHubSection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IHub> : std::true_type {};
 template<>
-struct is_tracker_target<CHubSection> : std::true_type {};
-class HWWindowedPopupCompTreeNodeWinRT;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IHubSection> : std::true_type {};
 template<>
-struct is_tracker_target<HWWindowedPopupCompTreeNodeWinRT> : std::true_type {};
-class CHyperlink;
+struct is_tracker_target<DirectUI::HWWindowedPopupCompTreeNodeWinRT> : std::true_type {};
 template<>
-struct is_tracker_target<CHyperlink> : std::true_type {};
-class CHyperlinkButtonAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Documents::IHyperlink> : std::true_type {};
 template<>
-struct is_tracker_target<CHyperlinkButtonAutomationPeer> : std::true_type {};
-class CIconSourceElement;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IHyperlinkButtonAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CIconSourceElement> : std::true_type {};
-class CItalic;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IIconSourceElement> : std::true_type {};
 template<>
-struct is_tracker_target<CItalic> : std::true_type {};
-class CItemCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Documents::IItalic> : std::true_type {};
 template<>
-struct is_tracker_target<CItemCollection> : std::true_type {};
-class CItemsControl;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IObservableVector<IInspectable*>> : std::true_type {};
 template<>
-struct is_tracker_target<CItemsControl> : std::true_type {};
-class CLine;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IItemsControl> : std::true_type {};
 template<>
-struct is_tracker_target<CLine> : std::true_type {};
-class CListBoxItemDataAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Shapes::ILine> : std::true_type {};
 template<>
-struct is_tracker_target<CListBoxItemDataAutomationPeer> : std::true_type {};
-class CListViewBaseItemDataAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IListBoxItemDataAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CListViewBaseItemDataAutomationPeer> : std::true_type {};
-class CListViewBaseItemChrome;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IListViewBaseItemDataAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CListViewBaseItemChrome> : std::true_type {};
-class CListViewHeaderItemAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IListViewBaseItemPresenter> : std::true_type {};
 template<>
-struct is_tracker_target<CListViewHeaderItemAutomationPeer> : std::true_type {};
-class CListViewItemAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IListViewHeaderItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CListViewItemAutomationPeer> : std::true_type {};
-class CMediaPlayerElement;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IListViewItemAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CMediaPlayerElement> : std::true_type {};
-class CMediaTransportControls;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IMediaPlayerElement> : std::true_type {};
 template<>
-struct is_tracker_target<CMediaTransportControls> : std::true_type {};
-class CMenuFlyoutItemBase;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IMediaTransportControls> : std::true_type {};
 template<>
-struct is_tracker_target<CMenuFlyoutItemBase> : std::true_type {};
-class CMenuFlyoutPresenterAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutItemBase> : std::true_type {};
 template<>
-struct is_tracker_target<CMenuFlyoutPresenterAutomationPeer> : std::true_type {};
-class CModernCollectionBasePanel;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IMenuFlyoutPresenterAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CModernCollectionBasePanel> : std::true_type {};
-class CPasswordBox;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IModernCollectionBasePanel> : std::true_type {};
 template<>
-struct is_tracker_target<CPasswordBox> : std::true_type {};
-class CPath;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IPasswordBox> : std::true_type {};
 template<>
-struct is_tracker_target<CPath> : std::true_type {};
-class CPathIcon;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Shapes::IPath> : std::true_type {};
 template<>
-struct is_tracker_target<CPathIcon> : std::true_type {};
-class CPolygon;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IPathIcon> : std::true_type {};
 template<>
-struct is_tracker_target<CPolygon> : std::true_type {};
-class CPolyline;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Shapes::IPolygon> : std::true_type {};
 template<>
-struct is_tracker_target<CPolyline> : std::true_type {};
-class CRangeBase;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Shapes::IPolyline> : std::true_type {};
 template<>
-struct is_tracker_target<CRangeBase> : std::true_type {};
-class CRectangle;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IRangeBase> : std::true_type {};
 template<>
-struct is_tracker_target<CRectangle> : std::true_type {};
-class CRelativePanel;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Shapes::IRectangle> : std::true_type {};
 template<>
-struct is_tracker_target<CRelativePanel> : std::true_type {};
-class CRenderTargetBitmapRoot;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IRelativePanel> : std::true_type {};
 template<>
-struct is_tracker_target<CRenderTargetBitmapRoot> : std::true_type {};
-class CRepeatButtonAutomationPeer;
+struct is_tracker_target<DirectUI::RenderTargetBitmapRoot> : std::true_type {};
 template<>
-struct is_tracker_target<CRepeatButtonAutomationPeer> : std::true_type {};
-class CRichEditBox;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IRepeatButtonAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CRichEditBox> : std::true_type {};
-class CRootVisual;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IRichEditBox> : std::true_type {};
 template<>
-struct is_tracker_target<CRootVisual> : std::true_type {};
-class CScrollBarAutomationPeer;
+struct is_tracker_target<DirectUI::RootVisual> : std::true_type {};
 template<>
-struct is_tracker_target<CScrollBarAutomationPeer> : std::true_type {};
-class CScrollContentPresenter;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IScrollBarAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CScrollContentPresenter> : std::true_type {};
-class CSelectorAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IScrollContentPresenter> : std::true_type {};
 template<>
-struct is_tracker_target<CSelectorAutomationPeer> : std::true_type {};
-class CSemanticZoom;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::ISelectorAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CSemanticZoom> : std::true_type {};
-class CSliderAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ISemanticZoom> : std::true_type {};
 template<>
-struct is_tracker_target<CSliderAutomationPeer> : std::true_type {};
-class CSplitView;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::ISliderAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CSplitView> : std::true_type {};
-class CStackPanel;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ISplitView> : std::true_type {};
 template<>
-struct is_tracker_target<CStackPanel> : std::true_type {};
-class CSymbolIcon;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IStackPanel> : std::true_type {};
 template<>
-struct is_tracker_target<CSymbolIcon> : std::true_type {};
-class CTextBox;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ISymbolIcon> : std::true_type {};
 template<>
-struct is_tracker_target<CTextBox> : std::true_type {};
-class CTextBoxBase;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ITextBox> : std::true_type {};
 template<>
-struct is_tracker_target<CTextBoxBase> : std::true_type {};
-class CThumb;
+struct is_tracker_target<DirectUI::TextBoxBase> : std::true_type {};
 template<>
-struct is_tracker_target<CThumb> : std::true_type {};
-class CTickBar;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IThumb> : std::true_type {};
 template<>
-struct is_tracker_target<CTickBar> : std::true_type {};
-class CTimePicker;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::ITickBar> : std::true_type {};
 template<>
-struct is_tracker_target<CTimePicker> : std::true_type {};
-class CToggleButtonAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ITimePicker> : std::true_type {};
 template<>
-struct is_tracker_target<CToggleButtonAutomationPeer> : std::true_type {};
-class CToggleSwitch;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IToggleButtonAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CToggleSwitch> : std::true_type {};
-class CUnderline;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IToggleSwitch> : std::true_type {};
 template<>
-struct is_tracker_target<CUnderline> : std::true_type {};
-class CUserControl;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Documents::IUnderline> : std::true_type {};
 template<>
-struct is_tracker_target<CUserControl> : std::true_type {};
-class CValidationErrorsCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IUserControl> : std::true_type {};
 template<>
-struct is_tracker_target<CValidationErrorsCollection> : std::true_type {};
-class CVariableSizedWrapGrid;
+struct is_tracker_target<DirectUI::ValidationErrorsCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CVariableSizedWrapGrid> : std::true_type {};
-class CVirtualizingPanel;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IVariableSizedWrapGrid> : std::true_type {};
 template<>
-struct is_tracker_target<CVirtualizingPanel> : std::true_type {};
-class CXamlIslandRoot;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IVirtualizingPanel> : std::true_type {};
 template<>
-struct is_tracker_target<CXamlIslandRoot> : std::true_type {};
-class CXamlIslandRootCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Hosting::IXamlIslandRoot> : std::true_type {};
 template<>
-struct is_tracker_target<CXamlIslandRootCollection> : std::true_type {};
-class CAppBar;
+struct is_tracker_target<DirectUI::XamlIslandRootCollection> : std::true_type {};
 template<>
-struct is_tracker_target<CAppBar> : std::true_type {};
-class CAppBarButtonAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IAppBar> : std::true_type {};
 template<>
-struct is_tracker_target<CAppBarButtonAutomationPeer> : std::true_type {};
-class CAppBarElementContainer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IAppBarButtonAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CAppBarElementContainer> : std::true_type {};
-class CAppBarLightDismiss;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IAppBarElementContainer> : std::true_type {};
 template<>
-struct is_tracker_target<CAppBarLightDismiss> : std::true_type {};
-class CAppBarToggleButtonAutomationPeer;
+struct is_tracker_target<DirectUI::AppBarLightDismiss> : std::true_type {};
 template<>
-struct is_tracker_target<CAppBarToggleButtonAutomationPeer> : std::true_type {};
-class CAutoSuggestBox;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IAppBarToggleButtonAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CAutoSuggestBox> : std::true_type {};
-class CBlockCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBox> : std::true_type {};
 template<>
-struct is_tracker_target<CBlockCollection> : std::true_type {};
-class CButtonBase;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Documents::Block*>> : std::true_type {};
 template<>
-struct is_tracker_target<CButtonBase> : std::true_type {};
-class CCalendarPanel;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IButtonBase> : std::true_type {};
 template<>
-struct is_tracker_target<CCalendarPanel> : std::true_type {};
-class CCalendarViewDayItemChrome;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::ICalendarPanel> : std::true_type {};
 template<>
-struct is_tracker_target<CCalendarViewDayItemChrome> : std::true_type {};
-class CCalendarViewItemChrome;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ICalendarViewDayItem> : std::true_type {};
 template<>
-struct is_tracker_target<CCalendarViewItemChrome> : std::true_type {};
-class CCarouselPanel;
+struct is_tracker_target<DirectUI::CalendarViewItem> : std::true_type {};
 template<>
-struct is_tracker_target<CCarouselPanel> : std::true_type {};
-class CCheckBoxAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::ICarouselPanel> : std::true_type {};
 template<>
-struct is_tracker_target<CCheckBoxAutomationPeer> : std::true_type {};
-class CComboBoxAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::ICheckBoxAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CComboBoxAutomationPeer> : std::true_type {};
-class CComboBoxLightDismiss;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IComboBoxAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CComboBoxLightDismiss> : std::true_type {};
-class CCommandBarOverflowPresenter;
+struct is_tracker_target<DirectUI::ComboBoxLightDismiss> : std::true_type {};
 template<>
-struct is_tracker_target<CCommandBarOverflowPresenter> : std::true_type {};
-class CContentDialog;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ICommandBarOverflowPresenter> : std::true_type {};
 template<>
-struct is_tracker_target<CContentDialog> : std::true_type {};
-class CFlipViewAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IContentDialog> : std::true_type {};
 template<>
-struct is_tracker_target<CFlipViewAutomationPeer> : std::true_type {};
-class CFlyoutPresenter;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IFlipViewAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CFlyoutPresenter> : std::true_type {};
-class CFrame;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IFlyoutPresenter> : std::true_type {};
 template<>
-struct is_tracker_target<CFrame> : std::true_type {};
-class CGridViewItemDataAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IFrame> : std::true_type {};
 template<>
-struct is_tracker_target<CGridViewItemDataAutomationPeer> : std::true_type {};
-class CGridViewItemChrome;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IGridViewItemDataAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CGridViewItemChrome> : std::true_type {};
-class CGroupItem;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IGridViewItemPresenter> : std::true_type {};
 template<>
-struct is_tracker_target<CGroupItem> : std::true_type {};
-class CInlineCollection;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IGroupItem> : std::true_type {};
 template<>
-struct is_tracker_target<CInlineCollection> : std::true_type {};
-class CItemsStackPanel;
+struct is_tracker_target<ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Documents::Inline*>> : std::true_type {};
 template<>
-struct is_tracker_target<CItemsStackPanel> : std::true_type {};
-class CItemsWrapGrid;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IItemsStackPanel> : std::true_type {};
 template<>
-struct is_tracker_target<CItemsWrapGrid> : std::true_type {};
-class CListBoxAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IItemsWrapGrid> : std::true_type {};
 template<>
-struct is_tracker_target<CListBoxAutomationPeer> : std::true_type {};
-class CListViewBaseAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IListBoxAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CListViewBaseAutomationPeer> : std::true_type {};
-class CListViewBaseHeaderItem;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IListViewBaseAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CListViewBaseHeaderItem> : std::true_type {};
-class CListViewItemDataAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IListViewBaseHeaderItem> : std::true_type {};
 template<>
-struct is_tracker_target<CListViewItemDataAutomationPeer> : std::true_type {};
-class CListViewItemChrome;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IListViewItemDataAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CListViewItemChrome> : std::true_type {};
-class CMenuFlyoutItem;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IListViewItemPresenter> : std::true_type {};
 template<>
-struct is_tracker_target<CMenuFlyoutItem> : std::true_type {};
-class CMenuFlyoutPresenter;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutItem> : std::true_type {};
 template<>
-struct is_tracker_target<CMenuFlyoutPresenter> : std::true_type {};
-class CMenuFlyoutSeparator;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenter> : std::true_type {};
 template<>
-struct is_tracker_target<CMenuFlyoutSeparator> : std::true_type {};
-class CMenuFlyoutSubItem;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSeparator> : std::true_type {};
 template<>
-struct is_tracker_target<CMenuFlyoutSubItem> : std::true_type {};
-class COrientedVirtualizingPanel;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSubItem> : std::true_type {};
 template<>
-struct is_tracker_target<COrientedVirtualizingPanel> : std::true_type {};
-class CPage;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IOrientedVirtualizingPanel> : std::true_type {};
 template<>
-struct is_tracker_target<CPage> : std::true_type {};
-class CPopupRoot;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IPage> : std::true_type {};
 template<>
-struct is_tracker_target<CPopupRoot> : std::true_type {};
-class CPrintRoot;
+struct is_tracker_target<DirectUI::PopupRoot> : std::true_type {};
 template<>
-struct is_tracker_target<CPrintRoot> : std::true_type {};
-class CRadioButtonAutomationPeer;
+struct is_tracker_target<DirectUI::PrintRoot> : std::true_type {};
 template<>
-struct is_tracker_target<CRadioButtonAutomationPeer> : std::true_type {};
-class CScrollBar;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IRadioButtonAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CScrollBar> : std::true_type {};
-class CScrollContentControl;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollBar> : std::true_type {};
 template<>
-struct is_tracker_target<CScrollContentControl> : std::true_type {};
-class CSeekSliderAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IScrollContentControl> : std::true_type {};
 template<>
-struct is_tracker_target<CSeekSliderAutomationPeer> : std::true_type {};
-class CSelector;
+struct is_tracker_target<DirectUI::SeekSliderAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CSelector> : std::true_type {};
-class CSelectorItem;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::ISelector> : std::true_type {};
 template<>
-struct is_tracker_target<CSelectorItem> : std::true_type {};
-class CSlider;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::ISelectorItem> : std::true_type {};
 template<>
-struct is_tracker_target<CSlider> : std::true_type {};
-class CSwapChainBackgroundPanel;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ISlider> : std::true_type {};
 template<>
-struct is_tracker_target<CSwapChainBackgroundPanel> : std::true_type {};
-class CSwapChainPanel;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ISwapChainBackgroundPanel> : std::true_type {};
 template<>
-struct is_tracker_target<CSwapChainPanel> : std::true_type {};
-class CTextSelectionGripper;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ISwapChainPanel> : std::true_type {};
 template<>
-struct is_tracker_target<CTextSelectionGripper> : std::true_type {};
-class CToolTip;
+struct is_tracker_target<DirectUI::TextSelectionGripper> : std::true_type {};
 template<>
-struct is_tracker_target<CToolTip> : std::true_type {};
-class CTransitionRoot;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IToolTip> : std::true_type {};
 template<>
-struct is_tracker_target<CTransitionRoot> : std::true_type {};
-class CWindowChrome;
+struct is_tracker_target<DirectUI::TransitionRoot> : std::true_type {};
 template<>
-struct is_tracker_target<CWindowChrome> : std::true_type {};
-class CButton;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::IWindowChrome> : std::true_type {};
 template<>
-struct is_tracker_target<CButton> : std::true_type {};
-class CComboBox;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IButton> : std::true_type {};
 template<>
-struct is_tracker_target<CComboBox> : std::true_type {};
-class CComboBoxItem;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IComboBox> : std::true_type {};
 template<>
-struct is_tracker_target<CComboBoxItem> : std::true_type {};
-class CCommandBar;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IComboBoxItem> : std::true_type {};
 template<>
-struct is_tracker_target<CCommandBar> : std::true_type {};
-class CFlipView;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ICommandBar> : std::true_type {};
 template<>
-struct is_tracker_target<CFlipView> : std::true_type {};
-class CFlipViewItem;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IFlipView> : std::true_type {};
 template<>
-struct is_tracker_target<CFlipViewItem> : std::true_type {};
-class CGridViewAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IFlipViewItem> : std::true_type {};
 template<>
-struct is_tracker_target<CGridViewAutomationPeer> : std::true_type {};
-class CGridViewHeaderItem;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IGridViewAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CGridViewHeaderItem> : std::true_type {};
-class CHyperlinkButton;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IGridViewHeaderItem> : std::true_type {};
 template<>
-struct is_tracker_target<CHyperlinkButton> : std::true_type {};
-class CListBox;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IHyperlinkButton> : std::true_type {};
 template<>
-struct is_tracker_target<CListBox> : std::true_type {};
-class CListBoxItem;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IListBox> : std::true_type {};
 template<>
-struct is_tracker_target<CListBoxItem> : std::true_type {};
-class CListViewAutomationPeer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IListBoxItem> : std::true_type {};
 template<>
-struct is_tracker_target<CListViewAutomationPeer> : std::true_type {};
-class CListViewBase;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Automation::Peers::IListViewAutomationPeer> : std::true_type {};
 template<>
-struct is_tracker_target<CListViewBase> : std::true_type {};
-class CListViewBaseItem;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IListViewBase> : std::true_type {};
 template<>
-struct is_tracker_target<CListViewBaseItem> : std::true_type {};
-class CListViewHeaderItem;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IListViewBaseItem> : std::true_type {};
 template<>
-struct is_tracker_target<CListViewHeaderItem> : std::true_type {};
-class CRepeatButton;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IListViewHeaderItem> : std::true_type {};
 template<>
-struct is_tracker_target<CRepeatButton> : std::true_type {};
-class CScrollViewer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IRepeatButton> : std::true_type {};
 template<>
-struct is_tracker_target<CScrollViewer> : std::true_type {};
-class CSplitMenuFlyoutItem;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IScrollViewer> : std::true_type {};
 template<>
-struct is_tracker_target<CSplitMenuFlyoutItem> : std::true_type {};
-class CToggleButton;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItem> : std::true_type {};
 template<>
-struct is_tracker_target<CToggleButton> : std::true_type {};
-class CToggleMenuFlyoutItem;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::Primitives::IToggleButton> : std::true_type {};
 template<>
-struct is_tracker_target<CToggleMenuFlyoutItem> : std::true_type {};
-class CVirtualizingStackPanel;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IToggleMenuFlyoutItem> : std::true_type {};
 template<>
-struct is_tracker_target<CVirtualizingStackPanel> : std::true_type {};
-class CWrapGrid;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IVirtualizingStackPanel> : std::true_type {};
 template<>
-struct is_tracker_target<CWrapGrid> : std::true_type {};
-class CAppBarButton;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IWrapGrid> : std::true_type {};
 template<>
-struct is_tracker_target<CAppBarButton> : std::true_type {};
-class CAppBarToggleButton;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IAppBarButton> : std::true_type {};
 template<>
-struct is_tracker_target<CAppBarToggleButton> : std::true_type {};
-class CCheckBox;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IAppBarToggleButton> : std::true_type {};
 template<>
-struct is_tracker_target<CCheckBox> : std::true_type {};
-class CGridView;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::ICheckBox> : std::true_type {};
 template<>
-struct is_tracker_target<CGridView> : std::true_type {};
-class CGridViewItem;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IGridView> : std::true_type {};
 template<>
-struct is_tracker_target<CGridViewItem> : std::true_type {};
-class CListView;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IGridViewItem> : std::true_type {};
 template<>
-struct is_tracker_target<CListView> : std::true_type {};
-class CListViewItem;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IListView> : std::true_type {};
 template<>
-struct is_tracker_target<CListViewItem> : std::true_type {};
-class CRadioButton;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IListViewItem> : std::true_type {};
 template<>
-struct is_tracker_target<CRadioButton> : std::true_type {};
-class CRootScrollViewer;
+struct is_tracker_target<ABI::Microsoft::UI::Xaml::Controls::IRadioButton> : std::true_type {};
 template<>
-struct is_tracker_target<CRootScrollViewer> : std::true_type {};
+struct is_tracker_target<DirectUI::RootScrollViewer> : std::true_type {};

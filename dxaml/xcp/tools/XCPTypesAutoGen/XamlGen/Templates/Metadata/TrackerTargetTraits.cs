@@ -31,10 +31,8 @@ namespace XamlGen.Templates.Metadata
             this.Write(this.ToStringHelper.ToStringWithCulture(IncludeTemplate<Copyright>()));
             this.Write("\r\n\r\n#pragma once\r\n\r\n#include \"TrackerTargetTraits.h\"\r\n\r\n");
  foreach (var type in Model.GetAllTypeTableTypes().OfType<ClassDefinition>().Where(c => c.IsTrackerTarget && c.IsADependencyObject && !c.IsGenericType)) { 
-            this.Write("class ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(type.CoreName));
-            this.Write(";\r\ntemplate<>\r\nstruct is_tracker_target<");
-            this.Write(this.ToStringHelper.ToStringWithCulture(type.CoreName));
+            this.Write("template<>\r\nstruct is_tracker_target<");
+            this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(new TypeReference(type).AbiFullName)));
             this.Write("> : std::true_type {};\r\n");
  } 
             return this.GenerationEnvironment.ToString();
