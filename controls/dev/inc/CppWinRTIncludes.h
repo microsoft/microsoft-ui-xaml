@@ -7,7 +7,6 @@
 #include <winrt\Windows.Foundation.h>
 #include <winrt\Windows.Foundation.Collections.h>
 #include <winrt\Windows.Foundation.Metadata.h>
-#include <winrt\Windows.ApplicationModel.Activation.h>
 #include <winrt\Windows.ApplicationModel.Contacts.h>
 #include <winrt\Windows.ApplicationModel.Core.h>
 #include <winrt\Windows.ApplicationModel.DataTransfer.h>
@@ -33,7 +32,6 @@
 #include <winrt\Windows.UI.Input.Inking.h>
 #include <winrt\Windows.UI.Text.h>
 #include <winrt\Windows.UI.ViewManagement.h>
-#include <winrt\Windows.UI.Xaml.Interop.h>
 #include <winrt\Windows.Data.Json.h>
 
 #include <winrt\Microsoft.Windows.ApplicationModel.Resources.h>
@@ -78,7 +76,6 @@
 namespace winrt
 {
     using namespace ::winrt::Windows;
-    using namespace ::winrt::Windows::ApplicationModel::Activation;
     using namespace ::winrt::Windows::ApplicationModel::Contacts;
     using namespace ::winrt::Windows::ApplicationModel::Core;
     using namespace ::winrt::Windows::ApplicationModel::DataTransfer;
@@ -107,7 +104,6 @@ namespace winrt
     using namespace ::winrt::Windows::UI::Core;
     using namespace ::winrt::Windows::UI::Text;
     using namespace ::winrt::Windows::UI::ViewManagement;
-    using namespace ::winrt::Windows::Web;
 
     using namespace ::winrt::Microsoft::UI::Dispatching;
     using namespace ::winrt::Microsoft::UI::Composition;
