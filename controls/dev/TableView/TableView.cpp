@@ -1611,14 +1611,6 @@ void TableView::RebuildHeaders()
             // opted-out column carries no chevron and no click handler at all.
             if (canUserSortColumns && column.CanSort())
             {
-                // The header cell is a Grid, and a Grid with a null Background is not hit-test
-                // visible in its empty regions. The header content presenter and the chevron host
-                // below are both effectively non-hit-testable in their padding, so without an
-                // explicit brush a tap that misses the header glyphs never reaches the Tapped
-                // handler and the column never sorts. A transparent fill makes the WHOLE cell the
-                // click target, matching the group-header band and WPF DataGrid column headers.
-                headerCell.Background(winrt::SolidColorBrush{ winrt::Colors::Transparent() });
-
                 // Hosted in its own panel so the chevron sits on the logical trailing edge without
                 // competing with the header content's Stretch alignment.
                 winrt::StackPanel indicatorHost;
