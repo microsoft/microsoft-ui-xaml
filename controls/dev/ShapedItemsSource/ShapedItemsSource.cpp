@@ -1162,7 +1162,7 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     ApplySort(rows, -1, m_pipeline.GroupOrder());
 
     std::vector<ShapingHelpers::KeyedBucket> keyedBuckets;
-    wchar_t const* degradeReason = nullptr;
+    wchar_t const* rejectReason = nullptr;
     const bool grouped = ShapingHelpers::BucketizeToGroups(
         rows,
         [this](winrt::IInspectable const& item) -> winrt::IInspectable
@@ -1182,7 +1182,7 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
             return m_groupIdentitySelector || RowIdentity::GroupKeysEqual(existingKey, newKey);
         },
         keyedBuckets,
-        degradeReason);
+        rejectReason);
 
     if (!grouped)
     {
@@ -1200,11 +1200,11 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
             L"selector so every group has a stable non-empty unique string identity, or "
             L"supply a groupIdentitySelector that resolves the collision intentionally. "
             L"See the per-bucket reason string logged via LogIdentityProjectionDisabled.");
-        LogIdentityProjectionDisabled(degradeReason);
+        LogIdentityProjectionDisabled(rejectReason);
         winrt::hstring message = Diagnostic(L"GroupBy key selector produced an invalid group identity");
-        if (degradeReason)
+        if (rejectReason)
         {
-            message = message + L": " + winrt::hstring{ degradeReason };
+            message = message + L": " + winrt::hstring{ rejectReason };
         }
         throw winrt::hresult_invalid_argument(message);
     }
