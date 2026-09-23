@@ -179,7 +179,7 @@ WeakReferenceSourceNoThreadId::ConnectFromTrackerSource()
     ClearReferenceTrackerPeg();
 
 #if DBG
-    // Pillar A: a tracker source now roots this peer (Detached -> Tracked, or Pegged stays Pegged).
+    // A tracker source now roots this peer (Detached -> Tracked, or Pegged stays Pegged).
     IGNOREHR(TransitionPeerState(fromState, GetPeerLifetimeState()));
 #endif
 
@@ -210,7 +210,7 @@ WeakReferenceSourceNoThreadId::DisconnectFromTrackerSource()
     }
 
 #if DBG
-    // Pillar A: a tracker source dropped its reference (Tracked -> Detached once the last one goes away,
+    // A tracker source dropped its reference (Tracked -> Detached once the last one goes away,
     // unless the peer is still explicitly pegged).
     IGNOREHR(TransitionPeerState(fromState, GetPeerLifetimeState()));
 #endif
@@ -619,7 +619,7 @@ WeakReferenceSourceNoThreadId::SetRefCountPeg()
     #endif
 
 #if DBG
-    // Pillar A: implicit GC-walk root applied (-> Pegged).
+    // Implicit GC-walk root applied (-> Pegged).
     IGNOREHR(TransitionPeerState(fromState, GetPeerLifetimeState()));
 #endif
 }
@@ -643,7 +643,7 @@ WeakReferenceSourceNoThreadId::ClearRefCountPeg()
     m_referenceTrackerBitFields.bRefCountPeg = false;
 
 #if DBG
-    // Pillar A: implicit GC-walk root removed (Pegged -> Tracked/Detached unless still explicitly pegged).
+    // Implicit GC-walk root removed (Pegged -> Tracked/Detached unless still explicitly pegged).
     IGNOREHR(TransitionPeerState(fromState, GetPeerLifetimeState()));
 #endif
 }
@@ -691,7 +691,7 @@ void WeakReferenceSourceNoThreadId::UpdatePeg(bool peg)
         }
     }
 #if DBG
-    // Pillar A: announce the counted-peg transition through the single choke point (observability only).
+    // Announce the counted-peg transition through the single choke point (observability only).
     IGNOREHR(TransitionPeerState(fromState, GetPeerLifetimeState()));
 #endif
 }
@@ -707,7 +707,7 @@ void WeakReferenceSourceNoThreadId::PegNoRef()
         ctl::addref_interface(this);
     }
 #if DBG
-    // Pillar A: announce the no-ref-peg transition through the single choke point (observability only).
+    // Announce the no-ref-peg transition through the single choke point (observability only).
     IGNOREHR(TransitionPeerState(fromState, GetPeerLifetimeState()));
 #endif
 }
@@ -740,7 +740,7 @@ void WeakReferenceSourceNoThreadId::UnpegNoRef(bool suppressClearReferenceTracke
     }
     #endif
 #if DBG
-    // Pillar A: announce the no-ref-unpeg transition through the single choke point (observability only).
+    // Announce the no-ref-unpeg transition through the single choke point (observability only).
     IGNOREHR(TransitionPeerState(fromState, GetPeerLifetimeState()));
 #endif
 }
@@ -815,7 +815,7 @@ WeakReferenceSourceNoThreadId::IsPeggedNoRef()
 
 //+---------------------------------------------------------------------------
 //
-// Peer-lifetime state machine (Pillar A)
+// Peer-lifetime state machine
 //
 // GetPeerLifetimeState derives the single explicit lifetime state from the existing (scattered) peg/tracker
 // bookkeeping. It reads the backing fields directly rather than the Is* helpers so it can stay const and cannot

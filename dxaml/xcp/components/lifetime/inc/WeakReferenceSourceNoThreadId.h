@@ -202,7 +202,7 @@ namespace ctl
         void PegNoRef();
         void UnpegNoRef( bool suppressClearReferenceTrackerPeg = false );
 
-        // Peer-lifetime state machine (Pillar A).
+        // Peer-lifetime state machine.
         //
         // Historically the answer to "what lifetime state is this peer in?" was implicit and scattered across
         // several independent fields (m_ulPegRefCount, m_bIsPeggedNoRef, m_bReferenceTrackerPeg, bRefCountPeg,
