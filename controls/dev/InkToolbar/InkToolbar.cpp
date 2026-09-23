@@ -891,6 +891,13 @@ void InkToolbar::OnActiveToolChanged(winrt::DependencyPropertyChangedEventArgs c
     if (oldTool)
     {
         UpdateToolButtonVisuals(oldTool, newTool);
+
+        // The tool name carries its selected state, so refresh it for the tool that just lost selection.
+        if (auto oldPeer = winrt::FrameworkElementAutomationPeer::FromElement(oldTool))
+        {
+            oldPeer.RaisePropertyChangedEvent(
+                winrt::AutomationElementIdentifiers::NameProperty(), winrt::box_value(L""), winrt::box_value(oldPeer.GetName()));
+        }
     }
 
     winrt::InkToolbarPenButton penButton{ nullptr };
@@ -910,6 +917,11 @@ void InkToolbar::OnActiveToolChanged(winrt::DependencyPropertyChangedEventArgs c
             if (peer)
             {
                 peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementSelected);
+
+                // "selected" is folded into the name, so re-raise Name; without this Narrator only reads
+                // the selected state the first time and stays silent on later tool changes.
+                peer.RaisePropertyChangedEvent(
+                    winrt::AutomationElementIdentifiers::NameProperty(), winrt::box_value(L""), winrt::box_value(peer.GetName()));
             }
         }
     }

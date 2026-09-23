@@ -106,6 +106,10 @@
     <value>button</value>
     <comment>Localized UIA control-type name for InkToolbar tool buttons; Narrator reads this instead of "custom". UWP IDS_INKTOOLBAR_TOOL_BUTTON_CONTROLTYPE_NAME.</comment>
   </data>
+  <data name="InkToolbarToolButtonSelectedStateName" xml:space="preserve">
+    <value>selected</value>
+    <comment>Appended to an InkToolbar tool button's accessible name when it is the active tool, so Narrator announces the selected tool. The Custom control type suppresses the native selected-state read.</comment>
+  </data>
   <data name="InkToolbarStrokeEraserLabel" xml:space="preserve">
     <value>Stroke eraser</value>
     <comment>Display label for the InkToolbar eraser flyout stroke-eraser item. UWP IDS_INKTOOLBAR_ERASERSTROKEERASER.</comment>
@@ -129,6 +133,10 @@
   <data name="InkToolbarNonSolidColorName" xml:space="preserve">
     <value>Not a solid color</value>
     <comment>Accessible name and tooltip for an InkToolbar palette entry whose brush is not a solid color. UWP IDS_INKTOOLBAR_NONSOLIDCOLOR = 6411.</comment>
+  </data>
+  <data name="InkToolbarStrokeWidthSliderRangeFormat" xml:space="preserve">
+    <value>Minimum %1!s!, maximum %2!s!</value>
+    <comment>Narrator help text for the InkToolbar pen-size slider, announcing the smallest and largest stroke width. %1!s! is the minimum value and %2!s! is the maximum value.</comment>
   </data>
   <data name="InkToolbarColorRgbFormat" xml:space="preserve">
     <value>RGB color %1!u!, %2!u!, %3!u!</value>

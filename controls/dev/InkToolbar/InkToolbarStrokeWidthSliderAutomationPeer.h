@@ -17,6 +17,7 @@ public:
 
     // IAutomationPeerOverrides
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
+    winrt::hstring GetNameCore();
 
     // IValueProvider
     bool IsReadOnly();
@@ -27,4 +28,8 @@ public:
 
 private:
     static winrt::hstring ValueToString(double value);
+
+    // Resolved once at construction (UI thread). Looking a resource up from the GetHelpTextCore UIA
+    // callback can escape as a fail-fast, so cache it here like the localized control type.
+    winrt::hstring m_rangeFormat;
 };

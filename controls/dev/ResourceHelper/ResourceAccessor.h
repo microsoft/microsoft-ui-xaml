@@ -48,6 +48,7 @@ public:
 #define SR_InkToolbarStencilRulerName L"InkToolbarStencilRulerName"
 #define SR_InkToolbarStencilProtractorName L"InkToolbarStencilProtractorName"
 #define SR_InkToolbarToolButtonControlTypeName L"InkToolbarToolButtonControlTypeName"
+#define SR_InkToolbarToolButtonSelectedStateName L"InkToolbarToolButtonSelectedStateName"
 
 #define SR_BasicRatingString L"BasicRatingString"
 #define SR_CommunityRatingString L"CommunityRatingString"
@@ -163,6 +164,7 @@ public:
 #define SR_InkToolbarLargeEraserLabel L"InkToolbarLargeEraserLabel"
 #define SR_InkToolbarClearAllLabel L"InkToolbarClearAllLabel"
 #define SR_InkToolbarPenConfigurationSizeSliderName L"InkToolbarPenConfigurationSizeSliderName"
+#define SR_InkToolbarStrokeWidthSliderRangeFormat L"InkToolbarStrokeWidthSliderRangeFormat"
 #define SR_InkToolbarNonSolidColorName L"InkToolbarNonSolidColorName"
 #define SR_InkToolbarColorRgbFormat L"InkToolbarColorRgbFormat"
 #define SR_InkToolbarColorNameBlack L"InkToolbarColorNameBlack"

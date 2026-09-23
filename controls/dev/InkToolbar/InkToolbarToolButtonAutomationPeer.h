@@ -11,6 +11,8 @@
 #include "ResourceAccessor.h"
 #include "InkToolbarToolButtonAutomationPeer.g.h"
 
+#include <string>
+
 class InkToolbarToolButtonAutomationPeer :
     public ReferenceTracker<InkToolbarToolButtonAutomationPeer, winrt::implementation::InkToolbarToolButtonAutomationPeerT>
 {
@@ -18,6 +20,9 @@ public:
     InkToolbarToolButtonAutomationPeer(winrt::InkToolbarToolButton const& owner)
         : ReferenceTracker(owner)
     {
+        // Cache here (UI thread); a resource lookup from the GetNameCore UIA callback can fail-fast.
+        try { m_selectedStateName = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarToolButtonSelectedStateName); }
+        catch (...) { m_selectedStateName = L"selected"; }
     }
 
     // IAutomationPeerOverrides
@@ -51,6 +56,25 @@ public:
         }
     }
 
+    hstring GetNameCore()
+    {
+        // The Custom control type suppresses Narrator's native selected-state read, so fold "selected"
+        // into the name of the active tool to guarantee the current tool is announced.
+        auto name = __super::GetNameCore();
+        if (auto toggle = Owner().try_as<winrt::Microsoft::UI::Xaml::Controls::Primitives::ToggleButton>())
+        {
+            if (auto checked = toggle.IsChecked(); checked && checked.Value() && !m_selectedStateName.empty())
+            {
+                if (name.empty())
+                {
+                    return m_selectedStateName;
+                }
+                return winrt::hstring{ std::wstring{ name.c_str() } + L", " + std::wstring{ m_selectedStateName.c_str() } };
+            }
+        }
+        return name;
+    }
+
     // IExpandCollapseProvider
     winrt::ExpandCollapseState ExpandCollapseState()
     {
@@ -82,6 +106,8 @@ public:
     }
 
 private:
+    winrt::hstring m_selectedStateName;
+
     com_ptr<InkToolbarToolButton> GetImpl()
     {
         com_ptr<InkToolbarToolButton> impl;

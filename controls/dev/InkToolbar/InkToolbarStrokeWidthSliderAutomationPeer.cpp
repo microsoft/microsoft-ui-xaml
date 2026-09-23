@@ -10,11 +10,18 @@
 #include <cmath>
 #include <string>
 
+#include "ResourceAccessor.h"
+#include "Utils.h"
+
 #include "InkToolbarStrokeWidthSliderAutomationPeer.properties.cpp"
 
 InkToolbarStrokeWidthSliderAutomationPeer::InkToolbarStrokeWidthSliderAutomationPeer(winrt::InkToolbarStrokeWidthSlider const& owner)
     : ReferenceTracker(owner)
 {
+    // Resolve here (peer creation, UI thread) and cache; the same lookup from the GetHelpTextCore UIA
+    // callback can escape as a fail-fast.
+    try { m_rangeFormat = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStrokeWidthSliderRangeFormat); }
+    catch (...) { m_rangeFormat = L"Minimum %1!s!, maximum %2!s!"; }
 }
 
 winrt::IInspectable InkToolbarStrokeWidthSliderAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
@@ -27,6 +34,29 @@ winrt::IInspectable InkToolbarStrokeWidthSliderAutomationPeer::GetPatternCore(wi
     }
 
     return __super::GetPatternCore(patternInterface);
+}
+
+winrt::hstring InkToolbarStrokeWidthSliderAutomationPeer::GetNameCore()
+{
+    // Narrator reads the name on every focus but does not reliably speak HelpText or the RangeValue
+    // bounds for a Value-pattern slider, so fold the absolute minimum and maximum stroke width into
+    // the name to guarantee they are announced.
+    auto baseName = __super::GetNameCore();
+    if (auto owner = Owner().try_as<winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBase>())
+    {
+        auto range = StringUtil::FormatString(
+            m_rangeFormat, ValueToString(owner.Minimum()).c_str(), ValueToString(owner.Maximum()).c_str());
+        if (!range.empty())
+        {
+            if (baseName.empty())
+            {
+                return range;
+            }
+            return winrt::hstring{ std::wstring{ baseName.c_str() } + L", " + std::wstring{ range.c_str() } };
+        }
+    }
+
+    return baseName;
 }
 
 bool InkToolbarStrokeWidthSliderAutomationPeer::IsReadOnly()
