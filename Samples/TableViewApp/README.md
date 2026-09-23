@@ -36,35 +36,46 @@ Those are separate paths and either can fail alone, so a conformance check wants
 
 ## Build and run
 
+`TableView` is not in any published `Microsoft.WindowsAppSDK.WinUI` package yet, so these apps only
+compile against a locally packed component — `Build.cmd samples` packs it and passes the matching
+version:
+
 ```
-.\initrun.ps1 msb /restore Samples\TableViewApp\TableViewAppCsPackaged\TableViewAppCsPackaged.csproj /p:Platform=x64
+.\Build.cmd product
+.\Build.cmd samples
 ```
 
-To test a locally built control, pack the component and override the version:
+Building one project on its own resolves the package from the feed instead and fails with
+`CS0234: The type or namespace name 'Tabular' does not exist`. To iterate on a single app, pack once
+and override the version:
 
 ```
 .\pack.component.cmd /version 3.0.0-mylocal
-... /p:WinUIVersion=3.0.0-mylocal
+.\initrun.ps1 msb /restore Samples\TableViewApp\TableViewAppCsPackaged\TableViewAppCsPackaged.csproj /p:Platform=x64 /p:WinUIVersion=3.0.0-mylocal
 ```
+
+NuGet caches by version, so re-pack under a fresh version string after changing the control.
 
 The unpackaged apps run straight from their output directory. The packaged apps produce a loose
 layout; register it with `Add-AppxPackage -Register <outdir>\AppxManifest.xml` and launch from Start.
 
-## Why the C# and C++ apps bind differently
+## The C# and C++ apps bind identically
 
-The C# apps use `TableViewTextColumn.Binding` with a classic `{Binding}` against a plain `Person`
-class. The C++ apps use `TableViewTemplateColumn.CellTemplate` with `x:Bind` against a `Person`
-runtimeclass declared in `MainWindow.idl`.
+All four apps use the same markup and the same code-behind shape: `TableViewTextColumn.Binding`
+with a classic `{Binding}`. Keeping the matrix identical is the point — a difference between the
+cells would make it unclear whether a rendering difference came from the language, the packaging,
+or the control.
 
-That difference is a **C++/WinRT data-binding rule, not a control limitation**. Classic `{Binding}`
-resolves properties through reflection in .NET, but C++/WinRT has no reflection: it needs an
-`IXamlType`, which the XAML compiler emits only for types it encounters **in markup**, or an
-explicit `ICustomPropertyProvider` implementation. A data type constructed purely from code has
-neither, so `{Binding}` silently resolves nothing and every cell renders empty while headers, rows,
-grid lines and theming all look perfectly correct.
+Classic `{Binding}` resolves properties through reflection in .NET, but C++/WinRT has no
+reflection: it needs an `IXamlType`, which the XAML compiler emits only for types it encounters
+**in markup**, or an `ICustomPropertyProvider` implementation. A `Person` built purely from code
+has neither, so `{Binding}` would silently resolve nothing — every cell renders empty while
+headers, rows, grid lines and theming all look perfectly correct.
 
-`x:Bind` compiles the property access at build time, needs no runtime type information, and is the
-right default for a C++/WinRT consumer.
+`[bindable]` on the `Person` runtimeclass in `MainWindow.idl` is what closes that gap: it makes
+C++/WinRT generate the `ICustomPropertyProvider` implementation, so the same `{Binding}` markup
+works in both languages. If a C++ consumer prefers compile-time binding, `x:Bind` inside a
+`TableViewTemplateColumn.CellTemplate` remains a valid alternative that needs no attribute.
 
 ## Preview-API warnings are left visible here
 

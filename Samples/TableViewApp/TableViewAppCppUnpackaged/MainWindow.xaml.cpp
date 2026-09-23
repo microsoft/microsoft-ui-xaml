@@ -20,15 +20,19 @@ namespace winrt::TableViewAppCppUnpackaged::implementation
             person.Age(age);
             return person;
         }
+
+        // Person is [bindable], so classic {Binding} resolves without an IXamlType.
+        TableViewTextColumn MakeColumn(hstring const& header, hstring const& path)
+        {
+            TableViewTextColumn column;
+            column.Header(box_value(header));
+            Microsoft::UI::Xaml::Data::Binding binding;
+            binding.Path(PropertyPath{ path });
+            column.Binding(binding);
+            return column;
+        }
     }
 
-    TableViewTemplateColumn MainWindow::MakeColumn(hstring const& header, hstring const& templateKey)
-    {
-        TableViewTemplateColumn column;
-        column.Header(box_value(header));
-        column.CellTemplate(RootGrid().Resources().Lookup(box_value(templateKey)).as<DataTemplate>());
-        return column;
-    }
 
     MainWindow::MainWindow()
     {
@@ -44,8 +48,8 @@ namespace winrt::TableViewAppCppUnpackaged::implementation
         auto codeTable = TableView{};
         codeTable.Height(160);
         codeTable.ItemsSource(m_people);
-        codeTable.Columns().Append(MakeColumn(L"Name", L"NameCell"));
-        codeTable.Columns().Append(MakeColumn(L"Age", L"AgeCell"));
+        codeTable.Columns().Append(MakeColumn(L"Name", L"Name"));
+        codeTable.Columns().Append(MakeColumn(L"Age", L"Age"));
         CodeTableHost().Children().Append(codeTable);
 
         StatusText().Text(L"Both tables are bound to the same 3 items.");

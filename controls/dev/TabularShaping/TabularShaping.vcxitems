@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!--
     TabularShaping — the shared shaping substrate.
@@ -30,11 +30,14 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ShapingHelpers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ShapingDescriptions.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ShapingPipeline.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RowExpansionModel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ShapingRevoke.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)ShapingHelpers.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ShapingDescriptions.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ShapingPipeline.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RowExpansionModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)SortDirection.idl" />

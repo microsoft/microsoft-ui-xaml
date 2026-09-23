@@ -173,7 +173,32 @@ Accessibility exposes a read-only UIA grid/table model:
 
 Lifetime rules: columns and rows use weak owner back-pointers (`GetOwningTableView()` resolves a strong owner for synchronous work); runtime classes use `ReferenceTracker` where required; cross-object events use `auto_revoke`; recycled rows reset transient visual state before reuse.
 
-Theme values resolve through `TabularSurfaces` resources and re-resolve across theme (and high-contrast) changes. Dark `TabularSurfaceGridLineBrush` is `#29FFFFFF`; the C++ fallback uses the same 16% white. Theme-XBF emission stays disabled in this PR to avoid resource-root / PRI collisions until isolated theme-resource emission is re-enabled.
+Theme values resolve through `TabularSurfaces` resources and re-resolve across theme (and high-contrast) changes. Dark `TabularSurfaceGridLineBrush` is `#29FFFFFF`; the C++ fallback uses the same 16% white.
+
+## Sort ownership and reconciliation
+
+Sort has two front-ends and exactly one axis is ever in force; they reconcile rather than stack.
+
+- `TableView.SortByColumn` (and header click) declares the control's own axis and publishes
+  `TableViewColumn.SortDirection`, which is what draws the header chevron.
+- `TableViewSource.Sort` declares an axis on the source. The path overload
+  (`Sort(sortMemberPath, direction)`) names a property, so the control can match it against a
+  column's `SortMemberPath` and light that column's chevron. The delegate overload
+  (`Sort(keySelector, direction)`) is opaque — the key may not correspond to a column at all
+  (computed key, multi-field, custom comparer) — so no chevron is shown.
+
+Reconciliation rules:
+
+- Sorting through the control clears any axis the app declared on the source.
+- Declaring a sort on the source clears the control's axis. A path-declared axis that matches a
+  column lights that column and raises `Sorted` with it; otherwise every `SortDirection` is
+  cleared and `Sorted` carries a null column.
+- `ClearSort()` clears every axis, including one the app declared.
+
+Without this, the earlier-declared axis would silently outrank the later one while the chevron
+advertised the loser. WPF splits the same way: `SortDescriptions` carry a property name, which is
+how `DataGrid` matches a column and lights its arrow, while a data-layer sort with no property
+name stays headerless.
 
 
 # Styling model

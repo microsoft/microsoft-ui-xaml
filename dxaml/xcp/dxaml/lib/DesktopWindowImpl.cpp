@@ -497,6 +497,14 @@ _Check_return_ HRESULT DesktopWindowImpl::CloseImpl()
             // better to crash
             VERIFYHR(RaiseWindowVisibilityChangedEvent(FALSE));
         }
+
+        // A Window can handle its own events. Revoke those native GIT registrations before
+        // unpegging it so the handlers cannot keep the closed Window's managed peer alive.
+        m_sizeChangedEventSource.Clear();
+        m_activatedEventSource.Clear();
+        m_closedEventSource.Clear();
+        m_visibilityChangedEventSource.Clear();
+
         // Close win32 window, cleanup, and unregister from hwnd mapping from DXamlCore
         Shutdown();
     }

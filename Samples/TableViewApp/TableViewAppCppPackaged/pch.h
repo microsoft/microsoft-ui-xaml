@@ -21,3 +21,6 @@
 #include <winrt/Microsoft.UI.Xaml.Navigation.h>
 #include <winrt/Microsoft.UI.Xaml.Shapes.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
+
+// Person no longer appears in markup; the generated XamlTypeInfo still needs its implementation.
+#include "Person.h"

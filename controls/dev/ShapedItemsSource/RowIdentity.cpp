@@ -28,7 +28,21 @@ namespace
 
 namespace RowIdentity
 {
-    TabularShapingHelpers::TabularKeySelector MakeObjectIdentitySelector()
+    namespace
+    {
+        bool TryCanonicalizeStableGroupKey(winrt::IInspectable const& key, winrt::hstring& identity)
+        {
+            identity = {};
+            if (!key)
+            {
+                return false;
+            }
+
+            return ShapingHelpers::ValueKey::TryGetStablePropertyKey(key, identity, true);
+        }
+    }
+
+    ShapingHelpers::KeySelector MakeObjectIdentitySelector()
     {
         return [](winrt::IInspectable const& item) -> winrt::IInspectable
         {
@@ -52,7 +66,7 @@ namespace RowIdentity
 
     bool TryGetRequiredRowIdentity(
         winrt::IInspectable const& item,
-        TabularShapingHelpers::TabularKeySelector const& keySelector,
+        ShapingHelpers::KeySelector const& keySelector,
         winrt::hstring& identity,
         wchar_t const*& reason)
     {
@@ -105,7 +119,7 @@ namespace RowIdentity
 
     bool ValidateRowIdentities(
         std::vector<winrt::IInspectable> const& rows,
-        TabularShapingHelpers::TabularKeySelector const& keySelector,
+        ShapingHelpers::KeySelector const& keySelector,
         wchar_t const*& reason)
     {
         std::unordered_set<winrt::hstring> identities;
@@ -142,7 +156,7 @@ namespace RowIdentity
     void RebuildFlatRowIdentityTracking(
         std::vector<winrt::IInspectable> const& rows,
         bool identityRequired,
-        TabularShapingHelpers::TabularKeySelector const& keySelector,
+        ShapingHelpers::KeySelector const& keySelector,
         std::unordered_set<winrt::hstring>& identities,
         std::unordered_map<winrt::hstring, uint32_t>& identityToIndex)
     {
@@ -186,7 +200,7 @@ namespace RowIdentity
     bool TryGetTrackedFlatRowIndex(
         winrt::hstring const& identity,
         winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& rows,
-        TabularShapingHelpers::TabularKeySelector const& keySelector,
+        ShapingHelpers::KeySelector const& keySelector,
         std::unordered_map<winrt::hstring, uint32_t> const& identityToIndex,
         uint32_t& index)
     {
@@ -234,8 +248,70 @@ namespace RowIdentity
         }
     }
 
+    bool TryGetGroupIdentity(
+        winrt::IInspectable const& key,
+        IdentitySelector const& groupIdentitySelector,
+        winrt::hstring& identity,
+        wchar_t const*& reason)
+    {
+        identity = {};
+        if (groupIdentitySelector)
+        {
+            try
+            {
+                identity = groupIdentitySelector(key);
+            }
+            catch (...)
+            {
+                reason = L"group identity selector threw";
+                return false;
+            }
+
+            if (!identity.empty())
+            {
+                return true;
+            }
+
+            reason = L"empty group identity";
+            return false;
+        }
+
+        if (TryCanonicalizeStableGroupKey(key, identity))
+        {
+            return true;
+        }
+
+        reason = key ? L"reference group key without stable identity selector" : L"null group key";
+        return false;
+    }
+
+    bool GroupKeysEqual(winrt::IInspectable const& a, winrt::IInspectable const& b)
+    {
+        if (a == b)
+        {
+            return true;
+        }
+
+        if (!a || !b)
+        {
+            return false;
+        }
+
+        winrt::hstring aIdentity;
+        winrt::hstring bIdentity;
+        if (TryCanonicalizeStableGroupKey(a, aIdentity) &&
+            TryCanonicalizeStableGroupKey(b, bIdentity))
+        {
+            return aIdentity == bIdentity;
+        }
+
+        auto aUnknown = a.try_as<::IUnknown>();
+        auto bUnknown = b.try_as<::IUnknown>();
+        return aUnknown && bUnknown && aUnknown.get() == bUnknown.get();
+    }
+
     winrt::hstring StringifyKey(winrt::IInspectable const& key)
     {
-        return TabularShapingHelpers::TabularValueKey::ToString(key);
+        return ShapingHelpers::ValueKey::ToString(key);
     }
 }

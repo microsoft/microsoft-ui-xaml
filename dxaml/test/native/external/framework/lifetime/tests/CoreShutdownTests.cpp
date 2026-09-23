@@ -136,6 +136,8 @@ void CoreShutdownTests::FocusedTextBoxAtCoreShutdown()
     {
         textBox = ref new xaml_controls::TextBox();
         textBox->Text = L"focused text input at shutdown";
+        textBox->ContextFlyout = nullptr;
+        textBox->SelectionFlyout = nullptr;
         TestServices::WindowHelper->WindowContent = textBox;
     });
     TestServices::WindowHelper->WaitForIdle();

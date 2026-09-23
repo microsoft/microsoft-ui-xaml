@@ -27,17 +27,27 @@ regressed. Check, in order:
 
 ## How it builds
 
+`TableView` is not in any published `Microsoft.WindowsAppSDK.WinUI` package yet, so the sample only
+compiles against a locally packed component. `Build.cmd samples` handles that — it runs
+`pack.component.cmd` and then builds every sample with the matching `/p:WinUIVersion`:
+
 ```
-.\initrun.ps1 msb /q /restore Samples\TableViewSampleApp\TableViewSampleApp.csproj /p:Platform=x64
+.\Build.cmd product
+.\Build.cmd samples
 ```
 
-`Microsoft.WindowsAppSDK.WinUI` resolves at `$(WinUIVersion)` through Central Package Versions. To
-test a locally built control, pack the component and override that version:
+Building the project on its own resolves `Microsoft.WindowsAppSDK.WinUI` from the feed instead, and
+fails with `CS0234: The type or namespace name 'Tabular' does not exist` — the package is real, it
+just predates Tabular in the public winmd. To iterate on this app alone, pack and override:
 
 ```
 .\pack.component.cmd /version 3.0.0-mylocal
-... /p:WinUIVersion=3.0.0-mylocal
+.\initrun.ps1 msb /q /restore Samples\TableViewSampleApp\TableViewSampleApp.csproj /p:Platform=x64 /p:WinUIVersion=3.0.0-mylocal
 ```
+
+NuGet caches by version under `packages\microsoft.windowsappsdk.winui\`, so re-packing the same
+version after a control change is silently ignored — use a fresh version string, or delete that
+folder first.
 
 The control DLL, its `.pri` and its theme XBFs arrive from the package. The consuming app's build
 expands every referenced `.pri` and re-indexes it into the app's own `TableViewSampleApp.pri`, which
@@ -64,8 +74,3 @@ file. XAML usage raises `WMC1501` once per page; those are deliberately left vis
 `Program.cs` provides `Main` and the project defines `DISABLE_XAML_GENERATED_MAIN`, following the
 [DisableXamlGeneratedMain](../DisableXamlGeneratedMain) sample. This is a normal WinUI pattern, not a
 workaround.
-
-## Known issue
-
-An `EmptyTemplate` containing a `FontIcon` can crash at startup while the empty state is first shown.
-Prefer text or shape content in the `EmptyTemplate` until this is resolved.

@@ -42,6 +42,10 @@ variables:
 - group: WinUI-Variable-Library
 - name: WindowsContainerImage
   value: 'onebranch.azurecr.io/windows/ltsc2022/vse2022:latest'
+# Run the LifetimeStressTestSuite native scenarios in their aggressive repro variant on the PR gate.
+# An unfixed native lifetime bug can fault the test host and fail this shared gate.
+- name: WINUI_LIFETIME_STRESS_NATIVE
+  value: 1
 
 resources:
   repositories:
@@ -168,8 +172,6 @@ extends:
       - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
         parameters:
           pipelineKind: PR
-          # Test results are published but do not gate the pipeline yet.
-          failOnTestFailure: false
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml

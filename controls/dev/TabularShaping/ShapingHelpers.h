@@ -15,7 +15,7 @@
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Foundation.h>
 
-namespace TabularShapingHelpers
+namespace ShapingHelpers
 {
     // A group object that already knows its own stable identity.
     //
@@ -28,12 +28,12 @@ namespace TabularShapingHelpers
     // This lives in layer 1 because the layer that implements it and the layer that reads it are
     // siblings: neither may include the other's headers, so the shared contract has to sit below
     // both.
-    struct __declspec(uuid("E74C4DC8-3FAC-4A24-AD34-01547B4672DF")) ITabularGroupIdentity : ::IUnknown
+    struct __declspec(uuid("E74C4DC8-3FAC-4A24-AD34-01547B4672DF")) IGroupIdentity : ::IUnknown
     {
         virtual winrt::hstring StableGroupIdentity() const = 0;
     };
 
-    struct TabularValueKey
+    struct ValueKey
     {
         static bool TryFormatPropertyValue(
             winrt::Windows::Foundation::IPropertyValue const& propertyValue,
@@ -49,12 +49,12 @@ namespace TabularShapingHelpers
         static winrt::hstring ToObjectLookupKey(winrt::IInspectable const& value, bool rejectEmptyString = false);
     };
 
-    struct TabularValueComparer
+    struct ValueComparer
     {
         static int Compare(winrt::IInspectable const& a, winrt::IInspectable const& b);
 
         // Overload for callers that can hoist the reference-key tiebreak string out of the
-        // comparison loop. `TabularValueKey::ToString` may call into app code (IStringable), so
+        // comparison loop. `ValueKey::ToString` may call into app code (IStringable), so
         // recomputing it per comparison is both O(n log n) app calls and a strict-weak-ordering
         // hazard when the app's ToString is not deterministic. Pass nullptr to compute on demand.
         static int Compare(
@@ -139,7 +139,7 @@ namespace TabularShapingHelpers
     // Canonical multi-axis stable sort shared by every Tabular shaping engine.
     // The caller supplies key extraction
     // (item, axisIndex) -> key and the per-axis sort direction; the routine performs a
-    // decorate-sort-undecorate stable sort keyed by TabularValueComparer, which guarantees a
+    // decorate-sort-undecorate stable sort keyed by ValueComparer, which guarantees a
     // strict-weak-ordering. Extracting key selection into a functor lets a delegate-based and a
     // property-name/reflection-based engine share one sort implementation.
     void StableSortByKeys(
@@ -195,7 +195,7 @@ namespace TabularShapingHelpers
     // to a std:: sort - it is untrusted and may be non-transitive, throwing, or reentrant, any of
     // which is undefined behaviour inside optimized sort internals. CustomSortRankAdapter is the
     // one place that ever invokes it, and it does so defensively.
-    using TabularPairwiseComparer =
+    using PairwiseComparer =
         std::function<int(winrt::IInspectable const& a, winrt::IInspectable const& b)>;
 
     // Adapts an untrusted pairwise comparer into stable integer sort keys, so the key-based engine
@@ -215,7 +215,7 @@ namespace TabularShapingHelpers
         // dense integer ranks. Equal items share a rank, so the projection imposes no order on a
         // tie the comparer called equal. Replaces any prior ranking and adopts `comparer` as the
         // one used to place late-arriving rows.
-        void Rank(TabularPairwiseComparer const& comparer, std::vector<winrt::IInspectable> const& rows);
+        void Rank(PairwiseComparer const& comparer, std::vector<winrt::IInspectable> const& rows);
 
         // The sort key for an item, boxed as int32. O(1) for a row the rank pass saw; a row added
         // afterwards is located among the existing ranks by the comparer and inserted, shifting the
@@ -264,7 +264,7 @@ namespace TabularShapingHelpers
         // before trusting ranks written for a pass that is no longer current.
         void ClearRanks();
 
-        TabularPairwiseComparer m_comparer{ nullptr };
+        PairwiseComparer m_comparer{ nullptr };
         std::vector<RankEntry> m_ranks;
         // O(1) identity -> rank lookup for the common (reference-type item) case; falls back to the
         // comparer scan on a miss, e.g. a boxed value type whose CCW churned.

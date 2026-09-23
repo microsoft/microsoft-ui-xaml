@@ -261,6 +261,14 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
             winrt::get_self<TableView>(owner)->OnColumnHeaderChanged(*this);
         }
     }
+    else if (property == s_HeaderToolTipProperty)
+    {
+        // Not the header branch above: that recomputes Auto width, which a tooltip cannot change.
+        if (auto owner = GetOwningTableView())
+        {
+            winrt::get_self<TableView>(owner)->OnColumnHeaderToolTipChanged(*this);
+        }
+    }
     else if (property == s_FrozenEdgeProperty)
     {
         if (auto owner = GetOwningTableView())

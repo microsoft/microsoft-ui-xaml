@@ -135,18 +135,32 @@ bool InkToolbarToolButton::HasL3()
 
 bool InkToolbarToolButton::IsL3Open()
 {
-    // UWP tracked open L3s in InkToolbar::m_openFlyouts (Opened/Closed notifications). That container-
-    // side tracking is restored when InkToolbar_Partial is ported; until then report closed.
+    if (auto toolbar = GetParentInkToolbar())
+    {
+        return winrt::get_self<InkToolbar>(toolbar)->IsL3Open(*this);
+    }
     return false;
 }
 
 void InkToolbarToolButton::OpenL3()
 {
+    // Route through the toolbar: it builds the L3 content (pen config / eraser items), applies the
+    // flyout placement and registers the open flyout. ShowAttachedFlyout alone would show an empty one.
+    if (auto toolbar = GetParentInkToolbar())
+    {
+        winrt::get_self<InkToolbar>(toolbar)->OpenL3(*this);
+        return;
+    }
     winrt::FlyoutBase::ShowAttachedFlyout(*this);
 }
 
 void InkToolbarToolButton::CloseL3()
 {
+    if (auto toolbar = GetParentInkToolbar())
+    {
+        winrt::get_self<InkToolbar>(toolbar)->CloseL3(*this);
+        return;
+    }
     if (auto flyout = winrt::FlyoutBase::GetAttachedFlyout(*this))
     {
         flyout.Hide();

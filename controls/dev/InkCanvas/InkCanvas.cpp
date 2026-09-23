@@ -77,28 +77,9 @@ struct ThreadData
     wil::unique_hmodule m_hmodDComp;
 };
 
-//
-// IInkCommitRequestHandler implementation.
-// InkPresenter calls OnCommitRequested() when ink transitions from wet to dry
-// and needs the app to commit the DComposition device.
-//
-struct InkCommitRequestHandler : winrt::implements<InkCommitRequestHandler, IInkCommitRequestHandler>
-{
-    InkCommitRequestHandler(winrt::com_ptr<IDCompositionDevice> device)
-        : m_device(device) {}
-
-    IFACEMETHODIMP OnCommitRequested() override
-    {
-        if (m_device)
-        {
-            return m_device->Commit();
-        }
-        return S_OK;
-    }
-
-private:
-    winrt::com_ptr<IDCompositionDevice> m_device;
-};
+// InkCommitRequestHandler (the IInkCommitRequestHandler the presenter calls on every wet->dry
+// transition to commit the shared DComposition device) now lives in InkPresenter.h, so the InkPresenter
+// proxy can re-create it when it re-creates the OS presenter to activate custom drying at runtime.
 
 //
 //  InkCanvas
@@ -128,6 +109,16 @@ InkCanvas::InkCanvas()
 
 InkCanvas::~InkCanvas()
 {
+    // Backstop for the Unloaded flush; summaryReported keeps it to one event. A throw from a
+    // destructor during teardown would terminate, so contain it.
+    try
+    {
+        InkTelemetry::ReportCanvasSessionSummary(m_telemetryState, CompositorEngineForTelemetry());
+    }
+    catch (...)
+    {
+    }
+
     // Ensure that we have torn down our dcomp stuff
     DetachFromVisualLink();
 }
@@ -142,11 +133,28 @@ void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventAr
         return;
     }
 
+    // Bracket the whole attach sequence so a throw from any step is still recorded as a failure.
+    InkTelemetry::BeginCanvasInitialization(m_telemetryState);
+    auto initializationOutcome = wil::scope_exit([this]()
+        {
+            InkTelemetry::ReportError(
+                InkTelemetry::ErrorCategory::Initialization,
+                InkTelemetry::Operation::AttachToCompositor,
+                false /* isRecoverable */,
+                E_FAIL,
+                &m_telemetryState);
+
+            InkTelemetry::CompleteCanvasInitialization(
+                m_telemetryState, InkTelemetry::Result::Failure, CompositorEngineForTelemetry(), E_FAIL);
+        });
+
     // Make sure the presenter (proxy + OS presenter) exists before we queue any ink-thread work
     // (SetRootVisual below runs against it). Safe here: we are past construction and on the UI thread.
+    InkTelemetry::SetCanvasInitializationStage(m_telemetryState, InkTelemetry::InitializationStage::InkPresenter);
     EnsureInkPresenter();
 
     // Hook up this ink canvas with the DComp tree.
+    InkTelemetry::SetCanvasInitializationStage(m_telemetryState, InkTelemetry::InitializationStage::VisualLink);
     AttachToVisualLink();
 
     // The composition target maintains position/clipping for our visual, but the presenter
@@ -188,7 +196,96 @@ void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventAr
 
     // Both compositor paths host the ink visual in the lifted XAML tree, which positions/clips/
     // scrolls it natively; the presenter still needs its size in physical pixels though.
+    InkTelemetry::SetCanvasInitializationStage(m_telemetryState, InkTelemetry::InitializationStage::PresenterSize);
     UpdateInkPresenterSize();
+
+    initializationOutcome.release();
+    auto const engine = CompositorEngineForTelemetry();
+    InkTelemetry::CompleteCanvasInitialization(m_telemetryState, InkTelemetry::Result::Success, engine);
+    ReportUsageTelemetry(engine);
+}
+
+// The engine is decided once per process, so this is stable for the lifetime of the canvas. It only
+// reads the value cached during the attach fork: this is noexcept and is reached from the failure
+// path, where re-entering the compositor query could throw and terminate the process instead of
+// surfacing the original initialization failure.
+InkTelemetry::CompositorEngine InkCanvas::CompositorEngineForTelemetry() noexcept
+{
+    return m_telemetryEngine;
+}
+
+void InkCanvas::ReportUsageTelemetry(InkTelemetry::CompositorEngine engine) noexcept
+{
+    if (!m_inkPresenterProxy)
+    {
+        return;
+    }
+
+    // Reading the presenter and subscribing are cross-ABI calls that can fail. Telemetry must never
+    // be the reason the canvas stops working, and this is noexcept, so contain everything here.
+    try
+    {
+        InkTelemetry::ReportCanvasUsage(
+            m_telemetryState,
+            engine,
+            static_cast<uint32_t>(m_inkPresenterProxy.InputDeviceTypes()),
+            static_cast<uint32_t>(m_inkPresenterProxy.HighContrastAdjustment()));
+
+        SubscribeToStrokeTelemetry();
+    }
+    catch (...)
+    {
+    }
+}
+
+// Counts only: the handlers never look at stroke geometry, and the totals are emitted once in the
+// session summary rather than as an event per stroke.
+void InkCanvas::SubscribeToStrokeTelemetry() noexcept
+{
+    if (m_strokesCollectedTelemetryRevoker || !m_inkPresenterProxy)
+    {
+        return;
+    }
+
+    // InkCanvas is unsealed, so route the weak reference through the outer object (cppwinrt #1431),
+    // exactly as the other subscriptions in this file do.
+    auto weakThis{ winrt::make_weak(static_cast<winrt::InkCanvas>(*this)) };
+
+    m_strokesCollectedTelemetryRevoker = m_inkPresenterProxy.StrokesCollected(
+        winrt::auto_revoke,
+        [weakThis](auto const&, winrt::InkStrokesCollectedEventArgs const& args)
+        {
+            try
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    auto const strokes = args.Strokes();
+                    InkTelemetry::RecordStrokesCollected(
+                        winrt::get_self<InkCanvas>(strongThis)->m_telemetryState, strokes ? strokes.Size() : 0);
+                }
+            }
+            catch (...)
+            {
+            }
+        });
+
+    m_strokesErasedTelemetryRevoker = m_inkPresenterProxy.StrokesErased(
+        winrt::auto_revoke,
+        [weakThis](auto const&, winrt::InkStrokesErasedEventArgs const& args)
+        {
+            try
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    auto const strokes = args.Strokes();
+                    InkTelemetry::RecordStrokesErased(
+                        winrt::get_self<InkCanvas>(strongThis)->m_telemetryState, strokes ? strokes.Size() : 0);
+                }
+            }
+            catch (...)
+            {
+            }
+        });
 }
 
 void InkCanvas::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
@@ -204,6 +301,17 @@ void InkCanvas::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEvent
     m_xamlRootChangedRevoker.revoke();
     m_sizeChangedRevoker.revoke();
     m_layoutUpdatedRevoker.revoke();
+
+    // Flush the roll-up here rather than relying on ~InkCanvas: closing the window tears the process
+    // down without destructing the tree, so the destructor is not a reliable emit point. The state's
+    // summaryReported flag keeps this to one event if the destructor does run later.
+    try
+    {
+        InkTelemetry::ReportCanvasSessionSummary(m_telemetryState, CompositorEngineForTelemetry());
+    }
+    catch (...)
+    {
+    }
 
     DetachFromVisualLink();
 }
@@ -247,33 +355,21 @@ void InkCanvas::EnsureInkPresenter()
 
 void InkCanvas::UpdateInkPresenterSize()
 {
-    // XamlRoot() can be null while unloading / reparenting. This runs from the SizeChanged
-    // and XamlRoot().Changed handlers, so guard it the same way as PositionInkVisual /
-    // AttachToVisualLink to avoid dereferencing a null XamlRoot for RasterizationScale().
-    auto xamlRoot = XamlRoot();
-    if (!xamlRoot)
+    // Push the new size onto the OS presenter (on the ink thread) through the proxy.
+    // The proxy's queue no-ops if the OS presenter has not been created yet.
+    if (!m_inkPresenterProxy)
     {
         return;
     }
 
-    // Transform the width/height based on Xaml scaling
-    auto transformer = TransformToVisual(nullptr);
-    winrt::Rect rect{ 0, 0, static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight())};
-    rect = transformer.TransformBounds(rect);
-
-    // Get the system scale
-    auto rootScale = xamlRoot.RasterizationScale();
-
-    // Push the new physical-pixel size onto the OS presenter (on the ink thread) through the proxy.
-    // The proxy's queue no-ops if the OS presenter has not been created yet.
-    if (m_inkPresenterProxy)
-    {
-        winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->QueueInkPresenterWorkItem(
-            [width = ActualWidth() * rootScale, height = ActualHeight() * rootScale](inking::InkPresenter const& presenter)
-            {
-                presenter.as<IInkPresenterDesktop>()->SetSize(static_cast<float>(width), static_cast<float>(height));
-            });
-    }
+    // Local DIPs, not root coordinates: the ink visual sits under the canvas's placement visual, so
+    // XAML already applies any RenderTransform. Transforming here would double-apply it, and for a
+    // rotation the axis-aligned bounds would hand the presenter swapped extents.
+    winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->QueueInkPresenterWorkItem(
+        [width = static_cast<float>(ActualWidth()), height = static_cast<float>(ActualHeight())](inking::InkPresenter const& presenter)
+        {
+            presenter.as<IInkPresenterDesktop>()->SetSize(width, height);
+        });
 }
 
 void InkCanvas::AttachToVisualLink()
@@ -314,7 +410,15 @@ void InkCanvas::AttachToVisualLink()
     // system-backed process splices the ink visual under a lifted MUC visual; a lifted process
     // bridges it into the XAML tree via ContentExternalOutputLink. Each path binds the ink visual to
     // the presenter (AttachInkVisualToPresenter) first, then roots it under its own target.
-    if (IsSystemCompositor())
+    const bool isSystemCompositor = IsSystemCompositor();
+
+    // Cache it here, where a throw is still allowed to propagate, so the noexcept telemetry accessor
+    // never has to ask again.
+    m_telemetryEngine = isSystemCompositor
+        ? InkTelemetry::CompositorEngine::System
+        : InkTelemetry::CompositorEngine::Lifted;
+
+    if (isSystemCompositor)
     {
         AttachToSystemCompositor();
     }
@@ -359,15 +463,27 @@ void InkCanvas::AttachInkVisualToPresenter()
     // Clear the detach flag BEFORE queuing so the ink thread doesn't drop the SetRootVisual work.
     m_isDetached.store(false, std::memory_order_release);
 
-    // Bind the visual to the presenter on the ink thread. SetRootVisual drives both rendering and
-    // input routing. XAML positions/clips the ink visual for both compositor paths, so commit here.
-    // No commit-request handler (conflicts with InkSynchronizer).
-    winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->QueueInkPresenterWorkItem([rootVisual = m_inkRootVisual, compositionDevice = m_threadData->m_compositionDevice](inking::InkPresenter const& presenter)
+    // Bind the visual to the presenter on the ink thread. SetRootVisual(rootVisual, device) roots the
+    // ink; SetCommitRequestHandler wires the DComp commit the presenter requests on every wet->dry
+    // transition (normal drying, and custom-dry EndDry) so the removal + new content land in one frame.
+    // The presenter holds a ref on the handler; it is replaced on re-attach and released at teardown.
+    auto* presenterSelf = winrt::get_self<::InkPresenter>(m_inkPresenterProxy);
+    presenterSelf->QueueInkPresenterWorkItem([rootVisual = m_inkRootVisual, compositionDevice = m_threadData->m_compositionDevice](inking::InkPresenter const& presenter)
         {
             auto desktopPresenter = presenter.as<IInkPresenterDesktop>();
-            winrt::check_hresult(desktopPresenter->SetRootVisual(rootVisual.get(), nullptr));
+            // Pass the composition device (not nullptr): custom drying needs it for the wet->dry
+            // handoff. The OS only uses the resulting commit provider in custom-dry mode.
+            winrt::check_hresult(desktopPresenter->SetRootVisual(rootVisual.get(), compositionDevice.get()));
+            auto commitHandler = winrt::make_self<InkCommitRequestHandler>(compositionDevice);
+            winrt::check_hresult(desktopPresenter->SetCommitRequestHandler(commitHandler.as<IInkCommitRequestHandler>().get()));
             winrt::check_hresult(compositionDevice->Commit());
         });
+}
+
+// Roots the ink visual under the given target. Shared by both compositor paths.
+void InkCanvas::SetInkRootVisual(IDCompositionTarget* target)
+{
+    winrt::check_hresult(target->SetRoot(m_inkRootVisual.get()));
 }
 
 // System compositor path: splices the ink visual directly under a lifted MUC visual via
@@ -404,7 +520,8 @@ void InkCanvas::AttachToSystemCompositor()
 #endif
         desktopDevice.get(),
         m_systemDCompTarget.put()));
-    winrt::check_hresult(m_systemDCompTarget->SetRoot(m_inkRootVisual.get()));
+    SetInkRootVisual(m_systemDCompTarget.get());
+    winrt::check_hresult(m_threadData->m_compositionDevice->Commit());
 
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, mucRootVisual);
 }
@@ -436,7 +553,7 @@ void InkCanvas::AttachToLiftedCompositor()
     m_systemVisualLink.IsAboveContent(true);
 
     winrt::com_ptr<IDCompositionTarget> target = m_systemVisualLink.DCompTarget();
-    winrt::check_hresult(target->SetRoot(m_inkRootVisual.get()));
+    SetInkRootVisual(target.get());
 
     winrt::check_hresult(m_threadData->m_compositionDevice->Commit());
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, m_systemVisualLink.PlacementVisual());
@@ -475,12 +592,21 @@ void InkCanvas::DetachFromVisualLink()
 bool InkCanvas::IsSystemCompositor()
 {
     static bool isSystemCompositor = [] {
-        auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
-        // GetForSystemEngine takes any composition object (IInspectable); pass the compositor
-        // directly rather than allocating a throwaway visual just to probe the engine.
-        // CompositionEngine lives in the Microsoft.UI.Composition namespace (it was promoted out of
-        // the Experimental namespace in the InteractiveExperiences transport), so reference it there.
-        return winrt::Microsoft::UI::Composition::CompositionEngine::GetForSystemEngine(compositor) != nullptr;
+        // CompositionEngine is not activatable on every OS build; there GetForSystemEngine throws
+        // CLASS_E_CLASSNOTAVAILABLE, and the lifted path still renders ink.
+        try
+        {
+            auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+            // GetForSystemEngine takes any composition object (IInspectable); pass the compositor
+            // directly rather than allocating a throwaway visual just to probe the engine.
+            // CompositionEngine lives in the Microsoft.UI.Composition namespace (it was promoted out of
+            // the Experimental namespace in the InteractiveExperiences transport), so reference it there.
+            return winrt::Microsoft::UI::Composition::CompositionEngine::GetForSystemEngine(compositor) != nullptr;
+        }
+        catch (winrt::hresult_error const&)
+        {
+            return false;
+        }
     }();
     return isSystemCompositor;
 }

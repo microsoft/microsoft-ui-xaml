@@ -6,6 +6,7 @@
 #include "TableView.h"
 #include "TableViewRow.h"
 #include "ResizeGripper.h"
+#include "TableViewGroupHeader.h"
 #include "GridCoordinateHelper.h"
 #include "ResourceAccessor.h"
 #include "Utils.h"
@@ -258,11 +259,18 @@ void TableView::OnKeyDownForNavigation(
         bool focusOnOurRow = false;
         if (auto const root = XamlRoot())
         {
-            if (auto const focusedRow = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::TableViewRow>())
+            // A group header is as much "one of our containers" as a data row: both are elements of
+            // m_rowsRepeater and both are valid arrow-navigation anchors. Recognizing only rows here
+            // ate keys pressed while a header had focus (the scroller marks nav keys Handled before
+            // this bubbling handler runs, so the guard returned early and no navigation happened).
+            if (auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::UIElement>())
             {
-                if (auto const repeater = m_rowsRepeater.get())
+                if (focused.try_as<winrt::TableViewRow>() || focused.try_as<winrt::TableViewGroupHeader>())
                 {
-                    focusOnOurRow = repeater.GetElementIndex(focusedRow) >= 0;
+                    if (auto const repeater = m_rowsRepeater.get())
+                    {
+                        focusOnOurRow = repeater.GetElementIndex(focused) >= 0;
+                    }
                 }
             }
         }
@@ -454,12 +462,20 @@ int32_t TableView::GetFocusedRowIndex() const
                 winrt::DependencyObject node = focused;
                 while (node)
                 {
-                    if (auto row = node.try_as<winrt::TableViewRow>())
+                    // Both data rows and group headers are elements of m_rowsRepeater, so either is a
+                    // valid focus anchor for arrow navigation. A header MUST be recognized here: if
+                    // it reports -1, relative navigation falls back to row 0 / the selected row and
+                    // fights the framework's built-in focus move (skipped rows, focus bouncing back
+                    // to the previous header, and selection landing on the wrong row).
+                    if (node.try_as<winrt::TableViewRow>() || node.try_as<winrt::TableViewGroupHeader>())
                     {
-                        const auto idx = repeater.GetElementIndex(row);
-                        if (idx >= 0)
+                        if (auto const element = node.try_as<winrt::UIElement>())
                         {
-                            return idx;
+                            const auto idx = repeater.GetElementIndex(element);
+                            if (idx >= 0)
+                            {
+                                return idx;
+                            }
                         }
                         // Nested TableViews can contribute inner rows; keep walking for ours.
                     }
@@ -481,18 +497,41 @@ int32_t TableView::GetEstimatedRowsPerPage()
         double rowH = GetDensityRowMinHeight(); // Density is the best fallback before realized rows can be sampled.
         if (auto repeater = m_rowsRepeater.get())
         {
+            // A grouped projection realizes group headers alongside data rows, and a header is
+            // typically taller than a row. Paging moves the focused *data* row, so measure a data
+            // row; only fall back to any realized element when no row has been realized yet.
+            double anyChildH = 0.0;
             const int32_t childCount = winrt::VisualTreeHelper::GetChildrenCount(repeater);
             for (int32_t i = 0; i < childCount; i++)
             {
-                if (auto el = winrt::VisualTreeHelper::GetChild(repeater, i).try_as<winrt::FrameworkElement>())
+                auto const child = winrt::VisualTreeHelper::GetChild(repeater, i);
+                auto const el = child.try_as<winrt::FrameworkElement>();
+                if (!el)
                 {
-                    const auto h = el.ActualHeight();
-                    if (h > 0)
-                    {
-                        rowH = h;
-                        break;
-                    }
+                    continue;
                 }
+
+                const auto h = el.ActualHeight();
+                if (h <= 0)
+                {
+                    continue;
+                }
+
+                if (child.try_as<winrt::TableViewRow>())
+                {
+                    anyChildH = h;
+                    break;
+                }
+
+                if (anyChildH <= 0)
+                {
+                    anyChildH = h;
+                }
+            }
+
+            if (anyChildH > 0)
+            {
+                rowH = anyChildH;
             }
         }
 

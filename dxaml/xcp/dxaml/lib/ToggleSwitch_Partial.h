@@ -180,9 +180,9 @@ namespace DirectUI
 
         // The translate transforms from template parts.
 
-        ctl::ComPtr<xaml_media::ITranslateTransform> m_spKnobTransform;
+        TrackerPtr<xaml_media::ITranslateTransform> m_spKnobTransform;
 
-        ctl::ComPtr<xaml_media::ITranslateTransform> m_spCurtainTransform;
+        TrackerPtr<xaml_media::ITranslateTransform> m_spCurtainTransform;
 
         EventRegistrationToken m_dragStarted{};
         

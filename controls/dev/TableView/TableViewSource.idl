@@ -9,6 +9,12 @@ delegate Boolean TableViewPredicate(Object item);
 [webhosthidden]
 delegate Object TableViewKeySelector(Object item);
 
+// Stable string identity for a group key (GroupBy overload). Row identity is not app-supplied:
+// the projection derives it from each item's object identity.
+[MUX_PREVIEW]
+[webhosthidden]
+delegate String TableViewIdentitySelector(Object item);
+
 [MUX_PREVIEW]
 [webhosthidden]
 // Sealed deliberately: TableView drives the concrete implementation, so an override of a shaping
@@ -17,7 +23,8 @@ runtimeclass TableViewSource
 {
     // Whole class:
     //  * Null items, predicate, or keySelector throws E_INVALIDARG. (Note this differs from
-    //    TableView's command surface, which no-ops on bad input.)
+    //    TableView's command surface, which no-ops on bad input.) The optional
+    //    groupIdentitySelector may be null and selects the built-in value-type group identity.
     //  * UI-thread affinity, like any XAML items source. The underlying collection must also
     //    raise its change notifications on that thread; raising them from a background thread
     //    is not supported. The verbs hold no lock.
@@ -25,28 +32,57 @@ runtimeclass TableViewSource
     //    So selection and focus re-anchor across a reshape, but NOT across an item being
     //    re-created, and the same object in two rows fails fast at materialization.
 
-    // The shaped projection consumed by TableView. Read-only: enumeration and VectorChanged are
-    // supported, mutating members throw. Shape it through From/Filter/Sort/Clear*.
-    Windows.Foundation.Collections.IObservableVector<Object> View{ get; };
-
     // Accepts the same collection interfaces as ItemsSourceView: IVector<Object> (so also
     // IObservableVector<Object>), IBindableVector, IIterable<Object>, or IBindableIterable.
-    // Anything else throws E_INVALIDARG. View is populated by the time From returns.
+    // Anything else throws E_INVALIDARG. The projection is populated by the time From returns.
     static TableViewSource From(Object items);
 
     // Use ClearFilter() to remove an existing filter rather than passing a pass-everything one.
     TableViewSource Filter(TableViewPredicate predicate);
 
+    // keySelector: required, non-null (throws E_INVALIDARG when null; use ClearGroupBy() to
+    // remove grouping). Overload metadata is frozen at v1 — without it MIDL bakes GroupBy2 into
+    // the ABI.
+    [default_overload] [method_name("GroupBy")]
+    TableViewSource GroupBy(TableViewKeySelector keySelector);
+
+    // groupIdentitySelector is OPTIONAL: null selects the built-in value-type group identity
+    // (String/Int32/Int64/Guid/Boolean/enum); a reference-type group key with no selector fails
+    // fast at projection time.
+    [method_name("GroupByWithIdentity")]
+    TableViewSource GroupBy(TableViewKeySelector keySelector, TableViewIdentitySelector groupIdentitySelector);
+
     // SortDirection.None removes that key's sort axis rather than seeding a stage, so sorting
     // every axis to None leaves the source unsorted. When several axes are active the FIRST one
     // declared is the primary sort and each later axis breaks ties within the previous, matching
     // WPF DataGrid's SortDescriptions order; re-sorting an existing axis keeps its position.
+    //
+    // Both overloads are LAST WRITER WINS against TableView's own sort: declaring a sort here
+    // replaces the control's axis rather than stacking behind it, so the rows are ordered by this
+    // axis alone. What differs is what the headers can say about it.
+    //
+    // sortMemberPath names the property this axis sorts on and is the preferred form. The path is
+    // evaluated by the same binding-based evaluator a column uses for its SortMemberPath, so a
+    // path that displays also sorts (dotted paths and indexers included), and a bound TableView
+    // can match the path to a column and light that column's sort indicator. Re-sorting the same
+    // path replaces that axis in place rather than adding a second one.
+    // Throws E_INVALIDARG when sortMemberPath is empty.
+    // Overload metadata is frozen at v1 — without it MIDL bakes Sort2 into the ABI.
+    [method_name("SortByPath")]
+    TableViewSource Sort(String sortMemberPath, SortDirection direction);
+
+    // keySelector form: for keys no property path expresses — computed, multi-field, normalized,
+    // or the identity of a primitive collection. The axis is ANONYMOUS: nothing names a property,
+    // so a bound TableView cannot attribute it to a column and clears every sort indicator
+    // instead of leaving one describing a sort that is no longer primary. Prefer the
+    // sortMemberPath overload whenever the key is a property.
+    [default_overload] [method_name("Sort")]
     TableViewSource Sort(TableViewKeySelector keySelector, SortDirection direction);
 
-    // Never throw, and idempotent: with no stage present these do nothing at all, not even a
-    // rebuild.
     TableViewSource ClearFilter();
+    TableViewSource ClearGroupBy();
     TableViewSource ClearSort();
+
 }
 
 }

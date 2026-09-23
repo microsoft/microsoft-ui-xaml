@@ -44,6 +44,7 @@ steps:
         controls\dev\ColorPicker\Strings\en-us\Resources.resw
         controls\dev\CommandBarFlyout\Strings\en-us\Resources.resw
         controls\dev\InfoBar\Strings\en-us\Resources.resw
+        controls\dev\InkToolbar\Strings\en-us\Resources.resw
         controls\dev\ItemContainer\Strings\en-us\Resources.resw
         controls\dev\NavigationView\Strings\en-us\Resources.resw
         controls\dev\NumberBox\Strings\en-us\Resources.resw

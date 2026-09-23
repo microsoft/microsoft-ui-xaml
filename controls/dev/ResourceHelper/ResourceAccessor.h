@@ -245,6 +245,7 @@ public:
 #define SR_TableViewSortAscendingHelpText L"TableViewSortAscendingHelpText"
 #define SR_TableViewSortDescendingHelpText L"TableViewSortDescendingHelpText"
 #define SR_TableViewSortNoneHelpText L"TableViewSortNoneHelpText"
+#define SR_TableViewColumnHeaderHelpTextFormat L"TableViewColumnHeaderHelpTextFormat"
 
 #define IR_NoiseAsset_256X256_PNG L"NoiseAsset_256X256_PNG"
 

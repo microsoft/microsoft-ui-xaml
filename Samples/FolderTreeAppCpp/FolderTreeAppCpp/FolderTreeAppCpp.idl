@@ -1,0 +1,28 @@
+namespace FolderTreeAppCpp
+{
+    [bindable]
+    [default_interface]
+    runtimeclass FolderNode
+    {
+        FolderNode(String path);
+        String Name{ get; };
+        String FullPath{ get; };
+        Windows.Foundation.Collections.IObservableVector<FolderNode> Children{ get; };
+        Boolean HasUnrealizedChildren{ get; };
+        String Glyph{ get; };
+        void LoadChildren();
+    }
+
+    [default_interface]
+    runtimeclass MainWindow : Microsoft.UI.Xaml.Window
+    {
+        MainWindow();
+        Windows.Foundation.Collections.IObservableVector<FolderNode> RootNodes{ get; };
+    }
+
+    [default_interface]
+    runtimeclass AnimationWindow : Microsoft.UI.Xaml.Window
+    {
+        AnimationWindow();
+    }
+}
