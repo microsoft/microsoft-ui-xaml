@@ -45,6 +45,13 @@ void DynamicMetadataStorage::Destroy()
     FAIL_FAST_ASSERT(s_storage == nullptr);
 }
 
+void DynamicMetadataStorage::Abandon()
+{
+    // Metadata can hold references to objects implemented by other DLLs. During process teardown those DLLs may
+    // already have been uninitialized, so intentionally leak the storage instead of running their destructors.
+    (void)s_storage.release();
+}
+
 void DynamicMetadataStorage::ResetInstance()
 {
     // First, mark all custom properties as invalid.

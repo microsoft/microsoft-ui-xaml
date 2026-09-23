@@ -12,7 +12,6 @@
 #include "UnhandledExceptionEventArgs.g.h"
 #include <FrameworkTheming.h>
 #include <DependencyLocator.h>
-#include <MetadataResetter.h>
 #include <process.h>
 #include <RuntimeEnabledFeatures.h>
 #include "NormalLaunchActivatedEventArgs.h"
@@ -442,17 +441,8 @@ void FrameworkApplication::ReleaseCurrent()
         // alive without Xaml, in which case Xaml should reuse the same instance should we ever get reinitialized.
         IFCFAILFAST(ctl::AsWeak(g_pApplication, &g_previousApplicationWeak));
         
-        // The metadata store may hold a reference to an IXamlMetadataProvider, which is usually the
-        // Application object (which derives from FrameworkApplication). In other words, there may be
-        // a reference cycle. We want to break that cycle when the main FrameworkView goes away.
-        g_pApplication->m_metadataRef = nullptr;
         ctl::release_interface(g_pApplication);
     }
-}
-
-std::shared_ptr<MetadataResetter> FrameworkApplication::GetMetadataReference()
-{
-    return m_metadataRef;
 }
 
 _Check_return_ HRESULT FrameworkApplicationFactory::get_CurrentImpl(_Outptr_result_maybenull_ xaml::IApplication** ppValue)
@@ -616,10 +606,6 @@ _Check_return_ HRESULT FrameworkApplication::Initialize()
     IFC_RETURN(ctl::ComObject<DirectUI::DebugSettings>::CreateInstance(&m_pDebugSettings));
     IFCEXPECT_RETURN(m_pDebugSettings);   // Should never fail
     m_pDebugSettings->UpdatePeg(true);
-
-    // Set up the metadata resetter. This object clears out the process-wide metadata when it is safe to do so (before
-    // DLLs are getting unloaded, but after we're done shutting down the visual tree).
-    m_metadataRef = std::make_shared<MetadataResetter>();
 
     // Determine which AppPolicyWindowingModel is being used. Use Application::GetAppPolicyWindowingModel() to
     // get the current Windowing model.

@@ -4,7 +4,6 @@
 #pragma once
 
 #include <FrameworkView.g.h>
-#include <MetadataResetter.h>
 
 namespace DirectUI
 {
@@ -34,7 +33,5 @@ namespace DirectUI
             _In_ waa::IActivatedEventArgs* pArgs);                                
 
         EventRegistrationToken m_ActivatedEventToken;
-
-        std::shared_ptr<MetadataResetter> m_metadataRef;
     };
 }
