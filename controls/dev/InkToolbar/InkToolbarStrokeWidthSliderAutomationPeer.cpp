@@ -6,6 +6,10 @@
 
 #include "InkToolbarStrokeWidthSliderAutomationPeer.h"
 
+#include <algorithm>
+#include <cmath>
+#include <string>
+
 #include "InkToolbarStrokeWidthSliderAutomationPeer.properties.cpp"
 
 InkToolbarStrokeWidthSliderAutomationPeer::InkToolbarStrokeWidthSliderAutomationPeer(winrt::InkToolbarStrokeWidthSlider const& owner)
@@ -40,9 +44,26 @@ winrt::hstring InkToolbarStrokeWidthSliderAutomationPeer::Value()
     return L"";
 }
 
-void InkToolbarStrokeWidthSliderAutomationPeer::SetValue(winrt::hstring const& /*value*/)
+void InkToolbarStrokeWidthSliderAutomationPeer::SetValue(winrt::hstring const& value)
 {
-    MUX_ASSERT(false); // Not implemented; the size is adjusted through the RangeValue pattern.
+    auto owner = Owner().try_as<winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBase>();
+    if (!owner)
+    {
+        return;
+    }
+
+    double parsed = 0.0;
+    try
+    {
+        parsed = std::stod(winrt::to_string(value));
+    }
+    catch (...)
+    {
+        // UIA SetValue contract: a value that is not a number is rejected.
+        throw winrt::hresult_invalid_argument();
+    }
+
+    owner.Value(std::clamp(parsed, owner.Minimum(), owner.Maximum()));
 }
 
 void InkToolbarStrokeWidthSliderAutomationPeer::RaiseValueChanged(double oldValue, double newValue)
@@ -55,5 +76,18 @@ void InkToolbarStrokeWidthSliderAutomationPeer::RaiseValueChanged(double oldValu
 
 winrt::hstring InkToolbarStrokeWidthSliderAutomationPeer::ValueToString(double value)
 {
-    return winrt::to_hstring(static_cast<int>(round(value)));
+    // Report the actual stroke width, not a rounded integer, so fractional widths are announced
+    // accurately. Whole widths read as "2" rather than "2.0".
+    if (value == std::floor(value))
+    {
+        return winrt::to_hstring(static_cast<int>(value));
+    }
+
+    std::wstring text = std::to_wstring(value);
+    text.erase(text.find_last_not_of(L'0') + 1);
+    if (!text.empty() && text.back() == L'.')
+    {
+        text.pop_back();
+    }
+    return winrt::hstring{ text };
 }

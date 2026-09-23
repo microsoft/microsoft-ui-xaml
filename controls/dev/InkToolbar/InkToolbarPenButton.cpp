@@ -98,17 +98,19 @@ void InkToolbarPenButton::SetSelectedBrushByIndex(int index)
 // UWP UpdatePenButtonHelpText: expose the selected color's name via AutomationProperties.HelpText.
 void InkToolbarPenButton::UpdatePenButtonHelpText()
 {
-    auto selectedBrush = SelectedBrush();
-    if (auto solid = selectedBrush.try_as<winrt::SolidColorBrush>())
+    winrt::hstring helpText;
+    if (auto solid = SelectedBrush().try_as<winrt::SolidColorBrush>())
     {
         bool isGenericFormat = false;
         auto name = m_colorNames.GetColorName(solid.Color(), isGenericFormat);
-        // UWP skips HelpText for generic (unnamed) colors; the lift only has generic names for now.
+        // Only named colors get HelpText; leave it empty for generic or non-solid brushes so a stale
+        // name from a previously selected color is not announced.
         if (!isGenericFormat)
         {
-            winrt::AutomationProperties::SetHelpText(*this, name);
+            helpText = name;
         }
     }
+    winrt::AutomationProperties::SetHelpText(*this, helpText);
 }
 
 // UWP DetermineStrokeWidth: the config slider's SelectedStrokeWidth clamped to [Min, Max].

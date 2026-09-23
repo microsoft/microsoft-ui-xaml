@@ -146,6 +146,11 @@ void InkToolbarPenConfigurationControl::ConfigureColorPicker(winrt::Control cons
 
     m_colorPicker = winrt::make_weak(colorPicker);
 
+    // A new palette is being configured; drop item-template caches captured from a previous template so
+    // UpdateHighContrast re-reads them from this picker instead of applying the old palette's templates.
+    m_originalColorPickerItemTemplate = nullptr;
+    m_highContrastColorPickerItemTemplate = nullptr;
+
     auto selector = colorPicker.as<winrt::Microsoft::UI::Xaml::Controls::Primitives::Selector>();
     m_selectionChangedToken = selector.SelectionChanged(
         winrt::SelectionChangedEventHandler([this](winrt::IInspectable const& s, winrt::SelectionChangedEventArgs const& e) { OnSelectedItemChanged(s, e); }));
@@ -218,16 +223,51 @@ void InkToolbarPenConfigurationControl::ConfigureLocalizableElements(winrt::Cont
     UNREFERENCED_PARAMETER(me);
 
     // ResourceAccessor throws ERROR_NOT_FOUND when a name is absent, which an app carrying an older
-    // merged PRI than the framework will hit; a missing string must not take the app down.
+    // merged PRI than the framework will hit; this runs from OnApplyTemplate, so a missing string
+    // must not take the app down.
     auto tryGetString = [](std::wstring_view name) -> winrt::hstring
     {
-        try { return ResourceAccessor::GetLocalizedStringResource(name); }
-        catch (...) { return {}; }
+        try
+        {
+            return ResourceAccessor::GetLocalizedStringResource(name);
+        }
+        catch (winrt::hresult_error const& e)
+        {
+            InkToolbarLogHResult(e.code(), L"pen flyout heading string lookup");
+            return {};
+        }
     };
+
+    // The template ships English defaults for these two headings, so they must be replaced here or
+    // they never localize.
+    if (auto colorsTitle = GetTemplateChild(L"PenColorPaletteTitle").try_as<winrt::TextBlock>())
+    {
+        if (auto text = tryGetString(SR_InkToolbarPenConfigurationColorsLabel); !text.empty())
+        {
+            colorsTitle.Text(text);
+        }
+    }
+
+    // The palette GridView is otherwise anonymous, so Narrator never announces that a colour list is
+    // present; name it with the same "Colors" string so it is exposed as a labelled group.
+    if (auto palette = GetTemplateChild(L"PenColorPalette").try_as<winrt::UIElement>())
+    {
+        if (auto text = tryGetString(SR_InkToolbarPenConfigurationColorsLabel); !text.empty())
+        {
+            winrt::AutomationProperties::SetName(palette, text);
+        }
+    }
+
+    if (auto sizeTitle = GetTemplateChild(L"PenStrokeWidthTitle").try_as<winrt::TextBlock>())
+    {
+        if (auto text = tryGetString(SR_InkToolbarPenConfigurationSizeLabel); !text.empty())
+        {
+            sizeTitle.Text(text);
+        }
+    }
 
     // Narrator announces the slider value with no name unless this is set, so "3" is read with no hint
     // that it is the pen size. UWP ConfigureLocalizableElements -> IDS_INKTOOLBAR_PENL3STROKEWIDTHSLIDERNAME.
-    // The two flyout titles are localized separately (see the InkToolbar localization change).
     auto sliderName = PenButton() ? L"PenStrokeWidthSlider" : L"EraserStrokeWidthSlider";
     if (auto slider = GetTemplateChild(sliderName))
     {
@@ -351,21 +391,28 @@ void InkToolbarPenConfigurationControl::OnContainerContentChanging(winrt::ListVi
     UNREFERENCED_PARAMETER(sender);
 
     winrt::hstring colorText;
+    winrt::hstring automationId;
     if (auto brush = args.Item().try_as<winrt::SolidColorBrush>())
     {
         bool isGenericFormat = false;
-        colorText = m_colorNames.GetColorName(brush.Color(), isGenericFormat);
+        auto color = brush.Color();
+        colorText = m_colorNames.GetColorName(color, isGenericFormat);
+        // AutomationId must be stable across languages, so derive it from the color, not the localized name.
+        wchar_t buffer[16];
+        swprintf_s(buffer, L"Color_%02X%02X%02X", color.R, color.G, color.B);
+        automationId = buffer;
     }
     else
     {
         colorText = m_nonSolidColorString;
+        automationId = L"NonSolidColor";
     }
 
     if (auto container = args.ItemContainer())
     {
         winrt::ToolTipService::SetToolTip(container, winrt::box_value(colorText));
         winrt::AutomationProperties::SetName(container, colorText);
-        winrt::AutomationProperties::SetAutomationId(container, colorText);
+        winrt::AutomationProperties::SetAutomationId(container, automationId);
     }
 }
 

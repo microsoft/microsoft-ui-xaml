@@ -295,20 +295,35 @@ void InkToolbarStencilButton::OnSelectedStencilChanged(winrt::DependencyProperty
 winrt::hstring InkToolbarStencilButton::GetLocalizedToolName()
 {
     // UWP StencilButton::GetLocalizedToolName: name reflects the currently selected stencil.
-    switch (SelectedStencil())
+    // Called during templating; a missing resource must fall back to empty rather than throw out of it.
+    try
     {
-    case winrt::InkToolbarStencilKind::Ruler:
-        return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilRulerName);
-    case winrt::InkToolbarStencilKind::Protractor:
-        return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilProtractorName);
-    default:
+        switch (SelectedStencil())
+        {
+        case winrt::InkToolbarStencilKind::Ruler:
+            return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilRulerName);
+        case winrt::InkToolbarStencilKind::Protractor:
+            return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilProtractorName);
+        default:
+            return {};
+        }
+    }
+    catch (winrt::hresult_error const&)
+    {
         return {};
     }
 }
 
 winrt::hstring InkToolbarStencilButton::GetFlyoutName()
 {
-    return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilFlyoutName);
+    try
+    {
+        return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilFlyoutName);
+    }
+    catch (winrt::hresult_error const&)
+    {
+        return {};
+    }
 }
 
 unsigned InkToolbarStencilButton::NumberOfStencils()
