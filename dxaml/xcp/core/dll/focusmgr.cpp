@@ -2151,7 +2151,10 @@ CFocusManager::UpdateFocus(_In_ const FocusMovement& movement)
 
 Cleanup:
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::UpdateFocusStop();
+    // Carry the element identity on both edges: Start records the requested target
+    // (movement.GetTarget()) and Stop records pNewFocus, matching the attribution the retail
+    // UpdateFocusEnd event records after synchronous GettingFocus/LosingFocus handlers run.
+    XamlProfilerTracing::UpdateFocusStop(reinterpret_cast<uint64_t>(pNewFocus));
 #else
     TraceUpdateFocusEnd((UINT64)pNewFocus);
 #endif
