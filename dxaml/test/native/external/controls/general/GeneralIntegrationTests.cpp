@@ -362,6 +362,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             safe_cast<xaml_controls::ITextBoxFactory^>(factory)->CreateInstance(reinterpret_cast<Platform::Object^>(static_cast<IInspectable*>(countingOuter.Get())), &inner);
             VERIFY_ARE_EQUAL(0, countingOuter.Get()->GetQueryInterfaceCallCount());
 
+            LOG_OUTPUT(L"Validate RichTextBlock");
+            THROW_IF_FAILED(wf::GetActivationFactory(wrl::Wrappers::HStringReference(L"Microsoft.UI.Xaml.Controls.RichTextBlock").Get(), reinterpret_cast<IInspectable**>(&factory)));
+            safe_cast<xaml_controls::IRichTextBlockFactory^>(factory)->CreateInstance(reinterpret_cast<Platform::Object^>(static_cast<IInspectable*>(countingOuter.Get())), &inner);
+            VERIFY_ARE_EQUAL(0, countingOuter.Get()->GetQueryInterfaceCallCount());
+
             LOG_OUTPUT(L"Validate ToolTip");
             THROW_IF_FAILED(wf::GetActivationFactory(wrl::Wrappers::HStringReference(L"Microsoft.UI.Xaml.Controls.ToolTip").Get(), reinterpret_cast<IInspectable**>(&factory)));
             safe_cast<xaml_controls::IToolTipFactory^>(factory)->CreateInstance(reinterpret_cast<Platform::Object^>(static_cast<IInspectable*>(countingOuter.Get())), &inner);
