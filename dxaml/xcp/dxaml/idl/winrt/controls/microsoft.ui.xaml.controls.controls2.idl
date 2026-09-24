@@ -1641,10 +1641,10 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass SymbolIcon
+    unsealed runtimeclass SymbolIcon
         : Microsoft.UI.Xaml.Controls.IconElement
     {
-        SymbolIcon();
+        [method_name("CreateInstance")] SymbolIcon();
         [method_name("CreateInstanceWithSymbol")] SymbolIcon(Microsoft.UI.Xaml.Controls.Symbol symbol);
         Microsoft.UI.Xaml.Controls.Symbol Symbol;
         static Microsoft.UI.Xaml.DependencyProperty SymbolProperty{ get; };

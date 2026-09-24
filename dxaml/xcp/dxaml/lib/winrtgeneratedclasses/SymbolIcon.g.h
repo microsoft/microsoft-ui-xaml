@@ -76,18 +76,19 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) SymbolIconFactory:
-       public ctl::BetterCoreObjectActivationFactory
+       public ctl::BetterAggregableCoreObjectActivationFactory
         , public ABI::Microsoft::UI::Xaml::Controls::ISymbolIconFactory
         , public ABI::Microsoft::UI::Xaml::Controls::ISymbolIconStatics
     {
-        BEGIN_INTERFACE_MAP(SymbolIconFactory, ctl::BetterCoreObjectActivationFactory)
+        BEGIN_INTERFACE_MAP(SymbolIconFactory, ctl::BetterAggregableCoreObjectActivationFactory)
             INTERFACE_ENTRY(SymbolIconFactory, ABI::Microsoft::UI::Xaml::Controls::ISymbolIconFactory)
             INTERFACE_ENTRY(SymbolIconFactory, ABI::Microsoft::UI::Xaml::Controls::ISymbolIconStatics)
-        END_INTERFACE_MAP(SymbolIconFactory, ctl::BetterCoreObjectActivationFactory)
+        END_INTERFACE_MAP(SymbolIconFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstanceWithSymbol)(ABI::Microsoft::UI::Xaml::Controls::Symbol symbol, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ISymbolIcon** ppInstance);
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ISymbolIcon** ppInstance);
+        IFACEMETHOD(CreateInstanceWithSymbol)(ABI::Microsoft::UI::Xaml::Controls::Symbol symbol, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ISymbolIcon** ppInstance);
 
         // Static properties.
 
@@ -110,7 +111,7 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceWithSymbolImpl(ABI::Microsoft::UI::Xaml::Controls::Symbol symbol, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ISymbolIcon** ppInstance);
+        _Check_return_ HRESULT CreateInstanceWithSymbolImpl(ABI::Microsoft::UI::Xaml::Controls::Symbol symbol, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ISymbolIcon** ppInstance);
 
         // Customized static properties.
 
