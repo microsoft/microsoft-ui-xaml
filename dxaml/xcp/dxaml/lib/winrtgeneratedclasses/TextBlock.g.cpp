@@ -595,13 +595,17 @@ Cleanup:
 
 HRESULT DirectUI::TextBlockFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ITextBlockStatics)))
+    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ITextBlockFactory)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ITextBlockFactory*>(this);
+    }
+    else     if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ITextBlockStatics)))
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ITextBlockStatics*>(this);
     }
     else
     {
-        RRETURN(ctl::BetterCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
+        RRETURN(ctl::BetterAggregableCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
     }
 
     AddRefOuter();
@@ -610,6 +614,15 @@ HRESULT DirectUI::TextBlockFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_
 
 
 // Factory methods.
+
+// Factory methods.
+IFACEMETHODIMP DirectUI::TextBlockFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ITextBlock** ppInstance)
+{
+#if DBG
+ const GUID a=__uuidof(ABI::Microsoft::UI::Xaml::Controls::ITextBlock); const GUID b=MetadataAPI::GetClassInfoByIndex(GetTypeIndex())->GetGuid(); if(a!=b){XAML_FAIL_FAST();}
+#endif
+ const HRESULT hr=ctl::ValidateFactoryCreateInstanceWithBetterAggregableCoreObjectActivationFactory(pOuter,ppInner,reinterpret_cast<IUnknown**>(ppInstance),GetTypeIndex(),false); IFC_RETURN(hr); return S_OK;
+}
 
 // Dependency properties.
 IFACEMETHODIMP DirectUI::TextBlockFactory::get_FontSizeProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)

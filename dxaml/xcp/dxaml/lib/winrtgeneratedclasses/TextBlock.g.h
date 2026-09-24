@@ -157,15 +157,19 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) TextBlockFactory:
-       public ctl::BetterCoreObjectActivationFactory
+       public ctl::BetterAggregableCoreObjectActivationFactory
+        , public ABI::Microsoft::UI::Xaml::Controls::ITextBlockFactory
         , public ABI::Microsoft::UI::Xaml::Controls::ITextBlockStatics
     {
-        BEGIN_INTERFACE_MAP(TextBlockFactory, ctl::BetterCoreObjectActivationFactory)
+        BEGIN_INTERFACE_MAP(TextBlockFactory, ctl::BetterAggregableCoreObjectActivationFactory)
+            INTERFACE_ENTRY(TextBlockFactory, ABI::Microsoft::UI::Xaml::Controls::ITextBlockFactory)
             INTERFACE_ENTRY(TextBlockFactory, ABI::Microsoft::UI::Xaml::Controls::ITextBlockStatics)
-        END_INTERFACE_MAP(TextBlockFactory, ctl::BetterCoreObjectActivationFactory)
+        END_INTERFACE_MAP(TextBlockFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ITextBlock** ppInstance);
+
 
         // Static properties.
 
