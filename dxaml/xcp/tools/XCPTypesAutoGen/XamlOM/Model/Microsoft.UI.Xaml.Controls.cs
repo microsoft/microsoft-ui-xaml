@@ -1613,7 +1613,7 @@ namespace Microsoft.UI.Xaml.Controls
     [FrameworkTypePattern]
     [Implements(typeof(Microsoft.UI.Xaml.Controls.Primitives.IScrollInfo))]
     [Guids(ClassGuid = "0d51bece-96e7-4469-bdfe-6fbe071c3d7c")]
-    public sealed class ScrollContentPresenter
+    public class ScrollContentPresenter
      : Microsoft.UI.Xaml.Controls.ContentPresenter
     {
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]

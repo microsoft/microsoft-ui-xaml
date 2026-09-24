@@ -501,13 +501,17 @@ Cleanup:
 
 HRESULT DirectUI::ScrollContentPresenterFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IScrollContentPresenterStatics)))
+    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IScrollContentPresenterFactory)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IScrollContentPresenterFactory*>(this);
+    }
+    else     if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IScrollContentPresenterStatics)))
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IScrollContentPresenterStatics*>(this);
     }
     else
     {
-        RRETURN(ctl::BetterCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
+        RRETURN(ctl::BetterAggregableCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
     }
 
     AddRefOuter();
@@ -516,6 +520,19 @@ HRESULT DirectUI::ScrollContentPresenterFactory::QueryInterfaceImpl(_In_ REFIID 
 
 
 // Factory methods.
+
+// Factory methods.
+IFACEMETHODIMP DirectUI::ScrollContentPresenterFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IScrollContentPresenter** ppInstance)
+{
+#if DBG
+    const GUID uuidofGUID = __uuidof(ABI::Microsoft::UI::Xaml::Controls::IScrollContentPresenter);
+    const GUID metadataAPIGUID = MetadataAPI::GetClassInfoByIndex(GetTypeIndex())->GetGuid();
+    if (uuidofGUID != metadataAPIGUID) { XAML_FAIL_FAST(); }
+#endif
+    const HRESULT hr = ctl::ValidateFactoryCreateInstanceWithBetterAggregableCoreObjectActivationFactory(pOuter, ppInner, reinterpret_cast<IUnknown**>(ppInstance), GetTypeIndex(), false /*isFreeThreaded*/);
+    IFC_RETURN(hr);
+    return S_OK;
+}
 
 // Dependency properties.
 IFACEMETHODIMP DirectUI::ScrollContentPresenterFactory::get_CanContentRenderOutsideBoundsProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
