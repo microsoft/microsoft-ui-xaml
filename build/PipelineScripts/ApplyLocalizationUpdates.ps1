@@ -170,8 +170,13 @@ function Publish-LocalizationChanges
 
     $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 
-    $changes = & git ls-files -m
-    Write-Host "Edited files:"
+    $changes = & git ls-files --modified --others --exclude-standard -- "controls/*" packages.config
+    if ($LASTEXITCODE -ne 0)
+    {
+        Write-Host "##vso[task.logissue type=error;]Failed to enumerate localization changes."
+        Exit 1
+    }
+    Write-Host "Changed localization files:"
     Write-Host "$changes"
     if ($changes)
     {
