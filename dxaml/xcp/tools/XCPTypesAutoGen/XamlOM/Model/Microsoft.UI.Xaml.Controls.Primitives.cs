@@ -944,8 +944,7 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
         public event Microsoft.UI.Xaml.Controls.SelectionChangedEventHandler SelectionChanged;
 
 
-        [CodeGen(CodeGenLevel.Excluded)]
-        internal Selector() { }
+        public Selector() { }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         public static Windows.Foundation.Boolean GetIsSelectionActive(Microsoft.UI.Xaml.DependencyObject element)
