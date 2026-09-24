@@ -2083,10 +2083,10 @@ namespace Microsoft.UI.Xaml.Controls
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [contentproperty("ZoomedInView")]
-    runtimeclass SemanticZoom
+    unsealed runtimeclass SemanticZoom
         : Microsoft.UI.Xaml.Controls.Control
     {
-        SemanticZoom();
+        [method_name("CreateInstance")] SemanticZoom();
         Microsoft.UI.Xaml.Controls.ISemanticZoomInformation ZoomedInView;
         Microsoft.UI.Xaml.Controls.ISemanticZoomInformation ZoomedOutView;
         Boolean IsZoomedInViewActive;

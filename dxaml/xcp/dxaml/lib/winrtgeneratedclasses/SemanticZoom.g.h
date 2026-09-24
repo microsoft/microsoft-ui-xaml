@@ -98,15 +98,19 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) SemanticZoomFactory:
-       public ctl::BetterCoreObjectActivationFactory
+       public ctl::BetterAggregableCoreObjectActivationFactory
+        , public ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomFactory
         , public ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomStatics
     {
-        BEGIN_INTERFACE_MAP(SemanticZoomFactory, ctl::BetterCoreObjectActivationFactory)
+        BEGIN_INTERFACE_MAP(SemanticZoomFactory, ctl::BetterAggregableCoreObjectActivationFactory)
+            INTERFACE_ENTRY(SemanticZoomFactory, ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomFactory)
             INTERFACE_ENTRY(SemanticZoomFactory, ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomStatics)
-        END_INTERFACE_MAP(SemanticZoomFactory, ctl::BetterCoreObjectActivationFactory)
+        END_INTERFACE_MAP(SemanticZoomFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ISemanticZoom** ppInstance);
+
 
         // Static properties.
 
