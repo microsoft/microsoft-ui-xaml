@@ -182,9 +182,7 @@ inherits the state foreground unless an application template explicitly supplies
 Application-supplied row backgrounds, foregrounds, and cell templates remain responsible for
 their own contrast-theme support.
 
-The source-contract regression check is
-`controls\dev\TableView\Test\ValidateThemeResources.ps1`. Runtime validation must additionally
-exercise normal, hovered, pressed, selected, and disabled rows in each contrast theme, including
+Runtime validation should exercise normal, hovered, pressed, selected, and disabled rows in each contrast theme, including
 switching themes while the table is visible and returning to Light/Dark. Verify text, selection,
 header and gridline colors, group headers, and application resource overrides.
 
