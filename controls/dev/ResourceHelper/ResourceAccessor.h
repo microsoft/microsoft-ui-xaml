@@ -204,6 +204,8 @@ public:
 #define SR_InkToolbarHighlighterFlyoutName L"InkToolbarHighlighterFlyoutName"
 #define SR_InkToolbarEraserFlyoutName L"InkToolbarEraserFlyoutName"
 #define SR_InkToolbarStencilFlyoutName L"InkToolbarStencilFlyoutName"
+#define SR_InkToolbarStencilButtonName L"InkToolbarStencilButtonName"
+#define SR_InkToolbarColorPaletteHelpText L"InkToolbarColorPaletteHelpText"
 #define SR_InkToolbarMenuButtonControlTypeName L"InkToolbarMenuButtonControlTypeName"
 #define SR_InkToolbarFlyoutItemControlTypeName L"InkToolbarFlyoutItemControlTypeName"
 #define SR_SplitButtonSecondaryButtonName L"SplitButtonSecondaryButtonName"

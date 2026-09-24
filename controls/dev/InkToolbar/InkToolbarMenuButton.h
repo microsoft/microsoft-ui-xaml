@@ -55,6 +55,10 @@ public:
     void OpenL3();
     void CloseL3();
 
+    // Persistent accessible identity for the button (e.g. "Measuring tools"); the peer prefixes it
+    // before the selected tool so the button's purpose is announced, not just the current selection.
+    virtual winrt::hstring GetPersistentToolName() { return {}; }
+
 protected:
     void SetMenuKind(winrt::InkToolbarMenuKind value) { m_menuKind = value; }
 

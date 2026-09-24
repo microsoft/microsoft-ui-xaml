@@ -23,6 +23,8 @@ public:
         // Cache here (UI thread); a resource lookup from the GetNameCore UIA callback can fail-fast.
         try { m_selectedStateName = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarToolButtonSelectedStateName); }
         catch (...) { m_selectedStateName = L"selected"; }
+        try { m_colorPaletteHint = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarColorPaletteHelpText); }
+        catch (...) { m_colorPaletteHint = L"Open to choose a color from the palette"; }
     }
 
     // IAutomationPeerOverrides
@@ -83,8 +85,12 @@ public:
 
     hstring GetHelpTextCore()
     {
-        // The colour is now folded into the name (Narrator does not reliably read HelpText); suppress the
-        // separate help read so the colour is not announced twice.
+        // The colour is folded into the name. If this tool has a colour (a pen/pencil/highlighter flyout),
+        // use the help text to tell the user a colour palette is available instead of repeating the colour.
+        if (!winrt::AutomationProperties::GetHelpText(Owner()).empty())
+        {
+            return m_colorPaletteHint;
+        }
         return {};
     }
 
@@ -120,6 +126,7 @@ public:
 
 private:
     winrt::hstring m_selectedStateName;
+    winrt::hstring m_colorPaletteHint;
 
     com_ptr<InkToolbarToolButton> GetImpl()
     {

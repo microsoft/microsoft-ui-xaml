@@ -50,6 +50,7 @@ protected:
     // IMenuButtonDerived override hooks (localized names are lift resource gaps -> empty).
     winrt::hstring GetLocalizedToolName() override;
     winrt::hstring GetFlyoutName() override;
+    winrt::hstring GetPersistentToolName() override;
 
 private:
     void OnL3ItemsVisibilitiesChanged();

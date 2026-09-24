@@ -11,6 +11,8 @@
 #include "ResourceAccessor.h"
 #include "InkToolbarMenuButtonAutomationPeer.g.h"
 
+#include <string>
+
 class InkToolbarMenuButtonAutomationPeer :
     public ReferenceTracker<InkToolbarMenuButtonAutomationPeer, winrt::implementation::InkToolbarMenuButtonAutomationPeerT>
 {
@@ -44,6 +46,22 @@ public:
     hstring GetLocalizedControlTypeCore()
     {
         return m_localizedControlType;
+    }
+
+    hstring GetNameCore()
+    {
+        // The base name is only the selected stencil (Ruler/Protractor). Prefix the persistent identity
+        // ("Measuring tools") so Narrator announces the button's purpose plus the current selection.
+        auto value = __super::GetNameCore();
+        if (auto owner = GetImpl())
+        {
+            if (auto identity = owner->GetPersistentToolName(); !identity.empty())
+            {
+                return value.empty() ? identity
+                                     : winrt::hstring{ std::wstring{ identity.c_str() } + L", " + std::wstring{ value.c_str() } };
+            }
+        }
+        return value;
     }
 
     // IExpandCollapseProvider

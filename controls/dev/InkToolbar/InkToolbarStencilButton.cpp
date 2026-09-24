@@ -326,6 +326,19 @@ winrt::hstring InkToolbarStencilButton::GetFlyoutName()
     }
 }
 
+winrt::hstring InkToolbarStencilButton::GetPersistentToolName()
+{
+    // The button's purpose is "Measuring tools" regardless of which stencil is selected.
+    try
+    {
+        return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilButtonName);
+    }
+    catch (winrt::hresult_error const&)
+    {
+        return {};
+    }
+}
+
 unsigned InkToolbarStencilButton::NumberOfStencils()
 {
     return (IsRulerItemVisible() ? 1u : 0u) + (IsProtractorItemVisible() ? 1u : 0u);
