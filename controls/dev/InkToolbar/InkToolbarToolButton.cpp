@@ -11,6 +11,7 @@
 #include "InkToolbarToolButton.h"
 #include "InkToolbarToolButtonAutomationPeer.h"
 #include "InkToolbar.h"
+#include "InkToolbarFlyoutHelper.h"
 #include "InkToolbarTrace.h"
 
 InkToolbarToolButton::InkToolbarToolButton()
@@ -23,16 +24,9 @@ InkToolbarToolButton::InkToolbarToolButton()
     auto flyout = winrt::Flyout{};
     flyout.ShouldConstrainToRootBounds(false);
 
-    if (auto resources = Resources())
-    {
-        if (resources.HasKey(winrt::box_value(L"InkToolbarFlyoutStyle")))
-        {
-            if (auto style = resources.Lookup(winrt::box_value(L"InkToolbarFlyoutStyle")).try_as<winrt::Style>())
-            {
-                flyout.FlyoutPresenterStyle(style);
-            }
-        }
-    }
+    // The keyed InkToolbarFlyoutStyle in generic.xaml is not reachable from the button's resources, so
+    // apply the equivalent (zero-padding) presenter style in code to match WinUI 2 flyout padding.
+    ApplyInkToolbarFlyoutStyle(flyout);
 
     winrt::FlyoutBase::SetAttachedFlyout(*this, flyout);
 }

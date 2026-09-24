@@ -17,6 +17,7 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)InkToolbarCustomPen.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InkToolbarAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolbarFlyoutHelper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InkToolbarStrokeWidthSlider.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InkToolbarStrokeWidthSliderAutomationPeer.h" />
   </ItemGroup>
