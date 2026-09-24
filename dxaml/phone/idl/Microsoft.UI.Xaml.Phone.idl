@@ -296,10 +296,10 @@ namespace Microsoft.UI.Xaml.Controls
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [contentproperty("Content")]
-    runtimeclass PickerFlyout
+    unsealed runtimeclass PickerFlyout
         : Microsoft.UI.Xaml.Controls.Primitives.PickerFlyoutBase
     {
-        PickerFlyout();
+        [method_name("CreateInstance")] PickerFlyout();
         Microsoft.UI.Xaml.UIElement Content;
         Boolean ConfirmationButtonsVisible;
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.PickerFlyout,Microsoft.UI.Xaml.Controls.PickerConfirmedEventArgs> Confirmed;
