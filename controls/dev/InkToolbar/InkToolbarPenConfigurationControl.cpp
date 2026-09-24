@@ -197,9 +197,10 @@ void InkToolbarPenConfigurationControl::ConfigureLocalizableElements(winrt::Cont
 {
     UNREFERENCED_PARAMETER(me);
 
-    // ResourceAccessor throws ERROR_NOT_FOUND when a name is absent, which an app carrying an older
-    // merged PRI than the framework will hit; this runs from OnApplyTemplate, so a missing string
-    // must not take the app down.
+    // ResourceAccessor throws ERROR_NOT_FOUND when a name is absent. In framework-package mode it reads
+    // the framework's own version-matched resources.pri, so that never happens there; the risk is the
+    // in-app / self-contained (and unpackaged) case, where the app's merged resources.pri can lag the
+    // WinUI binaries it bundles. This runs from OnApplyTemplate, so a missing string must not crash.
     auto tryGetString = [](std::wstring_view name) -> winrt::hstring
     {
         try
