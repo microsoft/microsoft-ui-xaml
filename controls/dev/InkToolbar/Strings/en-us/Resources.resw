@@ -130,4 +130,140 @@
     <value>Size</value>
     <comment>Heading above the stroke-width slider in the InkToolbar pen configuration flyout.</comment>
   </data>
+  <data name="InkToolbarNonSolidColorName" xml:space="preserve">
+    <value>Custom color</value>
+    <comment>Tooltip for an InkToolbar palette entry whose brush is not a solid color.</comment>
+  </data>
+  <data name="InkToolbarColorRgbFormat" xml:space="preserve">
+    <value>RGB %1!u!, %2!u!, %3!u!</value>
+    <comment>Tooltip for a palette color without a dedicated name. %1!u!, %2!u! and %3!u! are the red, green and blue values. Preserve the numbered inserts.</comment>
+  </data>
+  <data name="InkToolbarColorNameBlack" xml:space="preserve">
+    <value>Black</value>
+    <comment>Name of the InkToolbar palette color #000000.</comment>
+  </data>
+  <data name="InkToolbarColorNameWhite" xml:space="preserve">
+    <value>White</value>
+    <comment>Name of the InkToolbar palette color #FFFFFF.</comment>
+  </data>
+  <data name="InkToolbarColorNameSilver" xml:space="preserve">
+    <value>Silver</value>
+    <comment>Name of the InkToolbar palette color #D1D3D4.</comment>
+  </data>
+  <data name="InkToolbarColorNameGray" xml:space="preserve">
+    <value>Gray</value>
+    <comment>Name of the InkToolbar palette color #A7A9AC.</comment>
+  </data>
+  <data name="InkToolbarColorNameDarkGray" xml:space="preserve">
+    <value>Dark gray</value>
+    <comment>Name of the InkToolbar palette color #808285.</comment>
+  </data>
+  <data name="InkToolbarColorNameCharcoal" xml:space="preserve">
+    <value>Charcoal</value>
+    <comment>Name of the InkToolbar palette color #58595B.</comment>
+  </data>
+  <data name="InkToolbarColorNameMagenta" xml:space="preserve">
+    <value>Magenta</value>
+    <comment>Name of the InkToolbar palette color #B31564.</comment>
+  </data>
+  <data name="InkToolbarColorNameRed" xml:space="preserve">
+    <value>Red</value>
+    <comment>Name of the InkToolbar palette color #E61B1B.</comment>
+  </data>
+  <data name="InkToolbarColorNameRedOrange" xml:space="preserve">
+    <value>Red-orange</value>
+    <comment>Name of the InkToolbar palette color #FF5500.</comment>
+  </data>
+  <data name="InkToolbarColorNameOrange" xml:space="preserve">
+    <value>Orange</value>
+    <comment>Name of the InkToolbar palette color #FFAA00.</comment>
+  </data>
+  <data name="InkToolbarColorNameGold" xml:space="preserve">
+    <value>Gold</value>
+    <comment>Name of the InkToolbar palette color #FFCE00.</comment>
+  </data>
+  <data name="InkToolbarColorNameYellow" xml:space="preserve">
+    <value>Yellow</value>
+    <comment>Name of the InkToolbar palette color #FFE600.</comment>
+  </data>
+  <data name="InkToolbarColorNameGrassGreen" xml:space="preserve">
+    <value>Grass green</value>
+    <comment>Name of the InkToolbar palette color #A2E61B.</comment>
+  </data>
+  <data name="InkToolbarColorNameGreen" xml:space="preserve">
+    <value>Green</value>
+    <comment>Name of the InkToolbar palette color #26E600.</comment>
+  </data>
+  <data name="InkToolbarColorNameDarkGreen" xml:space="preserve">
+    <value>Dark green</value>
+    <comment>Name of the InkToolbar palette color #008055.</comment>
+  </data>
+  <data name="InkToolbarColorNameTeal" xml:space="preserve">
+    <value>Teal</value>
+    <comment>Name of the InkToolbar palette color #00AACC.</comment>
+  </data>
+  <data name="InkToolbarColorNameBlue" xml:space="preserve">
+    <value>Blue</value>
+    <comment>Name of the InkToolbar palette color #004DE6.</comment>
+  </data>
+  <data name="InkToolbarColorNameIndigo" xml:space="preserve">
+    <value>Indigo</value>
+    <comment>Name of the InkToolbar palette color #3D00B8.</comment>
+  </data>
+  <data name="InkToolbarColorNameViolet" xml:space="preserve">
+    <value>Violet</value>
+    <comment>Name of the InkToolbar palette color #6600CC.</comment>
+  </data>
+  <data name="InkToolbarColorNamePurple" xml:space="preserve">
+    <value>Purple</value>
+    <comment>Name of the InkToolbar palette color #600080.</comment>
+  </data>
+  <data name="InkToolbarColorNameBeige" xml:space="preserve">
+    <value>Beige</value>
+    <comment>Name of the InkToolbar palette color #F7D7C4.</comment>
+  </data>
+  <data name="InkToolbarColorNameLightBrown" xml:space="preserve">
+    <value>Light brown</value>
+    <comment>Name of the InkToolbar palette color #BB9167.</comment>
+  </data>
+  <data name="InkToolbarColorNameBrown" xml:space="preserve">
+    <value>Brown</value>
+    <comment>Name of the InkToolbar palette color #8E562E.</comment>
+  </data>
+  <data name="InkToolbarColorNameDarkBrown" xml:space="preserve">
+    <value>Dark brown</value>
+    <comment>Name of the InkToolbar palette color #613D30.</comment>
+  </data>
+  <data name="InkToolbarColorNamePastelPink" xml:space="preserve">
+    <value>Pastel pink</value>
+    <comment>Name of the InkToolbar palette color #FF80FF.</comment>
+  </data>
+  <data name="InkToolbarColorNamePastelOrange" xml:space="preserve">
+    <value>Pastel orange</value>
+    <comment>Name of the InkToolbar palette color #FFC680.</comment>
+  </data>
+  <data name="InkToolbarColorNamePastelYellow" xml:space="preserve">
+    <value>Pastel yellow</value>
+    <comment>Name of the InkToolbar palette color #FFFF80.</comment>
+  </data>
+  <data name="InkToolbarColorNamePastelGreen" xml:space="preserve">
+    <value>Pastel green</value>
+    <comment>Name of the InkToolbar palette color #80FF9E.</comment>
+  </data>
+  <data name="InkToolbarColorNamePastelBlue" xml:space="preserve">
+    <value>Pastel blue</value>
+    <comment>Name of the InkToolbar palette color #80D6FF.</comment>
+  </data>
+  <data name="InkToolbarColorNamePastelPurple" xml:space="preserve">
+    <value>Pastel purple</value>
+    <comment>Name of the InkToolbar palette color #BCB3FF.</comment>
+  </data>
+  <data name="InkToolbarColorNameLightBlue" xml:space="preserve">
+    <value>Light blue</value>
+    <comment>Name of the InkToolbar highlighter palette color #44C8F5.</comment>
+  </data>
+  <data name="InkToolbarColorNamePink" xml:space="preserve">
+    <value>Pink</value>
+    <comment>Name of the InkToolbar highlighter palette color #EC008C.</comment>
+  </data>
 </root>

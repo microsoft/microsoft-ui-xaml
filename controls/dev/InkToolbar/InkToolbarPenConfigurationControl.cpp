@@ -99,6 +99,7 @@ void InkToolbarPenConfigurationControl::OnApplyTemplate()
 
     ConfigureStrokeWidthSlider(nullptr);
     ConfigureStrokeWidthPreview();
+    ConfigureLocalizableElements(nullptr);
 
     if (penButton)
     {
@@ -110,7 +111,6 @@ void InkToolbarPenConfigurationControl::OnApplyTemplate()
         RemoveColorPicker(nullptr);
     }
 
-    ConfigureLocalizableElements(nullptr);
     ConfigureHighContrast();
 }
 
@@ -225,6 +225,11 @@ void InkToolbarPenConfigurationControl::ConfigureLocalizableElements(winrt::Cont
         {
             sizeTitle.Text(text);
         }
+    }
+
+    if (auto text = tryGetString(SR_InkToolbarNonSolidColorName); !text.empty())
+    {
+        m_nonSolidColorString = text;
     }
 }
 
