@@ -238,10 +238,10 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass DatePickerFlyout
+    unsealed runtimeclass DatePickerFlyout
         : Microsoft.UI.Xaml.Controls.Primitives.PickerFlyoutBase
     {
-        DatePickerFlyout();
+        [method_name("CreateInstance")] DatePickerFlyout();
         String CalendarIdentifier;
         Windows.Foundation.DateTime Date;
         Boolean DayVisible;

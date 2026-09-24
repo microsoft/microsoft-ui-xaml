@@ -149,8 +149,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
          _Check_return_ HRESULT RuntimeClassInitialize();
          static _Check_return_ HRESULT EnsureProperties();
          static void ClearProperties();
-        IFACEMETHOD(ActivateInstance)(
-            _Outptr_ IInspectable** ppInspectable);
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyout** ppInstance);
 
         // Properties.
 
@@ -221,7 +220,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
     };
     class DatePickerFlyoutFactory
         :
-        public wrl::AgileActivationFactory<ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyoutStatics>
+        public wrl::AgileActivationFactory<ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyoutFactory, ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyoutStatics>
     {
 
     friend class DatePickerFlyoutGenerated;
@@ -284,6 +283,9 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         : public DatePickerFlyoutRuntimeClass
     {
         friend class ABI::Microsoft::UI::Xaml::Controls::DatePickerFlyout;
+        friend class pctl::AggregableComObject<
+            ABI::Microsoft::UI::Xaml::Controls::DatePickerFlyout,
+            ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyout>;
         WuxpInspectableClass(RuntimeClass_Microsoft_UI_Xaml_Controls_DatePickerFlyout, TrustLevel::BaseTrust);
 
     public:

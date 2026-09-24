@@ -796,17 +796,16 @@ void DatePickerFlyoutFactory::ClearProperties()
         s_YearFormatProperty.Reset();
 }
 
-IFACEMETHODIMP
-DatePickerFlyoutFactory::ActivateInstance(
-    _Outptr_ IInspectable** ppInspectable)
+IFACEMETHODIMP DatePickerFlyoutFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyout** ppInstance)
 {
     HRESULT hr = S_OK;
-    wrl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyout> datePickerFlyout;
 
-    IFCPTR(ppInspectable);
-    IFC(wrl::MakeAndInitialize<DatePickerFlyout>(&datePickerFlyout));
-
-    *ppInspectable = datePickerFlyout.Detach();
+    IFC((pctl::AggregableComObject<
+            ABI::Microsoft::UI::Xaml::Controls::DatePickerFlyout,
+            ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyout>::CreateInstance(
+            pOuter,
+            ppInner,
+            ppInstance)));
 
 Cleanup:
     RRETURN(hr);
