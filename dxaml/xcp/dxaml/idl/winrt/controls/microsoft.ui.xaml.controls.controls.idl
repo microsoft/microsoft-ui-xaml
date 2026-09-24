@@ -1761,10 +1761,10 @@ namespace Microsoft.UI.Xaml.Controls
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [contentproperty("Child")]
-    runtimeclass Viewbox
+    unsealed runtimeclass Viewbox
         : Microsoft.UI.Xaml.FrameworkElement
     {
-        Viewbox();
+        [method_name("CreateInstance")] Viewbox();
         Microsoft.UI.Xaml.UIElement Child;
         Microsoft.UI.Xaml.Media.Stretch Stretch;
         Microsoft.UI.Xaml.Controls.StretchDirection StretchDirection;
