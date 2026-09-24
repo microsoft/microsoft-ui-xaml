@@ -6143,7 +6143,7 @@ namespace Microsoft.UI.Xaml.Controls
     [Implements(typeof(Microsoft.UI.Xaml.Controls.Primitives.IScrollInfo))]
     [Implements(typeof(Microsoft.UI.Xaml.Controls.Primitives.IScrollSnapPointsInfo))]
     [Guids(ClassGuid = "83545f9b-b339-4858-8756-f550c38f39af")]
-    public sealed class ItemsPresenter
+    public class ItemsPresenter
      : Microsoft.UI.Xaml.FrameworkElement
     {
         [TypeTable(IsExcludedFromCore = true)]

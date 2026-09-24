@@ -729,13 +729,17 @@ _Check_return_ HRESULT DirectUI::ItemsPresenterGenerated::EventRemoveHandlerByIn
 
 HRESULT DirectUI::ItemsPresenterFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemsPresenterStatics)))
+    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemsPresenterFactory)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IItemsPresenterFactory*>(this);
+    }
+    else     if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemsPresenterStatics)))
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IItemsPresenterStatics*>(this);
     }
     else
     {
-        RRETURN(ctl::BetterCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
+        RRETURN(ctl::BetterAggregableCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
     }
 
     AddRefOuter();
@@ -744,6 +748,19 @@ HRESULT DirectUI::ItemsPresenterFactory::QueryInterfaceImpl(_In_ REFIID iid, _Ou
 
 
 // Factory methods.
+
+// Factory methods.
+IFACEMETHODIMP DirectUI::ItemsPresenterFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IItemsPresenter** ppInstance)
+{
+#if DBG
+    const GUID uuidofGUID = __uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemsPresenter);
+    const GUID metadataAPIGUID = MetadataAPI::GetClassInfoByIndex(GetTypeIndex())->GetGuid();
+    if (uuidofGUID != metadataAPIGUID) { XAML_FAIL_FAST(); }
+#endif
+    const HRESULT hr = ctl::ValidateFactoryCreateInstanceWithBetterAggregableCoreObjectActivationFactory(pOuter, ppInner, reinterpret_cast<IUnknown**>(ppInstance), GetTypeIndex(), false /*isFreeThreaded*/);
+    IFC_RETURN(hr);
+    return S_OK;
+}
 
 // Dependency properties.
 IFACEMETHODIMP DirectUI::ItemsPresenterFactory::get_HeaderProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
