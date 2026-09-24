@@ -7180,7 +7180,7 @@ namespace Microsoft.UI.Xaml.Controls
     [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
     [FrameworkTypePattern]
     [Guids(ClassGuid = "0c15333e-3fb2-4a64-8511-2a225f0fcca7")]
-    public sealed class SemanticZoomLocation
+    public class SemanticZoomLocation
      : Windows.Foundation.Object
     {
         [Comment("Gets a point that specifies the gesture center.")]
