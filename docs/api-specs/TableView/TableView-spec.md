@@ -169,6 +169,25 @@ PeopleTable.GridLinesVisibility = TableViewGridLinesVisibility.All;
 PeopleTable.Density = TableViewDensity.Compact;
 ```
 
+### Contrast themes
+
+Merge `TabularControlsResources` alongside `XamlControlsResources` in the application resources.
+`TabularSurface*` brushes come from the shared theme dictionary; do not copy theme-invariant
+fallbacks into the default-style dictionary. In high contrast, Fluent color tokens such as
+`TextFillColorPrimary` and `SubtleFillColorSecondary` are diagnostic red sentinels, not usable colors.
+
+Rows use system window colors normally, paired system highlight/highlight-text colors for
+pointer-over, pressed, and selected states, and system gray text when disabled. Cell content
+inherits the state foreground unless an application template explicitly supplies its own brush.
+Application-supplied row backgrounds, foregrounds, and cell templates remain responsible for
+their own contrast-theme support.
+
+The source-contract regression check is
+`controls\dev\TableView\Test\ValidateThemeResources.ps1`. Runtime validation must additionally
+exercise normal, hovered, pressed, selected, and disabled rows in each contrast theme, including
+switching themes while the table is visible and returning to Light/Dark. Verify text, selection,
+header and gridline colors, group headers, and application resource overrides.
+
 ### Frozen (pinned) leading columns
 
 Set `FrozenEdge="Leading"` on a contiguous prefix starting at column 0 to pin those columns to the leading edge. A later `Leading` column is ignored. `Trailing` is reserved.
