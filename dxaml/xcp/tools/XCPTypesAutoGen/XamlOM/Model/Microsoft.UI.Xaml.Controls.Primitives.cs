@@ -510,7 +510,7 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
 
     [CodeGen(partial: true)]
     [Guids(ClassGuid = "463a80e0-2629-420c-a58b-ca2a049a669b")]
-    public sealed class ScrollBar
+    public class ScrollBar
      : Microsoft.UI.Xaml.Controls.Primitives.RangeBase
     {
         [FieldBacked]
