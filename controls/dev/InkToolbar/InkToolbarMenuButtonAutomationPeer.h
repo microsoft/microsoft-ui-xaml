@@ -8,6 +8,7 @@
 #include "common.h"
 
 #include "InkToolbarMenuButton.h"
+#include "InkToolbarTrace.h"
 #include "ResourceAccessor.h"
 #include "InkToolbarMenuButtonAutomationPeer.g.h"
 
@@ -20,10 +21,14 @@ public:
     InkToolbarMenuButtonAutomationPeer(winrt::InkToolbarMenuButton const& owner)
         : ReferenceTracker(owner)
     {
-        // Resolve here (peer creation, UI thread) and cache. The same lookup from the
-        // GetLocalizedControlTypeCore UIA callback can escape as a fatal error and fail-fast.
-        try { m_localizedControlType = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarMenuButtonControlTypeName); }
-        catch (...) { m_localizedControlType = L"menu button"; }
+        try
+        {
+            m_localizedControlType = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarDropDownButtonControlTypeName);
+        }
+        catch (winrt::hresult_error const& e)
+        {
+            InkToolbarLogHResult(e.code(), L"menu button dropdown control type lookup");
+        }
     }
 
     // IAutomationPeerOverrides
@@ -31,21 +36,27 @@ public:
     {
         if (patternInterface == winrt::PatternInterface::ExpandCollapse)
         {
-            return *this;
+            if (auto owner = GetImpl(); owner && owner->HasL3())
+            {
+                return *this;
+            }
+            return nullptr;
         }
         return __super::GetPatternCore(patternInterface);
     }
 
     winrt::AutomationControlType GetAutomationControlTypeCore()
     {
-        return winrt::AutomationControlType::Custom;
+        return winrt::AutomationControlType::Button;
     }
 
-    // Custom would make Narrator read "custom"; return the cached "menu button" instead. Never looks
-    // up a resource here - doing so from this callback can fail-fast.
     hstring GetLocalizedControlTypeCore()
     {
-        return m_localizedControlType;
+        if (auto owner = GetImpl(); owner && owner->HasL3() && !m_localizedControlType.empty())
+        {
+            return m_localizedControlType;
+        }
+        return __super::GetLocalizedControlTypeCore();
     }
 
     hstring GetNameCore()
@@ -67,20 +78,23 @@ public:
     // IExpandCollapseProvider
     winrt::ExpandCollapseState ExpandCollapseState()
     {
-        auto state = winrt::ExpandCollapseState::Collapsed;
         if (auto owner = GetImpl())
         {
-            if (owner->HasL3() && owner->IsL3Open())
+            if (owner->IsL3Open())
             {
-                state = winrt::ExpandCollapseState::Expanded;
+                return winrt::ExpandCollapseState::Expanded;
+            }
+            if (owner->HasL3())
+            {
+                return winrt::ExpandCollapseState::Collapsed;
             }
         }
-        return state;
+        return winrt::ExpandCollapseState::LeafNode;
     }
 
     void Expand()
     {
-        if (auto owner = GetImpl())
+        if (auto owner = GetImpl(); owner && owner->HasL3())
         {
             owner->OpenL3();
         }
@@ -107,4 +121,3 @@ private:
         return impl;
     }
 };
-

@@ -302,6 +302,10 @@
     <value>Measuring tools</value>
     <comment>Persistent accessible name for the InkToolbar stencil (measuring tools) button; Narrator reads this identity before the selected stencil (Ruler or Protractor).</comment>
   </data>
+  <data name="InkToolbarDropDownButtonControlTypeName" xml:space="preserve">
+    <value>drop down button</value>
+    <comment>Accessible control type for the InkToolbar measuring-tools and built-in pen buttons when a flyout is available. Expanded or collapsed state is reported separately by UI Automation.</comment>
+  </data>
   <data name="InkToolbarColorPaletteHelpText" xml:space="preserve">
     <value>Open to choose a color from the palette</value>
     <comment>Narrator help text on an InkToolbar pen, pencil or highlighter button, telling the user the tool's flyout has a color palette.</comment>

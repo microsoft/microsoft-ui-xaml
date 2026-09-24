@@ -48,6 +48,7 @@ public:
 #define SR_InkToolbarStencilRulerName L"InkToolbarStencilRulerName"
 #define SR_InkToolbarStencilProtractorName L"InkToolbarStencilProtractorName"
 #define SR_InkToolbarToolButtonControlTypeName L"InkToolbarToolButtonControlTypeName"
+#define SR_InkToolbarDropDownButtonControlTypeName L"InkToolbarDropDownButtonControlTypeName"
 #define SR_InkToolbarToolButtonSelectedStateName L"InkToolbarToolButtonSelectedStateName"
 
 #define SR_BasicRatingString L"BasicRatingString"

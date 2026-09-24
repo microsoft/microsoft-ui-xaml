@@ -6,6 +6,7 @@ using System;
 using System.Threading;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using MUXControlsTestApp.Utilities;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Markup;
@@ -848,70 +849,282 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Automation peer parity: the tool button peer exposes IExpandCollapseProvider (Narrator
-        // expand/collapse of the tool's L3 flyout) and reports control type Custom, matching UWP
-        // InkToolbarToolButtonAutomationPeer.
         [TestMethod]
         public void InkToolbarToolButtonAutomationPeerExpandCollapseTest()
         {
+            var toolbar = CreateLoadedInkToolbar();
             RunOnUIThread.Execute(() =>
             {
-                var toolbar = new InkToolbar();
-                Content = toolbar;
-                Content.UpdateLayout();
-
-                var toolButton = toolbar.GetToolButton(InkToolbarTool.BallpointPen);
-                Verify.IsNotNull(toolButton, "GetToolButton(BallpointPen) should be non-null after load.");
-
-                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(toolButton);
-                Verify.IsNotNull(peer, "ToolButton should create an automation peer.");
-                Verify.AreEqual(AutomationControlType.Custom, peer.GetAutomationControlType(),
-                    "ToolButton peer control type should be Custom.");
-                // UWP returns the localized "button" for the control type. Framework resource strings
-                // only resolve in packaged/deployed apps, so in the unpackaged test harness this falls
-                // back to "custom"; assert the ported value when it resolves, otherwise log.
-                var localizedControlType = peer.GetLocalizedControlType();
-                if (localizedControlType != "custom")
+                foreach (var tool in new[]
                 {
-                    Verify.AreEqual("button", localizedControlType,
-                        "ToolButton peer localized control type should be 'button' (UWP value).");
-                }
-                else
+                    InkToolbarTool.BallpointPen,
+                    InkToolbarTool.Pencil,
+                    InkToolbarTool.Highlighter
+                })
                 {
-                    Log.Comment("Localized control type resolved to 'custom' (framework resource strings " +
-                        "don't resolve in the unpackaged harness); 'button' is present in the built pri + deployed apps.");
-                }
+                    var button = toolbar.GetToolButton(tool);
+                    Verify.IsNotNull(button, $"{tool} should be present after load.");
+                    button.ApplyTemplate();
+                    button.UpdateLayout();
 
-                var expandCollapse = peer.GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
-                Verify.IsNotNull(expandCollapse, "ToolButton peer should expose IExpandCollapseProvider.");
-                Verify.AreEqual(ExpandCollapseState.Collapsed, expandCollapse.ExpandCollapseState,
-                    "With no open flyout the tool button should report Collapsed.");
+                    var peer = FrameworkElementAutomationPeer.CreatePeerForElement(button);
+                    Verify.IsNotNull(peer, $"{tool} should create an automation peer.");
+                    Verify.AreEqual(AutomationControlType.Button, peer.GetAutomationControlType(),
+                        $"{tool} should expose the standard Button role.");
+                    Verify.AreEqual("drop down button", peer.GetLocalizedControlType(),
+                        $"{tool} should advertise its configuration dropdown.");
+
+                    var expandCollapse = peer.GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
+                    Verify.IsNotNull(expandCollapse, $"{tool} should expose IExpandCollapseProvider.");
+                    Verify.AreEqual(ExpandCollapseState.Collapsed, expandCollapse.ExpandCollapseState,
+                        $"{tool} should report Collapsed before its flyout is opened.");
+                }
             });
         }
 
-        // Automation peer parity: the menu (stencil) button peer exposes IExpandCollapseProvider,
-        // matching UWP InkToolbarMenuButtonAutomationPeer.
         [TestMethod]
         public void InkToolbarMenuButtonAutomationPeerExpandCollapseTest()
         {
+            var toolbar = CreateLoadedInkToolbar();
+            AutomationPeer peer = null;
+            IExpandCollapseProvider expandCollapse = null;
+            Flyout flyout = null;
+            using var closed = new ManualResetEvent(false);
+            EventHandler<object> closedHandler = (s, e) => closed.Set();
             RunOnUIThread.Execute(() =>
             {
-                var toolbar = new InkToolbar();
-                Content = toolbar;
-                Content.UpdateLayout();
+                var button = toolbar.GetMenuButton(InkToolbarMenuKind.Stencil) as InkToolbarStencilButton;
+                Verify.IsNotNull(button, "The stencil button should be present after load.");
+                button.ApplyTemplate();
+                button.UpdateLayout();
 
-                var menuButton = toolbar.GetMenuButton(InkToolbarMenuKind.Stencil);
-                Verify.IsNotNull(menuButton, "GetMenuButton(Stencil) should be non-null after load.");
-
-                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(menuButton);
+                peer = FrameworkElementAutomationPeer.CreatePeerForElement(button);
                 Verify.IsNotNull(peer, "MenuButton should create an automation peer.");
-                Verify.AreEqual(AutomationControlType.Custom, peer.GetAutomationControlType(),
-                    "MenuButton peer control type should be Custom.");
+                Verify.AreEqual(AutomationControlType.Button, peer.GetAutomationControlType(),
+                    "The measuring-tools dropdown should expose the standard Button role.");
+                Verify.AreEqual("drop down button", peer.GetLocalizedControlType(),
+                    "The measuring-tools button should advertise its dropdown.");
+                Verify.AreEqual("Measuring tools, Ruler", peer.GetName(),
+                    "The name should include both the menu identity and the selected ruler.");
 
-                var expandCollapse = peer.GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
+                button.SelectedStencil = InkToolbarStencilKind.Protractor;
+                Verify.AreEqual("Measuring tools, Protractor", peer.GetName(),
+                    "Changing the selected stencil should preserve the measuring-tools identity.");
+                button.SelectedStencil = InkToolbarStencilKind.Ruler;
+
+                expandCollapse = peer.GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
                 Verify.IsNotNull(expandCollapse, "MenuButton peer should expose IExpandCollapseProvider.");
                 Verify.AreEqual(ExpandCollapseState.Collapsed, expandCollapse.ExpandCollapseState,
                     "With no open flyout the menu button should report Collapsed.");
+                flyout = FlyoutBase.GetAttachedFlyout(button) as Flyout;
+                Verify.IsNotNull(flyout, "The stencil button should have a flyout.");
+                flyout.Closed += closedHandler;
+            });
+
+            try
+            {
+                RunOnUIThread.Execute(() => expandCollapse.Expand());
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(ExpandCollapseState.Expanded, expandCollapse.ExpandCollapseState,
+                        "Opening the measuring-tools flyout through UIA should report Expanded.");
+                    Verify.AreEqual("Measuring tools, Ruler", peer.GetName(),
+                        "Opening the dropdown should preserve its identity and selected stencil.");
+
+                    var ruler = FindChildByName(flyout.Content, "StencilRuler") as InkToolbarFlyoutItem;
+                    var protractor = FindChildByName(flyout.Content, "StencilProtractor") as InkToolbarFlyoutItem;
+                    Verify.IsNotNull(ruler, "The ruler item should be present in the flyout.");
+                    Verify.IsNotNull(protractor, "The protractor item should be present in the flyout.");
+                    VerifyStencilFlyoutItem(ruler, "Ruler", 1, 2, true);
+                    VerifyStencilFlyoutItem(protractor, "Protractor", 2, 2, false);
+
+                    protractor.IsChecked = true;
+                    VerifyStencilFlyoutItem(ruler, "Ruler", 1, 2, false);
+                    VerifyStencilFlyoutItem(protractor, "Protractor", 2, 2, true);
+                });
+            }
+            finally
+            {
+                try
+                {
+                    RunOnUIThread.Execute(() => expandCollapse.Collapse());
+                    Verify.IsTrue(closed.WaitOne(DefaultWaitTimeInMS), "The stencil flyout should finish closing.");
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() => flyout.Closed -= closedHandler);
+                }
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(ExpandCollapseState.Collapsed, expandCollapse.ExpandCollapseState,
+                    "Closing the measuring-tools flyout through UIA should report Collapsed again.");
+            });
+        }
+
+        [TestMethod]
+        public void InkToolbarSingleStencilAutomationPeerTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var button = new InkToolbarStencilButton();
+                Content = button;
+                Content.UpdateLayout();
+                button.ApplyTemplate();
+                button.UpdateLayout();
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(button);
+                Verify.IsNotNull(peer, "The stencil button should create an automation peer.");
+                var cachedExpandCollapse = peer.GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
+                Verify.IsNotNull(cachedExpandCollapse, "Both visible stencils should expose ExpandCollapse.");
+                var flyout = FlyoutBase.GetAttachedFlyout(button) as Flyout;
+                Verify.IsNotNull(flyout, "The stencil button should retain its attached flyout content.");
+                var ruler = FindChildByName(flyout.Content, "StencilRuler") as InkToolbarFlyoutItem;
+                var protractor = FindChildByName(flyout.Content, "StencilProtractor") as InkToolbarFlyoutItem;
+                Verify.IsNotNull(ruler, "The ruler item should be present in the flyout content.");
+                Verify.IsNotNull(protractor, "The protractor item should be present in the flyout content.");
+
+                foreach (var kind in new[] { InkToolbarStencilKind.Ruler, InkToolbarStencilKind.Protractor })
+                {
+                    button.SelectedStencil = kind;
+                    button.IsRulerItemVisible = kind == InkToolbarStencilKind.Ruler;
+                    button.IsProtractorItemVisible = kind == InkToolbarStencilKind.Protractor;
+                    button.UpdateLayout();
+
+                    Verify.AreEqual(AutomationControlType.Button, peer.GetAutomationControlType(),
+                        "A single-stencil toggle should retain the standard Button role.");
+                    Verify.AreEqual("button", peer.GetLocalizedControlType(),
+                        "A single-stencil toggle should not advertise a dropdown.");
+                    Verify.AreEqual($"Measuring tools, {kind}", peer.GetName(),
+                        "A single-stencil toggle should retain the menu identity and visible stencil name.");
+                    Verify.IsNull(peer.GetPattern(PatternInterface.ExpandCollapse),
+                        "A single visible stencil should not expose ExpandCollapse.");
+                    Verify.AreEqual(ExpandCollapseState.LeafNode, cachedExpandCollapse.ExpandCollapseState,
+                        "A previously obtained provider should report LeafNode in single-stencil mode.");
+                    var checkedState = button.IsChecked;
+                    cachedExpandCollapse.Expand();
+                    Verify.AreEqual(ExpandCollapseState.LeafNode, cachedExpandCollapse.ExpandCollapseState,
+                        "Calling the cached provider should not open a single-stencil flyout.");
+                    Verify.AreEqual(checkedState, button.IsChecked,
+                        "Calling Expand in single-stencil mode should not toggle the stencil.");
+
+                    var toggle = peer.GetPattern(PatternInterface.Toggle) as IToggleProvider;
+                    Verify.IsNotNull(toggle, "A single-stencil button should retain its Toggle pattern.");
+                    button.IsChecked = true;
+                    Verify.AreEqual(ToggleState.On, toggle.ToggleState, "A checked stencil should report On.");
+                    button.IsChecked = false;
+                    Verify.AreEqual(ToggleState.Off, toggle.ToggleState, "An unchecked stencil should report Off.");
+
+                    var visibleItem = kind == InkToolbarStencilKind.Ruler ? ruler : protractor;
+                    var hiddenItem = kind == InkToolbarStencilKind.Ruler ? protractor : ruler;
+                    visibleItem.IsChecked = true;
+                    VerifyStencilFlyoutItem(visibleItem, kind.ToString(), 1, 1, true);
+                    Verify.AreEqual(Visibility.Collapsed, hiddenItem.Visibility,
+                        "The hidden stencil should be excluded from the visible item set.");
+                }
+
+                button.IsRulerItemVisible = true;
+                button.IsProtractorItemVisible = true;
+                Verify.AreEqual("drop down button", peer.GetLocalizedControlType(),
+                    "Restoring both stencils should restore the dropdown role on the existing peer.");
+                var expandCollapse = peer.GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
+                Verify.IsNotNull(expandCollapse, "Restoring both stencils should restore ExpandCollapse.");
+                Verify.AreEqual(ExpandCollapseState.Collapsed, expandCollapse.ExpandCollapseState,
+                    "Restoring both stencils should not open the flyout.");
+                ruler.IsChecked = false;
+                protractor.IsChecked = true;
+                VerifyStencilFlyoutItem(ruler, "Ruler", 1, 2, false);
+                VerifyStencilFlyoutItem(protractor, "Protractor", 2, 2, true);
+            });
+        }
+
+        [TestMethod]
+        public void InkToolbarFlyoutItemAutomationPeerSelectionTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var kind in new[] { InkToolbarFlyoutItemKind.Radio, InkToolbarFlyoutItemKind.RadioCheck })
+                {
+                    var item = new InkToolbarFlyoutItem { Kind = kind, Content = "Ruler" };
+                    Content = item;
+                    Content.UpdateLayout();
+
+                    var peer = FrameworkElementAutomationPeer.CreatePeerForElement(item);
+                    Verify.IsNotNull(peer, $"{kind} should create an automation peer.");
+                    Verify.AreEqual(AutomationControlType.MenuItem, peer.GetAutomationControlType(),
+                        $"{kind} should expose the standard MenuItem role.");
+                    Verify.AreEqual("Ruler", peer.GetName(),
+                        "Selection and position information should not be embedded in the accessible name.");
+
+                    var selection = peer.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                    Verify.IsNotNull(selection, $"{kind} should expose ISelectionItemProvider.");
+                    Verify.IsFalse(selection.IsSelected, $"{kind} should initially report unselected.");
+                    item.IsChecked = true;
+                    Verify.IsTrue(selection.IsSelected, $"{kind} should report selected when checked.");
+                    item.IsChecked = false;
+                    Verify.IsFalse(selection.IsSelected, $"{kind} should report unselected when unchecked.");
+                    selection.Select();
+                    Verify.IsTrue(selection.IsSelected, $"Select should select an unchecked {kind}.");
+                    selection.Select();
+                    Verify.IsTrue(selection.IsSelected, "Repeated Select should not toggle the item off.");
+                    item.IsChecked = false;
+
+                    var invoke = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                    Verify.IsNotNull(invoke, $"{kind} should retain IInvokeProvider.");
+                    invoke.Invoke();
+                    Verify.IsTrue(item.IsChecked, $"Invoking an unchecked {kind} should check it.");
+                    Verify.IsTrue(selection.IsSelected, "UIA selection should reflect the invoked state.");
+                    invoke.Invoke();
+                    Verify.AreEqual(kind == InkToolbarFlyoutItemKind.Radio, selection.IsSelected,
+                        "Repeated Invoke should keep Radio selected but toggle RadioCheck off.");
+                    Verify.AreEqual("Ruler", peer.GetName(), "Invoking an item should not decorate its name.");
+                }
+
+                foreach (var kind in new[] { InkToolbarFlyoutItemKind.Simple, InkToolbarFlyoutItemKind.Check })
+                {
+                    var item = new InkToolbarFlyoutItem { Kind = kind, Content = "Action" };
+                    Content = item;
+                    Content.UpdateLayout();
+
+                    var peer = FrameworkElementAutomationPeer.CreatePeerForElement(item);
+                    Verify.IsNotNull(peer, $"{kind} should create an automation peer.");
+                    Verify.IsNull(peer.GetPattern(PatternInterface.SelectionItem),
+                        $"{kind} should not advertise radio-item selection.");
+                    var invoke = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                    Verify.IsNotNull(invoke, $"{kind} should retain IInvokeProvider.");
+                    invoke.Invoke();
+                    Verify.AreEqual(kind == InkToolbarFlyoutItemKind.Check, item.IsChecked,
+                        "Invoke should toggle Check items without checking Simple items.");
+                }
+            });
+        }
+
+        [TestMethod]
+        public void InkToolbarEraserAndCustomToolAutomationPeerTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var button in new InkToolbarToolButton[]
+                {
+                    new InkToolbarEraserButton(),
+                    new InkToolbarCustomToolButton()
+                })
+                {
+                    Content = button;
+                    Content.UpdateLayout();
+
+                    var peer = FrameworkElementAutomationPeer.CreatePeerForElement(button);
+                    Verify.IsNotNull(peer, "The tool should create an automation peer.");
+                    Verify.AreEqual(AutomationControlType.Custom, peer.GetAutomationControlType(),
+                        "The built-in pen role change should not change eraser or custom-tool roles.");
+                    Verify.AreEqual("button", peer.GetLocalizedControlType(),
+                        "Eraser and custom tools should retain their localized button role.");
+                    var expandCollapse = peer.GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
+                    Verify.IsNotNull(expandCollapse, "Existing tool expand/collapse support should be preserved.");
+                    Verify.AreEqual(ExpandCollapseState.Collapsed, expandCollapse.ExpandCollapseState,
+                        "A closed eraser or custom tool should retain its Collapsed state.");
+                }
             });
         }
 
@@ -961,6 +1174,58 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Check(InkToolbarTool.Highlighter, "Highlighter");
                 Check(InkToolbarTool.Eraser, "Eraser");
             });
+        }
+
+        private InkToolbar CreateLoadedInkToolbar()
+        {
+            InkToolbar toolbar = null;
+            using (var loaded = new ManualResetEvent(false))
+            {
+                RoutedEventHandler loadedHandler = (s, e) => loaded.Set();
+                try
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        toolbar = new InkToolbar();
+                        toolbar.Loaded += loadedHandler;
+                        Content = toolbar;
+                        Content.UpdateLayout();
+                    });
+                    Verify.IsTrue(loaded.WaitOne(DefaultWaitTimeInMS), "InkToolbar should raise Loaded.");
+                    IdleSynchronizer.Wait();
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        if (toolbar != null)
+                        {
+                            toolbar.Loaded -= loadedHandler;
+                        }
+                    });
+                }
+            }
+            return toolbar;
+        }
+
+        private static void VerifyStencilFlyoutItem(
+            InkToolbarFlyoutItem item, string name, int position, int size, bool isSelected)
+        {
+            var peer = FrameworkElementAutomationPeer.CreatePeerForElement(item);
+            Verify.IsNotNull(peer, $"{name} should create an automation peer.");
+            Verify.AreEqual(Visibility.Visible, item.Visibility, $"{name} should be visible.");
+            Verify.AreEqual(name, peer.GetName(), "The accessible name should contain only the stencil name.");
+            Verify.AreEqual(AutomationControlType.MenuItem, peer.GetAutomationControlType(),
+                $"{name} should expose the standard MenuItem role.");
+            Verify.AreEqual("menu item", peer.GetLocalizedControlType(),
+                $"{name} should use the standard localized menu-item role.");
+            Verify.AreEqual(position, peer.GetPositionInSet(), $"{name} should have its visible position.");
+            Verify.AreEqual(size, peer.GetSizeOfSet(), $"{name} should count only visible stencils.");
+            var selection = peer.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+            Verify.IsNotNull(selection, $"{name} should expose ISelectionItemProvider.");
+            Verify.AreEqual(isSelected, selection.IsSelected, $"{name} should expose its selected state.");
+            Verify.IsNotNull(peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider,
+                $"{name} should retain IInvokeProvider.");
         }
 
         private static T FindDescendant<T>(DependencyObject root) where T : class
