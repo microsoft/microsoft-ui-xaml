@@ -21,6 +21,9 @@ parameters:
   # group; the monobuild test pipeline overrides to the OS-project WinAppSDK-WinUI-InternalFeed.
   internalFeedVariableGroup: 'WinUI-InternalFeed'
   dependsOn: ''
+  # Optional OneBranch host SKU for the BuildMUX jobs (e.g. D64). Empty = inherit the
+  # pipeline-level WindowsHostVersion, which currently draws an 8-vCPU host.
+  buildHostSku: ''
 
 stages:
 - stage: ${{ parameters.stageName }}
@@ -37,6 +40,12 @@ stages:
   - job: BuildMUX
     pool:
       type: windows
+      # hostVersion REPLACES featureFlags.WindowsHostVersion, so Version/Network are restated.
+      ${{ if ne(parameters.buildHostSku, '') }}:
+        hostVersion:
+          Version: 2022
+          Network: KS3
+          SKU: ${{ parameters.buildHostSku }}
     timeoutInMinutes: 500
     strategy:
       maxParallel: 10
