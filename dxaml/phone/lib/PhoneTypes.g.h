@@ -1906,7 +1906,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
     };
     class TimePickerFlyoutPresenterFactory
         :
-        public wrl::AgileActivationFactory<ABI::Microsoft::UI::Xaml::Controls::ITimePickerFlyoutPresenterStatics>
+        public wrl::AgileActivationFactory<ABI::Microsoft::UI::Xaml::Controls::ITimePickerFlyoutPresenterFactory, ABI::Microsoft::UI::Xaml::Controls::ITimePickerFlyoutPresenterStatics>
     {
 
     friend class TimePickerFlyoutPresenterGenerated;
@@ -1916,6 +1916,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
          _Check_return_ HRESULT RuntimeClassInitialize();
          static _Check_return_ HRESULT EnsureProperties();
          static void ClearProperties();
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ITimePickerFlyoutPresenter** ppInstance);
 
         // Properties.
 
@@ -1940,6 +1941,9 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         : public TimePickerFlyoutPresenterRuntimeClass
     {
         friend class ABI::Microsoft::UI::Xaml::Controls::TimePickerFlyoutPresenter;
+        friend class pctl::AggregableComObject<
+            ABI::Microsoft::UI::Xaml::Controls::TimePickerFlyoutPresenter,
+            ABI::Microsoft::UI::Xaml::Controls::ITimePickerFlyoutPresenter>;
         WuxpInspectableClass(RuntimeClass_Microsoft_UI_Xaml_Controls_TimePickerFlyoutPresenter, TrustLevel::BaseTrust);
 
     public:

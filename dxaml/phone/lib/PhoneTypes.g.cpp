@@ -11317,6 +11317,19 @@ void TimePickerFlyoutPresenterFactory::ClearProperties()
         s_IsDefaultShadowEnabledProperty.Reset();
 }
 
+IFACEMETHODIMP TimePickerFlyoutPresenterFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ITimePickerFlyoutPresenter** ppInstance)
+{
+    HRESULT hr = S_OK;
+    IFC((pctl::AggregableComObject<
+            ABI::Microsoft::UI::Xaml::Controls::TimePickerFlyoutPresenter,
+            ABI::Microsoft::UI::Xaml::Controls::ITimePickerFlyoutPresenter>::CreateInstance(
+            pOuter,
+            ppInner,
+            ppInstance)));
+Cleanup:
+    RRETURN(hr);
+}
+
 // Static properties.
 
 // Dependency properties initializing functions
