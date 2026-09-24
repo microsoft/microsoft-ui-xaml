@@ -70,9 +70,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                     "ved)\r\n    {\r\n        return _DllMainCRTStartup(hinstDLL, fdwReason, lpvReserved)" +
                     ";\r\n    }\r\n}\r\n\r\n#endif // (defined(_M_IX86) || defined(_M_AMD64) || defined(_M_AR" +
                     "M) || defined(_M_ARM64))) && !defined(_VSDESIGNER_DONT_LOAD_AS_DLL)\r\n\r\n#ifndef D" +
-                    "ISABLE_XAML_GENERATED_MAIN\r\nint __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, " +
-                    "int)\r\n#else\r\nint __stdcall wXamlGeneratedMain(HINSTANCE, HINSTANCE, PWSTR, int)\r" +
-                    "\n#endif\r\n{\r\n");
+                    "ISABLE_XAML_GENERATED_MAIN\r\nint __stdcall wWinMain(_In_ HINSTANCE, _In_opt_ HINS" +
+                    "TANCE, _In_ PWSTR, _In_ int)\r\n#else\r\nint __stdcall wXamlGeneratedMain(HINSTANCE," +
+                    " HINSTANCE, PWSTR, int)\r\n#endif\r\n{\r\n");
   if (ProjectInfo.IsWin32App) { 
             this.Write("    winrt::init_apartment(winrt::apartment_type::single_threaded);\r\n");
   } else { 
