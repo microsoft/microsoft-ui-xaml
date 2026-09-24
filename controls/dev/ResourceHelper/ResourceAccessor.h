@@ -162,6 +162,8 @@ public:
 #define SR_InkToolbarSmallEraserLabel L"InkToolbarSmallEraserLabel"
 #define SR_InkToolbarLargeEraserLabel L"InkToolbarLargeEraserLabel"
 #define SR_InkToolbarClearAllLabel L"InkToolbarClearAllLabel"
+#define SR_InkToolbarPenConfigurationColorsLabel L"InkToolbarPenConfigurationColorsLabel"
+#define SR_InkToolbarPenConfigurationSizeLabel L"InkToolbarPenConfigurationSizeLabel"
 #define SR_SplitButtonSecondaryButtonName L"SplitButtonSecondaryButtonName"
 #define SR_ProofingMenuItemLabel L"ProofingMenuItemLabel"
 #define SR_TextCommandLabelCut L"TextCommandLabelCut"

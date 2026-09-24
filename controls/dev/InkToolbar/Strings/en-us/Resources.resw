@@ -122,4 +122,12 @@
     <value>Erase all ink</value>
     <comment>Display label for the InkToolbar eraser flyout clear-all item. UWP IDS_INKTOOLBAR_ERASERCLEARALL = "Erase all ink" (verified against Windows.UI.Xaml.InkControls.dll resource 6400).</comment>
   </data>
+  <data name="InkToolbarPenConfigurationColorsLabel" xml:space="preserve">
+    <value>Colors</value>
+    <comment>Heading above the color palette in the InkToolbar pen configuration flyout.</comment>
+  </data>
+  <data name="InkToolbarPenConfigurationSizeLabel" xml:space="preserve">
+    <value>Size</value>
+    <comment>Heading above the stroke-width slider in the InkToolbar pen configuration flyout.</comment>
+  </data>
 </root>
