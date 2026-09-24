@@ -9858,7 +9858,6 @@ TimePickerFlyoutGenerated::InitializeImpl(_In_opt_ IInspectable* pOuter)
 
     UNREFERENCED_PARAMETER(pOuter);
 
-
     // When types are created internally there is no guarantee that
     // the factory has been previously instantiated. 
     IFC_RETURN(TimePickerFlyoutFactory::EnsureProperties());
@@ -10142,16 +10141,17 @@ void TimePickerFlyoutFactory::ClearProperties()
 IFACEMETHODIMP TimePickerFlyoutFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ITimePickerFlyout** ppInstance)
 {
     HRESULT hr = S_OK;
+
     IFC((pctl::AggregableComObject<
             ABI::Microsoft::UI::Xaml::Controls::TimePickerFlyout,
             ABI::Microsoft::UI::Xaml::Controls::ITimePickerFlyout>::CreateInstance(
             pOuter,
             ppInner,
             ppInstance)));
+
 Cleanup:
     RRETURN(hr);
 }
-
 // Static properties.
 
 // Dependency properties initializing functions

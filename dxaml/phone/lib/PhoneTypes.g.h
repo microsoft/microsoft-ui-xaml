@@ -149,7 +149,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
          _Check_return_ HRESULT RuntimeClassInitialize();
          static _Check_return_ HRESULT EnsureProperties();
          static void ClearProperties();
-        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ITimePickerFlyout** ppInstance);
+        IFACEMETHOD(ActivateInstance)(
+            _Outptr_ IInspectable** ppInspectable);
 
         // Properties.
 
@@ -1810,8 +1811,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
          _Check_return_ HRESULT RuntimeClassInitialize();
          static _Check_return_ HRESULT EnsureProperties();
          static void ClearProperties();
-        IFACEMETHOD(ActivateInstance)(
-            _Outptr_ IInspectable** ppInspectable);
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ITimePickerFlyout** ppInstance);
 
         // Properties.
 
@@ -1842,7 +1842,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         : public TimePickerFlyoutRuntimeClass
     {
         friend class ABI::Microsoft::UI::Xaml::Controls::TimePickerFlyout;
-        friend class pctl::AggregableComObject<
+        friend class pctl::AggregableComObject< 
             ABI::Microsoft::UI::Xaml::Controls::TimePickerFlyout,
             ABI::Microsoft::UI::Xaml::Controls::ITimePickerFlyout>;
         WuxpInspectableClass(RuntimeClass_Microsoft_UI_Xaml_Controls_TimePickerFlyout, TrustLevel::BaseTrust);
@@ -1900,7 +1900,6 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
 
         // Customized properties.
 
-        // Initialization methods
         // Initialization methods required by AggregableComObject to make this an aggregable class.
         virtual _Check_return_ HRESULT InitializeImpl(_In_opt_ IInspectable* pOuter = nullptr);
 
