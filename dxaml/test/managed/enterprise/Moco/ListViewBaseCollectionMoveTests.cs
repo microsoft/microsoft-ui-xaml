@@ -394,6 +394,188 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
+        public void CollectionMoveRejectsInvalidArgumentsAndRecovers()
+        {
+            WithCollectionMoveChange(true, () =>
+            {
+                const int invalidArgument = unchecked((int)0x80070057);
+                var invalidNotifications = new[]
+                {
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, "Item 0", 2, -1),
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, "Item 0", 3, 0),
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, (IList)new string[0], 0, 0),
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, (IList)new[] { "Item 0", "Item 1" }, 2, 0)
+                };
+                foreach (bool useGridView in new[] { false, true })
+                {
+                    foreach (var notification in invalidNotifications)
+                    {
+                        Log.Comment("{0}: invalid Move({1}, {2}), count={3}",
+                            useGridView ? "GridView" : "ListView",
+                            notification.OldStartingIndex, notification.NewStartingIndex, notification.NewItems.Count);
+                        var source = new MoveReadTrackingSource(3);
+                        var finalItems = new object[] { "Item 1", "Item 2", "Item 0" };
+                        CollectionViewSource viewSource = null;
+                        ListControl control = null;
+                        UIExecutor.Execute(() =>
+                        {
+                            viewSource = new CollectionViewSource { Source = source };
+                            Verify.IsTrue(viewSource.View.MoveCurrentToFirst());
+                            control = CreateMoveControl(useGridView);
+                            control.Width = 480;
+                            control.Height = 480;
+                            control.ShowsScrollingPlaceholders = false;
+                            control.IsSynchronizedWithCurrentItem = false;
+                            // Share one adapter: a failed raw-source callback stops subsequent listeners.
+                            control.ItemsSource = viewSource.View;
+                            control.SelectedIndex = 1;
+                            TestServices.WindowHelper.WindowContent = control;
+                        });
+                        TestServices.WindowHelper.WaitForIdle();
+
+                        UIExecutor.Execute(() =>
+                        {
+                            Verify.IsNotNull(control.ContainerFromIndex(0));
+                            var view = viewSource.View;
+                            var expected = new[] { new MoveNotification(CollectionChange.Reset, 0, finalItems) };
+                            using (var itemObserver = new MoveNotificationObserver(control.Items, () => control.Items, source, expected, finalItems, false))
+                            using (var viewObserver = new MoveNotificationObserver(view, () => viewSource.View, source, expected, finalItems, false))
+                            {
+                                Exception failure = VerifyMoveFailure(() => source.MoveRange(0, 2, 1, notification), invalidArgument);
+                                Verify.IsTrue(failure.Message.Contains("A Move notification must specify"));
+                                itemObserver.VerifyComplete();
+                                viewObserver.VerifyComplete();
+                            }
+                            Verify.AreEqual("Item 0", view.CurrentItem);
+                            Verify.AreEqual(2, view.CurrentPosition);
+                            control.UpdateLayout();
+                        });
+                        TestServices.WindowHelper.WaitForIdle();
+
+                        UIExecutor.Execute(() =>
+                        {
+                            for (int i = 0; i < finalItems.Length; i++)
+                            {
+                                var container = (ContentControl)control.ContainerFromIndex(i);
+                                Verify.IsNotNull(container);
+                                Verify.AreEqual(finalItems[i], container.Content);
+                                Verify.IsTrue(ReferenceEquals(container, control.ContainerFromItem(finalItems[i])));
+                            }
+                            Verify.AreEqual(control.SelectedIndex < 0 ? null : finalItems[control.SelectedIndex], control.SelectedItem);
+
+                            object[] restoredItems;
+                            var expected = CreateMoveNotifications(finalItems, 2, 0, 1, out restoredItems);
+                            using (var itemObserver = new MoveNotificationObserver(control.Items, () => control.Items, source, expected, restoredItems, true))
+                            using (var viewObserver = new MoveNotificationObserver(viewSource.View, () => viewSource.View, source, expected, restoredItems, true))
+                            {
+                                source.MoveRange(2, 0, 1);
+                                itemObserver.VerifyComplete();
+                                viewObserver.VerifyComplete();
+                            }
+                        });
+                        TestServices.WindowHelper.ResetWindowContentAndWaitForIdle();
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
+        public void CollectionMovePreservesPreparationFailureAndRecovers()
+        {
+            WithCollectionMoveChange(true, () =>
+            {
+                UIExecutor.Execute(() =>
+                {
+                    const int sourceHResult = unchecked((int)0x8004A504);
+                    const string sourceMessage = "CollectionMove source Count failure";
+                    var source = new MoveReadTrackingSource(3);
+                    var viewSource = new CollectionViewSource { Source = source };
+                    var view = viewSource.View;
+                    Verify.IsTrue(view.MoveCurrentToFirst());
+                    var finalItems = new object[] { "Item 1", "Item 2", "Item 0" };
+                    var expected = new[] { new MoveNotification(CollectionChange.Reset, 0, finalItems) };
+                    using (var observer = new MoveNotificationObserver(view, () => viewSource.View, source, expected, finalItems, false))
+                    {
+                        source.OnCountRead = () =>
+                        {
+                            source.OnCountRead = null;
+                            throw new COMException(sourceMessage, sourceHResult);
+                        };
+                        Exception failure = VerifyMoveFailure(() => source.MoveRange(0, 2, 1), sourceHResult);
+                        Verify.IsTrue(failure.Message.Contains(sourceMessage));
+                        observer.VerifyComplete();
+                    }
+                    Verify.AreEqual("Item 0", view.CurrentItem);
+                    Verify.AreEqual(2, view.CurrentPosition);
+
+                    object[] restoredItems;
+                    expected = CreateMoveNotifications(finalItems, 2, 0, 1, out restoredItems);
+                    using (var observer = new MoveNotificationObserver(view, () => viewSource.View, source, expected, restoredItems, true))
+                    {
+                        source.MoveRange(2, 0, 1);
+                        observer.VerifyComplete();
+                    }
+                });
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
+        public void CollectionMovePreservesValidationFailureWhenResetFails()
+        {
+            WithCollectionMoveChange(true, () =>
+            {
+                UIExecutor.Execute(() =>
+                {
+                    const int invalidArgument = unchecked((int)0x80070057);
+                    const int resetHResult = unchecked((int)0x8004A505);
+                    var source = new MoveReadTrackingSource(3);
+                    var viewSource = new CollectionViewSource { Source = source };
+                    var view = viewSource.View;
+                    var finalItems = new object[] { "Item 1", "Item 2", "Item 0" };
+                    var expected = new[] { new MoveNotification(CollectionChange.Reset, 0, finalItems) };
+                    int resetCallbacks = 0;
+                    VectorChangedEventHandler<object> handler = (sender, args) =>
+                    {
+                        Verify.AreEqual(CollectionChange.Reset, args.CollectionChange);
+                        resetCallbacks++;
+                        throw new COMException("CollectionMove recovery Reset failure", resetHResult);
+                    };
+                    using (var observer = new MoveNotificationObserver(view, () => viewSource.View, source, expected, finalItems, false))
+                    {
+                        view.VectorChanged += handler;
+                        try
+                        {
+                            var notification = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, "Item 0", 3, 0);
+                            Exception failure = VerifyMoveFailure(() => source.MoveRange(0, 2, 1, notification), invalidArgument);
+                            Verify.IsTrue(failure.Message.Contains("A Move notification must specify"),
+                                "A failing recovery Reset must not replace the original validation error.");
+                            Verify.AreEqual(1, resetCallbacks);
+                            observer.VerifyComplete();
+                        }
+                        finally
+                        {
+                            view.VectorChanged -= handler;
+                        }
+                    }
+
+                    object[] restoredItems;
+                    expected = CreateMoveNotifications(finalItems, 2, 0, 1, out restoredItems);
+                    using (var observer = new MoveNotificationObserver(view, () => viewSource.View, source, expected, restoredItems, true))
+                    {
+                        source.MoveRange(2, 0, 1);
+                        observer.VerifyComplete();
+                    }
+                });
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
         public void ListViewMovePreservesUnmovedItemState()
         {
             VerifyMovePreservesUnmovedItemState(false);
@@ -1091,6 +1273,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
             public int EnumeratorCount { get; private set; }
             public int CopyCount { get; private set; }
             public Action OnIndexedRead { get; set; }
+            public Action OnCountRead { get; set; }
             public event NotifyCollectionChangedEventHandler CollectionChanged;
 
             public MoveReadTrackingSource(int count)
@@ -1105,12 +1288,12 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                 CopyCount = 0;
             }
 
-            public void MoveRange(int oldIndex, int newIndex, int count)
+            public void MoveRange(int oldIndex, int newIndex, int count, NotifyCollectionChangedEventArgs notification = null)
             {
                 var movedItems = items.GetRange(oldIndex, count);
                 items.RemoveRange(oldIndex, count);
                 items.InsertRange(newIndex, movedItems);
-                CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(
+                CollectionChanged?.Invoke(this, notification ?? new NotifyCollectionChangedEventArgs(
                     NotifyCollectionChangedAction.Move, (IList)movedItems, newIndex, oldIndex));
             }
 
@@ -1126,7 +1309,14 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                 set { throw new NotSupportedException(); }
             }
 
-            public int Count => items.Count;
+            public int Count
+            {
+                get
+                {
+                    OnCountRead?.Invoke();
+                    return items.Count;
+                }
+            }
             public bool IsReadOnly => true;
             public bool IsFixedSize => true;
             public bool IsSynchronized => false;

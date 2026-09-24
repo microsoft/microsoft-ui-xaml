@@ -422,6 +422,8 @@ BindableObservableVectorWrapper::ProcessCollectionMove(_In_ INotifyCollectionCha
     // A notification handler can replace ItemsSource and release the owner's adapter.
     const ctl::ComPtr<wfc::IVector<IInspectable *>> keepAlive(this);
 
+    HRESULT hr = S_OK;
+    bool resetRequired = false;
     INT oldIndex = 0;
     INT newIndex = 0;
     UINT oldCount = 0;
@@ -430,23 +432,23 @@ BindableObservableVectorWrapper::ProcessCollectionMove(_In_ INotifyCollectionCha
     ctl::ComPtr<IBindableVector> oldItems;
     ctl::ComPtr<IBindableVector> newItems;
 
-    IFC_RETURN(pArgs->get_OldStartingIndex(&oldIndex));
-    IFC_RETURN(pArgs->get_NewStartingIndex(&newIndex));
-    IFC_RETURN(pArgs->get_OldItems(&oldItems));
-    IFC_RETURN(pArgs->get_NewItems(&newItems));
+    IFC(pArgs->get_OldStartingIndex(&oldIndex));
+    IFC(pArgs->get_NewStartingIndex(&newIndex));
+    IFC(pArgs->get_OldItems(&oldItems));
+    IFC(pArgs->get_NewItems(&newItems));
     if (oldItems)
     {
-        IFC_RETURN(oldItems->get_Size(&oldCount));
+        IFC(oldItems->get_Size(&oldCount));
     }
     if (newItems)
     {
-        IFC_RETURN(newItems->get_Size(&newCount));
+        IFC(newItems->get_Size(&newCount));
     }
-    IFC_RETURN(BindableVectorWrapper::get_Size(&sourceSize));
+    IFC(BindableVectorWrapper::get_Size(&sourceSize));
 
     if (!Components::CollectionMoveView::IsValid(sourceSize, oldIndex, newIndex, oldCount, newCount))
     {
-        IFC_RETURN(ErrorHelper::OriginateError(
+        IFC(ErrorHelper::OriginateError(
             E_INVALIDARG,
             wrl_wrappers::HStringReference(
                 L"A Move notification must specify valid old and new indices and equally sized, nonempty item ranges.").Get()));
@@ -456,8 +458,6 @@ BindableObservableVectorWrapper::ProcessCollectionMove(_In_ INotifyCollectionCha
         return S_OK;
     }
 
-    HRESULT hr = S_OK;
-    bool resetRequired = false;
     {
         m_moveView.emplace(sourceSize, oldIndex, newIndex, oldCount);
         auto clearMoveView = wil::scope_exit([this]()
@@ -477,12 +477,14 @@ BindableObservableVectorWrapper::ProcessCollectionMove(_In_ INotifyCollectionCha
             hr = RaiseVectorChanged(wfc::CollectionChange_ItemInserted, newIndex + inserted);
         }
 
-        resetRequired = FAILED(hr) || m_sourceChangedDuringMove;
+        resetRequired = m_sourceChangedDuringMove;
     }
 
-    if (resetRequired)
+Cleanup:
+    if (FAILED(hr) || resetRequired)
     {
-        // Restore the real source before notifying consumers, even if a handler failed.
+        // The source has already changed, even if preparation failed before creating a view.
+        // Notify consumers against the real source, never the intermediate projection.
         // Preserve the original language exception if the recovery notification also fails.
         ErrorInfo errorInfo;
         const bool restoreErrorInfo = FAILED(hr) && SUCCEEDED(errorInfo.GetFromThread());

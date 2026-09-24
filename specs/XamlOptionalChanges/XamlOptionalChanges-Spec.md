@@ -300,9 +300,12 @@ to `ItemRemoved` notifications at the old starting index, followed by
 `ItemInserted` notifications at successive new indices. The new starting
 index is the range's index in the final collection. A same-index move emits
 no vector notifications. Move arguments must contain equally sized, nonempty
-old/new item ranges and valid indices; invalid arguments produce
-`E_INVALIDARG`. Genuine Reset and ordinary Add, Remove, and Replace
-notifications retain their existing behavior.
+old/new item ranges and valid indices; invalid arguments cause WinUI to
+attempt a Reset against the actual source before returning `E_INVALIDARG`.
+Failures while reading the notification or source size also attempt a Reset
+and preserve the original error, even if a Reset handler fails. Genuine Reset
+and ordinary Add, Remove, and Replace notifications retain their existing
+behavior.
 
 The application source is already in its final state when it raises Move.
 WinUI does not modify that source again. Preparing the notifications does not
