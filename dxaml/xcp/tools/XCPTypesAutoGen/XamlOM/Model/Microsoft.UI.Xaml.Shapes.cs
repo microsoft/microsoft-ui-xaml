@@ -282,7 +282,7 @@ namespace Microsoft.UI.Xaml.Shapes
 
     [NativeName("CRectangle")]
     [Guids(ClassGuid = "f08ddae9-8acc-4bf5-aa40-0e5431ec3409")]
-    public sealed class Rectangle
+    public class Rectangle
      : Microsoft.UI.Xaml.Shapes.Shape
     {
         [PropertyFlags(AffectsMeasure = true)]
