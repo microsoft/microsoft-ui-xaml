@@ -104,7 +104,6 @@ namespace DirectUI
         // Factory methods.
         IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IWrapGrid** ppInstance);
 
-
         // Static properties.
 
         // Dependency properties.
