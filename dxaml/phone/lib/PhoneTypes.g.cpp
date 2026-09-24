@@ -233,14 +233,15 @@ Cleanup:
 _Check_return_ HRESULT 
 DatePickerFlyoutGenerated::RuntimeClassInitialize()
 {
-    RRETURN(InitializeImpl());
+    RRETURN(InitializeImpl(nullptr));
 }
 
 _Check_return_ HRESULT
-DatePickerFlyoutGenerated::InitializeImpl()
+DatePickerFlyoutGenerated::InitializeImpl(_In_opt_ IInspectable* pOuter)
 {
     HRESULT hr = S_OK;
 
+    UNREFERENCED_PARAMETER(pOuter);
 
     // When types are created internally there is no guarantee that
     // the factory has been previously instantiated. 
@@ -810,7 +811,6 @@ IFACEMETHODIMP DatePickerFlyoutFactory::CreateInstance(_In_opt_ IInspectable* pO
 Cleanup:
     RRETURN(hr);
 }
-
 // Static properties.
 
 // Dependency properties initializing functions

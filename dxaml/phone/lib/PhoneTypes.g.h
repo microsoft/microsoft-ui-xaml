@@ -149,7 +149,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
          _Check_return_ HRESULT RuntimeClassInitialize();
          static _Check_return_ HRESULT EnsureProperties();
          static void ClearProperties();
-        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyout** ppInstance);
+        IFACEMETHOD(ActivateInstance)(
+            _Outptr_ IInspectable** ppInspectable);
 
         // Properties.
 
@@ -230,8 +231,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
          _Check_return_ HRESULT RuntimeClassInitialize();
          static _Check_return_ HRESULT EnsureProperties();
          static void ClearProperties();
-        IFACEMETHOD(ActivateInstance)(
-            _Outptr_ IInspectable** ppInspectable);
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyout** ppInstance);
 
         // Properties.
 
@@ -283,7 +283,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         : public DatePickerFlyoutRuntimeClass
     {
         friend class ABI::Microsoft::UI::Xaml::Controls::DatePickerFlyout;
-        friend class pctl::AggregableComObject<
+        friend class pctl::AggregableComObject< 
             ABI::Microsoft::UI::Xaml::Controls::DatePickerFlyout,
             ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyout>;
         WuxpInspectableClass(RuntimeClass_Microsoft_UI_Xaml_Controls_DatePickerFlyout, TrustLevel::BaseTrust);
@@ -355,8 +355,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
 
         // Customized properties.
 
-        // Initialization methods
-        virtual _Check_return_ HRESULT InitializeImpl();
+        // Initialization methods required by AggregableComObject to make this an aggregable class.
+        virtual _Check_return_ HRESULT InitializeImpl(_In_opt_ IInspectable* pOuter = nullptr);
 
         // Event Sources
         Private::TrackerEventSource<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::DatePickerFlyout*, ABI::Microsoft::UI::Xaml::Controls::DatePickedEventArgs*>> m_DatePickedEventSource;
