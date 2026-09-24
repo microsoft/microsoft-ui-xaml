@@ -198,15 +198,19 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) ScrollViewerFactory:
-       public ctl::BetterCoreObjectActivationFactory
+       public ctl::BetterAggregableCoreObjectActivationFactory
+        , public ABI::Microsoft::UI::Xaml::Controls::IScrollViewerFactory
         , public ABI::Microsoft::UI::Xaml::Controls::IScrollViewerStatics
     {
-        BEGIN_INTERFACE_MAP(ScrollViewerFactory, ctl::BetterCoreObjectActivationFactory)
+        BEGIN_INTERFACE_MAP(ScrollViewerFactory, ctl::BetterAggregableCoreObjectActivationFactory)
+            INTERFACE_ENTRY(ScrollViewerFactory, ABI::Microsoft::UI::Xaml::Controls::IScrollViewerFactory)
             INTERFACE_ENTRY(ScrollViewerFactory, ABI::Microsoft::UI::Xaml::Controls::IScrollViewerStatics)
-        END_INTERFACE_MAP(ScrollViewerFactory, ctl::BetterCoreObjectActivationFactory)
+        END_INTERFACE_MAP(ScrollViewerFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IScrollViewer** ppInstance);
+
 
         // Static properties.
 
