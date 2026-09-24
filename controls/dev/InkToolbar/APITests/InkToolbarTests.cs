@@ -617,6 +617,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Applying the pen configuration template must actually run ConfigureLocalizableElements: both
+        // headings get their localized text and the otherwise-anonymous palette and slider get an
+        // automation name. The palette/slider names are set only in code (the template leaves them
+        // empty), so this test fails if ConfigureLocalizableElements is ever reduced to a no-op - which
+        // the makepri key-existence check alone would not catch.
+        [TestMethod]
+        public void InkToolbarPenConfigurationControlLocalizesHeadingsTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var config = new InkToolbarPenConfigurationControl();
+
+                // PenButton has no public setter; set the DP directly so OnApplyTemplate takes the
+                // pen (color-picker) path. Without a pen button the eraser path removes the Colors heading.
+                config.SetValue(InkToolbarPenConfigurationControl.PenButtonProperty, new InkToolbarBallpointPenButton());
+
+                Content = config;
+                Content.UpdateLayout();
+
+                var colorsTitle = config.FindVisualChildByName("PenColorPaletteTitle") as TextBlock;
+                var sizeTitle = config.FindVisualChildByName("PenStrokeWidthTitle") as TextBlock;
+                var palette = config.FindVisualChildByName("PenColorPalette") as FrameworkElement;
+                var slider = config.FindVisualChildByName("PenStrokeWidthSlider") as FrameworkElement;
+
+                Verify.IsNotNull(colorsTitle, "PenColorPaletteTitle should be realized after template apply.");
+                Verify.IsNotNull(sizeTitle, "PenStrokeWidthTitle should be realized after template apply.");
+                Verify.IsNotNull(palette, "PenColorPalette should be realized after template apply.");
+                Verify.IsNotNull(slider, "PenStrokeWidthSlider should be realized after template apply.");
+
+                Verify.IsFalse(string.IsNullOrEmpty(colorsTitle.Text), "Colors heading should carry localized text.");
+                Verify.IsFalse(string.IsNullOrEmpty(sizeTitle.Text), "Size heading should carry localized text.");
+
+                var paletteName = AutomationProperties.GetName(palette);
+                var sliderName = AutomationProperties.GetName(slider);
+                Verify.IsFalse(string.IsNullOrEmpty(paletteName), "Palette automation name should be set by ConfigureLocalizableElements.");
+                Verify.IsFalse(string.IsNullOrEmpty(sliderName), "Slider automation name should be set by ConfigureLocalizableElements.");
+                Verify.AreEqual(colorsTitle.Text, paletteName, "Palette automation name should match the Colors heading text.");
+            });
+        }
+
         // ====================================================================
         // Missing API coverage: EraserButton, CustomPen, CustomPenButton, Events
         // ====================================================================
